@@ -131,7 +131,7 @@ export function summaryFromMarkdown(markdown: string): string {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
     const heading = /^#{1,6}\s+(.+?)\s*#*$/.exec(trimmed);
-    if (heading !== null) return cleanSummary(heading[1]);
+    if (heading !== null) return cleanSummary(heading[1] ?? "");
     if (firstNonEmpty.length === 0) firstNonEmpty = trimmed;
   }
   return cleanSummary(firstNonEmpty);

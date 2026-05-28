@@ -101,7 +101,7 @@ export async function runReviewShow(
   options: { cwd: string; wiki?: string; id: string; json?: boolean },
 ): Promise<ReviewCommandOutput> {
   const found = await findReviewItem(options);
-  if (found.error !== undefined) return found.error;
+  if ("error" in found) return found.error;
   const item = found.item;
 
   if (options.json === true) {
@@ -117,7 +117,7 @@ export async function runReviewDecide(
   if (markdown === null) return missingMarkdown("review decide");
 
   const found = await findReviewItem(options);
-  if (found.error !== undefined) return found.error;
+  if ("error" in found) return found.error;
   const item = found.item;
   if (item.status === "applied") {
     return {
@@ -142,7 +142,7 @@ export async function runReviewApply(
   if (markdown === null) return missingMarkdown("review apply");
 
   const found = await findReviewItem(options);
-  if (found.error !== undefined) return found.error;
+  if ("error" in found) return found.error;
   const item = found.item;
   if (item.status !== "decided") {
     return {
@@ -162,7 +162,7 @@ export async function runReviewReopen(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
   const found = await findReviewItem(options);
-  if (found.error !== undefined) return found.error;
+  if ("error" in found) return found.error;
   const item = found.item;
   const markdown = readMarkdown(options);
   item.status = "open";
@@ -176,14 +176,15 @@ export async function runReviewReopen(
   return ok(`reopened review item: ${item.id}\n`);
 }
 
+type FindReviewItemResult =
+  | { file: Awaited<ReturnType<typeof loadReviewFile>>; path: string; item: ReviewItem }
+  | { error: ReviewCommandOutput };
+
 async function findReviewItem(options: {
   cwd: string;
   wiki?: string;
   id: string;
-}): Promise<
-  | { file: Awaited<ReturnType<typeof loadReviewFile>>; path: string; item: ReviewItem }
-  | { error: ReviewCommandOutput }
-> {
+}): Promise<FindReviewItemResult> {
   const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
   const path = reviewYamlPath(repoRoot);
   const file = await loadReviewFile(path);

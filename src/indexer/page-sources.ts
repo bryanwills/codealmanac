@@ -146,13 +146,19 @@ function sourceToIndexed(
   }
 }
 
-function optional<T extends IndexedPageSource>(source: T): T | null {
+function optional(
+  source: Omit<IndexedPageSource, "target"> & { target?: string },
+): IndexedPageSource | null {
   if (source.target === undefined || source.target.length === 0) return null;
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(source)) {
-    if (value !== undefined) out[key] = value;
-  }
-  return out as T;
+  return {
+    id: source.id,
+    type: source.type,
+    target: source.target,
+    legacy: source.legacy,
+    ...(source.title !== undefined ? { title: source.title } : {}),
+    ...(source.retrieved_at !== undefined ? { retrieved_at: source.retrieved_at } : {}),
+    ...(source.note !== undefined ? { note: source.note } : {}),
+  };
 }
 
 function uniqueId(base: string, used: Set<string>): string {
