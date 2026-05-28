@@ -1,7 +1,7 @@
 ---
 title: Wiki Organization Primitives
 summary: Almanac's current storage primitives are pages, links, topics, and lineage metadata, while anchors, hubs, redirects, and gardening remain editorial conventions layered on top.
-topics: [decisions, systems, agents, wiki-design]
+topics: [decisions, systems, agents, wiki-design, prompt-system]
 files:
   - AGENTS.md
   - .almanac/README.md

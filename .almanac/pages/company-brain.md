@@ -1,7 +1,7 @@
 ---
 title: Company Brain
 summary: The company-brain category frames CodeAlmanac as a codebase-scoped, local-first memory layer for AI agents rather than a generic search or chatbot product.
-topics: [product-positioning]
+topics: [product-positioning, competitive-research]
 sources:
   - /tmp/company-brain-research.md
   - /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T22-39-10-019e43e5-2148-7f80-a2f3-9823dae31139.jsonl

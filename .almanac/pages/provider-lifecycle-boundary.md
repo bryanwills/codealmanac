@@ -1,7 +1,7 @@
 ---
 title: Provider Lifecycle Boundary
 summary: CodeAlmanac separates runtime execution providers from agent readiness, auth, instruction, and config support so one provider name does not imply one lifecycle.
-topics: [agents, systems, decisions]
+topics: [agents, systems, decisions, provider-harness]
 files:
   - src/harness/types.ts
   - src/harness/providers/

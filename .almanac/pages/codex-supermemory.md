@@ -1,7 +1,7 @@
 ---
 title: Codex Supermemory
 summary: Codex Supermemory is a lightweight Supermemory hook integration whose smooth prompt-time recall sharpens CodeAlmanac's activation-gap lesson.
-topics: [product-positioning, agents]
+topics: [product-positioning, agents, competitive-research]
 files:
   - docs/strategy/codealmanac-vs-deepwiki-supermemory.md
 sources:

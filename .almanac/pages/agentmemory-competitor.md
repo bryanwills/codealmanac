@@ -1,7 +1,7 @@
 ---
 title: Agentmemory Competitor
 summary: Agentmemory is a serious adjacent memory product whose event-driven daemon competes with CodeAlmanac's memory-continuity promise but not its repo-owned wiki artifact.
-topics: [product-positioning]
+topics: [product-positioning, competitive-research]
 files:
   - docs/strategy/codealmanac-vs-deepwiki-supermemory.md
   - docs/research/karpathy-llm-wiki.md

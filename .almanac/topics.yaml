@@ -53,3 +53,18 @@ topics:
     title: Fundraising
     description: Investor-facing narrative, pitch deck, and financing assumptions for CodeAlmanac
     parents: [product-positioning]
+
+  - slug: provider-harness
+    title: Provider Harness
+    description: Runtime provider adapters, readiness boundaries, auth assumptions, and provider-neutral run contracts
+    parents: [agents, systems]
+
+  - slug: prompt-system
+    title: Prompt System
+    description: Operation prompts, base prompt modules, and external writing systems that shape wiki-writing behavior
+    parents: [agents, wiki-design]
+
+  - slug: competitive-research
+    title: Competitive Research
+    description: Adjacent memory, knowledge-base, and company-brain products that shape CodeAlmanac positioning
+    parents: [product-positioning]

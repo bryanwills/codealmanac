@@ -1,7 +1,7 @@
 ---
 title: Operation Prompts
 summary: Operation prompts define how Build, Absorb, and Garden turn repo evidence into wiki memory, and transcript-heavy Absorb runs should be improved in prompt space first.
-topics: [agents, decisions]
+topics: [agents, decisions, prompt-system, wiki-design]
 sources:
   - id: prompt-loader
     type: file

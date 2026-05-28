@@ -35,6 +35,9 @@ Topics form a DAG serialized in `.almanac/topics.yaml`. A page can belong to mul
 | `wiki-design` | Product and architecture decisions about what a codebase wiki should contain and how pages, hubs, topics, and links should fit together (child of `systems` + `decisions`) |
 | `product-positioning` | Product, market, user, pricing, and positioning synthesis that shapes how CodeAlmanac is explained and sold |
 | `fundraising` | Investor-facing narrative, pitch deck, and financing assumptions (child of `product-positioning`) |
+| `provider-harness` | Runtime provider adapters, readiness boundaries, auth assumptions, and provider-neutral run contracts (child of `agents` + `systems`) |
+| `prompt-system` | Operation prompts, base prompt modules, and external writing systems that shape wiki-writing behavior (child of `agents` + `wiki-design`) |
+| `competitive-research` | Adjacent memory, knowledge-base, and company-brain products that shape CodeAlmanac positioning (child of `product-positioning`) |
 
 Add domain topics as the wiki grows. New topics go in `topics.yaml`; `almanac topics create` handles this.
 

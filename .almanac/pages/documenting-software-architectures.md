@@ -1,7 +1,7 @@
 ---
 title: Documenting Software Architectures
 summary: Documenting Software Architectures is an external architecture-documentation reference whose views-and-beyond model informs how CodeAlmanac should organize durable project memory.
-topics: [decisions, agents, wiki-design]
+topics: [decisions, agents, wiki-design, prompt-system]
 files:
   - .almanac/README.md
   - prompts/base/notability.md
