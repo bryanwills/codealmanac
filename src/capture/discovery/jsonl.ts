@@ -24,6 +24,26 @@ export async function readFirstLines(file: string, maxLines: number): Promise<st
   }
 }
 
+export function looksLikeInternalAlmanacTranscript(lines: string[]): boolean {
+  const joined = lines.join("\n");
+  if (joined.includes("CODEALMANAC_INTERNAL_SESSION")) return true;
+  if (
+    joined.includes("Runtime context:") &&
+    joined.includes("Wiki pages directory:")
+  ) {
+    return true;
+  }
+  if (joined.includes("Scheduled capture cursor:")) return true;
+  return (
+    joined.includes("Command context:") &&
+    (
+      joined.includes("- Command: capture") ||
+      joined.includes("- Command: init") ||
+      joined.includes("- Command: ingest")
+    )
+  );
+}
+
 export async function candidateFromMeta(
   app: SweepApp,
   transcriptPath: string,

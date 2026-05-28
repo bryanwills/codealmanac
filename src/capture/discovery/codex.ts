@@ -3,6 +3,7 @@ import { join } from "node:path";
 import {
   candidateFromMeta,
   collectJsonl,
+  looksLikeInternalAlmanacTranscript,
   objectField,
   parseJsonObject,
   readFirstLines,
@@ -15,7 +16,9 @@ export async function discoverCodex(home: string): Promise<SessionCandidate[]> {
   const files = await collectJsonl(root);
   const out: SessionCandidate[] = [];
   for (const file of files) {
-    const meta = await readCodexMeta(file);
+    const lines = await readFirstLines(file, 20);
+    if (looksLikeInternalAlmanacTranscript(lines)) continue;
+    const meta = readCodexMeta(lines);
     if (meta === null || meta.threadSource === "subagent") continue;
     const candidate = await candidateFromMeta("codex", file, meta.sessionId, meta.cwd);
     if (candidate !== null) out.push(candidate);
@@ -23,12 +26,12 @@ export async function discoverCodex(home: string): Promise<SessionCandidate[]> {
   return out;
 }
 
-async function readCodexMeta(file: string): Promise<{
+function readCodexMeta(lines: string[]): {
   sessionId: string;
   cwd: string;
   threadSource?: string;
-} | null> {
-  for (const line of await readFirstLines(file, 20)) {
+} | null {
+  for (const line of lines) {
     const parsed = parseJsonObject(line);
     if (parsed === null) continue;
     const payload = objectField(parsed, "payload");
