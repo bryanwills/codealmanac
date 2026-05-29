@@ -1,8 +1,10 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { runsDir, listRunRecords } from "./records.js";
 import type { RunRecord } from "./types.js";
+
+const OWNERLESS_LOCK_GRACE_MS = 30_000;
 
 export interface RunWorkerLock {
   path: string;
@@ -20,7 +22,7 @@ export async function acquireRunWorkerLock(
   if (await tryCreateRunWorkerLock(repoRoot, now)) {
     return workerLock(repoRoot);
   }
-  if (!await isStaleRunWorkerLock(repoRoot)) return null;
+  if (!await isStaleRunWorkerLock(repoRoot, now)) return null;
   await releaseRunWorkerLock(repoRoot);
   return await tryCreateRunWorkerLock(repoRoot, now) ? workerLock(repoRoot) : null;
 }
@@ -64,15 +66,33 @@ async function releaseRunWorkerLock(repoRoot: string): Promise<void> {
   await rm(runWorkerLockPath(repoRoot), { recursive: true, force: true });
 }
 
-async function isStaleRunWorkerLock(repoRoot: string): Promise<boolean> {
+async function isStaleRunWorkerLock(
+  repoRoot: string,
+  now: Date,
+): Promise<boolean> {
   let raw: Record<string, unknown> = {};
   try {
     raw = parseJsonObject(await readFile(runWorkerLockOwnerPath(repoRoot), "utf8")) ?? {};
   } catch {
-    return true;
+    return await isOwnerlessLockPastGrace(repoRoot, now);
   }
   const pid = typeof raw.pid === "number" ? raw.pid : null;
-  return pid === null || !isPidAlive(pid);
+  if (pid === null) {
+    return await isOwnerlessLockPastGrace(repoRoot, now);
+  }
+  return !isPidAlive(pid);
+}
+
+async function isOwnerlessLockPastGrace(
+  repoRoot: string,
+  now: Date,
+): Promise<boolean> {
+  try {
+    const lockStat = await stat(runWorkerLockPath(repoRoot));
+    return now.getTime() - lockStat.mtimeMs > OWNERLESS_LOCK_GRACE_MS;
+  } catch {
+    return true;
+  }
 }
 
 function isPidAlive(pid: number): boolean {

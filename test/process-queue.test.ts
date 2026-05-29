@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -23,7 +23,7 @@ describe("process operation queue", () => {
 
       const lock = await acquireRunWorkerLock(
         repo,
-        new Date("2026-05-29T10:00:00.000Z"),
+        new Date(),
       );
 
       expect(lock).not.toBeNull();
@@ -60,7 +60,43 @@ describe("process operation queue", () => {
 
       const lock = await acquireRunWorkerLock(
         repo,
-        new Date("2026-05-29T10:00:00.000Z"),
+        new Date(),
+      );
+
+      expect(lock).not.toBeNull();
+      await lock?.release();
+    });
+  });
+
+  it("does not remove a new ownerless worker lock", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "queue-ownerless-lock");
+      await scaffoldWiki(repo);
+      const lockPath = runWorkerLockPath(repo);
+      await mkdir(lockPath, { recursive: true });
+
+      const lock = await acquireRunWorkerLock(
+        repo,
+        new Date(),
+      );
+
+      expect(lock).toBeNull();
+      expect(existsSync(lockPath)).toBe(true);
+    });
+  });
+
+  it("recovers an old ownerless worker lock", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "queue-old-ownerless-lock");
+      await scaffoldWiki(repo);
+      const lockPath = runWorkerLockPath(repo);
+      await mkdir(lockPath, { recursive: true });
+      const old = new Date(Date.now() - 60_000);
+      await utimes(lockPath, old, old);
+
+      const lock = await acquireRunWorkerLock(
+        repo,
+        new Date(),
       );
 
       expect(lock).not.toBeNull();
