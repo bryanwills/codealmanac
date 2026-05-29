@@ -21,11 +21,7 @@ import {
   resolveClaudeExecutable,
   type ClaudeAuthStatus,
 } from "../../agent/auth/claude.js";
-import {
-  attachAbortSignalToProcessGroup,
-  spawnInProcessGroup,
-  terminateProcessGroup,
-} from "../../process/process-group.js";
+import { spawnManagedChildProcess } from "../../process/managed-child.js";
 
 type ClaudeQuery = AsyncIterable<SDKMessage>;
 type ClaudeQueryFn = (params: {
@@ -274,14 +270,15 @@ function buildClaudeOptions(
 function spawnClaudeCodeProcessGroup(
   options: Parameters<NonNullable<ClaudeOptions["spawnClaudeCodeProcess"]>>[0],
 ): ReturnType<NonNullable<ClaudeOptions["spawnClaudeCodeProcess"]>> {
-  const child = spawnInProcessGroup(options.command, options.args, {
+  const managed = spawnManagedChildProcess(options.command, options.args, {
     cwd: options.cwd,
     env: options.env,
     stdio: ["pipe", "pipe", "ignore"],
   });
-  attachAbortSignalToProcessGroup(child, options.signal);
+  const child = managed.child;
+  managed.attachAbort(options.signal);
   if (child.stdin === null || child.stdout === null) {
-    throw new Error("Claude process group spawn did not create stdio pipes");
+    throw new Error("Claude managed process spawn did not create stdio pipes");
   }
   return {
     stdin: child.stdin,
@@ -293,7 +290,7 @@ function spawnClaudeCodeProcessGroup(
       return child.exitCode;
     },
     kill: (signal) => {
-      void terminateProcessGroup(child, { signal }).catch(() => undefined);
+      void managed.terminate({ signal }).catch(() => undefined);
       return true;
     },
     on: (event, listener) => {

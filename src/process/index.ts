@@ -4,6 +4,7 @@ export {
   startBackgroundProcess,
 } from "./background.js";
 export { appendRunEvent, initializeRunLog } from "./logs.js";
+export { spawnManagedChildProcess } from "./managed-child.js";
 export { startForegroundProcess, startQueuedProcess } from "./manager.js";
 export {
   buildQueuedRunRecord,
@@ -44,6 +45,10 @@ export type {
   StartProcessOptions,
   StartProcessResult,
 } from "./manager.js";
+export type {
+  ManagedChildProcess,
+  TerminateManagedChildOptions,
+} from "./managed-child.js";
 export type {
   DisplayRunStatus,
   RunPageChanges,

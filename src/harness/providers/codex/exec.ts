@@ -1,7 +1,6 @@
-import { spawn } from "node:child_process";
-
 import type { HarnessResult } from "../../events.js";
 import type { HarnessRunHooks } from "../../types.js";
+import { spawnManagedChildProcess } from "../../../process/managed-child.js";
 import type { CodexExecRequest } from "./request.js";
 import {
   applyCodexJsonlEvent,
@@ -15,11 +14,20 @@ export function runCodexCli(
   hooks?: HarnessRunHooks,
 ): Promise<HarnessResult> {
   return new Promise((resolve) => {
-    const child = spawn(request.command, request.args, {
+    const managed = spawnManagedChildProcess(request.command, request.args, {
       cwd: request.cwd,
       env: request.env,
       stdio: ["ignore", "pipe", "pipe"],
     });
+    const child = managed.child;
+    if (child.stdout === null || child.stderr === null) {
+      resolve({
+        success: false,
+        result: "",
+        error: "Codex managed process spawn did not create stdio pipes",
+      });
+      return;
+    }
 
     let stdoutBuf = "";
     let stderr = "";
@@ -28,9 +36,35 @@ export function runCodexCli(
       result: "",
     };
     const eventWrites: Promise<void>[] = [];
+    let settled = false;
+    const removeSignalHandlers = installSignalHandlers((signal) => {
+      void finish({
+        success: false,
+        result: state.result,
+        providerSessionId: state.providerSessionId,
+        turns: state.turns,
+        usage: state.usage,
+        error: `Codex exec interrupted by ${signal}`,
+      });
+    });
 
     const observe = (msg: Record<string, unknown>): void => {
       eventWrites.push(applyCodexJsonlEvent(state, msg, hooks));
+    };
+
+    const finish = async (result: HarnessResult): Promise<void> => {
+      if (settled) return;
+      settled = true;
+      removeSignalHandlers();
+      await Promise.allSettled(eventWrites);
+      const cleanupError = await terminateManagedChildSafely(managed);
+      if (cleanupError !== undefined) {
+        await hooks?.onEvent?.({
+          type: "error",
+          error: cleanupError,
+        });
+      }
+      resolve(result);
     };
 
     const flushLines = (): void => {
@@ -58,7 +92,7 @@ export function runCodexCli(
       stderr += chunk.toString("utf8");
     });
     child.on("error", (err: NodeJS.ErrnoException) => {
-      resolve({
+      void finish({
         success: false,
         result: state.result,
         providerSessionId: state.providerSessionId,
@@ -71,6 +105,7 @@ export function runCodexCli(
       });
     });
     child.on("close", async (code) => {
+      if (settled) return;
       flushLines();
       if (stdoutBuf.trim().length > 0) {
         try {
@@ -79,10 +114,9 @@ export function runCodexCli(
           // Ignore trailing non-JSON.
         }
       }
-      await Promise.allSettled(eventWrites);
 
       if (code === 0 && state.success) {
-        resolve(toHarnessResult(state));
+        await finish(toHarnessResult(state));
         return;
       }
 
@@ -92,7 +126,7 @@ export function runCodexCli(
           ? firstStderr
           : `${request.command} exited ${code ?? 1}`;
       const failure = state.failure ?? classifyCodexFailure(fallbackError);
-      resolve({
+      await finish({
         ...toHarnessResult(state),
         success: false,
         error: state.error ?? failure.message,
@@ -100,4 +134,29 @@ export function runCodexCli(
       });
     });
   });
+}
+
+function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () => void {
+  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"];
+  const handlers = signals.map((signal) => {
+    const handler = () => onSignal(signal);
+    process.once(signal, handler);
+    return { signal, handler };
+  });
+  return () => {
+    for (const { signal, handler } of handlers) {
+      process.off(signal, handler);
+    }
+  };
+}
+
+async function terminateManagedChildSafely(
+  managed: ReturnType<typeof spawnManagedChildProcess>,
+): Promise<string | undefined> {
+  try {
+    await managed.terminate();
+    return undefined;
+  } catch (err: unknown) {
+    return `Provider process cleanup failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
 }

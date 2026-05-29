@@ -2,10 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { HarnessResult } from "../../events.js";
 import type { AgentRunSpec, HarnessRunHooks } from "../../types.js";
-import {
-  spawnInProcessGroup,
-  terminateProcessGroup,
-} from "../../../process/process-group.js";
+import { spawnManagedChildProcess } from "../../../process/managed-child.js";
 import {
   buildCodexAppServerRequest,
   codexClientVersion,
@@ -55,11 +52,12 @@ export async function runCodexAppServer(
   const rpcTimeoutMs = codexAppServerRpcTimeoutMs(request.env);
   const turnTimeoutMs = codexAppServerTurnTimeoutMs(request.env);
   return new Promise((resolve) => {
-    const child = spawnInProcessGroup(request.command, request.args, {
+    const managed = spawnManagedChildProcess(request.command, request.args, {
       cwd: request.cwd,
       env: request.env,
       stdio: ["pipe", "pipe", "pipe"],
     });
+    const child = managed.child;
     const pending = new Map<string, PendingRequest>();
     const state: CodexRunState = { success: false, result: "" };
     const eventWrites: Promise<void>[] = [];
@@ -86,7 +84,13 @@ export async function runCodexAppServer(
       }
       pending.clear();
       await Promise.allSettled(eventWrites);
-      await terminateProcessGroup(child);
+      const cleanupError = await terminateManagedChildSafely(managed);
+      if (cleanupError !== undefined) {
+        await hooks?.onEvent?.({
+          type: "error",
+          error: cleanupError,
+        });
+      }
       resolve(result);
     };
 
@@ -363,6 +367,17 @@ function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () =
       process.off(signal, handler);
     }
   };
+}
+
+async function terminateManagedChildSafely(
+  managed: ReturnType<typeof spawnManagedChildProcess>,
+): Promise<string | undefined> {
+  try {
+    await managed.terminate();
+    return undefined;
+  } catch (err: unknown) {
+    return `Provider process cleanup failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
 }
 
 function isRootTurnCompletion(

@@ -34,7 +34,7 @@ sources:
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
   - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 status: implemented
-verified: 2026-05-28
+verified: 2026-05-29
 ---
 
 # Capture Automation
@@ -277,6 +277,8 @@ The implementation was verified in-repo with `npm run lint`, `npm test`, and `np
 
 The 2026-05-29 per-wiki queue and ephemeral-session fix was verified with the in-repo test suite, including provider adapter tests for Claude `persistSession: false`, Codex app-server `ephemeral: true`, and Codex exec `--ephemeral`. That verification did not include a live Claude or Codex smoke run with real provider credentials, and it does not clean historical maintenance transcripts that were already persisted before the marker-filtering path was removed. Future debugging should distinguish "new maintenance runs should not persist provider transcripts" from "old provider transcript stores contain no maintenance transcripts."
 
+The follow-up provider-process cleanup was verified with in-repo process-tree fixtures rather than live Claude or Codex credentials. The relevant tests prove that the managed child process boundary terminates a spawned child plus grandchild on POSIX, escalates when graceful termination is ignored, and that the Claude SDK spawn hook and Codex app-server timeout path both route through that boundary. The Windows branch is isolated behind the same helper and uses a best-effort `taskkill /T /F` fallback; future testing on Windows should verify that behavior against real provider-created child trees.
+
 The same review also did a more realistic manual smoke pass on `almanac capture sweep` itself. That run surfaced and then fixed a concrete CLI regression: `capture sweep --json` initially printed human-readable text because the `--json` flag was being captured on the parent `capture` command instead of the `sweep` subcommand. After the fix, dry-run emitted structured JSON again, still avoided writing `.almanac/runs/capture-ledger.json`, and confirmed mixed discovery from real local transcript stores rather than only fixture data.
 
 One specific observation from that smoke pass is worth keeping as a sanity anchor for future regressions: on the developer's machine, the fixed dry-run reported 478 eligible sessions across both apps, split between 255 Claude sessions and 223 Codex sessions, with one additional Codex session skipped. The exact counts are temporal, but the durable lesson is that Codex discovery was verified against a live transcript corpus after the scheduler refactor and should not be treated as merely test-only behavior.
@@ -360,11 +362,11 @@ The per-wiki operation queue replaced the old live sweep fan-out cap after issue
 
 The 2026-05-12 launchd stress test added one more practical calibration to those defaults. Extremely aggressive settings such as `--every 1m --quiet 1s` are useful for proving the scheduler and PATH wiring, but they are intentionally unrealistic for normal use: an active transcript can become re-eligible almost immediately after each new burst of conversation, which leads to many continuation captures against the same session over a short period. The product-level conclusion is not that the scheduler is broken; it is that the calm default posture (`5h` interval, `45m` quiet window) is part of the operational contract, not just a convenience.
 
-That stress test also made a subtler ownership rule visible. The repo-local `capture-sweep.lock` only prevents overlapping sweeps from mutating the same wiki at the same time; it does not protect against a later sweep that starts after the earlier one released its lock but before the absorb job it spawned has finished. Preventing repeated continuation captures for the same transcript therefore depends on both layers together:
+That stress test also made a subtler ownership rule visible. The repo-local `capture-sweep.lock` only prevents overlapping sweeps from mutating the same wiki at the same time; it does not protect against a later sweep that starts after the earlier one released its lock but before the absorb job it spawned has finished. Preventing repeated continuation captures for the same transcript therefore depends on the sweep ledger and operation queue together:
 
 - the repo lock serializes sweep-side ledger mutation and enqueue decisions
 - the [[capture-ledger]] `pending` state reserves a transcript's new cursor range until the corresponding background run resolves
-- the sweep checks `.almanac/runs/*.json` and skips a repo while another Absorb run is queued or actively running
+- the [[process-manager-runs]] worker serializes queued Absorb runs with Build and Garden work for the same wiki
 
 Future debugging should keep that distinction in mind. A burst of many jobs from one transcript usually means the ledger failed to record or honor pending ownership, not that the per-repo lock stopped working.
 
