@@ -14,6 +14,7 @@ import {
   runRecordPath,
   writeRunRecord,
 } from "./records.js";
+import { acquireRunWorkerLock } from "./queue.js";
 import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
 import type { RunPageChanges, RunRecord, RunSummary } from "./types.js";
 
@@ -42,57 +43,163 @@ export async function startForegroundProcess(
   const now = options.now ?? (() => new Date());
   const runId = options.runId ?? createRunId(now());
   const startedAt = now();
-  const recordPath = runRecordPath(options.repoRoot, runId);
-  const started = buildStartedRunRecord({
-    runId,
+  const lock = await acquireRunWorkerLock(options.repoRoot, startedAt);
+  if (lock === null) {
+    throw new Error(
+      "another Almanac operation is already running for this wiki; run without --foreground to queue this operation",
+    );
+  }
+  try {
+    const recordPath = runRecordPath(options.repoRoot, runId);
+    const started = buildStartedRunRecord({
+      runId,
+      repoRoot: options.repoRoot,
+      spec: options.spec,
+      startedAt,
+      pid: options.pid,
+    });
+
+    const preStart = await cancelledRecordIfRequested({
+      recordPath,
+      repoRoot: options.repoRoot,
+      runId,
+      fallback: started,
+      finishedAt: now(),
+    });
+    if (preStart !== null) {
+      return {
+        runId,
+        record: preStart,
+        result: {
+          success: false,
+          result: "",
+          error: "run cancelled before start",
+        },
+      };
+    }
+
+    await writeRunRecord(recordPath, started);
+    await initializeRunLog(started.logPath);
+    const afterStart = await cancelledRecordIfRequested({
+      recordPath,
+      repoRoot: options.repoRoot,
+      runId,
+      fallback: started,
+      finishedAt: now(),
+    });
+    if (afterStart !== null) {
+      return {
+        runId,
+        record: afterStart,
+        result: {
+          success: false,
+          result: "",
+          error: "run cancelled before start",
+        },
+      };
+    }
+
+    return executeStartedRun({
+      repoRoot: options.repoRoot,
+      spec: options.spec,
+      record: started,
+      now,
+      onEvent: options.onEvent,
+      harnessRun: options.harnessRun,
+    });
+  } finally {
+    await lock.release();
+  }
+}
+
+export async function startQueuedProcess(
+  options: Omit<StartProcessOptions, "runId"> & { runId: string },
+): Promise<StartProcessResult | null> {
+  const now = options.now ?? (() => new Date());
+  const recordPath = runRecordPath(options.repoRoot, options.runId);
+  const existing = await readRunRecord(recordPath);
+  if (existing === null || existing.status !== "queued") return null;
+
+  const beforeClaim = await cancelledRecordIfRequested({
+    recordPath,
+    repoRoot: options.repoRoot,
+    runId: options.runId,
+    fallback: existing,
+    finishedAt: now(),
+  });
+  if (beforeClaim !== null) {
+    return {
+      runId: options.runId,
+      record: beforeClaim,
+      result: {
+        success: false,
+        result: "",
+        error: "run cancelled before start",
+      },
+    };
+  }
+
+  const running: RunRecord = {
+    ...existing,
+    status: "running",
+    pid: options.pid ?? process.pid,
+    startedAt: now().toISOString(),
+    finishedAt: undefined,
+    durationMs: undefined,
+    summary: undefined,
+    pageChanges: undefined,
+    error: undefined,
+    failure: undefined,
+  };
+  await writeRunRecord(recordPath, running);
+
+  const afterClaim = await cancelledRecordIfRequested({
+    recordPath,
+    repoRoot: options.repoRoot,
+    runId: options.runId,
+    fallback: running,
+    finishedAt: now(),
+  });
+  if (afterClaim !== null) {
+    return {
+      runId: options.runId,
+      record: afterClaim,
+      result: {
+        success: false,
+        result: "",
+        error: "run cancelled before start",
+      },
+    };
+  }
+
+  return executeStartedRun({
     repoRoot: options.repoRoot,
     spec: options.spec,
-    startedAt,
-    pid: options.pid,
+    record: running,
+    now,
+    onEvent: options.onEvent,
+    harnessRun: options.harnessRun,
   });
+}
 
-  const preStart = await cancelledRecordIfRequested({
-    recordPath,
-    repoRoot: options.repoRoot,
-    runId,
-    fallback: started,
-    finishedAt: now(),
-  });
-  if (preStart !== null) {
-    return {
-      runId,
-      record: preStart,
-      result: {
-        success: false,
-        result: "",
-        error: "run cancelled before start",
-      },
-    };
-  }
-
-  await writeRunRecord(recordPath, started);
-  await initializeRunLog(started.logPath);
-  const afterStart = await cancelledRecordIfRequested({
-    recordPath,
-    repoRoot: options.repoRoot,
-    runId,
-    fallback: started,
-    finishedAt: now(),
-  });
-  if (afterStart !== null) {
-    return {
-      runId,
-      record: afterStart,
-      result: {
-        success: false,
-        result: "",
-        error: "run cancelled before start",
-      },
-    };
-  }
+async function executeStartedRun(args: {
+  repoRoot: string;
+  spec: AgentRunSpec;
+  record: RunRecord;
+  now: () => Date;
+  onEvent?: (event: HarnessEvent) => void | Promise<void>;
+  harnessRun?: (
+    spec: AgentRunSpec,
+    hooks?: HarnessRunHooks,
+  ) => Promise<HarnessResult>;
+}): Promise<StartProcessResult> {
+  const runId = args.record.id;
+  const recordPath = runRecordPath(args.repoRoot, runId);
+  const started = args.record;
+  const now = args.now;
 
   const harnessRun =
-    options.harnessRun ??
+    args.harnessRun ??
     ((spec, hooks) => getHarnessProvider(spec.provider.id).run(spec, hooks));
   const eventWrites: Promise<void>[] = [];
 
@@ -101,11 +208,11 @@ export async function startForegroundProcess(
   let summary: RunSummary | undefined;
   let pageChanges: RunPageChanges | undefined;
   try {
-    const pagesDir = join(options.repoRoot, ".almanac", "pages");
+    const pagesDir = join(args.repoRoot, ".almanac", "pages");
     const before = await snapshotPages(pagesDir);
     try {
-      result = await harnessRun(options.spec, {
-        onEvent: eventLogger(started.logPath, runId, now, eventWrites, options.onEvent),
+      result = await harnessRun(args.spec, {
+        onEvent: eventLogger(started.logPath, runId, now, eventWrites, args.onEvent),
       });
     } catch (err: unknown) {
       result = {
@@ -142,7 +249,7 @@ export async function startForegroundProcess(
       ...(resultSummary !== undefined ? { summary: resultSummary } : {}),
     };
     if (result.success) {
-      await runIndexer({ repoRoot: options.repoRoot });
+      await runIndexer({ repoRoot: args.repoRoot });
     }
     finalRecord = await finishUnlessCancelled({
       recordPath,

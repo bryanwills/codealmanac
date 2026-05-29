@@ -5,7 +5,7 @@ import type { AgentRunSpec, HarnessRunHooks } from "../harness/types.js";
 import type { HarnessResult } from "../harness/events.js";
 import { createRunId } from "./ids.js";
 import { initializeRunLog } from "./logs.js";
-import { startForegroundProcess, type StartProcessResult } from "./manager.js";
+import { startQueuedProcess } from "./manager.js";
 import {
   buildQueuedRunRecord,
   finishRunRecord,
@@ -14,6 +14,7 @@ import {
   writeRunRecord,
 } from "./records.js";
 import { readRunSpec, writeRunSpec } from "./spec.js";
+import { acquireRunWorkerLock, oldestQueuedRun } from "./queue.js";
 import type { RunRecord } from "./types.js";
 
 export interface BackgroundChild {
@@ -75,16 +76,17 @@ export async function startBackgroundProcess(
   }
 
   const spawnFn = options.spawnBackground ?? defaultSpawnBackground;
+  const childEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    CODEALMANAC_INTERNAL_SESSION: "1",
+  };
   let child: BackgroundChild;
   try {
     child = spawnFn({
       command: process.execPath,
-      args: [entrypoint, "__run-job", runId],
+      args: [entrypoint, "__run-worker"],
       cwd: options.repoRoot,
-      env: {
-        ...process.env,
-        CODEALMANAC_INTERNAL_SESSION: "1",
-      },
+      env: childEnv,
     });
   } catch (err: unknown) {
     await writeRunRecord(
@@ -105,7 +107,6 @@ export async function startBackgroundProcess(
 
 export interface RunBackgroundChildOptions {
   repoRoot: string;
-  runId: string;
   now?: () => Date;
   pid?: number;
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
@@ -115,31 +116,61 @@ export interface RunBackgroundChildOptions {
   ) => Promise<HarnessResult>;
 }
 
-export async function runBackgroundChild(
+export async function runBackgroundWorker(
   options: RunBackgroundChildOptions,
-): Promise<StartProcessResult> {
-  const existing = await readRunRecord(runRecordPath(options.repoRoot, options.runId));
-  if (existing?.status === "cancelled") {
-    return {
-      runId: options.runId,
-      record: existing,
-      result: {
-        success: false,
-        result: "",
-        error: "run cancelled before start",
-      },
-    };
+): Promise<void> {
+  const now = options.now ?? (() => new Date());
+  while (true) {
+    const lock = await acquireRunWorkerLock(options.repoRoot, now());
+    if (lock === null) return;
+    try {
+      while (true) {
+        const record = await oldestQueuedRun(options.repoRoot);
+        if (record === null) break;
+        try {
+          const spec = await readRunSpec(options.repoRoot, record.id);
+          await startQueuedProcess({
+            repoRoot: options.repoRoot,
+            spec,
+            runId: record.id,
+            now,
+            pid: options.pid,
+            onEvent: options.onEvent,
+            harnessRun: options.harnessRun,
+          });
+        } catch (err: unknown) {
+          await markQueuedRunFailed({
+            repoRoot: options.repoRoot,
+            record,
+            now: now(),
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    } finally {
+      await lock.release();
+    }
+    if (await oldestQueuedRun(options.repoRoot) === null) return;
   }
-  const spec = await readRunSpec(options.repoRoot, options.runId);
-  return startForegroundProcess({
-    repoRoot: options.repoRoot,
-    spec,
-    runId: options.runId,
-    now: options.now,
-    pid: options.pid,
-    onEvent: options.onEvent,
-    harnessRun: options.harnessRun,
-  });
+}
+
+async function markQueuedRunFailed(args: {
+  repoRoot: string;
+  record: RunRecord;
+  now: Date;
+  error: string;
+}): Promise<void> {
+  const current = await readRunRecord(runRecordPath(args.repoRoot, args.record.id));
+  if (current === null || current.status !== "queued") return;
+  await writeRunRecord(
+    runRecordPath(args.repoRoot, args.record.id),
+    finishRunRecord({
+      record: current,
+      status: "failed",
+      finishedAt: args.now,
+      error: args.error,
+    }),
+  );
 }
 
 function defaultSpawnBackground(args: {

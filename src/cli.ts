@@ -101,15 +101,10 @@ export async function run(argv: string[], deps: RunDeps = {}): Promise<void> {
 }
 
 async function tryRunInternalJob(args: string[]): Promise<boolean> {
-  if (args[0] !== "__run-job") return false;
-  const runId = args[1];
-  if (runId === undefined || !runId.startsWith("run_")) {
-    throw new Error("internal job requires a run id");
-  }
-  const { runBackgroundChild } = await import("./process/index.js");
-  await runBackgroundChild({
+  if (args[0] !== "__run-worker") return false;
+  const { runBackgroundWorker } = await import("./process/index.js");
+  await runBackgroundWorker({
     repoRoot: process.cwd(),
-    runId,
   });
   return true;
 }

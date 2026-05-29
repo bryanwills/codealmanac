@@ -1,10 +1,10 @@
 export { createRunId } from "./ids.js";
 export {
-  runBackgroundChild,
+  runBackgroundWorker,
   startBackgroundProcess,
 } from "./background.js";
 export { appendRunEvent, initializeRunLog } from "./logs.js";
-export { startForegroundProcess } from "./manager.js";
+export { startForegroundProcess, startQueuedProcess } from "./manager.js";
 export {
   buildQueuedRunRecord,
   buildStartedRunRecord,

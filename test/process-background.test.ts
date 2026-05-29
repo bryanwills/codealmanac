@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -7,15 +7,16 @@ import {
   markRunCancelled,
   readRunRecord,
   readRunSpec,
-  runBackgroundChild,
+  runBackgroundWorker,
   runRecordPath,
+  runWorkerLockPath,
   startBackgroundProcess,
   writeRunRecord,
 } from "../src/process/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 describe("process manager background execution", () => {
-  it("writes a queued record and spawns an internal detached child", async () => {
+  it("writes a queued record and wakes the per-wiki worker", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "background-start");
       await scaffoldWiki(repo);
@@ -64,8 +65,7 @@ describe("process manager background execution", () => {
           command: process.execPath,
           args: [
             "/tmp/codealmanac.js",
-            "__run-job",
-            "run_20260509195600_background",
+            "__run-worker",
           ],
           cwd: repo,
           env: expect.objectContaining({
@@ -91,7 +91,7 @@ describe("process manager background execution", () => {
     });
   });
 
-  it("lets the child rehydrate the spec and own the foreground run", async () => {
+  it("lets the worker rehydrate queued specs and drain them oldest-first", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "background-child");
       const pagesDir = await scaffoldWiki(repo);
@@ -110,27 +110,51 @@ describe("process manager background execution", () => {
         spawnBackground: () => ({ pid: 789 }),
       });
 
-      const result = await runBackgroundChild({
+      await startBackgroundProcess({
         repoRoot: repo,
-        runId: "run_20260509195700_child",
+        runId: "run_20260509195630_first",
+        entrypoint: "/tmp/codealmanac.js",
+        now: fixedClock(["2026-05-09T19:56:30.000Z"]),
+        spec: {
+          provider: { id: "codex" },
+          cwd: repo,
+          prompt: "first",
+          metadata: { operation: "garden", targetKind: "wiki" },
+        },
+        spawnBackground: () => ({ pid: 790 }),
+      });
+
+      const seenPrompts: string[] = [];
+      await runBackgroundWorker({
+        repoRoot: repo,
         pid: 789,
         now: fixedClock([
           "2026-05-09T19:57:01.000Z",
           "2026-05-09T19:57:02.000Z",
           "2026-05-09T19:57:03.000Z",
+          "2026-05-09T19:57:04.000Z",
+          "2026-05-09T19:57:05.000Z",
+          "2026-05-09T19:57:06.000Z",
         ]),
-        harnessRun: async (_spec, hooks) => {
-          await hooks?.onEvent?.({ type: "text", content: "child started" });
-          await writeFile(join(pagesDir, "gardened.md"), "# Gardened\n", "utf8");
-          return { success: true, result: "done", providerSessionId: "s-1" };
+        harnessRun: async (spec, hooks) => {
+          seenPrompts.push(spec.prompt);
+          await hooks?.onEvent?.({ type: "text", content: `${spec.prompt} started` });
+          if (spec.prompt === "garden") {
+            await writeFile(join(pagesDir, "gardened.md"), "# Gardened\n", "utf8");
+          }
+          return { success: true, result: spec.prompt, providerSessionId: `s-${seenPrompts.length}` };
         },
       });
 
-      expect(result.record).toMatchObject({
+      expect(seenPrompts).toEqual(["first", "garden"]);
+      await expect(readRunRecord(runRecordPath(repo, "run_20260509195630_first")))
+        .resolves.toMatchObject({ status: "done", providerSessionId: "s-1" });
+      const result = await readRunRecord(runRecordPath(repo, "run_20260509195700_child"));
+      expect(result).toMatchObject({
         status: "done",
         pid: 789,
         provider: "codex",
-        providerSessionId: "s-1",
+        providerSessionId: "s-2",
         summary: {
           created: 1,
           updated: 0,
@@ -144,16 +168,14 @@ describe("process manager background execution", () => {
           updated: [],
           archived: [],
           deleted: [],
-          summary: "done",
+          summary: "garden",
         },
       });
-      const stored = await readRunRecord(
-        runRecordPath(repo, "run_20260509195700_child"),
+      await expect(readFile(result!.logPath, "utf8")).resolves.toContain(
+        "garden started",
       );
-      expect(stored?.status).toBe("done");
-      await expect(readFile(result.record.logPath, "utf8")).resolves.toContain(
-        "child started",
-      );
+      expect(await readRunRecord(runRecordPath(repo, "run_20260509195630_first")))
+        .toMatchObject({ status: "done" });
     });
   });
 
@@ -219,16 +241,13 @@ describe("process manager background execution", () => {
         }),
       );
 
-      const child = await runBackgroundChild({
+      await runBackgroundWorker({
         repoRoot: repo,
-        runId: started.runId,
         harnessRun: async () => {
           throw new Error("should not run");
         },
       });
 
-      expect(child.record.status).toBe("cancelled");
-      expect(child.result.error).toBe("run cancelled before start");
       await expect(readRunRecord(runRecordPath(repo, started.runId))).resolves
         .toMatchObject({ status: "cancelled" });
     });
@@ -254,19 +273,52 @@ describe("process manager background execution", () => {
       });
       await markRunCancelled(repo, started.runId);
 
-      const child = await runBackgroundChild({
+      await runBackgroundWorker({
         repoRoot: repo,
-        runId: started.runId,
         pid: 222,
         harnessRun: async () => {
           throw new Error("should not run");
         },
       });
 
-      expect(child.record.status).toBe("cancelled");
-      expect(child.result.error).toBe("run cancelled before start");
       await expect(readRunRecord(runRecordPath(repo, started.runId))).resolves
         .toMatchObject({ status: "cancelled" });
+    });
+  });
+
+  it("does not run a second worker while the lock is held", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "background-worker-lock");
+      await scaffoldWiki(repo);
+      await startBackgroundProcess({
+        repoRoot: repo,
+        runId: "run_20260509210600_locked",
+        entrypoint: "/tmp/codealmanac.js",
+        now: fixedClock(["2026-05-09T21:06:00.000Z"]),
+        spec: {
+          provider: { id: "codex" },
+          cwd: repo,
+          prompt: "garden",
+          metadata: { operation: "garden" },
+        },
+        spawnBackground: () => ({ pid: 333 }),
+      });
+      await mkdir(runWorkerLockPath(repo), { recursive: true });
+      await writeFile(
+        join(runWorkerLockPath(repo), "owner.json"),
+        `${JSON.stringify({ pid: process.pid, startedAt: "2026-05-09T21:06:01.000Z" })}\n`,
+        "utf8",
+      );
+
+      await runBackgroundWorker({
+        repoRoot: repo,
+        harnessRun: async () => {
+          throw new Error("should not run");
+        },
+      });
+
+      await expect(readRunRecord(runRecordPath(repo, "run_20260509210600_locked")))
+        .resolves.toMatchObject({ status: "queued" });
     });
   });
 });
