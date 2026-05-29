@@ -10,10 +10,14 @@ files:
   - src/process/snapshots.ts
   - src/process/spec.ts
   - src/process/types.ts
+  - src/harness/providers/claude.ts
   - src/commands/jobs.ts
   - src/viewer/jobs.ts
   - viewer/jobs-view.js
   - viewer/jobs.css
+sources:
+  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+verified: 2026-05-28
 ---
 
 # Process Manager Runs
@@ -33,11 +37,31 @@ Runs are per wiki under `.almanac/runs/`:
 
 The JSON record stores status, operation, provider, model, PID, target metadata, log path, timestamps, final summary counts, page changes, and errors. The JSONL file stores normalized `HarnessEvent` records from [[harness-providers]], including structured tool display details when an adapter can provide them. The spec file stores the serialized `AgentRunSpec` that the child process rehydrates, including the exact prompt string, cwd, provider/model selection, targets, and operation metadata. For capture debugging this file is the inspectable answer to "what prompt and transcript context were actually sent for this run." The optional cancel marker is a race guard so a queued cancellation cannot be overwritten during child startup. New wiki scaffolding gitignores `.almanac/runs/` and `.almanac/index.db`.
 
+These run records are CodeAlmanac's canonical job transcript and audit record. Provider-owned Claude or Codex session history is secondary debug material and may be non-persistent for Almanac maintenance runs. The user-visible transcript feature belongs to `.almanac/runs/<run-id>.jsonl`, `almanac jobs logs <run-id>`, and the `almanac serve` jobs UI, not to the provider's own session store.
+
 ## Status lifecycle
 
-Background starts write a `queued` record before spawning a detached child. The child rehydrates the saved spec, transitions through foreground execution, and owns the terminal status. Foreground runs write a started record immediately and stream events to the optional observer while also appending them to JSONL.
+Background starts write a `queued` record, initialize the JSONL log, persist the `AgentRunSpec`, and wake the repo-local worker with `__run-worker`. The worker owns the transition from `queued` to `running`: it acquires `.almanac/runs/worker.lock`, chooses the oldest queued run, rehydrates the saved spec, writes a running record with its PID, executes the provider, finalizes the record, and then drains the next queued run before releasing the lock. Duplicate worker wakeups are harmless because only the lock holder can claim queued runs.
+
+Foreground runs do not bypass the single-writer invariant. They acquire the same worker lock before writing a started record and fail clearly if another operation is already running for the wiki. That keeps attached debugging runs from racing queued Build, Absorb, or Garden work.
 
 Terminal statuses are `done`, `failed`, and `cancelled`. `jobs` can display `stale` when a running PID is no longer alive. The foreground manager re-reads the record before terminal writes; if a run was cancelled, finalization returns the cancelled record instead of resurrecting it as done or failed.
+
+Maintenance operation specs set `providerSession.persistence = "ephemeral"`. Claude maps that to SDK `persistSession: false`, Codex app-server maps it to `thread/start.ephemeral`, and Codex exec maps it to `--ephemeral`. CodeAlmanac no longer injects internal transcript marker environment variables or scans provider transcript contents for those markers; the durable audit path is `.almanac/runs/`.
+
+Claude harness runs install `SIGINT`, `SIGTERM`, and `SIGHUP` handlers around the SDK query and abort its `AbortController` when the job process is asked to stop. This is a normal-termination cleanup path for the Claude CLI and MCP children; `SIGKILL` can still leave no JavaScript cleanup opportunity.
+
+## Single-writer queue
+
+The 2026-05-28 capture-sweep incident exposed a broader run-lifecycle invariant than "one sweep should not enqueue duplicate Absorb work." The accepted architecture is a per-wiki single-writer queue for all write-capable Almanac jobs. Build, Absorb, and Garden enter the same repo-local queue, and a worker guarded by a wiki-local lock runs at most one job against that `.almanac/` directory at a time.
+
+The queue boundary should be per wiki, not global to the machine. The shared correctness boundary is the wiki source tree, run records, index, review state, and git history under one repo; two unrelated repos do not need to block each other's maintenance jobs. A global machine lock would reduce concurrency for no correctness gain when repositories have separate `.almanac/` directories.
+
+That decision generalizes the scheduled-capture guardrails. It prevents Absorb-vs-Absorb duplicate page creation, Absorb-vs-Garden file races, and scheduler bursts that start several write-capable LLM jobs for the same wiki. It also removes the need for `capture sweep --max-starts` as a race-prevention mechanism, because the sweep enqueues eligible work and lets the per-wiki worker serialize execution. If the product later needs a backlog cap, it should be explicit queue policy rather than a capture-specific concurrency flag.
+
+The queue should reuse the existing process vocabulary instead of adding a parallel job taxonomy. `OperationKind` already names the semantic work type (`build`, `absorb`, `garden`), `AgentRunSpec` already serializes one executable operation run, and `RunRecord` already stores the durable lifecycle state (`queued`, `running`, `done`, `failed`, `cancelled`). New code in this area should extend names such as operation run, run record, queued run, and worker lock rather than introduce `WikiJobKind`, `WikiJobSpec`, or another synonym for the same concept.
+
+The single-writer queue does not replace source provenance. Provider sessions for Almanac maintenance are non-persistent where providers support it, and `.almanac/runs/` remains the canonical user-visible audit record. The project deliberately removed old marker-based transcript exclusion instead of preserving hidden content heuristics for already-persisted provider transcripts.
 
 ## Snapshot accounting
 

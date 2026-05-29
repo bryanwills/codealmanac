@@ -10,9 +10,11 @@ files:
   - prompts/operations/absorb.md
   - src/commands/capture-sweep.ts
   - src/capture/discovery/
+  - src/capture/discovery/jsonl.ts
   - src/capture/ledger.ts
   - src/capture/lock.ts
   - src/capture/sweep.ts
+  - src/process/background.ts
   - src/commands/automation.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
@@ -22,9 +24,10 @@ sources:
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
   - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
   - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
+  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
   - https://openai.com/api/pricing/
   - https://developers.openai.com/api/docs/models/gpt-5.5
-verified: 2026-05-14
+verified: 2026-05-28
 ---
 
 # Capture Flow
@@ -42,6 +45,8 @@ For Absorb, that means the unit of value is the conclusion the agent can verify 
 Transcript tails can also be incomplete. A 2026-05-14 Codex transcript ended after the user asked for an architecture design plan and after the assistant promised to write it, but before any plan file was created or final answer was recorded. Absorb should treat trailing intentions and in-progress commentary as weaker evidence than completed commands, diffs, or final answers.
 
 The same lesson shapes transcript discovery tooling, not just wiki prose. The scheduled sweep's metadata pass only reads an initial header chunk and first lines to recover fields such as session id and cwd, instead of eagerly loading whole transcript files during candidate discovery. That keeps the cheap path cheap, but it also limits how much noisy or sensitive transcript content routine automation touches before a session is even eligible for capture.
+
+Almanac maintenance runs request non-persistent provider sessions through `AgentRunSpec.providerSession.persistence = "ephemeral"` and keep their durable transcript under `.almanac/runs/`. Sweep discovery no longer scans provider transcript contents for CodeAlmanac marker environment variables; the prevention path is to avoid creating provider-history maintenance transcripts in the first place.
 
 Later turns in the same 2026-05-11 session pushed this one step further for actual Absorb work: large JSONL transcripts should be treated as structured event streams, not as text blobs to read linearly into context. The durable recommendation was to extract the useful capture signal structurally:
 

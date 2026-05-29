@@ -10,6 +10,9 @@ files:
   - src/agent/readiness/providers/claude/index.ts
   - src/agent/prompts.ts
   - test/setup.test.ts
+sources:
+  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - node_modules/@anthropic-ai/claude-agent-sdk/sdk.d.ts
 ---
 
 # Claude Agent SDK
@@ -24,7 +27,7 @@ files:
 
 ## Adapter mapping
 
-The adapter maps base tool requests to Claude tool names: read to `Read`, write to `Write`, edit to `Edit`, search to `Glob` and `Grep`, shell to `Bash`, and web to `WebSearch` and `WebFetch`. It passes the mapped list to both `tools` and `allowedTools`, sets `permissionMode: "dontAsk"`, sets `includePartialMessages: true`, and injects `CODEALMANAC_INTERNAL_SESSION=1`.
+The adapter maps base tool requests to Claude tool names: read to `Read`, write to `Write`, edit to `Edit`, search to `Glob` and `Grep`, shell to `Bash`, and web to `WebSearch` and `WebFetch`. It passes the mapped list to both `tools` and `allowedTools`, sets `permissionMode: "dontAsk"`, sets `includePartialMessages: true`, and sets SDK `persistSession: false` when `AgentRunSpec.providerSession.persistence` is `ephemeral`.
 
 When `AgentRunSpec.agents` is present, the adapter maps each helper `AgentSpec` to a Claude `AgentDefinition` and ensures the main tool list includes `Agent`. V1 operations do not hardcode a reviewer agent; helper agents are generic harness data.
 
@@ -37,6 +40,14 @@ Claude `SDKMessage` events are translated to `HarnessEvent` records. Text deltas
 Default model is `claude-sonnet-4-6` (from `HARNESS_PROVIDER_METADATA.claude.defaultModel`). Per-run model override passes through `AgentRunSpec.provider.model`. Effort values `low`, `medium`, `high`, and `max` map directly to Claude SDK's `effort` option; any other value is dropped.
 
 `maxTurns` defaults to `100` in `buildClaudeOptions`; operations currently override this to `150` via `AgentRunSpec.limits.maxTurns`. `maxBudgetUsd` maps to `limits.maxCostUsd` when present.
+
+## Session persistence and tags
+
+The SDK options include `persistSession`, and the installed type definitions expose `tagSession(sessionId, tag | null)` plus a `tag` field on session info. This matters for [[capture-automation]] because Claude has two usable provider-side provenance controls: routine Almanac maintenance can run with `persistSession: false`, and exceptional persisted sessions can be marked with an `almanac` tag after the provider session id is known.
+
+Provider session history is not CodeAlmanac's audit system. The process manager writes `.almanac/runs/` records, JSONL harness events, specs, page changes, and job logs for [[process-manager-runs]]. Claude transcript persistence and Claude session tags are provider-side provenance controls that keep scheduled capture from treating CodeAlmanac maintenance sessions as future project evidence.
+
+The 2026-05-28 decision prefers non-persistence over provider tagging for normal maintenance runs. Tags remain useful for provider-side debugging or compatibility cases where a Claude transcript must exist, but `.almanac/runs/` stays the canonical transcript surfaced by `almanac jobs` and `almanac serve`.
 
 ## Auth
 

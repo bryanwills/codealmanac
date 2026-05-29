@@ -9,6 +9,7 @@ files:
   - src/capture/ledger.ts
   - src/capture/lock.ts
   - src/capture/sweep.ts
+  - src/process/records.ts
   - src/paths.ts
   - src/commands/automation.ts
   - src/automation/tasks.ts
@@ -21,6 +22,9 @@ files:
   - src/commands/uninstall.ts
   - src/cli/register-setup-commands.ts
   - src/cli.ts
+  - src/harness/providers/claude.ts
+  - src/harness/providers/codex/request.ts
+  - src/harness/providers/codex/app-server.ts
   - test/setup.test.ts
   - test/automation.test.ts
   - test/paths.test.ts
@@ -28,8 +32,9 @@ sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
   - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 status: implemented
-verified: 2026-05-14
+verified: 2026-05-28
 ---
 
 # Capture Automation
@@ -103,6 +108,21 @@ The key state model implied by the discussion is:
 - last seen size or content hash
 - captured hash or captured offset
 - capture status
+
+The 2026-05-28 sweep incident added a stricter automation requirement: automatic capture must be provenance-aware, idempotent, non-recursive, and cost-bounded before it invokes an LLM. The narrow bug was that `capture sweep` discovered CodeAlmanac's own Absorb transcripts and queued new Absorb jobs over prior Absorb runs. The architectural flaw was broader: once CodeAlmanac becomes a background observer of agent transcripts, the discovery layer must separate user/project work from CodeAlmanac maintenance exhaust. A session tagged or labeled `almanac` belongs to that exclusion rule: it should not be considered project evidence for automatic capture unless the user explicitly asks to ingest it.
+
+Two cheap deterministic boundaries now belong to the capture contract:
+
+- provenance boundary: classify whether a transcript is ordinary project work, a helper/subagent transcript, or an internal CodeAlmanac maintenance run
+- ownership boundary: reserve the source range or repo-level work before model reasoning starts, so parallel sweeps cannot independently spend tokens on the same candidate
+
+This is a requirements lesson, not only a local bug fix. The LLM should decide whether claimed project-work evidence contains durable wiki knowledge. The sweep, ledger, and run-record layers should decide whether the candidate is in scope, unclaimed, and safe to process. In the desired architecture, `classifyCandidate(transcript)` produces a stable source category, tags, operation hints, eligibility, and skip reason before `applyCapturePolicy(candidate)` decides whether capture may start.
+
+The same session checked the current Claude and Codex local run surfaces for a native session tag. Claude SDK query options expose `persistSession` and `title`, and the installed SDK also exposes `tagSession(sessionId, tag | null)` plus a `tag` field on session info. Codex does not expose the same provider-native tag in the current local surfaces: Codex CLI exposes `--ephemeral`, and the Codex app-server thread start path uses `ephemeral: true` but no Almanac-specific tag field. The settled product rule after the 2026-05-28 discussion is stricter than "tag if possible": Almanac maintenance provider sessions should be non-persistent by default, and provider-native tags or Almanac-owned sidecar provenance should be fallback mechanisms only when a provider transcript must persist.
+
+The audit boundary is separate from provider transcript persistence. CodeAlmanac's durable audit trail is [[process-manager-runs]]: `.almanac/runs/<run-id>.json`, `.jsonl`, `.spec.json`, page-change summaries, job logs, and viewer job detail. Provider-owned Claude or Codex session history is optional debug material and should not be the canonical record for Build, Absorb, or Garden. A maintenance run can therefore use non-persistent provider sessions without losing the user-visible job transcript, as long as the process manager keeps its run records and `almanac jobs` / `almanac serve` continue to render them.
+
+The current implementation avoids provider-owned maintenance transcripts instead of tagging them after the fact. Build, Absorb, and Garden specs set `AgentRunSpec.providerSession.persistence = "ephemeral"`; Claude, Codex app-server, and Codex exec map that provider-neutral intent to their native non-persistence controls. CodeAlmanac no longer injects marker environment variables into maintenance sessions or scans provider transcript contents for those markers. `.almanac/runs/` is the durable audit trail.
 
 ## Long-term scheduler contract
 
@@ -332,8 +352,9 @@ The shared capture defaults under either posture were:
 - quiet window: about 30-60 minutes
 - apps: Claude and Codex first
 - concurrency: at most one active capture sweep per wiki
+- live sweep fan-out: enqueue every eligible transcript range, then let the per-wiki operation worker serialize execution
 
-`max sessions per sweep` remained a possible throttling control, but the more important invariant was preserved more strongly than the number: a cap may delay work, but it must not silently drop eligible sessions.
+The per-wiki operation queue replaced the old live sweep fan-out cap after issue #11 showed that one sweep can enqueue several overlapping transcripts for the same repo and make independent Absorb agents race to create the same pages. Sweep now enqueues eligible transcript ranges, and the process manager serializes the resulting Absorb runs with Build and Garden work for the same wiki.
 
 The 2026-05-12 launchd stress test added one more practical calibration to those defaults. Extremely aggressive settings such as `--every 1m --quiet 1s` are useful for proving the scheduler and PATH wiring, but they are intentionally unrealistic for normal use: an active transcript can become re-eligible almost immediately after each new burst of conversation, which leads to many continuation captures against the same session over a short period. The product-level conclusion is not that the scheduler is broken; it is that the calm default posture (`5h` interval, `45m` quiet window) is part of the operational contract, not just a convenience.
 
@@ -341,6 +362,7 @@ That stress test also made a subtler ownership rule visible. The repo-local `cap
 
 - the repo lock serializes sweep-side ledger mutation and enqueue decisions
 - the [[capture-ledger]] `pending` state reserves a transcript's new cursor range until the corresponding background run resolves
+- the sweep checks `.almanac/runs/*.json` and skips a repo while another Absorb run is queued or actively running
 
 Future debugging should keep that distinction in mind. A burst of many jobs from one transcript usually means the ledger failed to record or honor pending ownership, not that the per-repo lock stopped working.
 
@@ -399,6 +421,8 @@ Later turns refined that final step into a two-phase cursor model rather than "m
 - only promote the pending cursor to the durable "captured through here" cursor after the background capture job actually finished successfully
 
 The implementation also now takes the concurrency requirement literally: each repo acquires `.almanac/runs/capture-sweep.lock` before mutating ledger state or enqueueing work, so overlapping sweeps skip that repo instead of racing to enqueue duplicate captures.
+
+The per-wiki single-writer operation queue described in [[process-manager-runs]] is now the concurrency abstraction for scheduled capture. Sweep enqueues eligible transcript work, and the process manager serializes Build, Absorb, and Garden execution against the wiki. Any future backlog cap should be named and implemented as queue policy rather than as a capture-specific concurrency flag.
 
 That recommendation preserves dedupe without pretending a queued background job already succeeded.
 
@@ -502,9 +526,9 @@ If a future implementation session needs the shortest faithful restatement of th
 
 ## Backlog and throttling invariants
 
-`max sessions per sweep` is a throttling control, not a retention rule.
+Queue backlog policy is distinct from retention.
 
-If more eligible sessions exist than one sweep is willing to process, the remainder should stay in a durable backlog and be picked up by later sweeps. The scheduler may delay work to control cost, lock duration, or wiki churn, but it should not silently drop eligible sessions because a run hit its cap.
+If future product policy limits how many eligible sessions one sweep may enqueue, the remainder should stay in a durable backlog and be picked up by later sweeps. The scheduler may delay work to control cost, lock duration, or wiki churn, but it should not silently drop eligible sessions because a run hit its cap. The current queue-backed implementation no longer uses `sweep-start-limit` or `repo-capture-already-running`; the process worker serializes write-capable operation execution.
 
 The durable state model implied by the session is:
 
@@ -529,7 +553,7 @@ That separation helps avoid repeating the mistaken assumption that Codex `Stop` 
 
 `[[capture-flow]]` has the right boundary for this design: transcript resolution happens before Absorb, and no-op captures are normal. The scheduler extends that model from "explicit args or Claude discovery" toward "periodic multi-app discovery with persisted cursors."
 
-`[[process-manager-runs]]` is also the right place to preserve run visibility, but scheduled capture likely needs an additional singleton guard so overlapping ticks cannot enqueue competing sweeps for the same wiki.
+`[[process-manager-runs]]` is also the right place to preserve run visibility and the per-wiki single-writer queue. Scheduled capture uses sweep locks and pending ledger ownership for transcript-range reservation, then enqueues Absorb work for the per-wiki process worker to serialize with Build and Garden jobs against the same `.almanac/` directory.
 
 ## Design stance
 

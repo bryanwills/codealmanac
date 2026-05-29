@@ -46,33 +46,6 @@ describe("almanac capture sweep", () => {
       );
       await utimes(subagentTranscript, old, old);
 
-      const internalCodexTranscript = join(codexDir, "internal-codex.jsonl");
-      await writeFile(
-        internalCodexTranscript,
-        `${JSON.stringify({
-          type: "session_meta",
-          payload: {
-            id: "internal-codex",
-            cwd: repo,
-            env: { CODEALMANAC_ABSORB_RUN: "1" },
-          },
-        })}\n`,
-        "utf8",
-      );
-      await utimes(internalCodexTranscript, old, old);
-
-      const internalClaudeTranscript = join(claudeDir, "internal-claude.jsonl");
-      await writeFile(
-        internalClaudeTranscript,
-        `${JSON.stringify({
-          sessionId: "internal-claude",
-          cwd: repo,
-          env: { CODEALMANAC_INTERNAL_SESSION: "1" },
-        })}\n`,
-        "utf8",
-      );
-      await utimes(internalClaudeTranscript, old, old);
-
       const result = await runCaptureSweepCommand({
         cwd: repo,
         homeDir: home,
@@ -84,10 +57,10 @@ describe("almanac capture sweep", () => {
 
       expect(result.exitCode).toBe(0);
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.scanned).toBe(4);
-      expect(parsed.summary.started).toHaveLength(4);
+      expect(parsed.summary.scanned).toBe(2);
+      expect(parsed.summary.started).toHaveLength(2);
       expect(parsed.summary.started.map((s: { app: string }) => s.app).sort())
-        .toEqual(["claude", "claude", "codex", "codex"]);
+        .toEqual(["claude", "codex"]);
       expect(existsSync(join(repo, ".almanac", "runs", "capture-ledger.json")))
         .toBe(false);
     });
@@ -145,9 +118,7 @@ describe("almanac capture sweep", () => {
       const parsed = JSON.parse(result.stdout);
       expect(started).toHaveLength(2);
       expect(parsed.summary.started).toHaveLength(2);
-      expect(parsed.summary.skipped).not.toContainEqual(expect.objectContaining({
-        reason: "sweep-start-limit",
-      }));
+      expect(parsed.summary.skipped).toEqual([]);
     });
   });
 
@@ -205,9 +176,7 @@ describe("almanac capture sweep", () => {
       expect(parsed.summary.started[0]).toMatchObject({
         runId: "run_queued_after_active",
       });
-      expect(parsed.summary.skipped).not.toContainEqual(expect.objectContaining({
-        reason: "repo-capture-already-running",
-      }));
+      expect(parsed.summary.skipped).toEqual([]);
     });
   });
 
