@@ -1,12 +1,12 @@
 import { BLUE, BOLD, DIM, GREEN, RED, RST } from "../../../ansi.js";
-import { parseDuration } from "../../../indexer/duration.js";
-import { resolveWikiRoot } from "../../../indexer/resolve-wiki.js";
+import { parseDuration } from "../../../wiki/indexer/duration.js";
+import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
 import {
   applyHealthFixes,
   collectHealthReport,
   DEFAULT_STALE_SECONDS,
   type HealthReport,
-} from "../../../health/index.js";
+} from "../../../wiki/health/index.js";
 
 export interface HealthOptions {
   cwd: string;

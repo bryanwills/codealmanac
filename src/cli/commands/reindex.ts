@@ -1,5 +1,5 @@
-import { runIndexer, type IndexResult } from "../../indexer/index.js";
-import { resolveWikiRoot } from "../../indexer/resolve-wiki.js";
+import { runIndexer, type IndexResult } from "../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 
 export interface ReindexOptions {
   cwd: string;

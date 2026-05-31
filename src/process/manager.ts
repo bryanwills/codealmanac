@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { HarnessEvent, HarnessResult } from "../harness/events.js";
 import type { AgentRunSpec, HarnessRunHooks } from "../harness/types.js";
 import { getHarnessProvider } from "../harness/providers/index.js";
-import { runIndexer } from "../indexer/index.js";
+import { runIndexer } from "../wiki/indexer/index.js";
 import { createRunId } from "./ids.js";
 import { appendRunEvent, initializeRunLog } from "./logs.js";
 import {

@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
 import { getRegistryPath } from "../src/paths.js";
-import { autoRegisterIfNeeded } from "../src/registry/autoregister.js";
-import { readRegistry, addEntry } from "../src/registry/index.js";
+import { autoRegisterIfNeeded } from "../src/wiki/registry/autoregister.js";
+import { readRegistry, addEntry } from "../src/wiki/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 async function scaffoldDotAlmanac(repo: string): Promise<void> {

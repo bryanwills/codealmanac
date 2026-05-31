@@ -5,7 +5,7 @@ import {
   buildQuotedPrefixFtsQuery,
   buildQuotedTermFtsQuery,
   buildTokenPrefixFtsQuery,
-} from "../src/query/search.js";
+} from "../src/wiki/query/search.js";
 
 describe("query search helpers", () => {
   it("builds CLI token-prefix FTS queries and preserves quoted phrase mode", () => {

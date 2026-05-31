@@ -6,7 +6,7 @@ import { basename, join } from "node:path";
 import fg from "fast-glob";
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../slug.js";
+import { toKebabCase } from "../../slug.js";
 import { titleCase } from "../topics/yaml.js";
 import { firstH1, parseFrontmatter } from "./frontmatter.js";
 import {
@@ -450,7 +450,7 @@ async function indexPagesInto(
         );
       }
 
-      // Source-derived file references. `src/indexer/page-sources.ts`
+      // Source-derived file references. `src/wiki/indexer/page-sources.ts`
       // is the only place that knows legacy `files:` can still become
       // file refs; the indexer consumes the normalized model.
       for (const ref of p.sourceFileRefs) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { firstH1, parseFrontmatter } from "../src/indexer/frontmatter.js";
+import { firstH1, parseFrontmatter } from "../src/wiki/indexer/frontmatter.js";
 
 describe("parseFrontmatter", () => {
   it("parses a normal frontmatter block", () => {

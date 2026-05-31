@@ -1,8 +1,8 @@
 import type Database from "better-sqlite3";
 
 import { BLUE, DIM, RST } from "../../../ansi.js";
-import { descendantsInDb } from "../../../topics/dag.js";
-import { titleCase } from "../../../topics/yaml.js";
+import { descendantsInDb } from "../../../wiki/topics/dag.js";
+import { titleCase } from "../../../wiki/topics/yaml.js";
 
 export interface TopicsShowRecord {
   slug: string;

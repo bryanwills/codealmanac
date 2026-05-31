@@ -1,4 +1,4 @@
-import { resolveWikiRoot } from "../../indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 import {
   loadReviewFile,
   nextReviewId,

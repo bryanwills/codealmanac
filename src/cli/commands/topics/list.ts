@@ -1,8 +1,8 @@
 import { BLUE, DIM, RST } from "../../../ansi.js";
-import { ensureFreshIndex } from "../../../indexer/index.js";
-import { resolveWikiRoot } from "../../../indexer/resolve-wiki.js";
-import { openIndex } from "../../../indexer/schema.js";
-import { indexDbPath } from "../../../topics/paths.js";
+import { ensureFreshIndex } from "../../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../../wiki/indexer/schema.js";
+import { indexDbPath } from "../../../wiki/topics/paths.js";
 import { formatTextTable } from "../table.js";
 import type { TopicsCommandOutput, TopicsListOptions } from "./types.js";
 

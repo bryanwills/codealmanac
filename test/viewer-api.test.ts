@@ -44,13 +44,13 @@ topics: [storage, systems, agents]
 sources:
   - id: indexer
     type: file
-    path: src/indexer/index.ts
+    path: src/wiki/indexer/index.ts
     note: Implements indexing.
 ---
 
 # SQLite Indexer
 
-The indexer reads [[src/indexer/index.ts]] and links to [[wikilink-syntax]].
+The indexer reads [[src/wiki/indexer/index.ts]] and links to [[wikilink-syntax]].
 `,
   );
   await writePage(
@@ -60,7 +60,7 @@ The indexer reads [[src/indexer/index.ts]] and links to [[wikilink-syntax]].
 title: Wikilink Syntax
 topics: [systems]
 files:
-  - src/indexer/
+  - src/wiki/indexer/
 ---
 
 # Wikilink Syntax
@@ -96,13 +96,13 @@ describe("viewer api", () => {
       expect(page?.body).toContain("# SQLite Indexer");
       expect(page?.topics).toEqual(["agents", "storage", "systems"]);
       expect(page?.file_refs).toEqual([
-        { path: "src/indexer/index.ts", is_dir: false },
+        { path: "src/wiki/indexer/index.ts", is_dir: false },
       ]);
       expect(page?.sources).toEqual([
         {
           id: "indexer",
           type: "file",
-          target: "src/indexer/index.ts",
+          target: "src/wiki/indexer/index.ts",
           title: null,
           retrieved_at: null,
           note: "Implements indexing.",
@@ -127,7 +127,7 @@ describe("viewer api", () => {
       expect(partialSuggestions.pages.map((p) => p.slug)).toEqual(["sqlite-indexer"]);
       await expect(api.suggest("\"")).resolves.toEqual({ query: "\"", pages: [] });
 
-      const file = await api.file("src/indexer/index.ts");
+      const file = await api.file("src/wiki/indexer/index.ts");
       expect(file.pages.map((p) => p.slug).sort()).toEqual([
         "sqlite-indexer",
         "wikilink-syntax",

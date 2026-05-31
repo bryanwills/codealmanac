@@ -1,11 +1,11 @@
-import { runIndexer } from "../../../indexer/index.js";
+import { runIndexer } from "../../../wiki/indexer/index.js";
 import { toKebabCase } from "../../../slug.js";
-import { ancestorsInFile } from "../../../topics/dag.js";
+import { ancestorsInFile } from "../../../wiki/topics/dag.js";
 import {
   ensureTopic,
   findTopic,
   writeTopicsFile,
-} from "../../../topics/yaml.js";
+} from "../../../wiki/topics/yaml.js";
 import type { TopicsCommandOutput, TopicsLinkOptions } from "./types.js";
 import {
   closeWorkspace,

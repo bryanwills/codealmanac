@@ -7,16 +7,16 @@ files:
   - src/cli/commands/search.ts
   - src/cli/commands/show.ts
   - src/cli/commands/health/index.ts
-  - src/indexer/schema.ts
-  - src/indexer/index.ts
-  - src/indexer/frontmatter.ts
-  - src/indexer/page-sources.ts
-  - src/indexer/wikilinks.ts
-  - src/indexer/paths.ts
-  - src/indexer/resolve-wiki.ts
-  - src/indexer/duration.ts
-  - src/health/index.ts
-  - src/health/legacy-frontmatter-fix.ts
+  - src/wiki/indexer/schema.ts
+  - src/wiki/indexer/index.ts
+  - src/wiki/indexer/frontmatter.ts
+  - src/wiki/indexer/page-sources.ts
+  - src/wiki/indexer/wikilinks.ts
+  - src/wiki/indexer/paths.ts
+  - src/wiki/indexer/resolve-wiki.ts
+  - src/wiki/indexer/duration.ts
+  - src/wiki/health/index.ts
+  - src/wiki/health/legacy-frontmatter-fix.ts
   - src/abi-guard.ts
   - src/cli.ts
 sources:
@@ -31,7 +31,7 @@ verified: 2026-05-15
 
 # SQLite Indexer
 
-The indexer (`src/indexer/`) builds and maintains `.almanac/index.db` — a SQLite database that powers all query commands (`search`, `show`, `health`, `topics show`). It runs silently before every query command. Freshness checks compare page and topic-file mtimes against the database mtime; once a reindex starts, unchanged page rows are skipped by `content_hash` and `file_path`.
+The indexer (`src/wiki/indexer/`) builds and maintains `.almanac/index.db` — a SQLite database that powers all query commands (`search`, `show`, `health`, `topics show`). It runs silently before every query command. Freshness checks compare page and topic-file mtimes against the database mtime; once a reindex starts, unchanged page rows are skipped by `content_hash` and `file_path`.
 
 ## Query output contract
 
@@ -41,7 +41,7 @@ Query commands should stay quiet by default and reserve richer context for expli
 
 ## Schema
 
-Defined in `src/indexer/schema.ts` and applied idempotently on every open (`CREATE ... IF NOT EXISTS`). Tables:
+Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (`CREATE ... IF NOT EXISTS`). Tables:
 
 - `pages` — one row per `.md` file: `slug`, `title`, `file_path`, `content_hash`, `updated_at`, `archived_at`, `superseded_by`
 - `topics` — topic metadata (slug, title, description); populated from `topics.yaml` at reindex time
@@ -54,9 +54,9 @@ Defined in `src/indexer/schema.ts` and applied idempotently on every open (`CREA
 
 ## Markdown Projection Boundary
 
-`src/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/indexer/frontmatter.ts]]`, source normalization in `[[src/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/health/index.ts]]` owns the health checks that query those projections.
+`src/wiki/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/wiki/indexer/frontmatter.ts]]`, source normalization in `[[src/wiki/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/wiki/health/index.ts]]` owns the health checks that query those projections.
 
-The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic `src/sources/` owner for this code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper lives in `[[src/health/legacy-frontmatter-fix.ts]]` because it exists only for `health --fix`; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
+The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic `src/sources/` owner for this code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper lives in `[[src/wiki/health/legacy-frontmatter-fix.ts]]` because it exists only for `health --fix`; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
 
 ## Schema versioning
 

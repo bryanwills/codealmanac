@@ -3,9 +3,9 @@ title: Wikilink Syntax
 summary: Almanac uses one double-bracket syntax for page, file, folder, and cross-wiki references, and the indexer classifies each link by its contents.
 topics: [systems, decisions]
 files:
-  - src/indexer/wikilinks.ts
-  - src/indexer/index.ts
-  - src/indexer/schema.ts
+  - src/wiki/indexer/wikilinks.ts
+  - src/wiki/indexer/index.ts
+  - src/wiki/indexer/schema.ts
 ---
 
 # Wikilink Syntax
@@ -14,7 +14,7 @@ Almanac uses a single double-bracket syntax for all intra-page references, disam
 
 ## Classification rules
 
-The indexer in `src/indexer/wikilinks.ts` classifies each double-bracket link into one of four categories:
+The indexer in `src/wiki/indexer/wikilinks.ts` classifies each double-bracket link into one of four categories:
 
 | Pattern | Category | Example |
 |---------|----------|---------|

@@ -1,6 +1,6 @@
-import { runIndexer } from "../../../indexer/index.js";
+import { runIndexer } from "../../../wiki/indexer/index.js";
 import { toKebabCase } from "../../../slug.js";
-import { writeTopicsFile } from "../../../topics/yaml.js";
+import { writeTopicsFile } from "../../../wiki/topics/yaml.js";
 import { rewriteTopicOnPages } from "./page-rewrite.js";
 import type { TopicsCommandOutput, TopicsDeleteOptions } from "./types.js";
 import {

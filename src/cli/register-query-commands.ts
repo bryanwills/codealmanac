@@ -5,7 +5,7 @@ import { listWikis } from "./commands/list.js";
 import { runSearch, type SearchOutputMode } from "./commands/search.js";
 import { runServe } from "./commands/serve.js";
 import { runShow } from "./commands/show.js";
-import { autoRegisterIfNeeded } from "../registry/autoregister.js";
+import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
 import {
   collectOption,
   deprecationWarning,

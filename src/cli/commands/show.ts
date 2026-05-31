@@ -1,10 +1,10 @@
 import { join } from "node:path";
 
 import { BLUE, DIM, RST } from "../../ansi.js";
-import { ensureFreshIndex } from "../../indexer/index.js";
-import { resolveWikiRoot } from "../../indexer/resolve-wiki.js";
-import { openIndex } from "../../indexer/schema.js";
-import { getPageView, type PageView } from "../../query/page-view.js";
+import { ensureFreshIndex } from "../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../wiki/indexer/schema.js";
+import { getPageView, type PageView } from "../../wiki/query/page-view.js";
 
 /**
  * `almanac show <slug>` — structured view of a page.

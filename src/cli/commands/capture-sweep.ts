@@ -9,7 +9,7 @@ import {
   type SweepSummary,
 } from "../../capture/sweep.js";
 import type { CommandResult } from "../helpers.js";
-import { parseDuration } from "../../indexer/duration.js";
+import { parseDuration } from "../../wiki/indexer/duration.js";
 import { readConfig } from "../../config/index.js";
 import { runCaptureCommand, type CaptureCommandOptions } from "./operations.js";
 

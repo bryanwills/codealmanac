@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { basename } from "node:path";
 
-import { findNearestAlmanacDir } from "../paths.js";
-import { toKebabCase } from "../slug.js";
+import { findNearestAlmanacDir } from "../../paths.js";
+import { toKebabCase } from "../../slug.js";
 import {
   addEntry,
   readRegistry,

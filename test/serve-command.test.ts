@@ -5,7 +5,7 @@ import {
   runRecordPath,
   writeRunRecord,
 } from "../src/process/index.js";
-import { addEntry } from "../src/registry/index.js";
+import { addEntry } from "../src/wiki/registry/index.js";
 import { startViewerServer } from "../src/viewer/server.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 

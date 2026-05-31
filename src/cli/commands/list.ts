@@ -5,7 +5,7 @@ import {
   dropEntry,
   readRegistry,
   type RegistryEntry,
-} from "../../registry/index.js";
+} from "../../wiki/registry/index.js";
 
 export interface ListOptions {
   json?: boolean;

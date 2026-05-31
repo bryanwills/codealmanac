@@ -3,7 +3,7 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, join, resolve } from "node:path";
 
-import { parseDuration } from "../indexer/duration.js";
+import { parseDuration } from "../wiki/indexer/duration.js";
 
 export interface ResolveCaptureTranscriptsOptions {
   repoRoot: string;

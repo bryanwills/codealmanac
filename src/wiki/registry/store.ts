@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-import { getGlobalAlmanacDir, getRegistryPath } from "../paths.js";
+import { getGlobalAlmanacDir, getRegistryPath } from "../../paths.js";
 
 /**
  * One entry in `~/.almanac/registry.json`.

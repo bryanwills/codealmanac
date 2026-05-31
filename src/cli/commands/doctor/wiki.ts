@@ -3,11 +3,11 @@ import path from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { ensureFreshIndex } from "../../../indexer/index.js";
-import { openIndex } from "../../../indexer/schema.js";
+import { ensureFreshIndex } from "../../../wiki/indexer/index.js";
+import { openIndex } from "../../../wiki/indexer/schema.js";
 import { findNearestAlmanacDir } from "../../../paths.js";
-import { findEntry } from "../../../registry/index.js";
-import { collectHealthReport, type HealthReport } from "../../../health/index.js";
+import { findEntry } from "../../../wiki/registry/index.js";
+import { collectHealthReport, type HealthReport } from "../../../wiki/health/index.js";
 import { formatDuration } from "./duration.js";
 import type { Check, DoctorOptions } from "./types.js";
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { runHealth } from "../src/cli/commands/health/index.js";
 import { runTopicsCreate } from "../src/cli/commands/topics/index.js";
-import { runIndexer } from "../src/indexer/index.js";
+import { runIndexer } from "../src/wiki/indexer/index.js";
 import {
   makeRepo,
   scaffoldWiki,

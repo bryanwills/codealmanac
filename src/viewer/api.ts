@@ -3,14 +3,14 @@ import { join } from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { ensureFreshIndex } from "../indexer/index.js";
-import { openIndex } from "../indexer/schema.js";
-import { getPageView, type PageView } from "../query/page-view.js";
+import { ensureFreshIndex } from "../wiki/indexer/index.js";
+import { openIndex } from "../wiki/indexer/schema.js";
+import { getPageView, type PageView } from "../wiki/query/page-view.js";
 import {
   buildFileMentionFilter,
   buildQuotedPrefixFtsQuery,
   buildQuotedTermFtsQuery,
-} from "../query/search.js";
+} from "../wiki/query/search.js";
 import {
   loadReviewFile,
   reviewYamlPath,
@@ -18,7 +18,7 @@ import {
   type ReviewStatus,
 } from "../review/store.js";
 import { toKebabCase } from "../slug.js";
-import { topicsYamlPath } from "../topics/paths.js";
+import { topicsYamlPath } from "../wiki/topics/paths.js";
 import {
   getViewerJob,
   type ViewerJobPageChangeDetails,

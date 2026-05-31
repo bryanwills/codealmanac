@@ -35,4 +35,4 @@ export {
   writeTopicsFile,
   type TopicEntry,
   type TopicsFile,
-} from "../../../topics/yaml.js";
+} from "../../../wiki/topics/yaml.js";

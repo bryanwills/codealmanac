@@ -1,6 +1,6 @@
-import { runIndexer } from "../../../indexer/index.js";
+import { runIndexer } from "../../../wiki/indexer/index.js";
 import { toKebabCase } from "../../../slug.js";
-import { ensureTopic, writeTopicsFile } from "../../../topics/yaml.js";
+import { ensureTopic, writeTopicsFile } from "../../../wiki/topics/yaml.js";
 import type { TopicsCommandOutput, TopicsDescribeOptions } from "./types.js";
 import {
   closeWorkspace,

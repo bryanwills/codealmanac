@@ -1,6 +1,6 @@
-import { toKebabCase } from "../slug.js";
+import { toKebabCase } from "../../slug.js";
 
-// Re-export so existing import sites (`from "../registry/index.js"`) keep
+// Re-export so existing import sites (`from "./index.js"`) keep
 // working without a mechanical fan-out. The canonical home is `../slug.js`.
 export { toKebabCase };
 export {

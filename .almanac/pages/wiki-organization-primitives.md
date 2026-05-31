@@ -11,7 +11,7 @@ files:
   - prompts/operations/absorb.md
   - prompts/operations/garden.md
   - src/cli.ts
-  - src/indexer/index.ts
+  - src/wiki/indexer/index.ts
   - src/cli/commands/setup/index.ts
   - src/cli/commands/automation.ts
 sources:

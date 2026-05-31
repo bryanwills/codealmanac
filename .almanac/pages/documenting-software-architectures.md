@@ -25,7 +25,7 @@ external_version: "Second Edition"
 
 The book divides architecture views into three major categories: module views, component-and-connector views, and allocation views. A module view explains implementation units and their responsibilities. A component-and-connector view explains runtime components, connectors, protocols, events, shared data, and control flow. An allocation view explains how software maps onto environments such as deployment infrastructure, files, teams, or work assignments.
 
-That distinction is useful for CodeAlmanac because future agents ask different questions before editing. A change to `src/indexer/` may need a module view of responsibilities, a runtime view of query-command behavior, and an allocation view that explains which files are committed wiki source versus ignored local index state. One page can summarize a subsystem, but the wiki graph needs separate anchors or sections when those questions diverge.
+That distinction is useful for CodeAlmanac because future agents ask different questions before editing. A change to `src/wiki/indexer/` may need a module view of responsibilities, a runtime view of query-command behavior, and an allocation view that explains which files are committed wiki source versus ignored local index state. One page can summarize a subsystem, but the wiki graph needs separate anchors or sections when those questions diverge.
 
 ## Beyond-view material
 

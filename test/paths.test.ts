@@ -6,7 +6,7 @@ import {
   looksLikeDir,
   normalizePath,
   normalizePathPreservingCase,
-} from "../src/indexer/paths.js";
+} from "../src/wiki/indexer/paths.js";
 import { findNearestAlmanacDir } from "../src/paths.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 

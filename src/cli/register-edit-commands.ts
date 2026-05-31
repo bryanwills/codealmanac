@@ -19,7 +19,7 @@ import {
   runTopicsShow,
   runTopicsUnlink,
 } from "./commands/topics/index.js";
-import { autoRegisterIfNeeded } from "../registry/autoregister.js";
+import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
 import { collectOption, emit, readStdin } from "./helpers.js";
 
 export function registerEditCommands(program: Command): void {

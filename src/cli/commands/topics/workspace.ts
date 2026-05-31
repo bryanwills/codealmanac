@@ -1,14 +1,14 @@
 import type Database from "better-sqlite3";
 
-import { ensureFreshIndex } from "../../../indexer/index.js";
-import { resolveWikiRoot } from "../../../indexer/resolve-wiki.js";
-import { openIndex } from "../../../indexer/schema.js";
-import { indexDbPath, topicsYamlPath } from "../../../topics/paths.js";
+import { ensureFreshIndex } from "../../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../../wiki/indexer/schema.js";
+import { indexDbPath, topicsYamlPath } from "../../../wiki/topics/paths.js";
 import {
   findTopic,
   loadTopicsFile,
   type TopicsFile,
-} from "../../../topics/yaml.js";
+} from "../../../wiki/topics/yaml.js";
 
 interface TopicsRepoOptions {
   cwd: string;

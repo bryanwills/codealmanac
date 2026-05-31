@@ -3,14 +3,14 @@ import { join } from "node:path";
 import type Database from "better-sqlite3";
 
 import { BLUE, RST } from "../../ansi.js";
-import { parseDuration } from "../../indexer/duration.js";
-import { ensureFreshIndex } from "../../indexer/index.js";
-import { resolveWikiRoot } from "../../indexer/resolve-wiki.js";
-import { openIndex } from "../../indexer/schema.js";
+import { parseDuration } from "../../wiki/indexer/duration.js";
+import { ensureFreshIndex } from "../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../wiki/indexer/schema.js";
 import {
   buildFileMentionFilter,
   buildTokenPrefixFtsQuery,
-} from "../../query/search.js";
+} from "../../wiki/query/search.js";
 
 export interface SearchOptions {
   cwd: string;

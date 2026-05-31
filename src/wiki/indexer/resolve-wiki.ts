@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { findNearestAlmanacDir } from "../paths.js";
+import { findNearestAlmanacDir } from "../../paths.js";
 import { findEntry } from "../registry/index.js";
 
 /**

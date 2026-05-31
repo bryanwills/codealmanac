@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 
 import yaml from "js-yaml";
 
-import { toKebabCase } from "../slug.js";
+import { toKebabCase } from "../../slug.js";
 
 /**
  * One entry in `.almanac/topics.yaml` — the source of truth for topic

@@ -1,14 +1,14 @@
-import { ensureFreshIndex, runIndexer } from "../../indexer/index.js";
-import { resolveWikiRoot } from "../../indexer/resolve-wiki.js";
-import { openIndex } from "../../indexer/schema.js";
+import { ensureFreshIndex, runIndexer } from "../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../wiki/indexer/schema.js";
 import { toKebabCase } from "../../slug.js";
-import { rewritePageTopics } from "../../topics/frontmatter-rewrite.js";
-import { indexDbPath, topicsYamlPath } from "../../topics/paths.js";
+import { rewritePageTopics } from "../../wiki/topics/frontmatter-rewrite.js";
+import { indexDbPath, topicsYamlPath } from "../../wiki/topics/paths.js";
 import {
   ensureTopic,
   loadTopicsFile,
   writeTopicsFile,
-} from "../../topics/yaml.js";
+} from "../../wiki/topics/yaml.js";
 
 /**
  * `almanac tag <page> <topic>...` and `almanac untag <page> <topic>`.

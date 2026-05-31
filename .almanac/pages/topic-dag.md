@@ -3,11 +3,11 @@ title: Topic DAG
 summary: Topics are a multi-parent DAG stored in `.almanac/topics.yaml`, while page membership stays in frontmatter and is reconciled at query time.
 topics: [systems, cli]
 files:
-  - src/topics/yaml.ts
-  - src/topics/dag.ts
-  - src/topics/frontmatter-rewrite.ts
-  - src/topics/paths.ts
-  - src/indexer/schema.ts
+  - src/wiki/topics/yaml.ts
+  - src/wiki/topics/dag.ts
+  - src/wiki/topics/frontmatter-rewrite.ts
+  - src/wiki/topics/paths.ts
+  - src/wiki/indexer/schema.ts
   - src/cli/commands/topics/index.ts
   - src/cli/commands/tag.ts
 ---
@@ -26,12 +26,12 @@ Topic metadata (slug, title, description, parents) lives in `topics.yaml`. Which
 
 Three layers:
 1. `CHECK (child_slug != parent_slug)` constraint in `topic_parents`
-2. Pre-insert cycle check in `src/topics/dag.ts` before `almanac topics link` runs
+2. Pre-insert cycle check in `src/wiki/topics/dag.ts` before `almanac topics link` runs
 3. Depth cap of 32 on any recursive CTE that traverses the DAG
 
 ## Frontmatter rewrite
 
-`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose.
+`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/wiki/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose.
 
 ## CLI surface
 

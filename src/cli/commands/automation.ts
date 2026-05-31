@@ -31,7 +31,7 @@ import {
 } from "../../automation/tasks.js";
 import type { CommandResult } from "../helpers.js";
 import { ensureAutomationCaptureSince } from "../../config/index.js";
-import { parseDuration } from "../../indexer/duration.js";
+import { parseDuration } from "../../wiki/indexer/duration.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 
 export { cleanupLegacyHooks } from "../../automation/legacy-hooks.js";

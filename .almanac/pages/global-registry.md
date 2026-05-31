@@ -3,9 +3,9 @@ title: Global Registry
 summary: "`~/.almanac/registry.json` is the machine-local index of known wikis and the lookup table for cross-wiki queries and links."
 topics: [systems, storage]
 files:
-  - src/registry/index.ts
-  - src/registry/store.ts
-  - src/registry/autoregister.ts
+  - src/wiki/registry/index.ts
+  - src/wiki/registry/store.ts
+  - src/wiki/registry/autoregister.ts
   - src/paths.ts
   - src/init/scaffold.ts
   - src/cli/commands/list.ts
@@ -19,11 +19,11 @@ verified: 2026-05-31
 
 ## Read/write
 
-`src/registry/store.ts` provides `readRegistry()` and `writeRegistry()`. `src/registry/index.ts` is the stable public facade for existing callers. Writes are atomic: content is written to a `.tmp` file, then renamed over the target. A missing registry file is treated as an empty array (first-run state); a malformed file is a hard error.
+`src/wiki/registry/store.ts` provides `readRegistry()` and `writeRegistry()`. `src/wiki/registry/index.ts` is the stable public facade for existing callers. Writes are atomic: content is written to a `.tmp` file, then renamed over the target. A missing registry file is treated as an empty array (first-run state); a malformed file is a hard error.
 
 ## Auto-registration
 
-`src/registry/autoregister.ts` runs before most commands. If the cwd is inside a repo with `.almanac/` that isn't in the registry, it silently registers it — handles the case where someone clones a repo that already has `.almanac/` committed. Two commands skip auto-registration: `init` (registers explicitly) and `list --drop` (intent is to shrink the registry, not grow it).
+`src/wiki/registry/autoregister.ts` runs before most commands. If the cwd is inside a repo with `.almanac/` that isn't in the registry, it silently registers it — handles the case where someone clones a repo that already has `.almanac/` committed. Two commands skip auto-registration: `init` (registers explicitly) and `list --drop` (intent is to shrink the registry, not grow it).
 
 ## Entry lifecycle
 

@@ -9,7 +9,7 @@ import { parseFrontmatter } from "../indexer/frontmatter.js";
 import { ensureFreshIndex } from "../indexer/index.js";
 import { openIndex } from "../indexer/schema.js";
 import { findEntry } from "../registry/index.js";
-import { toKebabCase } from "../slug.js";
+import { toKebabCase } from "../../slug.js";
 import {
   applySourceFrontmatterFix,
   writeSourceFrontmatterFix,

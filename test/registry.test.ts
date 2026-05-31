@@ -10,7 +10,7 @@ import {
   readRegistry,
   toKebabCase,
   writeRegistry,
-} from "../src/registry/index.js";
+} from "../src/wiki/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("registry", () => {

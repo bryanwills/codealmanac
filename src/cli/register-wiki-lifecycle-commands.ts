@@ -22,7 +22,7 @@ import {
 } from "./commands/operations.js";
 import type { HarnessEvent } from "../harness/events.js";
 import { runReindex } from "./commands/reindex.js";
-import { autoRegisterIfNeeded } from "../registry/autoregister.js";
+import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
 import {
   deprecationWarning,
   emit,

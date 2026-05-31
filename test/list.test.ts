@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
 import { listWikis } from "../src/cli/commands/list.js";
-import { autoRegisterIfNeeded } from "../src/registry/autoregister.js";
-import { readRegistry } from "../src/registry/index.js";
+import { autoRegisterIfNeeded } from "../src/wiki/registry/autoregister.js";
+import { readRegistry } from "../src/wiki/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("almanac list", () => {

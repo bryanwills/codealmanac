@@ -1,12 +1,12 @@
-import { runIndexer } from "../../../indexer/index.js";
-import { resolveWikiRoot } from "../../../indexer/resolve-wiki.js";
+import { runIndexer } from "../../../wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
 import { toKebabCase } from "../../../slug.js";
-import { topicsYamlPath } from "../../../topics/paths.js";
+import { topicsYamlPath } from "../../../wiki/topics/paths.js";
 import {
   findTopic,
   loadTopicsFile,
   writeTopicsFile,
-} from "../../../topics/yaml.js";
+} from "../../../wiki/topics/yaml.js";
 import type { TopicsCommandOutput, TopicsUnlinkOptions } from "./types.js";
 
 /**
