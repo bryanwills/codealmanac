@@ -16,7 +16,7 @@ files:
   - src/automation/launchd.ts
   - src/automation/legacy-hooks.ts
   - src/config/index.ts
-  - src/commands/session-transcripts.ts
+  - src/capture/input.ts
   - src/commands/operations.ts
   - src/commands/setup/index.ts
   - src/commands/uninstall.ts

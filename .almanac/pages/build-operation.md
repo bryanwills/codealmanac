@@ -4,7 +4,7 @@ summary: "Build is the `almanac init` operation for first-pass project memory, n
 topics: [agents, flows, cli]
 files:
   - src/operations/build.ts
-  - src/commands/init.ts
+  - src/init/scaffold.ts
   - src/commands/operations.ts
   - prompts/operations/build.md
   - src/viewer/api.ts

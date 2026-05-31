@@ -7,7 +7,7 @@ files:
   - src/registry/store.ts
   - src/registry/autoregister.ts
   - src/paths.ts
-  - src/commands/init.ts
+  - src/init/scaffold.ts
   - src/commands/list.ts
   - src/cli/register-query-commands.ts
 verified: 2026-05-31

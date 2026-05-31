@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
-import { initWiki } from "../src/commands/init.js";
+import { initWiki } from "../src/init/scaffold.js";
 import {
   runJobsCancel,
   streamJobsAttach,

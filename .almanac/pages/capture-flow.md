@@ -5,7 +5,7 @@ topics: [agents, flows]
 files:
   - src/commands/operations.ts
   - src/cli/register-wiki-lifecycle-commands.ts
-  - src/commands/session-transcripts.ts
+  - src/capture/input.ts
   - src/operations/absorb.ts
   - prompts/operations/absorb.md
   - src/commands/capture-sweep.ts
@@ -114,7 +114,7 @@ One implementation gotcha from the 2026-05-11/2026-05-12 sweep smoke tests is ea
 
 ## Transcript resolution
 
-Resolution lives in `src/commands/session-transcripts.ts` before Absorb starts:
+Resolution lives in `src/capture/input.ts` before Absorb starts:
 
 - Explicit transcript file args are validated and passed through.
 - No-arg capture defaults to Claude transcript discovery.

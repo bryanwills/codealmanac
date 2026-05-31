@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { AgentRunSpec } from "../harness/types.js";
-import { initWiki } from "../commands/init.js";
+import { initWiki } from "../init/scaffold.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,

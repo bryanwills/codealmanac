@@ -10,7 +10,7 @@ files:
   - src/commands/operations.ts
   - src/commands/review.ts
   - src/commands/jobs.ts
-  - src/commands/session-transcripts.ts
+  - src/capture/input.ts
   - src/commands/setup/index.ts
   - src/commands/setup/automation-step.ts
   - src/commands/automation.ts

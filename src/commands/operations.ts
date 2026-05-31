@@ -12,7 +12,7 @@ import {
   resolveIngestInput,
   type ResolveSourceFn,
 } from "../ingest/input.js";
-import { resolveCaptureTranscripts } from "./session-transcripts.js";
+import { resolveCaptureTranscripts } from "../capture/input.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
