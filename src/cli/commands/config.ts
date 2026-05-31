@@ -168,7 +168,9 @@ function isUserLevelOnlyKey(key: ConfigKey): boolean {
   return (
     key === "update_notifier" ||
     key === "auto_commit" ||
-    key === "automation.capture_since"
+    key === "automation.capture_since" ||
+    key === "connectors.composio.api_key_env" ||
+    key === "connectors.github.default_account"
   );
 }
 

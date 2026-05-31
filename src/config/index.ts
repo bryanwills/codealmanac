@@ -26,7 +26,12 @@ export {
   defaultConfig,
   type AgentConfig,
   type AutomationConfig,
+  type ComposioConfig,
+  type ConnectorsConfig,
+  type GitHubConnectorAccountConfig,
+  type GitHubConnectorConfig,
   type GlobalConfig,
+  isConnectorAlias,
 } from "./schema.js";
 export {
   ensureAutomationCaptureSince,

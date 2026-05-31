@@ -5,6 +5,14 @@ export type HarnessProviderId = "claude" | "codex" | "cursor";
 export type OperationKind = "build" | "absorb" | "garden";
 export type ProviderSessionPersistence = "ephemeral" | "persistent";
 
+export interface ConnectorRuntimeRequirement {
+  provider: "composio";
+  toolkit: "github";
+  account: string;
+  connectedAccountId: string;
+  sourceCommand: string;
+}
+
 export interface AgentSpec {
   description: string;
   prompt: string;
@@ -29,6 +37,7 @@ export interface AgentRunSpec {
   agents?: Record<string, AgentSpec>;
   skills?: string[];
   mcpServers?: Record<string, unknown>;
+  connectors?: ConnectorRuntimeRequirement[];
   limits?: {
     maxTurns?: number;
     maxCostUsd?: number;

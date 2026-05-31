@@ -236,6 +236,8 @@ describe("registerCommands", () => {
       "reindex",
       "agents",
       "config",
+      "connect",
+      "source",
       "set",
       "setup",
       "doctor",
@@ -266,6 +268,12 @@ describe("registerCommands", () => {
       .toEqual(["list", "doctor", "use", "model"]);
     expect(findCommand(program, ["config"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "get", "set", "unset"]);
+    expect(findCommand(program, ["connect"]).commands.map((cmd) => cmd.name()))
+      .toEqual(["github"]);
+    expect(findCommand(program, ["source"]).commands.map((cmd) => cmd.name()))
+      .toEqual(["github"]);
+    expect(findCommand(program, ["source", "github"]).commands.map((cmd) => cmd.name()))
+      .toEqual(["issue", "pr"]);
 
     expect(optionFlags(findCommand(program, ["setup"]))).toContain("-y, --yes");
     expect(optionFlags(findCommand(program, ["setup"]))).toContain(
@@ -287,6 +295,7 @@ describe("registerCommands", () => {
       "--using <provider[/model]>",
     );
     expect(optionFlags(findCommand(program, ["ingest"]))).toContain("--verbose");
+    expect(optionFlags(findCommand(program, ["ingest"]))).toContain("--account <alias>");
     expect(optionFlags(findCommand(program, ["garden"]))).toContain("--json");
     expect(optionFlags(findCommand(program, ["garden"]))).toContain("--verbose");
     expect(optionFlags(findCommand(program, ["topics", "show"]))).toContain(

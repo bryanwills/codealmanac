@@ -79,6 +79,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
+    .option("--account <alias>", "connector account alias for source ingest")
     .option("-y, --yes", "confirm non-interactively")
     .option("--verbose", "stream agent activity while the run is attached")
     .action(
@@ -126,6 +127,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
+    .option("--account <alias>", "connector account alias for source ingest")
     .option("-y, --yes", "confirm non-interactively")
     .option("--verbose", "stream agent activity while the run is attached")
     .action(
@@ -135,6 +137,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
           using?: string;
           foreground?: boolean;
           json?: boolean;
+          account?: string;
           yes?: boolean;
           verbose?: boolean;
         },
@@ -146,6 +149,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
           using: opts.using,
           foreground: opts.foreground,
           json: opts.json,
+          account: opts.account,
           yes: opts.yes,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)

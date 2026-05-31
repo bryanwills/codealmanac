@@ -63,41 +63,50 @@ describe("resolveGitHubSource", () => {
   it("builds a GitHub PR source from the current remote", async () => {
     const runCommand = fakeRunner({
       "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
-      "gh --version": { stdout: "gh version 2.0.0\n" },
-      "gh auth status": { stdout: "github.com\n" },
-      "gh pr view 123 --repo owner/repo --json title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences": {
-        stdout: '{"title":"A PR"}',
-      },
     });
 
-    await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
+    await expect(resolveGitHubSource({
+      ref,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig(),
+    }))
       .resolves.toEqual({
         kind: "github.pr",
         raw: "github:pr:123",
         repo: "owner/repo",
         url: "https://github.com/owner/repo/pull/123",
         number: "123",
-        material: '{"title":"A PR"}',
+        connector: {
+          provider: "composio",
+          toolkit: "github",
+          account: "work",
+          connectedAccountId: "ca_work",
+        },
       });
   });
 
   it("builds a GitHub issue source from a URL repo", async () => {
-    const runCommand = fakeRunner({
-      "gh --version": { stdout: "gh version 2.0.0\n" },
-      "gh auth status": { stdout: "github.com\n" },
-      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
-        stdout: '{"title":"An issue"}',
-      },
-    });
+    const runCommand = fakeRunner({});
 
-    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+    await expect(resolveGitHubSource({
+      ref: issueUrlRef,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig(),
+    }))
       .resolves.toEqual({
         kind: "github.issue",
         raw: "https://github.com/other/project/issues/11",
         repo: "other/project",
         url: "https://github.com/other/project/issues/11",
         number: "11",
-        material: '{"title":"An issue"}',
+        connector: {
+          provider: "composio",
+          toolkit: "github",
+          account: "work",
+          connectedAccountId: "ca_work",
+        },
       });
   });
 
@@ -106,99 +115,101 @@ describe("resolveGitHubSource", () => {
     const runCommand: CommandRunner = async (command, args) => {
       const key = [command, ...args].join(" ");
       seenCommands.push(key);
-      if (key === "gh --version") return { stdout: "gh version 2.0.0\n", stderr: "" };
-      if (key === "gh auth status") return { stdout: "github.com\n", stderr: "" };
-      if (
-        key ===
-        "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt"
-      ) {
-        return { stdout: '{"title":"An issue"}', stderr: "" };
-      }
       throw new Error(`unexpected command: ${key}`);
     };
 
-    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+    await expect(resolveGitHubSource({
+      ref: issueUrlRef,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig(),
+    }))
       .resolves.toMatchObject({
         kind: "github.issue",
         repo: "other/project",
-        material: '{"title":"An issue"}',
       });
-    expect(seenCommands).not.toContain("git remote get-url origin");
+    expect(seenCommands).toEqual([]);
   });
 
-  it("fails before starting the agent when GitHub issue material cannot be fetched", async () => {
-    const runCommand = fakeRunner({
-      "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
-      "gh --version": { stdout: "gh version 2.0.0\n" },
-      "gh auth status": { stdout: "github.com\n" },
-      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
-        error: new Error("network unavailable"),
-      },
-    });
+  it("does not fetch GitHub issue material or call gh while resolving identity", async () => {
+    const seenCommands: string[] = [];
+    const runCommand = fakeRunner({}, seenCommands);
 
-    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
-      .rejects.toMatchObject({
-        message: "Could not fetch GitHub issue #11.",
-        fix: expect.stringContaining("gh issue view 11 --repo other/project"),
+    await expect(resolveGitHubSource({
+      ref: issueUrlRef,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig(),
+    }))
+      .resolves.toMatchObject({
+        kind: "github.issue",
+        repo: "other/project",
       });
+    expect(seenCommands).toEqual([]);
   });
 
-  it("checks gh before returning URL-resolved issue sources", async () => {
-    const runCommand = fakeRunner({
-      "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
-      "gh --version": { error: Object.assign(new Error("not found"), { code: "ENOENT" }) },
-    });
-
-    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
-      .rejects.toMatchObject({
-        message: "GitHub ingest needs the GitHub CLI (`gh`).",
-      });
-  });
-
-  it("returns a setup error when gh is missing", async () => {
+  it("returns a setup error when no GitHub connector account is configured", async () => {
     const runCommand = fakeRunner({
       "git remote get-url origin": { stdout: "https://github.com/owner/repo.git\n" },
-      "gh --version": { error: Object.assign(new Error("not found"), { code: "ENOENT" }) },
     });
 
-    await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
+    await expect(resolveGitHubSource({
+      ref,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig({ defaultAccount: null }),
+    }))
       .rejects.toMatchObject({
-        message: "GitHub ingest needs the GitHub CLI (`gh`).",
+        message: "GitHub ingest needs a connected GitHub account.",
         fix: [
-          "Install and authenticate it:",
+          "Connect GitHub through Composio first:",
           "",
-          "  1. Install GitHub CLI:",
-          "     https://cli.github.com/",
+          "  almanac connect github",
           "",
-          "  2. Sign in:",
-          "     gh auth login",
-          "",
-          "  3. Try again:",
-          "     almanac ingest github:pr:123",
+          "Then rerun the ingest command.",
         ].join("\n"),
       });
   });
 
-  it("returns an auth error when gh is not authenticated", async () => {
+  it("returns a setup error when the requested account is missing", async () => {
     const runCommand = fakeRunner({
       "git remote get-url origin": { stdout: "https://github.com/owner/repo.git\n" },
-      "gh --version": { stdout: "gh version 2.0.0\n" },
-      "gh auth status": { error: new Error("not logged in") },
     });
 
-    await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
+    await expect(resolveGitHubSource({
+      ref,
+      cwd: "/repo",
+      account: "personal",
+      runCommand,
+      config: githubConfig(),
+    }))
       .rejects.toMatchObject({
-        message: "GitHub CLI is installed, but not authenticated.",
+        message: "GitHub connector account 'personal' is not configured.",
         fix: [
-          "Sign in with:",
+          "Connect GitHub through Composio:",
           "",
-          "  gh auth login",
-          "",
-          "Then try again:",
-          "  almanac ingest github:pr:123",
+          "  almanac connect github --account personal",
         ].join("\n"),
       });
   });
+
+  it("returns a setup error when the selected account is not active", async () => {
+    const runCommand = fakeRunner({
+      "git remote get-url origin": { stdout: "https://github.com/owner/repo.git\n" },
+    });
+
+    await expect(resolveGitHubSource({
+      ref,
+      cwd: "/repo",
+      runCommand,
+      config: githubConfig({ status: "INITIATED" }),
+    }))
+      .rejects.toMatchObject({
+        message: "GitHub connector account 'work' is INITIATED, not ACTIVE.",
+        fix: expect.stringContaining("almanac connect github --account work --wait"),
+      });
+  });
+
 
   it("returns a clear error for non-GitHub remotes", async () => {
     const runCommand = fakeRunner({
@@ -233,11 +244,52 @@ describe("resolveGitHubSource", () => {
   });
 });
 
+function githubConfig(options: {
+  defaultAccount?: string | null;
+  status?: string | null;
+} = {}) {
+  return {
+    update_notifier: true,
+    auto_commit: true,
+    agent: {
+      default: "codex" as const,
+      models: {
+        claude: null,
+        codex: null,
+        cursor: null,
+      },
+    },
+    automation: {
+      capture_since: null,
+    },
+    connectors: {
+      composio: {
+        api_key_env: "COMPOSIO_API_KEY",
+        user_id: "user_123",
+      },
+      github: {
+        default_account: options.defaultAccount === undefined
+          ? "work"
+          : options.defaultAccount,
+        accounts: {
+          work: {
+            alias: "work",
+            connected_account_id: "ca_work",
+            status: options.status ?? "ACTIVE",
+          },
+        },
+      },
+    },
+  };
+}
+
 function fakeRunner(
   responses: Record<string, { stdout?: string; stderr?: string; error?: Error }>,
+  seenCommands: string[] = [],
 ): CommandRunner {
   return async (command, args) => {
     const key = [command, ...args].join(" ");
+    seenCommands.push(key);
     const response = responses[key];
     if (response === undefined) {
       throw new Error(`unexpected command: ${key}`);

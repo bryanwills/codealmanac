@@ -1,6 +1,10 @@
 import { joinPrompts, loadPrompt } from "../agent/prompts.js";
 import type { HarnessEvent } from "../harness/events.js";
-import type { AgentRunSpec, OperationKind } from "../harness/types.js";
+import type {
+  AgentRunSpec,
+  ConnectorRuntimeRequirement,
+  OperationKind,
+} from "../harness/types.js";
 import type { ToolRequest } from "../harness/tools.js";
 import {
   startBackgroundProcess,
@@ -38,6 +42,7 @@ export async function createOperationRunSpec(args: {
   context?: string;
   targetKind?: string;
   targetPaths?: string[];
+  connectors?: ConnectorRuntimeRequirement[];
 }): Promise<AgentRunSpec> {
   const basePrompts = await Promise.all(
     BASE_PROMPTS.map((name) => loadPrompt(name)),
@@ -57,6 +62,7 @@ export async function createOperationRunSpec(args: {
     cwd: args.repoRoot,
     prompt,
     tools: BASE_OPERATION_TOOLS,
+    connectors: args.connectors,
     limits: {
       maxTurns: DEFAULT_MAX_TURNS,
     },

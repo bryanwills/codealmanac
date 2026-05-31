@@ -126,6 +126,73 @@ describe("Codex harness provider", () => {
     );
   });
 
+  it("enables app-server network access when connector runtime is required", async () => {
+    const binDir = await mkdtemp(join(tmpdir(), "codealmanac-codex-connector-bin-"));
+    const codexPath = join(binDir, "codex");
+    await writeFile(
+      codexPath,
+      `#!/usr/bin/env node
+const readline = require("node:readline");
+const rl = readline.createInterface({ input: process.stdin });
+function send(msg) { process.stdout.write(JSON.stringify(msg) + "\\n"); }
+rl.on("line", (line) => {
+  const msg = JSON.parse(line);
+  if (msg.method === "initialize") {
+    send({ id: msg.id, result: { userAgent: "fake-codex" } });
+    return;
+  }
+  if (msg.method === "thread/start") {
+    send({ id: msg.id, result: { thread: { id: "thread-1" } } });
+    return;
+  }
+  if (msg.method === "turn/start") {
+    if (msg.params.sandboxPolicy.networkAccess !== true) {
+      send({ id: msg.id, error: { code: -32000, message: "network disabled" } });
+      return;
+    }
+    send({ id: msg.id, result: { turn: { id: "turn-1" } } });
+    send({
+      method: "item/completed",
+      params: {
+        threadId: "thread-1",
+        turnId: "turn-1",
+        item: { type: "agentMessage", id: "msg-1", text: "ok" }
+      }
+    });
+    send({
+      method: "turn/completed",
+      params: { threadId: "thread-1", turnId: "turn-1", turn: { id: "turn-1", status: "completed" } }
+    });
+  }
+});
+`,
+    );
+    await chmod(codexPath, 0o755);
+    const oldPath = process.env.PATH;
+    process.env.PATH = `${binDir}:${oldPath ?? ""}`;
+    try {
+      const result = await runCodexAppServer({
+        provider: { id: "codex" },
+        cwd: process.cwd(),
+        prompt: "run",
+        connectors: [
+          {
+            provider: "composio",
+            toolkit: "github",
+            account: "work",
+            connectedAccountId: "ca_work",
+            sourceCommand: "almanac source github issue 11 --repo owner/repo --account work",
+          },
+        ],
+        metadata: { operation: "absorb" },
+      });
+
+      expect(result).toMatchObject({ success: true, result: "ok" });
+    } finally {
+      process.env.PATH = oldPath;
+    }
+  });
+
   it("maps app-server notifications to structured harness events", () => {
     const state = { success: false, result: "" };
 

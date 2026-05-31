@@ -222,6 +222,67 @@ function toStoredConfigPatch(
       setStoredValue(stored, ["automation", "capture_since"], value, defaultValue);
     }
   }
+  if (config.connectors !== undefined) {
+    const connectors = normalized.connectors;
+    const currentConnectors = current.connectors;
+    const defaultConnectors = defaults.connectors;
+    if (
+      config.connectors.composio?.api_key_env !== undefined &&
+      connectors.composio.api_key_env !== currentConnectors.composio.api_key_env
+    ) {
+      setStoredValue(
+        stored,
+        ["connectors", "composio", "api_key_env"],
+        connectors.composio.api_key_env,
+        defaultConnectors.composio.api_key_env,
+      );
+    }
+    if (
+      config.connectors.composio?.user_id !== undefined &&
+      connectors.composio.user_id !== currentConnectors.composio.user_id
+    ) {
+      setStoredValue(
+        stored,
+        ["connectors", "composio", "user_id"],
+        connectors.composio.user_id,
+        defaultConnectors.composio.user_id,
+      );
+    }
+    if (
+      config.connectors.github?.default_account !== undefined &&
+      connectors.github.default_account !== currentConnectors.github.default_account
+    ) {
+      setStoredValue(
+        stored,
+        ["connectors", "github", "default_account"],
+        connectors.github.default_account,
+        defaultConnectors.github.default_account,
+      );
+    }
+    const inputAccounts = config.connectors.github?.accounts ?? {};
+    for (const alias of Object.keys(inputAccounts)) {
+      const account = connectors.github.accounts[alias];
+      if (account === undefined) continue;
+      setStoredValue(
+        stored,
+        ["connectors", "github", "accounts", alias, "alias"],
+        account.alias,
+        alias,
+      );
+      setStoredValue(
+        stored,
+        ["connectors", "github", "accounts", alias, "connected_account_id"],
+        account.connected_account_id,
+        null,
+      );
+      setStoredValue(
+        stored,
+        ["connectors", "github", "accounts", alias, "status"],
+        account.status,
+        null,
+      );
+    }
+  }
   pruneEmptyObjects(stored);
   return stored;
 }

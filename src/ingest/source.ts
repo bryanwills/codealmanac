@@ -6,7 +6,12 @@ export interface GitHubSource {
   repo: string;
   url: string;
   number: string;
-  material?: string;
+  connector: {
+    provider: "composio";
+    toolkit: "github";
+    account: string;
+    connectedAccountId: string;
+  };
 }
 
 export interface WebSource {

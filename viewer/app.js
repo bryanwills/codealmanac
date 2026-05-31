@@ -186,6 +186,12 @@ async function route(pathname, search = "", push = true) {
     return;
   }
 
+  if (wikiPath === "/connections") {
+    await renderConnections();
+    clearPageRail();
+    return;
+  }
+
   if (wikiPath === "/jobs") {
     await jobsView.renderList();
     clearPageRail();
@@ -264,6 +270,7 @@ function setActiveNav(pathname) {
       ? pathname === "/" || pathname.startsWith("/w/")
         && !pathname.includes("/jobs")
         && !pathname.includes("/review")
+        && !pathname.includes("/connections")
       : state.currentWiki !== null && (
         route === "/jobs"
           ? pathname === wikiRoute("/jobs") || pathname.startsWith(wikiRoute("/jobs/"))
@@ -601,6 +608,61 @@ async function renderReview() {
     ${reviewSection("Open", "Needs a human/editor decision.", items.filter((item) => item.status === "open"))}
     ${reviewSection("Decided", "Ready for Garden to apply.", items.filter((item) => item.status === "decided"))}
     ${reviewSection("Applied", "Already applied to the wiki.", items.filter((item) => item.status === "applied"))}
+  `;
+}
+
+async function renderConnections() {
+  const result = await api(wikiApi("/connections"));
+  const connectors = Array.isArray(result.connectors) ? result.connectors : [];
+  document.title = `Connections — ${state.currentWiki}`;
+  els.reader.innerHTML = `
+    ${renderPageActions(wikiRoute("/"))}
+    <section class="ca-hero">
+      <h1 class="ca-display-h1">Connections</h1>
+      <p class="ca-lede">External accounts available to Almanac operations through Composio.</p>
+    </section>
+    <section class="ca-connections" aria-label="Connections">
+      ${connectors.map(connectionCard).join("")}
+    </section>
+  `;
+}
+
+function connectionCard(connector) {
+  const accounts = Array.isArray(connector.accounts) ? connector.accounts : [];
+  const connected = connector.status === "connected";
+  const statusText = {
+    connected: "Connected",
+    pending: "Pending",
+    failed: "Needs attention",
+    not_connected: "Not connected",
+  }[connector.status] ?? "Not connected";
+  return `
+    <article class="ca-connection-card">
+      <div class="ca-connection-icon" aria-hidden="true">${escapeHtml(connector.icon ?? "")}</div>
+      <div class="ca-connection-body">
+        <div class="ca-connection-title-row">
+          <h2>${escapeHtml(connector.name ?? connector.id)}</h2>
+          <span class="ca-connection-status${connected ? " is-connected" : ""}${connector.status === "failed" ? " is-failed" : ""}">
+            ${escapeHtml(statusText)}
+          </span>
+        </div>
+        <p>${escapeHtml(connector.provider ?? "Composio")} connector</p>
+        ${accounts.length > 0 ? `
+          <div class="ca-connection-accounts">
+            ${accounts.map((account) => `
+              <span class="ca-connection-account">
+                ${escapeHtml(account.alias)}
+                ${account.default ? `<span>default</span>` : ""}
+                ${account.status ? `<span>${escapeHtml(account.status)}</span>` : ""}
+              </span>
+            `).join("")}
+          </div>
+        ` : ""}
+        <div class="ca-connection-actions">
+          <code>${escapeHtml(connected ? connector.manageCommand : connector.connectCommand)}</code>
+        </div>
+      </div>
+    </article>
   `;
 }
 

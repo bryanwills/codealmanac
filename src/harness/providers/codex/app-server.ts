@@ -336,7 +336,7 @@ export async function runCodexAppServer(
             sandboxPolicy: {
               type: "workspaceWrite",
               writableRoots: [spec.cwd],
-              networkAccess: false,
+              networkAccess: connectorNetworkAccess(spec),
               excludeTmpdirEnvVar: false,
               excludeSlashTmp: false,
             },
@@ -353,6 +353,10 @@ export async function runCodexAppServer(
       }
     })();
   });
+}
+
+function connectorNetworkAccess(spec: AgentRunSpec): boolean {
+  return (spec.connectors?.length ?? 0) > 0;
 }
 
 function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () => void {

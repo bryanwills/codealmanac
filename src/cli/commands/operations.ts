@@ -9,6 +9,7 @@ import { readConfig } from "../../config/index.js";
 import { GitHubSourceError } from "../../ingest/github.js";
 import { renderIngestContext } from "../../ingest/context.js";
 import {
+  connectorRuntimeRequirements,
   resolveIngestInput,
   type ResolveSourceFn,
 } from "../../ingest/input.js";
@@ -59,6 +60,7 @@ export interface IngestCommandOptions extends OperationCommandDeps {
   foreground?: boolean;
   json?: boolean;
   yes?: boolean;
+  account?: string;
   resolveSource?: ResolveSourceFn;
 }
 
@@ -174,6 +176,7 @@ export async function runIngestCommand(
     const input = await resolveIngestInput({
       cwd: options.cwd,
       inputs: options.paths,
+      account: options.account,
       resolveSource: options.resolveSource,
     });
     if (!input.ok) {
@@ -189,6 +192,7 @@ export async function runIngestCommand(
       context: renderIngestContext(input.value),
       targetKind: input.value.kind,
       targetPaths: input.value.targets,
+      connectors: connectorRuntimeRequirements(input.value),
       onEvent: options.onEvent,
       startForeground: options.startForeground,
       startBackground: options.startBackground,

@@ -10,7 +10,9 @@ export type ConfigKey =
   | "auto_commit"
   | "agent.default"
   | `agent.models.${AgentProviderId}`
-  | "automation.capture_since";
+  | "automation.capture_since"
+  | "connectors.composio.api_key_env"
+  | "connectors.github.default_account";
 
 export interface ConfigEntry {
   key: ConfigKey;
@@ -23,6 +25,8 @@ export const CONFIG_KEYS: ConfigKey[] = [
   "agent.default",
   ...AGENT_PROVIDER_IDS.map((id) => `agent.models.${id}` as const),
   "automation.capture_since",
+  "connectors.composio.api_key_env",
+  "connectors.github.default_account",
 ];
 
 export function parseConfigKey(raw: string): ConfigKey | null {
@@ -30,7 +34,9 @@ export function parseConfigKey(raw: string): ConfigKey | null {
     raw === "update_notifier" ||
     raw === "auto_commit" ||
     raw === "agent.default" ||
-    raw === "automation.capture_since"
+    raw === "automation.capture_since" ||
+    raw === "connectors.composio.api_key_env" ||
+    raw === "connectors.github.default_account"
   ) return raw;
   const prefix = "agent.models.";
   if (!raw.startsWith(prefix)) return null;
@@ -47,6 +53,12 @@ export function getConfigValue(
   if (key === "auto_commit") return config.auto_commit;
   if (key === "agent.default") return config.agent.default;
   if (key === "automation.capture_since") return config.automation.capture_since;
+  if (key === "connectors.composio.api_key_env") {
+    return config.connectors.composio.api_key_env;
+  }
+  if (key === "connectors.github.default_account") {
+    return config.connectors.github.default_account;
+  }
   const provider = providerFromModelKey(key);
   return config.agent.models[provider] ?? null;
 }
@@ -86,6 +98,30 @@ export function setConfigValue(
       automation: {
         ...config.automation,
         capture_since: normalizeCaptureSince(rawValue),
+      },
+    };
+  }
+  if (key === "connectors.composio.api_key_env") {
+    return {
+      ...config,
+      connectors: {
+        ...config.connectors,
+        composio: {
+          ...config.connectors.composio,
+          api_key_env: normalizeEnvName(rawValue),
+        },
+      },
+    };
+  }
+  if (key === "connectors.github.default_account") {
+    return {
+      ...config,
+      connectors: {
+        ...config.connectors,
+        github: {
+          ...config.connectors.github,
+          default_account: normalizeDefaultAccount(rawValue),
+        },
       },
     };
   }
@@ -142,6 +178,24 @@ function normalizeCaptureSince(value: string | null): string | null {
   if (value === null || value === "default" || value === "null") return null;
   if (!Number.isFinite(Date.parse(value))) {
     throw new Error("automation.capture_since must be an ISO timestamp, default, or null");
+  }
+  return value;
+}
+
+function normalizeEnvName(value: string | null): string {
+  if (value === null || value.length === 0) {
+    throw new Error("connectors.composio.api_key_env must be a non-empty environment variable name");
+  }
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(value)) {
+    throw new Error("connectors.composio.api_key_env must be an environment variable name");
+  }
+  return value;
+}
+
+function normalizeDefaultAccount(value: string | null): string | null {
+  if (value === null || value === "default" || value === "null") return null;
+  if (!/^[A-Za-z0-9_.-]+$/.test(value)) {
+    throw new Error("connectors.github.default_account must be a connector account alias, default, or null");
   }
   return value;
 }

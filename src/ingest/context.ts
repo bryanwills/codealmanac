@@ -24,20 +24,14 @@ function sourceIngestContext(sources: Source[]): string {
         "    Source kind: GitHub pull request",
         `    Repository: ${source.repo}`,
         `    URL: ${source.url}`,
-        ...(source.material !== undefined
-          ? [
-              "",
-              "Resolved GitHub PR source material:",
-              fenced(source.material),
-            ]
-          : []),
+        `    Number: ${source.number}`,
+        `    Connector: Composio github toolkit`,
+        `    Account: ${source.connector.account}`,
         "",
         "GitHub PR ingest guidance:",
-        "Use the GitHub CLI (`gh`) to inspect this PR as needed.",
-        "",
-        "Suggested commands:",
-        `- gh pr view ${source.number} --repo ${source.repo} --json title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences`,
-        `- gh pr diff ${source.number} --repo ${source.repo}`,
+        "Use the agent source command to inspect this PR through the configured Composio GitHub account.",
+        `Agent source command: almanac source github pr ${source.number} --repo ${source.repo} --account ${source.connector.account}`,
+        "Inspect PR metadata, diff, changed files, reviews, comments, linked issues, and commits before deciding whether wiki memory changed.",
         "",
         "Treat PR discussion as evidence, not final truth.",
         "Prefer current code and the merged diff for present-tense behavior.",
@@ -52,19 +46,14 @@ function sourceIngestContext(sources: Source[]): string {
         "    Source kind: GitHub issue",
         `    Repository: ${source.repo}`,
         `    URL: ${source.url}`,
-        ...(source.material !== undefined
-          ? [
-              "",
-              "Resolved GitHub issue source material:",
-              fenced(source.material),
-            ]
-          : []),
+        `    Number: ${source.number}`,
+        `    Connector: Composio github toolkit`,
+        `    Account: ${source.connector.account}`,
         "",
         "GitHub issue ingest guidance:",
-        "The resolved issue material above is source material. Use the GitHub CLI (`gh`) for follow-up only if needed.",
-        "",
-        "Suggested commands:",
-        `- gh issue view ${source.number} --repo ${source.repo} --json title,body,url,author,state,comments,labels,assignees,closedAt`,
+        "Use the agent source command to inspect this issue through the configured Composio GitHub account.",
+        `Agent source command: almanac source github issue ${source.number} --repo ${source.repo} --account ${source.connector.account}`,
+        "Inspect issue metadata, comments, labels, assignees, linked pull requests, and referenced code before deciding whether wiki memory changed.",
         "",
         "Treat issue discussion as evidence, not final truth.",
         "Prefer current code for present-tense behavior.",
@@ -90,8 +79,4 @@ function sourceIngestContext(sources: Source[]): string {
     }
   }
   return lines.join("\n");
-}
-
-function fenced(value: string): string {
-  return ["```json", value.replaceAll("```", "'''"), "```"].join("\n");
 }

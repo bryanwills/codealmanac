@@ -16,6 +16,34 @@ export interface AutomationConfig {
   capture_since: string | null;
 }
 
+export interface ComposioConfig {
+  /** Environment variable that holds the Composio project API key. */
+  api_key_env: string;
+  /** Stable Composio user id for this Almanac install. */
+  user_id: string | null;
+}
+
+export interface GitHubConnectorAccountConfig {
+  /** User-facing account alias, stored redundantly for readable config files. */
+  alias: string;
+  /** Composio connected account id for this GitHub account. */
+  connected_account_id: string;
+  /** Last observed Composio account status. */
+  status: string | null;
+}
+
+export interface GitHubConnectorConfig {
+  /** Default account alias for GitHub operations. */
+  default_account: string | null;
+  /** Connected GitHub accounts keyed by local alias. */
+  accounts: Record<string, GitHubConnectorAccountConfig>;
+}
+
+export interface ConnectorsConfig {
+  composio: ComposioConfig;
+  github: GitHubConnectorConfig;
+}
+
 export interface GlobalConfig {
   /** When `false`, suppress the pre-command update-nag banner. Default: true. */
   update_notifier: boolean;
@@ -25,6 +53,8 @@ export interface GlobalConfig {
   agent: AgentConfig;
   /** Scheduled auto-capture settings. */
   automation: AutomationConfig;
+  /** External connector settings. Secrets live in env vars, not config files. */
+  connectors: ConnectorsConfig;
 }
 
 export function defaultConfig(): GlobalConfig {
@@ -41,6 +71,16 @@ export function defaultConfig(): GlobalConfig {
     },
     automation: {
       capture_since: null,
+    },
+    connectors: {
+      composio: {
+        api_key_env: "COMPOSIO_API_KEY",
+        user_id: null,
+      },
+      github: {
+        default_account: null,
+        accounts: {},
+      },
     },
   };
 }
@@ -89,6 +129,23 @@ export function normalizeRawConfig(raw: Record<string, unknown>): GlobalConfig {
       Number.isFinite(Date.parse(rawAutomation.capture_since))
       ? rawAutomation.capture_since
       : defaults.automation.capture_since;
+  const rawConnectors = objectRecord(raw.connectors);
+  const rawComposio = objectRecord(rawConnectors.composio);
+  const rawGithub = objectRecord(rawConnectors.github);
+  const rawGithubAccounts = objectRecord(rawGithub.accounts);
+  const accounts: Record<string, GitHubConnectorAccountConfig> = {};
+  for (const [alias, value] of Object.entries(rawGithubAccounts)) {
+    if (!isConnectorAlias(alias)) continue;
+    const account = objectRecord(value);
+    const connectedAccountId = stringValue(account.connected_account_id);
+    if (connectedAccountId === null) continue;
+    accounts[alias] = {
+      alias: stringValue(account.alias) ?? alias,
+      connected_account_id: connectedAccountId,
+      status: stringValue(account.status),
+    };
+  }
+  const defaultAccount = stringValue(rawGithub.default_account);
   return {
     update_notifier:
       typeof raw.update_notifier === "boolean"
@@ -104,6 +161,21 @@ export function normalizeRawConfig(raw: Record<string, unknown>): GlobalConfig {
     },
     automation: {
       capture_since: captureSince,
+    },
+    connectors: {
+      composio: {
+        api_key_env:
+          stringValue(rawComposio.api_key_env) ??
+          defaults.connectors.composio.api_key_env,
+        user_id: stringValue(rawComposio.user_id),
+      },
+      github: {
+        default_account:
+          defaultAccount !== null && isConnectorAlias(defaultAccount)
+            ? defaultAccount
+            : defaults.connectors.github.default_account,
+        accounts,
+      },
     },
   };
 }
@@ -137,6 +209,7 @@ export function normalizeConfig(
         defaults.automation.capture_since,
       ),
     },
+    connectors: normalizeConnectorsConfig(config.connectors, defaults.connectors),
   };
 }
 
@@ -188,4 +261,54 @@ export function normalizeCaptureSince(
 ): string | null {
   if (typeof value !== "string") return fallback;
   return Number.isFinite(Date.parse(value)) ? value : fallback;
+}
+
+export function isConnectorAlias(alias: string): boolean {
+  return /^[A-Za-z0-9_.-]+$/.test(alias);
+}
+
+function normalizeConnectorsConfig(
+  config: Partial<ConnectorsConfig> | undefined,
+  defaults: ConnectorsConfig,
+): ConnectorsConfig {
+  const rawAccounts = config?.github?.accounts ?? {};
+  const accounts: Record<string, GitHubConnectorAccountConfig> = {};
+  for (const [alias, account] of Object.entries(rawAccounts)) {
+    if (!isConnectorAlias(alias)) continue;
+    if (typeof account.connected_account_id !== "string" ||
+      account.connected_account_id.length === 0) continue;
+    accounts[alias] = {
+      alias: account.alias.length > 0 ? account.alias : alias,
+      connected_account_id: account.connected_account_id,
+      status: account.status ?? null,
+    };
+  }
+  const requestedDefault = config?.github?.default_account ?? null;
+  return {
+    composio: {
+      api_key_env:
+        config?.composio?.api_key_env !== undefined &&
+        config.composio.api_key_env.length > 0
+          ? config.composio.api_key_env
+          : defaults.composio.api_key_env,
+      user_id: config?.composio?.user_id ?? defaults.composio.user_id,
+    },
+    github: {
+      default_account:
+        requestedDefault !== null && isConnectorAlias(requestedDefault)
+          ? requestedDefault
+          : defaults.github.default_account,
+      accounts,
+    },
+  };
+}
+
+function objectRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === "string" && value.length > 0 ? value : null;
 }

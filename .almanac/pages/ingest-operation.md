@@ -1,6 +1,6 @@
 ---
 title: Ingest Operation
-summary: "`almanac ingest` runs Absorb over bounded user-supplied context, with local GitHub PR source-address ingest as the first connector-backed validation path."
+summary: "`almanac ingest` runs Absorb over bounded user-supplied context, with Composio-backed GitHub PR and issue source ingest as the first connector validation path."
 topics: [agents, flows, cli]
 sources:
   - id: operations-command
@@ -30,7 +30,7 @@ sources:
   - id: connector-session
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-    note: Records the source-address ingest discussion that chose local GitHub ingest before a hosted GitHub App and `gh` before Composio for the local MVP.
+    note: Records the source-address ingest discussion that framed GitHub source ingest before the later Composio-only connector decision.
   - id: source-architecture-session
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
@@ -73,15 +73,13 @@ The connector-facing direction is to extend `ingest` for addressable external so
 
 That direction belongs to [[evidence-bundles]]. Path ingest remains the right shape for files, folders, transcripts, research notes, and local exports that already exist on disk. Source-aware ingest is for pull requests, issues, git ranges, and future connector objects whose useful context comes from an addressable external system rather than a path the user already has on disk. [@connector-session]
 
-The first local GitHub path is intentionally narrower than the hosted connector architecture. It supports PR and issue source refs plus GitHub PR and issue URLs, infers the repository from the current git remote for shorthand refs, checks that the GitHub CLI exists, and renders GitHub command-context blocks for Absorb. The agent then uses `gh` during the run to inspect the pull request or issue, related discussion, code, and existing wiki pages. That local path does not require a hosted GitHub App, webhooks, cloud queue, Composio account, Almanac-managed OAuth app, PAT storage inside Almanac, Octokit dependency, run-local source artifact, or source dedupe key. [@connector-session]
+The current GitHub path uses Composio as the only connector substrate. It supports PR and issue source refs plus GitHub PR and issue URLs, infers the repository from the current git remote for shorthand refs, resolves a configured Composio GitHub account, and renders GitHub command-context blocks for Absorb. The agent inspects source material with `almanac source github pr ...` or `almanac source github issue ...`, which executes through a toolkit-scoped Composio session for the selected connected account. That path does not prefetch issue or PR material into the initial prompt, does not depend on `gh`, and does not store GitHub tokens in Almanac config. [@source-architecture-session]
 
-The local `gh` choice is a product boundary, not a rejection of connector runtimes. GitHub is common enough in developer environments that `gh auth login` is the lightest local setup; Composio remains a candidate runtime for non-GitHub connectors, advanced bring-your-own-key local experiments, and hosted or paid team products where Almanac owns the connector account and can cover the cost. [@connector-session]
-
-The v1 source split is deliberately small: `SourceRef` is syntax, and `Source` is resolved fact data for prompt rendering. `SourceRef` parses the user's string, for example `github:pr:123`, `github:issue:11`, a GitHub issue URL, or a generic URL, without doing authentication, prompt construction, shell commands, or wiki judgment. The GitHub resolver checks `gh` availability and builds a `Source` with kind, raw ref, repository, URL, and source number. Generic web URLs resolve directly to `web.url` sources. `renderIngestContext()` renders those facts into Absorb command context; the `Source` itself does not carry a pre-rendered prompt, fetch source content, or decide whether the source is notable. [@connector-session] [@ingest-input] [@ingest-context]
+The v1 source split is deliberately small: `SourceRef` is syntax, and `Source` is resolved fact data for prompt rendering. `SourceRef` parses the user's string, for example `github:pr:123`, `github:issue:11`, a GitHub issue URL, or a generic URL, without doing prompt construction or wiki judgment. The GitHub resolver builds a `Source` with kind, raw ref, repository, URL, source number, and Composio connector account identity. Generic web URLs resolve directly to `web.url` sources. `renderIngestContext()` renders those facts into Absorb command context; the `Source` itself does not carry a pre-rendered prompt, fetch source content, or decide whether the source is notable. [@connector-session] [@ingest-input] [@ingest-context]
 
 The first local GitHub implementation exposed a boundary problem: `src/cli/commands/operations.ts` had command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The 2026-05-31 ingest boundary refactor moved input resolution to `src/ingest/input.ts` and source-specific prompt rendering to `src/ingest/context.ts`. The command file still owns provider selection, operation result rendering, and GitHub setup-error translation. Those are separate lifecycle-command cleanup targets, not source-ingest responsibilities. [@source-architecture-session] [@ingest-input] [@ingest-context] [@operations-command]
 
-Missing or unauthenticated `gh` should be a clear setup error rather than an auto-install path for GitHub PR and issue sources. The preferred missing-binary message is a short set of steps: install GitHub CLI from `https://cli.github.com/`, run `gh auth login`, then rerun the same `almanac ingest ...` command. Generic web URL ingest does not require `gh`; it gives the URL to Absorb as web source material. [@connector-session]
+Missing or inactive GitHub connector accounts are setup errors before Absorb starts. `almanac connect github` creates or refreshes Composio connected-account config, `almanac connect github --wait` waits for an active connection, and `almanac connect github --status` lists stored GitHub accounts. Generic web URL ingest does not require a GitHub connector; it gives the URL to Absorb as web source material. [@source-architecture-session]
 
 ## Relationship to Build
 
