@@ -5,7 +5,6 @@ import type { GitHubSource } from "./source.js";
 import type { SourceRef } from "./source-ref.js";
 
 const execFileAsync = promisify(execFile);
-const GITHUB_SOURCE_MATERIAL_LIMIT = 60_000;
 
 export interface GitHubRepo {
   owner: string;
@@ -47,20 +46,12 @@ export async function resolveGitHubSource(args: {
 
   const repoName = `${repo.owner}/${repo.repo}`;
   const sourceKind = args.ref.kind === "pr" ? "pull" : "issues";
-  const material = await fetchGitHubMaterial({
-    kind: args.ref.kind,
-    number: args.ref.id,
-    repo: repoName,
-    cwd: args.cwd,
-    runCommand,
-  });
   return {
     kind: args.ref.kind === "pr" ? "github.pr" : "github.issue",
     raw: args.ref.raw,
     repo: repoName,
     url: `https://github.com/${repoName}/${sourceKind}/${args.ref.id}`,
     number: args.ref.id,
-    material,
   };
 }
 
@@ -88,7 +79,6 @@ async function defaultCommandRunner(
   const result = await execFileAsync(command, args, {
     cwd: options.cwd,
     encoding: "utf8",
-    maxBuffer: GITHUB_SOURCE_MATERIAL_LIMIT * 2,
   });
   return {
     stdout: result.stdout,
@@ -119,58 +109,6 @@ async function resolveRepoFromRemote(
 
 function isSafeGitHubPart(part: string): boolean {
   return /^[A-Za-z0-9_.-]+$/.test(part);
-}
-
-async function fetchGitHubMaterial(args: {
-  kind: "pr" | "issue";
-  number: string;
-  repo: string;
-  cwd: string;
-  runCommand: CommandRunner;
-}): Promise<string | undefined> {
-  const commandArgs =
-    args.kind === "pr"
-      ? [
-          "pr",
-          "view",
-          args.number,
-          "--repo",
-          args.repo,
-          "--json",
-          "title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences",
-        ]
-      : [
-          "issue",
-          "view",
-          args.number,
-          "--repo",
-          args.repo,
-          "--json",
-          "title,body,url,author,state,comments,labels,assignees,closedAt",
-        ];
-
-  try {
-    const result = await args.runCommand("gh", commandArgs, { cwd: args.cwd });
-    return truncateMaterial(result.stdout.trim());
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new GitHubSourceError(
-      `Could not fetch GitHub ${args.kind === "pr" ? "PR" : "issue"} #${args.number}.`,
-      [
-        "Check that GitHub CLI can read this source:",
-        "",
-        `  gh ${args.kind === "pr" ? "pr" : "issue"} view ${args.number} --repo ${args.repo}`,
-        "",
-        `Underlying error: ${message}`,
-      ].join("\n"),
-    );
-  }
-}
-
-function truncateMaterial(material: string): string | undefined {
-  if (material.length === 0) return undefined;
-  if (material.length <= GITHUB_SOURCE_MATERIAL_LIMIT) return material;
-  return `${material.slice(0, GITHUB_SOURCE_MATERIAL_LIMIT)}\n\n[GitHub source material truncated at ${GITHUB_SOURCE_MATERIAL_LIMIT} characters. Use gh for follow-up.]`;
 }
 
 function ghMissingError(ref: string): GitHubSourceError {

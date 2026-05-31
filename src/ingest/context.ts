@@ -24,13 +24,7 @@ function sourceIngestContext(sources: Source[]): string {
         "    Source kind: GitHub pull request",
         `    Repository: ${source.repo}`,
         `    URL: ${source.url}`,
-        ...(source.material !== undefined
-          ? [
-              "",
-              "Resolved GitHub PR source material:",
-              fenced(source.material),
-            ]
-          : []),
+        `    Number: ${source.number}`,
         "",
         "GitHub PR ingest guidance:",
         "Use the GitHub CLI (`gh`) to inspect this PR as needed.",
@@ -52,16 +46,10 @@ function sourceIngestContext(sources: Source[]): string {
         "    Source kind: GitHub issue",
         `    Repository: ${source.repo}`,
         `    URL: ${source.url}`,
-        ...(source.material !== undefined
-          ? [
-              "",
-              "Resolved GitHub issue source material:",
-              fenced(source.material),
-            ]
-          : []),
+        `    Number: ${source.number}`,
         "",
         "GitHub issue ingest guidance:",
-        "The resolved issue material above is source material. Use the GitHub CLI (`gh`) for follow-up only if needed.",
+        "Use the GitHub CLI (`gh`) to inspect this issue as needed.",
         "",
         "Suggested commands:",
         `- gh issue view ${source.number} --repo ${source.repo} --json title,body,url,author,state,comments,labels,assignees,closedAt`,
@@ -90,8 +78,4 @@ function sourceIngestContext(sources: Source[]): string {
     }
   }
   return lines.join("\n");
-}
-
-function fenced(value: string): string {
-  return ["```json", value.replaceAll("```", "'''"), "```"].join("\n");
 }

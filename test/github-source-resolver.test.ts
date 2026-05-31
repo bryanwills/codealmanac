@@ -65,9 +65,6 @@ describe("resolveGitHubSource", () => {
       "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
       "gh --version": { stdout: "gh version 2.0.0\n" },
       "gh auth status": { stdout: "github.com\n" },
-      "gh pr view 123 --repo owner/repo --json title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences": {
-        stdout: '{"title":"A PR"}',
-      },
     });
 
     await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
@@ -77,7 +74,6 @@ describe("resolveGitHubSource", () => {
         repo: "owner/repo",
         url: "https://github.com/owner/repo/pull/123",
         number: "123",
-        material: '{"title":"A PR"}',
       });
   });
 
@@ -85,9 +81,6 @@ describe("resolveGitHubSource", () => {
     const runCommand = fakeRunner({
       "gh --version": { stdout: "gh version 2.0.0\n" },
       "gh auth status": { stdout: "github.com\n" },
-      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
-        stdout: '{"title":"An issue"}',
-      },
     });
 
     await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
@@ -97,7 +90,6 @@ describe("resolveGitHubSource", () => {
         repo: "other/project",
         url: "https://github.com/other/project/issues/11",
         number: "11",
-        material: '{"title":"An issue"}',
       });
   });
 
@@ -108,12 +100,6 @@ describe("resolveGitHubSource", () => {
       seenCommands.push(key);
       if (key === "gh --version") return { stdout: "gh version 2.0.0\n", stderr: "" };
       if (key === "gh auth status") return { stdout: "github.com\n", stderr: "" };
-      if (
-        key ===
-        "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt"
-      ) {
-        return { stdout: '{"title":"An issue"}', stderr: "" };
-      }
       throw new Error(`unexpected command: ${key}`);
     };
 
@@ -121,26 +107,26 @@ describe("resolveGitHubSource", () => {
       .resolves.toMatchObject({
         kind: "github.issue",
         repo: "other/project",
-        material: '{"title":"An issue"}',
       });
     expect(seenCommands).not.toContain("git remote get-url origin");
+    expect(seenCommands).not.toContain(
+      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt",
+    );
   });
 
-  it("fails before starting the agent when GitHub issue material cannot be fetched", async () => {
+  it("does not fetch GitHub issue material while resolving identity", async () => {
+    const seenCommands: string[] = [];
     const runCommand = fakeRunner({
-      "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
       "gh --version": { stdout: "gh version 2.0.0\n" },
       "gh auth status": { stdout: "github.com\n" },
-      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
-        error: new Error("network unavailable"),
-      },
-    });
+    }, seenCommands);
 
     await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
-      .rejects.toMatchObject({
-        message: "Could not fetch GitHub issue #11.",
-        fix: expect.stringContaining("gh issue view 11 --repo other/project"),
+      .resolves.toMatchObject({
+        kind: "github.issue",
+        repo: "other/project",
       });
+    expect(seenCommands).toEqual(["gh --version", "gh auth status"]);
   });
 
   it("checks gh before returning URL-resolved issue sources", async () => {
@@ -235,9 +221,11 @@ describe("resolveGitHubSource", () => {
 
 function fakeRunner(
   responses: Record<string, { stdout?: string; stderr?: string; error?: Error }>,
+  seenCommands: string[] = [],
 ): CommandRunner {
   return async (command, args) => {
     const key = [command, ...args].join(" ");
+    seenCommands.push(key);
     const response = responses[key];
     if (response === undefined) {
       throw new Error(`unexpected command: ${key}`);

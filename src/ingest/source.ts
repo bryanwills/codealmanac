@@ -6,7 +6,6 @@ export interface GitHubSource {
   repo: string;
   url: string;
   number: string;
-  material?: string;
 }
 
 export interface WebSource {

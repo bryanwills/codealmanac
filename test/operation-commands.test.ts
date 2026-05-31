@@ -384,7 +384,6 @@ describe("operation command wrappers", () => {
             repo: `${ref.repo?.owner}/${ref.repo?.repo}`,
             url: `https://github.com/${ref.repo?.owner}/${ref.repo?.repo}/issues/${ref.id}`,
             number: ref.id,
-            material: '{"title":"Issue material from resolver"}',
           };
         },
         startBackground: async (options) => {
@@ -420,8 +419,8 @@ describe("operation command wrappers", () => {
       });
       const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
       expect(prompt).toContain("Source kind: GitHub issue");
-      expect(prompt).toContain("Resolved GitHub issue source material:");
-      expect(prompt).toContain('"title":"Issue material from resolver"');
+      expect(prompt).toContain("Number: 11");
+      expect(prompt).not.toContain("Resolved GitHub issue source material:");
       expect(prompt).toContain("gh issue view 11 --repo owner/repo");
       expect(prompt).toContain("type: web");
     });

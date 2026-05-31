@@ -30,7 +30,6 @@ describe("resolveIngestInput", () => {
         repo: "owner/repo",
         url: "https://github.com/owner/repo/pull/123",
         number: "123",
-        material: '{"title":"Test PR"}',
       }),
     })).resolves.toEqual({
       ok: true,
@@ -44,7 +43,6 @@ describe("resolveIngestInput", () => {
             repo: "owner/repo",
             url: "https://github.com/owner/repo/pull/123",
             number: "123",
-            material: '{"title":"Test PR"}',
           },
         ],
       },
@@ -131,7 +129,6 @@ describe("renderIngestContext", () => {
           repo: "owner/repo",
           url: "https://github.com/owner/repo/pull/123",
           number: "123",
-          material: '{"title":"Test PR"}',
         },
       ],
     });
@@ -139,8 +136,8 @@ describe("renderIngestContext", () => {
     expect(context).toContain("Input source: github:pr:123");
     expect(context).toContain("Source kind: GitHub pull request");
     expect(context).toContain("Repository: owner/repo");
-    expect(context).toContain("Resolved GitHub PR source material:");
-    expect(context).toContain('"title":"Test PR"');
+    expect(context).toContain("Number: 123");
+    expect(context).not.toContain("Resolved GitHub PR source material:");
     expect(context).toContain("gh pr view 123 --repo owner/repo");
     expect(context).toContain("gh pr diff 123 --repo owner/repo");
     expect(context).toContain("type: pr");
@@ -160,7 +157,6 @@ describe("renderIngestContext", () => {
           repo: "owner/repo",
           url: "https://github.com/owner/repo/issues/11",
           number: "11",
-          material: '{"title":"Test issue"}',
         },
         {
           kind: "web.url",
@@ -171,8 +167,8 @@ describe("renderIngestContext", () => {
     });
 
     expect(context).toContain("Source kind: GitHub issue");
-    expect(context).toContain("Resolved GitHub issue source material:");
-    expect(context).toContain('"title":"Test issue"');
+    expect(context).toContain("Number: 11");
+    expect(context).not.toContain("Resolved GitHub issue source material:");
     expect(context).toContain("gh issue view 11 --repo owner/repo");
     expect(context).toContain("type: web");
     expect(context).toContain("Source kind: web URL");
