@@ -9,7 +9,7 @@ import {
   runGardenCommand,
   runIngestCommand,
   runInitCommand,
-} from "../src/commands/operations.js";
+} from "../src/cli/commands/operations.js";
 import { writeConfig } from "../src/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 

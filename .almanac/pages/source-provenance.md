@@ -33,7 +33,7 @@ sources:
     note: Rewrites safe legacy frontmatter into structured sources.
   - id: show-command
     type: file
-    path: src/commands/show.ts
+    path: src/cli/commands/show.ts
     note: Displays indexed page sources in the show command metadata header.
   - id: page-view-query
     type: file
@@ -69,7 +69,7 @@ sources:
     note: Defines the shipped review-escalation queue, command surface, status lifecycle, and Garden handoff.
   - id: review-command
     type: file
-    path: src/commands/review.ts
+    path: src/cli/commands/review.ts
     note: Implements the deterministic almanac review command functions.
   - id: review-store
     type: file
@@ -118,7 +118,7 @@ The source shape is:
 sources:
   - id: capture-command
     type: file
-    path: src/commands/capture.ts
+    path: src/cli/commands/operations.ts
     note: Starts capture and records run metadata.
   - id: sdk-docs
     type: web
@@ -138,7 +138,7 @@ GitHub pull requests fit the current `pr` source type because a PR is a durable 
 
 The 2026-05-29 GitHub connector research made this boundary sharper: `sources:` and `page_sources` are page-provenance machinery, not the ingestion model for webhooks, linked issues, review comments, branch-scoped source handles, or duplicate delivery handling. Connector ingestion should use source adapters and [[evidence-bundles|evidence bundles]] that carry trigger identity, addressable source refs, branch context, provenance metadata, and dedupe keys as run input or run sidecar data. PR-time review notes should also be separate output objects rather than page edits, so page frontmatter remains the durable citation layer for claims that actually land in the wiki. [@lifecycle-provenance-session]
 
-The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/ingest/source-ref.ts` and `src/ingest/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps health checks and deterministic source-frontmatter repair in `[[src/health/]]`, and leaves `[[src/commands/health/index.ts]]` as terminal orchestration for `health --fix`. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
+The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/ingest/source-ref.ts` and `src/ingest/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps health checks and deterministic source-frontmatter repair in `[[src/health/]]`, and leaves `[[src/cli/commands/health/index.ts]]` as terminal orchestration for `health --fix`. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
 
 The same source can support current truth, historical context, rejected alternatives, or unresolved questions depending on the claim that cites it. The first implementation does not add source status fields because the underlying problem is simpler: each `note` must state what the source supports. A fixed issue should be cited as the original report plus the current fix source; a brainstorming conversation should be cited as brainstorming unless code, tests, or prompts implemented the idea; and a PR discussion that changed before merge should not be cited as current behavior without a current code or prompt source. [@implementation-session]
 
@@ -180,7 +180,7 @@ The deterministic migration surface is `almanac health --fix`, not a separate `a
 
 The rewriter in `[[src/health/legacy-frontmatter-fix.ts]]` preserves unrelated frontmatter fields, preserves body bytes, converts legacy `files:` entries into `sources` entries with `type: file`, converts legacy string URL entries in `sources:` into `type: web` entries, and removes `files:` only after conversion. Ambiguous non-URL legacy source strings remain unchanged and are reported as not fixable. [@source-rewriter]
 
-The command-local placement of the rewriter is not a general rule that health repair logic belongs under `src/commands/`. If health checks, reports, or fixers become reusable domain logic outside one CLI entrypoint, the cleaner boundary is `src/health/` with `src/commands/health/index.ts` left as terminal orchestration. `src/migrations/` should stay unused until Almanac has ordered, versioned migration infrastructure with durable migration state; this frontmatter rewriter is a deterministic `health --fix` repair, not that system. [@source-architecture-session]
+The command-local placement of the rewriter is not a general rule that health repair logic belongs under `src/cli/commands/`. If health checks, reports, or fixers become reusable domain logic outside one CLI entrypoint, the cleaner boundary is `src/health/` with `src/cli/commands/health/index.ts` left as terminal orchestration. `src/migrations/` should stay unused until Almanac has ordered, versioned migration infrastructure with durable migration state; this frontmatter rewriter is a deterministic `health --fix` repair, not that system. [@source-architecture-session]
 
 The migration must not invent citation markers in prose. Generated source IDs come from basenames, domains, or other deterministic target-derived names, with numeric suffixes for collisions. Migrated file entries use conservative notes such as `Migrated from legacy files.` until Garden or a future human edit can state source relevance more precisely.
 
@@ -196,9 +196,9 @@ The `page_sources` table stores `page_slug`, `source_id`, `source_type`, `target
 
 A future `almanac sources` command should behave like source-aware `--mentions`, not like a raw inventory dump. The useful questions are "which pages cite this PR, issue, URL, commit, file, or conversation?", "which pages rely on sources from this type or domain?", and "which current wiki claims still depend only on unresolved or historical context?" Candidate query shapes are `almanac sources --mentions <target>`, `almanac sources --type pr`, `almanac sources --type issue`, and `almanac sources --domain github.com`. [@implementation-session]
 
-The query surface exposes sources without replacing existing file-reference behavior. `[[src/commands/show.ts]]` renders a compact source summary in the metadata header, `[[src/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
+The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show.ts]]` renders a compact source summary in the metadata header, `[[src/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
 
-The health implementation in `[[src/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, `unfixable_sources` records ambiguous legacy source strings, and `health --fix` performs only deterministic frontmatter rewrites for safe legacy cases through a separate repair API from read-only report collection. [@health-command]
+The health implementation in `[[src/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, `unfixable_sources` records ambiguous legacy source strings, and `health --fix` performs only deterministic frontmatter rewrites for safe legacy cases through a separate repair API from read-only report collection. [@health-command]
 
 ## Prompt And Manual Guidance
 

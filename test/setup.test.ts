@@ -8,8 +8,8 @@ import type {
   SpawnCliFn,
   SpawnedProcess,
 } from "../src/agent/readiness/providers/claude/index.js";
-import { hasImportLine, runSetup } from "../src/commands/setup/index.js";
-import { runAutomationSetupStep } from "../src/commands/setup/automation-step.js";
+import { hasImportLine, runSetup } from "../src/cli/commands/setup/index.js";
+import { runAutomationSetupStep } from "../src/cli/commands/setup/automation-step.js";
 import { readConfig, writeConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 

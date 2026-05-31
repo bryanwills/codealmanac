@@ -5,7 +5,7 @@ topics: [agents, flows, cli]
 files:
   - src/operations/build.ts
   - src/init/scaffold.ts
-  - src/commands/operations.ts
+  - src/cli/commands/operations.ts
   - prompts/operations/build.md
   - src/viewer/api.ts
   - viewer/app.js
@@ -61,4 +61,4 @@ The same session also motivated the stricter tool boundary now captured in [[ope
 
 ## Old bootstrap removal
 
-The V1 cleanup deleted `src/commands/bootstrap.ts`, the old `almanac bootstrap` public wiring, `prompts/bootstrap.md`, and the raw `.bootstrap-*.log` path. Historical slice docs still mention bootstrap, but current runtime guidance should point to `almanac init`, [[wiki-lifecycle-operations]], and [[operation-prompts]].
+The V1 cleanup deleted `src/cli/commands/bootstrap.ts`, the old `almanac bootstrap` public wiring, `prompts/bootstrap.md`, and the raw `.bootstrap-*.log` path. Historical slice docs still mention bootstrap, but current runtime guidance should point to `almanac init`, [[wiki-lifecycle-operations]], and [[operation-prompts]].

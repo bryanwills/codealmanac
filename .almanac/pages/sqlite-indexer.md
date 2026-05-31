@@ -4,9 +4,9 @@ summary: The SQLite indexer powers query commands but inherits `better-sqlite3`'
 topics: [systems, storage]
 files:
   - src/cli/register-query-commands.ts
-  - src/commands/search.ts
-  - src/commands/show.ts
-  - src/commands/health/index.ts
+  - src/cli/commands/search.ts
+  - src/cli/commands/show.ts
+  - src/cli/commands/health/index.ts
   - src/indexer/schema.ts
   - src/indexer/index.ts
   - src/indexer/frontmatter.ts

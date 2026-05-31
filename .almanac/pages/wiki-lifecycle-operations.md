@@ -7,7 +7,7 @@ files:
   - src/operations/absorb.ts
   - src/operations/garden.ts
   - src/operations/types.ts
-  - src/commands/operations.ts
+  - src/cli/commands/operations.ts
 sources:
   - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl

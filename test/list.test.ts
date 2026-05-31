@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
-import { listWikis } from "../src/commands/list.js";
+import { listWikis } from "../src/cli/commands/list.js";
 import { autoRegisterIfNeeded } from "../src/registry/autoregister.js";
 import { readRegistry } from "../src/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";

@@ -5,7 +5,7 @@ topics: [agents, flows, cli]
 sources:
   - id: operations-command
     type: file
-    path: src/commands/operations.ts
+    path: src/cli/commands/operations.ts
     note: Implements the `runIngestCommand` command adapter and routes resolved ingest input into Absorb.
   - id: ingest-input
     type: file
@@ -41,7 +41,7 @@ verified: 2026-05-31
 
 # Ingest Operation
 
-`almanac ingest <file-or-folder>` is the manual entry point for running [[wiki-lifecycle-operations]] Absorb over bounded user-provided context. It is not a separate operation kind in the runtime layer. `src/commands/operations.ts` owns the command adapter, `src/ingest/input.ts` resolves supplied paths or source refs into operation-facing ingest input, `src/ingest/context.ts` renders ingest-specific context text, and `runIngestCommand()` then calls `runAbsorbOperation(...)` with the normal Absorb writing prompt. [@operations-command] [@ingest-input] [@ingest-context] [@absorb-operation] [@absorb-prompt]
+`almanac ingest <file-or-folder>` is the manual entry point for running [[wiki-lifecycle-operations]] Absorb over bounded user-provided context. It is not a separate operation kind in the runtime layer. `src/cli/commands/operations.ts` owns the command adapter, `src/ingest/input.ts` resolves supplied paths or source refs into operation-facing ingest input, `src/ingest/context.ts` renders ingest-specific context text, and `runIngestCommand()` then calls `runAbsorbOperation(...)` with the normal Absorb writing prompt. [@operations-command] [@ingest-input] [@ingest-context] [@absorb-operation] [@absorb-prompt]
 
 ## What it is for
 
@@ -79,7 +79,7 @@ The local `gh` choice is a product boundary, not a rejection of connector runtim
 
 The v1 source split is deliberately small: `SourceRef` is syntax, and `Source` is resolved fact data for prompt rendering. `SourceRef` parses the user's string, for example `github:pr:123`, into provider, kind, and id without doing repository lookup, authentication, prompt construction, shell commands, or wiki judgment. The GitHub resolver takes that ref, detects owner and repo from the local git remote, checks `gh` availability, and builds a `Source` with kind, raw ref, repository, URL, and PR number. `renderIngestContext()` renders those facts into Absorb command context; the `Source` itself does not carry a pre-rendered prompt, fetch PR content, or decide whether the source is notable. [@connector-session] [@ingest-input] [@ingest-context]
 
-The first local GitHub implementation exposed a boundary problem: `src/commands/operations.ts` had command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The 2026-05-31 ingest boundary refactor moved input resolution to `src/ingest/input.ts` and source-specific prompt rendering to `src/ingest/context.ts`. The command file still owns provider selection, operation result rendering, and GitHub setup-error translation. Those are separate lifecycle-command cleanup targets, not source-ingest responsibilities. [@source-architecture-session] [@ingest-input] [@ingest-context] [@operations-command]
+The first local GitHub implementation exposed a boundary problem: `src/cli/commands/operations.ts` had command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The 2026-05-31 ingest boundary refactor moved input resolution to `src/ingest/input.ts` and source-specific prompt rendering to `src/ingest/context.ts`. The command file still owns provider selection, operation result rendering, and GitHub setup-error translation. Those are separate lifecycle-command cleanup targets, not source-ingest responsibilities. [@source-architecture-session] [@ingest-input] [@ingest-context] [@operations-command]
 
 Missing or unauthenticated `gh` should be a clear setup error rather than an auto-install path. The preferred missing-binary message is a short set of steps: install GitHub CLI from `https://cli.github.com/`, run `gh auth login`, then rerun the same `almanac ingest github:pr:123` command. If `gh` exists but auth fails, the error should tell the user to run `gh auth login` and retry. [@connector-session]
 

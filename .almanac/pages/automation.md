@@ -3,17 +3,17 @@ title: Automation
 summary: "Automation is the macOS launchd layer that schedules known Almanac maintenance tasks: capture sweep, Garden, and opt-in self-update."
 topics: [automation, cli, flows]
 files:
-  - src/commands/automation.ts
+  - src/cli/commands/automation.ts
   - src/automation/tasks.ts
   - src/automation/launchd.ts
   - src/automation/legacy-hooks.ts
-  - src/commands/setup/index.ts
-  - src/commands/setup/automation-step.ts
-  - src/commands/uninstall.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/setup/automation-step.ts
+  - src/cli/commands/uninstall.ts
   - src/cli.ts
   - src/cli/register-setup-commands.ts
   - src/cli/register-wiki-lifecycle-commands.ts
-  - src/commands/capture-sweep.ts
+  - src/cli/commands/capture-sweep.ts
   - src/config/index.ts
   - test/automation.test.ts
   - test/cli.test.ts
@@ -51,7 +51,7 @@ The capture plist path is `~/Library/LaunchAgents/com.codealmanac.capture-sweep.
 
 The capture job runs `almanac capture sweep` with a quiet-window argument. The default schedule is every `5h`, and the default quiet window is `45m`. The Garden job runs `almanac garden` every `4h` by default. The update job runs bare `almanac update` every `1d` by default and relies on [[self-update]] for no-op behavior when the installed package is current.
 
-The automation code is split by responsibility. `[[src/automation/tasks.ts]]` owns `ScheduledTaskDefinition` records for capture, Garden, and update: labels, default intervals, plist paths, log filenames, working-directory policy, and default command arguments. `[[src/automation/launchd.ts]]` owns plist rendering, PATH construction, bootstrap/removal, and loaded-state checks. `[[src/automation/legacy-hooks.ts]]` owns private migration cleanup for older hook-based installs. `[[src/commands/automation.ts]]` remains the command transaction that validates options, writes the activation baseline for capture, turns task definitions into launchd jobs, calls launchd helpers, and formats user output.
+The automation code is split by responsibility. `[[src/automation/tasks.ts]]` owns `ScheduledTaskDefinition` records for capture, Garden, and update: labels, default intervals, plist paths, log filenames, working-directory policy, and default command arguments. `[[src/automation/launchd.ts]]` owns plist rendering, PATH construction, bootstrap/removal, and loaded-state checks. `[[src/automation/legacy-hooks.ts]]` owns private migration cleanup for older hook-based installs. `[[src/cli/commands/automation.ts]]` remains the command transaction that validates options, writes the activation baseline for capture, turns task definitions into launchd jobs, calls launchd helpers, and formats user output.
 
 Every task gets an explicit `PATH` assembled for launchd from the current environment plus fallback locations such as `/usr/local/bin`, `/opt/homebrew/bin`, and `/usr/bin`. The Garden plist also records a `WorkingDirectory`: `runAutomationInstall()` resolves it to the nearest repo containing `.almanac/`, falling back to the current directory when no wiki root is found.
 
@@ -76,7 +76,7 @@ The task/run/operation relationship is asymmetric:
 
 That terminology keeps `capture sweep` honest. `capture sweep` is not a lifecycle operation; it is a capture coordinator that discovers quiet external transcripts, maps them to repos, reconciles ledger state, and may enqueue zero or more Absorb runs. Scheduled Garden is simpler: the scheduler invokes `almanac garden`, and that command starts one Garden operation run.
 
-The 2026-05-14 refactor chose a `ScheduledTaskDefinition` model for known Almanac tasks such as capture, Garden, and update. That model shares launchd plist rendering, PATH construction, log naming, bootstrap/bootout, and status mechanics while preserving the distinction between scheduler tasks, coordinator commands, process-manager runs, and semantic wiki operations. Adding another scheduled Almanac maintenance command should start by adding a task definition, not by copying plist labels, log paths, and working-directory rules into `[[src/commands/automation.ts]]`.
+The 2026-05-14 refactor chose a `ScheduledTaskDefinition` model for known Almanac tasks such as capture, Garden, and update. That model shares launchd plist rendering, PATH construction, log naming, bootstrap/bootout, and status mechanics while preserving the distinction between scheduler tasks, coordinator commands, process-manager runs, and semantic wiki operations. Adding another scheduled Almanac maintenance command should start by adding a task definition, not by copying plist labels, log paths, and working-directory rules into `[[src/cli/commands/automation.ts]]`.
 
 The task definition is the source of truth for each task's scheduler identity: label, plist path, logs, working-directory policy, and command arguments. The default interval constants live in `[[src/automation/tasks.ts]]` beside those task records, so changing scheduled task cadence stays inside the task-definition module instead of in command-level plist branches.
 
@@ -116,7 +116,7 @@ A 2026-05-14 review against `.claude/agents/review.md` did not question the sche
 The review did identify placement and product-scope pressure in the pre-refactor automation shape:
 
 - `runAutomationInstall()` manages both capture scheduling and Garden scheduling, with `--garden-every` and `--garden-off` living under an `automation` command that users may read as auto-capture-specific.
-- `cleanupLegacyHooks()` is justified migration glue, but it lives in [[src/commands/automation.ts]] beside launchd install/status/uninstall; a cleaner boundary would isolate provider-hook cleanup and let setup call it explicitly.
+- `cleanupLegacyHooks()` is justified migration glue, but it lives in [[src/cli/commands/automation.ts]] beside launchd install/status/uninstall; a cleaner boundary would isolate provider-hook cleanup and let setup call it explicitly.
 - Setup's ephemeral-`npx` handling is justified because launchd must not pin itself to a transient cache path, but the special path should stay named and contained so it does not become general scheduler behavior by accident.
 - `automation status` originally read plist presence and quiet-window text without checking loaded `launchd` state, so a stale or unloaded plist could look healthier than it was.
 

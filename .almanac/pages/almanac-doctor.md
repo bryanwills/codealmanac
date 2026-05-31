@@ -4,12 +4,12 @@ summary: "`almanac doctor` reports install, agent, update, and wiki status, but 
 topics: [cli, systems]
 files:
   - src/agent/install-targets.ts
-  - src/commands/doctor/index.ts
-  - src/commands/doctor/install.ts
-  - src/commands/doctor/wiki.ts
-  - src/commands/doctor/updates.ts
-  - src/commands/doctor/probes.ts
-  - src/commands/setup/index.ts
+  - src/cli/commands/doctor/index.ts
+  - src/cli/commands/doctor/install.ts
+  - src/cli/commands/doctor/wiki.ts
+  - src/cli/commands/doctor/updates.ts
+  - src/cli/commands/doctor/probes.ts
+  - src/cli/commands/setup/index.ts
   - src/abi-guard.ts
   - test/doctor.test.ts
 sources:
@@ -26,14 +26,14 @@ status: active
 
 ## Current command shape
 
-[[src/commands/doctor/index.ts]] is the composition root. It gathers four check groups and returns either formatted text or a stable JSON object:
+[[src/cli/commands/doctor/index.ts]] is the composition root. It gathers four check groups and returns either formatted text or a stable JSON object:
 
-- install checks from [[src/commands/doctor/install.ts]]
+- install checks from [[src/cli/commands/doctor/install.ts]]
 - agent readiness checks
-- update-notifier checks from [[src/commands/doctor/updates.ts]]
-- repo wiki checks from [[src/commands/doctor/wiki.ts]]
+- update-notifier checks from [[src/cli/commands/doctor/updates.ts]]
+- repo wiki checks from [[src/cli/commands/doctor/wiki.ts]]
 
-The 2026-05-30 command-folder refactor kept the entrypoint thin and moved the old `doctor-checks/` modules into `src/commands/doctor/`. That makes `doctor` match the repository convention for multi-file commands: the command root is `index.ts`, and command-private helpers live beside it.
+The 2026-05-30 command-folder refactor kept the entrypoint thin and moved the old `doctor-checks/` modules into `src/cli/commands/doctor/`. That makes `doctor` match the repository convention for multi-file commands: the command root is `index.ts`, and command-private helpers live beside it.
 
 ## What install checks cover
 
@@ -46,7 +46,7 @@ The install section currently reports:
 - whether Claude guide files exist under `~/.claude/`
 - whether the global agent instruction entries are installed for Claude and Codex
 
-[[src/commands/doctor/install.ts]] expresses repairs as `fix: "run: ..."` strings. The command prints those hints, but it does not execute them.
+[[src/cli/commands/doctor/install.ts]] expresses repairs as `fix: "run: ..."` strings. The command prints those hints, but it does not execute them.
 
 The `install.import` JSON key is intentionally stable even though the meaning expanded in the 2026-05-13 provider refactor. It now checks the Claude `CLAUDE.md` import and the Codex managed AGENTS block via [[src/agent/install-targets.ts]], and the human message says "Agent instruction entries" rather than naming only Claude imports.
 
@@ -69,9 +69,9 @@ The wiki section first resolves the nearest repo with `.almanac/`. When one exis
 - most recent capture artifact age
 - an `almanac health` summary
 
-The "most recent capture artifact" line currently has a narrow scanner. [[src/commands/doctor/wiki.ts]] checks `.almanac/logs` and `.almanac/` for `.capture-*` log/jsonl files, but it does not scan `.almanac/runs/` for the process-manager run records described in [[process-manager-runs]]. A 2026-05-13 support check found `almanac doctor` reporting an old `last capture` even though `.almanac/runs/<run-id>.json`, the matching JSONL log, and the hook log proved a capture had completed minutes earlier. When doctor and jobs disagree, trust the run record and hook log for recent background captures.
+The "most recent capture artifact" line currently has a narrow scanner. [[src/cli/commands/doctor/wiki.ts]] checks `.almanac/logs` and `.almanac/` for `.capture-*` log/jsonl files, but it does not scan `.almanac/runs/` for the process-manager run records described in [[process-manager-runs]]. A 2026-05-13 support check found `almanac doctor` reporting an old `last capture` even though `.almanac/runs/<run-id>.json`, the matching JSONL log, and the hook log proved a capture had completed minutes earlier. When doctor and jobs disagree, trust the run record and hook log for recent background captures.
 
-If wiki checks throw, [[src/commands/doctor/index.ts]] degrades to a single `wiki.checks` problem entry instead of crashing the whole command.
+If wiki checks throw, [[src/cli/commands/doctor/index.ts]] degrades to a single `wiki.checks` problem entry instead of crashing the whole command.
 
 ## Verification boundaries
 

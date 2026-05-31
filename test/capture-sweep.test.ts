@@ -3,7 +3,7 @@ import { mkdir, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runCaptureSweepCommand } from "../src/commands/capture-sweep.js";
+import { runCaptureSweepCommand } from "../src/cli/commands/capture-sweep.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/config/index.js";
 import { runRecordPath, writeRunRecord } from "../src/process/index.js";

@@ -45,7 +45,7 @@ sources:
     note: Defines the shipped review-escalation queue, command surface, status lifecycle, Garden handoff, and verification plan.
   - id: review-command
     type: file
-    path: src/commands/review.ts
+    path: src/cli/commands/review.ts
     note: Implements add, list, show, decide, apply, and reopen behavior for review escalations.
   - id: review-store
     type: file

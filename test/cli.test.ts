@@ -10,7 +10,7 @@ import {
   initStartMessage,
   lifecycleForegroundEventHandler,
 } from "../src/cli/register-wiki-lifecycle-commands.js";
-import type { SetupResult } from "../src/commands/setup/index.js";
+import type { SetupResult } from "../src/cli/commands/setup/index.js";
 
 /**
  * Unit tests for the `codealmanac` bare-binary routing logic.

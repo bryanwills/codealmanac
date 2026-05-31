@@ -8,7 +8,7 @@ import {
   runConfigList,
   runConfigSet,
   runConfigUnset,
-} from "../src/commands/config.js";
+} from "../src/cli/commands/config.js";
 import { parseConfigText, readConfig } from "../src/config/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 

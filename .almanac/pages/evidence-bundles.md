@@ -33,7 +33,7 @@ sources:
     note: Resolves local GitHub PR sources through the repository origin remote and GitHub CLI readiness checks.
   - id: ingest-command-source-wiring
     type: file
-    path: src/commands/operations.ts
+    path: src/cli/commands/operations.ts
     note: Wires source refs into ingest command context and GitHub PR guidance for Absorb.
   - id: github-source-tests
     type: file

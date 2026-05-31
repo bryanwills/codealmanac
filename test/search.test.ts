@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { runSearch } from "../src/commands/search.js";
+import { runSearch } from "../src/cli/commands/search.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 
 async function seedFixture(repo: string): Promise<void> {

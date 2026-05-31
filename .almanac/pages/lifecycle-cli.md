@@ -7,13 +7,13 @@ files:
   - src/cli/register-edit-commands.ts
   - src/cli.ts
   - src/cli/sqlite-free.ts
-  - src/commands/operations.ts
-  - src/commands/review.ts
-  - src/commands/jobs.ts
+  - src/cli/commands/operations.ts
+  - src/cli/commands/review.ts
+  - src/cli/commands/jobs.ts
   - src/capture/input.ts
-  - src/commands/setup/index.ts
-  - src/commands/setup/automation-step.ts
-  - src/commands/automation.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/setup/automation-step.ts
+  - src/cli/commands/automation.ts
   - src/review/store.ts
   - src/automation/tasks.ts
 sources:
@@ -59,9 +59,9 @@ There is one CLI-shape wrinkle inside that surface: `capture` itself has `--json
 
 ## Command source layout
 
-The 2026-05-30 command-folder refactor set a concrete source-layout rule for `src/commands/`. Small single-file commands stay as `src/commands/<command>.ts`. Multi-file commands use `src/commands/<command>/index.ts` as the public command entrypoint, with command-private helpers beside it. The current examples are `[[src/commands/doctor/index.ts]]`, `[[src/commands/health/index.ts]]`, `[[src/commands/setup/index.ts]]`, and `[[src/commands/topics/index.ts]]`.
+The 2026-05-30 command-folder refactor set a concrete source-layout rule for `src/cli/commands/`. Small single-file commands stay as `src/cli/commands/<command>.ts`. Multi-file commands use `src/cli/commands/<command>/index.ts` as the public command entrypoint, with command-private helpers beside it. The current examples are `[[src/cli/commands/doctor/index.ts]]`, `[[src/cli/commands/health/index.ts]]`, `[[src/cli/commands/setup/index.ts]]`, and `[[src/cli/commands/topics/index.ts]]`.
 
-`src/commands/` is the terminal CLI surface, not the owner of every user-facing surface. `[[src/commands/serve.ts]]` stays a thin command wrapper that starts the viewer, while the local browser surface remains under `[[src/viewer/]]`. Shared read models should move to shared query modules when both CLI commands and the viewer need them, as `[[src/query/page-view.ts]]` already does for page views.
+`src/cli/commands/` is the terminal CLI surface, not the owner of every user-facing surface. `[[src/cli/commands/serve.ts]]` stays a thin command wrapper that starts the viewer, while the local browser surface remains under `[[src/viewer/]]`. Shared read models should move to shared query modules when both CLI commands and the viewer need them, as `[[src/query/page-view.ts]]` already does for page views.
 
 ## Shared flags
 

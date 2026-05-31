@@ -2,8 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runHealth } from "../src/commands/health/index.js";
-import { runTopicsCreate } from "../src/commands/topics/index.js";
+import { runHealth } from "../src/cli/commands/health/index.js";
+import { runTopicsCreate } from "../src/cli/commands/topics/index.js";
 import { runIndexer } from "../src/indexer/index.js";
 import {
   makeRepo,

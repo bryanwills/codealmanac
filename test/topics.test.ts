@@ -13,7 +13,7 @@ import {
   runTopicsRename,
   runTopicsShow,
   runTopicsUnlink,
-} from "../src/commands/topics/index.js";
+} from "../src/cli/commands/topics/index.js";
 import { topicsYamlPath } from "../src/topics/paths.js";
 import { loadTopicsFile } from "../src/topics/yaml.js";
 import {

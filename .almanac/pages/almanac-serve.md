@@ -5,7 +5,7 @@ topics: [cli, decisions, systems]
 status: active
 verified: 2026-05-31
 files:
-  - src/commands/serve.ts
+  - src/cli/commands/serve.ts
   - src/viewer/api.ts
   - src/viewer/job-projections.ts
   - src/viewer/job-types.ts
@@ -55,7 +55,7 @@ sources:
     note: Defines the `almanac serve` host and port options and their defaults.
   - id: serve-runtime
     type: file
-    path: src/commands/serve.ts
+    path: src/cli/commands/serve.ts
     note: Prints the viewer URL and keeps the local server running until interrupt.
 ---
 
@@ -63,7 +63,7 @@ sources:
 
 `almanac serve` is a lightweight local read-only web viewer for browsing a repo's Almanac wiki. It is the preferred "read the wiki" experience for humans; filesystem browsing is the fallback and editor interface, not the primary UX. Designed and implemented 2026-05-10.
 
-The viewer is mostly a read-only client over existing wiki/index/run-record primitives. `[[src/query/search.ts]]` owns shared FTS query builders and file-reference matching primitives used by both `[[src/commands/search.ts]]` and `[[src/viewer/api.ts]]`, including parent-folder prefix calculation and SQLite GLOB escaping for literal path queries.
+The viewer is mostly a read-only client over existing wiki/index/run-record primitives. `[[src/query/search.ts]]` owns shared FTS query builders and file-reference matching primitives used by both `[[src/cli/commands/search.ts]]` and `[[src/viewer/api.ts]]`, including parent-folder prefix calculation and SQLite GLOB escaping for literal path queries.
 
 ## Rationale
 
@@ -79,7 +79,7 @@ Run the installed CLI from a repo that contains `.almanac/`:
 almanac serve
 ```
 
-By default the command binds `127.0.0.1:3927`; `src/commands/serve.ts` prints the exact URL as `almanac viewer: <url>` before waiting for Ctrl+C. [@serve-command-registration] [@serve-runtime]
+By default the command binds `127.0.0.1:3927`; `src/cli/commands/serve.ts` prints the exact URL as `almanac viewer: <url>` before waiting for Ctrl+C. [@serve-command-registration] [@serve-runtime]
 
 Use `--port <n>` when the default port is busy, and use `--host <host>` only when the viewer needs to bind somewhere other than localhost. [@serve-command-registration]
 

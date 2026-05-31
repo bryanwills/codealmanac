@@ -4,22 +4,22 @@ summary: CodeAlmanac's auto-capture contract is scheduler-backed quiet-session c
 topics: [flows, agents, cli, automation]
 files:
   - docs/plans/2026-05-11-scheduled-quiet-session-capture.md
-  - src/commands/capture-sweep.ts
+  - src/cli/commands/capture-sweep.ts
   - src/capture/discovery/
   - src/capture/ledger.ts
   - src/capture/lock.ts
   - src/capture/sweep.ts
   - src/process/records.ts
   - src/paths.ts
-  - src/commands/automation.ts
+  - src/cli/commands/automation.ts
   - src/automation/tasks.ts
   - src/automation/launchd.ts
   - src/automation/legacy-hooks.ts
   - src/config/index.ts
   - src/capture/input.ts
-  - src/commands/operations.ts
-  - src/commands/setup/index.ts
-  - src/commands/uninstall.ts
+  - src/cli/commands/operations.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/uninstall.ts
   - src/cli/register-setup-commands.ts
   - src/cli.ts
   - src/harness/providers/claude.ts
@@ -83,7 +83,7 @@ The session verified this from several angles:
 - searching that installed package did not reveal a local `SessionEnd` hook contract to depend on
 - public and local evidence still pointed to `Stop` for Codex, while historical Claude/Cursor-era configs and older examples also used `SessionEnd` or `sessionEnd`
 
-That is why [[src/commands/automation.ts]] removes CodeAlmanac-owned legacy hook commands by content and by multiple event names instead of assuming one canonical key. The current cleanup and tests should preserve compatibility with at least these observed shapes:
+That is why [[src/cli/commands/automation.ts]] removes CodeAlmanac-owned legacy hook commands by content and by multiple event names instead of assuming one canonical key. The current cleanup and tests should preserve compatibility with at least these observed shapes:
 
 - `~/.claude/settings.json` with `SessionEnd`
 - `~/.codex/hooks.json` with `Stop`

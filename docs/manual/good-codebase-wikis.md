@@ -16,7 +16,7 @@ Use `sources:` for evidence:
 sources:
   - id: capture-command
     type: file
-    path: src/commands/capture.ts
+    path: src/cli/commands/operations.ts
     note: Starts capture and records run metadata.
   - id: provider-docs
     type: web

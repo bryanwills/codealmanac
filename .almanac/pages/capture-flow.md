@@ -3,19 +3,19 @@ title: Capture Flow
 summary: "`almanac capture` resolves transcript inputs and runs the Absorb operation, while `capture sweep` adds scheduled quiet-transcript discovery for Claude and Codex."
 topics: [agents, flows]
 files:
-  - src/commands/operations.ts
+  - src/cli/commands/operations.ts
   - src/cli/register-wiki-lifecycle-commands.ts
   - src/capture/input.ts
   - src/operations/absorb.ts
   - prompts/operations/absorb.md
-  - src/commands/capture-sweep.ts
+  - src/cli/commands/capture-sweep.ts
   - src/capture/discovery/
   - src/capture/discovery/jsonl.ts
   - src/capture/ledger.ts
   - src/capture/lock.ts
   - src/capture/sweep.ts
   - src/process/background.ts
-  - src/commands/automation.ts
+  - src/cli/commands/automation.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T21-33-50-019e1a76-701d-7583-a76c-b3739632ee9b.jsonl
@@ -34,7 +34,7 @@ verified: 2026-05-28
 
 `almanac capture` is the session-ingest command for the V1 Absorb operation. It resolves one or more coding-session transcript files, builds command context, and calls [[wiki-lifecycle-operations]] with `targetKind: "session"`. The operation then runs through [[process-manager-runs]] and [[harness-providers]] like every other AI write path.
 
-The old hardcoded writer/reviewer capture pipeline was removed. There is no `prompts/writer.md`, `prompts/reviewer.md`, `src/commands/capture.ts`, `src/agent/sdk.ts`, or capture-specific `StreamingFormatter` in V1. Old root-level `.capture-*.log` provider logs were replaced by [[process-manager-runs]] JSON/JSONL records.
+The old hardcoded writer/reviewer capture pipeline was removed. There is no `prompts/writer.md`, `prompts/reviewer.md`, `src/cli/commands/capture.ts`, `src/agent/sdk.ts`, or capture-specific `StreamingFormatter` in V1. Old root-level `.capture-*.log` provider logs were replaced by [[process-manager-runs]] JSON/JSONL records.
 
 ## Transcript inputs are raw evidence
 
@@ -124,7 +124,7 @@ Resolution lives in `src/capture/input.ts` before Absorb starts:
 
 The important current implementation boundary is that `runCaptureCommand()` resolves a concrete list of transcript file paths first, then passes those absolute paths into `runAbsorbOperation()` as normal session targets. There is no capture-time notion of "read only bytes N-M from this transcript" in today's command surface.
 
-That boundary also matters at prompt-construction time. `captureContext()` in [[src/commands/operations.ts]] does not inline transcript contents into the Absorb prompt or try to pre-truncate the session into the context window. It appends a command-context block listing the resolved session/transcript file paths, then relies on the Absorb agent's normal filesystem/search tools to inspect the transcript lazily in chunks as needed. For large or noisy transcripts, "capture input" therefore means "here are the files to examine," not "here is the whole transcript stuffed into the model context."
+That boundary also matters at prompt-construction time. `captureContext()` in [[src/cli/commands/operations.ts]] does not inline transcript contents into the Absorb prompt or try to pre-truncate the session into the context window. It appends a command-context block listing the resolved session/transcript file paths, then relies on the Absorb agent's normal filesystem/search tools to inspect the transcript lazily in chunks as needed. For large or noisy transcripts, "capture input" therefore means "here are the files to examine," not "here is the whole transcript stuffed into the model context."
 
 The scheduler path extends this resolver boundary rather than replacing it. `capture sweep` discovers candidate transcript files itself, but it still starts normal capture jobs with ordinary transcript paths and additional cursor context.
 
@@ -134,9 +134,9 @@ The 2026-05-13 review discussion clarified the ownership boundary for this disco
 
 Continuation capture keeps passing the original transcript path into capture, and adds cursor context telling Absorb what transcript prefix was already captured. That preserves the "agent inspects files lazily" contract while avoiding temp delta transcript files or byte-range semantics in `almanac capture`.
 
-The sweep's state helpers now live beside capture. `[[src/capture/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, and initial cursor calculation. `[[src/capture/lock.ts]]` owns repo-level sweep locking and stale-lock recovery. `[[src/capture/sweep.ts]]` owns the sweep coordinator: eligibility checks, lock acquisition, ledger reconciliation, cursor validation, capture enqueueing, cursor context, capture-start result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/commands/capture-sweep.ts]]` parses CLI options, loads config and discovery inputs, adapts `runCaptureCommand()` to a typed capture-start result, and renders command output.
+The sweep's state helpers now live beside capture. `[[src/capture/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, and initial cursor calculation. `[[src/capture/lock.ts]]` owns repo-level sweep locking and stale-lock recovery. `[[src/capture/sweep.ts]]` owns the sweep coordinator: eligibility checks, lock acquisition, ledger reconciliation, cursor validation, capture enqueueing, cursor context, capture-start result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/capture-sweep.ts]]` parses CLI options, loads config and discovery inputs, adapts `runCaptureCommand()` to a typed capture-start result, and renders command output.
 
-The current sweep implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/commands/capture-sweep.ts]] appends a second command-context block with the transcript identity and cursor boundary:
+The current sweep implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/cli/commands/capture-sweep.ts]] appends a second command-context block with the transcript identity and cursor boundary:
 
 ```text
 Scheduled capture cursor:

@@ -45,7 +45,7 @@ title: Capture
 sources:
   - id: capture-command
     type: file
-    path: src/commands/capture.ts
+    path: src/cli/commands/operations.ts
     note: Starts capture.
   - id: sdk-docs
     type: web
@@ -66,7 +66,7 @@ Body.
       {
         id: "capture-command",
         type: "file",
-        path: "src/commands/capture.ts",
+        path: "src/cli/commands/operations.ts",
         note: "Starts capture.",
       },
       {

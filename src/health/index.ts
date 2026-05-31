@@ -20,7 +20,7 @@ import { subtreeInDb } from "../topics/dag.js";
  * Health report collection and deterministic health repairs.
  *
  * This module owns wiki-health checks over the SQLite index and filesystem.
- * CLI option parsing and report rendering live in `src/commands/health/`.
+ * CLI option parsing and report rendering live in `src/cli/commands/health/`.
  */
 
 export interface HealthReport {

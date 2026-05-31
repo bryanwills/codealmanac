@@ -1,5 +1,5 @@
-import { runSetup } from "../commands/setup/index.js";
-import type { runDoctor } from "../commands/doctor/index.js";
+import { runSetup } from "./commands/setup/index.js";
+import type { runDoctor } from "./commands/doctor/index.js";
 import { runCodealmanacBootstrap } from "../install/global.js";
 import { emit } from "./helpers.js";
 
@@ -113,7 +113,7 @@ async function runAutomationFastPath(args: string[]): Promise<boolean> {
     runAutomationInstall,
     runAutomationStatus,
     runAutomationUninstall,
-  } = await import("../commands/automation.js");
+  } = await import("./commands/automation.js");
   if (subcommand === "install") {
     const parsed = parseAutomationInstallFlags(args.slice(2));
     if (!parsed.ok) {
@@ -160,7 +160,7 @@ async function runAgentsFastPath(args: string[]): Promise<boolean> {
     runAgentsList,
     runAgentsModel,
     runAgentsUse,
-  } = await import("../commands/agents.js");
+  } = await import("./commands/agents.js");
   if (subcommand === "list" || subcommand === undefined) {
     emit(await runAgentsList());
     return true;
@@ -191,7 +191,7 @@ async function runConfigFastPath(args: string[]): Promise<boolean> {
     runConfigList,
     runConfigSet,
     runConfigUnset,
-  } = await import("../commands/config.js");
+  } = await import("./commands/config.js");
   if (subcommand === "list" || subcommand === undefined) {
     emit(await runConfigList({
       json: args.includes("--json"),
@@ -230,7 +230,7 @@ async function runConfigFastPath(args: string[]): Promise<boolean> {
 async function runDeprecatedSetFastPath(args: string[]): Promise<boolean> {
   const subcommand = args[1];
   const { runDeprecatedSetAgentModel, runDeprecatedSetDefaultAgent } = await import(
-    "../commands/agents.js"
+    "./commands/agents.js"
   );
   if (subcommand === "default-agent") {
     emit(await runDeprecatedSetDefaultAgent({ provider: args[2] ?? "" }));
@@ -247,7 +247,7 @@ async function runDeprecatedSetFastPath(args: string[]): Promise<boolean> {
 }
 
 async function runUpdateFastPath(args: string[]): Promise<boolean> {
-  const { runUpdate } = await import("../commands/update.js");
+  const { runUpdate } = await import("./commands/update.js");
   emit(await runUpdate(parseUpdateFlags(args.slice(1))));
   return true;
 }
@@ -256,7 +256,7 @@ async function runDoctorFastPath(
   args: string[],
   deps: Required<Pick<SqliteFreeDeps, "runSetup">> & Pick<SqliteFreeDeps, "runDoctor">,
 ): Promise<boolean> {
-  const runDoctorFn = deps.runDoctor ?? (await import("../commands/doctor/index.js")).runDoctor;
+  const runDoctorFn = deps.runDoctor ?? (await import("./commands/doctor/index.js")).runDoctor;
   emit(await runDoctorFn({
     cwd: process.cwd(),
     ...parseDoctorFlags(args.slice(1)),
@@ -265,7 +265,7 @@ async function runDoctorFastPath(
 }
 
 async function runUninstallFastPath(args: string[]): Promise<boolean> {
-  const { runUninstall } = await import("../commands/uninstall.js");
+  const { runUninstall } = await import("./commands/uninstall.js");
   emit(await runUninstall(parseUninstallFlags(args.slice(1))));
   return true;
 }

@@ -71,4 +71,4 @@ From `HARNESS_PROVIDER_METADATA.claude`: `sessionPersistence: true`, `threadResu
 
 ## Old wrapper removal
 
-`src/agent/sdk.ts`, `src/commands/bootstrap.ts`, `src/commands/capture.ts`, and the `.bootstrap-*.log` / `.capture-*.log` flows were removed during the V1 cleanup. Do not reintroduce a command-specific Claude runner; add mapping behavior inside the provider adapter.
+`src/agent/sdk.ts`, `src/cli/commands/bootstrap.ts`, `src/cli/commands/capture.ts`, and the `.bootstrap-*.log` / `.capture-*.log` flows were removed during the V1 cleanup. Do not reintroduce a command-specific Claude runner; add mapping behavior inside the provider adapter.

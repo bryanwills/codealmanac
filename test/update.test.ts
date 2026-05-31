@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { runUpdate } from "../src/commands/update.js";
-import { runConfigSet } from "../src/commands/config.js";
+import { runUpdate } from "../src/cli/commands/update.js";
+import { runConfigSet } from "../src/cli/commands/config.js";
 import { parseConfigText, readConfig, writeConfig } from "../src/config/index.js";
 import { readState, writeState } from "../src/update/state.js";
 import { withTempHome } from "./helpers.js";

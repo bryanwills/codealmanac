@@ -7,17 +7,17 @@ import {
   runAgentsUse,
   runDeprecatedSetAgentModel,
   runDeprecatedSetDefaultAgent,
-} from "../commands/agents.js";
+} from "./commands/agents.js";
 import {
   runConfigGet,
   runConfigList,
   runConfigSet,
   runConfigUnset,
-} from "../commands/config.js";
-import { runDoctor } from "../commands/doctor/index.js";
-import { runSetup } from "../commands/setup/index.js";
-import { runUninstall } from "../commands/uninstall.js";
-import { runUpdate } from "../commands/update.js";
+} from "./commands/config.js";
+import { runDoctor } from "./commands/doctor/index.js";
+import { runSetup } from "./commands/setup/index.js";
+import { runUninstall } from "./commands/uninstall.js";
+import { runUpdate } from "./commands/update.js";
 import { emit } from "./helpers.js";
 
 export function registerSetupCommands(program: Command): void {

@@ -10,10 +10,10 @@ files:
   - src/agent/auth/claude.ts
   - src/agent/instructions/codex.ts
   - src/agent/install-targets.ts
-  - src/commands/agents.ts
-  - src/commands/setup/index.ts
-  - src/commands/setup/
-  - src/commands/doctor/agents.ts
+  - src/cli/commands/agents.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/setup/
+  - src/cli/commands/doctor/agents.ts
   - src/process/manager.ts
   - src/config/index.ts
   - src/config/providers.ts
@@ -56,11 +56,11 @@ No production code path found in the 2026-05-14 review called `getAgentProvider(
 
 ## Current agent-support path
 
-`src/agent/readiness/view.ts` uses provider status checks and model choices to build setup, agents, and doctor views. `src/commands/agents.ts`, `src/commands/setup/index.ts`, and `src/commands/doctor/agents.ts` depend on that projection. Provider-specific readiness checks live under `src/agent/readiness/providers/` and answer only setup/status questions.
+`src/agent/readiness/view.ts` uses provider status checks and model choices to build setup, agents, and doctor views. `src/cli/commands/agents.ts`, `src/cli/commands/setup/index.ts`, and `src/cli/commands/doctor/agents.ts` depend on that projection. Provider-specific readiness checks live under `src/agent/readiness/providers/` and answer only setup/status questions.
 
 That setup/status responsibility is distinct from execution. It answers questions such as whether a provider CLI is installed and authenticated, which model choices should be shown, which fix command should be printed, and which provider-specific instruction files setup should write. Those are agent readiness concerns, not per-run execution concerns.
 
-The setup/status path is also distinct from persisted config. `src/config/index.ts` is now a stable facade over focused config modules: `src/config/schema.ts` owns defaults and normalization, `src/config/codec.ts` owns TOML/JSON parsing and serialization, `src/config/store.ts` owns filesystem reads/writes, legacy migration, config merging, and `automation.capture_since`, `src/config/origins.ts` owns origin reporting, `src/config/paths.ts` owns config path resolution, and `src/config/providers.ts` owns provider ids and feature-gated provider availability. `src/commands/config.ts` and `src/commands/config-keys.ts` expose config keys, `src/commands/setup/index.ts` orchestrates first-run choices, and `src/commands/agents.ts` manages agent choice and model choice after setup. Setup is a workflow over config, readiness, automation, and guide installation; it should not become the home for reusable provider readiness logic.
+The setup/status path is also distinct from persisted config. `src/config/index.ts` is now a stable facade over focused config modules: `src/config/schema.ts` owns defaults and normalization, `src/config/codec.ts` owns TOML/JSON parsing and serialization, `src/config/store.ts` owns filesystem reads/writes, legacy migration, config merging, and `automation.capture_since`, `src/config/origins.ts` owns origin reporting, `src/config/paths.ts` owns config path resolution, and `src/config/providers.ts` owns provider ids and feature-gated provider availability. `src/cli/commands/config.ts` and `src/cli/commands/config-keys.ts` expose config keys, `src/cli/commands/setup/index.ts` orchestrates first-run choices, and `src/cli/commands/agents.ts` manages agent choice and model choice after setup. Setup is a workflow over config, readiness, automation, and guide installation; it should not become the home for reusable provider readiness logic.
 
 `src/config/providers.ts` is a small provider-id catalog, not a runtime provider layer. It owns `ALL_AGENT_PROVIDER_IDS`, Cursor enablement, enabled-provider lists, provider-id type guards, provider-list formatting, and disabled-provider messages because those facts are needed by config normalization and setup/status views. Runtime capabilities, transports, tool mapping, and execution behavior remain under `src/harness/providers/`.
 
@@ -82,7 +82,7 @@ The follow-up cleanup branch made the next boundary sharper. `src/agent/provider
 
 A later code review found two limits on that `src/agent/readiness/` destination. Claude executable resolution and auth probing are shared runtime facts when the harness adapter and doctor/setup status both need them; those helpers live in `src/agent/auth/claude.ts`, not under readiness. Codex AGENTS-file writing is instruction-install behavior, not provider readiness; the instruction writer lives in `src/agent/instructions/codex.ts`, even though setup, doctor, and uninstall may all call it.
 
-`src/commands/setup/index.ts` was the next provider-adjacent cohesion risk. It orchestrated global install handling, provider/model selection, instruction-guide installation, automation setup, config writes, prompt/output flow, and path resolution. The cleanup made `setup/index.ts` the CLI wrapper and kept named workflow steps in `src/commands/setup/` modules: provider/model choice, durable global install handling, automation setup, guide installation, auto-commit config, next-step rendering, guide path resolution, and terminal output. That preserves setup as one user-facing command while preventing setup from becoming the owner of reusable provider readiness, config, guide, and automation behavior.
+`src/cli/commands/setup/index.ts` was the next provider-adjacent cohesion risk. It orchestrated global install handling, provider/model selection, instruction-guide installation, automation setup, config writes, prompt/output flow, and path resolution. The cleanup made `setup/index.ts` the CLI wrapper and kept named workflow steps in `src/cli/commands/setup/` modules: provider/model choice, durable global install handling, automation setup, guide installation, auto-commit config, next-step rendering, guide path resolution, and terminal output. That preserves setup as one user-facing command while preventing setup from becoming the owner of reusable provider readiness, config, guide, and automation behavior.
 
 The same follow-up plan explicitly rejects a generic "automate anything" framework for now. Current automation has two real scheduled tasks, `capture-sweep` and `garden`; `src/automation/tasks.ts` can become more explicit for those known tasks, but a broader operation/coordinator automation abstraction should wait for a third concrete scheduled task or product surface.
 

@@ -7,8 +7,8 @@ import {
   runReviewList,
   runReviewReopen,
   runReviewShow,
-} from "../commands/review.js";
-import { runTag, runUntag } from "../commands/tag.js";
+} from "./commands/review.js";
+import { runTag, runUntag } from "./commands/tag.js";
 import {
   runTopicsCreate,
   runTopicsDelete,
@@ -18,7 +18,7 @@ import {
   runTopicsRename,
   runTopicsShow,
   runTopicsUnlink,
-} from "../commands/topics/index.js";
+} from "./commands/topics/index.js";
 import { autoRegisterIfNeeded } from "../registry/autoregister.js";
 import { collectOption, emit, readStdin } from "./helpers.js";
 

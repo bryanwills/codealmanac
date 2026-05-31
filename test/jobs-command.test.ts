@@ -8,7 +8,7 @@ import {
   runJobsList,
   runJobsLogs,
   runJobsShow,
-} from "../src/commands/jobs.js";
+} from "../src/cli/commands/jobs.js";
 import {
   buildQueuedRunRecord,
   buildStartedRunRecord,

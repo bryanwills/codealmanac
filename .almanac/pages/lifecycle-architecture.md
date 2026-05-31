@@ -4,7 +4,7 @@ summary: Lifecycle architecture is the reading map for Almanac's AI write operat
 topics: [agents, flows, cli, systems]
 files:
   - src/operations/
-  - src/commands/operations.ts
+  - src/cli/commands/operations.ts
   - src/cli/register-wiki-lifecycle-commands.ts
   - src/process/
   - src/harness/

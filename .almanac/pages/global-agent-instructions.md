@@ -4,11 +4,11 @@ summary: "`almanac setup` installs global Claude and Codex instruction artifacts
 topics: [agents, cli, flows]
 files:
   - src/agent/install-targets.ts
-  - src/commands/setup/index.ts
-  - src/commands/setup/guides.ts
-  - src/commands/setup/guides-step.ts
-  - src/commands/uninstall.ts
-  - src/commands/doctor/install.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/setup/guides.ts
+  - src/cli/commands/setup/guides-step.ts
+  - src/cli/commands/uninstall.ts
+  - src/cli/commands/doctor/install.ts
   - src/agent/instructions/codex.ts
   - test/setup.test.ts
   - test/uninstall.test.ts
@@ -26,11 +26,11 @@ verified: 2026-05-13
 
 `almanac setup` has one "install agent instructions" step, but it writes different artifacts for Claude and Codex because the two harnesses read global guidance differently. Claude gets copied markdown files under `~/.claude/` plus an import line in `~/.claude/CLAUDE.md`. Codex gets the same mini-guide content written inline into the active global AGENTS file under `~/.codex/`.
 
-The shared install layer lives in [[src/agent/install-targets.ts]]. Setup, uninstall, and doctor call that module instead of each command encoding Claude and Codex instruction behavior independently. `[[src/commands/setup/guides-step.ts]]` owns the setup workflow step that prompts for guide installation and calls the shared install layer.
+The shared install layer lives in [[src/agent/install-targets.ts]]. Setup, uninstall, and doctor call that module instead of each command encoding Claude and Codex instruction behavior independently. `[[src/cli/commands/setup/guides-step.ts]]` owns the setup workflow step that prompts for guide installation and calls the shared install layer.
 
 ## Claude install contract
 
-[[src/commands/setup/index.ts]] copies two bundled guide files into `~/.claude/`:
+[[src/cli/commands/setup/index.ts]] copies two bundled guide files into `~/.claude/`:
 
 - `almanac.md` from `guides/mini.md`
 - `almanac-reference.md` from `guides/reference.md`
@@ -49,7 +49,7 @@ If both managed markers already exist, setup replaces only the block body. If no
 
 ## Uninstall and migration cleanup
 
-[[src/agent/install-targets.ts]] and [[src/commands/uninstall.ts]] remove exactly the instruction artifacts setup owns:
+[[src/agent/install-targets.ts]] and [[src/cli/commands/uninstall.ts]] remove exactly the instruction artifacts setup owns:
 
 - the `@~/.claude/almanac.md` import line from `CLAUDE.md`
 - the guide files `almanac.md` and `almanac-reference.md`
@@ -69,9 +69,9 @@ The same test also confirmed one setup edge condition from code against a real i
 
 ## No single clean-slate command
 
-The repo does not currently implement a one-shot "clean slate" command for Almanac artifacts. The 2026-05-11 naming-migration plan records a future slash-command recipe for that job, but the current tree still has no `.claude/commands/clean-slate.md`, no dedicated CLI command under [[src/commands/]], and no CLI registration for such a command.
+The repo does not currently implement a one-shot "clean slate" command for Almanac artifacts. The 2026-05-11 naming-migration plan records a future slash-command recipe for that job, but the current tree still has no `.claude/commands/clean-slate.md`, no dedicated CLI command under [[src/cli/commands/]], and no CLI registration for such a command.
 
-That distinction matters because [[src/commands/uninstall.ts]] only removes the artifacts setup owns plus scheduler and legacy-hook state. A full machine-level reset still requires manual cleanup outside the current command surface, including the global npm package, `~/.almanac`, and stale `~/.npm/_npx/.../node_modules/codealmanac` caches described in `docs/plans/2026-05-11-almanac-naming-migration.md`.
+That distinction matters because [[src/cli/commands/uninstall.ts]] only removes the artifacts setup owns plus scheduler and legacy-hook state. A full machine-level reset still requires manual cleanup outside the current command surface, including the global npm package, `~/.almanac`, and stale `~/.npm/_npx/.../node_modules/codealmanac` caches described in `docs/plans/2026-05-11-almanac-naming-migration.md`.
 
 ## Verification boundary
 
@@ -84,6 +84,6 @@ The 2026-05-12 install-verification session confirmed the current fresh-install 
 
 The same session also confirmed the reinstall path from a markdown-only reset: after clearing the markdown artifacts manually, a fresh `npx codealmanac` install recreated the two Claude guide files, restored the `@~/.claude/almanac.md` import, and repopulated `~/.codex/AGENTS.md` with the inline managed block.
 
-[[src/commands/doctor/install.ts]] keeps the stable `install.guides` and `install.import` keys, but `install.import` now means "agent instruction entries." It checks both the Claude `CLAUDE.md` import and the Codex managed AGENTS block through [[src/agent/install-targets.ts]]. The stable key name avoids breaking JSON consumers while expanding the diagnostic coverage.
+[[src/cli/commands/doctor/install.ts]] keeps the stable `install.guides` and `install.import` keys, but `install.import` now means "agent instruction entries." It checks both the Claude `CLAUDE.md` import and the Codex managed AGENTS block through [[src/agent/install-targets.ts]]. The stable key name avoids breaking JSON consumers while expanding the diagnostic coverage.
 
 The provider-status path adds one more practical split for Codex debugging. [[src/harness/providers/codex.ts]] treats Codex as installed only when the `codex` executable is visible on `PATH`; otherwise it reports `codex not found on PATH` before any AGENTS-file logic matters. A support triage for "Codex works in one place but Almanac cannot see it" should therefore start with `which codex` and `codex --version`, then move on to which of `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md` is active.

@@ -6,7 +6,7 @@ import {
   runAutomationInstall,
   runAutomationStatus,
   runAutomationUninstall,
-} from "../src/commands/automation.js";
+} from "../src/cli/commands/automation.js";
 import { readConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 

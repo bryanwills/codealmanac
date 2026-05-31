@@ -11,7 +11,7 @@ files:
   - src/process/spec.ts
   - src/process/types.ts
   - src/harness/providers/claude.ts
-  - src/commands/jobs.ts
+  - src/cli/commands/jobs.ts
   - src/viewer/job-projections.ts
   - src/viewer/job-types.ts
   - src/viewer/jobs.ts

@@ -3,7 +3,7 @@ title: Self Update
 summary: Almanac self-update uses a background notifier plus an idempotent global npm install path, and scheduled self-update runs the normal `almanac update` command.
 topics: [cli, systems, automation, decisions]
 files:
-  - src/commands/update.ts
+  - src/cli/commands/update.ts
   - src/update/check.ts
   - src/update/notifier-worker.ts
   - src/update/announce.ts
@@ -11,12 +11,12 @@ files:
   - src/update/install.ts
   - src/update/lock.ts
   - src/update/version.ts
-  - src/commands/doctor/updates.ts
+  - src/cli/commands/doctor/updates.ts
   - src/cli/sqlite-free.ts
   - src/automation/tasks.ts
-  - src/commands/automation.ts
-  - src/commands/setup/index.ts
-  - src/commands/setup/automation-step.ts
+  - src/cli/commands/automation.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/setup/automation-step.ts
 sources:
   - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
   - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
@@ -36,7 +36,7 @@ Almanac self-update means updating the globally installed `codealmanac` package 
 
 `[[src/update/announce.ts]]` synchronously reads `~/.almanac/update-state.json` and `~/.almanac/config.toml` before Commander handles a command. It prints the update banner to stderr only when `latest_version` is newer than the installed package version, the version has not been dismissed, and `update_notifier` is not `false`.
 
-`[[src/commands/update.ts]]` owns the update surface. `almanac update --check` forces a registry query, `--dismiss` suppresses the current latest version, the deprecated notifier flags write `update_notifier`, and bare `almanac update` checks npm before running `npm i -g codealmanac@latest` with inherited stdio. The install path does not run `sudo`; permission failures are left visible in npm output and summarized afterward.
+`[[src/cli/commands/update.ts]]` owns the update surface. `almanac update --check` forces a registry query, `--dismiss` suppresses the current latest version, the deprecated notifier flags write `update_notifier`, and bare `almanac update` checks npm before running `npm i -g codealmanac@latest` with inherited stdio. The install path does not run `sudo`; permission failures are left visible in npm output and summarized afterward.
 
 `[[src/update/install.ts]]` owns the npm install subprocess and its user-facing failure messages. `[[src/update/lock.ts]]` owns the global `.update-install.lock` file so manual and scheduled update attempts cannot overlap. `[[src/update/version.ts]]` owns installed package-version lookup for the check, announce, and update paths.
 
@@ -66,9 +66,9 @@ The user-facing syntax does not leak launchd implementation details. The public 
 
 ## Relationship to automation
 
-`[[src/automation/tasks.ts]]` models known scheduled Almanac tasks with labels, default intervals, plist paths, log names, working-directory policy, and program arguments. Auto-update extends that task-definition model instead of copying plist construction into `[[src/commands/update.ts]]` or adding another ad hoc branch to `[[src/commands/automation.ts]]`.
+`[[src/automation/tasks.ts]]` models known scheduled Almanac tasks with labels, default intervals, plist paths, log names, working-directory policy, and program arguments. Auto-update extends that task-definition model instead of copying plist construction into `[[src/cli/commands/update.ts]]` or adding another ad hoc branch to `[[src/cli/commands/automation.ts]]`.
 
-`[[src/commands/automation.ts]]` selects task IDs and iterates task definitions. The default install still targets capture plus Garden for compatibility, while positional task selection handles explicit operations such as `almanac automation install update --every 1d`.
+`[[src/cli/commands/automation.ts]]` selects task IDs and iterates task definitions. The default install still targets capture plus Garden for compatibility, while positional task selection handles explicit operations such as `almanac automation install update --every 1d`.
 
 The 2026-05-14 discussion also exposed a product naming tension. Setup asks whether to "keep your codebase wiki up to date automatically" for capture and Garden automation, while CLI self-update changes the tool that performs that wiki maintenance. The implemented onboarding keeps those choices separate by asking "Keep Almanac automatically updated?" only after scheduled wiki maintenance is accepted and installed.
 

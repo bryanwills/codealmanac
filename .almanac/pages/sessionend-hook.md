@@ -3,9 +3,9 @@ title: Legacy SessionEnd Hook
 summary: Hook-based auto-capture is historical; scheduler-backed quiet-session capture supersedes it.
 topics: [agents, flows, cli]
 files:
-  - src/commands/automation.ts
-  - src/commands/setup/index.ts
-  - src/commands/uninstall.ts
+  - src/cli/commands/automation.ts
+  - src/cli/commands/setup/index.ts
+  - src/cli/commands/uninstall.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
 verified: 2026-05-13
@@ -23,7 +23,7 @@ This page remains only as historical context for cleanup and migration. Earlier 
 
 Automatic capture is scheduler-only. `almanac capture sweep` is the only automatic path that decides transcript eligibility, quiet-window timing, cursor dedupe, and capture enqueueing. No hook path should bypass [[capture-ledger]].
 
-Setup and uninstall still clean legacy hook entries privately. [[src/commands/automation.ts]] removes CodeAlmanac-owned commands whose `command` contains `almanac-capture.sh`, including wrapped and unwrapped hook shapes, while preserving unrelated user hooks.
+Setup and uninstall still clean legacy hook entries privately. [[src/cli/commands/automation.ts]] removes CodeAlmanac-owned commands whose `command` contains `almanac-capture.sh`, including wrapped and unwrapped hook shapes, while preserving unrelated user hooks.
 
 ## Legacy shapes to keep cleaning
 

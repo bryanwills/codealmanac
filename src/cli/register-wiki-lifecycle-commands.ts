@@ -5,23 +5,23 @@ import {
   runAutomationInstall,
   runAutomationStatus,
   runAutomationUninstall,
-} from "../commands/automation.js";
-import { runCaptureSweepCommand } from "../commands/capture-sweep.js";
+} from "./commands/automation.js";
+import { runCaptureSweepCommand } from "./commands/capture-sweep.js";
 import {
   runJobsCancel,
   runJobsList,
   runJobsLogs,
   runJobsShow,
   streamJobsAttach,
-} from "../commands/jobs.js";
+} from "./commands/jobs.js";
 import {
   runCaptureCommand,
   runGardenCommand,
   runIngestCommand,
   runInitCommand,
-} from "../commands/operations.js";
+} from "./commands/operations.js";
 import type { HarnessEvent } from "../harness/events.js";
-import { runReindex } from "../commands/reindex.js";
+import { runReindex } from "./commands/reindex.js";
 import { autoRegisterIfNeeded } from "../registry/autoregister.js";
 import {
   deprecationWarning,

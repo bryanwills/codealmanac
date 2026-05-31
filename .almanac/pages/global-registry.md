@@ -8,7 +8,7 @@ files:
   - src/registry/autoregister.ts
   - src/paths.ts
   - src/init/scaffold.ts
-  - src/commands/list.ts
+  - src/cli/commands/list.ts
   - src/cli/register-query-commands.ts
 verified: 2026-05-31
 ---
