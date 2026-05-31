@@ -14,8 +14,8 @@ import {
   runConfigSet,
   runConfigUnset,
 } from "../commands/config.js";
-import { runDoctor } from "../commands/doctor.js";
-import { runSetup } from "../commands/setup.js";
+import { runDoctor } from "../commands/doctor/index.js";
+import { runSetup } from "../commands/setup/index.js";
 import { runUninstall } from "../commands/uninstall.js";
 import { runUpdate } from "../commands/update.js";
 import { emit } from "./helpers.js";

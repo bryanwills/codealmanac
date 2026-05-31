@@ -8,7 +8,7 @@ files:
   - src/topics/frontmatter-rewrite.ts
   - src/topics/paths.ts
   - src/indexer/schema.ts
-  - src/commands/topics.ts
+  - src/commands/topics/index.ts
   - src/commands/tag.ts
 ---
 

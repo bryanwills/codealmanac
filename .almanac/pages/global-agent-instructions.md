@@ -4,11 +4,11 @@ summary: "`almanac setup` installs global Claude and Codex instruction artifacts
 topics: [agents, cli, flows]
 files:
   - src/agent/install-targets.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/setup/guides.ts
   - src/commands/setup/guides-step.ts
   - src/commands/uninstall.ts
-  - src/commands/doctor-checks/install.ts
+  - src/commands/doctor/install.ts
   - src/agent/instructions/codex.ts
   - test/setup.test.ts
   - test/uninstall.test.ts
@@ -30,7 +30,7 @@ The shared install layer lives in [[src/agent/install-targets.ts]]. Setup, unins
 
 ## Claude install contract
 
-[[src/commands/setup.ts]] copies two bundled guide files into `~/.claude/`:
+[[src/commands/setup/index.ts]] copies two bundled guide files into `~/.claude/`:
 
 - `almanac.md` from `guides/mini.md`
 - `almanac-reference.md` from `guides/reference.md`
@@ -84,6 +84,6 @@ The 2026-05-12 install-verification session confirmed the current fresh-install 
 
 The same session also confirmed the reinstall path from a markdown-only reset: after clearing the markdown artifacts manually, a fresh `npx codealmanac` install recreated the two Claude guide files, restored the `@~/.claude/almanac.md` import, and repopulated `~/.codex/AGENTS.md` with the inline managed block.
 
-[[src/commands/doctor-checks/install.ts]] keeps the stable `install.guides` and `install.import` keys, but `install.import` now means "agent instruction entries." It checks both the Claude `CLAUDE.md` import and the Codex managed AGENTS block through [[src/agent/install-targets.ts]]. The stable key name avoids breaking JSON consumers while expanding the diagnostic coverage.
+[[src/commands/doctor/install.ts]] keeps the stable `install.guides` and `install.import` keys, but `install.import` now means "agent instruction entries." It checks both the Claude `CLAUDE.md` import and the Codex managed AGENTS block through [[src/agent/install-targets.ts]]. The stable key name avoids breaking JSON consumers while expanding the diagnostic coverage.
 
 The provider-status path adds one more practical split for Codex debugging. [[src/harness/providers/codex.ts]] treats Codex as installed only when the `codex` executable is visible on `PATH`; otherwise it reports `codex not found on PATH` before any AGENTS-file logic matters. A support triage for "Codex works in one place but Almanac cannot see it" should therefore start with `which codex` and `codex --version`, then move on to which of `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md` is active.

@@ -5,38 +5,22 @@ import { basename, join } from "node:path";
 import fg from "fast-glob";
 import type Database from "better-sqlite3";
 
-import { BLUE, BOLD, DIM, GREEN, RED, RST } from "../ansi.js";
-import { parseDuration } from "../indexer/duration.js";
 import { parseFrontmatter } from "../indexer/frontmatter.js";
 import { ensureFreshIndex } from "../indexer/index.js";
-import { resolveWikiRoot } from "../indexer/resolve-wiki.js";
 import { openIndex } from "../indexer/schema.js";
 import { findEntry } from "../registry/index.js";
 import { toKebabCase } from "../slug.js";
 import {
   applySourceFrontmatterFix,
   writeSourceFrontmatterFix,
-} from "../sources/frontmatter-rewrite.js";
+} from "./legacy-frontmatter-fix.js";
 import { subtreeInDb } from "../topics/dag.js";
 
 /**
- * `almanac health` — flag problems in the wiki.
+ * Health report collection and deterministic health repairs.
  *
- * Eight independent categories, each checked against the current index
- * and filesystem. Categories never throw each other off; one failing
- * is not a reason to skip the others.
- *
- * Scoping:
- *   - `--topic <slug>` narrows every page-scoped category to pages
- *     tagged with that topic OR any descendant topic (DAG traversal).
- *     Topic-level categories (`empty_topics`) are narrowed to the
- *     subtree itself.
- *   - `--stdin` reads page slugs from stdin and limits page-scoped
- *     categories to that set.
- *
- * Output:
- *   - default: human-readable, grouped by category with counts.
- *   - `--json`: one big object, shape = `HealthReport`.
+ * This module owns wiki-health checks over the SQLite index and filesystem.
+ * CLI option parsing and report rendering live in `src/commands/health/`.
  */
 
 export interface HealthReport {
@@ -55,57 +39,41 @@ export interface HealthReport {
   slug_collisions: { slug: string; paths: string[] }[];
 }
 
-export interface HealthOptions {
-  cwd: string;
-  wiki?: string;
+export interface HealthReportOptions {
+  repoRoot: string;
   topic?: string;
-  stale?: string;
-  stdin?: boolean;
-  stdinInput?: string;
-  json?: boolean;
-  fix?: boolean;
+  staleSeconds?: number;
+  stdinSlugs?: string[];
 }
 
-export interface HealthCommandOutput {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
+export interface HealthFixOptions {
+  repoRoot: string;
+  topic?: string;
+  stdinSlugs?: string[];
 }
 
 /**
  * Default `--stale` window. 90 days matches the spec. Users can tune
  * with `--stale <duration>` using the shared parser.
  */
-const DEFAULT_STALE_SECONDS = 90 * 24 * 60 * 60;
+export const DEFAULT_STALE_SECONDS = 90 * 24 * 60 * 60;
 
-export async function runHealth(
-  options: HealthOptions,
-): Promise<HealthCommandOutput> {
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
+export async function collectHealthReport(
+  options: HealthReportOptions,
+): Promise<HealthReport> {
+  const repoRoot = options.repoRoot;
   const almanacDir = join(repoRoot, ".almanac");
   const pagesDir = join(almanacDir, "pages");
-  const staleSeconds = options.stale !== undefined
-    ? parseDuration(options.stale)
-    : DEFAULT_STALE_SECONDS;
+  const staleSeconds = options.staleSeconds ?? DEFAULT_STALE_SECONDS;
 
   await ensureFreshIndex({ repoRoot });
-
-  if (options.fix === true) {
-    const fixDb = openIndex(join(almanacDir, "index.db"));
-    try {
-      await fixLegacySourceFrontmatter(fixDb, resolveScope(fixDb, options));
-    } finally {
-      fixDb.close();
-    }
-    await ensureFreshIndex({ repoRoot });
-  }
 
   const db = openIndex(join(almanacDir, "index.db"));
 
   try {
     const scope = resolveScope(db, options);
 
-    const report: HealthReport = {
+    return {
       orphans: findOrphans(db, scope),
       stale: findStale(db, scope, staleSeconds),
       dead_refs: await findDeadRefs(db, scope, repoRoot),
@@ -120,23 +88,21 @@ export async function runHealth(
       empty_pages: await findEmptyPages(db, scope, pagesDir),
       slug_collisions: await findSlugCollisions(pagesDir),
     };
-
-    if (options.json === true) {
-      return {
-        stdout: `${JSON.stringify(report, null, 2)}\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    }
-
-    return {
-      stdout: formatReport(report),
-      stderr: "",
-      exitCode: 0,
-    };
   } finally {
     db.close();
   }
+}
+
+export async function applyHealthFixes(options: HealthFixOptions): Promise<void> {
+  const almanacDir = join(options.repoRoot, ".almanac");
+  await ensureFreshIndex({ repoRoot: options.repoRoot });
+  const db = openIndex(join(almanacDir, "index.db"));
+  try {
+    await fixLegacySourceFrontmatter(db, resolveScope(db, options));
+  } finally {
+    db.close();
+  }
+  await ensureFreshIndex({ repoRoot: options.repoRoot });
 }
 
 interface HealthScope {
@@ -150,7 +116,7 @@ interface HealthScope {
  * Compute the active page/topic scope from `--topic` and `--stdin`
  * flags. Both null = no restriction (report everything).
  */
-function resolveScope(db: Database.Database, options: HealthOptions): HealthScope {
+function resolveScope(db: Database.Database, options: HealthReportOptions): HealthScope {
   let pages: Set<string> | null = null;
   let topics: Set<string> | null = null;
 
@@ -170,12 +136,8 @@ function resolveScope(db: Database.Database, options: HealthOptions): HealthScop
     }
   }
 
-  if (options.stdin === true && options.stdinInput !== undefined) {
-    const stdinPages = new Set<string>();
-    for (const line of options.stdinInput.split(/\r?\n/)) {
-      const s = line.trim();
-      if (s.length > 0) stdinPages.add(s);
-    }
+  if (options.stdinSlugs !== undefined) {
+    const stdinPages = new Set(options.stdinSlugs);
     // Intersect with any existing topic-scoped set.
     if (pages === null) pages = stdinPages;
     else {
@@ -664,114 +626,4 @@ async function fixLegacySourceFrontmatter(
     const fixed = applySourceFrontmatterFix(raw);
     await writeSourceFrontmatterFix(row.file_path, fixed);
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// pretty-print
-// ─────────────────────────────────────────────────────────────────────
-
-function formatReport(r: HealthReport): string {
-  const sections: string[] = [];
-  sections.push(
-    section(
-      "orphans",
-      r.orphans.length,
-      r.orphans.map((o) => `  ${BLUE}${o.slug}${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "stale",
-      r.stale.length,
-      r.stale.map((s) => `  ${BLUE}${s.slug}${RST}     ${DIM}(${s.days_since_update} days)${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "dead-refs",
-      r.dead_refs.length,
-      r.dead_refs.map((d) => `  ${BLUE}${d.slug}${RST}  references ${d.path} ${DIM}(missing)${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "broken-links",
-      r.broken_links.length,
-      r.broken_links.map(
-        (b) => `  ${BLUE}${b.source_slug}${RST} → ${b.target_slug} ${DIM}(target does not exist)${RST}`,
-      ),
-    ),
-  );
-  sections.push(
-    section(
-      "broken-xwiki",
-      r.broken_xwiki.length,
-      r.broken_xwiki.map(
-        (b) =>
-          `  ${BLUE}${b.source_slug}${RST} → ${b.target_wiki}:${b.target_slug} ${DIM}(wiki unregistered or unreachable)${RST}`,
-      ),
-    ),
-  );
-  sections.push(
-    section(
-      "missing-sources",
-      r.missing_sources.length,
-      r.missing_sources.map((s) => `  ${BLUE}${s.slug}${RST} cites ${s.source_id} ${DIM}(missing source)${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "unused-sources",
-      r.unused_sources.length,
-      r.unused_sources.map((s) => `  ${BLUE}${s.slug}${RST} lists ${s.source_id} ${DIM}(not cited)${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "legacy-frontmatter",
-      r.legacy_frontmatter.length,
-      r.legacy_frontmatter.map((s) => `  ${BLUE}${s.slug}${RST} uses ${s.fields.join(", ")}`),
-    ),
-  );
-  sections.push(
-    section(
-      "unfixable-sources",
-      r.unfixable_sources.length,
-      r.unfixable_sources.map((s) => `  ${BLUE}${s.slug}${RST} has ambiguous legacy source ${s.source}`),
-    ),
-  );
-  sections.push(
-    section(
-      "duplicate-sources",
-      r.duplicate_sources.length,
-      r.duplicate_sources.map((s) => `  ${BLUE}${s.slug}${RST} repeats ${s.source_id}`),
-    ),
-  );
-  sections.push(
-    section(
-      "empty-topics",
-      r.empty_topics.length,
-      r.empty_topics.map((e) => `  ${BLUE}${e.slug}${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "empty-pages",
-      r.empty_pages.length,
-      r.empty_pages.map((e) => `  ${BLUE}${e.slug}${RST}`),
-    ),
-  );
-  sections.push(
-    section(
-      "slug-collisions",
-      r.slug_collisions.length,
-      r.slug_collisions.map((c) => `  ${BLUE}${c.slug}${RST}: ${c.paths.join(", ")}`),
-    ),
-  );
-  return `${sections.join("\n\n")}\n`;
-}
-
-function section(label: string, count: number, lines: string[]): string {
-  if (count === 0) return `${BOLD}${label}${RST} ${GREEN}(0): (ok)${RST}`;
-  return `${BOLD}${label}${RST} ${RED}(${count})${RST}:\n${lines.join("\n")}`;
 }

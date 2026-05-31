@@ -11,11 +11,11 @@ files:
   - src/update/install.ts
   - src/update/lock.ts
   - src/update/version.ts
-  - src/commands/doctor-checks/updates.ts
+  - src/commands/doctor/updates.ts
   - src/cli/sqlite-free.ts
   - src/automation/tasks.ts
   - src/commands/automation.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/setup/automation-step.ts
 sources:
   - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl

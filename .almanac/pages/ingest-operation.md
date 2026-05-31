@@ -1,6 +1,6 @@
 ---
 title: Ingest Operation
-summary: "`almanac ingest` runs Absorb over bounded user-supplied context, with source-address ingest planned as the local GitHub validation path."
+summary: "`almanac ingest` runs Absorb over bounded user-supplied context, with local GitHub PR source-address ingest as the first connector-backed validation path."
 topics: [agents, flows, cli]
 sources:
   - id: operations-command
@@ -23,6 +23,10 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
     note: Records the source-address ingest discussion that chose local GitHub ingest before a hosted GitHub App and `gh` before Composio for the local MVP.
+  - id: source-architecture-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
+    note: Records the architecture analysis that recommended moving source-specific resolution and prompt guidance out of the command wrapper before adding another source kind.
 status: active
 verified: 2026-05-13
 ---
@@ -66,6 +70,8 @@ The first local GitHub plan is intentionally narrower than the hosted connector 
 The local `gh` choice is a product boundary, not a rejection of connector runtimes. GitHub is common enough in developer environments that `gh auth login` is the lightest local setup; Composio remains a candidate runtime for non-GitHub connectors, advanced bring-your-own-key local experiments, and hosted or paid team products where Almanac owns the connector account and can cover the cost. [@connector-session]
 
 The v1 source split is deliberately small: `SourceRef` is syntax, and `Source` is resolved fact data for prompt rendering. `SourceRef` parses the user's string, for example `github:pr:123`, into provider, kind, and id without doing repository lookup, authentication, prompt construction, shell commands, or wiki judgment. The GitHub resolver takes that ref, detects owner and repo from the local git remote, checks `gh` availability, and builds a `Source` with kind, raw ref, repository, URL, and PR number. `ingestContext()` renders those facts into Absorb command context; the `Source` itself does not carry a pre-rendered prompt, fetch PR content, or decide whether the source is notable. [@connector-session]
+
+The first local GitHub implementation also exposed the next boundary problem. `src/commands/operations.ts` now has command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The recommended next slice is not to replace Absorb or add a plugin framework; it is to move source input resolution and source-specific guidance into a connector/source-input layer so command code returns to orchestration before `github:issue`, git ranges, hosted webhooks, or Composio-backed source tools arrive. [@source-architecture-session]
 
 Missing or unauthenticated `gh` should be a clear setup error rather than an auto-install path. The preferred missing-binary message is a short set of steps: install GitHub CLI from `https://cli.github.com/`, run `gh auth login`, then rerun the same `almanac ingest github:pr:123` command. If `gh` exists but auth fails, the error should tell the user to run `gh auth login` and retry. [@connector-session]
 

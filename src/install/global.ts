@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { runSetup, type SetupOptions, type SetupResult } from "../commands/setup.js";
+import { runSetup, type SetupOptions, type SetupResult } from "../commands/setup/index.js";
 import { isNewer } from "../update/semver.js";
 
 /**

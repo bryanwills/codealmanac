@@ -23,6 +23,26 @@ sources:
     type: file
     path: .git/refs/remotes/origin/codex/feat/add-wiki-connectors
     note: Shows the older Notion connector implementation that used Composio as an auth/API proxy, normalized fetched Notion content into a bundle, and wrote a run-local source artifact before Absorb.
+  - id: github-source-ref
+    type: file
+    path: src/ingest/source-ref.ts
+    note: Parses the implemented local GitHub PR source-ref syntax.
+  - id: github-source-resolver
+    type: file
+    path: src/ingest/github.ts
+    note: Resolves local GitHub PR sources through the repository origin remote and GitHub CLI readiness checks.
+  - id: ingest-command-source-wiring
+    type: file
+    path: src/commands/operations.ts
+    note: Wires source refs into ingest command context and GitHub PR guidance for Absorb.
+  - id: github-source-tests
+    type: file
+    path: test/github-source-resolver.test.ts
+    note: Verifies GitHub remote parsing and setup/auth error behavior for local source ingest.
+  - id: source-architecture-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
+    note: Records the architecture analysis that corrected the boundary between indexer-owned markdown source metadata and external source-connector input before adding another source kind.
 status: proposed
 ---
 
@@ -39,6 +59,8 @@ A later connector-design discussion reframed the surrounding architecture as fiv
 GitHub webhooks and future connector events are notifications, not clean agent context. A `pull_request.opened` delivery can identify the repository, pull request, base branch, and API URLs, but it does not give the agent a stable way to inspect the pull request, diff, linked issues, review comments, commit range, or target-branch Almanac pages. [@connector-session]
 
 The bundle exists so deterministic code can do operational work without taking over judgment. It should create a source box, record provenance, and grant source tools to the agent. It should not decide which facts matter, which wiki pages are relevant, or whether durable project memory changed. [@connector-session]
+
+The 2026-05-30 architecture analysis concluded that this boundary needs cleanup before the next source kind lands. The problem is not that `almanac ingest github:pr:123` is too large; the problem is that "source" now names page evidence, operation input, and future connector runtime concepts at the same time. The recommended scope is a medium source-connector refactor, plus clearer ownership for page-source metadata helpers, not a whole-codebase rewrite. [@source-architecture-session]
 
 The cheap deterministic layer may answer these questions before invoking an LLM:
 
@@ -79,9 +101,17 @@ The Composio-backed runtime should start with toolkit-scoped access rather than 
 
 Connector authentication has three product modes, and GitHub should not be forced into the broadest connector path first. Local native GitHub should use the user's existing `gh` auth or local GitHub token where possible, because requiring every open-source CLI user to create a Composio developer account and API key would make `almanac ingest github:pr:123` feel heavier than the source it reads. Bring-your-own Composio key is acceptable as an advanced local path for connector breadth and early testing. Almanac-managed Composio belongs to hosted or paid team products, where Almanac owns the Composio project, pays connector usage, manages auth configuration, and can cover that cost through the product tier. [@connector-session]
 
-The local GitHub MVP should use the GitHub CLI before adding Octokit, Composio, or a hosted GitHub App. The planned command surface starts with `almanac ingest github:pr:123`. The GitHub resolver should infer the owner and repository from the local git remote, check that `gh` is installed and authenticated enough to read the target, and produce a small `Source` fact object with kind, raw ref, repository, canonical URL, and PR number. `ingestContext()` should render those facts into source-specific guidance, and Absorb should let the agent call `gh pr view`, `gh pr diff`, and related commands as needed. This validates whether GitHub PRs improve the wiki before the product pays for webhooks, hosted workers, connector breadth, prefetch artifacts, live tool sessions, issue ingest, or source dedupe. [@connector-session]
+The local GitHub MVP uses the GitHub CLI before adding Octokit, Composio, or a hosted GitHub App. The implemented command surface starts with `almanac ingest github:pr:123`. The parser currently accepts only `github:pr:<number>` and rejects other GitHub source kinds or malformed PR IDs. [@github-source-ref]
+
+The resolver infers the owner and repository from `git remote get-url origin`, accepts GitHub HTTPS and SSH remotes, rejects non-GitHub remotes, then checks `gh --version` and `gh auth status` before producing a small source fact object with kind, raw ref, `owner/repo`, canonical PR URL, and PR number. Setup failures are ordinary `Error` subclasses with actionable fix text for installing or authenticating `gh`. [@github-source-resolver] [@github-source-tests]
+
+`ingestContext()` renders those source facts into source-specific guidance instead of prefetching PR material into a bundle. The prompt tells Absorb to inspect the PR through commands such as `gh pr view ... --json title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences` and `gh pr diff`, treat PR discussion as evidence rather than final truth, prefer current code and merged diffs for present-tense claims, cite supporting PRs with `sources[type=pr]`, and no-op when the PR does not improve durable project memory. [@ingest-command-source-wiring]
+
+The current local boundary deliberately excludes mixed path/source ingest, issue refs, live source tools, hosted webhook dedupe, source sidecar files, and connector-runtime registration. If any input in an `almanac ingest` invocation is a source ref, all inputs must be source refs; mixed local paths and source refs fail with a clear message. This validates whether GitHub PRs improve the wiki before the product pays for webhooks, hosted workers, connector breadth, prefetch artifacts, live tool sessions, issue ingest, or source dedupe. [@ingest-command-source-wiring] [@connector-session]
 
 This keeps GitHub as a first-class source connector even when Composio supplies tool access for other systems. GitHub is common enough in developer environments that local native auth is part of the product surface, while Composio remains the connector runtime for broader apps such as Slack, Linear, Gmail, or Notion when native local setup would be more expensive than a managed toolkit. [@connector-session]
+
+The next implementation slice should make the operation-input layer explicit before adding GitHub issues, git ranges, Composio-backed tools, or hosted publishers. The proposed naming is `SourceAddress` for the raw user string, `SourceRef` for parsed stable identity, and `SourceBrief` for resolved operation-facing facts plus provenance hints. A `source-connectors` module should own source-address parsing, GitHub resolution, GitHub prompt guidance, and source-specific errors. Page-source parsing and normalization should stay with the markdown-to-SQLite projection path, while the deterministic legacy-frontmatter rewrite stays under `[[src/health/]]` because only `health --fix` applies it. [@source-architecture-session]
 
 Hosted GitHub App runs separate the trigger from the source-access path. A GitHub webhook explains why the run exists, while the GitHub App installation token gives the worker access to pull requests, diffs, comments, linked issues, repository contents, branches, and write-back actions allowed by the selected mode. Core GitHub Absorb therefore does not require Composio; Composio is only an optional secondary access runtime when the GitHub source points to non-GitHub systems such as Linear, Slack, Gmail, or Notion. [@connector-session]
 

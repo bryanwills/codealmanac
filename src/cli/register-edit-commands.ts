@@ -18,7 +18,7 @@ import {
   runTopicsRename,
   runTopicsShow,
   runTopicsUnlink,
-} from "../commands/topics.js";
+} from "../commands/topics/index.js";
 import { autoRegisterIfNeeded } from "../registry/autoregister.js";
 import { collectOption, emit, readStdin } from "./helpers.js";
 

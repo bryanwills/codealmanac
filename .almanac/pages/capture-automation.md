@@ -18,7 +18,7 @@ files:
   - src/config/index.ts
   - src/commands/session-transcripts.ts
   - src/commands/operations.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/uninstall.ts
   - src/cli/register-setup-commands.ts
   - src/cli.ts

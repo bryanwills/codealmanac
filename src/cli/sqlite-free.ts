@@ -1,5 +1,5 @@
-import { runSetup } from "../commands/setup.js";
-import type { runDoctor } from "../commands/doctor.js";
+import { runSetup } from "../commands/setup/index.js";
+import type { runDoctor } from "../commands/doctor/index.js";
 import { runCodealmanacBootstrap } from "../install/global.js";
 import { emit } from "./helpers.js";
 
@@ -256,7 +256,7 @@ async function runDoctorFastPath(
   args: string[],
   deps: Required<Pick<SqliteFreeDeps, "runSetup">> & Pick<SqliteFreeDeps, "runDoctor">,
 ): Promise<boolean> {
-  const runDoctorFn = deps.runDoctor ?? (await import("../commands/doctor.js")).runDoctor;
+  const runDoctorFn = deps.runDoctor ?? (await import("../commands/doctor/index.js")).runDoctor;
   emit(await runDoctorFn({
     cwd: process.cwd(),
     ...parseDoctorFlags(args.slice(1)),

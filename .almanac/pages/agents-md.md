@@ -7,7 +7,7 @@ files:
   - CLAUDE.md
   - .gitignore
   - src/agent/instructions/codex.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/uninstall.ts
 sources:
   - https://developers.openai.com/codex/guides/agents-md
@@ -42,7 +42,7 @@ The same file preserves one Codex-specific constraint in code comments and behav
 
 ## Setup and uninstall behavior
 
-[[src/commands/setup.ts]] installs Claude and Codex guidance differently on purpose. Claude gets copied guide files plus an `@~/.claude/almanac.md` import line in `CLAUDE.md`. Codex gets the same mini-guide content inserted directly into the active global AGENTS file. Setup is idempotent because it replaces or appends only the managed block and leaves unrelated user text intact.
+[[src/commands/setup/index.ts]] installs Claude and Codex guidance differently on purpose. Claude gets copied guide files plus an `@~/.claude/almanac.md` import line in `CLAUDE.md`. Codex gets the same mini-guide content inserted directly into the active global AGENTS file. Setup is idempotent because it replaces or appends only the managed block and leaves unrelated user text intact.
 
 [[src/commands/uninstall.ts]] removes the managed block from both `AGENTS.md` and `AGENTS.override.md` so cleanup does not depend on which file was active when setup last ran. If removing the block leaves either file empty, uninstall deletes that file.
 

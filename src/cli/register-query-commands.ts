@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { runHealth } from "../commands/health.js";
+import { runHealth } from "../commands/health/index.js";
 import { listWikis } from "../commands/list.js";
 import { runSearch, type SearchOutputMode } from "../commands/search.js";
 import { runServe } from "../commands/serve.js";

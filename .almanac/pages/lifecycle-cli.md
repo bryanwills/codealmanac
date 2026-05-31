@@ -11,7 +11,7 @@ files:
   - src/commands/review.ts
   - src/commands/jobs.ts
   - src/commands/session-transcripts.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/setup/automation-step.ts
   - src/commands/automation.ts
   - src/review/store.ts
@@ -56,6 +56,12 @@ There is one CLI-shape wrinkle inside that surface: `capture` itself has `--json
 `almanac garden` maps to Garden and defaults background because it can make broad graph edits.
 
 `almanac review` is a deterministic edit command over `.almanac/review.yaml`, not an AI lifecycle command. `review add` records an open Markdown review item, `review decide` records the human decision, `review apply` records that an agent applied the decision to the wiki, and `review reopen` returns a decided or applied item to open. `review list` defaults to open items and supports `--status open|decided|applied|all`; `review show` and `review list` support JSON for agents and future viewer APIs. The command belongs beside edit commands because it writes wiki source state, but it does not itself edit pages or run an agent.
+
+## Command source layout
+
+The 2026-05-30 command-folder refactor set a concrete source-layout rule for `src/commands/`. Small single-file commands stay as `src/commands/<command>.ts`. Multi-file commands use `src/commands/<command>/index.ts` as the public command entrypoint, with command-private helpers beside it. The current examples are `[[src/commands/doctor/index.ts]]`, `[[src/commands/health/index.ts]]`, `[[src/commands/setup/index.ts]]`, and `[[src/commands/topics/index.ts]]`.
+
+`src/commands/` is the terminal CLI surface, not the owner of every user-facing surface. `[[src/commands/serve.ts]]` stays a thin command wrapper that starts the viewer, while the local browser surface remains under `[[src/viewer/]]`. Shared read models should move to shared query modules when both CLI commands and the viewer need them, as `[[src/query/page-view.ts]]` already does for page views.
 
 ## Shared flags
 

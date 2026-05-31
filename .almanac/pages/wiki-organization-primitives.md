@@ -12,7 +12,7 @@ files:
   - prompts/operations/garden.md
   - src/cli.ts
   - src/indexer/index.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/automation.ts
 sources:
   - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-50-50-019e6b34-4f03-7073-b36a-76aba85b3dcf.jsonl

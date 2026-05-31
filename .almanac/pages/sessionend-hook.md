@@ -4,7 +4,7 @@ summary: Hook-based auto-capture is historical; scheduler-backed quiet-session c
 topics: [agents, flows, cli]
 files:
   - src/commands/automation.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/uninstall.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl

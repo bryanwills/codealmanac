@@ -1,21 +1,21 @@
 import {
   type SpawnCliFn,
-} from "../agent/readiness/providers/claude/index.js";
+} from "../../agent/readiness/providers/claude/index.js";
 export {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
   hasCodexInstructions,
-} from "../agent/instructions/codex.js";
-import { chooseDefaultAgent, type AgentChoice } from "./setup/agent-choice.js";
-import { runAutoCommitSetupStep } from "./setup/auto-commit-step.js";
-import { runAutomationSetupStep } from "./setup/automation-step.js";
-export { IMPORT_LINE, hasImportLine } from "./setup/guides.js";
-import { runGlobalInstallStep } from "./setup/global-install-step.js";
-import { runGuidesSetupStep } from "./setup/guides-step.js";
+} from "../../agent/instructions/codex.js";
+import { chooseDefaultAgent, type AgentChoice } from "./agent-choice.js";
+import { runAutoCommitSetupStep } from "./auto-commit-step.js";
+import { runAutomationSetupStep } from "./automation-step.js";
+export { IMPORT_LINE, hasImportLine } from "./guides.js";
+import { runGlobalInstallStep } from "./global-install-step.js";
+import { runGuidesSetupStep } from "./guides-step.js";
 import {
   countExistingPages,
   printNextSteps,
-} from "./setup/next-steps.js";
+} from "./next-steps.js";
 import {
   BAR,
   BLUE,
@@ -25,7 +25,7 @@ import {
   printBadge,
   printBanner,
   stepDone,
-} from "./setup/output.js";
+} from "./output.js";
 
 export type AutomationExecFn = (
   file: string,

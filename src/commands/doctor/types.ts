@@ -1,7 +1,7 @@
 import type { SpawnCliFn } from "../../agent/readiness/providers/claude/index.js";
 import type { ProviderStatus } from "../../agent/types.js";
 import type { AgentProviderId } from "../../config/index.js";
-import type { runHealth } from "../health.js";
+import type { collectHealthReport } from "../../health/index.js";
 
 export interface DoctorOptions {
   cwd: string;
@@ -45,8 +45,8 @@ export interface DoctorOptions {
    * skips the real native-binding load and returns this instead.
    */
   sqliteProbe?: SqliteProbeResult;
-  /** Override the health probe runner (tests inject a canned report). */
-  runHealthFn?: typeof runHealth;
+  /** Override the health report collector (tests inject a canned report). */
+  collectHealthReportFn?: typeof collectHealthReport;
   /** Stdout sink. Tests capture here; production uses process.stdout. */
   stdout?: NodeJS.WritableStream;
   /** Test-only clock for "last capture: Xh ago" rendering. */

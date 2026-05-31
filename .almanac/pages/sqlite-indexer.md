@@ -6,18 +6,26 @@ files:
   - src/cli/register-query-commands.ts
   - src/commands/search.ts
   - src/commands/show.ts
+  - src/commands/health/index.ts
   - src/indexer/schema.ts
   - src/indexer/index.ts
   - src/indexer/frontmatter.ts
+  - src/indexer/page-sources.ts
   - src/indexer/wikilinks.ts
   - src/indexer/paths.ts
   - src/indexer/resolve-wiki.ts
   - src/indexer/duration.ts
+  - src/health/index.ts
+  - src/health/legacy-frontmatter-fix.ts
   - src/abi-guard.ts
   - src/cli.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
   - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+  - id: source-architecture-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
+    note: Records the correction that page `sources:` parsing is markdown projection work and that the legacy source-frontmatter rewriter belongs to health rather than a generic sources subsystem.
 verified: 2026-05-15
 ---
 
@@ -43,6 +51,12 @@ Defined in `src/indexer/schema.ts` and applied idempotently on every open (`CREA
 - `wikilinks` — page-slug links
 - `cross_wiki_links` — cross-wiki links
 - `fts_pages` — FTS5 virtual table (slug + title + content); **ON DELETE CASCADE does NOT apply to FTS5 virtual tables**; the indexer must issue an explicit `DELETE FROM fts_pages WHERE slug = ?` before re-inserting a changed page row, or the old content remains searchable alongside the new content
+
+## Markdown Projection Boundary
+
+`src/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/indexer/frontmatter.ts]]`, source normalization in `[[src/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/health/index.ts]]` owns the health checks that query those projections.
+
+The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic `src/sources/` owner for this code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper lives in `[[src/health/legacy-frontmatter-fix.ts]]` because it exists only for `health --fix`; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
 
 ## Schema versioning
 

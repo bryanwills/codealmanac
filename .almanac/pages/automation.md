@@ -7,7 +7,7 @@ files:
   - src/automation/tasks.ts
   - src/automation/launchd.ts
   - src/automation/legacy-hooks.ts
-  - src/commands/setup.ts
+  - src/commands/setup/index.ts
   - src/commands/setup/automation-step.ts
   - src/commands/uninstall.ts
   - src/cli.ts

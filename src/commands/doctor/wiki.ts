@@ -7,7 +7,7 @@ import { ensureFreshIndex } from "../../indexer/index.js";
 import { openIndex } from "../../indexer/schema.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { findEntry } from "../../registry/index.js";
-import { runHealth, type HealthReport } from "../health.js";
+import { collectHealthReport, type HealthReport } from "../../health/index.js";
 import { formatDuration } from "./duration.js";
 import type { Check, DoctorOptions } from "./types.js";
 
@@ -205,13 +205,10 @@ async function describeHealth(
   repoRoot: string,
   options: DoctorOptions,
 ): Promise<Check> {
-  const healthFn = options.runHealthFn ?? runHealth;
+  const healthFn = options.collectHealthReportFn ?? collectHealthReport;
   try {
-    const healthRes = await healthFn({
-      cwd: repoRoot,
-      json: true,
-    });
-    const problems = countHealthProblems(healthRes.stdout);
+    const report = await healthFn({ repoRoot });
+    const problems = countHealthProblems(report);
     if (problems === 0) {
       return {
         status: "ok",
@@ -246,16 +243,11 @@ const HEALTH_PROBLEM_KEYS: (keyof HealthReport)[] = [
   "slug_collisions",
 ];
 
-function countHealthProblems(jsonStdout: string): number {
-  try {
-    const report = JSON.parse(jsonStdout) as Partial<HealthReport>;
-    let total = 0;
-    for (const key of HEALTH_PROBLEM_KEYS) {
-      const arr = report[key];
-      if (Array.isArray(arr)) total += arr.length;
-    }
-    return total;
-  } catch {
-    return 0;
+function countHealthProblems(report: Partial<HealthReport>): number {
+  let total = 0;
+  for (const key of HEALTH_PROBLEM_KEYS) {
+    const arr = report[key];
+    if (Array.isArray(arr)) total += arr.length;
   }
+  return total;
 }

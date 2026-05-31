@@ -1,6 +1,6 @@
-import { formatReport } from "./doctor-checks/format.js";
-import { gatherInstallChecks } from "./doctor-checks/install.js";
-import { readPackageVersion } from "./doctor-checks/probes.js";
+import { formatReport } from "./format.js";
+import { gatherInstallChecks } from "./install.js";
+import { readPackageVersion } from "./probes.js";
 import type {
   Check,
   CheckStatus,
@@ -9,9 +9,9 @@ import type {
   DoctorReport,
   DoctorResult,
   SqliteProbeResult,
-} from "./doctor-checks/types.js";
-import { gatherAgentChecks } from "./doctor-checks/agents.js";
-import { gatherUpdateChecks } from "./doctor-checks/updates.js";
+} from "./types.js";
+import { gatherAgentChecks } from "./agents.js";
+import { gatherUpdateChecks } from "./updates.js";
 
 export type {
   Check,
@@ -31,8 +31,7 @@ export type {
  * sessions silently stop getting captured.
  *
  * This file is the command composition root. The section-specific probes
- * and formatting live in `doctor-checks/` so each durable fact has one
- * obvious owner.
+ * and formatting live next to it so each durable fact has one obvious owner.
  */
 export async function runDoctor(
   options: DoctorOptions,
@@ -77,7 +76,7 @@ async function safeGatherWikiChecks(
   options: DoctorOptions,
 ): Promise<Check[]> {
   try {
-    const { gatherWikiChecks } = await import("./doctor-checks/wiki.js");
+    const { gatherWikiChecks } = await import("./wiki.js");
     return await gatherWikiChecks(options);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

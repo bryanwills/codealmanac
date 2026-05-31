@@ -3,7 +3,7 @@ import { basename } from "node:path";
 
 import { Command } from "commander";
 
-import { runSetup } from "./commands/setup.js";
+import { runSetup } from "./commands/setup/index.js";
 import { configureGroupedHelp } from "./cli/help.js";
 import {
   parseAutomationInstallFlags,
@@ -12,7 +12,7 @@ import {
   tryRunSqliteFreeCommand,
 } from "./cli/sqlite-free.js";
 import { runCodealmanacBootstrap } from "./install/global.js";
-import type { runDoctor } from "./commands/doctor.js";
+import type { runDoctor } from "./commands/doctor/index.js";
 import { announceUpdateIfAvailable } from "./update/announce.js";
 import {
   runInternalUpdateCheck,

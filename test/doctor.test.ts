@@ -6,12 +6,12 @@ import type {
   SpawnCliFn,
   SpawnedProcess,
 } from "../src/agent/readiness/providers/claude/index.js";
-import { runDoctor } from "../src/commands/doctor.js";
+import { runDoctor } from "../src/commands/doctor/index.js";
 import {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
-} from "../src/commands/setup.js";
-import { IMPORT_LINE } from "../src/commands/setup.js";
+} from "../src/commands/setup/index.js";
+import { IMPORT_LINE } from "../src/commands/setup/index.js";
 import {
   makeRepo,
   scaffoldWiki,
