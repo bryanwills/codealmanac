@@ -15,6 +15,46 @@ describe("parseSourceRef", () => {
     });
   });
 
+  it("parses GitHub issue refs", () => {
+    expect(parseSourceRef("github:issue:123")).toEqual({
+      ok: true,
+      value: {
+        raw: "github:issue:123",
+        provider: "github",
+        kind: "issue",
+        id: "123",
+      },
+    });
+  });
+
+  it("parses GitHub issue URLs", () => {
+    expect(parseSourceRef("https://github.com/owner/repo/issues/11")).toEqual({
+      ok: true,
+      value: {
+        raw: "https://github.com/owner/repo/issues/11",
+        provider: "github",
+        kind: "issue",
+        id: "11",
+        repo: {
+          owner: "owner",
+          repo: "repo",
+        },
+      },
+    });
+  });
+
+  it("parses generic web URLs", () => {
+    expect(parseSourceRef("https://example.com/spec")).toEqual({
+      ok: true,
+      value: {
+        raw: "https://example.com/spec",
+        provider: "web",
+        kind: "url",
+        url: "https://example.com/spec",
+      },
+    });
+  });
+
   it("does not treat local paths as source refs", () => {
     expect(parseSourceRef("docs/foo.md")).toEqual({
       ok: false,
@@ -26,7 +66,8 @@ describe("parseSourceRef", () => {
     expect(parseSourceRef("github:pr:")).toEqual({
       ok: false,
       reason: "invalid-source-ref",
-      message: "invalid GitHub PR source ref 'github:pr:' (expected github:pr:<number>)",
+      message:
+        "invalid GitHub source ref 'github:pr:' (expected github:pr:<number> or github:issue:<number>)",
     });
   });
 
@@ -34,15 +75,16 @@ describe("parseSourceRef", () => {
     expect(parseSourceRef("github:pr:abc")).toEqual({
       ok: false,
       reason: "invalid-source-ref",
-      message: "invalid GitHub PR source ref 'github:pr:abc' (expected github:pr:<number>)",
+      message:
+        "invalid GitHub source ref 'github:pr:abc' (expected github:pr:<number> or github:issue:<number>)",
     });
   });
 
   it("rejects unsupported GitHub source kinds", () => {
-    expect(parseSourceRef("github:issue:123")).toEqual({
+    expect(parseSourceRef("github:discussion:123")).toEqual({
       ok: false,
       reason: "unsupported-source-ref",
-      message: "unsupported GitHub source kind 'issue' (supported: pr)",
+      message: "unsupported GitHub source kind 'discussion' (supported: pr, issue)",
     });
   });
 });

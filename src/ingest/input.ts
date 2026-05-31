@@ -2,8 +2,8 @@ import { resolve } from "node:path";
 
 import {
   resolveGitHubSource,
-  type Source,
 } from "./github.js";
+import type { Source } from "./source.js";
 import { parseSourceRef, type SourceRef } from "./source-ref.js";
 
 export type ResolvedIngestInput =
@@ -76,5 +76,13 @@ export async function resolveIngestInput(
 
 function defaultResolveSource(ref: SourceRef, cwd: string): Promise<Source> {
   if (ref.provider === "github") return resolveGitHubSource({ ref, cwd });
-  throw new Error(`unsupported source provider '${ref.provider}'`);
+  if (ref.provider === "web") {
+    return Promise.resolve({
+      kind: "web.url",
+      raw: ref.raw,
+      url: ref.url,
+    });
+  }
+  const _exhaustive: never = ref;
+  throw new Error(`unsupported source provider ${String(_exhaustive)}`);
 }

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { renderIngestContext } from "../src/ingest/context.js";
-import { resolveIngestInput } from "../src/ingest/input.js";
+import { resolveIngestInput, type ResolveSourceFn } from "../src/ingest/input.js";
 
 describe("resolveIngestInput", () => {
   it("resolves local paths to operation targets", async () => {
@@ -30,6 +30,7 @@ describe("resolveIngestInput", () => {
         repo: "owner/repo",
         url: "https://github.com/owner/repo/pull/123",
         number: "123",
+        material: '{"title":"Test PR"}',
       }),
     })).resolves.toEqual({
       ok: true,
@@ -43,6 +44,53 @@ describe("resolveIngestInput", () => {
             repo: "owner/repo",
             url: "https://github.com/owner/repo/pull/123",
             number: "123",
+            material: '{"title":"Test PR"}',
+          },
+        ],
+      },
+    });
+  });
+
+  it("parses GitHub issue URLs as source refs", async () => {
+    await expect(resolveIngestInput({
+      cwd: "/repo",
+      inputs: ["https://github.com/owner/repo/issues/11"],
+      resolveSource: async (ref) => ({
+        kind: "github.issue",
+        ...githubIssueFacts(ref),
+      }),
+    })).resolves.toEqual({
+      ok: true,
+      value: {
+        kind: "source",
+        targets: ["https://github.com/owner/repo/issues/11"],
+        sources: [
+          {
+            kind: "github.issue",
+            raw: "https://github.com/owner/repo/issues/11",
+            repo: "owner/repo",
+            url: "https://github.com/owner/repo/issues/11",
+            number: "11",
+          },
+        ],
+      },
+    });
+  });
+
+  it("passes arbitrary web URLs through as web sources", async () => {
+    await expect(resolveIngestInput({
+      cwd: "/repo",
+      inputs: ["https://example.com/some/spec"],
+    })).resolves.toEqual({
+      ok: true,
+      value: {
+        kind: "source",
+        targets: ["https://example.com/some/spec"],
+        sources: [
+          {
+            kind: "web.url",
+            raw: "https://example.com/some/spec",
+            url: "https://example.com/some/spec",
           },
         ],
       },
@@ -61,6 +109,16 @@ describe("resolveIngestInput", () => {
   });
 });
 
+function githubIssueFacts(ref: Parameters<ResolveSourceFn>[0]) {
+  if (ref.provider !== "github") throw new Error("expected GitHub source ref");
+  return {
+    raw: ref.raw,
+    repo: `${ref.repo?.owner}/${ref.repo?.repo}`,
+    url: `https://github.com/${ref.repo?.owner}/${ref.repo?.repo}/issues/${ref.id}`,
+    number: ref.id,
+  };
+}
+
 describe("renderIngestContext", () => {
   it("renders GitHub PR source guidance from resolved source facts", () => {
     const context = renderIngestContext({
@@ -73,6 +131,7 @@ describe("renderIngestContext", () => {
           repo: "owner/repo",
           url: "https://github.com/owner/repo/pull/123",
           number: "123",
+          material: '{"title":"Test PR"}',
         },
       ],
     });
@@ -80,8 +139,44 @@ describe("renderIngestContext", () => {
     expect(context).toContain("Input source: github:pr:123");
     expect(context).toContain("Source kind: GitHub pull request");
     expect(context).toContain("Repository: owner/repo");
+    expect(context).toContain("Resolved GitHub PR source material:");
+    expect(context).toContain('"title":"Test PR"');
     expect(context).toContain("gh pr view 123 --repo owner/repo");
     expect(context).toContain("gh pr diff 123 --repo owner/repo");
     expect(context).toContain("type: pr");
+  });
+
+  it("renders GitHub issue and generic web URL source guidance", () => {
+    const context = renderIngestContext({
+      kind: "source",
+      targets: [
+        "https://github.com/owner/repo/issues/11",
+        "https://example.com/spec",
+      ],
+      sources: [
+        {
+          kind: "github.issue",
+          raw: "https://github.com/owner/repo/issues/11",
+          repo: "owner/repo",
+          url: "https://github.com/owner/repo/issues/11",
+          number: "11",
+          material: '{"title":"Test issue"}',
+        },
+        {
+          kind: "web.url",
+          raw: "https://example.com/spec",
+          url: "https://example.com/spec",
+        },
+      ],
+    });
+
+    expect(context).toContain("Source kind: GitHub issue");
+    expect(context).toContain("Resolved GitHub issue source material:");
+    expect(context).toContain('"title":"Test issue"');
+    expect(context).toContain("gh issue view 11 --repo owner/repo");
+    expect(context).toContain("type: web");
+    expect(context).toContain("Source kind: web URL");
+    expect(context).toContain("URL: https://example.com/spec");
+    expect(context).toContain("type: web");
   });
 });

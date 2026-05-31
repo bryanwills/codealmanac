@@ -366,6 +366,143 @@ describe("operation command wrappers", () => {
     });
   });
 
+  it("runs ingest from GitHub issue URLs", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "cmd-ingest-github-issue-url");
+      await initWiki({ cwd: repo, name: "cmd-ingest-github-issue-url", description: "" });
+      const seen: unknown[] = [];
+
+      const result = await runIngestCommand({
+        cwd: repo,
+        paths: ["https://github.com/owner/repo/issues/11"],
+        using: "codex",
+        resolveSource: async (ref) => {
+          if (ref.provider !== "github") throw new Error("expected GitHub source ref");
+          return {
+            kind: "github.issue",
+            raw: ref.raw,
+            repo: `${ref.repo?.owner}/${ref.repo?.repo}`,
+            url: `https://github.com/${ref.repo?.owner}/${ref.repo?.repo}/issues/${ref.id}`,
+            number: ref.id,
+            material: '{"title":"Issue material from resolver"}',
+          };
+        },
+        startBackground: async (options) => {
+          seen.push(options);
+          return {
+            runId: "run_github_issue_ingest",
+            childPid: 4321,
+            record: {
+              version: 1,
+              id: "run_github_issue_ingest",
+              operation: "absorb",
+              status: "queued",
+              repoRoot: options.repoRoot,
+              pid: 0,
+              provider: options.spec.provider.id,
+              model: options.spec.provider.model,
+              startedAt: "2026-05-09T20:17:00.000Z",
+              logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
+            },
+          };
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("ingest started: run_github_issue_ingest\n");
+      expect(seen[0]).toMatchObject({
+        spec: {
+          metadata: {
+            targetKind: "source",
+            targetPaths: ["https://github.com/owner/repo/issues/11"],
+          },
+        },
+      });
+      const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
+      expect(prompt).toContain("Source kind: GitHub issue");
+      expect(prompt).toContain("Resolved GitHub issue source material:");
+      expect(prompt).toContain('"title":"Issue material from resolver"');
+      expect(prompt).toContain("gh issue view 11 --repo owner/repo");
+      expect(prompt).toContain("type: web");
+    });
+  });
+
+  it("passes arbitrary web URLs through to ingest without a GitHub resolver", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "cmd-ingest-web-url");
+      await initWiki({ cwd: repo, name: "cmd-ingest-web-url", description: "" });
+      const seen: unknown[] = [];
+
+      const result = await runIngestCommand({
+        cwd: repo,
+        paths: ["https://example.com/spec"],
+        using: "codex",
+        startBackground: async (options) => {
+          seen.push(options);
+          return {
+            runId: "run_web_ingest",
+            childPid: 4321,
+            record: {
+              version: 1,
+              id: "run_web_ingest",
+              operation: "absorb",
+              status: "queued",
+              repoRoot: options.repoRoot,
+              pid: 0,
+              provider: options.spec.provider.id,
+              model: options.spec.provider.model,
+              startedAt: "2026-05-09T20:17:00.000Z",
+              logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
+            },
+          };
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(seen[0]).toMatchObject({
+        spec: {
+          metadata: {
+            targetKind: "source",
+            targetPaths: ["https://example.com/spec"],
+          },
+        },
+      });
+      const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
+      expect(prompt).toContain("Source kind: web URL");
+      expect(prompt).toContain("URL: https://example.com/spec");
+      expect(prompt).toContain("type: web");
+    });
+  });
+
+  it("does not queue GitHub URL ingest when source setup fails", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "cmd-ingest-github-url-setup-error");
+      await initWiki({
+        cwd: repo,
+        name: "cmd-ingest-github-url-setup-error",
+        description: "",
+      });
+      let queued = false;
+
+      const result = await runIngestCommand({
+        cwd: repo,
+        paths: ["https://github.com/owner/repo/issues/11"],
+        using: "codex",
+        resolveSource: async () => {
+          throw new Error("source setup failed");
+        },
+        startBackground: async () => {
+          queued = true;
+          throw new Error("should not queue");
+        },
+      });
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("source setup failed");
+      expect(queued).toBe(false);
+    });
+  });
+
   it("rejects mixed source refs and local paths for ingest", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "cmd-ingest-mixed-source-path");

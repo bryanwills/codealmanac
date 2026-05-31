@@ -19,6 +19,11 @@ files:
   - viewer/jobs.css
 sources:
   - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: github-issue-11
+    type: web
+    url: https://github.com/AlmanacCode/codealmanac/issues/11
+    retrieved_at: 2026-05-31
+    note: Distinguishes the capture-sweep recursion incident from the provider child-process cascade tracked in issue #10.
 verified: 2026-05-31
 ---
 
@@ -57,7 +62,9 @@ Issue #10 remains a separate provider-process ownership risk from the single-wri
 
 ## Single-writer queue
 
-The 2026-05-28 capture-sweep incident exposed a broader run-lifecycle invariant than "one sweep should not enqueue duplicate Absorb work." The accepted architecture is a per-wiki single-writer queue for all write-capable Almanac jobs. Build, Absorb, and Garden enter the same repo-local queue, and a worker guarded by a wiki-local lock runs at most one job against that `.almanac/` directory at a time.
+The 2026-05-28 capture-sweep incident exposed a broader run-lifecycle invariant than "one sweep should not enqueue duplicate Absorb work." Issue #11 records this as distinct from issue #10's killed-provider-process risk: the sweep incident was repeated successful work over the wrong source category, so process-tree cleanup alone would not have fixed the cost spike. [@github-issue-11]
+
+The accepted architecture is a per-wiki single-writer queue for all write-capable Almanac jobs. Build, Absorb, and Garden enter the same repo-local queue, and a worker guarded by a wiki-local lock runs at most one job against that `.almanac/` directory at a time.
 
 The queue boundary should be per wiki, not global to the machine. The shared correctness boundary is the wiki source tree, run records, index, review state, and git history under one repo; two unrelated repos do not need to block each other's maintenance jobs. A global machine lock would reduce concurrency for no correctness gain when repositories have separate `.almanac/` directories.
 

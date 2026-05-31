@@ -33,6 +33,11 @@ sources:
   - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
   - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: github-issue-11
+    type: web
+    url: https://github.com/AlmanacCode/codealmanac/issues/11
+    retrieved_at: 2026-05-31
+    note: Reports the capture-sweep recursion incident, the two distinct failure causes, and the roughly 85% Codex usage spike from repeated Absorb jobs.
 status: implemented
 verified: 2026-05-29
 ---
@@ -109,7 +114,9 @@ The key state model implied by the discussion is:
 - captured hash or captured offset
 - capture status
 
-The 2026-05-28 sweep incident added a stricter automation requirement: automatic capture must be provenance-aware, idempotent, non-recursive, and cost-bounded before it invokes an LLM. The narrow bug was that `capture sweep` discovered CodeAlmanac's own Absorb transcripts and queued new Absorb jobs over prior Absorb runs. The architectural flaw was broader: once CodeAlmanac becomes a background observer of agent transcripts, the discovery layer must separate user/project work from CodeAlmanac maintenance exhaust. A session tagged or labeled `almanac` belongs to that exclusion rule: it should not be considered project evidence for automatic capture unless the user explicitly asks to ingest it.
+The 2026-05-28 sweep incident added a stricter automation requirement: automatic capture must be provenance-aware, idempotent, non-recursive, and cost-bounded before it invokes an LLM. The narrow bug was that `capture sweep` discovered CodeAlmanac's own Absorb transcripts and queued new Absorb jobs over prior Absorb runs. Issue #11 separated that recursion failure from a process-cascade failure: the immediate cost driver was repeated successful Absorb spawning, not an unbounded killed-child process tree. The reported impact was roughly 85% of the developer's Codex usage limit consumed over about four hours, which makes scheduler dedupe and pre-LLM eligibility checks a cost-control requirement rather than only a correctness nicety. [@github-issue-11]
+
+The architectural flaw was broader: once CodeAlmanac becomes a background observer of agent transcripts, the discovery layer must separate user/project work from CodeAlmanac maintenance exhaust. A session tagged or labeled `almanac` belongs to that exclusion rule: it should not be considered project evidence for automatic capture unless the user explicitly asks to ingest it.
 
 Two cheap deterministic boundaries now belong to the capture contract:
 

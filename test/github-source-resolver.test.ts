@@ -15,6 +15,17 @@ const ref: SourceRef = {
   id: "123",
 };
 
+const issueUrlRef: SourceRef = {
+  raw: "https://github.com/other/project/issues/11",
+  provider: "github",
+  kind: "issue",
+  id: "11",
+  repo: {
+    owner: "other",
+    repo: "project",
+  },
+};
+
 describe("parseGitHubRemote", () => {
   it("parses HTTPS GitHub remotes", () => {
     expect(parseGitHubRemote("https://github.com/owner/repo.git")).toEqual({
@@ -54,6 +65,9 @@ describe("resolveGitHubSource", () => {
       "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
       "gh --version": { stdout: "gh version 2.0.0\n" },
       "gh auth status": { stdout: "github.com\n" },
+      "gh pr view 123 --repo owner/repo --json title,body,url,author,baseRefName,headRefName,mergedAt,files,reviews,comments,closingIssuesReferences": {
+        stdout: '{"title":"A PR"}',
+      },
     });
 
     await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
@@ -63,6 +77,81 @@ describe("resolveGitHubSource", () => {
         repo: "owner/repo",
         url: "https://github.com/owner/repo/pull/123",
         number: "123",
+        material: '{"title":"A PR"}',
+      });
+  });
+
+  it("builds a GitHub issue source from a URL repo", async () => {
+    const runCommand = fakeRunner({
+      "gh --version": { stdout: "gh version 2.0.0\n" },
+      "gh auth status": { stdout: "github.com\n" },
+      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
+        stdout: '{"title":"An issue"}',
+      },
+    });
+
+    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+      .resolves.toEqual({
+        kind: "github.issue",
+        raw: "https://github.com/other/project/issues/11",
+        repo: "other/project",
+        url: "https://github.com/other/project/issues/11",
+        number: "11",
+        material: '{"title":"An issue"}',
+      });
+  });
+
+  it("does not require a GitHub remote when a URL contains the repo", async () => {
+    const seenCommands: string[] = [];
+    const runCommand: CommandRunner = async (command, args) => {
+      const key = [command, ...args].join(" ");
+      seenCommands.push(key);
+      if (key === "gh --version") return { stdout: "gh version 2.0.0\n", stderr: "" };
+      if (key === "gh auth status") return { stdout: "github.com\n", stderr: "" };
+      if (
+        key ===
+        "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt"
+      ) {
+        return { stdout: '{"title":"An issue"}', stderr: "" };
+      }
+      throw new Error(`unexpected command: ${key}`);
+    };
+
+    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+      .resolves.toMatchObject({
+        kind: "github.issue",
+        repo: "other/project",
+        material: '{"title":"An issue"}',
+      });
+    expect(seenCommands).not.toContain("git remote get-url origin");
+  });
+
+  it("fails before starting the agent when GitHub issue material cannot be fetched", async () => {
+    const runCommand = fakeRunner({
+      "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
+      "gh --version": { stdout: "gh version 2.0.0\n" },
+      "gh auth status": { stdout: "github.com\n" },
+      "gh issue view 11 --repo other/project --json title,body,url,author,state,comments,labels,assignees,closedAt": {
+        error: new Error("network unavailable"),
+      },
+    });
+
+    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+      .rejects.toMatchObject({
+        message: "Could not fetch GitHub issue #11.",
+        fix: expect.stringContaining("gh issue view 11 --repo other/project"),
+      });
+  });
+
+  it("checks gh before returning URL-resolved issue sources", async () => {
+    const runCommand = fakeRunner({
+      "git remote get-url origin": { stdout: "git@github.com:owner/repo.git\n" },
+      "gh --version": { error: Object.assign(new Error("not found"), { code: "ENOENT" }) },
+    });
+
+    await expect(resolveGitHubSource({ ref: issueUrlRef, cwd: "/repo", runCommand }))
+      .rejects.toMatchObject({
+        message: "GitHub ingest needs the GitHub CLI (`gh`).",
       });
   });
 

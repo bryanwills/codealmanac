@@ -15,6 +15,11 @@ sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
   - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
   - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: github-issue-11
+    type: web
+    url: https://github.com/AlmanacCode/codealmanac/issues/11
+    retrieved_at: 2026-05-31
+    note: Reports the repeated capture-sweep Absorb jobs that made transcript-range ownership a cost invariant.
 status: implemented
 verified: 2026-05-28
 ---
@@ -45,7 +50,7 @@ The per-transcript record tracks:
 
 This is stronger than whole-file hash dedupe. It lets append-only JSONL transcripts capture only new continuation while still guarding against rewrites or failed background jobs.
 
-The 2026-05-28 sweep incident made the ledger's ownership role broader than retry bookkeeping. Automatic capture must classify and reserve candidate work before invoking an LLM. The provenance boundary asks whether a transcript is real project work or CodeAlmanac maintenance exhaust such as a prior maintenance run reading another transcript. The current prevention path is provider-session policy: Build, Absorb, and Garden request non-persistent provider sessions, so new maintenance runs should not normally become future sweep input. The ownership boundary asks whether another capture already owns the transcript range; the ledger's pending cursor state reserves that range while the per-wiki operation queue serializes write-capable jobs against the wiki.
+The 2026-05-28 sweep incident made the ledger's ownership role broader than retry bookkeeping. Automatic capture must classify and reserve candidate work before invoking an LLM. The provenance boundary asks whether a transcript is real project work or CodeAlmanac maintenance exhaust such as a prior maintenance run reading another transcript. The current prevention path is provider-session policy: Build, Absorb, and Garden request non-persistent provider sessions, so new maintenance runs should not normally become future sweep input. The ownership boundary asks whether another capture already owns the transcript range; the ledger's pending cursor state reserves that range while the per-wiki operation queue serializes write-capable jobs against the wiki. Issue #11 makes that ordering concrete: repeated sweeps over the same maintenance-derived source can spend substantial model quota even when each individual Absorb job completes normally. [@github-issue-11]
 
 That ordering is the cost invariant. The LLM decides whether claimed project-work evidence contains durable wiki knowledge. Deterministic sweep and ledger code decide whether the evidence is eligible, non-recursive, and unowned before any model tokens are spent.
 
