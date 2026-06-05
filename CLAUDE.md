@@ -1,3 +1,10 @@
+> **COMPULSORY — read [`MANUAL.md`](MANUAL.md) before implementing any feature.**
+> It defines *how we build*: living architecture (the unit of work is "reshape
+> the codebase so the feature fits, then build it"), the seam-vs-machinery rule,
+> the duty to **stop and flag** when the current shape won't hold a feature
+> cleanly, and the wireframe-in-chat habit. Reason from it; don't bolt features
+> onto a misshapen base.
+
 codealmanac is a living wiki for codebases, maintained by AI coding agents. It documents what the code can't say — decisions, flows, invariants, incidents, gotchas — as atomic, interlinked markdown pages living at `.almanac/` in each repo. Primary consumer is the AI coding agent; humans benefit secondarily.
 
 **Full spec:** `/Users/rohan/Desktop/Projects/openalmanac/docs/ideas/codebase-wiki.md` — source of truth. Read it before making design changes. This file is the working context for implementation.

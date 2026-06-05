@@ -24,6 +24,10 @@ sources:
     type: transcript
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T15-28-27-019eae80-59af-7060-b6de-e0f8d96d48ca.jsonl
     note: Records the Codex-side Dosu setup experiment, including browser-auth gating, the missing pre-auth MCP config entry, and the conclusion that the deployment still needed a connected source before retrieval would work.
+  - id: moxie-comparison
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/05/rollout-2026-06-05T12-51-25-019e9957-24f5-76a3-9494-603f667f2bbf.jsonl
+    note: Records the comparison that identified Moxie Docs as a close hosted codebase-documentation competitor.
 status: active
 verified: 2026-06-09
 ---
@@ -77,6 +81,8 @@ The platform camp includes Hyper, Glean, Dust, Hebbia, Sana, Guru, and Notion AI
 [[dosu]] is a narrower managed-knowledge reference point inside the same camp. The 2026-06-09 tool-surface experiment showed a hosted curation model where source connection was not available through the observed MCP surface, and a successful `save_topic` write did not immediately reappear through `init_knowledge`. A second 2026-06-09 Codex setup session reinforced the same separation from the install side: `npx @dosu/cli setup --agent --tool codex` still left source attachment as a distinct step before retrieval could work. That makes Dosu useful as a contrast for review-gated or async-curated knowledge flows rather than a repo-owned memory artifact. [@dosu-experiment-session] [@dosu-codex-setup-session]
 
 The codebase-context camp is more crowded than the broad company-brain page originally implied. The 2026-05-31 YC CLI scan identified direct or near-direct products around codebase context, self-maintaining code knowledge bases, repository graphs, code search, specs as durable agent context, horizontal agent memory, and AI PR review. The named YC-adjacent set included Driver, Sage AI, Verba, Graphify Labs, Sourcebot, OpenSpec, Mem0, Nessie, Zep, Greptile, and cubic. That validates demand for "agents should understand the codebase" while making "AI codebase docs" a weak undifferentiated pitch. [@yc-market-scan]
+
+[[moxie-docs|Moxie Docs]] is the closest hosted codebase-docs competitor found so far because it combines GitHub App indexing, generated repo documentation, MCP context, pull-request documentation checks, and docs-only cleanup PRs. Its existence makes "AI docs for GitHub repos" too broad as CodeAlmanac positioning; the sharper contrast is governed engineering memory that lives with the repo. [@moxie-comparison]
 
 The same Bookface pass made broad "company brain" a dangerous default category for CodeAlmanac. Memoir, Peppr AI, and Dashworks already occupy versions of hosted company knowledge, living docs, and internal search across Slack, Notion, Drive, email, and other company systems. Datost and Platus show a stronger adjacent pattern: company context becomes easier to sell when attached to a vertical job such as data analysis or legal work. CodeAlmanac should therefore avoid a generic company-brain promise and describe the narrower job it owns: engineering memory and agent memory for codebases. [@yc-market-scan]
 

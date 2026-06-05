@@ -9,9 +9,13 @@ sources:
   - id: provider-setup-session
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-03 setup run that created or verified hosted provider resources, created the Render backend service after private-repository access was fixed, found that the first native Render deploy failed because the checked-out main commit did not contain backend/, replaced the native service with a Docker service after Render CLI would not convert it reliably, renamed the working service while keeping the generated Docker hostname, verified the Docker backend with production Doppler settings, registered the Almanac Bot GitHub App, stored the GitHub App secret names in Doppler, and verified production health recognized the GitHub App config.
+    note: Records the 2026-06-03 setup run that created or verified hosted provider resources, created the Render backend service after private-repository access was fixed, found that the first native Render deploy failed because the checked-out main commit did not contain backend/, replaced the native service with a Docker service after Render CLI would not convert it reliably, renamed the working service while keeping the generated Docker hostname, verified the Docker backend with production Doppler settings, registered the Almanac Bot GitHub App, stored the GitHub App secret names in Doppler, verified production health recognized the GitHub App config, and made the AlmanacCode installation visible for selected repositories.
+  - id: webhook-live-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: "Records the first live GitHub webhook backend slice: signed ping delivery accepted by Render, HMAC verification, Supabase persistence in GitHub installation/repository/event tables, Supabase pooler DATABASE_URL correction, and live smoke verification after deploy."
 status: active
-verified: 2026-06-03
+verified: 2026-06-05
 ---
 
 The hosted Almanac for GitHub environment is split between the `usealmanac` application repository and a `codealmanac` provider namespace. `usealmanac` is the code home for the hosted frontend, FastAPI backend, Modal worker scaffold, provider docs, and local deployment configuration, while `codealmanac` is the shared resource name used for Supabase, Doppler, Modal secrets, and the Render backend service [@external-providers-doc].
@@ -57,6 +61,12 @@ The required GitHub App names are `GITHUB_APP_ID`, `GITHUB_APP_CLIENT_ID`, `GITH
 The GitHub App is registered in GitHub as Almanac Bot, owned by `@rohans0509`, with App ID `3955695`, Client ID `Iv23lip5I92lhXZPzAs2`, and Doppler slug value `almanac-bot` [@provider-setup-session]. The downloaded private key file was found at `/Users/rohan/Downloads/almanac-bot.2026-06-03.private-key.pem` during setup and was stored in Doppler without printing its contents [@provider-setup-session].
 
 `GITHUB_WEBHOOK_SECRET` was generated locally and stored in Doppler for `codealmanac/prd`, `codealmanac/dev_personal`, and `codealmanac/dev` during GitHub App setup. The GitHub App metadata and private key were later stored in the same three Doppler configs, and `codealmanac/prd` contained `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_SLUG`, and `GITHUB_WEBHOOK_SECRET` after setup [@provider-setup-session]. A Render restart was requested for service `srv-d8g8nb37uimc739vnnsg`, and production `/api/health` later reported `github_app: true`; GitHub had already posted to `/api/github/webhook` and received `404` because the webhook route had not been implemented yet [@provider-setup-session].
+
+The app install flow initially showed only `@rohans0509` because the App was still private to the personal account. Making Almanac Bot public allowed installation on `AlmanacCode`, and the setup run verified that the App installation was visible for selected repositories before webhook implementation began [@provider-setup-session].
+
+The first live webhook slice is deployed on Render. `POST /api/github/webhook` verifies `X-Hub-Signature-256`, accepts valid GitHub-style deliveries with `202`, and persists delivery state into `github_installations`, `github_repositories`, and `github_events` in Supabase [@webhook-live-session]. The final live smoke against the deployed backend returned `/api/health` as `200 ok`, accepted a signed `ping` payload, and found the stored `github_events` row for installation `137830832` and sender `rohans0509` [@webhook-live-session].
+
+The database connection string was moved to the Supabase session-pooler host after the first pooler value failed. `DATABASE_URL` for `codealmanac/prd`, `codealmanac/dev_personal`, and `codealmanac/dev` now uses the `aws-1-us-east-1.pooler.supabase.com:5432` Supabase pooler form with `sslmode=require`, matching the live backend's successful SQLAlchemy connection checks [@webhook-live-session].
 
 ## Related Pages
 
