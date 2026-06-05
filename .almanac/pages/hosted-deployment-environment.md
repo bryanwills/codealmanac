@@ -14,6 +14,16 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: "Records the first live GitHub webhook backend slice: signed ping delivery accepted by Render, HMAC verification, Supabase persistence in GitHub installation/repository/event tables, Supabase pooler DATABASE_URL correction, and live smoke verification after deploy."
+  - id: pr-update-implementation-log
+    type: manual
+    note: Records the 2026-06-05 hosted PR update loop implementation decisions and verification results on the `usealmanac` dev branch; source path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/plans/2026-06-04-backend-architecture-refactor-log.md.
+  - id: pr-update-live-smoke-runbook
+    type: manual
+    note: Defines the production-readiness smoke test for the hosted GitHub App PR update loop; source path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/runbooks/pr-update-live-smoke.md.
+  - id: pr-update-production-smoke-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: Records the 2026-06-05 production smoke that retried the Almanac check after the model quota reset, fixed duplicate GitHub webhook delivery processing, redeployed Render at commit 05ead0e, and verified a same-repository Almanac bot commit on PR 12.
 status: active
 verified: 2026-06-05
 ---
@@ -67,6 +77,16 @@ The app install flow initially showed only `@rohans0509` because the App was sti
 The first live webhook slice is deployed on Render. `POST /api/github/webhook` verifies `X-Hub-Signature-256`, accepts valid GitHub-style deliveries with `202`, and persists delivery state into `github_installations`, `github_repositories`, and `github_events` in Supabase [@webhook-live-session]. The final live smoke against the deployed backend returned `/api/health` as `200 ok`, accepted a signed `ping` payload, and found the stored `github_events` row for installation `137830832` and sender `rohans0509` [@webhook-live-session].
 
 The database connection string was moved to the Supabase session-pooler host after the first pooler value failed. `DATABASE_URL` for `codealmanac/prd`, `codealmanac/dev_personal`, and `codealmanac/dev` now uses the `aws-1-us-east-1.pooler.supabase.com:5432` Supabase pooler form with `sslmode=require`, matching the live backend's successful SQLAlchemy connection checks [@webhook-live-session].
+
+## PR Update Loop State
+
+The hosted same-repository PR update loop is production-smoked as of 2026-06-05. The implemented backend records durable PR state and run rows, normalizes GitHub PR and check-action triggers, publishes one mutable check-run surface, authorizes actions through GitHub collaborator permissions, invokes Modal, receives Modal completion through an `X-Internal-Secret` route, validates returned Almanac-root bundles in the backend, delivers same-PR updates through the GitHub Git Data API, dispatches delivery through `run.delivery_kind`, and suppresses the bot loop by tracking the delivered Almanac commit SHA [@pr-update-implementation-log] [@pr-update-production-smoke-session].
+
+Repository settings are backend-owned for v1. The settings API is protected by the same internal-secret route pattern until dashboard user auth exists, same-repository behavior is controlled by `ask`, `auto`, or `disabled`, and fork follow-up behavior is disabled because follow-up PR delivery is not implemented yet. `same_pr_branch` is the only implemented delivery kind in v1, and stale fork actions now surface `fork_followup_unavailable` instead of queueing undeliverable runs [@pr-update-implementation-log].
+
+The production smoke followed the live-smoke runbook and used `AlmanacCode/codealmanac#12`. Render deployed commit `05ead0e`, the production health endpoint was green, the Almanac check reached success with the title "Almanac updated", the App committed `.almanac/pages/github-native-wiki-maintenance.md` as bot commit `09e4b706491207e3433cc264d7911839682b2196`, and the production run row reached `succeeded`, `delivered`, `same_pr_branch` with that delivered commit SHA [@pr-update-live-smoke-runbook] [@pr-update-production-smoke-session].
+
+The live smoke found one production-readiness blocker before the successful retry: duplicate GitHub webhook deliveries were recorded idempotently but still processed. The fix made duplicate deliveries stop before trigger handling, added a regression test, and redeployed before the successful smoke. Future webhook work must preserve that boundary because a duplicate `check_run.requested_action` delivery can otherwise queue duplicate Modal runs for the same pull-request head [@pr-update-production-smoke-session].
 
 ## Related Pages
 
