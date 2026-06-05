@@ -55,6 +55,12 @@ Run via `/publishcodealmanac dev`. The one rule that must never break: a
 `-dev.` prerelease must never land on the `latest` tag. If it does, fix
 forward by publishing a real stable version to `latest` immediately.
 
+The automation token lives in the `codealmanac` Doppler project (`prd` config)
+as `NPM_TOKEN` — a granular token that publishes headless. The skill fetches it
+into a temp userconfig (`doppler secrets get NPM_TOKEN … → npm publish
+--userconfig`) rather than `~/.npmrc`, whose interactive login token would
+prompt for a 2FA OTP. Same token works for stable `main` publishes.
+
 ## Why local and not CI
 
 Publishing runs from the maintainer's machine using the npm auth token in
