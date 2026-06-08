@@ -149,7 +149,7 @@ Build the first wiki for this repo. Requires the selected provider to be install
 
 #### `almanac capture [sessionFiles...]`
 
-Absorb coding-session knowledge into the wiki. Usually automatic: the installed scheduler runs `almanac capture sweep`, and the sweep invokes normal background capture jobs for quiet transcript material. Manual `capture` refuses if no `.almanac/` exists in cwd or any parent.
+Update the wiki from AI coding sessions. Usually automatic: the installed scheduler runs `almanac capture sweep`, and the sweep invokes normal background capture jobs for quiet transcript material. Manual `capture` refuses if no `.almanac/` exists in cwd or any parent.
 
 | Flag | Semantics |
 |---|---|
@@ -179,25 +179,25 @@ Scan supported app transcript stores, find quiet Claude/Codex sessions that map 
 | `--dry-run` | Discover and report eligible work without starting jobs or updating the ledger. |
 | `--json` | Emit structured sweep output. |
 
-Sweep passes the original transcript path to capture and adds cursor guidance from `.almanac/runs/capture-ledger.json`, so the Absorb agent focuses on lines/bytes after the last successful capture.
+Sweep passes the original transcript path to capture and adds cursor guidance from `.almanac/runs/capture-ledger.json`, so the capture agent focuses on lines/bytes after the last successful capture.
 
 #### `almanac ingest <paths...>`
 
-Absorb knowledge from one or more files or folders.
+Update the wiki from one or more files, folders, pull requests, issues, or URLs.
 
 | Flag | Semantics |
 |---|---|
-| `<paths...>` | One or more files/folders to use as starting context. |
+| `<paths...>` | One or more files, folders, PRs, issues, or URLs to use as starting context. |
 | `--using <provider[/model]>` | Override the configured provider/model for this run. |
 | `--foreground` | Run attached instead of starting a background job. |
 | `--json` | Emit structured JSON for background job start. Cannot be combined with `--foreground`. |
 | `-y, --yes` | Confirm non-interactively. |
 
-`ingest` maps to the internal Absorb operation with `targetKind: "path"`. The input is raw material, not the output; Absorb updates the wiki only when it finds durable project understanding.
+`ingest` maps to the internal Absorb operation with `targetKind: "path"`. The input is raw material, not the output; the agent updates the wiki only when it finds durable project understanding.
 
 #### `almanac garden`
 
-Improve the wiki as a graph: page boundaries, links, topics, hubs, stale claims, archive/supersession chains, and synthesis quality.
+Maintain the wiki as a graph: page boundaries, links, topics, hubs, stale claims, archive/supersession chains, and synthesis quality.
 
 | Flag | Semantics |
 |---|---|
@@ -613,7 +613,7 @@ almanac doctor --json | jq '.install[] | select(.status == "problem")'
 3. Ignore transcripts whose mtime is still inside the quiet window.
 4. Recover the transcript cwd/session metadata and map each transcript back to the nearest repo with `.almanac/`.
 5. Reconcile `.almanac/runs/capture-ledger.json` against background run records.
-6. Start an ordinary background `almanac capture <transcript>` job only for new eligible material, with cursor guidance telling Absorb where new lines begin.
+6. Start an ordinary background `almanac capture <transcript>` job only for new eligible material, with cursor guidance telling the capture agent where new lines begin.
 
 The scheduler is only a wakeup mechanism. Sweep owns transcript eligibility, dedupe, cursor state, and run enqueueing.
 
@@ -656,7 +656,7 @@ almanac jobs logs <run-id>
 Common causes:
 - Provider auth is missing in the scheduler environment. `launchd` has a reduced environment; the installed plist preserves PATH for user-managed CLIs, but provider login still has to work headlessly.
 - Transcript path didn't resolve or mapped to a repo without `.almanac/`. Sweep reports skip reasons; use `--dry-run --json` for structured output.
-- Absorb found no durable wiki change.
+- The writing agent found no durable wiki change.
 - Session was pure-read with no decisions or discoveries. Correct no-op.
 
 ---

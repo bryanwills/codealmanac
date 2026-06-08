@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { UserFacingError } from "../../errors.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { findEntry } from "../registry/index.js";
 
@@ -32,11 +33,15 @@ export async function resolveWikiRoot(params: {
   if (params.wiki !== undefined) {
     const entry = await findEntry({ name: params.wiki });
     if (entry === null) {
-      throw new Error(`no registered wiki named "${params.wiki}"`);
+      throw new UserFacingError(
+        `no registered wiki named "${params.wiki}"`,
+        { data: { wiki: params.wiki } },
+      );
     }
     if (!existsSync(join(entry.path, ".almanac"))) {
-      throw new Error(
+      throw new UserFacingError(
         `wiki "${params.wiki}" path is unreachable (${entry.path})`,
+        { data: { wiki: params.wiki, path: entry.path } },
       );
     }
     return entry.path;
@@ -44,8 +49,12 @@ export async function resolveWikiRoot(params: {
 
   const nearest = findNearestAlmanacDir(params.cwd);
   if (nearest === null) {
-    throw new Error(
-      "no .almanac/ found in this directory or any parent; run `almanac init` first",
+    throw new UserFacingError(
+      "no .almanac/ found in this directory or any parent",
+      {
+        outcome: "needs-action",
+        fix: "run: almanac init",
+      },
     );
   }
   return nearest;

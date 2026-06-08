@@ -19,10 +19,10 @@ export {
   type WebSourceRef,
 } from "./source-ref.js";
 export type {
-  GitHubSource,
-  Source,
-  WebSource,
-} from "./source.js";
+  GitHubIngestSource,
+  IngestSource,
+  WebIngestSource,
+} from "./input-source.js";
 export {
   startIngestRun as startRun,
   IngestInputError,

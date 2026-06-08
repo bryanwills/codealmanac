@@ -12,16 +12,19 @@ import {
   type HealthScope,
 } from "../health/scope.js";
 
-export interface MigrateLegacySourcesOptions {
+export interface LegacySourceMigrationOptions {
   repoRoot: string;
   topic?: string;
   stdinSlugs?: string[];
 }
 
-export interface MigrateLegacySourcesResult {
+export interface LegacySourceMigrationResult {
   migrated_pages: number;
   unfixable_sources: { slug: string; source: string }[];
 }
+
+export type MigrateLegacySourcesOptions = LegacySourceMigrationOptions;
+export type MigrateLegacySourcesResult = LegacySourceMigrationResult;
 
 export interface SourceFrontmatterFixResult {
   output: string;
@@ -116,14 +119,14 @@ export async function writeSourceFrontmatterFix(
   await rename(tmp, filePath);
 }
 
-export async function migrateLegacySources(
-  options: MigrateLegacySourcesOptions,
-): Promise<MigrateLegacySourcesResult> {
+export async function migrateLegacySourceFrontmatter(
+  options: LegacySourceMigrationOptions,
+): Promise<LegacySourceMigrationResult> {
   const almanacDir = join(options.repoRoot, ".almanac");
   await ensureFreshIndex({ repoRoot: options.repoRoot });
   const db = openIndex(join(almanacDir, "index.db"));
   try {
-    return await migrateLegacySourceFrontmatter(
+    return await migrateLegacySourceFrontmatterInDb(
       db,
       resolveHealthScope(db, options),
     );
@@ -133,10 +136,12 @@ export async function migrateLegacySources(
   }
 }
 
-export async function migrateLegacySourceFrontmatter(
+export const migrateLegacySources = migrateLegacySourceFrontmatter;
+
+export async function migrateLegacySourceFrontmatterInDb(
   db: Database.Database,
   scope: HealthScope,
-): Promise<MigrateLegacySourcesResult> {
+): Promise<LegacySourceMigrationResult> {
   const rows = db
     .prepare<[], { slug: string; file_path: string }>(
       `SELECT slug, file_path FROM pages

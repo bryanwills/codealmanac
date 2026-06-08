@@ -4,7 +4,7 @@ This repo has a `.almanac/` directory. It's a **living wiki** written for AI age
 
 You are the primary reader. When the user asks you to do something, **check the wiki before you touch related code** — it will often answer the question the user didn't think to ask ("we tried that in March, here's why it broke").
 
-You usually don't write the wiki during normal work. Scheduled auto-capture periodically runs `almanac capture sweep`, waits for Claude/Codex transcripts to go quiet, and starts an Absorb job that writes or updates pages for new material. Your job during the session is: **read, use, occasionally fix obvious errors.**
+You usually don't write the wiki during normal work. Scheduled auto-capture periodically runs `almanac capture sweep`, waits for Claude/Codex transcripts to go quiet, and starts a background capture job that writes or updates pages for new material. Your job during the session is: **read, use, occasionally fix obvious errors.**
 
 ---
 
@@ -165,7 +165,7 @@ You don't write anything. After the transcript has been quiet long enough, the s
 
 ## What runs automatically (don't invoke these)
 
-- **`almanac capture sweep`** — scans quiet Claude/Codex transcripts and starts background Absorb jobs for new material. The installed scheduler runs this for you.
+- **`almanac capture sweep`** — scans quiet Claude/Codex transcripts and starts background capture jobs for new material. The installed scheduler runs this for you.
 - **`almanac reindex`** — runs implicitly before every query when pages changed.
 
 Run `almanac init` yourself when you are creating the first wiki for a repo.
@@ -215,7 +215,7 @@ almanac capture sweep --dry-run
 almanac jobs
 ls -lah .almanac/runs/
 ```
-No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Capture ran but wrote nothing -> the Absorb run decided there was no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
+No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Capture ran but wrote nothing -> the capture run found no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
 
 ---
 

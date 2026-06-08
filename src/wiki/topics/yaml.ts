@@ -4,6 +4,7 @@ import { dirname } from "node:path";
 
 import yaml from "js-yaml";
 
+import { UserFacingError } from "../../errors.js";
 import { toKebabCase } from "../../slug.js";
 
 /**
@@ -65,7 +66,10 @@ export async function loadTopicsFile(path: string): Promise<TopicsFile> {
     parsed = yaml.load(raw);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`topics.yaml at ${path} is not valid YAML: ${message}`);
+    throw new UserFacingError(
+      `topics.yaml at ${path} is not valid YAML: ${message}`,
+      { data: { path } },
+    );
   }
 
   if (parsed === null || parsed === undefined) {
@@ -73,7 +77,10 @@ export async function loadTopicsFile(path: string): Promise<TopicsFile> {
   }
 
   if (typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(`topics.yaml at ${path} must be a mapping`);
+    throw new UserFacingError(
+      `topics.yaml at ${path} must be a mapping`,
+      { data: { path } },
+    );
   }
 
   const obj = parsed as Record<string, unknown>;
@@ -82,7 +89,10 @@ export async function loadTopicsFile(path: string): Promise<TopicsFile> {
     return { topics: [] };
   }
   if (!Array.isArray(rawTopics)) {
-    throw new Error(`topics.yaml at ${path} — "topics" must be a list`);
+    throw new UserFacingError(
+      `topics.yaml at ${path} — "topics" must be a list`,
+      { data: { path, field: "topics" } },
+    );
   }
 
   const topics: TopicEntry[] = [];

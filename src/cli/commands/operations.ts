@@ -1,5 +1,5 @@
 import type { CommandResult } from "../helpers.js";
-import { renderOutcome } from "../outcome.js";
+import { renderError, renderOutcome } from "../outcome.js";
 import type { HarnessEvent } from "../../harness/events.js";
 import * as capture from "../../capture/index.js";
 import * as ingest from "../../ingest/index.js";
@@ -250,25 +250,7 @@ function renderOperationError(
   err: unknown,
   json: boolean | undefined,
 ): CommandResult {
-  const message = err instanceof Error ? err.message : String(err);
-  if (err instanceof operations.OperationError) {
-    if (err.outcome === "needs-action" && err.fix !== undefined) {
-      return renderOutcome(
-        {
-          type: "needs-action",
-          message: err.message,
-          fix: err.fix,
-          data: err.data,
-        },
-        { json },
-      );
-    }
-    return renderOutcome(
-      { type: "error", message: err.message, data: err.data },
-      { json },
-    );
-  }
-  return renderOutcome({ type: "error", message }, { json });
+  return renderError(err, { json });
 }
 
 function jsonForegroundError(json: boolean | undefined): CommandResult {

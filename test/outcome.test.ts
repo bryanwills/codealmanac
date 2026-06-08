@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderOutcome } from "../src/cli/outcome.js";
+import { renderError, renderOutcome } from "../src/cli/outcome.js";
+import { UserFacingError } from "../src/errors.js";
 
 describe("CommandOutcome renderer", () => {
   it("renders the four shapes as JSON", () => {
@@ -27,5 +28,24 @@ describe("CommandOutcome renderer", () => {
     expect(result.stdout).toBe("");
     expect(result.stderr).toContain("almanac: no wiki");
     expect(result.stderr).toContain("run: almanac init");
+  });
+
+  it("renders user-facing errors through the same outcome contract", () => {
+    const result = renderError(
+      new UserFacingError("no wiki", {
+        outcome: "needs-action",
+        fix: "run: almanac init",
+        data: { cwd: "/tmp/project" },
+      }),
+      { json: true },
+    );
+
+    expect(result.stderr).toBe("");
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      type: "needs-action",
+      message: "no wiki",
+      fix: "run: almanac init",
+      data: { cwd: "/tmp/project" },
+    });
   });
 });

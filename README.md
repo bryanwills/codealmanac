@@ -92,7 +92,7 @@ Almanac gives agents durable project memory:
 - **Atomic pages**: one markdown page per stable concept, flow, decision, or gotcha.
 - **Code-aware search**: find pages that mention a file or folder before editing it.
 - **Topic graph**: organize pages into a DAG instead of one huge root instruction file.
-- **Scheduled maintenance**: absorb quiet AI coding transcripts and periodically garden the wiki graph.
+- **Scheduled maintenance**: capture quiet AI coding transcripts and periodically maintain the wiki graph.
 - **Local-only storage**: pages live in `.almanac/` inside the repo; the global registry stays under `~/.almanac/`.
 - **Git-reviewed output**: wiki edits show up in `git status` like any other change.
 
@@ -121,7 +121,7 @@ Almanac has two kinds of commands:
 - **Write-capable lifecycle commands**: `init`, `capture`, `ingest`, and `garden` can invoke your configured AI provider.
 - **Local query and organization commands**: `search`, `show`, `topics`, `tag`, `health`, `list`, `jobs`, and `automation` operate on local files, SQLite, or run records.
 
-Scheduled automation runs `almanac capture sweep` and `almanac garden`. The sweep scans Claude and Codex transcript stores, ignores transcripts from before automation was enabled, waits for active transcripts to become quiet, maps each transcript back to the nearest repo with `.almanac/`, and starts ordinary background capture jobs for new material. Garden periodically audits and improves the wiki graph.
+Scheduled automation runs `almanac capture sweep` and `almanac garden`. The sweep scans Claude and Codex transcript stores, ignores transcripts from before automation was enabled, waits for active transcripts to become quiet, maps each transcript back to the nearest repo with `.almanac/`, and starts ordinary background capture jobs for new material. Garden periodically maintains the wiki graph.
 
 Capture writes nothing if nothing in the session meets the notability bar. Silence is a valid outcome.
 
@@ -184,10 +184,10 @@ Almanac never stores provider credentials. Auth stays in each provider's normal 
 | `almanac topics list` | Show the topic graph. |
 | `almanac tag <page> <topic...>` | Add topics to a page. |
 | `almanac health` | Check wiki graph integrity. |
-| `almanac capture <transcript>` | Manually absorb a session transcript. |
+| `almanac capture <transcript>` | Update the wiki from a session transcript. |
 | `almanac capture sweep --dry-run --json` | Preview scheduled-capture candidates. |
-| `almanac ingest docs/adr.md` | Absorb files or folders into the wiki. |
-| `almanac garden` | Audit and improve the wiki graph. |
+| `almanac ingest docs/adr.md` | Update the wiki from files or folders. |
+| `almanac garden` | Maintain the wiki graph. |
 | `almanac jobs` | List local background runs. |
 | `almanac update` | Check npm and install the latest Almanac if one is available. |
 | `almanac automation install --every 2h` | Install or adjust scheduled capture and Garden. |

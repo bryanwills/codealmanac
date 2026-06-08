@@ -3,14 +3,14 @@ import { resolve } from "node:path";
 import {
   resolveGitHubSource,
 } from "./github.js";
-import type { Source } from "./source.js";
+import type { IngestSource } from "./input-source.js";
 import { parseSourceRef, type SourceRef } from "./source-ref.js";
 
 export type ResolvedIngestInput =
   | { kind: "path"; targets: string[]; paths: string[] }
-  | { kind: "source"; targets: string[]; sources: Source[] };
+  | { kind: "source"; targets: string[]; sources: IngestSource[] };
 
-export type ResolveSourceFn = (ref: SourceRef, cwd: string) => Promise<Source>;
+export type ResolveSourceFn = (ref: SourceRef, cwd: string) => Promise<IngestSource>;
 
 export interface ResolveIngestInputOptions {
   cwd: string;
@@ -49,7 +49,7 @@ export async function resolveIngestInput(
 
   if (sourceRefs.length > 0) {
     const resolveSource = options.resolveSource ?? defaultResolveSource;
-    const sources: Source[] = [];
+    const sources: IngestSource[] = [];
     for (const sourceRef of sourceRefs) {
       sources.push(await resolveSource(sourceRef, options.cwd));
     }
@@ -74,7 +74,7 @@ export async function resolveIngestInput(
   };
 }
 
-function defaultResolveSource(ref: SourceRef, cwd: string): Promise<Source> {
+function defaultResolveSource(ref: SourceRef, cwd: string): Promise<IngestSource> {
   if (ref.provider === "github") {
     return resolveGitHubSource({ ref, cwd });
   }

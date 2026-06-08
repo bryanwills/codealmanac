@@ -11,6 +11,7 @@ import {
   lifecycleForegroundEventHandler,
 } from "../src/cli/register-wiki-lifecycle-commands.js";
 import type { SetupResult } from "../src/cli/commands/setup/index.js";
+import { withTempHome } from "./helpers.js";
 
 /**
  * Unit tests for the `codealmanac` bare-binary routing logic.
@@ -695,5 +696,47 @@ describe("run() — codealmanac-setup shortcut routing", () => {
     expect(announceMock).not.toHaveBeenCalled();
     expect(scheduleMock).not.toHaveBeenCalled();
     expect(setupMock).not.toHaveBeenCalled();
+  });
+
+  it("renders uncaught user-facing command errors as JSON when --json is present", async () => {
+    await withTempHome(async (home) => {
+      const previousCwd = process.cwd();
+      const previousExitCode = process.exitCode;
+      const origStdout = process.stdout.write.bind(process.stdout);
+      const origStderr = process.stderr.write.bind(process.stderr);
+      let stdout = "";
+      let stderr = "";
+      process.stdout.write = ((chunk: string | Uint8Array) => {
+        stdout += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+        return true;
+      }) as typeof process.stdout.write;
+      process.stderr.write = ((chunk: string | Uint8Array) => {
+        stderr += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+        return true;
+      }) as typeof process.stderr.write;
+      process.chdir(home);
+      try {
+        await run(
+          ["/abs/node", "/abs/path/almanac", "search", "anything", "--json"],
+          {
+            announceUpdate: () => {},
+            scheduleUpdateCheck: () => {},
+            runInternalUpdateCheck: async () => {},
+          },
+        );
+      } finally {
+        process.chdir(previousCwd);
+        process.exitCode = previousExitCode;
+        process.stdout.write = origStdout;
+        process.stderr.write = origStderr;
+      }
+
+      expect(stderr).toBe("");
+      expect(JSON.parse(stdout)).toMatchObject({
+        type: "needs-action",
+        message: "no .almanac/ found in this directory or any parent",
+        fix: "run: almanac init",
+      });
+    });
   });
 });

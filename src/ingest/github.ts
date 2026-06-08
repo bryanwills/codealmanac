@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 import { OperationError } from "../operations/errors.js";
-import type { GitHubSource } from "./source.js";
+import type { GitHubIngestSource } from "./input-source.js";
 import type { SourceRef } from "./source-ref.js";
 
 const execFileAsync = promisify(execFile);
@@ -28,7 +28,7 @@ export async function resolveGitHubSource(args: {
   ref: Extract<SourceRef, { provider: "github" }>;
   cwd: string;
   runCommand?: CommandRunner;
-}): Promise<GitHubSource> {
+}): Promise<GitHubIngestSource> {
   const runCommand = args.runCommand ?? defaultCommandRunner;
   const repo = args.ref.repo ?? await resolveRepoFromRemote(runCommand, args.cwd);
   if (repo === null) throw githubRemoteError();

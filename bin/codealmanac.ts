@@ -1,4 +1,5 @@
 import { checkSqliteAbi } from "../src/abi-guard.js";
+import { renderErrorText } from "../src/cli/outcome.js";
 
 // ABI guard: detect better-sqlite3 binding mismatch before commands that may
 // touch the indexer. Skip setup/version/update-only paths so a fresh
@@ -15,8 +16,7 @@ if (shouldCheckSqliteAbi(process.argv)) {
 const { run } = await import("../src/cli.js");
 
 run(process.argv).catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err);
-  process.stderr.write(`almanac: ${message}\n`);
+  process.stderr.write(renderErrorText(err));
   process.exit(1);
 });
 

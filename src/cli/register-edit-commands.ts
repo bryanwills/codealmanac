@@ -168,11 +168,11 @@ export function registerEditCommands(program: Command): void {
 
   const migrate = program
     .command("migrate")
-    .description("run deterministic wiki migrations");
+    .description("run deterministic wiki-file migrations");
 
   migrate
     .command("legacy-sources")
-    .description("rewrite legacy files/source frontmatter into structured sources")
+    .description("convert legacy files/source frontmatter into structured sources")
     .option("--topic <name>", "scope to a topic + its descendants")
     .option("--stdin", "read page slugs from stdin (limit to these pages)")
     .option("--wiki <name>", "target a specific registered wiki")

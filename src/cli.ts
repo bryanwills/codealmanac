@@ -4,7 +4,9 @@ import { basename } from "node:path";
 import { Command } from "commander";
 
 import { runSetup } from "./cli/commands/setup/index.js";
+import { emit } from "./cli/helpers.js";
 import { configureGroupedHelp } from "./cli/help.js";
+import { renderError } from "./cli/outcome.js";
 import {
   parseAutomationInstallFlags,
   tryParseSetupShortcut,
@@ -95,7 +97,11 @@ export async function run(argv: string[], deps: RunDeps = {}): Promise<void> {
   });
   configureGroupedHelp(program);
 
-  await program.parseAsync(argv);
+  try {
+    await program.parseAsync(argv);
+  } catch (err: unknown) {
+    emit(renderError(err, { json: argv.slice(2).includes("--json") }));
+  }
 }
 
 async function tryRunInternalJob(args: string[]): Promise<boolean> {

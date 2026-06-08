@@ -18,13 +18,11 @@ import {
   readConfigWithOrigins,
   serializeConfig,
 } from "../../config/index.js";
+import type { CommandResult } from "../helpers.js";
+import { renderError, renderOutcome } from "../outcome.js";
 import { formatTextTable } from "./table.js";
 
-export interface ConfigResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-}
+export type ConfigResult = CommandResult;
 
 export async function runConfigList(opts: {
   json?: boolean;
@@ -81,27 +79,18 @@ export async function runConfigSet(opts: {
   const key = parseConfigKey(opts.key);
   if (key === null) return unknownKey(opts.key);
   if (opts.project === true && isUserLevelOnlyKey(key)) {
-    return {
-      stdout: "",
-      stderr: `almanac: ${key} is user-level only.\n`,
-      exitCode: 1,
-    };
+    return error(`${key} is user-level only`);
   }
   if (opts.value === undefined) {
-    return {
-      stdout: "",
-      stderr: `almanac: missing value for ${key}.\n`,
-      exitCode: 1,
-    };
+    return error(`missing value for ${key}`);
   }
   try {
     const file = targetConfigPath(opts.project === true);
     if (file === null) {
-      return {
-        stdout: "",
-        stderr: "almanac: no .almanac/ found for project config.\n",
-        exitCode: 1,
-      };
+      return needsAction(
+        "no .almanac/ found for project config",
+        "run: almanac init",
+      );
     }
     const next = setConfigValue(await readConfig({ cwd: process.cwd() }), key, opts.value);
     const raw = ensureRawObject(await readRawConfig(file));
@@ -112,8 +101,7 @@ export async function runConfigSet(opts: {
         `${opts.project === true ? " in project config" : ""}.\n`,
     );
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { stdout: "", stderr: `almanac: ${msg}\n`, exitCode: 1 };
+    return renderError(err);
   }
 }
 
@@ -124,19 +112,14 @@ export async function runConfigUnset(opts: {
   const key = parseConfigKey(opts.key);
   if (key === null) return unknownKey(opts.key);
   if (opts.project === true && isUserLevelOnlyKey(key)) {
-    return {
-      stdout: "",
-      stderr: `almanac: ${key} is user-level only.\n`,
-      exitCode: 1,
-    };
+    return error(`${key} is user-level only`);
   }
   const file = targetConfigPath(opts.project === true);
   if (file === null) {
-    return {
-      stdout: "",
-      stderr: "almanac: no .almanac/ found for project config.\n",
-      exitCode: 1,
-    };
+    return needsAction(
+      "no .almanac/ found for project config",
+      "run: almanac init",
+    );
   }
   const raw = ensureRawObject(await readRawConfig(file));
   deleteRawConfigValue(raw, key);
@@ -147,17 +130,21 @@ export async function runConfigUnset(opts: {
 }
 
 function unknownKey(key: string): ConfigResult {
-  return {
-    stdout: "",
-    stderr:
-      `almanac: unknown config key '${key}'. ` +
-      `Expected one of: ${CONFIG_KEYS.join(", ")}.\n`,
-    exitCode: 1,
-  };
+  return error(
+    `unknown config key '${key}'. Expected one of: ${CONFIG_KEYS.join(", ")}`,
+  );
 }
 
 function ok(stdout: string): ConfigResult {
   return { stdout, stderr: "", exitCode: 0 };
+}
+
+function error(message: string): ConfigResult {
+  return renderOutcome({ type: "error", message });
+}
+
+function needsAction(message: string, fix: string): ConfigResult {
+  return renderOutcome({ type: "needs-action", message, fix });
 }
 
 function targetConfigPath(project: boolean): string | null {

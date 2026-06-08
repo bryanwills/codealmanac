@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 
 import yaml from "js-yaml";
 
+import { UserFacingError } from "../errors.js";
 import { toKebabCase } from "../slug.js";
 
 export type ReviewStatus = "open" | "decided" | "applied";
@@ -51,18 +52,27 @@ export async function loadReviewFile(path: string): Promise<ReviewFile> {
     parsed = yaml.load(raw);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`review.yaml at ${path} is not valid YAML: ${message}`);
+    throw new UserFacingError(
+      `review.yaml at ${path} is not valid YAML: ${message}`,
+      { data: { path } },
+    );
   }
 
   if (parsed === null || parsed === undefined) return { version: 1, items: [] };
   if (typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(`review.yaml at ${path} must be a mapping`);
+    throw new UserFacingError(
+      `review.yaml at ${path} must be a mapping`,
+      { data: { path } },
+    );
   }
 
   const obj = parsed as Record<string, unknown>;
   const version = obj.version === undefined ? 1 : obj.version;
   if (version !== 1) {
-    throw new Error(`review.yaml at ${path} has unsupported version ${String(version)}`);
+    throw new UserFacingError(
+      `review.yaml at ${path} has unsupported version ${String(version)}`,
+      { data: { path, version } },
+    );
   }
 
   const rawItems = obj.items;
@@ -70,19 +80,28 @@ export async function loadReviewFile(path: string): Promise<ReviewFile> {
     return { version: 1, items: [] };
   }
   if (!Array.isArray(rawItems)) {
-    throw new Error(`review.yaml at ${path} - "items" must be a list`);
+    throw new UserFacingError(
+      `review.yaml at ${path} - "items" must be a list`,
+      { data: { path, field: "items" } },
+    );
   }
 
   const items: ReviewItem[] = rawItems.map((item, index) => {
     if (typeof item !== "object" || item === null || Array.isArray(item)) {
-      throw new Error(`review.yaml at ${path} - item ${index + 1} must be a mapping`);
+      throw new UserFacingError(
+        `review.yaml at ${path} - item ${index + 1} must be a mapping`,
+        { data: { path, index: index + 1 } },
+      );
     }
     return normalizeReviewItem(item as Record<string, unknown>, index + 1, path);
   });
   const seenIds = new Set<string>();
   for (const item of items) {
     if (seenIds.has(item.id)) {
-      throw new Error(`review.yaml at ${path} contains duplicate id "${item.id}"`);
+      throw new UserFacingError(
+        `review.yaml at ${path} contains duplicate id "${item.id}"`,
+        { data: { path, id: item.id } },
+      );
     }
     seenIds.add(item.id);
   }
@@ -179,7 +198,10 @@ function requiredString(
   path: string,
 ): string {
   if (typeof value !== "string" || value.trim().length === 0) {
-    throw new Error(`review.yaml at ${path} - item ${index} requires non-empty "${key}"`);
+    throw new UserFacingError(
+      `review.yaml at ${path} - item ${index} requires non-empty "${key}"`,
+      { data: { path, index, field: key } },
+    );
   }
   return value;
 }
@@ -188,8 +210,9 @@ function requiredStatus(value: unknown, index: number, path: string): ReviewStat
   if (value === "open" || value === "decided" || value === "applied") {
     return value;
   }
-  throw new Error(
+  throw new UserFacingError(
     `review.yaml at ${path} - item ${index} has invalid "status" (expected open, decided, or applied)`,
+    { data: { path, index, field: "status" } },
   );
 }
 

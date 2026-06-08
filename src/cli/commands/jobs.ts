@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 
 import type { CommandResult } from "../helpers.js";
-import { renderOutcome } from "../outcome.js";
+import { renderError, renderOutcome } from "../outcome.js";
+import { UserFacingError } from "../../errors.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { formatTextTable } from "./table.js";
 import {
@@ -267,12 +268,14 @@ function resolveWikiOrResult(
 ): string | CommandResult {
   const repoRoot = findNearestAlmanacDir(cwd);
   if (repoRoot !== null) return repoRoot;
-  return renderOutcome(
-    {
-      type: "needs-action",
-      message: "no .almanac/ found in this directory or any parent",
-      fix: "run: almanac init",
-    },
+  return renderError(
+    new UserFacingError(
+      "no .almanac/ found in this directory or any parent",
+      {
+        outcome: "needs-action",
+        fix: "run: almanac init",
+      },
+    ),
     { json },
   );
 }

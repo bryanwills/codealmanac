@@ -47,7 +47,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
   const capture = program
     .command("capture [sessionFiles...]")
     .alias("c")
-    .description("absorb coding-session knowledge into the wiki")
+    .description("update the wiki from AI coding sessions")
     .option("--app <app>", "source app: claude, codex, cursor, or generic")
     .option("--session <id>", "target a specific session by ID")
     .option("--since <duration-or-date>", "capture sessions since a time")
@@ -101,7 +101,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
 
   program
     .command("ingest <paths...>")
-    .description("absorb knowledge from files, folders, or source refs")
+    .description("update the wiki from files, folders, PRs, issues, or URLs")
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
@@ -137,7 +137,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
 
   program
     .command("garden")
-    .description("clean up, reconcile, and improve the wiki")
+    .description("maintain wiki structure, links, topics, and source hygiene")
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")

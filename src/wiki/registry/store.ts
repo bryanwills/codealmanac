@@ -2,6 +2,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 import { getGlobalAlmanacDir, getRegistryPath } from "../../paths.js";
+import { UserFacingError } from "../../errors.js";
 
 /**
  * One entry in `~/.almanac/registry.json`.
@@ -26,10 +27,10 @@ export interface RegistryEntry {
  * rather than silently clobbering the user's data.
  */
 export async function readRegistry(): Promise<RegistryEntry[]> {
-  const path = getRegistryPath();
+  const registryPath = getRegistryPath();
   let raw: string;
   try {
-    raw = await readFile(path, "utf8");
+    raw = await readFile(registryPath, "utf8");
   } catch (err: unknown) {
     if (isNodeError(err) && err.code === "ENOENT") {
       return [];
@@ -47,11 +48,17 @@ export async function readRegistry(): Promise<RegistryEntry[]> {
     parsed = JSON.parse(trimmed);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`registry at ${path} is not valid JSON: ${message}`);
+    throw new UserFacingError(
+      `registry at ${registryPath} is not valid JSON: ${message}`,
+      { data: { path: registryPath } },
+    );
   }
 
   if (!Array.isArray(parsed)) {
-    throw new Error(`registry at ${path} must be a JSON array`);
+    throw new UserFacingError(
+      `registry at ${registryPath} must be a JSON array`,
+      { data: { path: registryPath } },
+    );
   }
 
   // Validate every entry. We do NOT silently coerce missing `name` or
@@ -61,16 +68,25 @@ export async function readRegistry(): Promise<RegistryEntry[]> {
   // error is strictly better than limping along with corrupt data.
   return parsed.map((item, idx) => {
     if (typeof item !== "object" || item === null) {
-      throw new Error(`registry entry ${idx} is not an object`);
+      throw new UserFacingError(
+        `registry entry ${idx} is not an object`,
+        { data: { path: registryPath, index: idx } },
+      );
     }
     const e = item as Record<string, unknown>;
     const name = typeof e.name === "string" ? e.name : "";
     const path = typeof e.path === "string" ? e.path : "";
     if (name.length === 0) {
-      throw new Error(`registry entry ${idx} is missing a non-empty "name"`);
+      throw new UserFacingError(
+        `registry entry ${idx} is missing a non-empty "name"`,
+        { data: { path: registryPath, index: idx, field: "name" } },
+      );
     }
     if (path.length === 0) {
-      throw new Error(`registry entry ${idx} is missing a non-empty "path"`);
+      throw new UserFacingError(
+        `registry entry ${idx} is missing a non-empty "path"`,
+        { data: { path: registryPath, index: idx, field: "path" } },
+      );
     }
     return {
       name,

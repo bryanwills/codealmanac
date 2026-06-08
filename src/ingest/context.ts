@@ -1,5 +1,5 @@
 import type { ResolvedIngestInput } from "./input.js";
-import type { Source } from "./source.js";
+import type { IngestSource } from "./input-source.js";
 
 export function renderIngestContext(input: ResolvedIngestInput): string {
   if (input.kind === "source") return sourceIngestContext(input.sources);
@@ -11,7 +11,7 @@ export function renderIngestContext(input: ResolvedIngestInput): string {
   ].join("\n");
 }
 
-function sourceIngestContext(sources: Source[]): string {
+function sourceIngestContext(sources: IngestSource[]): string {
   const lines = [
     "Command context:",
     "- Command: ingest",

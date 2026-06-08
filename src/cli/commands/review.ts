@@ -8,12 +8,10 @@ import {
   summaryFromMarkdown,
   writeReviewFile,
 } from "../../review/store.js";
+import type { CommandResult } from "../helpers.js";
+import { renderOutcome } from "../outcome.js";
 
-export interface ReviewCommandOutput {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-}
+export type ReviewCommandOutput = CommandResult;
 
 export interface ReviewOptions {
   cwd: string;
@@ -72,11 +70,7 @@ export async function runReviewList(
 ): Promise<ReviewCommandOutput> {
   const status = options.status ?? "open";
   if (!isStatusFilter(status)) {
-    return {
-      stdout: "",
-      stderr: "almanac: review list --status must be open, decided, applied, or all\n",
-      exitCode: 1,
-    };
+    return errorResult("review list --status must be open, decided, applied, or all", options.json);
   }
 
   const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
@@ -120,11 +114,10 @@ export async function runReviewDecide(
   if ("error" in found) return found.error;
   const item = found.item;
   if (item.status === "applied") {
-    return {
-      stdout: "",
-      stderr: `almanac: review decide cannot change an applied item; reopen ${item.id} first\n`,
-      exitCode: 1,
-    };
+    return errorResult(
+      `review decide cannot change an applied item; reopen ${item.id} first`,
+      options.json,
+    );
   }
   item.status = "decided";
   item.decision = markdown;
@@ -145,11 +138,10 @@ export async function runReviewApply(
   if ("error" in found) return found.error;
   const item = found.item;
   if (item.status !== "decided") {
-    return {
-      stdout: "",
-      stderr: `almanac: review apply requires a decided item (${item.id} is ${item.status})\n`,
-      exitCode: 1,
-    };
+    return errorResult(
+      `review apply requires a decided item (${item.id} is ${item.status})`,
+      options.json,
+    );
   }
   item.status = "applied";
   item.application = markdown;
@@ -191,11 +183,7 @@ async function findReviewItem(options: {
   const item = file.items.find((candidate) => candidate.id === options.id);
   if (item === undefined) {
     return {
-      error: {
-        stdout: "",
-        stderr: `almanac: no review item "${options.id}"\n`,
-        exitCode: 1,
-      },
+      error: errorResult(`no review item "${options.id}"`),
     };
   }
   return { file, path, item };
@@ -234,11 +222,7 @@ function readMarkdown(options: ReviewOptions): string | null {
 }
 
 function missingMarkdown(commandName: string): ReviewCommandOutput {
-  return {
-    stdout: "",
-    stderr: `almanac: ${commandName} requires markdown text or piped stdin\n`,
-    exitCode: 1,
-  };
+  return errorResult(`${commandName} requires markdown text or piped stdin`);
 }
 
 function timestamp(now?: Date): string {
@@ -247,6 +231,10 @@ function timestamp(now?: Date): string {
 
 function ok(stdout: string): ReviewCommandOutput {
   return { stdout, stderr: "", exitCode: 0 };
+}
+
+function errorResult(message: string, json?: boolean): ReviewCommandOutput {
+  return renderOutcome({ type: "error", message }, { json });
 }
 
 function isStatusFilter(value: string): value is ReviewStatus | "all" {

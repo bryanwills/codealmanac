@@ -1,5 +1,6 @@
 import { readConfig } from "../config/index.js";
 import type { HarnessProviderId } from "../harness/types.js";
+import { OperationError } from "./errors.js";
 import type { OperationProviderSelection } from "./types.js";
 
 export function parseUsing(value: string | undefined): OperationProviderSelection {
@@ -8,8 +9,9 @@ export function parseUsing(value: string | undefined): OperationProviderSelectio
   }
   const [rawProvider, ...modelParts] = value.split("/");
   if (!isProviderId(rawProvider)) {
-    throw new Error(
+    throw new OperationError(
       `invalid --using "${value}" (expected claude, codex, or cursor)`,
+      { data: { using: value } },
     );
   }
   const model = modelParts.join("/");

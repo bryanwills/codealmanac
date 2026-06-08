@@ -10,6 +10,7 @@ import type {
   StartBackgroundProcess,
   StartForegroundProcess,
 } from "./types.js";
+import { OperationError } from "./errors.js";
 import { createOperationRunSpec, runOperationProcess } from "./run.js";
 
 export interface BuildOperationOptions {
@@ -47,8 +48,13 @@ export async function runBuildOperation(
   const repoRoot = init.entry.path;
   const pageCount = await countWikiPages(repoRoot);
   if (pageCount > 0 && options.force !== true) {
-    throw new Error(
+    throw new OperationError(
       `.almanac/ already initialized with ${pageCount} page${pageCount === 1 ? "" : "s"}; pass --force to rebuild`,
+      {
+        outcome: "needs-action",
+        fix: "run: almanac init --force",
+        data: { pageCount },
+      },
     );
   }
   const spec = await createBuildRunSpec({

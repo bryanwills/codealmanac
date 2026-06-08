@@ -1,4 +1,5 @@
 import type { CommandResult } from "./helpers.js";
+import { UserFacingError } from "../errors.js";
 
 export type CommandOutcome =
   | {
@@ -53,6 +54,41 @@ export function renderOutcome(
     stdout: opts.stdout ?? `${outcome.message}\n`,
     stderr: "",
     exitCode,
+  };
+}
+
+export function renderError(
+  err: unknown,
+  opts: { json?: boolean; exitCode?: number; stdout?: string } = {},
+): CommandResult {
+  return renderOutcome(outcomeFromError(err), opts);
+}
+
+export function renderErrorText(err: unknown): string {
+  const outcome = outcomeFromError(err);
+  if (outcome.type === "needs-action") {
+    return `almanac: ${outcome.message}\n${outcome.fix}\n`;
+  }
+  return `almanac: ${outcome.message}\n`;
+}
+
+function outcomeFromError(
+  err: unknown,
+): Extract<CommandOutcome, { type: "error" | "needs-action" }> {
+  if (err instanceof UserFacingError) {
+    if (err.outcome === "needs-action" && err.fix !== undefined) {
+      return {
+        type: "needs-action",
+        message: err.message,
+        fix: err.fix,
+        data: err.data,
+      };
+    }
+    return { type: "error", message: err.message, data: err.data };
+  }
+  return {
+    type: "error",
+    message: err instanceof Error ? err.message : String(err),
   };
 }
 

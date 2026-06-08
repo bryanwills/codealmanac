@@ -1,6 +1,6 @@
-export type Source = GitHubSource | WebSource;
+export type IngestSource = GitHubIngestSource | WebIngestSource;
 
-export interface GitHubSource {
+export interface GitHubIngestSource {
   kind: "github.pr" | "github.issue";
   raw: string;
   repo: string;
@@ -8,7 +8,7 @@ export interface GitHubSource {
   number: string;
 }
 
-export interface WebSource {
+export interface WebIngestSource {
   kind: "web.url";
   raw: string;
   url: string;

@@ -1,23 +1,17 @@
-export type OperationErrorOutcome = "error" | "needs-action";
+import {
+  UserFacingError,
+  type UserFacingErrorOptions,
+  type UserFacingErrorOutcome,
+} from "../errors.js";
 
-export class OperationError extends Error {
-  readonly outcome: OperationErrorOutcome;
-  readonly fix?: string;
-  readonly data?: Record<string, unknown>;
+export type OperationErrorOutcome = UserFacingErrorOutcome;
 
+export class OperationError extends UserFacingError {
   constructor(
     message: string,
-    options: {
-      outcome?: OperationErrorOutcome;
-      fix?: string;
-      data?: Record<string, unknown>;
-    } = {},
+    options: UserFacingErrorOptions = {},
   ) {
-    super(message);
-    this.name = new.target.name;
-    this.outcome = options.outcome ?? "error";
-    this.fix = options.fix;
-    this.data = options.data;
+    super(message, options);
   }
 }
 
