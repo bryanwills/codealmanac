@@ -29,7 +29,7 @@ export {
   type GlobalConfig,
 } from "./schema.js";
 export {
-  ensureAutomationCaptureSince,
+  ensureAutomationSyncSince,
   readConfig,
   readConfigWithOrigins,
   writeConfig,

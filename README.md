@@ -42,7 +42,7 @@ almanac search "auth"
 almanac show checkout-flow
 ```
 
-That is the whole first path: install Almanac, build the first wiki for a repo, then search and read it. From then on, scheduled capture periodically runs `almanac capture sweep` for quiet Claude/Codex transcripts, and scheduled Garden keeps the wiki graph tidy.
+That is the whole first path: install Almanac, build the first wiki for a repo, then search and read it. From then on, scheduled sync periodically runs `almanac sync` for quiet Claude/Codex transcripts, and scheduled Garden keeps the wiki graph tidy.
 
 Prefer the explicit install?
 
@@ -70,7 +70,7 @@ npx codealmanac show checkout-flow
   <img src="viewer/readme-sample-wiki.png" alt="Terminal showing Almanac search and show commands against the sample wiki">
 </p>
 
-The sample wiki shows the checked-in `.almanac/` files directly: a notability guide, topics, and two short pages that capture a flow and a gotcha.
+The sample wiki shows the checked-in `.almanac/` files directly: a notability guide, topics, and two short pages that document a flow and a gotcha.
 
 ## Choose Your Path
 
@@ -81,7 +81,7 @@ The sample wiki shows the checked-in `.almanac/` files directly: a notability gu
 | Build a new wiki in a repo | `almanac init` |
 | Search an existing wiki | `almanac search "query"` |
 | Check setup and provider auth | `almanac doctor` |
-| See scheduled capture status | `almanac automation status` |
+| See scheduled sync status | `almanac automation status` |
 
 ## What Almanac Gives You
 
@@ -92,7 +92,7 @@ Almanac gives agents durable project memory:
 - **Atomic pages**: one markdown page per stable concept, flow, decision, or gotcha.
 - **Code-aware search**: find pages that mention a file or folder before editing it.
 - **Topic graph**: organize pages into a DAG instead of one huge root instruction file.
-- **Scheduled maintenance**: capture quiet AI coding transcripts and periodically maintain the wiki graph.
+- **Scheduled maintenance**: sync quiet AI coding transcripts and periodically maintain the wiki graph.
 - **Local-only storage**: pages live in `.almanac/` inside the repo; the global registry stays under `~/.almanac/`.
 - **Git-reviewed output**: wiki edits show up in `git status` like any other change.
 
@@ -118,16 +118,16 @@ The markdown pages are the source of truth. `index.db` is a derived cache used b
 
 Almanac has two kinds of commands:
 
-- **Write-capable lifecycle commands**: `init`, `capture`, `ingest`, and `garden` can invoke your configured AI provider.
+- **Write-capable lifecycle commands**: `init`, `absorb`, `sync`, and `garden` can invoke your configured AI provider. `ingest` is an alias for `absorb`.
 - **Local query and organization commands**: `search`, `show`, `topics`, `tag`, `health`, `list`, `jobs`, and `automation` operate on local files, SQLite, or run records.
 
-Scheduled automation runs `almanac capture sweep` and `almanac garden`. The sweep scans Claude and Codex transcript stores, ignores transcripts from before automation was enabled, waits for active transcripts to become quiet, maps each transcript back to the nearest repo with `.almanac/`, and starts ordinary background capture jobs for new material. Garden periodically maintains the wiki graph.
+Scheduled automation runs `almanac sync` and `almanac garden`. Sync scans Claude and Codex transcript stores, ignores transcripts from before automation was enabled, waits for active transcripts to become quiet, maps each transcript back to the nearest repo with `.almanac/`, and starts ordinary background Absorb jobs for new material. Garden periodically maintains the wiki graph.
 
-Capture writes nothing if nothing in the session meets the notability bar. Silence is a valid outcome.
+Absorb writes nothing if the input does not meet the notability bar. Silence is a valid outcome.
 
 ## Setup And Auth
 
-Bare `almanac` opens the setup wizard. It chooses your default agent/model, checks readiness, installs scheduled capture and Garden automation, asks whether to keep Almanac automatically updated, and adds optional agent guides.
+Bare `almanac` opens the setup wizard. It chooses your default agent/model, checks readiness, installs scheduled sync and Garden automation, asks whether to keep Almanac automatically updated, and adds optional agent guides.
 
 Useful unattended setup flags:
 
@@ -137,8 +137,8 @@ almanac setup --skip-automation
 almanac setup --skip-guides
 almanac setup --auto-commit
 almanac setup --no-auto-commit
-almanac setup --auto-capture-every 2h
-almanac setup --auto-capture-quiet 30m
+almanac setup --sync-every 2h
+almanac setup --sync-quiet 30m
 almanac setup --garden-every 4h
 almanac setup --garden-off
 almanac setup --auto-update
@@ -184,13 +184,13 @@ Almanac never stores provider credentials. Auth stays in each provider's normal 
 | `almanac topics list` | Show the topic graph. |
 | `almanac tag <page> <topic...>` | Add topics to a page. |
 | `almanac health` | Check wiki graph integrity. |
-| `almanac capture <transcript>` | Update the wiki from a session transcript. |
-| `almanac capture sweep --dry-run --json` | Preview scheduled-capture candidates. |
-| `almanac ingest docs/adr.md` | Update the wiki from files or folders. |
+| `almanac absorb docs/adr.md github:pr:123` | Update the wiki from explicit files, folders, PRs, issues, or URLs. |
+| `almanac sync status --json` | Show scheduled sync candidates. |
+| `almanac ingest docs/adr.md` | Alias for `almanac absorb docs/adr.md`. |
 | `almanac garden` | Maintain the wiki graph. |
 | `almanac jobs` | List local background runs. |
 | `almanac update` | Check npm and install the latest Almanac if one is available. |
-| `almanac automation install --every 2h` | Install or adjust scheduled capture and Garden. |
+| `almanac automation install --every 2h` | Install or adjust scheduled sync and Garden. |
 | `almanac automation install update --every 1d` | Install scheduled Almanac self-update. |
 | `almanac doctor` | Check install, providers, automation, and wiki health. |
 
@@ -228,7 +228,7 @@ almanac search --stale 90d | almanac tag --stdin needs-review
 
 ```bash
 almanac automation status
-almanac capture sweep --dry-run --json
+almanac sync status --json
 almanac jobs
 ```
 

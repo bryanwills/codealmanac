@@ -227,6 +227,10 @@ sources:
     title: Example Docs
     retrieved_at: 2026-05-28
     note: Documents external behavior.
+  - id: issue-42
+    type: issue
+    number: 42
+    note: Bug report.
 ---
 
 Body.
@@ -257,16 +261,25 @@ Body.
           )
           .all("source-backed");
         expect(sources).toEqual([
-          {
-            source_id: "docs",
-            source_type: "web",
-            target: "https://example.com/docs",
-            title: "Example Docs",
-            retrieved_at: "2026-05-28",
-            note: "Documents external behavior.",
-            legacy: 0,
-          },
-          {
+            {
+              source_id: "docs",
+              source_type: "web",
+              target: "https://example.com/docs",
+              title: "Example Docs",
+              retrieved_at: "2026-05-28",
+              note: "Documents external behavior.",
+              legacy: 0,
+            },
+            {
+              source_id: "issue-42",
+              source_type: "issue",
+              target: "42",
+              title: null,
+              retrieved_at: null,
+              note: "Bug report.",
+              legacy: 0,
+            },
+            {
             source_id: "schema",
             source_type: "file",
             target: "src/wiki/indexer/schema.ts",

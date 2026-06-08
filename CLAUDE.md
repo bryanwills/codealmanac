@@ -63,7 +63,7 @@ When tasks are independent (e.g., "write slice-3 plan" and "draft reviewer promp
 
 ### Code review
 
-When the user asks for a code review or reviewer, read `.claude/agents/review.md` first and treat it as the authoritative code-review prompt for this repo. Do not confuse it with `prompts/reviewer.md`, which is the wiki reviewer subagent used by `capture`.
+When the user asks for a code review or reviewer, read `.claude/agents/review.md` first and treat it as the authoritative code-review prompt for this repo. Do not confuse it with `prompts/reviewer.md`, which is the wiki reviewer subagent used by Absorb.
 
 Use code review after meaningful structural changes, especially changes to command flows, provider boundaries, indexer behavior, SQLite queries, prompt contracts, or filesystem writes. The review standard is not "does it pass tests?" but "would a fresh maintainer understand why this is the obvious shape?"
 
@@ -111,7 +111,7 @@ Things we do not do. If a plan proposes one, push back.
 
 - **No propose/apply flows.** No proposal JSON files, no `--apply` or `--confirm` step. Agents write directly; users read the diff in `git status`.
 - **No `--dry-run` flags.** The agent is either doing the work or it isn't. Rehearsal is not a feature.
-- **No interactive prompts.** The CLI is pipeable and scriptable; scheduled capture runs in the background. Nothing blocks on user input.
+- **No interactive prompts.** The CLI is pipeable and scriptable; scheduled sync runs in the background. Nothing blocks on user input.
 - **No pipeline scaffolding where a prompt would do.** If a task calls for judgment, extend the prompt — don't add a pre-processing step in TypeScript that hard-codes the judgment.
 - **No state machines between writer and reviewer.** Writer invokes reviewer via `agents: { reviewer }` in the SDK, reads the text critique, decides. No approve/revise/reject enum.
 - **No semantic search yet.** FTS5 first. Add vectors only when FTS5 proves insufficient against a real repo.

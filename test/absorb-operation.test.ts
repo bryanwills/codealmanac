@@ -61,7 +61,7 @@ describe("absorb operation", () => {
 
       const result = await runAbsorbOperation({
         cwd: repo,
-        context: `Ingest path: ${target}`,
+        context: `Absorb path: ${target}`,
         targetKind: "path",
         targetPaths: [target],
         runId: "run_20260509201200_absorb",
@@ -101,7 +101,7 @@ describe("absorb operation", () => {
       const result = await runAbsorbOperation({
         cwd: repo,
         background: false,
-        context: "Manual ingest.",
+        context: "Manual absorb.",
         runId: "run_20260509201300_absorb_fg",
         startForeground: async (options) => ({
           runId: options.runId ?? "generated",

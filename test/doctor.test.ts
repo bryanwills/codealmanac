@@ -55,7 +55,7 @@ async function scaffoldHealthyInstall(home: string): Promise<{
   plistPath: string;
 }> {
   const claudeDir = join(home, ".claude");
-  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.capture-sweep.plist");
+  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.sync.plist");
   await mkdir(claudeDir, { recursive: true });
   await mkdir(dirname(plistPath), { recursive: true });
   await writeFile(plistPath, "<plist></plist>\n", "utf8");
@@ -133,6 +133,56 @@ describe("almanac doctor", () => {
       );
       expect(automation.status).toBe("problem");
       expect(automation.fix).toMatch(/almanac automation install/);
+    });
+  });
+
+  it("flags legacy capture sweep automation and suggests migration", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffoldHealthyInstall(home);
+      const legacyPlistPath = join(
+        home,
+        "Library",
+        "LaunchAgents",
+        "com.codealmanac.capture-sweep.plist",
+      );
+      await mkdir(dirname(legacyPlistPath), { recursive: true });
+      await writeFile(
+        legacyPlistPath,
+        `<plist version="1.0">
+<dict>
+  <key>ProgramArguments</key>
+  <array>
+    <string>almanac</string>
+    <string>capture</string>
+    <string>sweep</string>
+  </array>
+</dict>
+</plist>
+`,
+        "utf8",
+      );
+
+      const r = await runDoctor({
+        cwd: home,
+        json: true,
+        automationPlistPath: env.plistPath,
+        legacyAutomationPlistPath: legacyPlistPath,
+        claudeDir: env.claudeDir,
+        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
+        sqliteProbe: SQLITE_OK,
+        installPath: "/fake",
+        versionOverride: "0.1.3",
+      });
+
+      const parsed = JSON.parse(r.stdout);
+      const automation = parsed.install.find(
+        (c: { key: string }) => c.key === "install.automation",
+      );
+      expect(automation.status).toBe("problem");
+      expect(automation.message).toContain(
+        "legacy automation uses removed command capture sweep",
+      );
+      expect(automation.fix).toBe("run: almanac migrate automation");
     });
   });
 

@@ -29,6 +29,10 @@ sources:
     url: https://example.com/docs
     retrieved_at: 2026-05-28
     note: Supports the external dependency claims.
+  - id: issue-42
+    type: issue
+    number: 42
+    note: Supports the user-reported problem statement.
 status: active
 verified: 2026-05-10
 external_version: "api-or-doc-version-if-relevant"
@@ -48,10 +52,12 @@ not a paragraph, explaining what the page is about and why an agent would
 open it.
 
 Use `sources:` for evidence. Use `type: file` for repo files, tests,
-migrations, prompts, and config. Use other source types for external docs,
-papers, URLs, transcripts, notes, market reads, research inputs, commits, pull
-requests, or other material that supports the page. Every source needs a stable
-`id` and a `note` explaining what the source supports.
+migrations, prompts, and config; `type: pr` for pull requests; `type: issue`
+for GitHub issues or equivalent issue-tracker items; and `type: web` for
+generic external URLs. Use other source types for transcripts, notes, market
+reads, research inputs, commits, or other material that supports the page.
+Every source needs a stable `id` and a `note` explaining what the source
+supports.
 
 Cite non-obvious claims with `[@source-id]`. Do not cite a source you did not
 inspect. Citations are evidence; wikilinks are navigation.

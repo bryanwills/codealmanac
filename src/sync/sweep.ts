@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 
 import type { SessionCandidate, SweepApp } from "./discovery/index.js";
 import {
-  type CaptureLedger,
+  type SyncLedger,
   countLines,
-  captureCursor,
+  syncCursor,
   freshLedgerEntry,
   ledgerKey,
   loadLedgerForRepo,
@@ -12,10 +12,10 @@ import {
   sha256,
   writeLedger,
 } from "./ledger.js";
-import { acquireRepoSweepLock, releaseRepoSweepLock } from "./lock.js";
+import { acquireRepoSyncLock, releaseRepoSyncLock } from "./lock.js";
 import { listRunRecords } from "../process/index.js";
 
-export interface SweepStarted {
+export interface SyncStarted {
   app: SweepApp;
   sessionId: string;
   transcriptPath: string;
@@ -25,7 +25,16 @@ export interface SweepStarted {
   toLine: number;
 }
 
-export interface SweepSkipped {
+export interface SyncReady {
+  app: SweepApp;
+  sessionId: string;
+  transcriptPath: string;
+  repoRoot: string;
+  fromLine: number;
+  toLine: number;
+}
+
+export interface SyncSkipped {
   app?: SweepApp;
   sessionId?: string;
   transcriptPath: string;
@@ -33,28 +42,29 @@ export interface SweepSkipped {
   reason: string;
 }
 
-export interface SweepSummary {
+export interface SyncSummary {
+  mode: "sync" | "status";
   scanned: number;
   eligible: number;
-  dryRun: boolean;
-  captureSince: string | null;
-  started: SweepStarted[];
-  skipped: SweepSkipped[];
-  needsAttention: SweepSkipped[];
+  syncSince: string | null;
+  ready: SyncReady[];
+  started: SyncStarted[];
+  skipped: SyncSkipped[];
+  needsAttention: SyncSkipped[];
 }
 
-export interface StartSweepCaptureArgs {
+export interface StartSyncAbsorbArgs {
   candidate: SessionCandidate;
   contextNote: string;
 }
 
-export type StartSweepCaptureResult =
+export type StartSyncAbsorbResult =
   | { ok: true; runId: string }
   | { ok: false; error: string };
 
-export type StartSweepCaptureFn = (
-  args: StartSweepCaptureArgs,
-) => Promise<StartSweepCaptureResult>;
+export type StartSyncAbsorbFn = (
+  args: StartSyncAbsorbArgs,
+) => Promise<StartSyncAbsorbResult>;
 
 interface TranscriptSnapshot {
   content: Buffer;
@@ -66,30 +76,31 @@ type TranscriptReadResult =
   | { ok: true; snapshot: TranscriptSnapshot }
   | { ok: false; reason: string };
 
-type CaptureCursorDecision =
+type SyncCursorDecision =
   | { kind: "skip"; reason: string }
   | { kind: "needs_attention"; reason: string; entry: ReturnType<typeof markPrefixMismatch> }
   | { kind: "ready"; fromLine: number; toLine: number };
 
-export async function executeCaptureSweep(args: {
+export async function executeSyncSweep(args: {
   candidates: SessionCandidate[];
-  captureSince: Date | null;
+  syncSince: Date | null;
   quietMs: number;
-  dryRun: boolean;
+  mode: "sync" | "status";
   now: Date;
-  startCapture: StartSweepCaptureFn;
-}): Promise<SweepSummary> {
-  const summary: SweepSummary = {
+  startAbsorb: StartSyncAbsorbFn;
+}): Promise<SyncSummary> {
+  const summary: SyncSummary = {
+    mode: args.mode,
     scanned: args.candidates.length,
     eligible: 0,
-    dryRun: args.dryRun,
-    captureSince: args.captureSince?.toISOString() ?? null,
+    syncSince: args.syncSince?.toISOString() ?? null,
+    ready: [],
     started: [],
     skipped: [],
     needsAttention: [],
   };
 
-  const ledgers = new Map<string, CaptureLedger>();
+  const ledgers = new Map<string, SyncLedger>();
   const internalSessionIds = new Map<string, Set<string>>();
   const heldLocks = new Set<string>();
   try {
@@ -105,10 +116,10 @@ export async function executeCaptureSweep(args: {
         continue;
       }
 
-      if (!args.dryRun && !heldLocks.has(candidate.repoRoot)) {
-        const locked = await acquireRepoSweepLock(candidate.repoRoot, args.now);
+      if (args.mode === "sync" && !heldLocks.has(candidate.repoRoot)) {
+        const locked = await acquireRepoSyncLock(candidate.repoRoot, args.now);
         if (!locked) {
-          summary.skipped.push(skip(candidate, "sweep-already-running"));
+          summary.skipped.push(skip(candidate, "sync-already-running"));
           continue;
         }
         heldLocks.add(candidate.repoRoot);
@@ -124,9 +135,9 @@ export async function executeCaptureSweep(args: {
         continue;
       }
       const entry = ledger.sessions[key] ??
-        freshLedgerEntry(candidate, transcript.snapshot.content, args.captureSince);
+        freshLedgerEntry(candidate, transcript.snapshot.content, args.syncSince);
 
-      const decision = evaluateCaptureCursor(entry, transcript.snapshot);
+      const decision = evaluateSyncCursor(entry, transcript.snapshot);
       ledger.sessions[key] = decision.kind === "needs_attention"
         ? decision.entry
         : entry;
@@ -141,18 +152,18 @@ export async function executeCaptureSweep(args: {
       }
 
       summary.eligible += 1;
-      if (args.dryRun) {
-        summary.started.push(startedSummary(candidate, "dry-run", decision));
+      if (args.mode === "status") {
+        summary.ready.push(readySummary(candidate, decision));
         continue;
       }
 
-      const enqueue = await enqueueCapture({
+      const enqueue = await enqueueAbsorb({
         candidate,
         entry,
         decision,
         snapshot: transcript.snapshot,
         now: args.now,
-        startCapture: args.startCapture,
+        startAbsorb: args.startAbsorb,
       });
       if (!enqueue.ok) {
         ledger.sessions[key] = enqueue.entry;
@@ -165,13 +176,13 @@ export async function executeCaptureSweep(args: {
       summary.started.push(startedSummary(candidate, enqueue.runId, decision));
     }
 
-    if (!args.dryRun) {
+    if (args.mode === "sync") {
       for (const [repoRoot, ledger] of ledgers) {
         await writeLedger(repoRoot, ledger, args.now);
       }
     }
   } finally {
-    await Promise.all([...heldLocks].map(releaseRepoSweepLock));
+    await Promise.all([...heldLocks].map(releaseRepoSyncLock));
   }
 
   return summary;
@@ -196,12 +207,12 @@ async function isInternalAlmanacSession(
 function candidateEligibility(
   candidate: SessionCandidate,
   args: {
-    captureSince: Date | null;
+    syncSince: Date | null;
     quietMs: number;
     now: Date;
   },
-): SweepSkipped | null {
-  if (args.captureSince !== null && candidate.mtimeMs < args.captureSince.getTime()) {
+): SyncSkipped | null {
+  if (args.syncSince !== null && candidate.mtimeMs < args.syncSince.getTime()) {
     return skip(candidate, "before-automation-activation");
   }
 
@@ -231,20 +242,20 @@ async function readTranscriptSnapshot(
   }
 }
 
-function evaluateCaptureCursor(
-  entry: CaptureLedger["sessions"][string],
+function evaluateSyncCursor(
+  entry: SyncLedger["sessions"][string],
   snapshot: TranscriptSnapshot,
-): CaptureCursorDecision {
+): SyncCursorDecision {
   if (entry.status === "pending") {
-    return { kind: "skip", reason: "capture-already-pending" };
+    return { kind: "skip", reason: "sync-already-pending" };
   }
 
-  if (snapshot.currentSize <= entry.lastCapturedSize) {
+  if (snapshot.currentSize <= entry.lastAbsorbedSize) {
     return { kind: "skip", reason: "unchanged" };
   }
 
-  const prefixHash = sha256(snapshot.content.subarray(0, entry.lastCapturedSize));
-  if (prefixHash !== entry.lastCapturedPrefixHash) {
+  const prefixHash = sha256(snapshot.content.subarray(0, entry.lastAbsorbedSize));
+  if (prefixHash !== entry.lastAbsorbedPrefixHash) {
     return {
       kind: "needs_attention",
       reason: "prefix-mismatch",
@@ -254,14 +265,14 @@ function evaluateCaptureCursor(
 
   return {
     kind: "ready",
-    fromLine: entry.lastCapturedLine + 1,
+    fromLine: entry.lastAbsorbedLine + 1,
     toLine: snapshot.currentLine,
   };
 }
 
 function markPrefixMismatch(
-  entry: CaptureLedger["sessions"][string],
-): CaptureLedger["sessions"][string] {
+  entry: SyncLedger["sessions"][string],
+): SyncLedger["sessions"][string] {
   return {
     ...entry,
     status: "needs_attention",
@@ -269,30 +280,30 @@ function markPrefixMismatch(
   };
 }
 
-async function enqueueCapture(args: {
+async function enqueueAbsorb(args: {
   candidate: SessionCandidate;
-  entry: CaptureLedger["sessions"][string];
-  decision: Extract<CaptureCursorDecision, { kind: "ready" }>;
+  entry: SyncLedger["sessions"][string];
+  decision: Extract<SyncCursorDecision, { kind: "ready" }>;
   snapshot: TranscriptSnapshot;
   now: Date;
-  startCapture: StartSweepCaptureFn;
+  startAbsorb: StartSyncAbsorbFn;
 }): Promise<
-  | { ok: true; runId: string; entry: CaptureLedger["sessions"][string] }
-  | { ok: false; reason: string; entry: CaptureLedger["sessions"][string] }
+  | { ok: true; runId: string; entry: SyncLedger["sessions"][string] }
+  | { ok: false; reason: string; entry: SyncLedger["sessions"][string] }
 > {
-  const result = await args.startCapture({
+  const result = await args.startAbsorb({
     candidate: args.candidate,
     contextNote: cursorContext({
       candidate: args.candidate,
       fromLine: args.decision.fromLine,
-      lastCapturedLine: args.entry.lastCapturedLine,
-      lastCapturedSize: args.entry.lastCapturedSize,
+      lastAbsorbedLine: args.entry.lastAbsorbedLine,
+      lastAbsorbedSize: args.entry.lastAbsorbedSize,
     }),
   });
   if (!result.ok) {
     return {
       ok: false,
-      reason: "capture-start-failed",
+      reason: "absorb-start-failed",
       entry: {
         ...args.entry,
         status: "failed",
@@ -300,7 +311,7 @@ async function enqueueCapture(args: {
       },
     };
   }
-  const pendingCursor = captureCursor(args.snapshot.content, args.snapshot.currentLine);
+  const pendingCursor = syncCursor(args.snapshot.content, args.snapshot.currentLine);
   return {
     ok: true,
     runId: result.runId,
@@ -321,8 +332,8 @@ async function enqueueCapture(args: {
 function startedSummary(
   candidate: SessionCandidate,
   runId: string,
-  decision: Extract<CaptureCursorDecision, { kind: "ready" }>,
-): SweepStarted {
+  decision: Extract<SyncCursorDecision, { kind: "ready" }>,
+): SyncStarted {
   return {
     app: candidate.app,
     sessionId: candidate.sessionId,
@@ -334,26 +345,40 @@ function startedSummary(
   };
 }
 
+function readySummary(
+  candidate: SessionCandidate,
+  decision: Extract<SyncCursorDecision, { kind: "ready" }>,
+): SyncReady {
+  return {
+    app: candidate.app,
+    sessionId: candidate.sessionId,
+    transcriptPath: candidate.transcriptPath,
+    repoRoot: candidate.repoRoot,
+    fromLine: decision.fromLine,
+    toLine: decision.toLine,
+  };
+}
+
 function cursorContext(args: {
   candidate: SessionCandidate;
   fromLine: number;
-  lastCapturedLine: number;
-  lastCapturedSize: number;
+  lastAbsorbedLine: number;
+  lastAbsorbedSize: number;
 }): string {
   return [
-    "Scheduled capture cursor:",
+    "Scheduled sync cursor:",
     `- App: ${args.candidate.app}`,
     `- Session id: ${args.candidate.sessionId}`,
     `- Transcript: ${args.candidate.transcriptPath}`,
-    `- Previously captured through line: ${args.lastCapturedLine}`,
-    `- Previously captured through byte: ${args.lastCapturedSize}`,
+    `- Previously absorbed through line: ${args.lastAbsorbedLine}`,
+    `- Previously absorbed through byte: ${args.lastAbsorbedSize}`,
     `- Focus on line ${args.fromLine} onward.`,
     "- You may inspect earlier lines only for context.",
-    "- Do not re-document decisions already captured unless newer lines amend, invalidate, or add important nuance to them.",
+    "- Do not re-document decisions already absorbed unless newer lines amend, invalidate, or add important nuance to them.",
   ].join("\n");
 }
 
-function skip(candidate: Partial<SessionCandidate> & { transcriptPath: string }, reason: string): SweepSkipped {
+function skip(candidate: Partial<SessionCandidate> & { transcriptPath: string }, reason: string): SyncSkipped {
   return {
     app: candidate.app,
     sessionId: candidate.sessionId,

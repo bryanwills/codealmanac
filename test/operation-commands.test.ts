@@ -1,13 +1,11 @@
-import { mkdir, utimes, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
 import {
   parseUsing,
-  runCaptureCommand,
+  runAbsorbCommand,
   runGardenCommand,
-  runIngestCommand,
   runInitCommand,
 } from "../src/cli/commands/operations.js";
 import { writeConfig } from "../src/config/index.js";
@@ -265,22 +263,22 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("renders background JSON start responses for ingest", async () => {
+  it("renders background JSON start responses for absorb", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest");
-      await initWiki({ cwd: repo, name: "cmd-ingest", description: "" });
+      const repo = await makeRepo(home, "cmd-absorb");
+      await initWiki({ cwd: repo, name: "cmd-absorb", description: "" });
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["notes.md"],
+        inputs: ["notes.md"],
         using: "claude/claude-sonnet-4-6",
         json: true,
         startBackground: async (options) => ({
-          runId: "run_ingest",
+          runId: "run_absorb",
           childPid: 4321,
           record: {
             version: 1,
-            id: "run_ingest",
+            id: "run_absorb",
             operation: "absorb",
             status: "queued",
             repoRoot: options.repoRoot,
@@ -296,10 +294,10 @@ describe("operation command wrappers", () => {
       expect(result.exitCode).toBe(0);
       expect(JSON.parse(result.stdout)).toMatchObject({
         type: "success",
-        message: "ingest started: run_ingest",
+        message: "absorb started: run_absorb",
         data: {
-          operation: "ingest",
-          runId: "run_ingest",
+          operation: "absorb",
+          runId: "run_absorb",
           mode: "background",
           status: "queued",
         },
@@ -307,15 +305,15 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("runs ingest from GitHub PR source refs", async () => {
+  it("runs absorb from GitHub PR source refs", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-github-source");
-      await initWiki({ cwd: repo, name: "cmd-ingest-github-source", description: "" });
+      const repo = await makeRepo(home, "cmd-absorb-github-source");
+      await initWiki({ cwd: repo, name: "cmd-absorb-github-source", description: "" });
       const seen: unknown[] = [];
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["github:pr:123"],
+        inputs: ["github:pr:123"],
         using: "codex",
         resolveSource: async (ref) => ({
           kind: "github.pr",
@@ -327,11 +325,11 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_github_ingest",
+            runId: "run_github_absorb",
             childPid: 4321,
             record: {
               version: 1,
-              id: "run_github_ingest",
+              id: "run_github_absorb",
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
@@ -346,7 +344,7 @@ describe("operation command wrappers", () => {
       });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe("ingest started: run_github_ingest\n");
+      expect(result.stdout).toBe("absorb started: run_github_absorb\n");
       expect(seen[0]).toMatchObject({
         spec: {
           metadata: {
@@ -378,15 +376,15 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("does not attach the sticky PR-comment report to multi-PR ingest", async () => {
+  it("does not attach the sticky PR-comment report to multi-PR absorb", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-multiple-github-prs");
-      await initWiki({ cwd: repo, name: "cmd-ingest-multiple-github-prs", description: "" });
+      const repo = await makeRepo(home, "cmd-absorb-multiple-github-prs");
+      await initWiki({ cwd: repo, name: "cmd-absorb-multiple-github-prs", description: "" });
       const seen: unknown[] = [];
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["github:pr:123", "github:pr:124"],
+        inputs: ["github:pr:123", "github:pr:124"],
         using: "codex",
         resolveSource: async (ref) => {
           if (ref.provider !== "github") throw new Error("expected GitHub source ref");
@@ -401,11 +399,11 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_multi_pr_ingest",
+            runId: "run_multi_pr_absorb",
             childPid: 4321,
             record: {
               version: 1,
-              id: "run_multi_pr_ingest",
+              id: "run_multi_pr_absorb",
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
@@ -422,7 +420,7 @@ describe("operation command wrappers", () => {
       expect(result.exitCode).toBe(0);
       const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
       const output = (seen[0] as { spec: { output?: unknown } }).spec.output;
-      expect(prompt).toContain("Sources:");
+      expect(prompt).toContain("Input sources:");
       expect(prompt).toContain("github:pr:123");
       expect(prompt).toContain("github:pr:124");
       expect(prompt).not.toContain("sticky GitHub PR comment");
@@ -430,15 +428,15 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("runs ingest from GitHub issue URLs", async () => {
+  it("runs absorb from GitHub issue URLs", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-github-issue-url");
-      await initWiki({ cwd: repo, name: "cmd-ingest-github-issue-url", description: "" });
+      const repo = await makeRepo(home, "cmd-absorb-github-issue-url");
+      await initWiki({ cwd: repo, name: "cmd-absorb-github-issue-url", description: "" });
       const seen: unknown[] = [];
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["https://github.com/owner/repo/issues/11"],
+        inputs: ["https://github.com/owner/repo/issues/11"],
         using: "codex",
         resolveSource: async (ref) => {
           if (ref.provider !== "github") throw new Error("expected GitHub source ref");
@@ -453,11 +451,11 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_github_issue_ingest",
+            runId: "run_github_issue_absorb",
             childPid: 4321,
             record: {
               version: 1,
-              id: "run_github_issue_ingest",
+              id: "run_github_issue_absorb",
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
@@ -472,7 +470,7 @@ describe("operation command wrappers", () => {
       });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe("ingest started: run_github_issue_ingest\n");
+      expect(result.stdout).toBe("absorb started: run_github_issue_absorb\n");
       expect(seen[0]).toMatchObject({
         spec: {
           metadata: {
@@ -489,30 +487,30 @@ describe("operation command wrappers", () => {
       expect(prompt).toContain("gh issue view 11 --repo owner/repo");
       expect(prompt).not.toContain("Composio");
       expect(prompt).not.toContain("almanac source github");
-      expect(prompt).toContain("type: web");
+      expect(prompt).toContain("type: issue");
       expect(prompt).not.toContain("sticky GitHub PR comment");
       expect(output).toBeUndefined();
     });
   });
 
-  it("passes arbitrary web URLs through to ingest without a GitHub resolver", async () => {
+  it("passes arbitrary web URLs through to absorb without a GitHub resolver", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-web-url");
-      await initWiki({ cwd: repo, name: "cmd-ingest-web-url", description: "" });
+      const repo = await makeRepo(home, "cmd-absorb-web-url");
+      await initWiki({ cwd: repo, name: "cmd-absorb-web-url", description: "" });
       const seen: unknown[] = [];
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["https://example.com/spec"],
+        inputs: ["https://example.com/spec"],
         using: "codex",
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_web_ingest",
+            runId: "run_web_absorb",
             childPid: 4321,
             record: {
               version: 1,
-              id: "run_web_ingest",
+              id: "run_web_absorb",
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
@@ -542,19 +540,19 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("does not queue GitHub URL ingest when source setup fails", async () => {
+  it("does not queue GitHub URL absorb when source setup fails", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-github-url-setup-error");
+      const repo = await makeRepo(home, "cmd-absorb-github-url-setup-error");
       await initWiki({
         cwd: repo,
-        name: "cmd-ingest-github-url-setup-error",
+        name: "cmd-absorb-github-url-setup-error",
         description: "",
       });
       let queued = false;
 
-      const result = await runIngestCommand({
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["https://github.com/owner/repo/issues/11"],
+        inputs: ["https://github.com/owner/repo/issues/11"],
         using: "codex",
         resolveSource: async () => {
           throw new Error("source setup failed");
@@ -571,184 +569,54 @@ describe("operation command wrappers", () => {
     });
   });
 
-  it("rejects mixed source refs and local paths for ingest", async () => {
+  it("queues mixed source refs and local paths for absorb", async () => {
     await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-ingest-mixed-source-path");
+      const repo = await makeRepo(home, "cmd-absorb-mixed-source-path");
       await initWiki({
         cwd: repo,
-        name: "cmd-ingest-mixed-source-path",
+        name: "cmd-absorb-mixed-source-path",
         description: "",
       });
 
-      const result = await runIngestCommand({
+      const seen: unknown[] = [];
+      const result = await runAbsorbCommand({
         cwd: repo,
-        paths: ["github:pr:123", "notes.md"],
+        inputs: ["github:pr:123", "notes.md"],
         using: "codex",
-      });
-
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain(
-        "ingest cannot mix source refs and local paths yet",
-      );
-    });
-  });
-
-  it("capture and garden default to background", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-capture-garden");
-      await initWiki({ cwd: repo, name: "cmd-capture-garden", description: "" });
-      await writeFile(join(repo, "session.jsonl"), "{}\n");
-
-      const capture = await runCaptureCommand({
-        cwd: repo,
-        sessionFiles: ["session.jsonl"],
-        startBackground: async (options) => ({
-          runId: "run_capture",
-          childPid: 111,
-          record: {
-            version: 1,
-            id: "run_capture",
-            operation: "absorb",
-            status: "queued",
-            repoRoot: options.repoRoot,
-            pid: 0,
-            provider: options.spec.provider.id,
-            startedAt: "2026-05-09T20:18:00.000Z",
-            logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
-          },
+        resolveSource: async (ref) => ({
+          kind: "github.pr",
+          raw: ref.raw,
+          repo: "owner/repo",
+          url: "https://github.com/owner/repo/pull/123",
+          number: "123",
         }),
-      });
-      const garden = await runGardenCommand({
-        cwd: repo,
-        startBackground: async (options) => ({
-          runId: "run_garden",
-          childPid: 222,
-          record: {
-            version: 1,
-            id: "run_garden",
-            operation: "garden",
-            status: "queued",
-            repoRoot: options.repoRoot,
-            pid: 0,
-            provider: options.spec.provider.id,
-            startedAt: "2026-05-09T20:19:00.000Z",
-            logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
-          },
-        }),
-      });
-
-      expect(capture.stdout).toBe("capture started: run_capture\n");
-      expect(garden.stdout).toBe("garden started: run_garden\n");
-    });
-  });
-
-  it("auto-resolves Claude transcript scopes for capture", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-capture-auto");
-      await initWiki({ cwd: repo, name: "cmd-capture-auto", description: "" });
-      const projectsDir = join(home, "claude-projects");
-      const projectDir = join(projectsDir, "project");
-      await mkdir(projectDir, { recursive: true });
-      const older = join(projectDir, "older.jsonl");
-      const middle = join(projectDir, "middle.jsonl");
-      const newer = join(projectDir, "newer.jsonl");
-      await writeFile(older, `${JSON.stringify({ sessionId: "older", cwd: repo })}\n`);
-      await writeFile(middle, `${JSON.stringify({ sessionId: "middle", cwd: repo })}\n`);
-      await writeFile(newer, `${JSON.stringify({ sessionId: "newer", cwd: repo })}\n`);
-      const oldDate = new Date("2026-05-09T20:00:00.000Z");
-      const middleDate = new Date("2026-05-09T20:00:30.000Z");
-      const newDate = new Date("2026-05-09T20:01:00.000Z");
-      await Promise.all([
-        utimes(older, oldDate, oldDate),
-        utimes(middle, middleDate, middleDate),
-        utimes(newer, newDate, newDate),
-      ]);
-      const seen: unknown[] = [];
-
-      const result = await runCaptureCommand({
-        cwd: repo,
-        claudeProjectsDir: projectsDir,
-        all: true,
-        limit: 2,
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_capture_auto",
-            childPid: 333,
+            runId: "run_mixed_absorb",
+            childPid: 4321,
             record: {
               version: 1,
-              id: "run_capture_auto",
+              id: "run_mixed_absorb",
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
               pid: 0,
               provider: options.spec.provider.id,
-              startedAt: "2026-05-09T20:20:00.000Z",
+              model: options.spec.provider.model,
+              startedAt: "2026-05-09T20:17:00.000Z",
               logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
             },
           };
         },
       });
 
-      expect(result.stdout).toBe("capture started: run_capture_auto\n");
+      expect(result.exitCode).toBe(0);
       expect(seen[0]).toMatchObject({
         spec: {
           metadata: {
-            operation: "absorb",
-            targetKind: "session",
-            targetPaths: [newer, middle],
-          },
-        },
-      });
-    });
-  });
-
-  it("auto-resolves Codex transcript scopes for capture", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "cmd-capture-codex-auto");
-      await initWiki({ cwd: repo, name: "cmd-capture-codex-auto", description: "" });
-      const codexDir = join(home, ".codex", "sessions");
-      await mkdir(codexDir, { recursive: true });
-      const transcript = join(codexDir, "codex-session.jsonl");
-      await writeFile(
-        transcript,
-        `${JSON.stringify({
-          type: "session_meta",
-          payload: { id: "codex-session", cwd: repo },
-        })}\n`,
-      );
-      const seen: unknown[] = [];
-
-      const result = await runCaptureCommand({
-        cwd: repo,
-        app: "codex",
-        startBackground: async (options) => {
-          seen.push(options);
-          return {
-            runId: "run_capture_codex_auto",
-            childPid: 333,
-            record: {
-              version: 1,
-              id: "run_capture_codex_auto",
-              operation: "absorb",
-              status: "queued",
-              repoRoot: options.repoRoot,
-              pid: 0,
-              provider: options.spec.provider.id,
-              startedAt: "2026-05-09T20:20:00.000Z",
-              logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
-            },
-          };
-        },
-      });
-
-      expect(result.stdout).toBe("capture started: run_capture_codex_auto\n");
-      expect(seen[0]).toMatchObject({
-        spec: {
-          metadata: {
-            operation: "absorb",
-            targetKind: "session",
-            targetPaths: [transcript],
+            targetKind: "mixed",
+            targetPaths: ["github:pr:123", join(repo, "notes.md")],
           },
         },
       });

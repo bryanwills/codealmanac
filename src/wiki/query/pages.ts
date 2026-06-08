@@ -1,10 +1,10 @@
 import type Database from "better-sqlite3";
 
+import { buildFileMentionFilter } from "./file-mentions.js";
 import {
-  buildFileMentionFilter,
   buildQuotedPrefixFtsQuery,
   buildQuotedTermFtsQuery,
-} from "./search.js";
+} from "./fts.js";
 
 export interface PageSummary {
   slug: string;

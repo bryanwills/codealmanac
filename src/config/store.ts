@@ -86,7 +86,7 @@ export async function writeConfig(
   await rename(tmp, file);
 }
 
-export async function ensureAutomationCaptureSince(
+export async function ensureAutomationSyncSince(
   timestamp: string,
   path?: string,
 ): Promise<string> {
@@ -102,18 +102,29 @@ export async function ensureAutomationCaptureSince(
       ? raw.automation as Record<string, unknown>
       : {};
   const existing =
-    typeof automation.capture_since === "string" &&
-      Number.isFinite(Date.parse(automation.capture_since))
+    typeof automation.sync_since === "string" &&
+      Number.isFinite(Date.parse(automation.sync_since))
+      ? automation.sync_since
+      : typeof automation.capture_since === "string" &&
+          Number.isFinite(Date.parse(automation.capture_since))
       ? automation.capture_since
       : null;
-  if (existing !== null) return existing;
-  automation.capture_since = timestamp;
+  const hasLegacyKey = Object.prototype.hasOwnProperty.call(
+    automation,
+    "capture_since",
+  );
+  if (existing !== null && automation.sync_since === existing && !hasLegacyKey) {
+    return existing;
+  }
+  const canonical = existing ?? timestamp;
+  automation.sync_since = canonical;
+  delete automation.capture_since;
   raw.automation = automation;
   await mkdir(dirname(file), { recursive: true });
   const tmp = `${file}.tmp`;
   await writeFile(tmp, serializeConfig(raw, file), "utf8");
   await rename(tmp, file);
-  return timestamp;
+  return canonical;
 }
 
 function normalizeReadOptions(
@@ -215,11 +226,12 @@ function toStoredConfigPatch(
     }
   }
   if (config.automation !== undefined) {
-    const value = normalized.automation.capture_since;
-    const currentValue = current.automation.capture_since;
-    const defaultValue = defaults.automation.capture_since;
+    const value = normalized.automation.sync_since;
+    const currentValue = current.automation.sync_since;
+    const defaultValue = defaults.automation.sync_since;
     if (value !== currentValue) {
-      setStoredValue(stored, ["automation", "capture_since"], value, defaultValue);
+      setStoredValue(stored, ["automation", "sync_since"], value, defaultValue);
+      removeStoredValue(stored, ["automation", "capture_since"]);
     }
   }
   pruneEmptyObjects(stored);
@@ -244,6 +256,17 @@ function setStoredValue(
   if (leaf === undefined) return;
   cursor[leaf] = value;
   if (value !== defaultValue) return;
+}
+
+function removeStoredValue(raw: Record<string, unknown>, path: string[]): void {
+  let cursor = raw;
+  for (const part of path.slice(0, -1)) {
+    const next = cursor[part];
+    if (next === null || typeof next !== "object" || Array.isArray(next)) return;
+    cursor = next as Record<string, unknown>;
+  }
+  const leaf = path[path.length - 1];
+  if (leaf !== undefined) delete cursor[leaf];
 }
 
 function cloneJsonObject(raw: Record<string, unknown>): Record<string, unknown> {

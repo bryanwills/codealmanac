@@ -58,7 +58,7 @@ async function scaffold(home: string): Promise<{
 }> {
   const claudeDir = join(home, ".claude");
   const guidesDir = join(home, "fake-guides");
-  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.capture-sweep.plist");
+  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.sync.plist");
   await scaffoldGuides(guidesDir);
   const out = new PassThrough();
   const chunks: Buffer[] = [];
@@ -120,11 +120,10 @@ describe("codealmanac setup", () => {
       expect(existsSync(env.plistPath)).toBe(true);
       const plist = await readFile(env.plistPath, "utf8");
       expect(plist).toContain("dist/launcher.js");
-      expect(plist).toContain("<string>capture</string>");
-      expect(plist).toContain("<string>sweep</string>");
+      expect(plist).toContain("<string>sync</string>");
       await expect(readConfig()).resolves.toMatchObject({
         auto_commit: true,
-        automation: { capture_since: expect.any(String) },
+        automation: { sync_since: expect.any(String) },
       });
       expect(await readFile(codexHooks, "utf8")).not.toContain("almanac-capture.sh");
       expect(calls.some((call) => call.includes("bootstrap"))).toBe(true);
@@ -243,12 +242,12 @@ describe("codealmanac setup", () => {
         "LaunchAgents",
         "com.codealmanac.update.plist",
       );
-      let answeredCapture = false;
+      let answeredSync = false;
       let answeredUpdate = false;
       env.out.on("data", () => {
         const text = env.stdout();
-        if (!answeredCapture && text.includes("Keep your codebase wiki up to date automatically?")) {
-          answeredCapture = true;
+        if (!answeredSync && text.includes("Keep your codebase wiki synced automatically?")) {
+          answeredSync = true;
           queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
         }
         if (!answeredUpdate && text.includes("Keep Almanac automatically updated?")) {
@@ -270,7 +269,7 @@ describe("codealmanac setup", () => {
       });
 
       expect(result.ok).toBe(true);
-      expect(answeredCapture).toBe(true);
+      expect(answeredSync).toBe(true);
       expect(answeredUpdate).toBe(true);
       expect(await readFile(updatePlistPath, "utf8")).toContain("<string>update</string>");
     });

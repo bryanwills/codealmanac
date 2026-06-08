@@ -11,7 +11,7 @@ import { withTempHome } from "./helpers.js";
 
 /**
  * Pre-command nag banner. We drive it with a `PassThrough` stream so we
- * can capture the output deterministically without touching the real
+ * can record the output deterministically without touching the real
  * stderr. Every test forces `color: false` to keep assertions free of
  * ANSI escape sequences.
  */

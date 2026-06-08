@@ -41,18 +41,22 @@ Body goes here.
   it("parses structured sources and legacy source strings", () => {
     const fm = parseFrontmatter(
       `---
-title: Capture
+title: Absorb
 sources:
-  - id: capture-command
+  - id: absorb-command
     type: file
     path: src/cli/commands/operations.ts
-    note: Starts capture.
+    note: Starts absorb.
   - id: sdk-docs
     type: web
     url: https://example.com/docs
     title: SDK Docs
     retrieved_at: 2026-05-28
     note: External behavior.
+  - id: bug-report
+    type: issue
+    number: 42
+    note: User-reported regression.
   - https://legacy.example.com/docs
 files:
   - src/legacy.ts
@@ -64,10 +68,10 @@ Body.
 
     expect(fm.sources).toEqual([
       {
-        id: "capture-command",
+        id: "absorb-command",
         type: "file",
         path: "src/cli/commands/operations.ts",
-        note: "Starts capture.",
+        note: "Starts absorb.",
       },
       {
         id: "sdk-docs",
@@ -76,6 +80,12 @@ Body.
         title: "SDK Docs",
         retrieved_at: "2026-05-28",
         note: "External behavior.",
+      },
+      {
+        id: "bug-report",
+        type: "issue",
+        number: "42",
+        note: "User-reported regression.",
       },
     ]);
     expect(fm.files).toEqual(["src/legacy.ts"]);

@@ -87,10 +87,10 @@ function serializeTomlConfig(raw: Record<string, unknown>): string {
     !Array.isArray(raw.automation)
       ? raw.automation as Record<string, unknown>
       : {};
-  if (typeof automation.capture_since === "string") {
+  if (typeof automation.sync_since === "string") {
     if (lines.length > 0) lines.push("");
     lines.push("[automation]");
-    lines.push(`capture_since = ${tomlString(automation.capture_since)}`);
+    lines.push(`sync_since = ${tomlString(automation.sync_since)}`);
   }
   return `${lines.join("\n")}\n`;
 }

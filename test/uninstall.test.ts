@@ -13,7 +13,7 @@ async function scaffold(home: string): Promise<{
   claudeDir: string;
   out: PassThrough;
 }> {
-  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.capture-sweep.plist");
+  const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.sync.plist");
   const gardenPlistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.garden.plist");
   const claudeDir = join(home, ".claude");
   const out = new PassThrough();

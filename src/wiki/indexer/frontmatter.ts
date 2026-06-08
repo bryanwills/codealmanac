@@ -29,6 +29,7 @@ export type FrontmatterSource =
     }
   | { id: string; type: "commit"; rev: string; note?: string }
   | { id: string; type: "pr"; url?: string; number?: string; note?: string }
+  | { id: string; type: "issue"; url?: string; number?: string; note?: string }
   | {
       id: string;
       type: "conversation";
@@ -208,6 +209,12 @@ function coerceSource(v: unknown): FrontmatterSource | null {
       return rev === undefined ? null : optional({ id, type, rev, note });
     }
     case "pr": {
+      const url = coerceString(obj.url);
+      const number = coerceString(obj.number) ?? coerceNumberString(obj.number);
+      if (url === undefined && number === undefined) return null;
+      return optional({ id, type, url, number, note });
+    }
+    case "issue": {
       const url = coerceString(obj.url);
       const number = coerceString(obj.number) ?? coerceNumberString(obj.number);
       if (url === undefined && number === undefined) return null;

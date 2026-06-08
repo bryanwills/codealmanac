@@ -28,7 +28,7 @@ export type {
  * Separate from `almanac health` (which checks graph integrity of a
  * specific wiki). `doctor` answers the "is this install even set up
  * correctly?" question that users hit when first trying the tool or when
- * sessions silently stop getting captured.
+ * sessions silently stop getting absorbed.
  *
  * This file is the command composition root. The section-specific probes
  * and formatting live next to it so each durable fact has one obvious owner.

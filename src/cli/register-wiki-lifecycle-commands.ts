@@ -2,10 +2,7 @@ import { Command } from "commander";
 
 import type { HarnessEvent } from "../harness/events.js";
 import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
-import {
-  emit,
-  parsePositiveInt,
-} from "./helpers.js";
+import { emit } from "./helpers.js";
 
 export function registerWikiLifecycleCommands(program: Command): void {
   program
@@ -44,16 +41,9 @@ export function registerWikiLifecycleCommands(program: Command): void {
       },
     );
 
-  const capture = program
-    .command("capture [sessionFiles...]")
-    .alias("c")
-    .description("update the wiki from AI coding sessions")
-    .option("--app <app>", "source app: claude, codex, cursor, or generic")
-    .option("--session <id>", "target a specific session by ID")
-    .option("--since <duration-or-date>", "capture sessions since a time")
-    .option("--limit <n>", "maximum sessions to capture", parsePositiveInt)
-    .option("--all", "capture all matching sessions")
-    .option("--all-apps", "capture from all supported apps")
+  program
+    .command("absorb <inputs...>")
+    .description("update the wiki from explicit files, folders, PRs, issues, or URLs")
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
@@ -61,14 +51,8 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--verbose", "stream agent activity while the run is attached")
     .action(
       async (
-        sessionFiles: string[],
+        inputs: string[],
         opts: {
-          app?: string;
-          session?: string;
-          since?: string;
-          limit?: number;
-          all?: boolean;
-          allApps?: boolean;
           using?: string;
           foreground?: boolean;
           json?: boolean;
@@ -77,16 +61,10 @@ export function registerWikiLifecycleCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runCaptureCommand } = await import("./commands/operations.js");
-        const result = await runCaptureCommand({
+        const { runAbsorbCommand } = await import("./commands/operations.js");
+        const result = await runAbsorbCommand({
           cwd: process.cwd(),
-          sessionFiles,
-          app: opts.app,
-          session: opts.session,
-          since: opts.since,
-          limit: opts.limit,
-          all: opts.all,
-          allApps: opts.allApps,
+          inputs,
           using: opts.using,
           foreground: opts.foreground,
           json: opts.json,
@@ -100,8 +78,8 @@ export function registerWikiLifecycleCommands(program: Command): void {
     );
 
   program
-    .command("ingest <paths...>")
-    .description("update the wiki from files, folders, PRs, issues, or URLs")
+    .command("ingest <inputs...>")
+    .description("alias for absorb")
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
@@ -109,7 +87,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--verbose", "stream agent activity while the run is attached")
     .action(
       async (
-        paths: string[],
+        inputs: string[],
         opts: {
           using?: string;
           foreground?: boolean;
@@ -119,10 +97,10 @@ export function registerWikiLifecycleCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runIngestCommand } = await import("./commands/operations.js");
-        const result = await runIngestCommand({
+        const { runAbsorbCommand } = await import("./commands/operations.js");
+        const result = await runAbsorbCommand({
           cwd: process.cwd(),
-          paths,
+          inputs,
           using: opts.using,
           foreground: opts.foreground,
           json: opts.json,
@@ -134,6 +112,52 @@ export function registerWikiLifecycleCommands(program: Command): void {
         emit(result);
       },
     );
+
+  const sync = program
+    .command("sync")
+    .description("find new material from supported tools and absorb it")
+    .option("--from <apps>", "comma-separated sources to scan (default: claude,codex)")
+    .option("--quiet <duration>", "minimum quiet time before sync (default: 45m)")
+    .option("--using <provider[/model]>", "provider and optional model")
+    .option("--json", "emit structured JSON")
+    .action(async (opts: {
+      from?: string;
+      quiet?: string;
+      using?: string;
+      json?: boolean;
+    }) => {
+      const { runSyncCommand } = await import("./commands/sync.js");
+      const result = await runSyncCommand({
+        cwd: process.cwd(),
+        from: opts.from,
+        quiet: opts.quiet,
+        using: opts.using,
+        json: opts.json,
+      });
+      emit(result);
+    });
+
+  sync
+    .command("status")
+    .description("show sync candidates without starting absorb jobs")
+    .option("--from <apps>", "comma-separated sources to scan (default: claude,codex)")
+    .option("--quiet <duration>", "minimum quiet time before sync (default: 45m)")
+    .option("--json", "emit structured JSON")
+    .action(async (opts: {
+      from?: string;
+      quiet?: string;
+      json?: boolean;
+    }) => {
+      const { runSyncCommand } = await import("./commands/sync.js");
+      const result = await runSyncCommand({
+        cwd: process.cwd(),
+        mode: "status",
+        from: opts.from,
+        quiet: opts.quiet,
+        json: opts.json,
+      });
+      emit(result);
+    });
 
   program
     .command("garden")
@@ -240,40 +264,6 @@ export function registerWikiLifecycleCommands(program: Command): void {
       emit(result);
     });
 
-  capture
-    .command("sweep")
-    .description("scan quiet Claude/Codex transcripts and start capture jobs")
-    .option("--apps <apps>", "comma-separated apps to scan (default: claude,codex)")
-    .option("--quiet <duration>", "minimum quiet time before capture (default: 45m)")
-    .option("--using <provider[/model]>", "provider and optional model")
-    .option("--dry-run", "show eligible sessions without starting captures")
-    .option("--json", "emit structured JSON")
-    .action(async (opts: {
-      apps?: string;
-      quiet?: string;
-      using?: string;
-      dryRun?: boolean;
-      json?: boolean;
-    }, command: Command) => {
-      const merged = command.optsWithGlobals() as {
-        apps?: string;
-        quiet?: string;
-        using?: string;
-        dryRun?: boolean;
-        json?: boolean;
-      };
-      const { runCaptureSweepCommand } = await import("./commands/capture-sweep.js");
-      const result = await runCaptureSweepCommand({
-        cwd: process.cwd(),
-        apps: merged.apps ?? opts.apps,
-        quiet: merged.quiet ?? opts.quiet,
-        using: merged.using ?? opts.using,
-        dryRun: merged.dryRun ?? opts.dryRun,
-        json: merged.json ?? opts.json,
-      });
-      emit(result);
-    });
-
   const automation = program
     .command("automation")
     .description("manage scheduled Almanac automation");
@@ -281,8 +271,8 @@ export function registerWikiLifecycleCommands(program: Command): void {
   automation
     .command("install [tasks...]")
     .description("install the macOS launchd automation jobs")
-    .option("--every <duration>", "run interval for capture or a single selected task")
-    .option("--quiet <duration>", "minimum quiet time before capture (default: 45m)")
+    .option("--every <duration>", "run interval for sync or a single selected task")
+    .option("--quiet <duration>", "minimum quiet time before sync (default: 45m)")
     .option("--garden-every <duration>", "Garden run interval (default: 4h)")
     .option("--garden-off", "disable scheduled Garden automation")
     .action(async (tasks: string[], opts: {

@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -7,17 +7,18 @@ import {
   runAutomationStatus,
   runAutomationUninstall,
 } from "../src/cli/commands/automation.js";
-import { readConfig } from "../src/config/index.js";
+import { runMigrateAutomation } from "../src/cli/commands/migrate.js";
+import { ensureAutomationSyncSince, readConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 
 describe("almanac automation", () => {
-  it("records auto-capture activation once and preserves it on reinstall", async () => {
+  it("records sync activation once and preserves it on reinstall", async () => {
     await withTempHome(async (home) => {
       const plistPath = join(
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       const gardenPlistPath = join(
         home,
@@ -29,7 +30,7 @@ describe("almanac automation", () => {
       const exec = async (_file: string, args: string[]) => {
         if (args[0] === "bootstrap" && args[2] === plistPath) {
           const config = await readConfig();
-          launchEvents.push(config.automation.capture_since ?? "missing");
+          launchEvents.push(config.automation.sync_since ?? "missing");
         }
         return {};
       };
@@ -43,11 +44,11 @@ describe("almanac automation", () => {
       });
       expect(first.exitCode).toBe(0);
       expect(first.stdout).toContain(
-        "capturing transcripts after: 2026-05-12T05:10:00.000Z",
+        "syncing transcripts after: 2026-05-12T05:10:00.000Z",
       );
       expect(launchEvents).toEqual(["2026-05-12T05:10:00.000Z"]);
       await expect(readConfig()).resolves.toMatchObject({
-        automation: { capture_since: "2026-05-12T05:10:00.000Z" },
+        automation: { sync_since: "2026-05-12T05:10:00.000Z" },
       });
 
       const second = await runAutomationInstall({
@@ -59,19 +60,18 @@ describe("almanac automation", () => {
       });
       expect(second.exitCode).toBe(0);
       expect(second.stdout).toContain(
-        "capturing transcripts after: 2026-05-12T05:10:00.000Z",
+        "syncing transcripts after: 2026-05-12T05:10:00.000Z",
       );
       expect(launchEvents).toEqual([
         "2026-05-12T05:10:00.000Z",
         "2026-05-12T05:10:00.000Z",
       ]);
       await expect(readConfig()).resolves.toMatchObject({
-        automation: { capture_since: "2026-05-12T05:10:00.000Z" },
+        automation: { sync_since: "2026-05-12T05:10:00.000Z" },
       });
 
       const plist = await readFile(plistPath, "utf8");
-      expect(plist).toContain("<string>capture</string>");
-      expect(plist).toContain("<string>sweep</string>");
+      expect(plist).toContain("<string>sync</string>");
       expect(plist).toContain("<string>--quiet</string>");
       expect(plist).toContain("<string>45m</string>");
       expect(plist).toContain("<key>EnvironmentVariables</key>");
@@ -99,7 +99,7 @@ describe("almanac automation", () => {
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       const gardenPlistPath = join(
         home,
@@ -129,7 +129,7 @@ describe("almanac automation", () => {
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       const gardenPlistPath = join(
         home,
@@ -150,8 +150,8 @@ describe("almanac automation", () => {
       });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("capture interval: 1m");
-      expect(result.stdout).toContain("capture quiet: 1s");
+      expect(result.stdout).toContain("sync interval: 1m");
+      expect(result.stdout).toContain("sync quiet: 1s");
       expect(result.stdout).toContain("garden interval: 1w");
 
       const plist = await readFile(plistPath, "utf8");
@@ -172,7 +172,7 @@ describe("almanac automation", () => {
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       const gardenPlistPath = join(
         home,
@@ -200,7 +200,7 @@ describe("almanac automation", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("garden: disabled");
       await expect(readFile(gardenPlistPath, "utf8")).rejects.toThrow();
-      expect(await readFile(plistPath, "utf8")).toContain("<string>capture</string>");
+      expect(await readFile(plistPath, "utf8")).toContain("<string>sync</string>");
     });
   });
 
@@ -210,7 +210,7 @@ describe("almanac automation", () => {
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       await mkdir(join(home, ".almanac"), { recursive: true });
       await writeFile(
@@ -234,7 +234,7 @@ describe("almanac automation", () => {
       expect(result.exitCode).toBe(0);
       await expect(readConfig()).resolves.toMatchObject({
         agent: { default: "claude", models: { claude: "claude-opus-4-6" } },
-        automation: { capture_since: "2026-05-12T05:10:00.000Z" },
+        automation: { sync_since: "2026-05-12T05:10:00.000Z" },
       });
       const toml = await readFile(join(home, ".almanac", "config.toml"), "utf8");
       expect(toml).toContain('[agent]');
@@ -249,7 +249,7 @@ describe("almanac automation", () => {
         home,
         "Library",
         "LaunchAgents",
-        "com.codealmanac.capture-sweep.plist",
+        "com.codealmanac.sync.plist",
       );
       const gardenPlistPath = join(
         home,
@@ -269,7 +269,7 @@ describe("almanac automation", () => {
         plistPath,
         gardenPlistPath,
         exec: async (_file, args) => {
-          if (args[0] === "print" && String(args[1]).endsWith("capture-sweep")) {
+          if (args[0] === "print" && String(args[1]).endsWith("sync")) {
             return {};
           }
           throw new Error("not loaded");
@@ -277,10 +277,66 @@ describe("almanac automation", () => {
       });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("auto-capture automation: installed");
+      expect(result.stdout).toContain("sync automation: installed");
       expect(result.stdout).toContain("garden automation: installed");
       expect(result.stdout).toContain("launchd loaded: yes");
       expect(result.stdout).toContain("launchd loaded: no");
+    });
+  });
+
+  it("reports legacy capture sweep jobs in automation status", async () => {
+    await withTempHome(async (home) => {
+      const legacyPlistPath = join(
+        home,
+        "Library",
+        "LaunchAgents",
+        "com.codealmanac.capture-sweep.plist",
+      );
+      await writeLegacyCaptureSweepPlist(legacyPlistPath, {
+        quiet: "10m",
+        intervalSeconds: 3600,
+      });
+
+      const result = await runAutomationStatus({
+        tasks: ["sync"],
+        homeDir: home,
+        legacyCapturePlistPath: legacyPlistPath,
+        exec: async () => {
+          throw new Error("not loaded");
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("sync automation: not installed");
+      expect(result.stdout).toContain(
+        "legacy automation: uses removed command capture sweep",
+      );
+      expect(result.stdout).toContain(`plist: ${legacyPlistPath}`);
+      expect(result.stdout).toContain("run: almanac migrate automation");
+    });
+  });
+
+  it("canonicalizes legacy automation baselines to sync_since", async () => {
+    await withTempHome(async (home) => {
+      const configPath = join(home, ".almanac", "config.toml");
+      await mkdir(dirname(configPath), { recursive: true });
+      await writeFile(
+        configPath,
+        `[automation]
+capture_since = "2026-05-12T05:10:00.000Z"
+`,
+        "utf8",
+      );
+
+      const value = await ensureAutomationSyncSince(
+        "2026-05-12T06:00:00.000Z",
+        configPath,
+      );
+
+      expect(value).toBe("2026-05-12T05:10:00.000Z");
+      const toml = await readFile(configPath, "utf8");
+      expect(toml).toContain('sync_since = "2026-05-12T05:10:00.000Z"');
+      expect(toml).not.toContain("capture_since");
     });
   });
 
@@ -335,7 +391,7 @@ describe("almanac automation", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("auto-update automation: installed");
-      expect(result.stdout).not.toContain("auto-capture automation");
+      expect(result.stdout).not.toContain("sync automation");
       expect(result.stdout).not.toContain("garden automation");
     });
   });
@@ -365,4 +421,95 @@ describe("almanac automation", () => {
       await expect(readFile(updatePlistPath, "utf8")).rejects.toThrow();
     });
   });
+
+  it("migrates a legacy capture sweep job to sync automation", async () => {
+    await withTempHome(async (home) => {
+      const legacyPlistPath = join(
+        home,
+        "Library",
+        "LaunchAgents",
+        "com.codealmanac.capture-sweep.plist",
+      );
+      const syncPlistPath = join(
+        home,
+        "Library",
+        "LaunchAgents",
+        "com.codealmanac.sync.plist",
+      );
+      await writeLegacyCaptureSweepPlist(legacyPlistPath, {
+        quiet: "5m",
+        intervalSeconds: 7200,
+      });
+      const launchEvents: string[] = [];
+      const exec = async (file: string, args: string[]) => {
+        launchEvents.push([file, ...args].join(" "));
+        return {};
+      };
+
+      const result = await runMigrateAutomation({
+        homeDir: home,
+        legacyPlistPath,
+        syncPlistPath,
+        exec,
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("migrated automation to sync");
+      expect(result.stdout).toContain(`sync plist: ${syncPlistPath}`);
+      expect(result.stdout).toContain(`removed legacy plist: ${legacyPlistPath}`);
+      await expect(readFile(legacyPlistPath, "utf8")).rejects.toThrow();
+
+      const syncPlist = await readFile(syncPlistPath, "utf8");
+      expect(syncPlist).toContain("<string>com.codealmanac.sync</string>");
+      expect(syncPlist).toContain("<string>sync</string>");
+      expect(syncPlist).toContain("<string>--quiet</string>");
+      expect(syncPlist).toContain("<string>5m</string>");
+      expect(syncPlist).toContain("<integer>7200</integer>");
+      expect(launchEvents.some((event) => event.includes(syncPlistPath))).toBe(true);
+      expect(launchEvents.some((event) => event.includes(legacyPlistPath))).toBe(true);
+    });
+  });
+
+  it("reports automation migration as current when no legacy capture sweep job exists", async () => {
+    await withTempHome(async (home) => {
+      const result = await runMigrateAutomation({
+        homeDir: home,
+        exec: async () => {
+          throw new Error("launchctl should not run");
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("automation already current\n");
+    });
+  });
 });
+
+async function writeLegacyCaptureSweepPlist(
+  plistPath: string,
+  options: { quiet: string; intervalSeconds: number },
+): Promise<void> {
+  await mkdir(dirname(plistPath), { recursive: true });
+  await writeFile(
+    plistPath,
+    `<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codealmanac.capture-sweep</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>almanac</string>
+    <string>capture</string>
+    <string>sweep</string>
+    <string>--quiet</string>
+    <string>${options.quiet}</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>${options.intervalSeconds}</integer>
+</dict>
+</plist>
+`,
+    "utf8",
+  );
+}

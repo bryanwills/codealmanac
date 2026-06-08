@@ -155,7 +155,7 @@ function isUserLevelOnlyKey(key: ConfigKey): boolean {
   return (
     key === "update_notifier" ||
     key === "auto_commit" ||
-    key === "automation.capture_since"
+    key === "automation.sync_since"
   );
 }
 

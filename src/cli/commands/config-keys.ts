@@ -10,7 +10,7 @@ export type ConfigKey =
   | "auto_commit"
   | "agent.default"
   | `agent.models.${AgentProviderId}`
-  | "automation.capture_since";
+  | "automation.sync_since";
 
 export interface ConfigEntry {
   key: ConfigKey;
@@ -22,7 +22,7 @@ export const CONFIG_KEYS: ConfigKey[] = [
   "auto_commit",
   "agent.default",
   ...AGENT_PROVIDER_IDS.map((id) => `agent.models.${id}` as const),
-  "automation.capture_since",
+  "automation.sync_since",
 ];
 
 export function parseConfigKey(raw: string): ConfigKey | null {
@@ -30,7 +30,7 @@ export function parseConfigKey(raw: string): ConfigKey | null {
     raw === "update_notifier" ||
     raw === "auto_commit" ||
     raw === "agent.default" ||
-    raw === "automation.capture_since"
+    raw === "automation.sync_since"
   ) return raw;
   const prefix = "agent.models.";
   if (!raw.startsWith(prefix)) return null;
@@ -46,7 +46,7 @@ export function getConfigValue(
   if (key === "update_notifier") return config.update_notifier;
   if (key === "auto_commit") return config.auto_commit;
   if (key === "agent.default") return config.agent.default;
-  if (key === "automation.capture_since") return config.automation.capture_since;
+  if (key === "automation.sync_since") return config.automation.sync_since;
   const provider = providerFromModelKey(key);
   return config.agent.models[provider] ?? null;
 }
@@ -80,12 +80,12 @@ export function setConfigValue(
       },
     };
   }
-  if (key === "automation.capture_since") {
+  if (key === "automation.sync_since") {
     return {
       ...config,
       automation: {
         ...config.automation,
-        capture_since: normalizeCaptureSince(rawValue),
+        sync_since: normalizeSyncSince(rawValue),
       },
     };
   }
@@ -138,10 +138,10 @@ function normalizeModel(value: string | null): string | null {
   return value;
 }
 
-function normalizeCaptureSince(value: string | null): string | null {
+function normalizeSyncSince(value: string | null): string | null {
   if (value === null || value === "default" || value === "null") return null;
   if (!Number.isFinite(Date.parse(value))) {
-    throw new Error("automation.capture_since must be an ISO timestamp, default, or null");
+    throw new Error("automation.sync_since must be an ISO timestamp, default, or null");
   }
   return value;
 }

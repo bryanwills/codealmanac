@@ -4,30 +4,30 @@ import { dirname, join } from "node:path";
 import { parseJsonObject } from "./discovery/jsonl.js";
 import { getRepoAlmanacDir } from "../paths.js";
 
-const SWEEP_LOCK_STALE_MS = 60 * 60 * 1000;
+const SYNC_LOCK_STALE_MS = 60 * 60 * 1000;
 
-export function captureSweepLockPath(repoRoot: string): string {
-  return join(getRepoAlmanacDir(repoRoot), "runs", "capture-sweep.lock");
+export function syncLockPath(repoRoot: string): string {
+  return join(getRepoAlmanacDir(repoRoot), "runs", "sync.lock");
 }
 
-export async function acquireRepoSweepLock(repoRoot: string, now: Date): Promise<boolean> {
+export async function acquireRepoSyncLock(repoRoot: string, now: Date): Promise<boolean> {
   if (await tryCreateRepoLock(repoRoot, now)) return true;
   if (!await isStaleRepoLock(repoRoot, now)) return false;
-  await releaseRepoSweepLock(repoRoot);
+  await releaseRepoSyncLock(repoRoot);
   return await tryCreateRepoLock(repoRoot, now);
 }
 
-export async function releaseRepoSweepLock(repoRoot: string): Promise<void> {
-  await rm(captureSweepLockPath(repoRoot), { recursive: true, force: true });
+export async function releaseRepoSyncLock(repoRoot: string): Promise<void> {
+  await rm(syncLockPath(repoRoot), { recursive: true, force: true });
 }
 
 function lockOwnerPath(repoRoot: string): string {
-  return join(captureSweepLockPath(repoRoot), "owner.json");
+  return join(syncLockPath(repoRoot), "owner.json");
 }
 
 async function tryCreateRepoLock(repoRoot: string, now: Date): Promise<boolean> {
   try {
-    const lock = captureSweepLockPath(repoRoot);
+    const lock = syncLockPath(repoRoot);
     await mkdir(dirname(lock), { recursive: true });
     await mkdir(lock, { recursive: false });
     await writeFile(
@@ -50,7 +50,7 @@ async function isStaleRepoLock(repoRoot: string, now: Date): Promise<boolean> {
   }
   const startedAt = typeof raw.startedAt === "string" ? Date.parse(raw.startedAt) : NaN;
   if (!Number.isFinite(startedAt)) return true;
-  if (now.getTime() - startedAt > SWEEP_LOCK_STALE_MS) return true;
+  if (now.getTime() - startedAt > SYNC_LOCK_STALE_MS) return true;
   const pid = typeof raw.pid === "number" ? raw.pid : null;
   return pid !== null && !isPidAlive(pid);
 }

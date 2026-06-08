@@ -71,14 +71,14 @@ describe("tryParseSetupShortcut", () => {
       });
   });
 
-  it("recognizes --auto-capture-every and --auto-capture-quiet", () => {
-    expect(tryParseSetupShortcut(["--auto-capture-every", "2h"]))
+  it("recognizes --sync-every and --sync-quiet", () => {
+    expect(tryParseSetupShortcut(["--sync-every", "2h"]))
       .toEqual({ automationEvery: "2h" });
-    expect(tryParseSetupShortcut(["--auto-capture-quiet", "1s"]))
+    expect(tryParseSetupShortcut(["--sync-quiet", "1s"]))
       .toEqual({ automationQuiet: "1s" });
-    expect(tryParseSetupShortcut(["--auto-capture-every=2h"]))
+    expect(tryParseSetupShortcut(["--sync-every=2h"]))
       .toEqual({ automationEvery: "2h" });
-    expect(tryParseSetupShortcut(["--auto-capture-quiet=1s"]))
+    expect(tryParseSetupShortcut(["--sync-quiet=1s"]))
       .toEqual({ automationQuiet: "1s" });
   });
 
@@ -106,9 +106,9 @@ describe("tryParseSetupShortcut", () => {
         "--yes",
         "--skip-automation",
         "--skip-guides",
-        "--auto-capture-every",
+        "--sync-every",
         "2h",
-        "--auto-capture-quiet",
+        "--sync-quiet",
         "1s",
         "--garden-every",
         "2d",
@@ -229,8 +229,9 @@ describe("registerCommands", () => {
       "migrate",
       "topics",
       "init",
-      "capture",
+      "absorb",
       "ingest",
+      "sync",
       "garden",
       "jobs",
       "automation",
@@ -258,8 +259,6 @@ describe("registerCommands", () => {
       .toEqual(["add", "list", "show", "decide", "apply", "reopen"]);
     expect(findCommand(program, ["automation"]).commands.map((cmd) => cmd.name()))
       .toEqual(["install", "uninstall", "status"]);
-    expect(findCommand(program, ["capture"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["sweep"]);
     expect(findCommand(program, ["jobs"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "show", "logs", "attach", "cancel"]);
     expect(findCommand(program, ["agents"]).commands.map((cmd) => cmd.name()))
@@ -267,7 +266,9 @@ describe("registerCommands", () => {
     expect(findCommand(program, ["config"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "get", "set", "unset"]);
     expect(findCommand(program, ["migrate"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["legacy-sources"]);
+      .toEqual(["legacy-sources", "automation"]);
+    expect(findCommand(program, ["sync"]).commands.map((cmd) => cmd.name()))
+      .toEqual(["status"]);
 
     expect(optionFlags(findCommand(program, ["setup"]))).toContain("-y, --yes");
     expect(optionFlags(findCommand(program, ["setup"]))).toContain(
@@ -281,10 +282,16 @@ describe("registerCommands", () => {
       "--using <provider[/model]>",
     );
     expect(optionFlags(findCommand(program, ["init"]))).toContain("--verbose");
-    expect(optionFlags(findCommand(program, ["capture"]))).toContain(
+    expect(optionFlags(findCommand(program, ["absorb"]))).toContain(
       "--foreground",
     );
-    expect(optionFlags(findCommand(program, ["capture"]))).toContain("--verbose");
+    expect(optionFlags(findCommand(program, ["absorb"]))).toContain("--verbose");
+    expect(optionFlags(findCommand(program, ["sync"]))).not.toContain("--dry-run");
+    expect(optionFlags(findCommand(program, ["sync"]))).toContain("--from <apps>");
+    expect(optionFlags(findCommand(program, ["sync", "status"]))).toContain(
+      "--from <apps>",
+    );
+    expect(optionFlags(findCommand(program, ["sync", "status"]))).toContain("--json");
     expect(optionFlags(findCommand(program, ["ingest"]))).toContain(
       "--using <provider[/model]>",
     );

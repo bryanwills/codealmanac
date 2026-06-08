@@ -3,16 +3,17 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const CAPTURE_SWEEP_LABEL = "com.codealmanac.capture-sweep";
+export const SYNC_LABEL = "com.codealmanac.sync";
+export const LEGACY_CAPTURE_SWEEP_LABEL = "com.codealmanac.capture-sweep";
 export const GARDEN_LABEL = "com.codealmanac.garden";
 export const UPDATE_LABEL = "com.codealmanac.update";
 
-export const DEFAULT_CAPTURE_INTERVAL = "5h";
-export const DEFAULT_CAPTURE_QUIET = "45m";
+export const DEFAULT_SYNC_INTERVAL = "5h";
+export const DEFAULT_SYNC_QUIET = "45m";
 export const DEFAULT_GARDEN_INTERVAL = "4h";
 export const DEFAULT_UPDATE_INTERVAL = "1d";
 
-export type ScheduledTaskId = "capture" | "garden" | "update";
+export type ScheduledTaskId = "sync" | "garden" | "update";
 export type ScheduledTaskWorkingDirectory = "none" | "nearest-almanac-repo";
 
 export interface ScheduledTaskDefinition {
@@ -26,21 +27,20 @@ export interface ScheduledTaskDefinition {
   programArguments: (options?: { quiet?: string }) => string[];
 }
 
-export const CAPTURE_SWEEP_TASK: ScheduledTaskDefinition = {
-  id: "capture",
-  label: CAPTURE_SWEEP_LABEL,
-  defaultInterval: DEFAULT_CAPTURE_INTERVAL,
+export const SYNC_TASK: ScheduledTaskDefinition = {
+  id: "sync",
+  label: SYNC_LABEL,
+  defaultInterval: DEFAULT_SYNC_INTERVAL,
   plistPath: (home) =>
-    path.join(home, "Library", "LaunchAgents", `${CAPTURE_SWEEP_LABEL}.plist`),
-  stdoutLogName: "capture-sweep.out.log",
-  stderrLogName: "capture-sweep.err.log",
+    path.join(home, "Library", "LaunchAgents", `${SYNC_LABEL}.plist`),
+  stdoutLogName: "sync.out.log",
+  stderrLogName: "sync.err.log",
   workingDirectory: "none",
   programArguments: (options) => [
     ...defaultCliProgramArguments(),
-    "capture",
-    "sweep",
+    "sync",
     "--quiet",
-    options?.quiet ?? DEFAULT_CAPTURE_QUIET,
+    options?.quiet ?? DEFAULT_SYNC_QUIET,
   ],
 };
 
@@ -69,12 +69,12 @@ export const UPDATE_TASK: ScheduledTaskDefinition = {
 };
 
 export const SCHEDULED_TASKS = {
-  capture: CAPTURE_SWEEP_TASK,
+  sync: SYNC_TASK,
   garden: GARDEN_TASK,
   update: UPDATE_TASK,
 } as const;
 
-export const DEFAULT_AUTOMATION_TASK_IDS: ScheduledTaskId[] = ["capture", "garden"];
+export const DEFAULT_AUTOMATION_TASK_IDS: ScheduledTaskId[] = ["sync", "garden"];
 
 export function scheduledTaskDefinition(
   id: ScheduledTaskId,
@@ -83,7 +83,7 @@ export function scheduledTaskDefinition(
 }
 
 export function isScheduledTaskId(value: string): value is ScheduledTaskId {
-  return value === "capture" || value === "garden" || value === "update";
+  return value === "sync" || value === "garden" || value === "update";
 }
 
 export function scheduledTaskLogPaths(
@@ -97,10 +97,10 @@ export function scheduledTaskLogPaths(
   };
 }
 
-export function captureSweepProgramArguments(
-  quiet: string = DEFAULT_CAPTURE_QUIET,
+export function syncProgramArguments(
+  quiet: string = DEFAULT_SYNC_QUIET,
 ): string[] {
-  return CAPTURE_SWEEP_TASK.programArguments({ quiet });
+  return SYNC_TASK.programArguments({ quiet });
 }
 
 export function gardenProgramArguments(): string[] {
@@ -116,7 +116,11 @@ export function defaultCliProgramArguments(): string[] {
 }
 
 export function defaultCapturePlistPath(home: string = homedir()): string {
-  return CAPTURE_SWEEP_TASK.plistPath(home);
+  return path.join(home, "Library", "LaunchAgents", `${LEGACY_CAPTURE_SWEEP_LABEL}.plist`);
+}
+
+export function defaultSyncPlistPath(home: string = homedir()): string {
+  return SYNC_TASK.plistPath(home);
 }
 
 export function defaultGardenPlistPath(home: string = homedir()): string {

@@ -43,7 +43,7 @@ export type AutomationExecFn = (
  *
  * Setup installs:
  *
- *   1. macOS launchd jobs that periodically run `almanac capture sweep`
+   *   1. macOS launchd jobs that periodically run `almanac sync`
  *      and `almanac garden`.
  *   2. The short "how to use Almanac" guide at
  *      `~/.claude/almanac.md`, sourced from `guides/mini.md` in the
@@ -66,11 +66,11 @@ export type AutomationExecFn = (
 export interface SetupOptions {
   /** Install everything without prompting. */
   yes?: boolean;
-  /** Don't install the scheduled auto-capture job. */
+  /** Don't install the scheduled sync job. */
   skipAutomation?: boolean;
-  /** Configure the scheduled auto-capture interval. Defaults to 5h. */
+  /** Configure the scheduled sync interval. Defaults to 5h. */
   automationEvery?: string;
-  /** Configure the scheduled auto-capture quiet window. Defaults to 45m. */
+  /** Configure the scheduled sync quiet window. Defaults to 45m. */
   automationQuiet?: string;
   /** Configure the scheduled Garden interval. Defaults to 4h. */
   gardenEvery?: string;

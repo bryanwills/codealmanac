@@ -8,6 +8,8 @@ import {
 } from "../../../agent/install-targets.js";
 import type { ClaudeAuthStatus } from "../../../agent/readiness/providers/claude/index.js";
 import { defaultPlistPath } from "../automation.js";
+import { detectLegacyCaptureSweepAutomation } from "../../../platform/automation/legacy-capture.js";
+import { defaultCapturePlistPath } from "../../../platform/automation/tasks.js";
 import {
   classifyInstallPath,
   detectInstallPath,
@@ -41,8 +43,11 @@ export async function gatherInstallChecks(
   const auth = await safeCheckAuth(options.spawnCli);
   checks.push(describeAuth(auth));
 
-  const plistPath = options.automationPlistPath ?? defaultPlistPath(homedir());
-  checks.push(describeAutomation(plistPath));
+  const home = homedir();
+  const plistPath = options.automationPlistPath ?? defaultPlistPath(home);
+  const legacyPlistPath =
+    options.legacyAutomationPlistPath ?? defaultCapturePlistPath(home);
+  checks.push(await describeAutomation(plistPath, legacyPlistPath, home));
 
   const claudeDir = options.claudeDir ?? path.join(homedir(), ".claude");
   const codexDir = options.codexDir ?? path.join(homedir(), ".codex");
@@ -114,18 +119,34 @@ function describeAuth(auth: ClaudeAuthStatus): Check {
   };
 }
 
-function describeAutomation(plistPath: string): Check {
+async function describeAutomation(
+  plistPath: string,
+  legacyPlistPath: string,
+  home: string,
+): Promise<Check> {
+  const legacy = await detectLegacyCaptureSweepAutomation({
+    homeDir: home,
+    plistPath: legacyPlistPath,
+  });
+  if (legacy !== null) {
+    return {
+      status: "problem",
+      key: "install.automation",
+      message: `legacy automation uses removed command capture sweep at ${legacy.plistPath}`,
+      fix: "run: almanac migrate automation",
+    };
+  }
   if (existsSync(plistPath)) {
     return {
       status: "ok",
       key: "install.automation",
-      message: `auto-capture automation installed at ${plistPath}`,
+      message: `sync automation installed at ${plistPath}`,
     };
   }
   return {
     status: "problem",
     key: "install.automation",
-    message: "auto-capture automation not installed",
+    message: "sync automation not installed",
     fix: "run: almanac automation install",
   };
 }

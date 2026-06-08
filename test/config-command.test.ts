@@ -21,7 +21,7 @@ describe("config command", () => {
       expect(result.stdout).toMatch(/KEY\s+VALUE\s+ORIGIN/);
       expect(result.stdout).toContain("agent.default");
       expect(result.stdout).toContain("agent.models.claude");
-      expect(result.stdout).toContain("automation.capture_since");
+      expect(result.stdout).toContain("automation.sync_since");
       expect(result.stdout).toContain("default");
     });
   });
@@ -105,27 +105,27 @@ describe("config command", () => {
     });
   });
 
-  it("sets and unsets automation.capture_since", async () => {
+  it("sets and unsets automation.sync_since", async () => {
     await withTempHome(async (home) => {
       const timestamp = "2026-05-12T05:10:00.000Z";
       await expect(runConfigSet({
-        key: "automation.capture_since",
+        key: "automation.sync_since",
         value: timestamp,
       })).resolves.toMatchObject({ exitCode: 0 });
       await expect(readConfig()).resolves.toMatchObject({
-        automation: { capture_since: timestamp },
+        automation: { sync_since: timestamp },
       });
 
       const path = join(home, ".almanac", "config.toml");
       const toml = await readFile(path, "utf8");
       expect(toml).toContain("[automation]");
-      expect(toml).toContain(`capture_since = "${timestamp}"`);
+      expect(toml).toContain(`sync_since = "${timestamp}"`);
 
       await expect(runConfigUnset({
-        key: "automation.capture_since",
+        key: "automation.sync_since",
       })).resolves.toMatchObject({ exitCode: 0 });
       await expect(readConfig()).resolves.toMatchObject({
-        automation: { capture_since: null },
+        automation: { sync_since: null },
       });
     });
   });
@@ -182,9 +182,9 @@ describe("config command", () => {
             default: "codex",
             models: { codex: "gpt-5.3-codex" },
           },
-          automation: {
-            capture_since: "2026-05-12T05:10:00.000Z",
-          },
+	          automation: {
+	            capture_since: "2026-05-12T05:10:00.000Z",
+	          },
         }),
         "utf8",
       );
@@ -197,7 +197,7 @@ describe("config command", () => {
           models: { codex: "gpt-5.3-codex" },
         },
         automation: {
-          capture_since: "2026-05-12T05:10:00.000Z",
+          sync_since: "2026-05-12T05:10:00.000Z",
         },
       });
 
@@ -207,7 +207,7 @@ describe("config command", () => {
       expect(toml).toContain("[agent.models]");
       expect(toml).toContain('codex = "gpt-5.3-codex"');
       expect(toml).toContain("[automation]");
-      expect(toml).toContain('capture_since = "2026-05-12T05:10:00.000Z"');
+      expect(toml).toContain('sync_since = "2026-05-12T05:10:00.000Z"');
     });
   });
 
@@ -274,7 +274,7 @@ describe("config command", () => {
           exitCode: 1,
         });
         await expect(runConfigSet({
-          key: "automation.capture_since",
+          key: "automation.sync_since",
           value: "2026-05-12T05:10:00.000Z",
           project: true,
         })).resolves.toMatchObject({
@@ -293,7 +293,7 @@ describe("config command", () => {
           exitCode: 1,
         });
         await expect(runConfigUnset({
-          key: "automation.capture_since",
+          key: "automation.sync_since",
           project: true,
         })).resolves.toMatchObject({
           exitCode: 1,

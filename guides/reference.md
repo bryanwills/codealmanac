@@ -6,7 +6,7 @@ Groupings match `almanac --help`:
 
 1. **Query** — `search`, `show`, `health`, `list`, `serve`
 2. **Edit** — `tag`, `untag`, `migrate`, `topics ...`
-3. **Wiki lifecycle** — `init`, `capture`, `ingest`, `garden`, `jobs`, `automation ...`, `reindex`
+3. **Wiki lifecycle** — `init`, `absorb`, `sync`, `ingest`, `garden`, `jobs`, `automation ...`, `reindex`
 4. **Setup** — `setup`, `uninstall`, `doctor`, `update`
 
 Every query/edit command auto-registers the current repo in `~/.almanac/registry.json` on first run. Exceptions: `list --drop` (skips auto-register so the removal intent isn't undone) and the setup group (installers, not wiki commands — they never touch the registry).
@@ -119,6 +119,14 @@ Rewrite safe legacy `files:` and string URL `sources:` frontmatter into structur
 
 Flags: `--topic <name>`, `--stdin`, `--wiki <name>`, `--json`.
 
+#### `almanac migrate automation`
+
+Replace a legacy macOS launchd plist that still runs `almanac capture sweep`
+with the current scheduled `almanac sync` job, then remove the old plist. The
+command preserves the legacy quiet window and interval when it can read them.
+
+Flag: `--json`.
+
 #### `almanac topics` (DAG management)
 
 - `almanac topics list` — list all topics with page counts. `--json` emits an array of `{slug, title, description, page_count}`. `page_count` excludes archived pages (matches `topics show`). `parents`/`children` are only on `topics show <slug> --json`; use that when you need DAG edges.
@@ -147,53 +155,46 @@ Build the first wiki for this repo. Requires the selected provider to be install
 
 `init` runs foreground by default because first setup is an onboarding action. The Build operation receives the shared prompt base (`purpose`, `notability`, `syntax`) plus the Build algorithm prompt and runtime context.
 
-#### `almanac capture [sessionFiles...]`
+#### `almanac absorb <inputs...>`
 
-Update the wiki from AI coding sessions. Usually automatic: the installed scheduler runs `almanac capture sweep`, and the sweep invokes normal background capture jobs for quiet transcript material. Manual `capture` refuses if no `.almanac/` exists in cwd or any parent.
+Update the wiki from one or more explicit files, folders, pull requests, issues,
+or URLs.
 
 | Flag | Semantics |
 |---|---|
-| `[sessionFiles...]` | Explicit session transcript files. |
-| `--app <app>` | Source app: `claude`, `codex`, `cursor`, or `generic`. |
-| `--session <id>` | Target a specific session by ID. |
-| `--since <duration-or-date>` | Capture sessions since a time. |
-| `--limit <n>` | Maximum sessions to capture. |
-| `--all` | Capture all matching sessions. |
-| `--all-apps` | Capture from all supported apps. |
+| `<inputs...>` | One or more files, folders, PRs, issues, or URLs to use as starting context. |
 | `--using <provider[/model]>` | Override the configured provider/model for this run. |
 | `--foreground` | Run attached instead of starting a background job. |
 | `--json` | Emit structured JSON for background job start. Cannot be combined with `--foreground`. |
 | `-y, --yes` | Confirm non-interactively. |
 
-`capture` maps to the internal Absorb operation with `targetKind: "session"`. It starts background by default. Run records and JSONL event logs live under `.almanac/runs/`.
+`absorb` treats the inputs as raw material, not the output. The agent updates
+the wiki only when it finds durable project understanding. Mixed inputs are
+valid: `almanac absorb docs/adr.md github:pr:123 https://example.com/spec`.
 
-#### `almanac capture sweep`
+#### `almanac ingest <inputs...>`
 
-Scan supported app transcript stores, find quiet Claude/Codex sessions that map back to repos with `.almanac/`, reconcile each repo's capture ledger, and start ordinary background capture jobs for new material. This is the work command used by scheduled auto-capture and can also be run manually for debugging.
+Alias for `almanac absorb <inputs...>`. It exists for older habits and scripts;
+new docs should prefer `absorb`.
 
-| Flag | Semantics |
-|---|---|
-| `--apps <apps>` | Comma-separated app list. Supports `claude`, `codex`, or both. |
-| `--quiet <duration>` | Required transcript quiet window before capture. Default: `45m`. |
-| `--using <provider[/model]>` | Override the configured provider/model for started capture jobs. |
-| `--dry-run` | Discover and report eligible work without starting jobs or updating the ledger. |
-| `--json` | Emit structured sweep output. |
+#### `almanac sync`
 
-Sweep passes the original transcript path to capture and adds cursor guidance from `.almanac/runs/capture-ledger.json`, so the capture agent focuses on lines/bytes after the last successful capture.
-
-#### `almanac ingest <paths...>`
-
-Update the wiki from one or more files, folders, pull requests, issues, or URLs.
+Scan supported app transcript stores, find quiet Claude/Codex sessions that map
+back to repos with `.almanac/`, reconcile each repo's sync ledger, and start
+ordinary background Absorb jobs for new material. This is the work command used
+by scheduled automation and can also be run manually for debugging.
 
 | Flag | Semantics |
 |---|---|
-| `<paths...>` | One or more files, folders, PRs, issues, or URLs to use as starting context. |
-| `--using <provider[/model]>` | Override the configured provider/model for this run. |
-| `--foreground` | Run attached instead of starting a background job. |
-| `--json` | Emit structured JSON for background job start. Cannot be combined with `--foreground`. |
-| `-y, --yes` | Confirm non-interactively. |
+| `--from <apps>` | Comma-separated app list. Supports `claude`, `codex`, or both. |
+| `--quiet <duration>` | Required transcript quiet window before sync. Default: `45m`. |
+| `--using <provider[/model]>` | Override the configured provider/model for started Absorb jobs. |
+| `status` subcommand | Discover and report eligible work without starting jobs or updating the ledger. |
+| `--json` | Emit structured sync output. |
 
-`ingest` maps to the internal Absorb operation with `targetKind: "path"`. The input is raw material, not the output; the agent updates the wiki only when it finds durable project understanding.
+Sync passes the original transcript path to Absorb and adds cursor guidance from
+`.almanac/runs/sync-ledger.json`, so the agent focuses on lines/bytes after the
+last successful absorb.
 
 #### `almanac garden`
 
@@ -225,17 +226,17 @@ Each jobs subcommand accepts `--json`. `attach` streams the JSONL event log unti
 
 #### `almanac automation install | uninstall | status`
 
-Manage the scheduler that periodically runs `almanac capture sweep`.
+Manage the scheduler that periodically runs `almanac sync`.
 
 | Command | Semantics |
 |---|---|
-| `almanac automation install` | Install the macOS launchd auto-capture job. Default interval: `5h`. |
+| `almanac automation install` | Install the macOS launchd sync job. Default interval: `5h`. |
 | `almanac automation install --every 2h` | Customize the scheduler wakeup interval. |
-| `almanac automation install --quiet 30m` | Customize the transcript quiet window passed to the sweep. |
+| `almanac automation install --quiet 30m` | Customize the transcript quiet window passed to sync. |
 | `almanac automation status` | Show whether the scheduler is installed and which command it runs. |
-| `almanac automation uninstall` | Remove the scheduled auto-capture job. |
+| `almanac automation uninstall` | Remove the scheduled sync job. |
 
-See §7 for the scheduler and sweep contract.
+See §7 for the scheduler and sync contract.
 
 #### `almanac reindex`
 
@@ -247,16 +248,16 @@ Flag: `--wiki <name>`.
 
 #### `almanac setup`
 
-Install scheduled auto-capture + the two CLAUDE.md guides (`almanac.md`, `almanac-reference.md`) + the `@~/.claude/almanac.md` import line. Idempotent.
+Install scheduled sync + the two CLAUDE.md guides (`almanac.md`, `almanac-reference.md`) + the `@~/.claude/almanac.md` import line. Idempotent.
 
 | Flag | Semantics |
 |---|---|
 | `-y, --yes` | Skip prompts; install everything. |
 | `--agent <agent>` | Set the default provider. Accepts `claude`, `codex`, `cursor`, or optional shorthand like `claude/opus`. |
 | `--model <model>` | Set the provider-local model during setup. Non-interactive equivalent of the model picker. |
-| `--skip-automation` | Opt out of scheduled auto-capture. |
-| `--auto-capture-every <duration>` | Set the scheduler wakeup interval. Default: `5h`. |
-| `--auto-capture-quiet <duration>` | Set the transcript quiet window. Default: `45m`. |
+| `--skip-automation` | Opt out of scheduled sync. |
+| `--sync-every <duration>` | Set the scheduler wakeup interval. Default: `5h`. |
+| `--sync-quiet <duration>` | Set the transcript quiet window. Default: `45m`. |
 | `--skip-guides` | Opt out of the CLAUDE.md guides. |
 | `--auto-commit` | Opt into automatic git commits for wiki source changes. Default: off. |
 
@@ -264,7 +265,7 @@ Bare `almanac`, `almanac setup`, and the compatibility `npx codealmanac` bootstr
 
 #### `almanac uninstall`
 
-Remove scheduled auto-capture + guides + import line.
+Remove scheduled sync + guides + import line.
 
 | Flag | Semantics |
 |---|---|
@@ -317,7 +318,7 @@ Read-only install + current-wiki health report. Every check reports a state; non
     { "key": "wiki.pages",      "status": "info", "message": "pages: 42" },
     { "key": "wiki.topics",     "status": "info", "message": "topics: 7" },
     { "key": "wiki.index",      "status": "info", "message": "index: rebuilt 2m ago" },
-    { "key": "wiki.capture",    "status": "info", "message": "last capture: 1h ago (.capture-<id>.log)" },
+    { "key": "wiki.absorb",     "status": "info", "message": "last absorb: 1h ago (.absorb-<id>.log)" },
     { "key": "wiki.health",     "status": "ok",   "message": "almanac health reports 0 problems" }
   ]
 }
@@ -341,7 +342,7 @@ almanac agents model claude --default
 
 `agents use` writes the default provider; Codex is the built-in recommended default. `agents model` writes the provider-local model override; `--default`, `default`, or `null` resets the provider to its own default.
 
-`init`, `capture`, `ingest`, and `garden` resolve provider settings in this order:
+`init`, `absorb`, `sync`, `ingest`, and `garden` resolve provider settings in this order:
 
 ```text
 --using flag > project config > user config > provider default
@@ -361,8 +362,8 @@ almanac config set --project agent.default codex
 almanac config unset agent.models.claude
 ```
 
-Supported keys: `update_notifier`, `auto_commit`, `agent.default`, `agent.models.claude`, `agent.models.codex`, `agent.models.cursor`, and `automation.capture_since`.
-User config is stored at `~/.almanac/config.toml`. Project config lives at `.almanac/config.toml` and can override agent provider/model settings for a repo; `update_notifier`, `auto_commit`, and `automation.capture_since` remain user-level only because they control global side effects. Effective precedence is flag, environment, project config, user config, provider default.
+Supported keys: `update_notifier`, `auto_commit`, `agent.default`, `agent.models.claude`, `agent.models.codex`, `agent.models.cursor`, and `automation.sync_since`.
+User config is stored at `~/.almanac/config.toml`. Project config lives at `.almanac/config.toml` and can override agent provider/model settings for a repo; `update_notifier`, `auto_commit`, and `automation.sync_since` remain user-level only because they control global side effects. Effective precedence is flag, environment, project config, user config, provider default.
 
 #### `almanac update`
 
@@ -426,7 +427,7 @@ Cross-wiki refs live in their own table (`cross_wiki_links`), never lowercased.
 | Field | Type | Default | Purpose |
 |---|---|---|---|
 | `title` | string | H1 fallback | Display title. Missing → first H1 in body. |
-| `topics` | string[] | `[]` | DAG tags. Kebab-cased on ingest; duplicates collapsed. |
+| `topics` | string[] | `[]` | DAG tags. Kebab-cased on Absorb; duplicates collapsed. |
 | `files` | string[] | `[]` | File/folder paths this page documents. Load-bearing for `--mentions`. Trailing `/` = folder. |
 | `archived_at` | date / ISO string / epoch seconds | `null` | Non-null → excluded from default search. See §4. |
 | `superseded_by` | slug | `null` | For archived pages: the active replacement. |
@@ -600,33 +601,33 @@ almanac doctor --json | jq '.install[] | select(.status == "problem")'
 
 ---
 
-## 7. Scheduled auto-capture
+## 7. Scheduled sync
 
 ### Trigger
 
-`almanac automation install` writes a macOS launchd job that periodically invokes `almanac capture sweep`. The default cadence is `5h`; setup and automation install can change it with `--auto-capture-every` / `--every`.
+`almanac automation install` writes a macOS launchd job that periodically invokes `almanac sync`. The default cadence is `5h`; setup and automation install can change it with `--sync-every` / `--every`.
 
-### What `almanac capture sweep` does
+### What `almanac sync` does
 
 1. Scan Claude and Codex transcript stores.
-2. Ignore transcripts older than `automation.capture_since`, which setup records the first time auto-capture is enabled.
+2. Ignore transcripts older than `automation.sync_since`, which setup records the first time sync is enabled.
 3. Ignore transcripts whose mtime is still inside the quiet window.
 4. Recover the transcript cwd/session metadata and map each transcript back to the nearest repo with `.almanac/`.
-5. Reconcile `.almanac/runs/capture-ledger.json` against background run records.
-6. Start an ordinary background `almanac capture <transcript>` job only for new eligible material, with cursor guidance telling the capture agent where new lines begin.
+5. Reconcile `.almanac/runs/sync-ledger.json` against background run records.
+6. Start an ordinary background Absorb job only for new eligible material, with cursor guidance telling the agent where new lines begin.
 
-The scheduler is only a wakeup mechanism. Sweep owns transcript eligibility, dedupe, cursor state, and run enqueueing.
+The scheduler is only a wakeup mechanism. Sync owns transcript eligibility, dedupe, cursor state, and run enqueueing.
 
 ### `automation install | uninstall | status`
 
 **`install`:**
 - **Idempotent.** Twice -> one launchd plist, not two.
-- **Records activation once.** The first install writes `automation.capture_since` in `~/.almanac/config.toml`; reinstalls preserve it.
-- **Uses durable program arguments.** The plist invokes the absolute Node executable plus the resolved `dist/launcher.js` entrypoint, then `capture sweep`.
+- **Records activation once.** The first install writes `automation.sync_since` in `~/.almanac/config.toml`; reinstalls preserve it.
+- **Uses durable program arguments.** The plist invokes the absolute Node executable plus the resolved `dist/launcher.js` entrypoint, then `sync`.
 - **Cleans legacy hooks privately.** Setup/install remove old CodeAlmanac-owned `almanac-capture.sh` commands from Claude/Codex/Cursor hook configs.
 
 **`uninstall`:**
-- Removes the scheduled auto-capture plist.
+- Removes the scheduled sync plist.
 - Also cleans legacy CodeAlmanac hook entries; unrelated user hooks stay.
 
 **`status`:**
@@ -634,19 +635,19 @@ The scheduler is only a wakeup mechanism. Sweep owns transcript eligibility, ded
 
 `almanac setup` wraps `automation install` alongside the guides. `almanac uninstall` wraps `automation uninstall` alongside guide removal. You usually invoke `automation *` only for debugging or changing cadence.
 
-### Diagnosing "capture didn't run"
+### Diagnosing "sync didn't run"
 
 ```bash
-almanac doctor              # catch-all — reports automation state + last capture age
+almanac doctor              # catch-all — reports automation state + last absorb age
 almanac automation status   # scheduler entry
-almanac capture sweep --dry-run
+almanac sync status
 almanac jobs
 ls -lah .almanac/runs/
 ```
 
-Installed but no job: the scheduler has not reached its next wakeup, the transcript is still inside the quiet window, the transcript predates `automation.capture_since`, there is no new content past the ledger cursor, or no `.almanac/` exists upward from the transcript cwd (silent correct no-op).
+Installed but no job: the scheduler has not reached its next wakeup, the transcript is still inside the quiet window, the transcript predates `automation.sync_since`, there is no new content past the ledger cursor, or no `.almanac/` exists upward from the transcript cwd (silent correct no-op).
 
-### Diagnosing "capture ran but wrote nothing"
+### Diagnosing "sync ran but wrote nothing"
 
 ```bash
 almanac jobs show <run-id>
@@ -655,7 +656,7 @@ almanac jobs logs <run-id>
 
 Common causes:
 - Provider auth is missing in the scheduler environment. `launchd` has a reduced environment; the installed plist preserves PATH for user-managed CLIs, but provider login still has to work headlessly.
-- Transcript path didn't resolve or mapped to a repo without `.almanac/`. Sweep reports skip reasons; use `--dry-run --json` for structured output.
+- Transcript path didn't resolve or mapped to a repo without `.almanac/`. Sync reports skip reasons; use `sync status --json` for structured output.
 - The writing agent found no durable wiki change.
 - Session was pure-read with no decisions or discoveries. Correct no-op.
 
@@ -807,7 +808,7 @@ one, usually the webhook, leaving orders silently stuck in pending.
 
 ### Catch-all: `almanac doctor`
 
-When something feels off and you don't know where to start, run `almanac doctor`. It reports install state (binary, native binding, provider readiness, scheduled automation, guides, import line) and current-wiki state (registered, page/topic counts, index freshness, last capture age, health problems). Every problem comes with a one-line `run: ...` fix. `--json` for scripting.
+When something feels off and you don't know where to start, run `almanac doctor`. It reports install state (binary, native binding, provider readiness, scheduled automation, guides, import line) and current-wiki state (registered, page/topic counts, index freshness, last absorb age, health problems). Every problem comes with a one-line `run: ...` fix. `--json` for scripting.
 
 ### "better-sqlite3 bindings missing"
 Node version / arch mismatch with the prebuilt binary. `almanac doctor` reports it as `install.sqlite: problem` with the underlying error's first line. Fix:
@@ -832,17 +833,17 @@ Missing `files:` frontmatter, OR path referenced only in inline prose (not via `
 
 `topics rename` bumps `topics.yaml` mtime → next query's `ensureFreshIndex` catches up. Hand-edited `topics.yaml` without page rewrites leaves frontmatter out of sync — `almanac reindex` then audit with `almanac health --orphans --empty-topics`.
 
-### "capture didn't run"
+### "sync didn't run"
 
 ```bash
-almanac doctor              # reports automation state + last capture age + auth
+almanac doctor              # reports automation state + last absorb age + auth
 almanac automation status   # scheduler installed?
-almanac capture sweep --dry-run --json
+almanac sync status --json
 almanac jobs
 ls -lah .almanac/runs/
 ```
 
-No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, the transcript predates `automation.capture_since`, or the transcript maps to no repo with `.almanac/`. If automation is missing, `almanac doctor` reports `install.automation: problem` with `run: almanac automation install`.
+No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, the transcript predates `automation.sync_since`, or the transcript maps to no repo with `.almanac/`. If automation is missing, `almanac doctor` reports `install.automation: problem` with `run: almanac automation install`.
 
 ### "slug collision warnings"
 
@@ -856,8 +857,8 @@ Case sensitivity on Linux. Schema v2 stores `original_path` for case-preserving 
 
 - `.almanac/runs/<run-id>.json` — Almanac run record with status, provider, model, timings, log path, and failure metadata.
 - `.almanac/runs/<run-id>.jsonl` — provider event log for the run. Read with `almanac jobs logs <run-id>`.
-- `.almanac/runs/capture-ledger.json` — sweep cursor and pending-run state used to dedupe scheduled captures.
-- `.almanac/runs/capture-sweep.lock` — repo-local sweep lock used to avoid overlapping capture enqueue races.
+- `.almanac/runs/sync-ledger.json` — sync cursor and pending-run state used to dedupe scheduled absorbs.
+- `.almanac/runs/sync.lock` — repo-local sync lock used to avoid overlapping sync enqueue races.
 
 ---
 

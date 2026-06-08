@@ -90,10 +90,10 @@ describe("jobs command", () => {
           version: 1 as const,
           runId: "run_20260509202200_show",
           created: ["new-page"],
-          updated: ["capture-flow", "process-manager-runs"],
+          updated: ["sync-flow", "process-manager-runs"],
           archived: [],
           deleted: [],
-          summary: "Updated capture/run lifecycle docs after scheduled absorb.",
+          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
       };
       await writeRunRecord(runRecordPath(repo, record.id), record);
@@ -109,14 +109,14 @@ describe("jobs command", () => {
       expect(show.stdout).toContain("Status: running");
       expect(show.stdout).toContain("Provider: claude/claude-sonnet-4-6");
       expect(show.stdout).toContain(
-        "Summary: Updated capture/run lifecycle docs after scheduled absorb.",
+        "Summary: Updated sync/run lifecycle docs after scheduled absorb.",
       );
       expect(show.stdout).toContain(
         "Changes: 1 created, 2 updated, 0 archived, 0 deleted",
       );
       expect(show.stdout).toContain("Created: new-page");
       expect(show.stdout).toContain(
-        "Updated: capture-flow, process-manager-runs",
+        "Updated: sync-flow, process-manager-runs",
       );
 
       const logs = await runJobsLogs({ cwd: repo, runId: record.id });

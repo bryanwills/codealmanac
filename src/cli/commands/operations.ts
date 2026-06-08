@@ -1,8 +1,7 @@
 import type { CommandResult } from "../helpers.js";
 import { renderError, renderOutcome } from "../outcome.js";
 import type { HarnessEvent } from "../../harness/events.js";
-import * as capture from "../../capture/index.js";
-import * as ingest from "../../ingest/index.js";
+import * as absorb from "../../absorb/index.js";
 import * as operations from "../../operations/index.js";
 
 export { parseUsing } from "../../operations/index.js";
@@ -22,31 +21,14 @@ export interface InitCommandOptions extends OperationCommandDeps {
   yes?: boolean;
 }
 
-export interface CaptureCommandOptions extends OperationCommandDeps {
+export interface AbsorbCommandOptions extends OperationCommandDeps {
   cwd: string;
-  sessionFiles?: string[];
-  app?: string;
-  session?: string;
-  since?: string;
-  limit?: number;
-  all?: boolean;
-  allApps?: boolean;
+  inputs: string[];
   using?: string;
   foreground?: boolean;
   json?: boolean;
   yes?: boolean;
-  claudeProjectsDir?: string;
-  contextNote?: string;
-}
-
-export interface IngestCommandOptions extends OperationCommandDeps {
-  cwd: string;
-  paths: string[];
-  using?: string;
-  foreground?: boolean;
-  json?: boolean;
-  yes?: boolean;
-  resolveSource?: ingest.ResolveSourceFn;
+  resolveSource?: absorb.ResolveSourceFn;
 }
 
 export interface GardenCommandOptions extends OperationCommandDeps {
@@ -82,8 +64,8 @@ export async function runInitCommand(
   }
 }
 
-export async function runCaptureCommand(
-  options: CaptureCommandOptions,
+export async function runAbsorbCommand(
+  options: AbsorbCommandOptions,
 ): Promise<CommandResult> {
   const provider = await resolveProviderOrOutcome(options);
   if ("error" in provider) return provider.error;
@@ -92,35 +74,17 @@ export async function runCaptureCommand(
   }
 
   try {
-    const started = await capture.startRun({
+    const started = await absorb.startRun({
       ...options,
       provider: provider.value,
     });
-    return renderOperationResult("capture", started.result, options.json);
+    return renderOperationResult("absorb", started.result, options.json);
   } catch (err: unknown) {
     return renderOperationError(err, options.json);
   }
 }
 
-export async function runIngestCommand(
-  options: IngestCommandOptions,
-): Promise<CommandResult> {
-  const provider = await resolveProviderOrOutcome(options);
-  if ("error" in provider) return provider.error;
-  if (options.json === true && options.foreground === true) {
-    return jsonForegroundError(options.json);
-  }
-
-  try {
-    const started = await ingest.startRun({
-      ...options,
-      provider: provider.value,
-    });
-    return renderOperationResult("ingest", started.result, options.json);
-  } catch (err: unknown) {
-    return renderOperationError(err, options.json);
-  }
-}
+export const runIngestCommand = runAbsorbCommand;
 
 export async function runGardenCommand(
   options: GardenCommandOptions,

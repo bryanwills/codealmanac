@@ -134,14 +134,14 @@ function parseSetupShortcutFlags(args: string[]): SetupShortcutOptions | null {
       opts.skipAutomation = true;
       continue;
     }
-    if (arg === "--auto-capture-every") {
+    if (arg === "--sync-every") {
       const value = parsed.value ?? args[i + 1];
       if (value === undefined || value.startsWith("-")) return null;
       opts.automationEvery = value;
       if (parsed.value === undefined) i += 1;
       continue;
     }
-    if (arg === "--auto-capture-quiet") {
+    if (arg === "--sync-quiet") {
       const value = parsed.value ?? args[i + 1];
       if (value === undefined || value.startsWith("-")) return null;
       opts.automationQuiet = value;

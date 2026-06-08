@@ -112,6 +112,7 @@ function sourceToIndexed(
         legacy,
       });
     case "pr":
+    case "issue":
       return optional({
         id: source.id,
         type: source.type,

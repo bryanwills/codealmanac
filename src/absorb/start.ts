@@ -12,22 +12,22 @@ import type {
   StartBackgroundProcess,
   StartForegroundProcess,
 } from "../operations/types.js";
-import { renderIngestContext } from "./context.js";
+import { renderAbsorbInputContext } from "./context.js";
 import {
-  resolveIngestInput,
-  type ResolvedIngestInput,
+  resolveAbsorbInput,
+  type ResolvedAbsorbInput,
   type ResolveSourceFn,
 } from "./input.js";
 
-export class IngestInputError extends OperationError {
+export class AbsorbInputError extends OperationError {
   constructor(message: string) {
     super(message);
   }
 }
 
-export interface StartIngestRunOptions {
+export interface StartAbsorbRunOptions {
   cwd: string;
-  paths: string[];
+  inputs: string[];
   provider: OperationProviderSelection;
   foreground?: boolean;
   resolveSource?: ResolveSourceFn;
@@ -36,34 +36,34 @@ export interface StartIngestRunOptions {
   startBackground?: StartBackgroundProcess;
 }
 
-export interface IngestRunStart {
+export interface AbsorbRunStart {
   runId: string;
   result: OperationRunResult;
-  input: ResolvedIngestInput;
+  input: ResolvedAbsorbInput;
 }
 
-export async function startIngestRun(
-  options: StartIngestRunOptions,
-): Promise<IngestRunStart> {
-  if (options.paths.length === 0) {
-    throw new IngestInputError("ingest requires at least one file or folder");
+export async function startAbsorbRun(
+  options: StartAbsorbRunOptions,
+): Promise<AbsorbRunStart> {
+  if (options.inputs.length === 0) {
+    throw new AbsorbInputError("absorb requires at least one input");
   }
 
-  const input = await resolveIngestInput({
+  const input = await resolveAbsorbInput({
     cwd: options.cwd,
-    inputs: options.paths,
+    inputs: options.inputs,
     resolveSource: options.resolveSource,
   });
-  if (!input.ok) throw new IngestInputError(input.message);
+  if (!input.ok) throw new AbsorbInputError(input.message);
 
   const result = await runAbsorbOperation({
     cwd: options.cwd,
     provider: options.provider,
     background: options.foreground !== true,
-    context: ingestOperationContext(input.value),
+    context: absorbOperationContext(input.value),
     targetKind: input.value.kind,
     targetPaths: input.value.targets,
-    networkAccess: input.value.kind === "source",
+    networkAccess: input.value.networkAccess,
     output: githubPullRequestReportOutput(input.value),
     onEvent: options.onEvent,
     startForeground: options.startForeground,
@@ -76,8 +76,8 @@ export async function startIngestRun(
   };
 }
 
-function ingestOperationContext(input: ResolvedIngestInput): string {
-  const base = renderIngestContext(input);
+function absorbOperationContext(input: ResolvedAbsorbInput): string {
+  const base = renderAbsorbInputContext(input);
   if (!isSingleGitHubPullRequestInput(input)) return base;
   return [
     base,
@@ -86,15 +86,15 @@ function ingestOperationContext(input: ResolvedIngestInput): string {
 }
 
 function githubPullRequestReportOutput(
-  input: ResolvedIngestInput,
+  input: ResolvedAbsorbInput,
 ): FinalOutputSpec | undefined {
   return isSingleGitHubPullRequestInput(input)
     ? ALMANAC_OPERATION_REPORT_OUTPUT
     : undefined;
 }
 
-function isSingleGitHubPullRequestInput(input: ResolvedIngestInput): boolean {
-  return input.kind === "source" &&
+function isSingleGitHubPullRequestInput(input: ResolvedAbsorbInput): boolean {
+  return input.paths.length === 0 &&
     input.sources.length === 1 &&
     input.sources.every((source) => source.kind === "github.pr");
 }

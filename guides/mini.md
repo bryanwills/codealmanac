@@ -4,7 +4,7 @@ This repo has a `.almanac/` directory. It's a **living wiki** written for AI age
 
 You are the primary reader. When the user asks you to do something, **check the wiki before you touch related code** — it will often answer the question the user didn't think to ask ("we tried that in March, here's why it broke").
 
-You usually don't write the wiki during normal work. Scheduled auto-capture periodically runs `almanac capture sweep`, waits for Claude/Codex transcripts to go quiet, and starts a background capture job that writes or updates pages for new material. Your job during the session is: **read, use, occasionally fix obvious errors.**
+You usually don't write the wiki during normal work. Scheduled sync periodically runs `almanac sync`, waits for Claude/Codex transcripts to go quiet, and starts a background Absorb job that writes or updates pages for new material. Your job during the session is: **read, use, occasionally fix obvious errors.**
 
 ---
 
@@ -111,10 +111,10 @@ Categories: `orphans`, `stale` (90+ days), `dead-refs`, `broken-links`, `broken-
 Search when the task is named: subsystem (checkout, auth, search), external service (Stripe, Supabase), cross-cutting concern (caching, sessions). Grep for mechanical tasks.
 
 ### "The wiki says X. The code does Y. Which is right?"
-The code. Then fix the wiki — small fixes edit the page directly. Substantial changes: mention clearly in your response so the next scheduled capture has context to update the page.
+The code. Then fix the wiki — small fixes edit the page directly. Substantial changes: mention clearly in your response so the next scheduled sync has context to update the page.
 
 ### "Should I create a new page mid-session?"
-Usually no. Capture writes pages from the session transcript with full context. Exceptions: user explicitly asks, or you're doing deliberate wiki maintenance.
+Usually no. Absorb writes pages from session transcripts with full context. Exceptions: user explicitly asks, or you're doing deliberate wiki maintenance.
 
 When you do write: read `.almanac/README.md` for the notability bar, use `[[...]]` syntax, include `files:` frontmatter, keep every sentence factual, no speculation.
 
@@ -125,7 +125,7 @@ Almost always existing. Skim `almanac topics` before creating. New topic is just
 Yes — safe, idempotent, preserves body bytes. Use `almanac tag` / `untag` rather than hand-editing frontmatter.
 
 ### "The wiki returned nothing. Now what?"
-Trust the silence. Empty stdout with `# 0 results` on stderr means the query ran cleanly and matched nothing — the wiki doesn't have a page on that yet, or the query needs to be broader. That is the answer, not a bug. Don't fall back to guessing; fall back to the code, and trust that capture will surface the knowledge the next time a session naturally discovers it.
+Trust the silence. Empty stdout with `# 0 results` on stderr means the query ran cleanly and matched nothing — the wiki doesn't have a page on that yet, or the query needs to be broader. That is the answer, not a bug. Don't fall back to guessing; fall back to the code, and trust that sync will surface the knowledge the next time a session naturally discovers it.
 
 If stderr shows a real error (an `almanac:` prefix or a commander parse failure), the invocation is broken — re-read `almanac --help` for the right flags.
 
@@ -159,13 +159,13 @@ $ almanac show sqlite-indexer --backlinks
 
 You now know: the indexer only re-parses pages whose mtime is newer than the stored `content_hash`, runs on every query command, and backing it is a schema you can read at `src/indexer/schema.ts`. The lead alone ruled out two entire hypotheses ("maybe it only indexes on startup", "maybe I need to restart something") before you read any source code.
 
-You don't write anything. After the transcript has been quiet long enough, the scheduled capture sweep reads the new session material, sees your discovery, and writes or updates pages. Next session, a different agent running a related task sees it surface in `--mentions`.
+You don't write anything. After the transcript has been quiet long enough, scheduled sync reads the new session material, starts Absorb when there is eligible material, and writes or updates pages. Next session, a different agent running a related task sees it surface in `--mentions`.
 
 ---
 
 ## What runs automatically (don't invoke these)
 
-- **`almanac capture sweep`** — scans quiet Claude/Codex transcripts and starts background capture jobs for new material. The installed scheduler runs this for you.
+- **`almanac sync`** — scans quiet Claude/Codex transcripts and starts background Absorb jobs for new material. The installed scheduler runs this for you.
 - **`almanac reindex`** — runs implicitly before every query when pages changed.
 
 Run `almanac init` yourself when you are creating the first wiki for a repo.
@@ -194,7 +194,7 @@ The Absorb/Garden prompts enforce these during wiki-writing runs. Stricter with 
 ## Troubleshooting
 
 ### `almanac doctor` is the catchall
-When anything feels off and you don't know where to start, run `almanac doctor`. It reports the install (binary, native SQLite binding, provider readiness, scheduled automation, guides, CLAUDE.md import) and the current wiki (registered, page/topic counts, index freshness, last capture age, health problems). Every problem comes with a one-line `run: ...` fix. Add `--json` for scripting.
+When anything feels off and you don't know where to start, run `almanac doctor`. It reports the install (binary, native SQLite binding, provider readiness, scheduled automation, guides, CLAUDE.md import) and the current wiki (registered, page/topic counts, index freshness, last absorb age, health problems). Every problem comes with a one-line `run: ...` fix. Add `--json` for scripting.
 
 ### "better-sqlite3 bindings failed"
 Node version or arch mismatch with the prebuilt native binding. `almanac doctor` reports this under `install.sqlite` with the raw error. Fix by rebuilding the native binding:
@@ -207,15 +207,15 @@ Empty stdout plus `# 0 results` on stderr means the query ran and genuinely matc
 
 `--json` is silent on stderr — the `[]` array is the empty signal there.
 
-### "capture didn't run after my last session"
+### "sync didn't run after my last session"
 ```bash
-almanac doctor              # install.automation: ok/problem, wiki.capture: last capture age
+almanac doctor              # install.automation: ok/problem, wiki.absorb: last absorb age
 almanac automation status   # scheduler status
-almanac capture sweep --dry-run
+almanac sync status
 almanac jobs
 ls -lah .almanac/runs/
 ```
-No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Capture ran but wrote nothing -> the capture run found no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
+No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Sync ran but wrote nothing -> Absorb found no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
 
 ---
 

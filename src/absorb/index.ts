@@ -6,9 +6,10 @@ export {
   type GitHubRepo,
 } from "./github.js";
 export {
-  resolveIngestInput,
-  type ResolvedIngestInput,
-  type ResolveIngestInputOptions,
+  resolveAbsorbInput,
+  type AbsorbInputKind,
+  type ResolvedAbsorbInput,
+  type ResolveAbsorbInputOptions,
   type ResolveSourceFn,
 } from "./input.js";
 export {
@@ -19,13 +20,13 @@ export {
   type WebSourceRef,
 } from "./source-ref.js";
 export type {
-  GitHubIngestSource,
-  IngestSource,
-  WebIngestSource,
+  AbsorbInputSource,
+  GitHubAbsorbInputSource,
+  WebAbsorbInputSource,
 } from "./input-source.js";
 export {
-  startIngestRun as startRun,
-  IngestInputError,
-  type IngestRunStart,
-  type StartIngestRunOptions,
+  startAbsorbRun as startRun,
+  AbsorbInputError,
+  type AbsorbRunStart,
+  type StartAbsorbRunOptions,
 } from "./start.js";

@@ -6,22 +6,26 @@ import {
   bootstrapLaunchdJob,
   buildLaunchPath,
   ensureLaunchdDirs,
+  readProgramArgumentAfter,
   type ExecFn,
   type LaunchdJobStatus,
   readLaunchdJobStatus,
-  readProgramArgumentAfter,
   removeLaunchdJob,
   writeLaunchdPlist,
 } from "../../platform/automation/launchd.js";
+import {
+  detectLegacyCaptureSweepAutomation,
+  type LegacyCaptureSweepAutomation,
+} from "../../platform/automation/legacy-capture.js";
 import type { LaunchdJobDefinition } from "../../platform/automation/launchd.js";
 import {
   DEFAULT_AUTOMATION_TASK_IDS,
-  DEFAULT_CAPTURE_INTERVAL,
-  DEFAULT_CAPTURE_QUIET,
+  DEFAULT_SYNC_INTERVAL,
+  DEFAULT_SYNC_QUIET,
   DEFAULT_GARDEN_INTERVAL,
   DEFAULT_UPDATE_INTERVAL,
-  defaultCapturePlistPath,
   defaultGardenPlistPath,
+  defaultSyncPlistPath,
   defaultUpdatePlistPath,
   isScheduledTaskId,
   scheduledTaskDefinition,
@@ -30,7 +34,7 @@ import {
   type ScheduledTaskId,
 } from "../../platform/automation/tasks.js";
 import type { CommandResult } from "../helpers.js";
-import { ensureAutomationCaptureSince } from "../../config/index.js";
+import { ensureAutomationSyncSince } from "../../config/index.js";
 import { parseDuration } from "../../wiki/indexer/duration.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 
@@ -62,6 +66,7 @@ export interface AutomationStatusOptions {
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
+  legacyCapturePlistPath?: string;
   exec?: ExecFn;
 }
 
@@ -77,7 +82,7 @@ interface AutomationInstallPlan {
 }
 
 const TASK_LABELS: Record<ScheduledTaskId, string> = {
-  capture: "auto-capture automation",
+  sync: "sync automation",
   garden: "garden automation",
   update: "auto-update automation",
 };
@@ -92,10 +97,10 @@ export async function runAutomationInstall(
 
   await writeAutomationPlists(plan.value);
 
-  const captureJob = plan.value.jobs.find((job) => job.task.id === "capture");
-  const captureSince = captureJob === undefined
+  const syncJob = plan.value.jobs.find((job) => job.task.id === "sync");
+  const syncSince = syncJob === undefined
     ? null
-    : await ensureAutomationCaptureSince(
+    : await ensureAutomationSyncSince(
       (options.now ?? new Date()).toISOString(),
       options.configPath,
     );
@@ -105,7 +110,7 @@ export async function runAutomationInstall(
   }
 
   return {
-    stdout: formatAutomationInstall(plan.value, captureSince),
+    stdout: formatAutomationInstall(plan.value, syncSince),
     stderr: "",
     exitCode: 0,
   };
@@ -146,6 +151,12 @@ export async function runAutomationStatus(
   const home = options.homeDir ?? homedir();
   const tasks = selectedTaskIds(options.tasks, false);
   const sections: string[] = [];
+  const legacy = tasks.includes("sync")
+    ? await detectLegacyCaptureSweepAutomation({
+      homeDir: home,
+      plistPath: options.legacyCapturePlistPath,
+    })
+    : null;
   for (const task of tasks.map((id) => scheduledTaskDefinition(id))) {
     const status = await readLaunchdJobStatus({
       label: task.label,
@@ -153,6 +164,9 @@ export async function runAutomationStatus(
       exec: options.exec,
     });
     sections.push(formatAutomationStatus(task, status));
+    if (task.id === "sync" && legacy !== null) {
+      sections.push(formatLegacyCaptureSweepStatus(legacy));
+    }
   }
   return {
     stdout: sections.join(""),
@@ -162,7 +176,7 @@ export async function runAutomationStatus(
 }
 
 export function defaultPlistPath(home: string = homedir()): string {
-  return defaultCapturePlistPath(home);
+  return defaultSyncPlistPath(home);
 }
 
 export function parseAutomationTaskIds(
@@ -173,7 +187,7 @@ export function parseAutomationTaskIds(
     if (!isScheduledTaskId(value)) {
       return {
         ok: false,
-        error: `unknown automation task '${value}' (expected capture, garden, or update)`,
+        error: `unknown automation task '${value}' (expected sync, garden, or update)`,
       };
     }
     if (!tasks.includes(value)) tasks.push(value);
@@ -209,8 +223,8 @@ function buildAutomationInstallPlan(
 
   for (const taskId of taskIds) {
     const task = scheduledTaskDefinition(taskId);
-    if (taskId === "capture") {
-      const quiet = parseQuiet(options.quiet ?? DEFAULT_CAPTURE_QUIET);
+    if (taskId === "sync") {
+      const quiet = parseQuiet(options.quiet ?? DEFAULT_SYNC_QUIET);
       if (!quiet.ok) return quiet;
     }
     const intervalInput = intervalInputForTask(taskId, options, explicitTasks);
@@ -252,7 +266,7 @@ function selectedTaskIds(
   if (tasks !== undefined && tasks.length > 0) return dedupeTaskIds(tasks);
   return forInstall
     ? [...DEFAULT_AUTOMATION_TASK_IDS]
-    : ["capture", "garden", "update"];
+    : ["sync", "garden", "update"];
 }
 
 function dedupeTaskIds(tasks: ScheduledTaskId[]): ScheduledTaskId[] {
@@ -268,7 +282,7 @@ function intervalInputForTask(
   options: AutomationOptions,
   explicitTasks: boolean,
 ): string {
-  if (task === "capture") return options.every ?? DEFAULT_CAPTURE_INTERVAL;
+  if (task === "sync") return options.every ?? DEFAULT_SYNC_INTERVAL;
   if (task === "garden") {
     return options.gardenEvery ??
       (explicitTasks ? options.every ?? DEFAULT_GARDEN_INTERVAL : DEFAULT_GARDEN_INTERVAL);
@@ -280,9 +294,9 @@ function programArgumentsForTask(
   task: ScheduledTaskDefinition,
   options: AutomationOptions,
 ): string[] {
-  if (task.id === "capture") {
+  if (task.id === "sync") {
     return options.programArguments ??
-      task.programArguments({ quiet: options.quiet ?? DEFAULT_CAPTURE_QUIET });
+      task.programArguments({ quiet: options.quiet ?? DEFAULT_SYNC_QUIET });
   }
   if (task.id === "garden") {
     return options.gardenProgramArguments ?? task.programArguments();
@@ -295,7 +309,7 @@ function plistPathForTask(
   home: string,
   options: Pick<AutomationOptions, "plistPath" | "gardenPlistPath" | "updatePlistPath">,
 ): string {
-  if (task.id === "capture") return options.plistPath ?? defaultCapturePlistPath(home);
+  if (task.id === "sync") return options.plistPath ?? defaultSyncPlistPath(home);
   if (task.id === "garden") return options.gardenPlistPath ?? defaultGardenPlistPath(home);
   return options.updatePlistPath ?? defaultUpdatePlistPath(home);
 }
@@ -342,15 +356,15 @@ async function activateAutomationJobs(
 
 function formatAutomationInstall(
   plan: AutomationInstallPlan,
-  captureSince: string | null,
+  syncSince: string | null,
 ): string {
   const lines = ["almanac: automation installed"];
   for (const planned of plan.jobs) {
     lines.push(`  ${planned.task.id} interval: ${planned.intervalInput}`);
-    if (planned.task.id === "capture") {
-      lines.push(`  capture quiet: ${readArgument(planned.job.programArguments, "--quiet") ?? DEFAULT_CAPTURE_QUIET}`);
-      if (captureSince !== null) {
-        lines.push(`  capturing transcripts after: ${captureSince}`);
+    if (planned.task.id === "sync") {
+      lines.push(`  sync quiet: ${readArgument(planned.job.programArguments, "--quiet") ?? DEFAULT_SYNC_QUIET}`);
+      if (syncSince !== null) {
+        lines.push(`  syncing transcripts after: ${syncSince}`);
       }
     }
     lines.push(`  ${planned.task.id} command: ${planned.job.programArguments.join(" ")}`);
@@ -397,7 +411,7 @@ function formatAutomationStatus(
   status: LaunchdJobStatus,
 ): string {
   if (status.contents === null) return `${TASK_LABELS[task.id]}: not installed\n`;
-  const extra = task.id === "capture"
+  const extra = task.id === "sync"
     ? (() => {
       const quiet = readProgramArgumentAfter(status.contents!, "--quiet");
       return quiet !== null ? `  quiet: ${quiet}\n` : "";
@@ -409,5 +423,15 @@ function formatAutomationStatus(
     `  launchd loaded: ${status.loaded ? "yes" : "no"}\n` +
     (status.intervalSeconds !== null ? `  interval: ${status.intervalSeconds}s\n` : "") +
     extra
+  );
+}
+
+function formatLegacyCaptureSweepStatus(
+  legacy: LegacyCaptureSweepAutomation,
+): string {
+  return (
+    "legacy automation: uses removed command capture sweep\n" +
+    `  plist: ${legacy.plistPath}\n` +
+    "  run: almanac migrate automation\n"
   );
 }

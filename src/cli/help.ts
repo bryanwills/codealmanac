@@ -15,7 +15,8 @@ const HELP_GROUPS: Array<{ title: string; commands: string[] }> = [
     title: "Wiki lifecycle",
     commands: [
       "init",
-      "capture",
+      "absorb",
+      "sync",
       "ingest",
       "garden",
       "jobs",

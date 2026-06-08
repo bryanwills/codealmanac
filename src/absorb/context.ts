@@ -1,22 +1,22 @@
-import type { ResolvedIngestInput } from "./input.js";
-import type { IngestSource } from "./input-source.js";
+import type { ResolvedAbsorbInput } from "./input.js";
+import type { AbsorbInputSource } from "./input-source.js";
 
-export function renderIngestContext(input: ResolvedIngestInput): string {
-  if (input.kind === "source") return sourceIngestContext(input.sources);
-  return [
-    "Command context:",
-    "- Command: ingest",
-    "- Paths:",
-    ...input.paths.map((path) => `  - ${path}`),
-  ].join("\n");
-}
-
-function sourceIngestContext(sources: IngestSource[]): string {
+export function renderAbsorbInputContext(input: ResolvedAbsorbInput): string {
   const lines = [
     "Command context:",
-    "- Command: ingest",
-    "- Sources:",
+    "- Command: absorb",
   ];
+  if (input.paths.length > 0) {
+    lines.push("- Paths:", ...input.paths.map((path) => `  - ${path}`));
+  }
+  if (input.sources.length > 0) {
+    lines.push(...sourceInputContext(input.sources));
+  }
+  return lines.join("\n");
+}
+
+function sourceInputContext(sources: AbsorbInputSource[]): string[] {
+  const lines = ["- Input sources:"];
   for (const source of sources) {
     if (source.kind === "github.pr") {
       lines.push(
@@ -26,7 +26,7 @@ function sourceIngestContext(sources: IngestSource[]): string {
         `    URL: ${source.url}`,
         `    Number: ${source.number}`,
         "",
-        "GitHub PR ingest guidance:",
+        "GitHub PR absorb guidance:",
         "The `gh` CLI is installed and authenticated in this environment. Use it freely",
         "and as much as you need; you have full read access to this repository through it.",
         "Inspect the PR however is useful — for example:",
@@ -52,7 +52,7 @@ function sourceIngestContext(sources: IngestSource[]): string {
         `    URL: ${source.url}`,
         `    Number: ${source.number}`,
         "",
-        "GitHub issue ingest guidance:",
+        "GitHub issue absorb guidance:",
         "The `gh` CLI is installed and authenticated in this environment. Use it freely",
         "and as much as you need; you have full read access to this repository through it.",
         "Inspect the issue however is useful — for example:",
@@ -64,7 +64,7 @@ function sourceIngestContext(sources: IngestSource[]): string {
         "Treat issue discussion as evidence, not final truth.",
         "Prefer current code for present-tense behavior.",
         "Update the Almanac only if this issue contains durable project knowledge.",
-        "If this issue supports a wiki claim, cite it with a `sources:` entry of `type: web` using the issue URL.",
+        "If this issue supports a wiki claim, cite it with a `sources:` entry of `type: issue`.",
         "No-op if the issue does not improve durable project knowledge.",
       );
     }
@@ -74,7 +74,7 @@ function sourceIngestContext(sources: IngestSource[]): string {
         "    Source kind: web URL",
         `    URL: ${source.url}`,
         "",
-        "Web URL ingest guidance:",
+        "Web URL absorb guidance:",
         "Inspect this URL if network access and tools are available.",
         "Treat the URL as source material, not final truth.",
         "Prefer current repository code for present-tense behavior.",
@@ -84,5 +84,5 @@ function sourceIngestContext(sources: IngestSource[]): string {
       );
     }
   }
-  return lines.join("\n");
+  return lines;
 }

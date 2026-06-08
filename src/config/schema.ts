@@ -12,8 +12,8 @@ export interface AgentConfig {
 }
 
 export interface AutomationConfig {
-  /** ISO timestamp from which scheduled capture should consider transcripts. */
-  capture_since: string | null;
+  /** ISO timestamp from which scheduled sync should consider transcripts. */
+  sync_since: string | null;
 }
 
 export interface GlobalConfig {
@@ -23,7 +23,7 @@ export interface GlobalConfig {
   auto_commit: boolean;
   /** Agent-provider settings for agent-backed lifecycle commands. */
   agent: AgentConfig;
-  /** Scheduled auto-capture settings. */
+  /** Scheduled sync settings. */
   automation: AutomationConfig;
 }
 
@@ -40,7 +40,7 @@ export function defaultConfig(): GlobalConfig {
       },
     },
     automation: {
-      capture_since: null,
+      sync_since: null,
     },
   };
 }
@@ -84,11 +84,14 @@ export function normalizeRawConfig(raw: Record<string, unknown>): GlobalConfig {
     !Array.isArray(raw.automation)
       ? raw.automation as Record<string, unknown>
       : {};
-  const captureSince =
-    typeof rawAutomation.capture_since === "string" &&
-      Number.isFinite(Date.parse(rawAutomation.capture_since))
+  const syncSince =
+    typeof rawAutomation.sync_since === "string" &&
+      Number.isFinite(Date.parse(rawAutomation.sync_since))
+      ? rawAutomation.sync_since
+      : typeof rawAutomation.capture_since === "string" &&
+          Number.isFinite(Date.parse(rawAutomation.capture_since))
       ? rawAutomation.capture_since
-      : defaults.automation.capture_since;
+      : defaults.automation.sync_since;
   return {
     update_notifier:
       typeof raw.update_notifier === "boolean"
@@ -103,7 +106,7 @@ export function normalizeRawConfig(raw: Record<string, unknown>): GlobalConfig {
       models,
     },
     automation: {
-      capture_since: captureSince,
+      sync_since: syncSince,
     },
   };
 }
@@ -132,9 +135,9 @@ export function normalizeConfig(
       },
     },
     automation: {
-      capture_since: normalizeCaptureSince(
-        config.automation?.capture_since,
-        defaults.automation.capture_since,
+      sync_since: normalizeSyncSince(
+        config.automation?.sync_since,
+        defaults.automation.sync_since,
       ),
     },
   };
@@ -182,7 +185,7 @@ export function applyProjectConfig(
   }
 }
 
-export function normalizeCaptureSince(
+export function normalizeSyncSince(
   value: string | null | undefined,
   fallback: string | null,
 ): string | null {

@@ -168,7 +168,7 @@ export function registerEditCommands(program: Command): void {
 
   const migrate = program
     .command("migrate")
-    .description("run deterministic wiki-file migrations");
+    .description("run deterministic Almanac migrations");
 
   migrate
     .command("legacy-sources")
@@ -191,6 +191,18 @@ export function registerEditCommands(program: Command): void {
         stdin: opts.stdin,
         stdinInput: opts.stdin === true ? await readStdin() : undefined,
         wiki: opts.wiki,
+        json: opts.json,
+      });
+      emit(result);
+    });
+
+  migrate
+    .command("automation")
+    .description("migrate legacy scheduled automation to sync")
+    .option("--json", "emit structured JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const { runMigrateAutomation } = await import("./commands/migrate.js");
+      const result = await runMigrateAutomation({
         json: opts.json,
       });
       emit(result);

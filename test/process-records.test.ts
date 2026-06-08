@@ -130,10 +130,10 @@ describe("process run records", () => {
           version: 1,
           runId: started.id,
           created: ["new-page"],
-          updated: ["capture-flow", "process-manager-runs"],
+          updated: ["sync-flow", "process-manager-runs"],
           archived: [],
           deleted: [],
-          summary: "Updated capture/run lifecycle docs after scheduled absorb.",
+          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
         operationOutput: {
           version: 1,
@@ -153,8 +153,8 @@ describe("process run records", () => {
         summary: { created: 1, updated: 2, archived: 0, deleted: 0, costUsd: 0.12 },
         pageChanges: {
           created: ["new-page"],
-          updated: ["capture-flow", "process-manager-runs"],
-          summary: "Updated capture/run lifecycle docs after scheduled absorb.",
+          updated: ["sync-flow", "process-manager-runs"],
+          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
         operationOutput: {
           contract: "almanac_operation_report_v1",

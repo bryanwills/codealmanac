@@ -118,9 +118,9 @@ export function registerSetupCommands(
     .option("-y, --yes", "skip prompts; install everything")
     .option("--agent <agent>", "default agent: claude, codex, or cursor")
     .option("--model <model>", "default model for the selected agent")
-    .option("--skip-automation", "opt out of scheduled auto-capture")
-    .option("--auto-capture-every <duration>", "scheduled auto-capture interval (default: 5h)")
-    .option("--auto-capture-quiet <duration>", "scheduled auto-capture quiet window (default: 45m)")
+    .option("--skip-automation", "opt out of scheduled sync")
+    .option("--sync-every <duration>", "scheduled sync interval (default: 5h)")
+    .option("--sync-quiet <duration>", "scheduled sync quiet window (default: 45m)")
     .option("--garden-every <duration>", "scheduled Garden interval (default: 4h)")
     .option("--garden-off", "disable scheduled Garden automation")
     .option("--auto-update", "install scheduled Almanac self-update")
@@ -134,8 +134,8 @@ export function registerSetupCommands(
         agent?: string;
         model?: string;
         skipAutomation?: boolean;
-        autoCaptureEvery?: string;
-        autoCaptureQuiet?: string;
+        syncEvery?: string;
+        syncQuiet?: string;
         gardenEvery?: string;
         gardenOff?: boolean;
         autoUpdate?: boolean;
@@ -150,8 +150,8 @@ export function registerSetupCommands(
           agent: opts.agent,
           model: opts.model,
           skipAutomation: opts.skipAutomation,
-          automationEvery: opts.autoCaptureEvery,
-          automationQuiet: opts.autoCaptureQuiet,
+          automationEvery: opts.syncEvery,
+          automationQuiet: opts.syncQuiet,
           gardenEvery: opts.gardenEvery,
           gardenOff: opts.gardenOff,
           autoUpdate: opts.autoUpdate,

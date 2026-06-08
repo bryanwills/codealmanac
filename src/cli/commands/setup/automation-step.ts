@@ -46,7 +46,7 @@ export async function runAutomationSetupStep(args: {
   } else if (args.interactive) {
     automationAction = await confirm(
       args.out,
-      "Keep your codebase wiki up to date automatically?",
+	      "Keep your codebase wiki synced automatically?",
       true,
     );
   }
@@ -55,12 +55,12 @@ export async function runAutomationSetupStep(args: {
     if (args.ephemeral && !args.durableGlobalInstall) {
       stepSkipped(
         args.out,
-        `Auto-capture automation ${DIM}skipped — requires a durable Almanac install${RST}`,
+        `Sync automation ${DIM}skipped — requires a durable Almanac install${RST}`,
       );
     } else {
       await cleanupLegacyHooks();
       const res = await runAutomationInstall({
-        tasks: ["capture", "garden"],
+        tasks: ["sync", "garden"],
         every: args.options.automationEvery,
         quiet: args.options.automationQuiet,
         gardenEvery: args.options.gardenEvery,
@@ -77,14 +77,14 @@ export async function runAutomationSetupStep(args: {
         exec: args.options.automationExec,
       });
       if (res.exitCode !== 0) {
-        stepActive(args.out, `Auto-capture automation: ${res.stderr.trim()}`);
+        stepActive(args.out, `Sync automation: ${res.stderr.trim()}`);
         return {
           ok: false,
           stderr: res.stderr,
           exitCode: res.exitCode,
         };
       }
-      stepDone(args.out, "Auto-capture automation installed");
+      stepDone(args.out, "Sync automation installed");
       let autoUpdateAction: InstallDecision = args.options.autoUpdate === true
         ? "install"
         : "skip";
@@ -119,14 +119,14 @@ export async function runAutomationSetupStep(args: {
       }
     }
   } else {
-    stepSkipped(args.out, `Auto-capture automation ${DIM}skipped${RST}`);
+    stepSkipped(args.out, `Sync automation ${DIM}skipped${RST}`);
   }
   args.out.write(BAR + "\n");
   return { ok: true };
 }
 
 function globalAlmanacProgramArguments(quiet = "45m"): string[] {
-  return ["/usr/bin/env", "almanac", "capture", "sweep", "--quiet", quiet];
+  return ["/usr/bin/env", "almanac", "sync", "--quiet", quiet];
 }
 
 function globalGardenProgramArguments(): string[] {

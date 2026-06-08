@@ -18,8 +18,10 @@ export interface DoctorOptions {
   spawnCli?: SpawnCliFn;
   /** Override provider readiness probes. */
   providerStatuses?: ProviderStatus[];
-  /** Override auto-capture launchd plist path. */
+  /** Override sync launchd plist path. */
   automationPlistPath?: string;
+  /** Override legacy capture-sweep launchd plist path. */
+  legacyAutomationPlistPath?: string;
   /** Override `~/.claude/settings.json` path. */
   settingsPath?: string;
   /** Override `~/.almanac/` directory. */
@@ -47,9 +49,9 @@ export interface DoctorOptions {
   sqliteProbe?: SqliteProbeResult;
   /** Override the health report collector (tests inject a canned report). */
   collectHealthReportFn?: typeof collectHealthReport;
-  /** Stdout sink. Tests capture here; production uses process.stdout. */
+  /** Stdout sink. Tests collect here; production uses process.stdout. */
   stdout?: NodeJS.WritableStream;
-  /** Test-only clock for "last capture: Xh ago" rendering. */
+  /** Test-only clock for "last absorb: Xh ago" rendering. */
   now?: () => Date;
 }
 

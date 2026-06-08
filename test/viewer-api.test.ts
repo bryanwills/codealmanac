@@ -374,7 +374,7 @@ items:
         cwd: repo,
         prompt: [
           "Command context:",
-          "- Command: capture",
+          "- Command: sync",
           "- App: claude",
           "- Session id: session-1",
           `- Transcript: ${transcript}`,

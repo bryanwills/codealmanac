@@ -16,8 +16,8 @@ describe("viewer server", () => {
       await scaffoldWiki(repo);
       await writePage(
         repo,
-        "capture-flow",
-        "---\ntitle: Capture Flow\ntopics: [flows]\n---\n\n# Capture Flow\n\nBody.\n",
+        "sync-flow",
+        "---\ntitle: Sync Flow\ntopics: [flows]\n---\n\n# Sync Flow\n\nBody.\n",
       );
       const record = buildQueuedRunRecord({
         runId: "run_20260510123000_server",
@@ -56,17 +56,17 @@ describe("viewer server", () => {
         };
         expect(overview.pageCount).toBe(1);
 
-        const page = await fetch(`${server.url}/api/wikis/alpha/page/capture-flow`).then((r) => r.json()) as {
+        const page = await fetch(`${server.url}/api/wikis/alpha/page/sync-flow`).then((r) => r.json()) as {
           title: string;
           body: string;
         };
-        expect(page.title).toBe("Capture Flow");
-        expect(page.body).toContain("# Capture Flow");
+        expect(page.title).toBe("Sync Flow");
+        expect(page.body).toContain("# Sync Flow");
 
-        const suggest = await fetch(`${server.url}/api/wikis/alpha/suggest?q=capture`).then((r) => r.json()) as {
+        const suggest = await fetch(`${server.url}/api/wikis/alpha/suggest?q=sync`).then((r) => r.json()) as {
           pages: Array<{ slug: string }>;
         };
-        expect(suggest.pages.map((p) => p.slug)).toEqual(["capture-flow"]);
+        expect(suggest.pages.map((p) => p.slug)).toEqual(["sync-flow"]);
 
       const jobs = await fetch(`${server.url}/api/wikis/alpha/jobs`).then((r) => r.json()) as {
           runs: Array<{ id: string }>;

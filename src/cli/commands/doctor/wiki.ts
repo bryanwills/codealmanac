@@ -43,7 +43,7 @@ export async function gatherWikiChecks(options: DoctorOptions): Promise<Check[]>
   const dbPath = path.join(almanacDir, "index.db");
   checks.push(...describeCounts(dbPath));
   checks.push(describeIndexFreshness(dbPath));
-  checks.push(describeLastCapture(almanacDir, options.now));
+  checks.push(describeLastAbsorb(almanacDir, options.now));
   checks.push(await describeHealth(repoRoot, options));
 
   return checks;
@@ -144,19 +144,19 @@ function describeIndexFreshness(dbPath: string): Check {
   }
 }
 
-function describeLastCapture(
+function describeLastAbsorb(
   almanacDir: string,
   nowFn?: () => Date,
 ): Check {
   if (!existsSync(almanacDir)) {
     return {
       status: "info",
-      key: "wiki.capture",
-      message: "last capture: never",
+      key: "wiki.absorb",
+      message: "last absorb: never",
     };
   }
   const logDirs = [path.join(almanacDir, "logs"), almanacDir];
-  const captures = logDirs
+  const absorbs = logDirs
     .flatMap((dir) => {
       let entries: string[];
       try {
@@ -167,7 +167,7 @@ function describeLastCapture(
       return entries
         .filter(
           (e) =>
-            e.startsWith(".capture-") &&
+            e.startsWith(".absorb-") &&
             (e.endsWith(".log") || e.endsWith(".jsonl")),
         )
         .map((e) => ({ dir, name: e }));
@@ -183,21 +183,21 @@ function describeLastCapture(
       }
     })
     .filter((e): e is { name: string; mtime: number } => e !== null);
-  if (captures.length === 0) {
+  if (absorbs.length === 0) {
     return {
       status: "info",
-      key: "wiki.capture",
-      message: "last capture: never",
+      key: "wiki.absorb",
+      message: "last absorb: never",
     };
   }
-  captures.sort((a, b) => b.mtime - a.mtime);
-  const latest = captures[0]!;
+  absorbs.sort((a, b) => b.mtime - a.mtime);
+  const latest = absorbs[0]!;
   const now = (nowFn?.() ?? new Date()).getTime();
   const age = now - latest.mtime;
   return {
     status: "info",
-    key: "wiki.capture",
-    message: `last capture: ${formatDuration(age)} ago (${latest.name})`,
+    key: "wiki.absorb",
+    message: `last absorb: ${formatDuration(age)} ago (${latest.name})`,
   };
 }
 

@@ -5,8 +5,8 @@ import {
   parseGitHubRemote,
   resolveGitHubSource,
   type CommandRunner,
-} from "../src/ingest/github.js";
-import type { SourceRef } from "../src/ingest/source-ref.js";
+} from "../src/absorb/github.js";
+import type { SourceRef } from "../src/absorb/source-ref.js";
 
 const ref: SourceRef = {
   raw: "github:pr:123",
@@ -97,7 +97,7 @@ describe("resolveGitHubSource", () => {
 
     await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
       .rejects.toMatchObject({
-        message: "GitHub source ingest requires a GitHub remote for this repository.",
+        message: "GitHub source absorb requires a GitHub remote for this repository.",
         fix: [
           "Set an origin remote that points to GitHub, or run this command from a GitHub-backed repo:",
           "",
@@ -113,7 +113,7 @@ describe("resolveGitHubSource", () => {
 
     await expect(resolveGitHubSource({ ref, cwd: "/repo", runCommand }))
       .rejects.toMatchObject({
-        message: "GitHub source ingest requires a GitHub remote for this repository.",
+        message: "GitHub source absorb requires a GitHub remote for this repository.",
         fix: [
           "Set an origin remote that points to GitHub, or run this command from a GitHub-backed repo:",
           "",

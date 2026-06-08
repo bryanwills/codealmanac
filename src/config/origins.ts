@@ -20,11 +20,13 @@ export function originsFromRaw(
     !Array.isArray(raw.automation)
       ? raw.automation as Record<string, unknown>
       : {};
-  if (
+  if (!agentOnly && Object.prototype.hasOwnProperty.call(automation, "sync_since")) {
+    origins["automation.sync_since"] = origin;
+  } else if (
     !agentOnly &&
     Object.prototype.hasOwnProperty.call(automation, "capture_since")
   ) {
-    origins["automation.capture_since"] = origin;
+    origins["automation.sync_since"] = origin;
   }
   const agent =
     raw.agent !== null &&

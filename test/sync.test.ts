@@ -3,13 +3,13 @@ import { mkdir, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runCaptureSweepCommand } from "../src/cli/commands/capture-sweep.js";
+import { runSyncCommand } from "../src/cli/commands/sync.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/config/index.js";
 import { runRecordPath, writeRunRecord } from "../src/process/index.js";
 
-describe("almanac capture sweep", () => {
-  it("dry-runs quiet Claude and Codex transcripts mapped to .almanac repos", async () => {
+describe("almanac sync", () => {
+  it("identifies ready Claude and Codex transcripts mapped to .almanac repos", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
@@ -46,10 +46,10 @@ describe("almanac capture sweep", () => {
       );
       await utimes(subagentTranscript, old, old);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
-        dryRun: true,
+        mode: "status",
         json: true,
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
@@ -57,16 +57,16 @@ describe("almanac capture sweep", () => {
 
       expect(result.exitCode).toBe(0);
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.scanned).toBe(2);
-      expect(parsed.summary.started).toHaveLength(2);
-      expect(parsed.summary.started.map((s: { app: string }) => s.app).sort())
+      expect(parsed.data.summary.scanned).toBe(2);
+      expect(parsed.data.summary.ready).toHaveLength(2);
+      expect(parsed.data.summary.ready.map((s: { app: string }) => s.app).sort())
         .toEqual(["claude", "codex"]);
-      expect(existsSync(join(repo, ".almanac", "runs", "capture-ledger.json")))
+      expect(existsSync(join(repo, ".almanac", "runs", "sync-ledger.json")))
         .toBe(false);
     });
   });
 
-  it("enqueues every eligible capture job in a live sweep", async () => {
+  it("enqueues every eligible sync job in a live sync", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
@@ -86,7 +86,7 @@ describe("almanac capture sweep", () => {
 
       const started: string[] = [];
       let runIndex = 0;
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
@@ -117,12 +117,12 @@ describe("almanac capture sweep", () => {
 
       const parsed = JSON.parse(result.stdout);
       expect(started).toHaveLength(2);
-      expect(parsed.summary.started).toHaveLength(2);
-      expect(parsed.summary.skipped).toEqual([]);
+      expect(parsed.data.summary.started).toHaveLength(2);
+      expect(parsed.data.summary.skipped).toEqual([]);
     });
   });
 
-  it("still enqueues sweep captures when an absorb job is already queued", async () => {
+  it("still enqueues sync jobs when an absorb job is already queued", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
@@ -148,7 +148,7 @@ describe("almanac capture sweep", () => {
       const old = new Date("2026-05-11T10:00:00.000Z");
       await utimes(transcript, old, old);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
@@ -172,11 +172,11 @@ describe("almanac capture sweep", () => {
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(1);
-      expect(parsed.summary.started[0]).toMatchObject({
+      expect(parsed.data.summary.started).toHaveLength(1);
+      expect(parsed.data.summary.started[0]).toMatchObject({
         runId: "run_queued_after_active",
       });
-      expect(parsed.summary.skipped).toEqual([]);
+      expect(parsed.data.summary.skipped).toEqual([]);
     });
   });
 
@@ -195,18 +195,18 @@ describe("almanac capture sweep", () => {
       const mtime = new Date("2026-05-11T11:30:00.000Z");
       await utimes(transcript, mtime, mtime);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
-        dryRun: true,
+        mode: "status",
         json: true,
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(0);
-      expect(parsed.summary.skipped[0]).toMatchObject({
+      expect(parsed.data.summary.ready).toHaveLength(0);
+      expect(parsed.data.summary.skipped[0]).toMatchObject({
         transcriptPath: transcript,
         reason: "quiet-window",
       });
@@ -214,12 +214,12 @@ describe("almanac capture sweep", () => {
     });
   });
 
-  it("ignores transcripts from before auto-capture activation", async () => {
+  it("ignores transcripts from before sync activation", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
       await writeConfig({
-        automation: { capture_since: "2026-05-11T11:00:00.000Z" },
+        automation: { sync_since: "2026-05-11T11:00:00.000Z" },
       });
       const codexDir = join(home, ".codex", "sessions");
       await mkdir(codexDir, { recursive: true });
@@ -246,20 +246,20 @@ describe("almanac capture sweep", () => {
       const recent = new Date("2026-05-11T11:10:00.000Z");
       await utimes(newTranscript, recent, recent);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
-        dryRun: true,
+        mode: "status",
         json: true,
         quiet: "1m",
         now: new Date("2026-05-11T12:00:00.000Z"),
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.captureSince).toBe("2026-05-11T11:00:00.000Z");
-      expect(parsed.summary.started).toHaveLength(1);
-      expect(parsed.summary.started[0]).toMatchObject({ sessionId: "new" });
-      expect(parsed.summary.skipped).toContainEqual(expect.objectContaining({
+      expect(parsed.data.summary.syncSince).toBe("2026-05-11T11:00:00.000Z");
+      expect(parsed.data.summary.ready).toHaveLength(1);
+      expect(parsed.data.summary.ready[0]).toMatchObject({ sessionId: "new" });
+      expect(parsed.data.summary.skipped).toContainEqual(expect.objectContaining({
         transcriptPath: oldTranscript,
         reason: "before-automation-activation",
       }));
@@ -271,7 +271,7 @@ describe("almanac capture sweep", () => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
       await writeConfig({
-        automation: { capture_since: "2026-05-11T11:00:00.000Z" },
+        automation: { sync_since: "2026-05-11T11:00:00.000Z" },
       });
       const codexDir = join(home, ".codex", "sessions");
       await mkdir(codexDir, { recursive: true });
@@ -296,18 +296,18 @@ describe("almanac capture sweep", () => {
       const recent = new Date("2026-05-11T11:10:00.000Z");
       await utimes(transcript, recent, recent);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
-        dryRun: true,
+        mode: "status",
         json: true,
         quiet: "1m",
         now: new Date("2026-05-11T12:00:00.000Z"),
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(1);
-      expect(parsed.summary.started[0]).toMatchObject({
+      expect(parsed.data.summary.ready).toHaveLength(1);
+      expect(parsed.data.summary.ready[0]).toMatchObject({
         sessionId: "continued",
         fromLine: 2,
         toLine: 2,
@@ -320,7 +320,7 @@ describe("almanac capture sweep", () => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
       await writeConfig({
-        automation: { capture_since: "2026-05-11T11:00:00.000Z" },
+        automation: { sync_since: "2026-05-11T11:00:00.000Z" },
       });
       const codexDir = join(home, ".codex", "sessions");
       await mkdir(codexDir, { recursive: true });
@@ -333,30 +333,30 @@ describe("almanac capture sweep", () => {
       const recent = new Date("2026-05-11T11:10:00.000Z");
       await utimes(transcript, recent, recent);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
-        dryRun: true,
+        mode: "status",
         json: true,
         quiet: "1m",
         now: new Date("2026-05-11T12:00:00.000Z"),
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(0);
-      expect(parsed.summary.skipped[0]).toMatchObject({ reason: "unchanged" });
+      expect(parsed.data.summary.ready).toHaveLength(0);
+      expect(parsed.data.summary.skipped[0]).toMatchObject({ reason: "unchanged" });
     });
   });
 
-  it("skips a repo when another sweep holds its lock", async () => {
+  it("skips a repo when another sync holds its lock", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
-      await mkdir(join(repo, ".almanac", "runs", "capture-sweep.lock"), {
+      await mkdir(join(repo, ".almanac", "runs", "sync.lock"), {
         recursive: true,
       });
       await writeFile(
-        join(repo, ".almanac", "runs", "capture-sweep.lock", "owner.json"),
+        join(repo, ".almanac", "runs", "sync.lock", "owner.json"),
         JSON.stringify({
           pid: process.pid,
           startedAt: "2026-05-11T11:59:00.000Z",
@@ -374,7 +374,7 @@ describe("almanac capture sweep", () => {
       const old = new Date("2026-05-11T10:00:00.000Z");
       await utimes(transcript, old, old);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
@@ -386,9 +386,9 @@ describe("almanac capture sweep", () => {
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(0);
-      expect(parsed.summary.skipped[0]).toMatchObject({
-        reason: "sweep-already-running",
+      expect(parsed.data.summary.started).toHaveLength(0);
+      expect(parsed.data.summary.skipped[0]).toMatchObject({
+        reason: "sync-already-running",
       });
     });
   });
@@ -425,20 +425,20 @@ describe("almanac capture sweep", () => {
         targetPaths: [transcript],
       });
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
         startBackground: async () => {
-          throw new Error("should not capture internal provider sessions");
+          throw new Error("should not absorb internal provider sessions");
         },
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(0);
-      expect(parsed.summary.skipped).toContainEqual(expect.objectContaining({
+      expect(parsed.data.summary.started).toHaveLength(0);
+      expect(parsed.data.summary.skipped).toContainEqual(expect.objectContaining({
         sessionId: "provider-session-1",
         reason: "internal-almanac-session",
       }));
@@ -480,7 +480,7 @@ describe("almanac capture sweep", () => {
         "utf8",
       );
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
@@ -506,16 +506,16 @@ describe("almanac capture sweep", () => {
 
       const parsed = JSON.parse(result.stdout);
       expect(result.exitCode).toBe(0);
-      expect(parsed.summary.started).toHaveLength(1);
-      expect(parsed.summary.started[0]).toMatchObject({ sessionId: "external" });
+      expect(parsed.data.summary.started).toHaveLength(1);
+      expect(parsed.data.summary.started[0]).toMatchObject({ sessionId: "external" });
     });
   });
 
-  it("recovers an abandoned sweep lock", async () => {
+  it("recovers an abandoned sync lock", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
-      const lock = join(repo, ".almanac", "runs", "capture-sweep.lock");
+      const lock = join(repo, ".almanac", "runs", "sync.lock");
       await mkdir(lock, { recursive: true });
       await writeFile(
         join(lock, "owner.json"),
@@ -540,7 +540,7 @@ describe("almanac capture sweep", () => {
       const old = new Date("2026-05-11T10:00:00.000Z");
       await utimes(transcript, old, old);
 
-      const result = await runCaptureSweepCommand({
+      const result = await runSyncCommand({
         cwd: repo,
         homeDir: home,
         json: true,
@@ -565,8 +565,8 @@ describe("almanac capture sweep", () => {
       });
 
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.summary.started).toHaveLength(1);
-      expect(parsed.summary.started[0]).toMatchObject({
+      expect(parsed.data.summary.started).toHaveLength(1);
+      expect(parsed.data.summary.started[0]).toMatchObject({
         runId: "run_recovered_lock",
       });
       await expect(readFile(lock, "utf8")).rejects.toThrow();

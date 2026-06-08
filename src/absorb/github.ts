@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 import { OperationError } from "../operations/errors.js";
-import type { GitHubIngestSource } from "./input-source.js";
+import type { GitHubAbsorbInputSource } from "./input-source.js";
 import type { SourceRef } from "./source-ref.js";
 
 const execFileAsync = promisify(execFile);
@@ -28,7 +28,7 @@ export async function resolveGitHubSource(args: {
   ref: Extract<SourceRef, { provider: "github" }>;
   cwd: string;
   runCommand?: CommandRunner;
-}): Promise<GitHubIngestSource> {
+}): Promise<GitHubAbsorbInputSource> {
   const runCommand = args.runCommand ?? defaultCommandRunner;
   const repo = args.ref.repo ?? await resolveRepoFromRemote(runCommand, args.cwd);
   if (repo === null) throw githubRemoteError();
@@ -102,7 +102,7 @@ function isSafeGitHubPart(part: string): boolean {
 
 function githubRemoteError(): GitHubSourceError {
   return new GitHubSourceError(
-    "GitHub source ingest requires a GitHub remote for this repository.",
+    "GitHub source absorb requires a GitHub remote for this repository.",
     [
       "Set an origin remote that points to GitHub, or run this command from a GitHub-backed repo:",
       "",
