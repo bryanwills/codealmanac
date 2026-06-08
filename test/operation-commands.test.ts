@@ -356,6 +356,7 @@ describe("operation command wrappers", () => {
         },
       });
       const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
+      const output = (seen[0] as { spec: { output?: unknown } }).spec.output;
       expect(prompt).toContain("Input source: github:pr:123");
       expect(prompt).toContain("Source kind: GitHub pull request");
       expect(prompt).toContain("Repository: owner/repo");
@@ -365,6 +366,67 @@ describe("operation command wrappers", () => {
       expect(prompt).not.toContain("Composio");
       expect(prompt).not.toContain("almanac source github");
       expect(prompt).toContain("type: pr");
+      expect(prompt).toContain("## Final Output");
+      expect(prompt).toContain("sticky GitHub PR comment");
+      expect(prompt).toContain("### Almanac updated");
+      expect(prompt).toContain("### No Almanac update needed");
+      expect(prompt).not.toContain("wiki memory");
+      expect(output).toMatchObject({
+        kind: "json_schema",
+        name: "almanac_operation_report_v1",
+      });
+    });
+  });
+
+  it("does not attach the sticky PR-comment report to multi-PR ingest", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "cmd-ingest-multiple-github-prs");
+      await initWiki({ cwd: repo, name: "cmd-ingest-multiple-github-prs", description: "" });
+      const seen: unknown[] = [];
+
+      const result = await runIngestCommand({
+        cwd: repo,
+        paths: ["github:pr:123", "github:pr:124"],
+        using: "codex",
+        resolveSource: async (ref) => {
+          if (ref.provider !== "github") throw new Error("expected GitHub source ref");
+          return {
+            kind: "github.pr",
+            raw: ref.raw,
+            repo: "owner/repo",
+            url: `https://github.com/owner/repo/pull/${ref.id}`,
+            number: ref.id,
+          };
+        },
+        startBackground: async (options) => {
+          seen.push(options);
+          return {
+            runId: "run_multi_pr_ingest",
+            childPid: 4321,
+            record: {
+              version: 1,
+              id: "run_multi_pr_ingest",
+              operation: "absorb",
+              status: "queued",
+              repoRoot: options.repoRoot,
+              pid: 0,
+              provider: options.spec.provider.id,
+              model: options.spec.provider.model,
+              startedAt: "2026-05-09T20:17:00.000Z",
+              logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
+            },
+          };
+        },
+      });
+
+      expect(result.exitCode).toBe(0);
+      const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
+      const output = (seen[0] as { spec: { output?: unknown } }).spec.output;
+      expect(prompt).toContain("Sources:");
+      expect(prompt).toContain("github:pr:123");
+      expect(prompt).toContain("github:pr:124");
+      expect(prompt).not.toContain("sticky GitHub PR comment");
+      expect(output).toBeUndefined();
     });
   });
 
@@ -420,6 +482,7 @@ describe("operation command wrappers", () => {
         },
       });
       const prompt = (seen[0] as { spec: { prompt: string } }).spec.prompt;
+      const output = (seen[0] as { spec: { output?: unknown } }).spec.output;
       expect(prompt).toContain("Source kind: GitHub issue");
       expect(prompt).toContain("Number: 11");
       expect(prompt).toContain("The `gh` CLI is installed and authenticated");
@@ -427,6 +490,8 @@ describe("operation command wrappers", () => {
       expect(prompt).not.toContain("Composio");
       expect(prompt).not.toContain("almanac source github");
       expect(prompt).toContain("type: web");
+      expect(prompt).not.toContain("sticky GitHub PR comment");
+      expect(output).toBeUndefined();
     });
   });
 

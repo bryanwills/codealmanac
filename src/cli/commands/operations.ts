@@ -1,6 +1,7 @@
 import type { CommandResult } from "../helpers.js";
 import { renderOutcome } from "../outcome.js";
 import type { HarnessEvent } from "../../harness/events.js";
+import type { FinalOutputSpec } from "../../harness/final-output.js";
 import type { HarnessProviderId } from "../../harness/types.js";
 import { runAbsorbOperation } from "../../operations/absorb.js";
 import { runBuildOperation } from "../../operations/build.js";
@@ -9,7 +10,12 @@ import { readConfig } from "../../config/index.js";
 import { GitHubSourceError } from "../../ingest/github.js";
 import { renderIngestContext } from "../../ingest/context.js";
 import {
+  ALMANAC_OPERATION_REPORT_OUTPUT,
+  githubPullRequestReportInstructions,
+} from "../../operations/reports.js";
+import {
   resolveIngestInput,
+  type ResolvedIngestInput,
   type ResolveSourceFn,
 } from "../../ingest/input.js";
 import { resolveCaptureTranscripts } from "../../capture/input.js";
@@ -186,12 +192,13 @@ export async function runIngestCommand(
       cwd: options.cwd,
       provider: provider.value,
       background: options.foreground !== true,
-      context: renderIngestContext(input.value),
+      context: ingestOperationContext(input.value),
       targetKind: input.value.kind,
       targetPaths: input.value.targets,
       // Source ingest (GitHub via `gh`, or a web URL) needs the network;
       // local-file ingest does not.
       networkAccess: input.value.kind === "source",
+      output: githubPullRequestReportOutput(input.value),
       onEvent: options.onEvent,
       startForeground: options.startForeground,
       startBackground: options.startBackground,
@@ -200,6 +207,29 @@ export async function runIngestCommand(
   } catch (err: unknown) {
     return renderOperationError(err, options.json);
   }
+}
+
+function ingestOperationContext(input: ResolvedIngestInput): string {
+  const base = renderIngestContext(input);
+  if (!isSingleGitHubPullRequestInput(input)) return base;
+  return [
+    base,
+    githubPullRequestReportInstructions({ almanacRoot: ".almanac/" }),
+  ].join("\n\n");
+}
+
+function githubPullRequestReportOutput(
+  input: ResolvedIngestInput,
+): FinalOutputSpec | undefined {
+  return isSingleGitHubPullRequestInput(input)
+    ? ALMANAC_OPERATION_REPORT_OUTPUT
+    : undefined;
+}
+
+function isSingleGitHubPullRequestInput(input: ResolvedIngestInput): boolean {
+  return input.kind === "source" &&
+    input.sources.length === 1 &&
+    input.sources.every((source) => source.kind === "github.pr");
 }
 
 export async function runGardenCommand(

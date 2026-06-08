@@ -24,7 +24,7 @@ other concrete pointer. Treat that input as raw material, not as the output.
   meaning. If you create a temporal page, also update or link the synthesis
    page or hub it informs.
 8. Update topics and links so the new understanding joins the graph.
-9. No-op when the input does not improve durable project memory.
+9. No-op when the input does not improve durable project knowledge.
 
 When you create or substantially edit a page, use structured `sources:`
 frontmatter for evidence. Do not emit legacy `files:` on new pages; use

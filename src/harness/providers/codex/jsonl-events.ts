@@ -1,4 +1,5 @@
 import type { HarnessRunHooks } from "../../types.js";
+import { parseJsonSchemaFinalOutputText } from "../../final-output.js";
 import { classifyCodexFailure } from "./failures.js";
 import {
   objectField,
@@ -25,6 +26,26 @@ export async function applyCodexJsonlEvent(
       const text = stringField(item, "text");
       if (text !== undefined) {
         state.result = text;
+        if (state.outputSpec?.kind === "json_schema") {
+          try {
+            state.output = parseJsonSchemaFinalOutputText(state.outputSpec, text);
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            state.error = message;
+            state.failure = {
+              provider: "codex",
+              code: "codex.structured_output_invalid",
+              message,
+              raw: text,
+              details: { output: state.outputSpec.name },
+            };
+            await hooks?.onEvent?.({
+              type: "error",
+              error: message,
+              failure: state.failure,
+            });
+          }
+        }
         await hooks?.onEvent?.({ type: "text", content: text });
       }
     }
@@ -35,7 +56,7 @@ export async function applyCodexJsonlEvent(
   }
 
   if (msg.type === "turn.completed") {
-    state.success = true;
+    state.success = state.failure === undefined;
     state.turns = 1;
     state.usage = parseCodexUsage(msg.usage);
     await hooks?.onEvent?.({
@@ -44,6 +65,9 @@ export async function applyCodexJsonlEvent(
       providerSessionId: state.providerSessionId,
       turns: state.turns,
       usage: state.usage,
+      output: state.output,
+      error: state.error,
+      failure: state.failure,
     });
     return;
   }

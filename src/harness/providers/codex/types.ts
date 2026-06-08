@@ -2,10 +2,16 @@ import type {
   AgentUsage,
   HarnessFailure,
 } from "../../events.js";
+import type {
+  FinalOutputResult,
+  FinalOutputSpec,
+} from "../../final-output.js";
 
 export interface CodexRunState {
   success: boolean;
   result: string;
+  outputSpec?: FinalOutputSpec;
+  output?: FinalOutputResult;
   providerSessionId?: string;
   turns?: number;
   usage?: AgentUsage;

@@ -135,6 +135,14 @@ describe("process run records", () => {
           deleted: [],
           summary: "Updated capture/run lifecycle docs after scheduled absorb.",
         },
+        operationOutput: {
+          version: 1,
+          contract: "almanac_operation_report_v1",
+          value: {
+            version: 1,
+            summary: "### Almanac updated",
+          },
+        },
       });
 
       expect(finished).toMatchObject({
@@ -147,6 +155,12 @@ describe("process run records", () => {
           created: ["new-page"],
           updated: ["capture-flow", "process-manager-runs"],
           summary: "Updated capture/run lifecycle docs after scheduled absorb.",
+        },
+        operationOutput: {
+          contract: "almanac_operation_report_v1",
+          value: {
+            summary: "### Almanac updated",
+          },
         },
       });
     });
@@ -188,6 +202,41 @@ describe("process run records", () => {
           updated: [],
           archived: [],
           deleted: [],
+        },
+      })).toBe(false);
+    });
+  });
+
+  it("rejects malformed operationOutput in persisted records", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "malformed-operation-output");
+      await scaffoldWiki(repo);
+      const record = buildStartedRunRecord({
+        runId: "run_20260509195001_deadbeef",
+        repoRoot: repo,
+        startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        spec: {
+          provider: { id: "claude" },
+          cwd: repo,
+          prompt: "garden",
+          metadata: { operation: "garden" },
+        },
+      });
+
+      expect(isRunRecord({
+        ...record,
+        operationOutput: {
+          version: 1,
+          contract: "report",
+          value: Number.NaN,
+        },
+      })).toBe(false);
+      expect(isRunRecord({
+        ...record,
+        operationOutput: {
+          version: 2,
+          contract: "report",
+          value: {},
         },
       })).toBe(false);
     });

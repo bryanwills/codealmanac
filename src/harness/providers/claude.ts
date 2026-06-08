@@ -6,6 +6,10 @@ import {
 } from "@anthropic-ai/claude-agent-sdk";
 
 import type { HarnessEvent, HarnessFailure, HarnessResult } from "../events.js";
+import {
+  parseJsonSchemaFinalOutputText,
+  finalJsonSchemaOutput,
+} from "../final-output.js";
 import type { RunActor } from "../events.js";
 import type { ToolRequest } from "../tools.js";
 import type {
@@ -15,6 +19,7 @@ import type {
   HarnessRunHooks,
   ProviderStatus,
 } from "../types.js";
+import type { FinalOutputResult, FinalOutputSpec } from "../final-output.js";
 import { HARNESS_PROVIDER_METADATA } from "./metadata.js";
 import {
   checkClaudeAuth,
@@ -104,6 +109,7 @@ async function runClaudeHarness(
   let error: string | undefined;
   let failure: HarnessFailure | undefined;
   let usage: HarnessResult["usage"];
+  let output: FinalOutputResult | undefined;
   const trace: ClaudeTraceState = {
     agentParents: {},
     agentLabels: {},
@@ -136,6 +142,27 @@ async function runClaudeHarness(
         if (message.subtype === "success") {
           success = true;
           result = message.result;
+          if (spec.output?.kind === "json_schema") {
+            try {
+              output = message.structured_output !== undefined
+                ? finalJsonSchemaOutput(
+                    spec.output,
+                    message.result,
+                    message.structured_output,
+                  )
+                : parseJsonSchemaFinalOutputText(spec.output, message.result);
+            } catch (err: unknown) {
+              success = false;
+              error = err instanceof Error ? err.message : String(err);
+              failure = {
+                provider: "claude",
+                code: "claude.structured_output_invalid",
+                message: error,
+                raw: message.result,
+                details: { output: spec.output.name },
+              };
+            }
+          }
         } else {
           success = false;
           error =
@@ -162,6 +189,7 @@ async function runClaudeHarness(
     costUsd,
     turns,
     usage,
+    output,
     error,
     failure,
     sourceThreadId: providerSessionId,
@@ -176,6 +204,7 @@ async function runClaudeHarness(
     costUsd,
     turns,
     usage,
+    output,
     error,
     failure,
   };
@@ -253,6 +282,7 @@ function buildClaudeOptions(
     allowedTools: tools,
     agents,
     mcpServers: (spec.mcpServers ?? {}) as ClaudeOptions["mcpServers"],
+    outputFormat: claudeOutputFormat(spec.output),
     maxTurns: spec.limits?.maxTurns ?? 100,
     maxBudgetUsd: spec.limits?.maxCostUsd,
     permissionMode: "dontAsk",
@@ -265,6 +295,16 @@ function buildClaudeOptions(
       ? { pathToClaudeCodeExecutable: claudeExecutable }
       : {}),
   });
+}
+
+function claudeOutputFormat(
+  output: FinalOutputSpec | undefined,
+): ClaudeOptions["outputFormat"] {
+  if (output?.kind !== "json_schema") return undefined;
+  return {
+    type: "json_schema",
+    schema: output.schema as Record<string, unknown>,
+  };
 }
 
 function spawnClaudeCodeProcessGroup(

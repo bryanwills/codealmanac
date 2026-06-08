@@ -45,7 +45,16 @@ describe("process manager foreground execution", () => {
           });
           return {
             success: true,
-            result: "ok",
+            result: "{\"version\":1,\"summary\":\"### Almanac updated\\n\\nChanged one page.\"}",
+            output: {
+              kind: "json_schema",
+              name: "almanac_operation_report_v1",
+              text: "{\"version\":1,\"summary\":\"### Almanac updated\\n\\nChanged one page.\"}",
+              value: {
+                version: 1,
+                summary: "### Almanac updated\n\nChanged one page.",
+              },
+            },
             providerSessionId: "provider-1",
             costUsd: 0.2,
             turns: 4,
@@ -75,7 +84,15 @@ describe("process manager foreground execution", () => {
           updated: [],
           archived: [],
           deleted: [],
-          summary: "ok",
+          summary: "### Almanac updated\n\nChanged one page.",
+        },
+        operationOutput: {
+          version: 1,
+          contract: "almanac_operation_report_v1",
+          value: {
+            version: 1,
+            summary: "### Almanac updated\n\nChanged one page.",
+          },
         },
       });
 
@@ -87,6 +104,54 @@ describe("process manager foreground execution", () => {
       const log = await readFile(result.record.logPath, "utf8");
       expect(log).toContain('"type":"text"');
       expect(log).toContain('"type":"done"');
+    });
+  });
+
+  it("uses structured summary only for the Almanac operation report contract", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "foreground-unrelated-output");
+      const pagesDir = await scaffoldWiki(repo);
+
+      const result = await startForegroundProcess({
+        repoRoot: repo,
+        runId: "run_20260509195500_unrelated_output",
+        now: fixedClock([
+          "2026-05-09T19:55:00.000Z",
+          "2026-05-09T19:55:01.000Z",
+          "2026-05-09T19:55:02.000Z",
+        ]),
+        spec: {
+          provider: { id: "codex" },
+          cwd: repo,
+          prompt: "absorb",
+          metadata: { operation: "absorb", targetKind: "session" },
+        },
+        harnessRun: async () => {
+          await writeFile(join(pagesDir, "other.md"), "# Other\n", "utf8");
+          return {
+            success: true,
+            result: "Fallback summary\n\nDetails.",
+            output: {
+              kind: "json_schema",
+              name: "unrelated_contract_v1",
+              text: "{\"summary\":\"Do not use this\"}",
+              value: { summary: "Do not use this" },
+            },
+          };
+        },
+      });
+
+      expect(result.record).toMatchObject({
+        status: "done",
+        pageChanges: {
+          created: ["other"],
+          summary: "Fallback summary",
+        },
+        operationOutput: {
+          contract: "unrelated_contract_v1",
+          value: { summary: "Do not use this" },
+        },
+      });
     });
   });
 

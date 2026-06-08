@@ -1,4 +1,5 @@
 import type { HarnessEvent, HarnessResult } from "./events.js";
+import type { FinalOutputSpec } from "./final-output.js";
 import type { ToolRequest } from "./tools.js";
 
 export type HarnessProviderId = "claude" | "codex" | "cursor";
@@ -51,9 +52,7 @@ export interface AgentRunSpec {
   providerSession?: {
     persistence?: ProviderSessionPersistence;
   };
-  output?: {
-    schemaPath?: string;
-  };
+  output?: FinalOutputSpec;
   metadata?: {
     operation: OperationKind;
     targetKind?: string;

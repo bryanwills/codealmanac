@@ -29,7 +29,18 @@ describe("Codex harness provider", () => {
       cwd: "/repo",
       systemPrompt: "system",
       prompt: "run garden",
-      output: { schemaPath: "/tmp/schema.json" },
+      output: {
+        kind: "json_schema",
+        name: "test_report",
+        schemaPath: "/tmp/schema.json",
+        schema: {
+          type: "object",
+          properties: {
+            summary: { type: "string" },
+          },
+          required: ["summary"],
+        },
+      },
       providerSession: { persistence: "ephemeral" },
       metadata: { operation: "garden" },
     };
@@ -55,6 +66,112 @@ describe("Codex harness provider", () => {
       ],
       env: process.env,
     });
+  });
+
+  it("passes app-server output schema and parses root structured output", async () => {
+    const binDir = await mkdtemp(join(tmpdir(), "codealmanac-codex-output-bin-"));
+    const codexPath = join(binDir, "codex");
+    await writeFile(
+      codexPath,
+      `#!/usr/bin/env node
+const readline = require("node:readline");
+const rl = readline.createInterface({ input: process.stdin });
+function send(msg) { process.stdout.write(JSON.stringify(msg) + "\\n"); }
+rl.on("line", (line) => {
+  const msg = JSON.parse(line);
+  if (msg.method === "initialize") {
+    send({ id: msg.id, result: { userAgent: "fake-codex" } });
+    return;
+  }
+  if (msg.method === "thread/start") {
+    send({ id: msg.id, result: { thread: { id: "thread-1" } } });
+    return;
+  }
+  if (msg.method === "turn/start") {
+    if (msg.params.outputSchema?.properties?.summary?.type !== "string") {
+      send({ method: "error", params: { error: { message: "missing output schema" } } });
+      return;
+    }
+    send({ id: msg.id, result: { turn: { id: "turn-1" } } });
+    send({
+      method: "item/completed",
+      params: {
+        threadId: "thread-1",
+        turnId: "turn-1",
+        item: {
+          type: "agentMessage",
+          id: "msg-1",
+          text: "{\\"version\\":1,\\"summary\\":\\"### Almanac updated\\\\n\\\\nChanged one page.\\"}"
+        }
+      }
+    });
+    send({
+      method: "turn/completed",
+      params: {
+        threadId: "thread-1",
+        turnId: "turn-1",
+        turn: { id: "turn-1", status: "completed", error: null }
+      }
+    });
+  }
+});
+`,
+    );
+    await chmod(codexPath, 0o755);
+    const oldPath = process.env.PATH;
+    process.env.PATH = `${binDir}:${oldPath ?? ""}`;
+    try {
+      const events: unknown[] = [];
+      await expect(
+        runCodexAppServer(
+          {
+            provider: { id: "codex" },
+            cwd: binDir,
+            prompt: "run",
+            output: {
+              kind: "json_schema",
+              name: "almanac_operation_report_v1",
+              schema: {
+                type: "object",
+                properties: {
+                  version: { type: "number", enum: [1] },
+                  summary: { type: "string" },
+                },
+                required: ["version", "summary"],
+              },
+            },
+            metadata: { operation: "absorb" },
+          },
+          {
+            onEvent: (event) => {
+              events.push(event);
+            },
+          },
+        ),
+      ).resolves.toMatchObject({
+        success: true,
+        output: {
+          kind: "json_schema",
+          name: "almanac_operation_report_v1",
+          value: {
+            version: 1,
+            summary: "### Almanac updated\n\nChanged one page.",
+          },
+        },
+      });
+      expect(events).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: "done",
+            output: expect.objectContaining({
+              name: "almanac_operation_report_v1",
+            }),
+          }),
+        ]),
+      );
+    } finally {
+      process.env.PATH = oldPath;
+    }
   });
 
   it("uses injected CLI runner and reports unsupported per-run agents", async () => {

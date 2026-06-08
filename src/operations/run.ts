@@ -1,5 +1,6 @@
 import { joinPrompts, loadPrompt } from "../agent/prompts.js";
 import type { HarnessEvent } from "../harness/events.js";
+import type { FinalOutputSpec } from "../harness/final-output.js";
 import type {
   AgentRunSpec,
   ConnectorRuntimeRequirement,
@@ -44,6 +45,7 @@ export async function createOperationRunSpec(args: {
   targetPaths?: string[];
   connectors?: ConnectorRuntimeRequirement[];
   networkAccess?: boolean;
+  output?: FinalOutputSpec;
 }): Promise<AgentRunSpec> {
   const basePrompts = await Promise.all(
     BASE_PROMPTS.map((name) => loadPrompt(name)),
@@ -71,6 +73,7 @@ export async function createOperationRunSpec(args: {
     providerSession: {
       persistence: "ephemeral",
     },
+    output: args.output,
     metadata: {
       operation: args.operation,
       targetKind: args.targetKind,

@@ -36,7 +36,7 @@ describe("harness provider registry", () => {
     expect(HARNESS_PROVIDER_METADATA.codex.capabilities.contextUsage).toBe(true);
     expect(HARNESS_PROVIDER_METADATA.cursor.capabilities.fileWrite).toBe(false);
     expect(HARNESS_PROVIDER_METADATA.claude.capabilities.contextUsage).toBe(false);
-    expect(HARNESS_PROVIDER_METADATA.claude.capabilities.structuredOutput).toBe(false);
+    expect(HARNESS_PROVIDER_METADATA.claude.capabilities.structuredOutput).toBe(true);
   });
 
   it("keeps unported adapters explicit", async () => {

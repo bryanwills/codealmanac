@@ -35,13 +35,13 @@ function sourceIngestContext(sources: Source[]): string {
         `  gh api repos/${source.repo}/pulls/${source.number}/comments   # review comments`,
         `  gh api repos/${source.repo}/issues/${source.number}/comments  # PR conversation`,
         "Read the PR metadata, diff, changed files, commits, reviews, review comments,",
-        "linked issues, and discussion before deciding whether wiki memory changed.",
+        "linked issues, and discussion before deciding whether project knowledge changed.",
         "",
         "Treat PR discussion as evidence, not final truth.",
         "Prefer current code and the merged diff for present-tense behavior.",
-        "Update the Almanac only if this PR contains durable project memory.",
+        "Update the Almanac only if this PR contains durable project knowledge.",
         "If this PR supports a wiki claim, cite it with a `sources:` entry of `type: pr`.",
-        "No-op if the PR does not improve durable project memory.",
+        "No-op if the PR does not improve durable project knowledge.",
       );
     }
     if (source.kind === "github.issue") {
@@ -59,13 +59,13 @@ function sourceIngestContext(sources: Source[]): string {
         `  gh issue view ${source.number} --repo ${source.repo} --json title,body,labels,assignees,comments`,
         `  gh api repos/${source.repo}/issues/${source.number}/comments`,
         "Read the issue metadata, comments, labels, assignees, linked pull requests, and",
-        "referenced code before deciding whether wiki memory changed.",
+        "referenced code before deciding whether project knowledge changed.",
         "",
         "Treat issue discussion as evidence, not final truth.",
         "Prefer current code for present-tense behavior.",
-        "Update the Almanac only if this issue contains durable project memory.",
+        "Update the Almanac only if this issue contains durable project knowledge.",
         "If this issue supports a wiki claim, cite it with a `sources:` entry of `type: web` using the issue URL.",
-        "No-op if the issue does not improve durable project memory.",
+        "No-op if the issue does not improve durable project knowledge.",
       );
     }
     if (source.kind === "web.url") {
@@ -78,9 +78,9 @@ function sourceIngestContext(sources: Source[]): string {
         "Inspect this URL if network access and tools are available.",
         "Treat the URL as source material, not final truth.",
         "Prefer current repository code for present-tense behavior.",
-        "Update the Almanac only if this URL contains durable project memory.",
+        "Update the Almanac only if this URL contains durable project knowledge.",
         "If this URL supports a wiki claim, cite it with a `sources:` entry of `type: web`.",
-        "No-op if the URL does not improve durable project memory.",
+        "No-op if the URL does not improve durable project knowledge.",
       );
     }
   }

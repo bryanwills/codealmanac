@@ -4,8 +4,10 @@ import { dirname, join } from "node:path";
 
 import type { AgentRunSpec } from "../harness/types.js";
 import type { HarnessFailure } from "../harness/events.js";
+import { isJsonValue } from "../harness/final-output.js";
 import { getRepoAlmanacDir } from "../paths.js";
 import type {
+  RunOperationOutput,
   RunPageChanges,
   RunRecord,
   RunStatus,
@@ -103,6 +105,7 @@ export function finishRunRecord(args: {
   providerSessionId?: string;
   summary?: RunSummary;
   pageChanges?: RunPageChanges;
+  operationOutput?: RunOperationOutput;
   error?: string;
   failure?: HarnessFailure;
 }): RunRecord {
@@ -118,6 +121,7 @@ export function finishRunRecord(args: {
       : undefined,
     summary: args.summary,
     pageChanges: args.pageChanges,
+    operationOutput: args.operationOutput,
     error: args.error,
     failure: args.failure,
   };
@@ -198,7 +202,19 @@ export function isRunRecord(value: unknown): value is RunRecord {
     (v.provider === "claude" || v.provider === "codex" || v.provider === "cursor") &&
     typeof v.startedAt === "string" &&
     typeof v.logPath === "string" &&
-    (v.pageChanges === undefined || isRunPageChanges(v.pageChanges))
+    (v.pageChanges === undefined || isRunPageChanges(v.pageChanges)) &&
+    (v.operationOutput === undefined || isRunOperationOutput(v.operationOutput))
+  );
+}
+
+function isRunOperationOutput(value: unknown): value is RunOperationOutput {
+  if (value === null || typeof value !== "object") return false;
+  const v = value as Partial<RunOperationOutput>;
+  return (
+    v.version === 1 &&
+    typeof v.contract === "string" &&
+    v.contract.length > 0 &&
+    isJsonValue(v.value)
   );
 }
 

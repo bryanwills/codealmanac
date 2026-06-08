@@ -32,6 +32,7 @@ export function runCodexCli(
     const state: CodexRunState = {
       success: false,
       result: "",
+      outputSpec: request.outputSpec,
     };
     const eventWrites: Promise<void>[] = [];
     let settled = false;

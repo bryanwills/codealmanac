@@ -1,7 +1,12 @@
 import { join } from "node:path";
 
 import type { HarnessEvent, HarnessResult } from "../harness/events.js";
+import type { FinalOutputResult } from "../harness/final-output.js";
 import type { AgentRunSpec, HarnessRunHooks } from "../harness/types.js";
+import {
+  ALMANAC_OPERATION_REPORT_NAME,
+  parseAlmanacOperationReport,
+} from "../operations/reports.js";
 import { getHarnessProvider } from "../harness/providers/index.js";
 import { runIndexer } from "../wiki/indexer/index.js";
 import { createRunId } from "./ids.js";
@@ -16,7 +21,12 @@ import {
 } from "./records.js";
 import { acquireRunWorkerLock } from "./queue.js";
 import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
-import type { RunPageChanges, RunRecord, RunSummary } from "./types.js";
+import type {
+  RunOperationOutput,
+  RunPageChanges,
+  RunRecord,
+  RunSummary,
+} from "./types.js";
 
 export interface StartProcessOptions {
   repoRoot: string;
@@ -207,6 +217,7 @@ async function executeStartedRun(args: {
   let finalRecord: RunRecord;
   let summary: RunSummary | undefined;
   let pageChanges: RunPageChanges | undefined;
+  let operationOutput: RunOperationOutput | undefined;
   try {
     const pagesDir = join(args.repoRoot, ".almanac", "pages");
     const before = await snapshotPages(pagesDir);
@@ -246,7 +257,9 @@ async function executeStartedRun(args: {
       turns: result.turns,
       usage: result.usage,
     };
-    const resultSummary = harnessResultSummary(result.result);
+    operationOutput = runOperationOutput(result.output);
+    const resultSummary =
+      operationOutputSummary(operationOutput) ?? harnessResultSummary(result.result);
     pageChanges = {
       version: 1,
       runId,
@@ -267,6 +280,7 @@ async function executeStartedRun(args: {
       providerSessionId: result.providerSessionId,
       summary,
       pageChanges,
+      operationOutput,
       error: result.error,
       failure: result.failure,
     });
@@ -293,6 +307,7 @@ async function executeStartedRun(args: {
       finishedAt: now(),
       summary,
       pageChanges,
+      operationOutput,
       error: result.error,
       failure: result.failure,
     });
@@ -316,6 +331,7 @@ async function finishUnlessCancelled(args: {
   providerSessionId?: string;
   summary?: RunSummary;
   pageChanges?: RunPageChanges;
+  operationOutput?: RunOperationOutput;
   error?: string;
   failure?: import("../harness/events.js").HarnessFailure;
 }): Promise<RunRecord> {
@@ -338,6 +354,7 @@ async function finishUnlessCancelled(args: {
     providerSessionId: args.providerSessionId,
     summary: args.summary,
     pageChanges: args.pageChanges,
+    operationOutput: args.operationOutput,
     error: args.error,
     failure: args.failure,
   });
@@ -443,6 +460,27 @@ function harnessResultSummary(result: string): string | undefined {
     const line = rawLine.replace(/^#+\s*/, "").trim();
     if (line.length === 0 || line === "---") continue;
     return line.length > 500 ? `${line.slice(0, 497)}...` : line;
+  }
+  return undefined;
+}
+
+function runOperationOutput(
+  output: FinalOutputResult | undefined,
+): RunOperationOutput | undefined {
+  if (output?.kind !== "json_schema") return undefined;
+  return {
+    version: 1,
+    contract: output.name,
+    value: output.value,
+  };
+}
+
+function operationOutputSummary(
+  output: RunOperationOutput | undefined,
+): string | undefined {
+  if (output === undefined) return undefined;
+  if (output.contract === ALMANAC_OPERATION_REPORT_NAME) {
+    return parseAlmanacOperationReport(output.value).summary;
   }
   return undefined;
 }

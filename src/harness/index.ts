@@ -15,6 +15,12 @@ export type {
   HarnessEventType,
   HarnessResult,
 } from "./events.js";
+export type {
+  JsonObject,
+  JsonValue,
+  FinalOutputResult,
+  FinalOutputSpec,
+} from "./final-output.js";
 export type { ShellPolicy, ToolId, ToolRequest } from "./tools.js";
 export { isToolId, uniqueToolRequests } from "./tools.js";
 export {

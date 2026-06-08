@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-
 import type { HarnessResult } from "../../events.js";
 import type { AgentRunSpec, HarnessRunHooks } from "../../types.js";
 import { spawnManagedChildProcess } from "../../../process/managed-child.js";
@@ -59,7 +57,11 @@ export async function runCodexAppServer(
     });
     const child = managed.child;
     const pending = new Map<string, PendingRequest>();
-    const state: CodexRunState = { success: false, result: "" };
+    const state: CodexRunState = {
+      success: false,
+      result: "",
+      outputSpec: spec.output,
+    };
     const eventWrites: Promise<void>[] = [];
     let nextRequestId = 1;
     let stdoutBuf = "";
@@ -216,6 +218,7 @@ export async function runCodexAppServer(
             providerSessionId: state.providerSessionId,
             turns: state.turns,
             usage: state.usage,
+            output: state.output,
             error: state.error,
             failure: state.failure,
             sourceThreadId: state.resultSourceThreadId,
@@ -320,7 +323,6 @@ export async function runCodexAppServer(
           hooks?.onEvent?.({ type: "provider_session", providerSessionId: threadId }) ??
             Promise.resolve(),
         );
-        const outputSchema = await readOutputSchema(spec.output?.schemaPath);
         const turn = asRecord(
           await requestRpc("turn/start", {
             threadId,
@@ -342,7 +344,8 @@ export async function runCodexAppServer(
             },
             model: spec.provider.model ?? null,
             effort: spec.provider.effort ?? null,
-            outputSchema,
+            outputSchema:
+              spec.output?.kind === "json_schema" ? spec.output.schema : null,
           }),
         );
         activeTurnId = stringField(asRecord(turn.turn), "id");
@@ -460,12 +463,6 @@ function respondToServerRequest(
     default:
       respondUnsupported(id, method);
   }
-}
-
-async function readOutputSchema(schemaPath: string | undefined): Promise<unknown> {
-  if (schemaPath === undefined) return null;
-  const raw = await readFile(schemaPath, "utf8");
-  return JSON.parse(raw) as unknown;
 }
 
 function codexAppServerRpcTimeoutMs(env: NodeJS.ProcessEnv): number {

@@ -1,6 +1,6 @@
 ---
 title: Operation Prompts
-summary: Operation prompts define how Build, Absorb, and Garden turn repo evidence into wiki memory, and transcript-heavy Absorb runs should be improved in prompt space first.
+summary: Operation prompts define how Build, Absorb, and Garden turn repo evidence into project knowledge, and transcript-heavy Absorb runs should be improved in prompt space first.
 topics: [agents, decisions, prompt-system, wiki-design]
 sources:
   - id: prompt-loader
@@ -80,6 +80,8 @@ V1 prompt layout is base doctrine plus operation algorithms. The bundled base pr
 7. command-specific context
 
 `joinPrompts()` concatenates these modules with `---` separators. There is no manifest, proposal file, evidence pipeline, or prompt-state object between the CLI and the provider adapter. The source-control runtime context resolves `auto_commit` from user config and explicitly tells the agent whether it may create a wiki-only git commit. Auto-commit is now on by default through `defaultConfig().auto_commit`; `almanac setup --no-auto-commit` or `almanac config set auto_commit false` are the opt-out paths. The commit-message contract is `almanac: <imperative one-line summary>` followed by an optional body explaining what changed and why.
+
+GitHub pull-request ingest adds one extra final-output instruction block. `almanac ingest github:pr:<n>` attaches the `almanac_operation_report_v1` JSON Schema from `[[src/operations/reports.ts]]`; the schema contains `version: 1` and `summary`. The `summary` field is the complete markdown body for the sticky GitHub PR comment, including the heading, final state, changed Almanac pages when present, and a concise reason when the PR created durable project knowledge. This is a structured provider-output contract, not a regex over final assistant prose.
 
 ## Base modules
 

@@ -1,4 +1,5 @@
 import type { AgentUsage, HarnessFailure } from "../harness/events.js";
+import type { JsonValue } from "../harness/final-output.js";
 import type { HarnessProviderId, OperationKind } from "../harness/types.js";
 
 export type RunStatus = "queued" | "running" | "done" | "failed" | "cancelled";
@@ -24,6 +25,12 @@ export interface RunPageChanges {
   summary?: string;
 }
 
+export interface RunOperationOutput {
+  version: 1;
+  contract: string;
+  value: JsonValue;
+}
+
 export interface RunRecord {
   version: 1;
   id: string;
@@ -42,6 +49,7 @@ export interface RunRecord {
   targetPaths?: string[];
   summary?: RunSummary;
   pageChanges?: RunPageChanges;
+  operationOutput?: RunOperationOutput;
   error?: string;
   failure?: HarnessFailure;
 }

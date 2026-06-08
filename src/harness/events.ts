@@ -1,4 +1,5 @@
 import type { HarnessProviderId } from "./types.js";
+import type { FinalOutputResult } from "./final-output.js";
 
 export interface AgentUsage {
   inputTokens?: number;
@@ -88,6 +89,7 @@ export type HarnessEvent = HarnessEventEnvelopeFields &
       costUsd?: number;
       turns?: number;
       usage?: AgentUsage;
+      output?: FinalOutputResult;
       error?: string;
       failure?: HarnessFailure;
       sourceThreadId?: string;
@@ -124,6 +126,7 @@ export interface HarnessResult {
   costUsd?: number;
   turns?: number;
   usage?: AgentUsage;
+  output?: FinalOutputResult;
   error?: string;
   failure?: HarnessFailure;
 }

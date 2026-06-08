@@ -159,6 +159,90 @@ describe("Claude harness provider", () => {
     });
   });
 
+  it("passes outputFormat and preserves structured_output", async () => {
+    let seenOptions: unknown;
+    const provider = createClaudeHarnessProvider({
+      resolveExecutable: () => "/bin/claude",
+      query: ({ options }) => {
+        seenOptions = options;
+        return messages([
+          sdk({
+            type: "result",
+            subtype: "success",
+            duration_ms: 10,
+            duration_api_ms: 10,
+            is_error: false,
+            num_turns: 1,
+            result: "final text",
+            stop_reason: null,
+            total_cost_usd: 0.01,
+            usage: {
+              input_tokens: 1,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              output_tokens: 2,
+              server_tool_use: null,
+              service_tier: "standard",
+            },
+            modelUsage: {},
+            permission_denials: [],
+            structured_output: {
+              version: 1,
+              summary: "### Almanac updated\n\nChanged one page.",
+            },
+            uuid: "uuid",
+            session_id: "claude-session",
+          }),
+        ]);
+      },
+    });
+
+    await expect(
+      provider.run({
+        provider: { id: "claude" },
+        cwd: "/repo",
+        prompt: "run",
+        output: {
+          kind: "json_schema",
+          name: "almanac_operation_report_v1",
+          schema: {
+            type: "object",
+            properties: {
+              version: { type: "number", enum: [1] },
+              summary: { type: "string" },
+            },
+            required: ["version", "summary"],
+          },
+        },
+        metadata: { operation: "absorb" },
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      result: "final text",
+      providerSessionId: "claude-session",
+      output: {
+        kind: "json_schema",
+        name: "almanac_operation_report_v1",
+        text: "final text",
+        value: {
+          version: 1,
+          summary: "### Almanac updated\n\nChanged one page.",
+        },
+      },
+    });
+    expect(seenOptions).toMatchObject({
+      outputFormat: {
+        type: "json_schema",
+        schema: {
+          type: "object",
+          properties: {
+            summary: { type: "string" },
+          },
+        },
+      },
+    });
+  });
+
   it("isolates Claude runs from ambient filesystem settings and MCP config", async () => {
     const calls: Array<{ options?: Record<string, unknown> }> = [];
     const provider = createClaudeHarnessProvider({
