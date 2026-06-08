@@ -9,7 +9,7 @@ import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
  *
  *   - Default view: body only
  *   - Verbose view: metadata header + body
- *   - Body-only mode (`--body`, with `--raw` retained as a CLI alias)
+ *   - Body-only mode (`--body`)
  *   - `--meta`: metadata only
  *   - `--lead`: first paragraph only
  *   - `--json`: structured JSON, single object for positional, null for

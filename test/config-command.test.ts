@@ -130,43 +130,6 @@ describe("config command", () => {
     });
   });
 
-  it("sets connector config through the canonical config surface", async () => {
-    await withTempHome(async (home) => {
-      await expect(runConfigSet({
-        key: "connectors.composio.api_key_env",
-        value: "ALMANAC_COMPOSIO_API_KEY",
-      })).resolves.toMatchObject({ exitCode: 0 });
-      await expect(runConfigSet({
-        key: "connectors.github.default_account",
-        value: "work",
-      })).resolves.toMatchObject({ exitCode: 0 });
-
-      await expect(readConfig()).resolves.toMatchObject({
-        connectors: {
-          composio: { api_key_env: "ALMANAC_COMPOSIO_API_KEY" },
-          github: { default_account: "work" },
-        },
-      });
-
-      const path = join(home, ".almanac", "config.toml");
-      const toml = await readFile(path, "utf8");
-      expect(toml).toContain("[connectors.composio]");
-      expect(toml).toContain('api_key_env = "ALMANAC_COMPOSIO_API_KEY"');
-      expect(toml).toContain("[connectors.github]");
-      expect(toml).toContain('default_account = "work"');
-
-      await expect(runConfigUnset({
-        key: "connectors.github.default_account",
-      })).resolves.toMatchObject({ exitCode: 0 });
-      await expect(readConfig()).resolves.toMatchObject({
-        connectors: {
-          github: { default_account: null },
-        },
-      });
-    });
-  });
-
-
   it("reports file origins in json even without --show-origin", async () => {
     await withTempHome(async () => {
       await runConfigSet({ key: "agent.default", value: "codex" });
@@ -198,6 +161,12 @@ describe("config command", () => {
       const unknown = await runConfigGet({ key: "agent.nope" });
       expect(unknown.exitCode).toBe(1);
       expect(unknown.stderr).toContain("unknown config key");
+
+      const connectorKey = await runConfigGet({
+        key: "connectors.composio.api_key_env",
+      });
+      expect(connectorKey.exitCode).toBe(1);
+      expect(connectorKey.stderr).toContain("unknown config key");
     });
   });
 
@@ -290,71 +259,45 @@ describe("config command", () => {
           value: "codex",
           project: true,
         })).resolves.toMatchObject({ exitCode: 0 });
-      await expect(runConfigSet({
-        key: "update_notifier",
-        value: "false",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigSet({
-        key: "auto_commit",
-        value: "true",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigSet({
-        key: "automation.capture_since",
-        value: "2026-05-12T05:10:00.000Z",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigUnset({
-        key: "update_notifier",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigUnset({
-        key: "auto_commit",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigUnset({
-        key: "automation.capture_since",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigSet({
-        key: "connectors.composio.api_key_env",
-        value: "ALMANAC_COMPOSIO_API_KEY",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigSet({
-        key: "connectors.github.default_account",
-        value: "work",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigUnset({
-        key: "connectors.composio.api_key_env",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
-      await expect(runConfigUnset({
-        key: "connectors.github.default_account",
-        project: true,
-      })).resolves.toMatchObject({
-        exitCode: 1,
-      });
+        await expect(runConfigSet({
+          key: "update_notifier",
+          value: "false",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
+        await expect(runConfigSet({
+          key: "auto_commit",
+          value: "true",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
+        await expect(runConfigSet({
+          key: "automation.capture_since",
+          value: "2026-05-12T05:10:00.000Z",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
+        await expect(runConfigUnset({
+          key: "update_notifier",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
+        await expect(runConfigUnset({
+          key: "auto_commit",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
+        await expect(runConfigUnset({
+          key: "automation.capture_since",
+          project: true,
+        })).resolves.toMatchObject({
+          exitCode: 1,
+        });
       } finally {
         process.chdir(originalCwd);
       }

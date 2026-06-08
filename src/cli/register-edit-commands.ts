@@ -8,6 +8,7 @@ import {
   runReviewReopen,
   runReviewShow,
 } from "./commands/review.js";
+import { runMigrateLegacySources } from "./commands/migrate.js";
 import { runTag, runUntag } from "./commands/tag.js";
 import {
   runTopicsCreate,
@@ -176,6 +177,35 @@ export function registerEditCommands(program: Command): void {
         emit(result);
       },
     );
+
+  const migrate = program
+    .command("migrate")
+    .description("run deterministic wiki migrations");
+
+  migrate
+    .command("legacy-sources")
+    .description("rewrite legacy files/source frontmatter into structured sources")
+    .option("--topic <name>", "scope to a topic + its descendants")
+    .option("--stdin", "read page slugs from stdin (limit to these pages)")
+    .option("--wiki <name>", "target a specific registered wiki")
+    .option("--json", "emit structured JSON")
+    .action(async (opts: {
+      topic?: string;
+      stdin?: boolean;
+      wiki?: string;
+      json?: boolean;
+    }) => {
+      await autoRegisterIfNeeded(process.cwd());
+      const result = await runMigrateLegacySources({
+        cwd: process.cwd(),
+        topic: opts.topic,
+        stdin: opts.stdin,
+        stdinInput: opts.stdin === true ? await readStdin() : undefined,
+        wiki: opts.wiki,
+        json: opts.json,
+      });
+      emit(result);
+    });
 
   const topics = program
     .command("topics")

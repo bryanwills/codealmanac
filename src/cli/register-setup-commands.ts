@@ -5,8 +5,6 @@ import {
   runAgentsList,
   runAgentsModel,
   runAgentsUse,
-  runDeprecatedSetAgentModel,
-  runDeprecatedSetDefaultAgent,
 } from "./commands/agents.js";
 import {
   runConfigGet,
@@ -14,10 +12,8 @@ import {
   runConfigSet,
   runConfigUnset,
 } from "./commands/config.js";
-import { runConnectGitHub } from "./commands/connect.js";
 import { runDoctor } from "./commands/doctor/index.js";
 import { runSetup } from "./commands/setup/index.js";
-import { runSourceGitHub } from "./commands/source.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
 import { emit } from "./helpers.js";
@@ -114,97 +110,6 @@ export function registerSetupCommands(program: Command): void {
     .option("--project", "remove from .almanac/config.toml for this repo")
     .action(async (key: string, opts: { project?: boolean }) => {
       emit(await runConfigUnset({ key, project: opts.project }));
-    });
-
-  const connect = program
-    .command("connect")
-    .description("connect external accounts through Composio");
-
-  connect
-    .command("github")
-    .description("connect or inspect a GitHub account")
-    .option("--account <alias>", "local account alias (default: default)")
-    .option("--status", "list GitHub connections")
-    .option("--wait", "wait for the Composio connection to become active")
-    .option("--json", "emit structured JSON")
-    .action(async (opts: {
-      account?: string;
-      status?: boolean;
-      wait?: boolean;
-      json?: boolean;
-    }) => {
-      emit(await runConnectGitHub(opts));
-    });
-
-  const source = program
-    .command("source")
-    .description("inspect connected external source objects");
-
-  const sourceGithub = source
-    .command("github")
-    .description("inspect GitHub sources through Composio");
-
-  sourceGithub
-    .command("issue <number>")
-    .description("read a GitHub issue through the connected GitHub account")
-    .requiredOption("--repo <owner/repo>", "GitHub repository")
-    .option("--account <alias>", "connector account alias")
-    .option("--json", "emit structured JSON")
-    .action(async (
-      number: string,
-      opts: { repo: string; account?: string; json?: boolean },
-    ) => {
-      emit(await runSourceGitHub({
-        kind: "issue",
-        number,
-        repo: opts.repo,
-        account: opts.account,
-        json: opts.json,
-      }));
-    });
-
-  sourceGithub
-    .command("pr <number>")
-    .description("read a GitHub pull request through the connected GitHub account")
-    .requiredOption("--repo <owner/repo>", "GitHub repository")
-    .option("--account <alias>", "connector account alias")
-    .option("--json", "emit structured JSON")
-    .action(async (
-      number: string,
-      opts: { repo: string; account?: string; json?: boolean },
-    ) => {
-      emit(await runSourceGitHub({
-        kind: "pr",
-        number,
-        repo: opts.repo,
-        account: opts.account,
-        json: opts.json,
-      }));
-    });
-
-  program
-    .command("set")
-    .description("configure Almanac defaults")
-    .argument("<key>", "setting key, e.g. default-agent or model")
-    .argument("[value...]", "setting value")
-    .action(async (key: string, value: string[]) => {
-      if (key === "default-agent") {
-        emit(await runDeprecatedSetDefaultAgent({ provider: value[0] ?? "" }));
-        return;
-      }
-      if (key === "model") {
-        emit(await runDeprecatedSetAgentModel({
-          provider: value[0] ?? "",
-          model: value[1],
-        }));
-        return;
-      }
-      emit({
-        stdout: "",
-        stderr:
-          "almanac: unknown setting. Use `default-agent` or `model`.\n",
-        exitCode: 1,
-      });
     });
 
   program

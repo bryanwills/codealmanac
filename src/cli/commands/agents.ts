@@ -71,16 +71,6 @@ export async function runSetDefaultAgent(
   return setDefaultAgent(opts);
 }
 
-export async function runDeprecatedSetDefaultAgent(
-  opts: SetDefaultAgentOptions,
-): Promise<AgentsResult> {
-  return withDeprecation(
-    await setDefaultAgent(opts),
-    "almanac set default-agent <provider>",
-    "almanac agents use <provider>",
-  );
-}
-
 export async function runAgentsUse(opts: SetDefaultAgentOptions): Promise<AgentsResult> {
   return setDefaultAgent(opts);
 }
@@ -131,18 +121,6 @@ export async function runSetAgentModel(opts: {
   defaultModel?: boolean;
 }): Promise<AgentsResult> {
   return setProviderModel(opts);
-}
-
-export async function runDeprecatedSetAgentModel(opts: {
-  provider: string;
-  model?: string;
-  defaultModel?: boolean;
-}): Promise<AgentsResult> {
-  return withDeprecation(
-    await setProviderModel(opts),
-    "almanac set model <provider> <model>",
-    "almanac agents model <provider> <model>",
-  );
 }
 
 export async function runAgentsModel(opts: {
@@ -222,17 +200,4 @@ function readinessLabel(readiness: ProviderReadiness): string {
     case "not-authenticated":
       return "not ready";
   }
-}
-
-function withDeprecation(
-  result: AgentsResult,
-  oldUsage: string,
-  newUsage: string,
-): AgentsResult {
-  return {
-    ...result,
-    stderr:
-      `almanac: warning: \`${oldUsage}\` is deprecated; use \`${newUsage}\`.\n` +
-      result.stderr,
-  };
 }

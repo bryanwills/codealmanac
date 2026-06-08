@@ -2,7 +2,6 @@ import { BLUE, BOLD, DIM, GREEN, RED, RST } from "../../../ansi.js";
 import { parseDuration } from "../../../wiki/indexer/duration.js";
 import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
 import {
-  applyHealthFixes,
   collectHealthReport,
   DEFAULT_STALE_SECONDS,
   type HealthReport,
@@ -16,7 +15,6 @@ export interface HealthOptions {
   stdin?: boolean;
   stdinInput?: string;
   json?: boolean;
-  fix?: boolean;
 }
 
 export interface HealthCommandOutput {
@@ -33,13 +31,6 @@ export async function runHealth(
     ? parseDuration(options.stale)
     : DEFAULT_STALE_SECONDS;
   const slugs = stdinSlugs(options);
-  if (options.fix === true) {
-    await applyHealthFixes({
-      repoRoot,
-      topic: options.topic,
-      stdinSlugs: slugs,
-    });
-  }
   const report = await collectHealthReport({
     repoRoot,
     topic: options.topic,
@@ -50,14 +41,14 @@ export async function runHealth(
   if (options.json === true) {
     return {
       stdout: `${JSON.stringify(report, null, 2)}\n`,
-      stderr: "",
+      stderr: migrationWarning(report),
       exitCode: 0,
     };
   }
 
   return {
     stdout: formatReport(report),
-    stderr: "",
+    stderr: migrationWarning(report),
     exitCode: 0,
   };
 }
@@ -176,4 +167,9 @@ function formatReport(r: HealthReport): string {
 function section(label: string, count: number, lines: string[]): string {
   if (count === 0) return `${BOLD}${label}${RST} ${GREEN}(0): (ok)${RST}`;
   return `${BOLD}${label}${RST} ${RED}(${count})${RST}:\n${lines.join("\n")}`;
+}
+
+function migrationWarning(report: HealthReport): string {
+  if (report.legacy_frontmatter.length === 0) return "";
+  return "almanac: warning: legacy source frontmatter found; run `almanac migrate legacy-sources`.\n";
 }

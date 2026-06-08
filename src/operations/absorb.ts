@@ -1,7 +1,4 @@
-import type {
-  AgentRunSpec,
-  ConnectorRuntimeRequirement,
-} from "../harness/types.js";
+import type { AgentRunSpec } from "../harness/types.js";
 import type { FinalOutputSpec } from "../harness/final-output.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import type {
@@ -19,7 +16,6 @@ export interface AbsorbOperationOptions {
   background?: boolean;
   targetKind?: string;
   targetPaths?: string[];
-  connectors?: ConnectorRuntimeRequirement[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
   runId?: string;
@@ -34,7 +30,6 @@ export async function createAbsorbRunSpec(args: {
   provider?: OperationProviderSelection;
   targetKind?: string;
   targetPaths?: string[];
-  connectors?: ConnectorRuntimeRequirement[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
 }): Promise<AgentRunSpec> {
@@ -46,7 +41,6 @@ export async function createAbsorbRunSpec(args: {
     context: args.context,
     targetKind: args.targetKind,
     targetPaths: args.targetPaths,
-    connectors: args.connectors,
     networkAccess: args.networkAccess,
     output: args.output,
   });
@@ -65,7 +59,6 @@ export async function runAbsorbOperation(
     context: options.context,
     targetKind: options.targetKind,
     targetPaths: options.targetPaths,
-    connectors: options.connectors,
     networkAccess: options.networkAccess,
     output: options.output,
   });

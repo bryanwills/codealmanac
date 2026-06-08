@@ -133,7 +133,7 @@ async function readPackageVersion(root: string): Promise<string | null> {
 function findCurrentPackageRoot(): string {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
-    // Bundled: `.../codealmanac/dist/codealmanac.js` -> package root.
+    // Bundled: `.../codealmanac/dist/launcher.js` -> package root.
     path.resolve(here, ".."),
     // Old source/dist layout: `.../codealmanac/src/install/global.ts` -> package root.
     path.resolve(here, "..", ".."),

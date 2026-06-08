@@ -19,7 +19,7 @@ import { getPageView, type PageView } from "../../wiki/query/page-view.js";
  *      pipe-friendly; `--verbose` restores the metadata header.
  *   2. **View flags** (mutually exclusive-ish):
  *        --json   structured JSON, overrides everything else
- *        --body   body only (`--raw` is a deprecated CLI alias)
+ *        --body   body only
  *        --meta   metadata only, no body
  *        --lead   first paragraph of body only (cheap preview)
  *   3. **Field flags** (composable). Each selects one "field" of the page:
@@ -40,9 +40,9 @@ export interface ShowOptions {
   stdinInput?: string;
   wiki?: string;
 
-  // View modes (mutually exclusive-ish — precedence: json > raw > meta > lead > default).
+  // View modes (mutually exclusive-ish — precedence: json > body > meta > lead > default).
   json?: boolean;
-  raw?: boolean; // alias: body
+  raw?: boolean;
   meta?: boolean;
   lead?: boolean;
   verbose?: boolean;

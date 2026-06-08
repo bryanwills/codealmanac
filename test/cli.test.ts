@@ -225,20 +225,17 @@ describe("registerCommands", () => {
       "review",
       "tag",
       "untag",
+      "migrate",
       "topics",
       "init",
       "capture",
       "ingest",
       "garden",
       "jobs",
-      "ps",
       "automation",
       "reindex",
       "agents",
       "config",
-      "connect",
-      "source",
-      "set",
       "setup",
       "doctor",
       "update",
@@ -261,19 +258,15 @@ describe("registerCommands", () => {
     expect(findCommand(program, ["automation"]).commands.map((cmd) => cmd.name()))
       .toEqual(["install", "uninstall", "status"]);
     expect(findCommand(program, ["capture"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["sweep", "status"]);
+      .toEqual(["sweep"]);
     expect(findCommand(program, ["jobs"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "show", "logs", "attach", "cancel"]);
     expect(findCommand(program, ["agents"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "doctor", "use", "model"]);
     expect(findCommand(program, ["config"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "get", "set", "unset"]);
-    expect(findCommand(program, ["connect"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["github"]);
-    expect(findCommand(program, ["source"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["github"]);
-    expect(findCommand(program, ["source", "github"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["issue", "pr"]);
+    expect(findCommand(program, ["migrate"]).commands.map((cmd) => cmd.name()))
+      .toEqual(["legacy-sources"]);
 
     expect(optionFlags(findCommand(program, ["setup"]))).toContain("-y, --yes");
     expect(optionFlags(findCommand(program, ["setup"]))).toContain(
@@ -323,7 +316,7 @@ describe("registerCommands", () => {
     );
   });
 
-  it("places legacy commands in a Deprecated help group", () => {
+  it("does not keep deprecated root commands in help", () => {
     const program = new Command();
     program.name("almanac");
     registerCommands(program);
@@ -333,9 +326,8 @@ describe("registerCommands", () => {
 
     expect(help).toMatch(/Setup:[\s\S]*agents\s+list supported AI agent providers and readiness/);
     expect(help).toMatch(/Setup:[\s\S]*config\s+read and write Almanac settings/);
-    expect(help).toContain("Deprecated:");
-    expect(help).toMatch(/set <key> \[value\.\.\.\]\s+configure Almanac defaults/);
-    expect(help).toMatch(/ps \[options\]\s+deprecated alias for jobs/);
+    expect(help).not.toContain("Deprecated:");
+    expect(help).not.toMatch(/ps \[options\]/);
   });
 });
 

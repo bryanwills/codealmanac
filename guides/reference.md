@@ -50,7 +50,6 @@ Unified reader. Absorbs the old `info` and `path` commands — pick fields with 
 | `--wiki <name>` | current repo | Target a specific registered wiki. |
 | `--json` | false | Structured JSON. Overrides every view/field flag. |
 | `--body` | false | Body only. Guarantees exactly one trailing newline — shell redirect produces a well-formed file. |
-| `--raw` | false | Deprecated alias for `--body`; still accepted for compatibility. |
 | `--meta` | false | Metadata header only, no body. |
 | `--lead` | false | First paragraph of the body only (cheap preview). |
 | `--title` | false | Print title. |
@@ -69,7 +68,7 @@ Combining field flags emits labeled sections in canonical order. `--meta` is the
 
 #### `almanac health`
 
-Eight independent categories. One failing doesn't skip the others.
+Independent integrity categories. One failing doesn't skip the others.
 
 | Flag | Default | Semantics |
 |---|---|---|
@@ -79,7 +78,9 @@ Eight independent categories. One failing doesn't skip the others.
 | `--json` | false | Structured JSON. |
 | `--wiki <name>` | current repo | Target a specific registered wiki. |
 
-**Categories:** `orphans`, `stale`, `dead-refs`, `broken-links`, `broken-xwiki`, `empty-topics`, `empty-pages`, `slug-collisions`. Archived pages are exempt from most (see §4). Exit `0` always — the report IS the output.
+If `legacy-frontmatter` is non-empty, `health` writes a stderr warning that points to `almanac migrate legacy-sources`. `health` reports only; it does not mutate wiki files.
+
+**Categories:** `orphans`, `stale`, `dead-refs`, `broken-links`, `broken-xwiki`, `missing-sources`, `unused-sources`, `legacy-frontmatter`, `unfixable-sources`, `duplicate-sources`, `empty-topics`, `empty-pages`, `slug-collisions`. Archived pages are exempt from most (see §4). Exit `0` always — the report IS the output.
 
 #### `almanac list`
 
@@ -101,6 +102,12 @@ Flags: `--stdin`, `--wiki <name>`.
 Remove one topic. Idempotent (silent `0` if page wasn't tagged).
 
 Flags: `--wiki <name>`.
+
+#### `almanac migrate legacy-sources`
+
+Rewrite safe legacy `files:` and string URL `sources:` frontmatter into structured `sources:` entries. The command does not invoke AI and preserves page body bytes.
+
+Flags: `--topic <name>`, `--stdin`, `--wiki <name>`, `--json`.
 
 #### `almanac topics` (DAG management)
 
@@ -322,7 +329,7 @@ almanac agents model claude claude-opus-4-6
 almanac agents model claude --default
 ```
 
-`agents use` writes the default provider; Codex is the built-in recommended default. `agents model` writes the provider-local model override; `--default`, `default`, or `null` resets the provider to its own default. The older `almanac set default-agent ...` and `almanac set model ...` commands remain compatibility aliases and print deprecation warnings.
+`agents use` writes the default provider; Codex is the built-in recommended default. `agents model` writes the provider-local model override; `--default`, `default`, or `null` resets the provider to its own default.
 
 `init`, `capture`, `ingest`, and `garden` resolve provider settings in this order:
 
@@ -605,7 +612,7 @@ The scheduler is only a wakeup mechanism. Sweep owns transcript eligibility, ded
 **`install`:**
 - **Idempotent.** Twice -> one launchd plist, not two.
 - **Records activation once.** The first install writes `automation.capture_since` in `~/.almanac/config.toml`; reinstalls preserve it.
-- **Uses durable program arguments.** The plist invokes the absolute Node executable plus the resolved `dist/codealmanac.js` entrypoint, then `capture sweep`.
+- **Uses durable program arguments.** The plist invokes the absolute Node executable plus the resolved `dist/launcher.js` entrypoint, then `capture sweep`.
 - **Cleans legacy hooks privately.** Setup/install remove old CodeAlmanac-owned `almanac-capture.sh` commands from Claude/Codex/Cursor hook configs.
 
 **`uninstall`:**

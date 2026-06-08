@@ -24,10 +24,8 @@ import type { HarnessEvent } from "../harness/events.js";
 import { runReindex } from "./commands/reindex.js";
 import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
 import {
-  deprecationWarning,
   emit,
   parsePositiveInt,
-  withWarning,
 } from "./helpers.js";
 
 export function registerWikiLifecycleCommands(program: Command): void {
@@ -79,7 +77,6 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--using <provider[/model]>", "provider and optional model")
     .option("--foreground", "run now instead of starting a background job")
     .option("--json", "emit structured JSON for background job start")
-    .option("--account <alias>", "connector account alias for source ingest")
     .option("-y, --yes", "confirm non-interactively")
     .option("--verbose", "stream agent activity while the run is attached")
     .action(
@@ -286,37 +283,6 @@ export function registerWikiLifecycleCommands(program: Command): void {
         json: merged.json ?? opts.json,
       });
       emit(result);
-    });
-
-  capture
-    .command("status")
-    .description("deprecated alias for jobs")
-    .option("--json", "emit structured JSON")
-    .action(async (opts: { json?: boolean }, command: Command) => {
-      const merged = command.optsWithGlobals() as { json?: boolean };
-      const result = await runJobsList({
-        cwd: process.cwd(),
-        json: merged.json ?? opts.json,
-      });
-      emit(withWarning(
-        result,
-        deprecationWarning("almanac capture status", "almanac jobs"),
-      ));
-    });
-
-  program
-    .command("ps")
-    .description("deprecated alias for jobs")
-    .option("--json", "emit structured JSON")
-    .action(async (opts: { json?: boolean }) => {
-      const result = await runJobsList({
-        cwd: process.cwd(),
-        json: opts.json,
-      });
-      emit(withWarning(
-        result,
-        deprecationWarning("almanac ps", "almanac jobs"),
-      ));
     });
 
   const automation = program

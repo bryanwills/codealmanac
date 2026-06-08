@@ -24,8 +24,8 @@ import { fileURLToPath } from "node:url";
  * Two runtime layouts need to work:
  *
  *   1. **Installed (`npm i -g codealmanac`).** The entry point lives at
- *      `dist/codealmanac.js`; prompts at `prompts/*.md`. Walking up from
- *      `import.meta.url` (`.../<pkg>/dist/codealmanac.js`) one level and
+ *      `dist/launcher.js`; prompts at `prompts/*.md`. Walking up from
+ *      `import.meta.url` (`.../<pkg>/dist/launcher.js`) one level and
  *      into `prompts/` hits the right directory.
  *
  *   2. **Source dev.** During `npm run dev`, tsup emits to `dist/` just
@@ -84,7 +84,7 @@ export function resolvePromptsDir(): string {
   // live given some plausible bundle layout. The first one that exists
   // and contains our expected prompt files wins.
   const candidates = [
-    // Bundled dist layout: `.../<pkg>/dist/codealmanac.js` → `../prompts`
+    // Bundled dist layout: `.../<pkg>/dist/launcher.js` → `../prompts`
     path.resolve(here, "..", "prompts"),
     // Source layout: `.../<pkg>/src/agent/prompts.ts` → `../../prompts`
     path.resolve(here, "..", "..", "prompts"),

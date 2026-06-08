@@ -46,10 +46,15 @@ export interface HealthReportOptions {
   stdinSlugs?: string[];
 }
 
-export interface HealthFixOptions {
+export interface MigrateLegacySourcesOptions {
   repoRoot: string;
   topic?: string;
   stdinSlugs?: string[];
+}
+
+export interface MigrateLegacySourcesResult {
+  migrated_pages: number;
+  unfixable_sources: { slug: string; source: string }[];
 }
 
 /**
@@ -93,16 +98,18 @@ export async function collectHealthReport(
   }
 }
 
-export async function applyHealthFixes(options: HealthFixOptions): Promise<void> {
+export async function migrateLegacySources(
+  options: MigrateLegacySourcesOptions,
+): Promise<MigrateLegacySourcesResult> {
   const almanacDir = join(options.repoRoot, ".almanac");
   await ensureFreshIndex({ repoRoot: options.repoRoot });
   const db = openIndex(join(almanacDir, "index.db"));
   try {
-    await fixLegacySourceFrontmatter(db, resolveScope(db, options));
+    return await fixLegacySourceFrontmatter(db, resolveScope(db, options));
   } finally {
     db.close();
+    await ensureFreshIndex({ repoRoot: options.repoRoot });
   }
-  await ensureFreshIndex({ repoRoot: options.repoRoot });
 }
 
 interface HealthScope {
@@ -612,7 +619,7 @@ async function findSlugCollisions(
 async function fixLegacySourceFrontmatter(
   db: Database.Database,
   scope: HealthScope,
-): Promise<void> {
+): Promise<MigrateLegacySourcesResult> {
   const rows = db
     .prepare<[], { slug: string; file_path: string }>(
       `SELECT slug, file_path FROM pages
@@ -620,10 +627,20 @@ async function fixLegacySourceFrontmatter(
        ORDER BY slug`,
     )
     .all();
+  let migratedPages = 0;
+  const unfixableSources: { slug: string; source: string }[] = [];
   for (const row of rows) {
     if (!inPageScope(scope, row.slug)) continue;
     const raw = await readFile(row.file_path, "utf8");
     const fixed = applySourceFrontmatterFix(raw);
+    if (fixed.changed) migratedPages += 1;
+    for (const source of fixed.notFixable) {
+      unfixableSources.push({ slug: row.slug, source });
+    }
     await writeSourceFrontmatterFix(row.file_path, fixed);
   }
+  return {
+    migrated_pages: migratedPages,
+    unfixable_sources: unfixableSources,
+  };
 }

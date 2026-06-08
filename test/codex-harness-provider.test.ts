@@ -243,28 +243,6 @@ rl.on("line", (line) => {
     );
   });
 
-  it("enables app-server network access when a legacy connector runtime is required", async () => {
-    await withNetworkRequiringCodex(async () => {
-      const result = await runCodexAppServer({
-        provider: { id: "codex" },
-        cwd: process.cwd(),
-        prompt: "run",
-        connectors: [
-          {
-            provider: "composio",
-            toolkit: "github",
-            account: "work",
-            connectedAccountId: "ca_work",
-            sourceCommand: "almanac source github issue 11 --repo owner/repo --account work",
-          },
-        ],
-        metadata: { operation: "absorb" },
-      });
-
-      expect(result).toMatchObject({ success: true, result: "ok" });
-    });
-  });
-
   it("enables app-server network access when the run requests it (no connector)", async () => {
     await withNetworkRequiringCodex(async () => {
       const result = await runCodexAppServer({

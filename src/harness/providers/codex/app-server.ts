@@ -359,9 +359,7 @@ export async function runCodexAppServer(
 }
 
 function requiresNetworkAccess(spec: AgentRunSpec): boolean {
-  // Explicit network requirement (e.g. source ingest using `gh`), or a legacy
-  // connector runtime that needs the network. Independent of each other.
-  return spec.networkAccess === true || (spec.connectors?.length ?? 0) > 0;
+  return spec.networkAccess === true;
 }
 
 function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () => void {

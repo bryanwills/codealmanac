@@ -6,14 +6,6 @@ export type HarnessProviderId = "claude" | "codex" | "cursor";
 export type OperationKind = "build" | "absorb" | "garden";
 export type ProviderSessionPersistence = "ephemeral" | "persistent";
 
-export interface ConnectorRuntimeRequirement {
-  provider: "composio";
-  toolkit: "github";
-  account: string;
-  connectedAccountId: string;
-  sourceCommand: string;
-}
-
 export interface AgentSpec {
   description: string;
   prompt: string;
@@ -38,11 +30,10 @@ export interface AgentRunSpec {
   agents?: Record<string, AgentSpec>;
   skills?: string[];
   mcpServers?: Record<string, unknown>;
-  connectors?: ConnectorRuntimeRequirement[];
   /**
    * Whether the run needs outbound network access (e.g. the agent will use
    * `gh` to reach api.github.com). Sandboxed providers gate the network on
-   * this; it is independent of any connector runtime.
+   * this.
    */
   networkAccess?: boolean;
   limits?: {

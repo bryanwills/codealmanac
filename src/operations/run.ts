@@ -3,7 +3,6 @@ import type { HarnessEvent } from "../harness/events.js";
 import type { FinalOutputSpec } from "../harness/final-output.js";
 import type {
   AgentRunSpec,
-  ConnectorRuntimeRequirement,
   OperationKind,
 } from "../harness/types.js";
 import type { ToolRequest } from "../harness/tools.js";
@@ -43,7 +42,6 @@ export async function createOperationRunSpec(args: {
   context?: string;
   targetKind?: string;
   targetPaths?: string[];
-  connectors?: ConnectorRuntimeRequirement[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
 }): Promise<AgentRunSpec> {
@@ -65,7 +63,6 @@ export async function createOperationRunSpec(args: {
     cwd: args.repoRoot,
     prompt,
     tools: BASE_OPERATION_TOOLS,
-    connectors: args.connectors,
     networkAccess: args.networkAccess,
     limits: {
       maxTurns: DEFAULT_MAX_TURNS,

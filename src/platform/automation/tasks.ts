@@ -111,7 +111,7 @@ export function defaultCliProgramArguments(): string[] {
   const cliEntry = findPackageCliEntry() ??
     (process.argv[1] !== undefined
       ? path.resolve(process.argv[1])
-      : path.resolve(process.cwd(), "dist", "codealmanac.js"));
+      : path.resolve(process.cwd(), "dist", "launcher.js"));
   return [process.execPath, cliEntry];
 }
 
@@ -131,8 +131,7 @@ function findPackageCliEntry(): string | null {
   let dir = path.dirname(fileURLToPath(import.meta.url));
   for (let i = 0; i < 8; i++) {
     const pkg = path.join(dir, "package.json");
-    const cli = path.join(dir, "dist", "codealmanac.js");
-    if (existsSync(pkg) && existsSync(cli)) return cli;
+    if (existsSync(pkg)) return path.join(dir, "dist", "launcher.js");
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;

@@ -8,11 +8,9 @@ import { runShow } from "./commands/show.js";
 import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
 import {
   collectOption,
-  deprecationWarning,
   emit,
   parsePositiveInt,
   readStdin,
-  withWarning,
 } from "./helpers.js";
 
 export function registerQueryCommands(program: Command): void {
@@ -99,7 +97,6 @@ export function registerQueryCommands(program: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "structured JSON (overrides other view/field flags)")
     .option("--body", "body only")
-    .option("--raw", "deprecated alias for --body")
     .option("--verbose", "metadata header + body")
     .option("--meta", "metadata only, no body")
     .option("--lead", "first paragraph of the body only")
@@ -119,7 +116,6 @@ export function registerQueryCommands(program: Command): void {
           stdin?: boolean;
           wiki?: string;
           json?: boolean;
-          raw?: boolean;
           body?: boolean;
           verbose?: boolean;
           meta?: boolean;
@@ -143,7 +139,7 @@ export function registerQueryCommands(program: Command): void {
           stdinInput: opts.stdin === true ? await readStdin() : undefined,
           wiki: opts.wiki,
           json: opts.json,
-          raw: opts.raw === true || opts.body === true,
+          raw: opts.body === true,
           verbose: opts.verbose,
           meta: opts.meta,
           lead: opts.lead,
@@ -157,12 +153,7 @@ export function registerQueryCommands(program: Command): void {
           updated: opts.updated,
           path: opts.path,
         });
-        emit(opts.raw === true
-          ? withWarning(
-            result,
-            deprecationWarning("almanac show <slug> --raw", "almanac show <slug> --body"),
-          )
-          : result);
+        emit(result);
       },
     );
 
@@ -174,7 +165,6 @@ export function registerQueryCommands(program: Command): void {
     .option("--stdin", "read page slugs from stdin (limit to these pages)")
     .option("--json", "emit structured JSON")
     .option("--wiki <name>", "target a specific registered wiki")
-    .option("--fix", "apply safe deterministic wiki metadata fixes")
     .action(
       async (opts: {
         topic?: string;
@@ -182,7 +172,6 @@ export function registerQueryCommands(program: Command): void {
         stdin?: boolean;
         json?: boolean;
         wiki?: string;
-        fix?: boolean;
       }) => {
         await autoRegisterIfNeeded(process.cwd());
         const result = await runHealth({
@@ -193,7 +182,6 @@ export function registerQueryCommands(program: Command): void {
           stdinInput: opts.stdin === true ? await readStdin() : undefined,
           json: opts.json,
           wiki: opts.wiki,
-          fix: opts.fix,
         });
         emit(result);
       },

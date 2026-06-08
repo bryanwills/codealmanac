@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { runHealth } from "../src/cli/commands/health/index.js";
+import { runMigrateLegacySources } from "../src/cli/commands/migrate.js";
 import { runTopicsCreate } from "../src/cli/commands/topics/index.js";
 import { runIndexer } from "../src/wiki/indexer/index.js";
 import {
@@ -288,6 +289,7 @@ Claim. [@missing-source]
       expect(report.legacy_frontmatter).toEqual([
         { slug: "sources", fields: ["files", "sources"] },
       ]);
+      expect(result.stderr).toContain("almanac migrate legacy-sources");
       expect(report.unfixable_sources).toEqual([]);
     });
   });
@@ -327,7 +329,7 @@ Claim. [@repeated]
     });
   });
 
-  it("--fix rewrites safe legacy source frontmatter without changing body prose", async () => {
+  it("migrate legacy-sources rewrites safe legacy source frontmatter without changing body prose", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -349,8 +351,14 @@ Body stays byte-identical.
 `,
       );
 
-      const result = await runHealth({ cwd: repo, fix: true, json: true });
-      const report = JSON.parse(result.stdout);
+      const result = await runMigrateLegacySources({ cwd: repo, json: true });
+      expect(JSON.parse(result.stdout)).toEqual({
+        migrated_pages: 1,
+        unfixable_sources: [],
+      });
+
+      const health = await runHealth({ cwd: repo, json: true });
+      const report = JSON.parse(health.stdout);
       expect(report.legacy_frontmatter).toEqual([]);
 
       const page = await readFile(
@@ -367,7 +375,7 @@ Body stays byte-identical.
     });
   });
 
-  it("--fix respects topic scope", async () => {
+  it("migrate legacy-sources respects topic scope", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -384,7 +392,7 @@ Body stays byte-identical.
         "---\ntopics: [other]\nfiles:\n  - src/other.ts\n---\n\nbody.\n",
       );
 
-      await runHealth({ cwd: repo, topic: "target", fix: true, json: true });
+      await runMigrateLegacySources({ cwd: repo, topic: "target", json: true });
 
       const targetPage = await readFile(
         join(repo, ".almanac", "pages", "target-page.md"),
@@ -400,7 +408,7 @@ Body stays byte-identical.
     });
   });
 
-  it("--fix validates stale duration before rewriting pages", async () => {
+  it("health validates stale duration without rewriting pages", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -411,7 +419,7 @@ Body stays byte-identical.
       );
 
       await expect(
-        runHealth({ cwd: repo, fix: true, stale: "bad", json: true }),
+        runHealth({ cwd: repo, stale: "bad", json: true }),
       ).rejects.toThrow(/invalid duration/);
 
       const page = await readFile(
@@ -422,7 +430,7 @@ Body stays byte-identical.
     });
   });
 
-  it("--fix skips malformed frontmatter instead of aborting", async () => {
+  it("migrate legacy-sources skips malformed frontmatter instead of aborting", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -432,14 +440,8 @@ Body stays byte-identical.
         "utf8",
       );
 
-      const origWrite = process.stderr.write.bind(process.stderr);
-      process.stderr.write = ((): boolean => true) as typeof process.stderr.write;
-      try {
-        const result = await runHealth({ cwd: repo, fix: true, json: true });
-        expect(result.exitCode).toBe(0);
-      } finally {
-        process.stderr.write = origWrite;
-      }
+      const result = await runMigrateLegacySources({ cwd: repo, json: true });
+      expect(result.exitCode).toBe(0);
 
       const page = await readFile(
         join(repo, ".almanac", "pages", "broken.md"),

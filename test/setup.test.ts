@@ -119,7 +119,7 @@ describe("codealmanac setup", () => {
       expect(res.exitCode).toBe(0);
       expect(existsSync(env.plistPath)).toBe(true);
       const plist = await readFile(env.plistPath, "utf8");
-      expect(plist).toContain("dist/codealmanac.js");
+      expect(plist).toContain("dist/launcher.js");
       expect(plist).toContain("<string>capture</string>");
       expect(plist).toContain("<string>sweep</string>");
       await expect(readConfig()).resolves.toMatchObject({

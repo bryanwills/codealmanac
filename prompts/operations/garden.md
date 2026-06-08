@@ -59,7 +59,7 @@ A good review item sets the scene:
    frontmatter, and page boundaries make the graph easier to use.
 
 If you find legacy `files:` or string-list `sources:` frontmatter, use or
-recommend the deterministic fixer (`almanac health --fix`) for mechanical
+recommend the deterministic migration (`almanac migrate legacy-sources`) for mechanical
 migration. Garden may improve source notes, citations, and links after the
 mechanical rewrite, but Garden is not the migration engine.
 

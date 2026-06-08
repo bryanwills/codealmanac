@@ -26,8 +26,6 @@ import {
   type ViewerJobDetail,
   type ViewerJobRun,
 } from "./jobs.js";
-import { readConfig } from "../config/index.js";
-import { isActiveConnectorAccount } from "../connectors/status.js";
 
 const SIDEBAR_TAG_LIMIT = 8;
 
@@ -87,7 +85,6 @@ export interface ViewerApi {
   suggest(query: string): Promise<{ query: string; pages: ViewerPageSummary[] }>;
   file(path: string): Promise<{ path: string; pages: ViewerPageSummary[] }>;
   review(): Promise<ViewerReview>;
-  connections(): Promise<ViewerConnections>;
   jobs(): Promise<{ runs: ViewerJobRun[] }>;
   job(runId: string): Promise<ViewerJobDetail | null>;
 }
@@ -95,23 +92,6 @@ export interface ViewerApi {
 export interface ViewerReview {
   items: ReviewItem[];
   counts: Record<ReviewStatus, number>;
-}
-
-export interface ViewerConnections {
-  connectors: Array<{
-    id: string;
-    name: string;
-    provider: string;
-    icon: string;
-    status: "connected" | "pending" | "failed" | "not_connected";
-    accounts: Array<{
-      alias: string;
-      status: string | null;
-      default: boolean;
-    }>;
-    connectCommand: string;
-    manageCommand: string;
-  }>;
 }
 
 export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
@@ -257,40 +237,6 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
           decided: file.items.filter((item) => item.status === "decided").length,
           applied: file.items.filter((item) => item.status === "applied").length,
         },
-      };
-    },
-
-    async connections() {
-      const config = await readConfig({ cwd: ctx.repoRoot });
-      const githubAccounts = Object.values(config.connectors.github.accounts)
-        .sort((a, b) => a.alias.localeCompare(b.alias))
-        .map((account) => ({
-          alias: account.alias,
-          status: account.status,
-          default: account.alias === config.connectors.github.default_account,
-        }));
-      const rawGithubAccounts = Object.values(config.connectors.github.accounts);
-      const activeCount = rawGithubAccounts.filter(isActiveConnectorAccount).length;
-      const failedCount = rawGithubAccounts.filter((account) => account.status === "FAILED").length;
-      return {
-        connectors: [
-          {
-            id: "github",
-            name: "GitHub",
-            provider: "Composio",
-            icon: "GH",
-            status: activeCount > 0
-              ? "connected"
-              : failedCount > 0
-                ? "failed"
-                : githubAccounts.length > 0
-                  ? "pending"
-                  : "not_connected",
-            accounts: githubAccounts,
-            connectCommand: "almanac connect github",
-            manageCommand: "almanac connect github --status",
-          },
-        ],
       };
     },
 

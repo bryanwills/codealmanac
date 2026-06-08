@@ -63,7 +63,7 @@ docs.
 
 Package update must not rewrite wiki files. Safe mechanical migration of legacy
 source frontmatter belongs behind an explicit wiki-maintenance command such as
-`almanac health --fix`.
+`almanac migrate legacy-sources`.
 
 Do not add fields mechanically. Frontmatter should make the page more
 retrievable, grounded, or maintainable.

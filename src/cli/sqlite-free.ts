@@ -34,7 +34,6 @@ const SQLITE_FREE_COMMANDS: Record<string, SqliteFreeHandler> = {
   automation: runAutomationFastPath,
   agents: runAgentsFastPath,
   config: runConfigFastPath,
-  set: runDeprecatedSetFastPath,
   update: runUpdateFastPath,
   doctor: runDoctorFastPath,
   uninstall: runUninstallFastPath,
@@ -221,25 +220,6 @@ async function runConfigFastPath(args: string[]): Promise<boolean> {
     emit(await runConfigUnset({
       key: values[0] ?? "",
       project: args.includes("--project"),
-    }));
-    return true;
-  }
-  return false;
-}
-
-async function runDeprecatedSetFastPath(args: string[]): Promise<boolean> {
-  const subcommand = args[1];
-  const { runDeprecatedSetAgentModel, runDeprecatedSetDefaultAgent } = await import(
-    "./commands/agents.js"
-  );
-  if (subcommand === "default-agent") {
-    emit(await runDeprecatedSetDefaultAgent({ provider: args[2] ?? "" }));
-    return true;
-  }
-  if (subcommand === "model") {
-    emit(await runDeprecatedSetAgentModel({
-      provider: args[2] ?? "",
-      model: args[3],
     }));
     return true;
   }

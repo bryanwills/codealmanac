@@ -36,7 +36,7 @@ verified against current code, tests, config, or current external docs.
 
 Package updates should not rewrite wiki files. Mechanical migration of old
 source frontmatter should happen only through an explicit maintenance action
-such as `almanac health --fix`.
+such as `almanac migrate legacy-sources`.
 
 ## Links
 

@@ -4,9 +4,6 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  writeConfig,
-} from "../src/config/index.js";
-import {
   buildStartedRunRecord,
   finishRunRecord,
   runLogPath,
@@ -183,96 +180,6 @@ items:
       });
     });
   });
-
-  it("returns connection status without exposing secrets", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writeConfig({
-        connectors: {
-          composio: {
-            api_key_env: "COMPOSIO_API_KEY",
-            user_id: "user_123",
-          },
-          github: {
-            default_account: "work",
-            accounts: {
-              work: {
-                alias: "work",
-                connected_account_id: "ca_work",
-                status: "ACTIVE",
-              },
-            },
-          },
-        },
-      });
-
-      const api = createViewerApi({ repoRoot: repo });
-      await expect(api.connections()).resolves.toEqual({
-        connectors: [
-          {
-            id: "github",
-            name: "GitHub",
-            provider: "Composio",
-            icon: "GH",
-            status: "connected",
-            accounts: [
-              {
-                alias: "work",
-                status: "ACTIVE",
-                default: true,
-              },
-            ],
-            connectCommand: "almanac connect github",
-            manageCommand: "almanac connect github --status",
-          },
-        ],
-      });
-    });
-  });
-
-  it("does not mark pending connector accounts as connected", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writeConfig({
-        connectors: {
-          composio: {
-            api_key_env: "COMPOSIO_API_KEY",
-            user_id: "user_123",
-          },
-          github: {
-            default_account: "work",
-            accounts: {
-              work: {
-                alias: "work",
-                connected_account_id: "ca_work",
-                status: "INITIATED",
-              },
-            },
-          },
-        },
-      });
-
-      const api = createViewerApi({ repoRoot: repo });
-      await expect(api.connections()).resolves.toMatchObject({
-        connectors: [
-          {
-            id: "github",
-            status: "pending",
-            accounts: [
-              {
-                alias: "work",
-                status: "INITIATED",
-                default: true,
-              },
-            ],
-          },
-        ],
-      });
-    });
-  });
-
 
   it("reports markdown-backed getting-started when it exists", async () => {
     await withTempHome(async (home) => {
