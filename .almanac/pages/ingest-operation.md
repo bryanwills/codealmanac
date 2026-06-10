@@ -1,19 +1,19 @@
 ---
 title: Ingest Operation
-summary: "`almanac ingest` runs Absorb over bounded user-supplied context, with Composio-backed GitHub PR and issue source ingest as the first connector validation path."
+summary: "`almanac absorb` and its `ingest` alias run Absorb over bounded user-supplied paths, GitHub PR or issue refs, GitHub URLs, and generic web URLs."
 topics: [agents, flows, cli]
 sources:
   - id: operations-command
     type: file
     path: src/cli/commands/operations.ts
-    note: Implements the `runIngestCommand` command adapter and routes resolved ingest input into Absorb.
+    note: Implements the absorb/ingest command adapter and routes resolved input into Absorb.
   - id: ingest-input
     type: file
-    path: src/ingest/input.ts
+    path: src/absorb/input.ts
     note: Resolves local path inputs and source refs into operation-facing ingest input.
   - id: ingest-context
     type: file
-    path: src/ingest/context.ts
+    path: src/absorb/context.ts
     note: Renders path and source-specific command context for Absorb.
   - id: absorb-operation
     type: file
@@ -30,18 +30,22 @@ sources:
   - id: connector-session
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-    note: Records the source-address ingest discussion that framed GitHub source ingest before the later Composio-only connector decision.
+    note: Records the source-address ingest discussion that framed GitHub source ingest before the later return to local gh-guided source access.
   - id: source-architecture-session
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
     note: Records the architecture analysis that recommended moving source-specific resolution and prompt guidance out of the command wrapper before adding another source kind.
+  - id: source-naming-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/06/rollout-2026-06-06T12-10-13-019e9e57-c72a-7fa1-b72c-5889cdd60e67.jsonl
+    note: Records the naming decision that local source-aware ingest should distinguish SourceAddress, SourceRef, SourceBrief, runtime source access, and page provenance.
 status: active
-verified: 2026-05-31
+verified: 2026-06-06
 ---
 
 # Ingest Operation
 
-`almanac ingest <file-or-folder>` is the manual entry point for running [[wiki-lifecycle-operations]] Absorb over bounded user-provided context. It is not a separate operation kind in the runtime layer. `src/cli/commands/operations.ts` owns the command adapter, `src/ingest/input.ts` resolves supplied paths or source refs into operation-facing ingest input, `src/ingest/context.ts` renders ingest-specific context text, and `runIngestCommand()` then calls `runAbsorbOperation(...)` with the normal Absorb writing prompt. [@operations-command] [@ingest-input] [@ingest-context] [@absorb-operation] [@absorb-prompt]
+`almanac absorb <inputs...>` is the manual entry point for running [[wiki-lifecycle-operations]] Absorb over bounded user-provided context. `almanac ingest <inputs...>` is a public alias for the same command path. It is not a separate operation kind in the runtime layer. `src/cli/commands/operations.ts` owns the command adapter, `src/absorb/input.ts` resolves supplied paths or source refs into operation-facing input, `src/absorb/context.ts` renders path and source-specific command context, and `startAbsorbRun()` then calls `runAbsorbOperation(...)` with the normal Absorb writing prompt. [@operations-command] [@ingest-input] [@ingest-context] [@absorb-operation] [@absorb-prompt]
 
 ## What it is for
 
@@ -50,20 +54,21 @@ Ingest exists for "digest this specific context into the wiki" work:
 - a doc, note, proposal, or ADR
 - a folder of supporting materials
 - non-session external artifacts that should inform project memory
+- GitHub pull requests, GitHub issues, or web pages that should be inspected as source material
 
 This keeps the user-intent surface distinct:
 
 - `almanac init` creates the first wiki from the repo as a whole.
-- `almanac capture` absorbs coding-session transcripts.
-- `almanac ingest` absorbs explicitly pointed-at files or folders.
+- `almanac sync` absorbs quiet coding-session transcripts through background Absorb runs.
+- `almanac absorb` and `almanac ingest` absorb explicitly pointed-at files, folders, PRs, issues, or URLs.
 
 ## Current contract
 
 Unlike Build, ingest requires an existing `.almanac/`. `runAbsorbOperation` calls `findNearestAlmanacDir(options.cwd)` and throws `no .almanac/ found in this directory or any parent` if the wiki has not been initialized yet.
 
-The command also requires at least one path. `runIngestCommand` returns `ingest requires at least one file or folder` before contacting any provider when `options.paths.length === 0`.
+The command also requires at least one input. `startAbsorbRun()` throws `absorb requires at least one input` before contacting any provider when the input list is empty.
 
-`src/ingest/input.ts` resolves every supplied local path against `options.cwd` before handing control back to the command adapter. The prompt context therefore names concrete absolute files or folders rather than preserving the user's original relative spellings. [@ingest-input] [@ingest-context]
+`src/absorb/input.ts` resolves every supplied local path against `options.cwd` before handing control back to the command adapter. The prompt context therefore names concrete absolute files or folders rather than preserving the user's original relative spellings. [@ingest-input] [@ingest-context]
 
 By default ingest backgrounds the run, matching capture rather than init. `--foreground` keeps the agent attached, and `--json` is only valid for background start responses. [@operations-command]
 
@@ -73,13 +78,15 @@ The connector-facing direction is to extend `ingest` for addressable external so
 
 That direction belongs to [[evidence-bundles]]. Path ingest remains the right shape for files, folders, transcripts, research notes, and local exports that already exist on disk. Source-aware ingest is for pull requests, issues, git ranges, and future connector objects whose useful context comes from an addressable external system rather than a path the user already has on disk. [@connector-session]
 
-The current GitHub path uses Composio as the only connector substrate. It supports PR and issue source refs plus GitHub PR and issue URLs, infers the repository from the current git remote for shorthand refs, resolves a configured Composio GitHub account, and renders GitHub command-context blocks for Absorb. The agent inspects source material with `almanac source github pr ...` or `almanac source github issue ...`, which executes through a toolkit-scoped Composio session for the selected connected account. That path does not prefetch issue or PR material into the initial prompt, does not depend on `gh`, and does not store GitHub tokens in Almanac config. [@source-architecture-session]
+The current GitHub path is local and `gh`-guided. It supports PR and issue source refs plus GitHub PR and issue URLs, infers the repository from the current git remote for shorthand refs, uses repository identity embedded in GitHub URLs when present, and renders command-context blocks that tell the agent to inspect the source with authenticated `gh` commands. That path does not prefetch issue or PR material into the initial prompt, does not store GitHub tokens in Almanac config, and no longer uses Composio-backed `connect github` or `source github` commands. [@source-architecture-session]
 
-The v1 source split is deliberately small: `SourceRef` is syntax, and `Source` is resolved fact data for prompt rendering. `SourceRef` parses the user's string, for example `github:pr:123`, `github:issue:11`, a GitHub issue URL, or a generic URL, without doing prompt construction or wiki judgment. The GitHub resolver builds a `Source` with kind, raw ref, repository, URL, source number, and Composio connector account identity. Generic web URLs resolve directly to `web.url` sources. `renderIngestContext()` renders those facts into Absorb command context; the `Source` itself does not carry a pre-rendered prompt, fetch source content, or decide whether the source is notable. [@connector-session] [@ingest-input] [@ingest-context]
+The v1 source split is deliberately small: the raw user string is parsed into a `SourceRef`, and the resolver returns an `AbsorbInputSource` such as `github.pr`, `github.issue`, or `web.url`. `SourceRef` parses inputs such as `github:pr:123`, `github:issue:11`, a GitHub issue URL, or a generic URL without doing prompt construction or wiki judgment. The GitHub resolver builds a small object with kind, raw ref, repository, URL, and source number. Generic web URLs resolve directly to `web.url` sources. `renderAbsorbInputContext()` renders those facts into Absorb command context; the source object itself is not fetched source material, is not final page provenance, and does not decide whether the source is notable. [@connector-session] [@ingest-input] [@ingest-context] [@source-naming-session]
 
-The first local GitHub implementation exposed a boundary problem: `src/cli/commands/operations.ts` had command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The 2026-05-31 ingest boundary refactor moved input resolution to `src/ingest/input.ts` and source-specific prompt rendering to `src/ingest/context.ts`. The command file still owns provider selection, operation result rendering, and GitHub setup-error translation. Those are separate lifecycle-command cleanup targets, not source-ingest responsibilities. [@source-architecture-session] [@ingest-input] [@ingest-context] [@operations-command]
+The resolved object should not be named only `Source`, because that noun already names page `sources:` provenance, user-supplied source addresses, external source material, and runtime access to source systems. `EvidenceBundle` also overstates the local v1 object: evidence bundles are the hosted or webhook-scale manifest that can include triggers, branches, dedupe identity, source refs, publisher context, and runtime access. Local `almanac ingest github:pr:123` currently needs the smaller `raw input -> SourceRef -> AbsorbInputSource -> prompt guidance` path. [@source-naming-session]
 
-Missing or inactive GitHub connector accounts are setup errors before Absorb starts. `almanac connect github` creates or refreshes Composio connected-account config, `almanac connect github --wait` waits for an active connection, and `almanac connect github --status` lists stored GitHub accounts. Generic web URL ingest does not require a GitHub connector; it gives the URL to Absorb as web source material. [@source-architecture-session]
+The first local GitHub implementation exposed a boundary problem: `src/cli/commands/operations.ts` had command orchestration, source-ref parsing, GitHub source resolution, source-specific prompt rendering, setup-error translation, and operation dispatch in one file. The boundary refactor moved input resolution to `src/absorb/input.ts`, source-ref parsing to `src/absorb/source-ref.ts`, GitHub source resolution to `src/absorb/github.ts`, and source-specific prompt rendering to `src/absorb/context.ts`. The command file still owns provider selection and operation result rendering. Those are lifecycle-command responsibilities, not source-ingest responsibilities. [@source-architecture-session] [@ingest-input] [@ingest-context] [@operations-command]
+
+Shorthand GitHub refs require a GitHub `origin` remote before Absorb starts, because `resolveGitHubSource()` needs `owner/repo` to render usable `gh` commands. Full GitHub PR or issue URLs carry repository identity in the URL. Generic web URL ingest does not require a GitHub remote; it gives the URL to Absorb as web source material. [@source-architecture-session]
 
 ## Relationship to Build
 

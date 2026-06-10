@@ -13,12 +13,12 @@ sources:
     note: Runs Garden operations that may review unresolved wiki maintenance items.
   - id: process-manager
     type: file
-    path: src/process/manager.ts
-    note: Records operation runs that can expose questions or review items.
+    path: src/jobs/records.ts
+    note: Records operation jobs that can expose questions or review items.
   - id: viewer-jobs
     type: file
     path: src/viewer/jobs.ts
-    note: Exposes operation run records to the local viewer.
+    note: Exposes operation job records to the local viewer.
   - id: viewer-api
     type: file
     path: src/viewer/api.ts
@@ -102,7 +102,7 @@ A useful question record needs enough context for a human to answer without reop
 - optional answer choices with consequences
 - freeform answer support
 
-The first implementation can store questions with the run record under `.almanac/runs/`, because they are produced by a specific Absorb, Garden, or Verify pass. A separate `.almanac/questions/` store is only justified when questions need to survive independently of run records, be grouped across runs, or become a first-class viewer workflow.
+The first implementation can store questions with the job record under `.almanac/jobs/`, because they are produced by a specific Absorb, Garden, or Verify pass. A separate `.almanac/questions/` store is only justified when questions need to survive independently of job records, be grouped across jobs, or become a first-class viewer workflow.
 
 ## Editorial Review Items
 

@@ -3,20 +3,23 @@ title: Farzapedia
 summary: Farzapedia is an external wiki-system reference whose anti-cramming, anti-thinning, and prose rules inform Almanac prompt design.
 topics: [agents, decisions, prompt-system]
 sources:
-  - docs/research/farzapedia.md
+  - id: farzapedia-research
+    type: file
+    path: docs/research/farzapedia.md
+    note: Contains the Farzapedia skill/spec text compared by this page.
 status: active
 verified: 2026-05-10
 ---
 
 # Farzapedia
 
-Farzapedia is a personal knowledge wiki system delivered as an AI skill prompt. The prompt is dropped into `.claude/skills/wiki/SKILL.md` and exposes slash commands (`/wiki ingest`, `/wiki absorb`, `/wiki query`, `/wiki cleanup`, `/wiki breakdown`, `/wiki status`) that compile personal data — Day One journals, Apple Notes, iMessage exports, Obsidian vaults, email, Twitter archives, CSV — into a structured wiki. The system lives at [[docs/research/farzapedia.md]] in this repo.
+Farzapedia is a personal knowledge wiki system delivered as an AI skill prompt. The prompt is dropped into `.claude/skills/wiki/SKILL.md` and exposes slash commands (`/wiki ingest`, `/wiki absorb`, `/wiki query`, `/wiki cleanup`, `/wiki breakdown`, `/wiki status`) that compile personal data — Day One journals, Apple Notes, iMessage exports, Obsidian vaults, email, Twitter archives, CSV — into a structured wiki. The system lives at [[docs/research/farzapedia.md]] in this repo. [@farzapedia-research]
 
 The relevance to [[wiki-lifecycle-operations]] is domain adjacency: both are AI-maintained wikis over a corpus, both use the [[wikilink-syntax]], both treat synthesis as superior to summarizing. The architectures diverge in three areas: organization model, index storage, and absorb loop design. The writing anti-pattern vocabulary is the most directly portable contribution to [[operation-prompts]].
 
 ## Architecture contrasts
 
-**Organization model.** Farzapedia organizes pages in a directory taxonomy (`people/`, `projects/`, `places/`, `philosophies/`, `patterns/`, `tensions/`, `eras/`, `decisions/`, and many others). Directories emerge from the data; the system provides a reference taxonomy to converge toward. Almanac uses a flat `pages/` directory plus a multi-parent topic DAG in `.almanac/topics.yaml`. The topic DAG decouples classification from storage, so a page can belong to multiple overlapping clusters without being duplicated in a folder hierarchy.
+**Organization model.** Farzapedia organizes pages in a directory taxonomy (`people/`, `projects/`, `places/`, `philosophies/`, `patterns/`, `tensions/`, `eras/`, `decisions/`, and many others). Directories emerge from the data; the system provides a reference taxonomy to converge toward. [@farzapedia-research] Almanac uses a flat `pages/` directory plus a multi-parent topic DAG in `.almanac/topics.yaml`. The topic DAG decouples classification from storage, so a page can belong to multiple overlapping clusters without being duplicated in a folder hierarchy.
 
 **Index storage.** Farzapedia maintains `_index.md` (a master article index with aliases) and `_backlinks.json` (a reverse-link map) as hand-maintained JSON/markdown files that get rebuilt at periodic checkpoints. Almanac uses [[sqlite-indexer]], which rebuilds from `pages/*.md` mtimes before every query command, silently and implicitly.
 

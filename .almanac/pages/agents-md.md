@@ -1,21 +1,49 @@
 ---
 title: AGENTS.md
-summary: Codex loads durable instructions from global and project `AGENTS.md` files, and CodeAlmanac setup writes its managed Codex guide inline into the active global file because Codex does not expand `@file` references there.
-topics: [agents, stack]
-files:
-  - AGENTS.md
-  - CLAUDE.md
-  - .gitignore
-  - src/agent/instructions/codex.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/uninstall.ts
+summary: >-
+  Codex loads durable instructions from global and project `AGENTS.md` files, and CodeAlmanac setup
+  writes its managed Codex guide inline into the active global file because Codex does not expand
+  `@file` references there.
+topics:
+  - agents
+  - stack
 sources:
-  - https://developers.openai.com/codex/guides/agents-md
+  - id: agents
+    type: file
+    path: AGENTS.md
+    note: Migrated from legacy files.
+  - id: claude
+    type: file
+    path: CLAUDE.md
+    note: Migrated from legacy files.
+  - id: source
+    type: file
+    path: .gitignore
+    note: Migrated from legacy files.
+  - id: codex
+    type: file
+    path: src/agent/instructions/codex.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: uninstall
+    type: file
+    path: src/cli/commands/uninstall.ts
+    note: Migrated from legacy files.
+  - id: agents-md
+    type: web
+    url: https://developers.openai.com/codex/guides/agents-md
+    note: Migrated from legacy sources.
   - docs/research/2026-05-09-codex-harness-capabilities.md
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-39-37-019e1e21-939f-79f1-9722-c890eb4d1f38.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T10-09-42-019e21ac-062a-7830-af2e-f8e719f85d89.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-39-37-019e1e21-939f-79f1-9722-c890eb4d1f38.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T10-09-42-019e21ac-062a-7830-af2e-f8e719f85d89.jsonl
 status: active
-verified: 2026-05-14
+verified: 2026-05-14T00:00:00.000Z
+
 ---
 
 # AGENTS.md

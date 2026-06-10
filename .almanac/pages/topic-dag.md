@@ -1,15 +1,41 @@
 ---
 title: Topic DAG
-summary: Topics are a multi-parent DAG stored in `.almanac/topics.yaml`, while page membership stays in frontmatter and is reconciled at query time.
-topics: [systems, cli]
-files:
-  - src/wiki/topics/yaml.ts
-  - src/wiki/topics/dag.ts
-  - src/wiki/topics/frontmatter-rewrite.ts
-  - src/wiki/topics/paths.ts
-  - src/wiki/indexer/schema.ts
-  - src/cli/commands/topics/index.ts
-  - src/cli/commands/tag.ts
+summary: >-
+  Topics are a multi-parent DAG stored in `.almanac/topics.yaml`, while page membership stays in
+  frontmatter and is reconciled at query time.
+topics:
+  - systems
+  - cli
+sources:
+  - id: yaml
+    type: file
+    path: src/wiki/topics/yaml.ts
+    note: Migrated from legacy files.
+  - id: dag
+    type: file
+    path: src/wiki/topics/dag.ts
+    note: Migrated from legacy files.
+  - id: frontmatter-rewrite
+    type: file
+    path: src/wiki/topics/frontmatter-rewrite.ts
+    note: Migrated from legacy files.
+  - id: paths
+    type: file
+    path: src/wiki/topics/paths.ts
+    note: Migrated from legacy files.
+  - id: schema
+    type: file
+    path: src/wiki/indexer/schema.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/topics/index.ts
+    note: Migrated from legacy files.
+  - id: tag
+    type: file
+    path: src/cli/commands/tag.ts
+    note: Migrated from legacy files.
+
 ---
 
 # Topic DAG

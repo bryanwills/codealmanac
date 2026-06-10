@@ -1,25 +1,64 @@
 ---
 title: Global Agent Instructions
-summary: "`almanac setup` installs global Claude and Codex instruction artifacts differently: Claude reads copied guide files plus a `CLAUDE.md` import, while Codex reads an inline managed block in the active global AGENTS file."
-topics: [agents, cli, flows]
-files:
-  - src/agent/install-targets.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/setup/guides.ts
-  - src/cli/commands/setup/guides-step.ts
-  - src/cli/commands/uninstall.ts
-  - src/cli/commands/doctor/install.ts
-  - src/agent/instructions/codex.ts
-  - test/setup.test.ts
-  - test/uninstall.test.ts
-  - test/doctor.test.ts
+summary: >-
+  `almanac setup` installs global Claude and Codex instruction artifacts differently: Claude reads
+  copied guide files plus a `CLAUDE.md` import, while Codex reads an inline managed block in the
+  active global AGENTS file.
+topics:
+  - agents
+  - cli
+  - flows
 sources:
+  - id: install-targets
+    type: file
+    path: src/agent/install-targets.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: guides
+    type: file
+    path: src/cli/commands/setup/guides.ts
+    note: Migrated from legacy files.
+  - id: guides-step
+    type: file
+    path: src/cli/commands/setup/guides-step.ts
+    note: Migrated from legacy files.
+  - id: uninstall
+    type: file
+    path: src/cli/commands/uninstall.ts
+    note: Migrated from legacy files.
+  - id: install
+    type: file
+    path: src/cli/commands/doctor/install.ts
+    note: Migrated from legacy files.
+  - id: codex
+    type: file
+    path: src/agent/instructions/codex.ts
+    note: Migrated from legacy files.
+  - id: setup-test
+    type: file
+    path: test/setup.test.ts
+    note: Migrated from legacy files.
+  - id: uninstall-test
+    type: file
+    path: test/uninstall.test.ts
+    note: Migrated from legacy files.
+  - id: doctor-test
+    type: file
+    path: test/doctor.test.ts
+    note: Migrated from legacy files.
   - docs/plans/2026-05-11-almanac-naming-migration.md
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-29-09-019e1e17-fe55-7362-b42e-bb000f81f93e.jsonl
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-34-26-019e230c-4437-7422-9e8d-b7caa9b592fc.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-29-09-019e1e17-fe55-7362-b42e-bb000f81f93e.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-34-26-019e230c-4437-7422-9e8d-b7caa9b592fc.jsonl
 status: active
-verified: 2026-05-13
+verified: 2026-05-13T00:00:00.000Z
+
 ---
 
 # Global Agent Instructions

@@ -1,16 +1,42 @@
 ---
 title: Global Registry
-summary: "`~/.almanac/registry.json` is the machine-local index of known wikis and the lookup table for cross-wiki queries and links."
-topics: [systems, storage]
-files:
-  - src/wiki/registry/index.ts
-  - src/wiki/registry/store.ts
-  - src/wiki/registry/autoregister.ts
-  - src/paths.ts
-  - src/init/scaffold.ts
-  - src/cli/commands/list.ts
-  - src/cli/register-query-commands.ts
-verified: 2026-05-31
+summary: >-
+  `~/.almanac/registry.json` is the machine-local index of known wikis and the lookup table for
+  cross-wiki queries and links.
+topics:
+  - systems
+  - storage
+verified: 2026-05-31T00:00:00.000Z
+sources:
+  - id: index
+    type: file
+    path: src/wiki/registry/index.ts
+    note: Migrated from legacy files.
+  - id: store
+    type: file
+    path: src/wiki/registry/store.ts
+    note: Migrated from legacy files.
+  - id: autoregister
+    type: file
+    path: src/wiki/registry/autoregister.ts
+    note: Migrated from legacy files.
+  - id: paths
+    type: file
+    path: src/paths.ts
+    note: Migrated from legacy files.
+  - id: scaffold
+    type: file
+    path: src/init/scaffold.ts
+    note: Migrated from legacy files.
+  - id: list
+    type: file
+    path: src/cli/commands/list.ts
+    note: Migrated from legacy files.
+  - id: register-query-commands
+    type: file
+    path: src/cli/register-query-commands.ts
+    note: Migrated from legacy files.
+
 ---
 
 # Global Registry

@@ -1,32 +1,116 @@
 ---
 title: SQLite Indexer
-summary: The SQLite indexer powers query commands but inherits `better-sqlite3`'s Node-version-sensitive native binding behavior.
-topics: [systems, storage]
-files:
-  - src/cli/register-query-commands.ts
-  - src/cli/commands/search.ts
-  - src/cli/commands/show.ts
-  - src/cli/commands/health/index.ts
-  - src/wiki/indexer/schema.ts
-  - src/wiki/indexer/index.ts
-  - src/wiki/indexer/frontmatter.ts
-  - src/wiki/indexer/page-sources.ts
-  - src/wiki/indexer/wikilinks.ts
-  - src/wiki/indexer/paths.ts
-  - src/wiki/indexer/resolve-wiki.ts
-  - src/wiki/indexer/duration.ts
-  - src/wiki/health/index.ts
-  - src/wiki/health/legacy-frontmatter-fix.ts
-  - src/abi-guard.ts
-  - src/cli.ts
+summary: >-
+  The SQLite indexer powers query commands but inherits `better-sqlite3`'s Node-version-sensitive
+  native binding behavior.
+topics:
+  - systems
+  - storage
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
   - id: source-architecture-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
-    note: Records the correction that page `sources:` parsing is markdown projection work and that the legacy source-frontmatter rewriter belongs to health rather than a generic sources subsystem.
-verified: 2026-05-15
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
+    note: >-
+      Records the correction that page `sources:` parsing is markdown projection work and that the
+      legacy source-frontmatter rewriter belongs to health rather than a generic sources subsystem.
+  - id: search-query-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T17-38-44-019ea4aa-e76e-7841-94a0-b00f3c24ccf8.jsonl
+    note: >-
+      Records the 2026-06-08 conclusion that search/query does not need a major rewrite yet, but
+      should split filter builders when new query features land.
+  - id: reindex-command
+    type: file
+    path: src/cli/commands/reindex.ts
+    note: Shows that explicit `almanac reindex` calls `runIndexer()` and reports its result.
+  - id: indexer-fast-path
+    type: file
+    path: src/wiki/indexer/index.ts
+    note: Shows that `runIndexer()` skips rows whose `content_hash` and `file_path` already match.
+  - id: register-query-commands
+    type: file
+    path: src/cli/register-query-commands.ts
+    note: Migrated from legacy files.
+  - id: search
+    type: file
+    path: src/cli/commands/search.ts
+    note: Migrated from legacy files.
+  - id: show
+    type: file
+    path: src/cli/commands/show.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/health/index.ts
+    note: Migrated from legacy files.
+  - id: schema
+    type: file
+    path: src/wiki/indexer/schema.ts
+    note: Migrated from legacy files.
+  - id: index-2
+    type: file
+    path: src/wiki/indexer/index.ts
+    note: Migrated from legacy files.
+  - id: frontmatter
+    type: file
+    path: src/wiki/indexer/frontmatter.ts
+    note: Migrated from legacy files.
+  - id: page-sources
+    type: file
+    path: src/wiki/indexer/page-sources.ts
+    note: Migrated from legacy files.
+  - id: wikilinks
+    type: file
+    path: src/wiki/indexer/wikilinks.ts
+    note: Migrated from legacy files.
+  - id: paths
+    type: file
+    path: src/wiki/indexer/paths.ts
+    note: Migrated from legacy files.
+  - id: resolve-wiki
+    type: file
+    path: src/wiki/indexer/resolve-wiki.ts
+    note: Migrated from legacy files.
+  - id: duration
+    type: file
+    path: src/wiki/indexer/duration.ts
+    note: Migrated from legacy files.
+  - id: query-search
+    type: file
+    path: src/wiki/query/search.ts
+    note: Executes the search SQL plan and hydrates result topics.
+  - id: query-search-plan
+    type: file
+    path: src/wiki/query/search-plan.ts
+    note: Builds the current FTS/list SQL plan and shared search filters.
+  - id: query-file-mentions
+    type: file
+    path: src/wiki/query/file-mentions.ts
+    note: Builds file and folder mention filters for search.
+  - id: index-3
+    type: file
+    path: src/wiki/health/index.ts
+    note: Migrated from legacy files.
+  - id: maintenance
+    type: file
+    path: src/wiki/sources/maintenance.ts
+    note: Migrated from legacy files.
+  - id: abi-guard
+    type: file
+    path: src/abi-guard.ts
+    note: Migrated from legacy files.
+  - id: cli
+    type: file
+    path: src/cli.ts
+    note: Migrated from legacy files.
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+verified: 2026-05-15T00:00:00.000Z
+
 ---
 
 # SQLite Indexer
@@ -38,6 +122,8 @@ The indexer (`src/wiki/indexer/`) builds and maintains `.almanac/index.db` — a
 Query commands should stay quiet by default and reserve richer context for explicit flags. `almanac search` defaults to one slug per line even in a TTY; `--verbose` and the older `--summaries` flag print one-line summaries. `almanac show <slug>` defaults to the page body only; `--verbose` restores the metadata header, separator, and body view. Field flags such as `--title`, `--topics`, `--files`, and JSON output keep their existing explicit shapes.
 
 `almanac search` should remain a wiki-page search by default. A 2026-05-15 product/API discussion rejected mixing real source files into the default result stream because it would blur Almanac's contract with ordinary code search tools such as `rg` and make slug piping less predictable. A future explicit mode such as `almanac search --files "query"` is consistent with the model if it returns file refs attached to matching wiki pages; that mode should mean "show the source files the wiki says matter for this concept," not "grep the repository too." `almanac show <slug> --files` and `almanac search --mentions <path>` remain the direct file-aware surfaces for one page or one source path.
+
+The current search-query architecture is intentionally modest. `[[src/wiki/query/search.ts]]` asks `[[src/wiki/query/search-plan.ts]]` for SQL and params, executes the plan, and hydrates each result with topics. `search-plan.ts` still assembles archive, topic, mention, freshness, orphan, FTS, and list-mode clauses in one builder, while `[[src/wiki/query/file-mentions.ts]]` owns the file/folder mention filter. That shape is acceptable because the current query surface is small; the project should split filter builders and topic hydration only when new behavior such as source filtering, snippets, OR groups, topic descendants, semantic/vector search, more ranking modes, or reusable viewer/API search plans makes the combined builder materially harder to maintain. [@query-search] [@query-search-plan] [@query-file-mentions] [@search-query-session]
 
 ## Schema
 
@@ -56,7 +142,7 @@ Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (
 
 `src/wiki/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/wiki/indexer/frontmatter.ts]]`, source normalization in `[[src/wiki/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/wiki/health/index.ts]]` owns the health checks that query those projections.
 
-The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic `src/sources/` owner for this code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper lives in `[[src/wiki/health/legacy-frontmatter-fix.ts]]` because it exists only for `health --fix`; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
+The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic source-connector owner for page-source projection code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper now lives in `[[src/wiki/sources/maintenance.ts]]` because `almanac migrate legacy-sources` owns mechanical source-frontmatter migration; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
 
 ## Schema versioning
 
@@ -68,7 +154,9 @@ All stored paths are lowercase + forward-slashes + no `./` prefix (normalized at
 
 ## Freshness
 
-`better-sqlite3` (sync SQLite driver). WAL journal mode is set on first open and persists in the DB header. `almanac reindex` clears hashes to force a full rebuild even when the index is otherwise fresh.
+`better-sqlite3` is the synchronous SQLite driver. WAL journal mode is set on first open and persists in the DB header.
+
+`almanac reindex` runs the indexer even when the freshness check would skip work, but the current command path does not clear `pages.content_hash`. A page whose `content_hash` and `file_path` already match the existing row is skipped inside `runIndexer()`. That means parser, projection, or source-normalization changes can require deleting the generated `.almanac/index.db` or triggering a schema-version rebuild before old derived rows such as `page_sources` are recomputed. [@reindex-command] [@indexer-fast-path]
 
 ## Native binding constraint
 

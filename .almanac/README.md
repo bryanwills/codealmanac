@@ -4,6 +4,8 @@ This is the Almanac wiki for the codealmanac repo itself — the CLI and agent h
 
 The primary reader is an AI coding agent picking up a new session. Write accordingly: dense, factual, linked.
 
+Start at [[getting-started]] when you need a reading path through the current wiki. Use topic pages and search after that; topics are browse neighborhoods, not a guaranteed order of work.
+
 ## Notability bar
 
 Write a page when there is **non-obvious knowledge that will help a future agent**. Specifically:

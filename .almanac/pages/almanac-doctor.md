@@ -1,23 +1,55 @@
 ---
 title: Almanac Doctor
-summary: "`almanac doctor` reports install, agent, update, and wiki status, but it currently stops at diagnosis and prints `run:` hints instead of applying repairs."
-topics: [cli, systems]
-files:
-  - src/agent/install-targets.ts
-  - src/cli/commands/doctor/index.ts
-  - src/cli/commands/doctor/install.ts
-  - src/cli/commands/doctor/wiki.ts
-  - src/cli/commands/doctor/updates.ts
-  - src/cli/commands/doctor/probes.ts
-  - src/cli/commands/setup/index.ts
-  - src/abi-guard.ts
-  - test/doctor.test.ts
+summary: >-
+  `almanac doctor` reports install, agent, update, and wiki status, but it currently stops at
+  diagnosis and prints `run:` hints instead of applying repairs.
+topics:
+  - cli
+  - systems
 sources:
+  - id: install-targets
+    type: file
+    path: src/agent/install-targets.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/doctor/index.ts
+    note: Migrated from legacy files.
+  - id: install
+    type: file
+    path: src/cli/commands/doctor/install.ts
+    note: Migrated from legacy files.
+  - id: wiki
+    type: file
+    path: src/cli/commands/doctor/wiki.ts
+    note: Migrated from legacy files.
+  - id: updates
+    type: file
+    path: src/cli/commands/doctor/updates.ts
+    note: Migrated from legacy files.
+  - id: probes
+    type: file
+    path: src/cli/commands/doctor/probes.ts
+    note: Migrated from legacy files.
+  - id: index-2
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: abi-guard
+    type: file
+    path: src/abi-guard.ts
+    note: Migrated from legacy files.
+  - id: doctor-test
+    type: file
+    path: test/doctor.test.ts
+    note: Migrated from legacy files.
   - docs/plans/2026-04-30-doctor-refactor.md
   - docs/bugs/codealmanac-known-bugs.md
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T00-52-10-019e1b2c-0679-7bb0-a926-b8643aa710c1.jsonl
-verified: 2026-05-13
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T00-52-10-019e1b2c-0679-7bb0-a926-b8643aa710c1.jsonl
+verified: 2026-05-13T00:00:00.000Z
 status: active
+
 ---
 
 # Almanac Doctor
@@ -66,10 +98,10 @@ The wiki section first resolves the nearest repo with `.almanac/`. When one exis
 - whether the repo is already present in the global [[global-registry]]
 - indexed page and topic counts when `.almanac/index.db` is readable
 - index age
-- most recent capture artifact age
+- most recent absorb log age
 - an `almanac health` summary
 
-The "most recent capture artifact" line currently has a narrow scanner. [[src/cli/commands/doctor/wiki.ts]] checks `.almanac/logs` and `.almanac/` for `.capture-*` log/jsonl files, but it does not scan `.almanac/runs/` for the process-manager run records described in [[process-manager-runs]]. A 2026-05-13 support check found `almanac doctor` reporting an old `last capture` even though `.almanac/runs/<run-id>.json`, the matching JSONL log, and the hook log proved a capture had completed minutes earlier. When doctor and jobs disagree, trust the run record and hook log for recent background captures.
+The "last absorb" line currently has a narrow scanner. [[src/cli/commands/doctor/wiki.ts]] checks `.almanac/logs` and `.almanac/` for `.absorb-*` log/jsonl files, but it does not scan `.almanac/jobs/` for the job records described in [[process-manager-runs]]. A 2026-05-13 support check found the same class of mismatch before the jobs storage rename: doctor reported an old last-capture artifact even though the job record, matching JSONL log, and hook log proved background capture had completed minutes earlier. When doctor and jobs disagree, trust the job record and hook log for recent background Absorb jobs.
 
 If wiki checks throw, [[src/cli/commands/doctor/index.ts]] degrades to a single `wiki.checks` problem entry instead of crashing the whole command.
 

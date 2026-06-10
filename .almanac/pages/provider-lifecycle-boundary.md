@@ -1,46 +1,116 @@
 ---
 title: Provider Lifecycle Boundary
-summary: CodeAlmanac separates runtime execution providers from agent readiness, auth, instruction, and config support so one provider name does not imply one lifecycle.
-topics: [agents, systems, decisions, provider-harness]
-files:
-  - src/harness/types.ts
-  - src/harness/providers/
-  - src/agent/types.ts
-  - src/agent/readiness/
-  - src/agent/auth/claude.ts
-  - src/agent/instructions/codex.ts
-  - src/agent/install-targets.ts
-  - src/cli/commands/agents.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/setup/
-  - src/cli/commands/doctor/agents.ts
-  - src/process/manager.ts
-  - src/config/index.ts
-  - src/config/providers.ts
-  - src/config/schema.ts
-  - src/config/codec.ts
-  - src/config/store.ts
-  - src/config/paths.ts
-  - src/config/origins.ts
+summary: >-
+  CodeAlmanac separates runtime execution providers from agent readiness, auth, instruction, and
+  config support so one provider name does not imply one lifecycle.
+topics:
+  - agents
+  - systems
+  - decisions
+  - provider-harness
 sources:
+  - id: types
+    type: file
+    path: src/harness/types.ts
+    note: Migrated from legacy files.
+  - id: providers
+    type: file
+    path: src/harness/providers/
+    note: Migrated from legacy files.
+  - id: types-2
+    type: file
+    path: src/agent/types.ts
+    note: Migrated from legacy files.
+  - id: readiness
+    type: file
+    path: src/agent/readiness/
+    note: Migrated from legacy files.
+  - id: claude
+    type: file
+    path: src/agent/auth/claude.ts
+    note: Migrated from legacy files.
+  - id: codex
+    type: file
+    path: src/agent/instructions/codex.ts
+    note: Migrated from legacy files.
+  - id: install-targets
+    type: file
+    path: src/agent/install-targets.ts
+    note: Migrated from legacy files.
+  - id: agents
+    type: file
+    path: src/cli/commands/agents.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: setup
+    type: file
+    path: src/cli/commands/setup/
+    note: Migrated from legacy files.
+  - id: agents-2
+    type: file
+    path: src/cli/commands/doctor/agents.ts
+    note: Migrated from legacy files.
+  - id: manager
+    type: file
+    path: src/jobs/executor.ts
+    note: Executes operation jobs through the selected harness provider.
+  - id: index-2
+    type: file
+    path: src/config/index.ts
+    note: Migrated from legacy files.
+  - id: providers-2
+    type: file
+    path: src/config/providers.ts
+    note: Migrated from legacy files.
+  - id: schema
+    type: file
+    path: src/config/schema.ts
+    note: Migrated from legacy files.
+  - id: codec
+    type: file
+    path: src/config/codec.ts
+    note: Migrated from legacy files.
+  - id: store
+    type: file
+    path: src/config/store.ts
+    note: Migrated from legacy files.
+  - id: paths
+    type: file
+    path: src/config/paths.ts
+    note: Migrated from legacy files.
+  - id: origins
+    type: file
+    path: src/config/origins.ts
+    note: Migrated from legacy files.
   - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - /Users/rohan/.config/superpowers/worktrees/codealmanac/long-term-arch-cleanup/docs/plans/2026-05-14-long-term-architecture-cleanup.md
-  - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T13-38-45-019e2791-c776-7f62-a6fc-25a8f07c6a6e.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+  - >-
+    /Users/rohan/.config/superpowers/worktrees/codealmanac/long-term-arch-cleanup/docs/plans/2026-05-14-long-term-architecture-cleanup.md
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T13-38-45-019e2791-c776-7f62-a6fc-25a8f07c6a6e.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
   - /Users/rohan/Desktop/Projects/t3code/packages/contracts/src/providerInstance.ts
   - /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/ProviderDriver.ts
   - /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/Services/ProviderRegistry.ts
-  - /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/Services/ProviderAdapterRegistry.ts
+  - >-
+    /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/Services/ProviderAdapterRegistry.ts
 status: active
-verified: 2026-05-31
+verified: 2026-05-31T00:00:00.000Z
+
 ---
 
 # Provider Lifecycle Boundary
 
-CodeAlmanac has one runtime provider boundary and several agent-support boundaries. [[harness-providers]] executes Build, Absorb, Garden, and other lifecycle operations from `AgentRunSpec`. `src/agent/readiness/` builds installed/authenticated/model-choice status for setup, `almanac agents`, and doctor. `src/agent/auth/claude.ts` owns Claude executable and auth probing shared by readiness and runtime. `src/agent/instructions/codex.ts` owns Codex AGENTS-file writing because that is instruction installation, not readiness or execution.
+CodeAlmanac has one runtime provider boundary and several agent-support boundaries. [[harness-providers]] executes Build, Absorb, Garden, and other lifecycle operations from `OperationSpec`. `src/agent/readiness/` builds installed/authenticated/model-choice status for setup, `almanac agents`, and doctor. `src/agent/auth/claude.ts` owns Claude executable and auth probing shared by readiness and runtime. `src/agent/instructions/codex.ts` owns Codex AGENTS-file writing because that is instruction installation, not readiness or execution.
 
 The pre-cleanup tree had two provider-shaped areas: `src/harness/providers/` and `src/agent/providers/`. That was a structural smell because a maintainer could reasonably ask which one was the real provider system. The durable decision was not to delete setup/status behavior, and not to merge every concern into the harness. The durable decision was to separate lifecycles while keeping provider identity narrow and shared where needed.
 
@@ -50,7 +120,7 @@ A follow-up review of the provider-automation boundary refactor accepted the pro
 
 ## Current execution path
 
-Current operation execution goes through `src/process/manager.ts`, which calls `getHarnessProvider(spec.provider.id).run(...)`. `src/harness/types.ts` defines `AgentRunSpec`, `HarnessProvider`, `HarnessEvent`, and related execution types. This is the path that owns provider runtime behavior such as SDK or CLI protocol mapping, event normalization, sandbox policy, tool mapping, subagent support, request timeouts, and usage reporting.
+Current operation execution goes through `src/jobs/executor.ts`, which calls `getHarnessProvider(spec.provider.id).run(...)`. `src/harness/types.ts` defines the provider-neutral `OperationSpec` execution path, `HarnessProvider`, `HarnessEvent`, and related execution types. This is the path that owns provider runtime behavior such as SDK or CLI protocol mapping, event normalization, sandbox policy, tool mapping, subagent support, request timeouts, and usage reporting.
 
 No production code path found in the 2026-05-14 review called `getAgentProvider(...).run(...)` for lifecycle operation execution. The old `AgentProvider.run()` surface in `src/agent/types.ts` is therefore obsolete unless future tests or hidden callers prove otherwise.
 

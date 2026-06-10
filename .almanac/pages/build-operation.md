@@ -1,25 +1,51 @@
 ---
 title: Build Operation
-summary: "Build is the `almanac init` operation for first-pass project memory, not a generic compiler from arbitrary files to a wiki."
-topics: [agents, flows, cli]
-files:
-  - src/operations/build.ts
-  - src/init/scaffold.ts
-  - src/cli/commands/operations.ts
-  - prompts/operations/build.md
-  - src/viewer/api.ts
-  - viewer/app.js
+summary: >-
+  Build is the `almanac init` operation for first-pass project memory, not a generic compiler from
+  arbitrary files to a wiki.
+topics:
+  - agents
+  - flows
+  - cli
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/10/rollout-2026-05-10T14-49-00-019e13dd-740e-7421-9d32-51615ab7c84f.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T00-28-55-019e6d0e-a0d0-7ec0-bbbd-92d2c677608c.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
+  - id: build
+    type: file
+    path: src/operations/build.ts
+    note: Migrated from legacy files.
+  - id: scaffold
+    type: file
+    path: src/init/scaffold.ts
+    note: Migrated from legacy files.
+  - id: operations
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Migrated from legacy files.
+  - id: build-2
+    type: file
+    path: prompts/operations/build.md
+    note: Migrated from legacy files.
+  - id: api
+    type: file
+    path: src/viewer/api.ts
+    note: Migrated from legacy files.
+  - id: app
+    type: file
+    path: viewer/app.js
+    note: Migrated from legacy files.
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/10/rollout-2026-05-10T14-49-00-019e13dd-740e-7421-9d32-51615ab7c84f.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T00-28-55-019e6d0e-a0d0-7ec0-bbbd-92d2c677608c.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
 status: active
-verified: 2026-05-28
+verified: 2026-05-28T00:00:00.000Z
+
 ---
 
 # Build Operation
 
-Build is the V1 operation behind `almanac init`. It replaced the old public `almanac bootstrap` command and the deleted `prompts/bootstrap.md` flow. The operation creates or opens `.almanac/`, refuses to run against a populated wiki unless `--force` is set, constructs one `AgentRunSpec`, and hands execution to [[process-manager-runs]].
+Build is the V1 operation behind `almanac init`. It replaced the old public `almanac bootstrap` command and the deleted `prompts/bootstrap.md` flow. The operation creates or opens `.almanac/`, refuses to run against a populated wiki unless `--force` is set, constructs one `OperationSpec`, and hands execution to [[process-manager-runs]].
 
 ## Command contract
 

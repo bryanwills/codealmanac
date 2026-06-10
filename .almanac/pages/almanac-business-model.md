@@ -7,6 +7,10 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: User asked whether CodeAlmanac should become closed-source or follow hosted open-source norms, then why open source builds trust; the answer settled on open local core plus paid hosted coordination and framed open source as trust architecture rather than the value proposition.
+  - id: cli-review-wedge-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T14-10-43-019ea3ec-7755-7d03-b5bb-753ed523503d.jsonl
+    note: Records the compute-boundary conclusion that CLI review is a product surface, not necessarily the compute boundary; local compute supports trust and adoption, while hosted compute is the paid team default.
 status: active
 verified: 2026-06-01
 ---
@@ -21,11 +25,13 @@ The open layer is the trusted substrate. It should include the local CLI, the `.
 
 The paid layer is not merely "we host your wiki." That framing fits products where the open-source code is a server a company can run for the customer, but Almanac's source of truth should remain the repository. The hosted product should sell automation and governance around repo-owned memory: auth, connectors, GitHub checks, scheduled capture, Almanac update PRs, review queues, policy controls, provenance, permissions, Slack and Linear or Jira sync, dashboards, audit logs, hosted agent context, and enterprise deployment controls. [@business-model-session]
 
+CLI review should not force a local-only business model. The CLI is the developer-time trigger surface: it can identify the repository, branch, diff, and changed files, then either run a local review with the user's model or API key or call Almanac Cloud for team-governed review. Local compute matters for OSS, privacy-sensitive repositories, and trust in the repo-owned memory format; hosted compute is the paid default for teams that want shared policy, consistent results, connector context, queueing, and managed model spend. [@cli-review-wedge-session]
+
 ## Product Packages
 
 Almanac OSS should be genuinely free for public repositories because the strategic goal is making maintained project memory a normal repository convention. [[open-source-almanac]] defines that wedge as maintainer-attention infrastructure: cited context cards, `/almanac note`, and Almanac update PRs that reduce repeated maintainer explanations without making hidden hosted memory canonical.
 
-Almanac Teams should sell the private-repository workflow. The buyer pays for private GitHub integration, connector orchestration, team review queues, permissions, org memory policies, hosted job history, and context delivery into the tools where engineers and agents already work.
+Almanac Teams should sell the private-repository workflow. The buyer pays for private GitHub integration, connector orchestration, team review queues, permissions, org memory policies, hosted job history, and context delivery into the tools where engineers and agents already work. Inner-loop `almanac review --agent` can belong in this tier when it uses Almanac Cloud to apply org policy, retrieve hosted connector context, and return structured findings to local coding agents. [@cli-review-wedge-session]
 
 Almanac Enterprise should add procurement and control features rather than a different knowledge model. The enterprise package belongs around SSO, RBAC, audit logs, retention policies, private model routing, self-hosting or VPC deployment, cross-repo confidential context, and compliance exports.
 

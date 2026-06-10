@@ -1,29 +1,36 @@
 ---
 title: Legacy SessionEnd Hook
-summary: Hook-based auto-capture is historical; scheduler-backed quiet-session capture supersedes it.
+summary: Hook-based auto-capture is historical; scheduler-backed quiet-session sync supersedes it.
 topics: [agents, flows, cli]
 files:
   - src/cli/commands/automation.ts
+  - src/cli/commands/migrate.ts
   - src/cli/commands/setup/index.ts
   - src/cli/commands/uninstall.ts
+  - src/platform/automation/legacy-hooks.ts
+  - src/platform/automation/legacy-capture.ts
 sources:
   - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-verified: 2026-05-13
+  - id: sync-refactor-commit
+    type: commit
+    rev: 6fc4124bec3da04242077dcd01b26482d6f1126d
+    note: Renamed the scheduled transcript coordinator from capture sweep to sync and added legacy automation migration.
+verified: 2026-06-08
 archived_at: 2026-05-13
 superseded_by: capture-automation
 ---
 
 # Legacy SessionEnd Hook
 
-Hook-based auto-capture is no longer the current product path. [[automation]] and [[capture-automation]] supersede it with scheduler-backed quiet-session capture: `almanac automation install` registers OS scheduler jobs, and the capture job periodically runs `almanac capture sweep`. The current scheduler-owned automation surface itself is described in [[lifecycle-cli]] and [[install-time-node-launcher]].
+Hook-based auto-capture is no longer the current product path. [[automation]] and [[capture-automation]] supersede it with scheduler-backed quiet-session sync: `almanac automation install` registers OS scheduler jobs, and the sync job periodically runs `almanac sync --quiet <duration>`. The current scheduler-owned automation surface itself is described in [[lifecycle-cli]] and [[install-time-node-launcher]].
 
 This page remains only as historical context for cleanup and migration. Earlier versions installed a shared `almanac-capture.sh` command into provider hook configs: Claude used `SessionEnd`, Codex used `Stop`, and Cursor used `sessionEnd`. That shape was removed from onboarding and the public command surface because each provider exposes different lifecycle semantics, and Codex `Stop` is turn-scoped rather than a reliable session boundary.
 
 ## Current invariant
 
-Automatic capture is scheduler-only. `almanac capture sweep` is the only automatic path that decides transcript eligibility, quiet-window timing, cursor dedupe, and capture enqueueing. No hook path should bypass [[capture-ledger]].
+Automatic session capture is scheduler-only. `almanac sync` is the only automatic path that decides transcript eligibility, quiet-window timing, cursor dedupe, and Absorb enqueueing. `almanac sync status` is the read-only verification path. No hook path should bypass [[capture-ledger]]. [@sync-refactor-commit]
 
-Setup and uninstall still clean legacy hook entries privately. [[src/cli/commands/automation.ts]] removes CodeAlmanac-owned commands whose `command` contains `almanac-capture.sh`, including wrapped and unwrapped hook shapes, while preserving unrelated user hooks.
+Setup and uninstall still clean legacy hook entries privately. [[src/platform/automation/legacy-hooks.ts]] removes CodeAlmanac-owned commands whose `command` contains `almanac-capture.sh`, including wrapped and unwrapped hook shapes, while preserving unrelated user hooks.
 
 ## Legacy shapes to keep cleaning
 
@@ -42,8 +49,8 @@ When automatic capture does not run, inspect scheduler state first:
 ```bash
 almanac doctor
 almanac automation status
-almanac capture sweep --dry-run --json
+almanac sync status --json
 almanac jobs
 ```
 
-Hook config files under `~/.claude/`, `~/.codex/`, and `~/.cursor/` are now legacy cleanup targets, not active CodeAlmanac automation state. If a machine still has `almanac-capture.sh` entries, rerun `almanac setup` or `almanac automation install` to install scheduler-backed capture and clean the old entries.
+Hook config files under `~/.claude/`, `~/.codex/`, and `~/.cursor/` are now legacy cleanup targets, not active CodeAlmanac automation state. If a machine still has `almanac-capture.sh` entries, rerun `almanac setup` or `almanac automation install` to install scheduler-backed sync and clean the old entries. If a machine has `~/Library/LaunchAgents/com.codealmanac.capture-sweep.plist`, run `almanac migrate automation` to replace the removed `capture sweep` launchd job with sync automation.

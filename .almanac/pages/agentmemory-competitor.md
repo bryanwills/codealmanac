@@ -1,23 +1,49 @@
 ---
 title: Agentmemory Competitor
-summary: Agentmemory is a serious adjacent memory product whose event-driven daemon competes with CodeAlmanac's memory-continuity promise but not its repo-owned wiki artifact.
-topics: [product-positioning, competitive-research]
-files:
-  - docs/strategy/codealmanac-vs-deepwiki-supermemory.md
-  - docs/research/karpathy-llm-wiki.md
-  - README.md
+summary: >-
+  Agentmemory is a serious adjacent memory product whose event-driven daemon competes with
+  CodeAlmanac's memory-continuity promise but not its repo-owned wiki artifact.
+topics:
+  - product-positioning
+  - competitive-research
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - https://github.com/rohitg00/agentmemory
-  - https://github.com/iii-hq/iii
-  - https://iii.dev/docs/0-10-0/architecture/workers
-  - https://workers.iii.dev/
+  - id: codealmanac-vs-deepwiki-supermemory
+    type: file
+    path: docs/strategy/codealmanac-vs-deepwiki-supermemory.md
+    note: Migrated from legacy files.
+  - id: karpathy-llm-wiki
+    type: file
+    path: docs/research/karpathy-llm-wiki.md
+    note: Migrated from legacy files.
+  - id: readme
+    type: file
+    path: README.md
+    note: Migrated from legacy files.
+  - id: agentmemory
+    type: web
+    url: https://github.com/rohitg00/agentmemory
+    note: Migrated from legacy sources.
+  - id: iii
+    type: web
+    url: https://github.com/iii-hq/iii
+    note: Migrated from legacy sources.
+  - id: workers
+    type: web
+    url: https://iii.dev/docs/0-10-0/architecture/workers
+    note: Migrated from legacy sources.
+  - id: workers-iii-dev
+    type: web
+    url: https://workers.iii.dev/
+    note: Migrated from legacy sources.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
   - /Users/rohan/Desktop/Projects/agentmemory/README.md
   - /Users/rohan/Desktop/Projects/agentmemory/src/index.ts
   - /Users/rohan/Desktop/Projects/agentmemory/src/hooks/post-tool-use.ts
   - /Users/rohan/Desktop/Projects/agentmemory/src/functions/context.ts
   - /Users/rohan/Desktop/Projects/agentmemory/src/functions/observe.ts
-verified: 2026-05-15
+verified: 2026-05-15T00:00:00.000Z
+
 ---
 
 `agentmemory` is a persistent memory engine for AI coding agents. Its public package is `@agentmemory/agentmemory`, and the cloned repo at `../agentmemory` was inspected at commit `4b354b7` on 2026-05-15. Its README describes support for Claude Code, Cursor, Gemini CLI, Codex CLI, OpenClaw, Hermes, OpenCode, MCP clients, and REST clients.

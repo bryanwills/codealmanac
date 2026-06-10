@@ -1,21 +1,27 @@
 ---
 title: Company Brain
-summary: The company-brain category frames CodeAlmanac as a codebase-scoped, local-first memory layer for AI agents rather than a generic search or chatbot product.
-topics: [product-positioning, competitive-research]
+summary: >-
+  The company-brain category frames CodeAlmanac as a codebase-scoped, local-first memory layer for
+  AI agents rather than a generic search or chatbot product.
+topics:
+  - product-positioning
+  - competitive-research
 sources:
-  - /tmp/company-brain-research.md
-  - /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T22-39-10-019e43e5-2148-7f80-a2f3-9823dae31139.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T02-37-42-019e2a5a-eb3c-7180-89fb-b5591b3c7d24.jsonl
-  - https://www.ycombinator.com/rfs?year=2025
-  - https://github.com/garrytan/gbrain
-  - https://www.ycombinator.com/companies/hyper-4
-  - https://www.ycombinator.com/launches/QKg-hyper-the-self-driving-company-brain
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
   - id: yc-market-scan
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the YC CLI and Bookface market scan that compared company-brain, codebase-context, PR-review, and agent-memory competitors, then narrowed CodeAlmanac positioning around engineering memory, context freshness, and retrieval.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the YC CLI and Bookface market scan that compared company-brain, codebase-context,
+      PR-review, and agent-memory competitors, then narrowed CodeAlmanac positioning around
+      engineering memory, context freshness, and retrieval.
+  - id: bookface-company-brain-followup
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the Bookface-only follow-up that treated "company brain" as crowded and pushed
+      CodeAlmanac toward engineering memory and agent memory for codebases.
   - id: dosu-experiment-session
     type: transcript
     path: /Users/kushagrachitkara/.claude/projects/-Users-kushagrachitkara-Downloads-reverie-codealmanac/767924bf-14a8-48e3-8c5c-a69523619cb9.jsonl
@@ -26,8 +32,44 @@ sources:
     note: Records the Codex-side Dosu setup experiment, including browser-auth gating, the missing pre-auth MCP config entry, and the conclusion that the deployment still needed a connected source before retrieval would work.
   - id: moxie-comparison
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/06/05/rollout-2026-06-05T12-51-25-019e9957-24f5-76a3-9494-603f667f2bbf.jsonl
-    note: Records the comparison that identified Moxie Docs as a close hosted codebase-documentation competitor.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/05/rollout-2026-06-05T12-51-25-019e9957-24f5-76a3-9494-603f667f2bbf.jsonl
+    note: >-
+      Records the comparison that identified Moxie Docs as a close hosted codebase-documentation
+      competitor.
+  - id: dosu-research-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the Dosu competitor research that compared self-documenting PRs, OSS support
+      automation, hosted knowledge infrastructure, and repo-backed documentation sync against
+      CodeAlmanac's repo-owned memory model.
+  - id: rfs
+    type: web
+    url: https://www.ycombinator.com/rfs?year=2025
+    note: Migrated from legacy sources.
+  - id: gbrain
+    type: web
+    url: https://github.com/garrytan/gbrain
+    note: Migrated from legacy sources.
+  - id: hyper-4
+    type: web
+    url: https://www.ycombinator.com/companies/hyper-4
+    note: Migrated from legacy sources.
+  - id: qkg-hyper-the-self-driving-company-brain
+    type: web
+    url: https://www.ycombinator.com/launches/QKg-hyper-the-self-driving-company-brain
+    note: Migrated from legacy sources.
+  - /tmp/company-brain-research.md
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T22-39-10-019e43e5-2148-7f80-a2f3-9823dae31139.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T02-37-42-019e2a5a-eb3c-7180-89fb-b5591b3c7d24.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
 status: active
 verified: 2026-06-09
 ---
@@ -84,7 +126,11 @@ The codebase-context camp is more crowded than the broad company-brain page orig
 
 [[moxie-docs|Moxie Docs]] is the closest hosted codebase-docs competitor found so far because it combines GitHub App indexing, generated repo documentation, MCP context, pull-request documentation checks, and docs-only cleanup PRs. Its existence makes "AI docs for GitHub repos" too broad as CodeAlmanac positioning; the sharper contrast is governed engineering memory that lives with the repo. [@moxie-comparison]
 
-The same Bookface pass made broad "company brain" a dangerous default category for CodeAlmanac. Memoir, Peppr AI, and Dashworks already occupy versions of hosted company knowledge, living docs, and internal search across Slack, Notion, Drive, email, and other company systems. Datost and Platus show a stronger adjacent pattern: company context becomes easier to sell when attached to a vertical job such as data analysis or legal work. CodeAlmanac should therefore avoid a generic company-brain promise and describe the narrower job it owns: engineering memory and agent memory for codebases. [@yc-market-scan]
+[[dosu|Dosu]] is another close hosted competitor because it combines self-documenting pull requests, existing-doc sync, docs generation, MCP, public-repo support, OSS issue and discussion automation, and direct maintenance of agent instruction files such as `AGENTS.md` and `CLAUDE.md`. It makes the "AI-maintained docs from PRs" pitch too crowded for CodeAlmanac; the better contrast is that CodeAlmanac treats the repo-owned Almanac as canonical governed project memory rather than a hosted knowledge base with repository sync. [@dosu-research-session]
+
+The same Bookface pass made broad "company brain" a dangerous default category for CodeAlmanac. Memoir, Peppr AI, and Dashworks already occupy versions of hosted company knowledge, living docs, and internal search across Slack, Notion, Drive, email, and other company systems. Datost and Platus show a stronger adjacent pattern: company context becomes easier to sell when attached to a vertical job such as data analysis or legal work. CodeAlmanac should therefore avoid a generic company-brain promise and describe the narrower job it owns: engineering memory and agent memory for codebases. [@yc-market-scan] [@bookface-company-brain-followup]
+
+The honest market read is that customers are not usually saying "I want repo-owned Markdown" or "I want a wiki." They are saying that agents lose context, docs and instruction files go stale, senior people repeat architecture and constraints, and tools need trustworthy project-specific context at the moment of work. Repo ownership, Markdown, citations, and Git review are the trust architecture for that need; they should not replace the customer problem in product language. [@bookface-company-brain-followup]
 
 CodeAlmanac should not pitch as if these products do not exist. They validate the same category need. The differentiator is scope and control: CodeAlmanac is for the software-project memory that coding agents need before making changes, not for every Slack thread or CRM object in a company.
 
@@ -154,4 +200,4 @@ The product experience should still move toward [[just-in-time-context-surfacing
 
 ## Related Pages
 
-[[customer-segmentation]] explains the customer groups CodeAlmanac should prioritize before broad company-brain markets. [[github-native-wiki-maintenance]] explains the remote CodeAlmanac product thesis: a GitHub App and hosted maintenance layer over repo-owned `.almanac/` pages, not a hosted canonical memory store. [[almanac-product-family]] explains the broader product vocabulary for scoped almanacs over codebases, personal contexts, companies, projects, and research corpora. [[pitch-deck-fundraising]] explains how this category should be compressed into an investor deck. [[agentmemory-competitor]] explains the strongest adjacent local-daemon coding-agent memory product found in the 2026-05-15 comparison. [[codex-supermemory]] explains the lighter Codex hook integration that makes Supermemory feel immediate after install. [[mem0]] explains an operational memory-store competitor whose extraction and retrieval model clarifies the difference between runtime recall and repo-governed project knowledge. [[just-in-time-context-surfacing]] explains the product mechanism that would make repo-owned memory automatic without becoming uncited memory injection. [[wiki-lifecycle-operations]] explains the Build, Absorb, and Garden operations that keep the wiki current. [[farzapedia]] explains an adjacent AI-maintained wiki reference whose synthesis-first writing rules shaped Almanac prompts.
+[[customer-segmentation]] explains the customer groups CodeAlmanac should prioritize before broad company-brain markets. [[github-native-wiki-maintenance]] explains the remote CodeAlmanac product thesis: a GitHub App and hosted maintenance layer over repo-owned `.almanac/` pages, not a hosted canonical memory store. [[almanac-product-family]] explains the broader product vocabulary for scoped almanacs over codebases, personal contexts, companies, projects, and research corpora. [[pitch-deck-fundraising]] explains how this category should be compressed into an investor deck. [[agentmemory-competitor]] explains the strongest adjacent local-daemon coding-agent memory product found in the 2026-05-15 comparison. [[codex-supermemory]] explains the lighter Codex hook integration that makes Supermemory feel immediate after install. [[mem0]] explains an operational memory-store competitor whose extraction and retrieval model clarifies the difference between runtime recall and repo-governed project knowledge. [[moxie-docs]] and [[dosu]] explain the close hosted docs-maintenance competitors that make generic "AI codebase docs" positioning weak. [[just-in-time-context-surfacing]] explains the product mechanism that would make repo-owned memory automatic without becoming uncited memory injection. [[wiki-lifecycle-operations]] explains the Build, Absorb, and Garden operations that keep the wiki current. [[farzapedia]] explains an adjacent AI-maintained wiki reference whose synthesis-first writing rules shaped Almanac prompts.

@@ -1,202 +1,505 @@
 ---
 title: GitHub-Native Wiki Maintenance
-summary: GitHub-native wiki maintenance is the remote CodeAlmanac product thesis where hosted automation surfaces and updates repo-owned Almanac memory through normal GitHub workflows.
-topics: [product-positioning, competitive-research, wiki-design]
+summary: >-
+  GitHub-native wiki maintenance is the remote CodeAlmanac product thesis where hosted automation
+  surfaces and updates repo-owned Almanac pages through normal GitHub workflows.
+topics:
+  - product-positioning
+  - competitive-research
+  - wiki-design
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
-  - docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
-  - docs/research/2026-05-29-github-context-connectors.md
-  - docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
-  - docs/strategy/2026-05-29-open-source-almanac-concept.md
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-  - https://docs.coderabbit.ai/platforms/github-com
-  - https://docs.coderabbit.ai/knowledge-base
-  - https://www.greptile.com/docs/introduction
-  - https://www.greptile.com/docs/how-greptile-works/graph-based-codebase-context
-  - https://supermemory.ai/docs/concepts/how-it-works
-  - https://docs.github.com/en/webhooks/webhook-events-and-payloads
   - id: github-check-runs-api
     type: web
     url: https://docs.github.com/en/rest/checks/runs?apiVersion=2022-11-28
-    retrieved_at: 2026-06-02
-    note: Documents check-run output actions, their button labels, identifiers, descriptions, and the three-action limit for GitHub App check runs.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents check-run output actions, their button labels, identifiers, descriptions, and the
+      three-action limit for GitHub App check runs.
   - id: github-check-run-webhooks
     type: web
-    url: https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=requested_action#check_run
-    retrieved_at: 2026-06-02
-    note: Documents the check_run webhook and the Checks permission requirement for requested_action events.
-  - https://docs.github.com/en/rest/pulls/pulls
-  - https://docs.github.com/en/rest/repos/contents
-  - https://www.mintlify.com/docs/organize/settings
-  - https://www.mintlify.com/docs/deploy/github
-  - https://www.mintlify.com/docs/deploy/preview-deployments
+    url: >-
+      https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=requested_action#check_run
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents the check_run webhook and the Checks permission requirement for requested_action
+      events.
   - id: yc-market-scan
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the YC CLI market scan that refined the GitHub-native roadmap around PR context cards, maintainer notes, Almanac update PRs, session capture, repeated-answer detection, and agent read surfaces.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the YC CLI market scan that refined the GitHub-native roadmap around PR context cards,
+      maintainer notes, Almanac update PRs, session capture, repeated-answer detection, and agent
+      read surfaces.
   - id: github-app-flow-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the discussion that a real GitHub App needs a deployed webhook receiver and that a GitHub Action can prototype the loop before a hosted App validates paid team use.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the discussion that a real GitHub App needs a deployed webhook receiver and that a
+      GitHub Action can prototype the loop before a hosted App validates paid team use.
   - id: almanac-update-pr-deploy-risk-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the discussion that same-repo Almanac update PRs can trigger CI, preview deployments, branch protection, and merge-time deploy workflows unless repositories configure path filters or choose a lower-risk Almanac location.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the discussion that same-repo Almanac update PRs can trigger CI, preview deployments,
+      branch protection, and merge-time deploy workflows unless repositories configure path filters
+      or choose a lower-risk Almanac location.
   - id: same-pr-almanac-update-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the decision that PR UI should say "Almanac update" rather than "memory update" and that Almanac can add wiki changes to the same pull request branch only when the author or maintainer approves or repo-visible auto-apply is enabled.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the decision that PR UI should say "Almanac update" rather than "memory update" and
+      that Almanac can add wiki changes to the same pull request branch only when the author or
+      maintainer approves or repo-visible auto-apply is enabled.
   - id: github-mcp-transport-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the settled boundary that the GitHub App owns events, permissions, and publishing while GitHub MCP or native API wrappers are possible agent source-tool transports, with Daytona-like sandboxing belonging to hosted worker infrastructure.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the settled boundary that the GitHub App owns events, permissions, and publishing
+      while GitHub MCP or native API wrappers are possible agent source-tool transports, with
+      Daytona-like sandboxing belonging to hosted worker infrastructure.
   - id: github-mcp-deepwiki-answer
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the DeepWiki answer that local or Docker `github/github-mcp-server` should accept GitHub App installation tokens through `GITHUB_PERSONAL_ACCESS_TOKEN`, with `GITHUB_TOOLSETS=pull_requests,repos,issues,actions` and `GITHUB_READ_ONLY=true`, while remote MCP remains less documented for installation-token use.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the DeepWiki answer that local or Docker `github/github-mcp-server` should accept
+      GitHub App installation tokens through `GITHUB_PERSONAL_ACCESS_TOKEN`, with
+      `GITHUB_TOOLSETS=pull_requests,repos,issues,actions` and `GITHUB_READ_ONLY=true`, while remote
+      MCP remains less documented for installation-token use.
   - id: daytona-sandbox-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the Daytona sandbox sketch for running one hosted Almanac pull-request job in an isolated checkout with GitHub App credentials, source tools, diff validation, optional same-branch publishing, and sandbox teardown.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the Daytona sandbox sketch for running one hosted Almanac pull-request job in an
+      isolated checkout with GitHub App credentials, source tools, diff validation, optional
+      same-branch publishing, and sandbox teardown.
   - id: hosted-agent-runner-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the hosted-runner split where Python worker orchestration may run a controlled agent loop using CodeAlmanac prompts and conventions instead of depending on the local CodeAlmanac CLI or desktop coding-agent CLIs.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the hosted-runner split where Python worker orchestration may run a controlled agent
+      loop using CodeAlmanac prompts and conventions instead of depending on the local CodeAlmanac
+      CLI or desktop coding-agent CLIs.
   - id: daytona-docs
     type: web
     url: https://www.daytona.io/docs/
-    retrieved_at: 2026-06-02
-    note: Documents Daytona sandboxes, SDK creation, process execution, filesystem operations, lifecycle management, and agent workflow positioning.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents Daytona sandboxes, SDK creation, process execution, filesystem operations, lifecycle
+      management, and agent workflow positioning.
   - id: daytona-codex-sdk-guide
     type: web
     url: https://www.daytona.io/docs/en/guides/codex/codex-sdk-interactive-terminal-sandbox/
-    retrieved_at: 2026-06-02
+    retrieved_at: 2026-06-02T00:00:00.000Z
     note: Documents Daytona's pattern for running a Codex SDK coding agent workflow in a sandbox.
   - id: e2b-docs
     type: web
     url: https://www.e2b.dev/docs
-    retrieved_at: 2026-06-02
-    note: Documents E2B sandboxes, coding-agent use cases, GitHub Actions CI/CD use, commands, filesystem access, and agent-in-sandbox examples.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents E2B sandboxes, coding-agent use cases, GitHub Actions CI/CD use, commands,
+      filesystem access, and agent-in-sandbox examples.
   - id: modal-sandboxes
     type: web
     url: https://modal.com/docs/guide/sandboxes
-    retrieved_at: 2026-06-02
-    note: Documents Modal Sandboxes as a substrate for running arbitrary or untrusted code in isolated environments.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents Modal Sandboxes as a substrate for running arbitrary or untrusted code in isolated
+      environments.
   - id: modal-job-processing
     type: web
     url: https://modal.com/docs/guide/job-queue
-    retrieved_at: 2026-06-02
-    note: Documents Modal Functions as a scalable async job queue through deployed functions, `.spawn()`, polling, retries, timeouts, and concurrency controls.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents Modal Functions as a scalable async job queue through deployed functions,
+      `.spawn()`, polling, retries, timeouts, and concurrency controls.
   - id: hosted-github-app-runtime-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: "Records the hosted GitHub App runtime discussion: usealmanac API, Postgres/Supabase, Doppler, Modal Function, Modal Sandbox, GitHub MCP or Octokit source tools, proposal storage as an approval-first option, diff validation, and same-PR publishing."
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the hosted GitHub App runtime discussion: usealmanac API, Postgres/Supabase, Doppler,
+      Modal Function, Modal Sandbox, GitHub MCP or Octokit source tools, proposal storage as an
+      approval-first option, diff validation, and same-PR publishing.
   - id: hosted-gh-cli-spike-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-04 Modal spike decision to run Absorb with `gh` over a GitHub App installation token, use no pre-fetched source bundle beyond minimal run metadata, treat `connectors` as an inert legacy field for hosted GitHub, and prove GitHub permissions through explicit worker assertions.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-04 Modal spike decision to run Absorb with `gh` over a GitHub App
+      installation token, use no pre-fetched source bundle beyond minimal run metadata, treat
+      `connectors` as an inert legacy field for hosted GitHub, and prove GitHub permissions through
+      explicit worker assertions.
   - id: hosted-github-direct-commit-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the later critique that storing proposed same-PR diffs creates backend complexity, so the MVP should use GitHub as the diff and review surface and reserve proposal storage or pending branches for a later approval-first mode.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the later critique that storing proposed same-PR diffs creates backend complexity, so
+      the MVP should use GitHub as the diff and review surface and reserve proposal storage or
+      pending branches for a later approval-first mode.
   - id: pr-evolution-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: "Records the settled PR lifecycle model: one persistent Almanac thread or check per pull request, repeatable runs keyed to head SHAs, PR-level approval as ongoing permission for that PR, no draft noise before ready_for_review, and fork PRs handled through post-merge follow-up Almanac update PRs."
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the settled PR lifecycle model: one persistent Almanac thread or check per pull
+      request, repeatable runs keyed to head SHAs, PR-level approval as ongoing permission for that
+      PR, no draft noise before ready_for_review, and fork PRs handled through post-merge follow-up
+      Almanac update PRs.
   - id: hosted-github-first-slice-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the implementation sequencing decision that the first hosted slice should prove the GitHub App, Modal job, same-PR commit, check-run update, and Almanac-root diff validation loop with a fake Almanac change before adding an AI agent.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the implementation sequencing decision that the first hosted slice should prove the
+      GitHub App, Modal job, same-PR commit, check-run update, and Almanac-root diff validation loop
+      with a fake Almanac change before adding an AI agent.
   - id: hosted-action-transport-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-03 correction that v1 should not depend on @-mention comment commands or pretend issue comments have native action buttons; GitHub check-run actions are the clean action transport.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-03 correction that v1 should not depend on @-mention comment commands or
+      pretend issue comments have native action buttons; GitHub check-run actions are the clean
+      action transport.
+  - id: pr-surface-followup-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the PR #12 follow-up that separated GitHub Actions CI checks from Almanac checks,
+      found that the smoke PR did not prove a clean requested_action click path, and revised the
+      product surface toward comments as the primary human thread with checks as lightweight status
+      and action plumbing.
+  - id: pr-ux-flow-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the final PR UX flow: trusted same-repo PRs auto-update by default, one sticky Almanac
+      comment explains state and changed pages, one Almanac check reports compact status and
+      actions, ask mode waits for maintainer action, fork PRs wait for a follow-up path after merge,
+      and the agent should write the complete comment markdown instead of the backend composing
+      rationale objects.
   - id: hosted-backend-placement-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-03 decision that hosted backend implementation belongs in usealmanac, should follow openalmanac backend organization patterns, and should treat almanac-backend as old-product history rather than the code home.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-03 decision that hosted backend implementation belongs in usealmanac,
+      should follow openalmanac backend organization patterns, and should treat almanac-backend as
+      old-product history rather than the code home.
   - id: hosted-cloud-resource-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the hosted deployment setup decisions around the codealmanac resource namespace, active Render and Supabase workspaces, region choice, Doppler config policy, and the Render service's failed first deploy against a main commit without backend/.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the hosted deployment setup decisions around the codealmanac resource namespace,
+      active Render and Supabase workspaces, region choice, Doppler config policy, and the Render
+      service's failed first deploy against a main commit without backend/.
   - id: hosted-github-app-architecture-note
     type: file
     path: docs/plans/2026-06-02-hosted-github-app-architecture.md
-    note: "Captures the working hosted GitHub App architecture: usealmanac API, Postgres or Supabase, Modal job and sandbox, GitHub MCP or source tools, agent runtime, diff validation, and publisher flow."
+    note: >-
+      Captures the working hosted GitHub App architecture: usealmanac API, Postgres or Supabase,
+      Modal job and sandbox, GitHub MCP or source tools, agent runtime, diff validation, and
+      publisher flow.
   - id: hosted-requirements-log
     type: file
     path: docs/requirements_log.md
-    note: "Records settled requirements for hosted GitHub App language, PR modes, repo-owned Almanac updates, settings, worker model, GitHub access, secrets, platform direction, proposal lifecycle, and delivery abstraction."
+    note: >-
+      Records settled requirements for hosted GitHub App language, PR modes, repo-owned Almanac
+      updates, settings, worker model, GitHub access, secrets, platform direction, proposal
+      lifecycle, and delivery abstraction.
   - id: pr-update-loop-plan
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the final 2026-06-05 implementation plan for finishing the hosted PR update loop on `usealmanac` dev, including GitHub App JWT issuer configuration, durable update state, check-run actions, Modal invocation, real CodeAlmanac execution, delivery, fork handling, bot-loop prevention, tests, and live smoke gates.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the final 2026-06-05 implementation plan for finishing the hosted PR update loop on
+      `usealmanac` dev, including GitHub App JWT issuer configuration, durable update state,
+      check-run actions, Modal invocation, real CodeAlmanac execution, delivery, fork handling,
+      bot-loop prevention, tests, and live smoke gates.
   - id: pr-update-implementation-log
     type: manual
-    note: Records the 2026-06-05 hosted PR update loop implementation decisions and verification results on the `usealmanac` dev branch; source path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/plans/2026-06-04-backend-architecture-refactor-log.md.
+    note: >-
+      Records the 2026-06-05 hosted PR update loop implementation decisions and verification results
+      on the `usealmanac` dev branch; source path is
+      /Users/rohan/Desktop/Projects/usealmanac-dev/docs/plans/2026-06-04-backend-architecture-refactor-log.md.
   - id: pr-update-live-smoke-runbook
     type: manual
-    note: Defines the production-readiness smoke test for the hosted GitHub App PR update loop, including deploy preconditions, same-repo PR behavior, database checks, and rollback; source path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/runbooks/pr-update-live-smoke.md.
+    note: >-
+      Defines the production-readiness smoke test for the hosted GitHub App PR update loop,
+      including deploy preconditions, same-repo PR behavior, database checks, and rollback; source
+      path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/runbooks/pr-update-live-smoke.md.
   - id: pr-update-production-smoke-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-05 production smoke that retried the Almanac check after the model quota reset, fixed duplicate GitHub webhook delivery processing, redeployed Render at commit 05ead0e, and verified a same-repository Almanac bot commit on PR 12.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 production smoke that retried the Almanac check after the model quota
+      reset, fixed duplicate GitHub webhook delivery processing, redeployed Render at commit
+      05ead0e, verified a same-repository Almanac bot commit on PR 12, later found that a terminal
+      check attached to the pre-bot head SHA falls out of the current PR check summary, and
+      clarified the check-run versus sticky-comment UI contract.
   - id: extensible-update-pipeline-design
     type: manual
-    note: Records the future hosted update-pipeline shape, including Trigger -> Source -> Operation -> Policy -> Run -> Bundle -> Select -> Deliver, source-blind delivery strategies, and deferred settings/source-ref migrations; source path is /Users/rohan/Desktop/Projects/usealmanac-dev/docs/designs/2026-06-05-extensible-update-pipeline.md.
+    note: >-
+      Records the future hosted update-pipeline shape, including Trigger -> Source -> Operation ->
+      Policy -> Run -> Bundle -> Select -> Deliver, source-blind delivery strategies, and deferred
+      settings/source-ref migrations; source path is
+      /Users/rohan/Desktop/Projects/usealmanac-dev/docs/designs/2026-06-05-extensible-update-pipeline.md.
   - id: hosted-async-completion-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: "Records the 2026-06-05 async-completion decision boundary for long-running Modal agent runs: webhook handlers must return quickly, Modal callback is the recommended v1 completion path, and backend polling remains a fallback."
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 async-completion decision boundary for long-running Modal agent runs:
+      webhook handlers must return quickly, Modal callback is the recommended v1 completion path,
+      and backend polling remains a fallback.
   - id: hosted-callback-security-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-05 hosted callback security decision to authenticate Modal completion with an internal shared-secret header, keep GitHub webhook authentication on GitHub HMAC signatures, and use a stale-run sweeper only as recovery.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 hosted callback security decision to authenticate Modal completion with
+      an internal shared-secret header, keep GitHub webhook authentication on GitHub HMAC
+      signatures, and use a stale-run sweeper only as recovery.
+  - id: hosted-manual-alignment-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 architecture review after the production smoke: durable run rows must
+      commit before Modal spawn, delivery execution must be source-blind after delivery selection,
+      and those hosted-loop invariants belong in repo-specific manual doctrine rather than the
+      universal manual.
+  - id: hosted-terminal-race-hardening-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 terminal-race hardening after review: Modal spawn recording must not
+      regress terminal runs, must still persist the Modal call id, and must suppress stale duplicate
+      check publication when completion wins before the original webhook records a check id.
   - id: hosted-settings-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the v1 settings decision that hosted dashboard or database settings, not repo configuration, own GitHub App behavior; new installs default to ask on future triggers without backfilling existing pull requests.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the v1 settings decision that hosted dashboard or database settings, not repo
+      configuration, own GitHub App behavior; new installs default to ask on future triggers without
+      backfilling existing pull requests.
   - id: hosted-authorization-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: "Records the hosted GitHub App authorization decision: centralize server-side authorization as a v1 RBAC/ABAC service backed by GitHub repository permissions and defer OPA, Cedar, or OpenFGA until org policy complexity appears."
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the hosted GitHub App authorization decision: centralize server-side authorization as
+      a v1 RBAC/ABAC service backed by GitHub repository permissions and defer OPA, Cedar, or
+      OpenFGA until org policy complexity appears.
   - id: hosted-pr-rerun-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the v1 decision that approving Almanac on one pull request grants ongoing permission for that pull request, with reruns triggered by new commits, submitted reviews, and review comments rather than every issue comment.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the v1 decision that approving Almanac on one pull request grants ongoing permission
+      for that pull request, with reruns triggered by new commits, submitted reviews, and review
+      comments rather than every issue comment.
   - id: github-app-registration-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: "Records the 2026-06-03 GitHub App registration choices for Almanac Bot: installation auth only, `Any account` install location, v1 repository permissions, selected webhook events, Doppler secret storage, and the final `github_app:true` production health check."
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-03 GitHub App registration choices for Almanac Bot: installation auth
+      only, `Any account` install location, v1 repository permissions, selected webhook events,
+      Doppler secret storage, and the final `github_app:true` production health check.
   - id: hosted-backend-service-boundary-session
     type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the 2026-06-05 backend structure discussion after the first webhook slice, including the decision to copy OpenAlmanac backend principles, use thin routes and an Almanac facade, keep schemas/models near owning services, and make updates the product lifecycle service.
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-05 backend structure discussion after the first webhook slice, including
+      the decision to copy OpenAlmanac backend principles, use thin routes and an Almanac facade,
+      keep schemas/models near owning services, and make updates the product lifecycle service.
+  - id: hosted-dashboard-review-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 hosted dashboard architecture review: GitHub remains the PR-time action
+      surface, the dashboard is a BFF for settings, observability, wiki browsing, account/repo
+      management, and billing, tenant identity is GitHub App installation, authorization stays
+      separate from billing entitlement, current auto mode updates PR branches rather than merge
+      events, OAuth sessions should use opaque cookies with server-side encrypted tokens, and Autumn
+      billing should be a seam unless charging is imminent.
+  - id: hosted-dashboard-auth-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 dashboard-auth decision: depend on Supabase Auth for frontend and
+      backend dashboard identity/session, use GitHub OAuth through Supabase for v1 login, keep
+      GitHub App installation tokens for repository automation and wiki reads, and require signed-in
+      user permission checks before serving private wiki content.
+  - id: hosted-dashboard-wiki-ref-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 dashboard wiki-reader terminology decision: wiki reads are
+      Git-ref-aware, `ref` names default, pull-request, or branch versions of the Almanac, and
+      `source` remains reserved for raw material the agent learns from.
+  - id: hosted-dashboard-wiki-reader-review-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the late 2026-06-06 focused review finding that dashboard wiki listing may treat a
+      missing `.almanac/pages` directory as an empty wiki, but must not convert upstream GitHub
+      integration failures into successful empty wiki responses.
+  - id: hosted-dashboard-identity-access-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 service-boundary and security discussion that dashboard identity
+      authenticates Supabase users, accounts resolves linked provider identities, repository action
+      checks remain a separate access service, user-editable metadata must not become authorization
+      input, authorization-bearing GitHub identity should be captured from trusted Supabase
+      identities or app metadata into product-owned verified link state, and GitHub permission
+      checks need a short cache.
+  - id: hosted-dashboard-identity-minimal-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 minimal identity-model decision: Supabase identities and GitHub remain
+      the source of truth for external account facts, so v1 should not create GitHubAccountSnapshot,
+      ConnectedIdentity, DashboardUser, DashboardUserAuth, DashboardUserRecord, or a local users
+      table without a concrete product-owned need.
+  - id: hosted-update-outcome-publication-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the 2026-06-06 service-boundary correction that publishing update outcomes to GitHub
+      checks should be `GitHubAppService.publish_update_check(...)`, with `UpdatesService` wired
+      into `GitHubAppService` through the `Almanac` composition root, not a vague top-level Almanac
+      facade method or a new orchestration service.
+  - id: supabase-github-auth-docs
+    type: web
+    url: https://supabase.com/docs/guides/auth/social-login/auth-github
+    retrieved_at: 2026-06-06T00:00:00.000Z
+    note: >-
+      Documents Supabase Auth GitHub login through a GitHub OAuth App, GitHub OAuth credentials in
+      Supabase, `signInWithOAuth({ provider: "github" })`, and SSR callback code exchange.
+  - id: supabase-provider-token-docs
+    type: web
+    url: https://supabase.com/docs/guides/auth/social-login
+    retrieved_at: 2026-06-06T00:00:00.000Z
+    note: >-
+      Documents provider token behavior: applications can use provider tokens for OAuth-provider API
+      calls, Supabase does not refresh those tokens, and provider tokens are intentionally not
+      stored in the project database.
   - id: hosted-almanac-updates-design
     type: manual
-    note: "Design note at /Users/rohan/Desktop/Projects/usealmanac/docs/designs/2026-06-04-almanac-updates-service.md records the hosted update-service structure, typed trigger boundary, main webhook and approval flows, state model, and boundary rules for the usealmanac backend; the later service-boundary session finalized the folder name as services/updates."
+    note: >-
+      Design note at
+      /Users/rohan/Desktop/Projects/usealmanac/docs/designs/2026-06-04-almanac-updates-service.md
+      records the hosted update-service structure, typed trigger boundary, main webhook and approval
+      flows, state model, and boundary rules for the usealmanac backend; the later service-boundary
+      session finalized the folder name as services/updates.
   - id: github-mcp-host-integration
     type: web
     url: https://github.com/github/github-mcp-server/blob/main/docs/host-integration.md
-    retrieved_at: 2026-06-02
-    note: Documents local and remote GitHub MCP authentication, including the requirement for a valid access token and OAuth as the recommended remote flow.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents local and remote GitHub MCP authentication, including the requirement for a valid
+      access token and OAuth as the recommended remote flow.
   - id: github-mcp-policies
     type: web
     url: https://github.com/github/github-mcp-server/blob/main/docs/policies-and-governance.md
-    retrieved_at: 2026-06-02
-    note: Documents GitHub MCP deployment modes, enterprise controls, PATs, OAuth, and GitHub App installation-token governance.
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents GitHub MCP deployment modes, enterprise controls, PATs, OAuth, and GitHub App
+      installation-token governance.
   - id: github-app-installation-auth
     type: web
-    url: https://docs.github.com/en/enterprise-cloud@latest/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
-    retrieved_at: 2026-06-02
-    note: Documents GitHub App installation access tokens, one-hour expiry, REST/GraphQL use, Git clone use through Contents permission, and Octokit.js installation authentication.
+    url: >-
+      https://docs.github.com/en/enterprise-cloud@latest/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
+    retrieved_at: 2026-06-02T00:00:00.000Z
+    note: >-
+      Documents GitHub App installation access tokens, one-hour expiry, REST/GraphQL use, Git clone
+      use through Contents permission, and Octokit.js installation authentication.
+  - id: github-com
+    type: web
+    url: https://docs.coderabbit.ai/platforms/github-com
+    note: Migrated from legacy sources.
+  - id: knowledge-base
+    type: web
+    url: https://docs.coderabbit.ai/knowledge-base
+    note: Migrated from legacy sources.
+  - id: introduction
+    type: web
+    url: https://www.greptile.com/docs/introduction
+    note: Migrated from legacy sources.
+  - id: graph-based-codebase-context
+    type: web
+    url: https://www.greptile.com/docs/how-greptile-works/graph-based-codebase-context
+    note: Migrated from legacy sources.
+  - id: how-it-works
+    type: web
+    url: https://supermemory.ai/docs/concepts/how-it-works
+    note: Migrated from legacy sources.
+  - id: webhook-events-and-payloads
+    type: web
+    url: https://docs.github.com/en/webhooks/webhook-events-and-payloads
+    note: Migrated from legacy sources.
+  - id: pulls
+    type: web
+    url: https://docs.github.com/en/rest/pulls/pulls
+    note: Migrated from legacy sources.
+  - id: contents
+    type: web
+    url: https://docs.github.com/en/rest/repos/contents
+    note: Migrated from legacy sources.
+  - id: settings
+    type: web
+    url: https://www.mintlify.com/docs/organize/settings
+    note: Migrated from legacy sources.
+  - id: github
+    type: web
+    url: https://www.mintlify.com/docs/deploy/github
+    note: Migrated from legacy sources.
+  - id: preview-deployments
+    type: web
+    url: https://www.mintlify.com/docs/deploy/preview-deployments
+    note: Migrated from legacy sources.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
+  - docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
+  - docs/research/2026-05-29-github-context-connectors.md
+  - docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
+  - docs/strategy/2026-05-29-open-source-almanac-concept.md
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 status: active
-verified: 2026-06-05
+verified: 2026-06-06T00:00:00.000Z
+
 ---
 
 # GitHub-Native Wiki Maintenance
 
-GitHub-native wiki maintenance is the remote CodeAlmanac product direction that keeps the repository as the canonical memory artifact while using hosted infrastructure for GitHub event handling, indexing, checks, comments, scheduled maintenance, and Almanac update pull requests. The durable product boundary is that the hosted service can compute, cache, search, and propose, but durable project memory lands as reviewed markdown changes in the repository.
+GitHub-native wiki maintenance is the remote CodeAlmanac product direction that keeps the repository as the canonical Almanac artifact while using hosted infrastructure for GitHub event handling, indexing, checks, comments, scheduled maintenance, and Almanac update pull requests. The durable product boundary is that the hosted service can compute, cache, search, and propose, but durable project knowledge lands as reviewed markdown changes in the repository.
 
 The 2026-05-28 remote-product research session clarified the distinction from hosted memory products. A remote CodeAlmanac should not be a hosted replacement for repo-owned Almanac pages, because that would weaken the branch, review, provenance, blame, rollback, and local-agent trust boundary that makes CodeAlmanac different from broad memory layers such as [[codex-supermemory]] and company-brain products discussed in [[company-brain]].
 
@@ -240,7 +543,7 @@ The remote product should make local wiki knowledge available at the moments whe
 
 1. On PR open or update, register source handles for the pull request, diff or commit range, review thread, linked issues, changed files, and target-branch Almanac root.
 2. Run a small review-note agent with source and wiki tools when the repository has enabled PR-time notes.
-3. Post a short "project memory for this PR" comment only when the agent can cite existing memory or explicit source material that changes review behavior.
+3. Post a short "Almanac context for this PR" comment only when the agent can cite existing Almanac pages or explicit source material that changes review behavior.
 4. After merge, run Absorb or Garden with source handles for the merged diff, PR discussion, issues, reviews, and branch wiki.
 5. Open a separate Almanac update PR when durable knowledge changed.
 6. Keep quiet when no useful wiki action exists.
@@ -321,6 +624,8 @@ The service split should be product-capability first. `clients/github.py` owns r
 
 The `updates` boundary should receive product-shaped triggers such as `PullRequestChanged`, `PullRequestDiscussionChanged`, `PullRequestMerged`, `CheckActionRequested`, `ManualUpdateRequested`, and `ScheduledDigestDue`. GitHub-specific payload parsing stays in `github_app`, which converts webhooks into normalized trigger facts such as repository ID, pull request number, head SHA, base branch, fork status, actor, event kind, and source delivery ID. `almanac.updates.handle_trigger(trigger)` should return outcomes such as ignore, prompt, run, or wait-for-merge, and `almanac.updates.handle_approval(action, actor)` should preserve authorized user intent before creating worker runs. Routes should publish the returned surface through `github_app.checks` instead of knowing whether the product skipped, prompted, ran, or deferred the work. [@hosted-almanac-updates-design]
 
+Check publication plus check-run-id persistence should be extracted out of routers, but it should not become a vague top-level `almanac.publish_update_outcome(...)` facade method or a new orchestration service. Publishing an `UpdateTriggerOutcome` is GitHub App surface work: transform the outcome into a check payload, create or update the GitHub check run, and record a newly created `check_run_id` through the updates service. The lightweight hosted-backend shape is to wire `GitHubAppService` with `UpdatesService` through the `Almanac` service registry and expose a concrete `publish_update_check(outcome)` method. That follows the old `almanac-backend` composition-root pattern without turning the top-level `Almanac` object into a business-verb facade. [@hosted-update-outcome-publication-session]
+
 The design's negative boundary rules are part of the architecture. Routers should not call Modal or create check-run markdown directly, `updates` should not verify webhook signatures or read raw GitHub payloads, `github_app` should not mint installation tokens or decide product policy, and worker code should report run outcomes rather than owning product truth. An `events` service should be deferred until more than one real subscriber needs an internal event bus. Dashboard-owned repository settings remain under `repositories` for v1 rather than moving into repo config before the hosted loop proves itself. [@hosted-backend-service-boundary-session] [@hosted-almanac-updates-design]
 
 The hosted deployment resource namespace is `codealmanac`, while the frontend project and backend code home remain `usealmanac`. Existing provider state should guide placement instead of names alone: Render's active `openalmanac` backend lived in the `Almanac` workspace and the `virginia` region, while Supabase active projects were visible under the `Reverie` organization with `OpenAlmanac` in `us-east-1` and `Almanac` in `us-east-2`. The setup session therefore treated `us-east-1` as the preferred new Supabase region for overlap with Render Virginia and treated Supabase `micro` as the minimum paid-plan size after `nano` was rejected. Doppler should mirror the existing projects' pattern: deployment uses `codealmanac/prd`, local personal work uses `codealmanac/dev_personal`, and values can match early on while still living in the environment-specific config. Render service creation succeeded after private-repository access was available, but the first deploy failed because Render checked out a `main` commit that did not contain `backend/`; pushing the backend scaffold to Render's deployed branch is the next deployment gate. [@hosted-cloud-resource-session]
@@ -349,6 +654,38 @@ Newly installed repositories should default to `ask` and begin on future trigger
 
 Authorization should be a server-side product service, not checks scattered through webhook handlers or UI button visibility. The v1 shape is `authorize(user, action, resource, context) -> allow | deny`, backed by GitHub repository permissions and PR state. `Update this PR` and `Skip this PR` require write, maintain, or admin permission on the repository; `Always update in this repo` and repository settings changes require maintain or admin permission; dashboard read paths can use read permission. The backend must identify the GitHub sender and re-run authorization before starting a Modal job, changing repository settings, committing to a branch, or publishing an Almanac update PR. Unauthorized clicks should create an audit event and redraw the prior GitHub comment or check state with a denial note; they must not set the pull request to active, change repository settings, or enqueue a run. RBAC and ABAC are enough for v1 because GitHub role and resource attributes carry the important decisions; OPA/Rego, Cedar, OpenFGA, or Zanzibar-style relationship authorization should remain later options for complex organization and team policy. [@hosted-authorization-session]
 
+The hosted dashboard should be a BFF and user-auth layer over existing hosted services, not a second product engine. GitHub remains the PR-time action surface for `Update this PR`, check status, and same-branch Almanac commits; the dashboard covers the work GitHub cannot do well: repository and installation selection, settings, run history and observability, hosted wiki browsing, account management, and billing. The dashboard should be repo-centric because users ask what Almanac is doing in a specific repository before they ask for an organization-wide memory product. [@hosted-dashboard-review-session]
+
+Dashboard tenancy should be the GitHub App installation, not the individual user who installed the app. GitHub-derived authorization and billing entitlement must stay separate: authorization answers whether a user may read or change a repository or installation resource, while billing answers whether the installation has capacity to run hosted work. GitHub OAuth should use an opaque signed session cookie with encrypted OAuth tokens stored server-side, rather than putting encrypted GitHub tokens directly in cookies, because the dashboard will call GitHub repeatedly and needs revocation, rotation, and audit control. [@hosted-dashboard-review-session]
+
+Supabase Auth is the v1 dashboard identity and session layer on both frontend and backend. The frontend should use the Supabase client for GitHub OAuth login, session state, and logout. The backend should verify the Supabase session or JWT, read the Supabase user and linked GitHub identity, and then apply Almanac authorization policy over GitHub repository permissions. Almanac should not build custom `users` and `user_identities` tables for v1 because Supabase already owns stable users, provider identities, identity linking, sessions, and future enterprise identity paths. [@hosted-dashboard-auth-session] [@supabase-github-auth-docs]
+
+The v1 identity model should stay smaller than the earlier service sketches. Supabase `auth.users` and `auth.identities` own app users and linked login methods, while GitHub owns repository permissions and current provider account facts. Almanac should not create `GitHubAccountSnapshot`, `ConnectedIdentity`, `DashboardUser`, `DashboardUserAuth`, `DashboardUserRecord`, or a broad local `users` table unless a product-owned fact needs storage. Valid local tables are product state, durable audit, billing, repository settings, pull-request state, run state, webhook delivery dedupe, a measured cache, or a verified linked-account row for an authorization-bearing external identity. [@hosted-dashboard-identity-minimal-session] [@hosted-dashboard-identity-access-session]
+
+The dashboard service boundary should separate identity, accounts, and access. `services/identity` owns Supabase token verification and returns an authenticated app user. `services/accounts` owns linked external identities and may wrap Supabase `auth.identities` for GitHub, Google, or WorkOS without leaking Supabase's storage shape to the rest of the backend. Its core API should be provider-parameterized, such as `accounts.require_linked_account(user, provider=AccountProvider.GITHUB)`, rather than a GitHub-only `github_account_for(...)` helper. `services/access` owns repository-specific action checks using GitHub App installation facts, GitHub collaborator permissions, and Almanac product policy. The stable browser flow is `identity.authenticate(token) -> accounts.require_linked_account(user, provider=GITHUB) -> repositories.get_repository(repo_id) -> access.require_repository_action(github_login, action, repository)`, while GitHub webhooks build the GitHub login directly from the signed payload and reuse the same access policy. `accounts` can start as a small identity-adjacent helper if v1 only has GitHub, but the named boundary is useful because later Google, GitHub, and WorkOS account facts should not be folded into repository authorization. A broad actor framework should wait until more than the browser and webhook paths need it. [@hosted-dashboard-identity-access-session]
+
+Per-request dashboard authentication should split "who is signed in" from "which external account may authorize repository actions." `identity.authenticate(token)` should verify the Supabase JWT locally through claims or JWKS behavior and return an `AuthenticatedUser` for the signed-in Supabase user. That local JWT path is trusted for the Supabase user identity, but it should not be assumed to contain the trusted GitHub account link because Supabase access tokens commonly expose user metadata and app metadata but not the full provider `identities[]` record. [@hosted-dashboard-identity-access-session]
+
+Authorization-bearing GitHub identity must never come from Supabase `user_metadata` or `raw_user_meta_data`. Those fields are user-editable, so trusting `user_metadata.user_name` would let an attacker set their GitHub login string to a repository admin's login and pass a downstream GitHub permission check as the wrong person. Trusted link material can come from Supabase provider identity data captured during OAuth, Supabase app metadata written by service-role code, or a product-owned verified linked-account row derived from those trusted sources. [@hosted-dashboard-identity-access-session]
+
+The corrected v1 shape is to capture the verified GitHub link once from trusted Supabase identities, anchor it on stable `github_user_id`, store current `github_login` plus refresh metadata in product-owned linked-account state, and let `accounts.require_linked_account(user, provider=GITHUB)` read that verified row on ordinary requests. Occasional refresh can use Supabase `get_user` or another trusted identity lookup, but ordinary dashboard requests should not hide a Supabase API round trip inside account resolution. The small verified-link table earns its place because the GitHub identity link is both authorization-bearing and needed often. [@hosted-dashboard-identity-access-session]
+
+`require_repository_action` means "can this GitHub login perform this Almanac product action on this repository," not generic repo access. Its implementation should map actions such as `VIEW_WIKI`, `EDIT_REPO_SETTINGS`, and `UPDATE_THIS_PR` to required GitHub permissions, ask the GitHub integration for the login's current repository permission, and raise access denied before settings changes, wiki reads, run enqueue, branch commits, or check publication. GitHub check-run button identifiers should be translated inside a small `github_app.check_actions` boundary into product actions instead of becoming flat route logic or a broad `github_app` catchall. [@hosted-dashboard-identity-access-session]
+
+GitHub repository permission remains the source of truth for repository actions, but dashboard pages should not fan out one GitHub permission API call for every backend request. V1 should cache permission facts for a short window keyed by GitHub login, repository, and action or required permission, roughly 30 to 60 seconds. That cache is only a latency and rate-limit guard; losing repository access may remain visible for less than a minute, and every mutating backend action still calls the same `access.require_repository_action(...)` boundary rather than trusting frontend state. [@hosted-dashboard-identity-access-session]
+
+The GitHub App installation token remains the repository credential for automation, `.almanac/` reads, GitHub checks, and bot commits. Supabase documents GitHub login as a GitHub OAuth App configured in Supabase with `signInWithOAuth({ provider: "github" })` and SSR callback code exchange, so custom dashboard session auth should wait for a concrete Supabase blocker. Supabase provider tokens should not become Almanac's core GitHub access path because Supabase does not refresh them and does not store them in the project database; they are only a possible fallback for user-specific permission checks if installation-token permission endpoints cannot answer a repository-access question. [@hosted-dashboard-auth-session] [@supabase-github-auth-docs] [@supabase-provider-token-docs]
+
+Hosted wiki-reader endpoints such as `GET /api/dashboard/repos/{repo_id}/wiki` and `GET /api/dashboard/repos/{repo_id}/wiki/pages/{slug}` may read `.almanac/` through the GitHub App installation token only after the backend verifies the Supabase user, maps that user to a GitHub login, confirms the repository is installed, and checks that the user has GitHub read access to the repository. The installation token is the app's repo-scoped file credential, not a bypass around user authorization. The required invariant is `Supabase user -> GitHub login -> GitHub repo permission -> product action policy` for every dashboard repo, wiki, run, and settings endpoint. [@hosted-dashboard-auth-session] [@github-app-installation-auth]
+
+Dashboard wiki reads should be Git-ref-aware because the Almanac root is repository state. The default branch is the canonical dashboard view, a pull-request branch is a preview of proposed or in-flight Almanac state, and arbitrary branch refs are possible later without becoming the primary UI. The API term should be `ref`, as in `GET /api/dashboard/repos/{repo_id}/wiki?ref=default`, `?ref=pr:418`, or `?ref=branch:release/1.4`; `source` remains reserved for raw material the agent learns from, such as pull requests, issues, transcripts, and documents. [@hosted-dashboard-wiki-ref-session]
+
+Dashboard wiki listing may expose a missing `.almanac/pages` directory as an empty wiki state, but upstream GitHub errors are not empty wiki states. A GitHub 403, 500, malformed content response, or transport failure should propagate as an error response rather than `200` with an empty page list, because a false empty wiki hides authorization, installation, ref, and transport problems from users and operators. [@hosted-dashboard-wiki-reader-review-session]
+
+Dashboard copy must describe the current same-PR product loop accurately. `ask` means Almanac proposes on a pull request and waits for approval; `auto` means Almanac updates the pull-request branch automatically when relevant pull-request activity happens. "Update automatically on PR merge" describes a later after-merge delivery mode, not the current same-PR branch model, and would make users expect follow-up PR behavior that v1 does not provide. [@hosted-dashboard-review-session]
+
+Billing should exist as a service boundary before it becomes full payment machinery. `billing.has_run_capacity(...)` and `billing.record_run(...)` are the right call shape, but Autumn customer creation, webhook mirroring, metering, entitlement gates, local billing mirrors, and usage UI are v1 machinery only if charging is imminent. If dashboard and settings are the immediate MVP, a no-op or free billing provider behind the same seam preserves the architecture without making Autumn the blocking path. [@hosted-dashboard-review-session]
+
 `Update this PR` is ongoing approval for that pull request, not a one-shot run request. After authorization passes, the hosted database owns the persistent PR state and the GitHub comment or check is only a projection of that state. V1 reruns should trigger on `pull_request.synchronize`, `pull_request_review.submitted`, and `pull_request_review_comment.created` because commits change code and review comments often carry rationale. V1 should not rerun on every `issue_comment.created`; ordinary PR comments can contain thanks, CI noise, bumps, or other conversation that does not justify another Almanac run. [@hosted-pr-rerun-session]
 
 Useful discussion that does not change code should mark the pull request as dirty without immediately running Almanac. The next code-triggered run or explicit `Update now` action can include that discussion; merge should run one final check for active pull requests whose discussion changed since the last run. If the same-PR Almanac update was already captured before merge, the final check can report that Almanac is current. If uncaptured discussion landed after the last update, the hosted app should open a follow-up Almanac update PR against the maintained base branch. [@pr-evolution-session] [@hosted-pr-rerun-session]
@@ -361,6 +698,20 @@ By the end of 2026-06-05, the `usealmanac` dev branch had the hosted same-reposi
 
 The production gate passed on 2026-06-05 after the branch was pushed, merged to `main`, deployed to Render, paired with the production Supabase migration, redeployed to Modal, and smoke-tested on a same-repository pull request. The successful smoke used `AlmanacCode/codealmanac#12`; Render was live on commit `05ead0e`, the Almanac check reached success with the title "Almanac updated", the App committed `.almanac/pages/github-native-wiki-maintenance.md` as bot commit `09e4b706491207e3433cc264d7911839682b2196`, and the production run row reached `succeeded`, `delivered`, `same_pr_branch` with that delivered commit SHA. [@pr-update-live-smoke-runbook] [@pr-update-loop-plan] [@pr-update-production-smoke-session]
 
+PR 12 should not be treated as clean evidence that the GitHub UI approval path works end to end. Production state showed `same_repo_behavior=ask`, `approved_by=rohans0509`, `approved_at=2026-06-05 19:59:08 UTC`, and a successful run created at the same time, but the recorded GitHub deliveries did not include a `check_run.requested_action` event for that PR. The smoke proves that the backend can create a check, spawn Modal, receive a bundle, and commit `.almanac/` changes to the same PR branch; a separate clean smoke should prove `check_run.requested_action -> actor authorization -> run enqueue` with no manual or synthetic backend trigger. [@pr-update-production-smoke-session]
+
+The PR 12 smoke also exposed a GitHub visibility invariant for same-PR delivery. GitHub check runs are attached to a specific commit SHA, so the Almanac check that succeeded on pre-delivery head `fd38bd2` stopped appearing in the current pull-request check summary after the bot commit advanced the head to `09e4b70`. Same-PR delivery should therefore publish or update a terminal Almanac check on the post-delivery head SHA as well as recording the delivered commit SHA, so the current PR view still shows `Almanac updated` after the bot commit lands. [@pr-update-production-smoke-session]
+
+Checks remain the right v1 action and status surface because GitHub check-run actions provide native `Update this PR`, `Skip this PR`, and `Always update in this repo` buttons and appear in the merge box. A sticky PR comment is still useful as the human-readable thread because comments are visible in conversation history, can explain why Almanac is waiting or what it changed, and can be edited in place after delivery. The product invariant is that the hosted database owns the pull-request state, the check run projects actionable status for the current head SHA, and the sticky comment projects human-readable context without becoming the authorization mechanism. [@hosted-action-transport-session] [@pr-update-production-smoke-session] [@pr-surface-followup-session]
+
+The follow-up product critique changed the default feel even though it did not remove checks. The merge box is culturally a CI and gate surface, so Almanac should not make the check run the only visible product experience or make routine Almanac maintenance feel like an extra approval chore. For trusted same-repository pull requests, `auto` should probably become the normal mode after installation: Almanac updates the PR branch when the Almanac should change, posts or updates a sticky comment with the changed pages and rationale, and leaves the check as the compact current-head status. `ask` remains useful for first-run trust, public repositories, forks, and teams that do not want a bot mutating PR branches by default. [@pr-surface-followup-session]
+
+The product UX contract is one sticky Almanac comment plus one Almanac check per pull request. The comment is the human-readable thread: it says when no Almanac update was needed, when Almanac is checking the pull request, which pages changed after a bot commit, supported rationale when the run produced it, and what happened on later PR revisions. The check is the compact status and control projection: `No Almanac update needed`, `Checking the Almanac`, `Almanac updated`, `Waiting for maintainer`, or `Waiting for merge`, with actions only when the repository is in `ask` mode or the user can change the repository mode. User-facing copy should say "Almanac", "Update the Almanac", "Almanac pages", or "project knowledge"; it should not say "repo memory", "memory update", or "repo-memory update". Almanac should edit these surfaces in place rather than adding a new comment on every push. [@pr-ux-flow-session] [@same-pr-almanac-update-session]
+
+For the normal same-repository path, auto-update means Almanac analyzes the PR source material and existing Almanac, commits `.almanac/` changes to the same PR branch when durable project knowledge changed, and updates the sticky comment with changed pages. Reviewers then inspect, edit, or revert the Almanac commit through the ordinary pull-request diff. `ask` mode changes only the start condition: the check presents `Update this PR`, `Skip`, and possibly `Always update in this repo`, and the run begins after authorization. Fork PRs remain a separate delivery mode; the intended user-facing state is waiting until merge and then opening a follow-up Almanac update PR, but v1 must not advertise that state until follow-up delivery exists. [@pr-ux-flow-session] [@pr-update-implementation-log]
+
+The current hosted worker contract should let the agent write the full sticky-comment markdown rather than forcing the backend to compose meaning from small reason fields. The useful bundle shape is `comment_markdown: str | None` alongside status and changed files. The backend validates that comment markdown is present for `changed` or `no_change`, enforces safety limits such as length and unsafe links, and posts or edits the sticky PR comment. It should not invent per-page rationale after the fact or split the agent's explanation into backend-composed reason objects. [@pr-ux-flow-session]
+
 The same live smoke found a webhook idempotency invariant before it passed. Duplicate GitHub deliveries must stop after delivery-record dedupe and must not continue into trigger handling, run creation, check publishing, or Modal invocation. The production blocker was that duplicate deliveries were recorded idempotently but still processed; the fix made duplicates return before product handling and added a regression test before the successful Render deploy. [@pr-update-production-smoke-session]
 
 Fork follow-up delivery is intentionally disabled in v1 even though the product model still has a future after-merge path. The settings API can only set `fork_behavior` to `disabled`, so deployed repository settings cannot promise an unimplemented follow-up PR delivery flow. [@pr-update-implementation-log]
@@ -370,6 +721,10 @@ The extensibility rule for the hosted update pipeline is that configuration stay
 Long-running Modal agent runs need an explicit async completion path because GitHub webhook handlers cannot wait one to five minutes for CodeAlmanac. The recommended v1 architecture is Modal callback to backend: the webhook handler records a run, spawns Modal, returns quickly, and later receives an authenticated internal callback containing the validated bundle or failure result; the backend then runs delivery and updates the check surface. The old `almanac-backend` job pattern supports the durable-state discipline rather than a pure callback-only design: a job row is the source of truth, the worker records progress and heartbeats, and a scheduled sweeper marks stale running jobs failed. The hosted CodeAlmanac version should use callback as the normal completion path and a stale-run sweeper only for missed callbacks, killed workers, or stuck GitHub checks, not as a poller that routinely asks Modal whether work is done. [@hosted-async-completion-session] [@hosted-callback-security-session]
 
 The Modal completion route uses the old backend's internal-secret pattern as a route-level dependency, not as global middleware for v1. GitHub webhooks are public external callbacks and authenticate with `X-Hub-Signature-256` HMAC verification; GitHub cannot send Almanac's internal proxy secret. Modal completion is an internal callback and requires `X-Internal-Secret` before the backend accepts a run result, validates bundle paths, commits Almanac-root changes, or updates the GitHub check. A later global internal-proxy middleware can exist after route exemptions are stable, but copying it before the webhook surface settles would add avoidable failure modes. [@hosted-callback-security-session] [@pr-update-implementation-log]
+
+Two hosted-loop invariants should be treated as repo-specific manual doctrine. First, durable run state must commit before any external worker spawn: the backend creates and commits a queued run, spawns Modal outside that transaction, then records the invocation in a second transaction or marks the run failed if spawn fails. Second, delivery mechanisms must be source-blind after policy selection: fork, writability, branch, and settings facts choose a `delivery_kind` before delivery starts, and the same-PR branch executor should only write to the resolved target instead of rechecking source facts such as `is_fork`. These rules belong in the hosted product's manual section because they are local invariants of the GitHub App and Modal loop, not universal CodeAlmanac doctrine. [@hosted-manual-alignment-session]
+
+The Modal spawn and completion paths have a specific race contract. Completion may win after the worker starts but before the webhook path records the Modal invocation or publishes its projected GitHub check. Spawn recording must therefore always persist `modal_call_id` while only promoting still-queued rows to `running` and `modal_spawned`; terminal rows keep their terminal status and step. After spawn recording or spawn failure handling, the webhook path must re-read the run. If completion already won and no `check_run_id` is recorded, the webhook path should return no surface so GitHub publishing no-ops, because the internal completion route is responsible for publishing and recording the first terminal check id. [@hosted-terminal-race-hardening-session]
 
 ## Branch Scope
 
@@ -399,7 +754,7 @@ The implementation should start inside this repository because CodeAlmanac alrea
 
 OpenClaw or another active public repository can still be a testbed, but only through a fork or read-only experiment. The success criterion is simple: a code PR merges, the Action runs, Almanac updates or creates a page, a PR opens, and a human says the Almanac update is useful. If that loop works, Scout, queue views, context comments, maintainer routing, and a hosted App become workflow layers rather than the core product proof.
 
-OpenClaw is useful as a scale example because a high-activity public repository already has issue and pull-request automation for readiness, proof quality, merge risk, and maintainer status. Almanac's missing value there would not be another blanket triage bot. The useful loop is maintainer repetition reduction, decision capture, PR-time context from existing pages, post-merge Almanac update PRs, and strict silence unless cited repo memory or a high-confidence missing-context signal exists.
+OpenClaw is useful as a scale example because a high-activity public repository already has issue and pull-request automation for readiness, proof quality, merge risk, and maintainer status. Almanac's missing value there would not be another blanket triage bot. The useful loop is maintainer repetition reduction, decision capture, PR-time context from existing pages, post-merge Almanac update PRs, and strict silence unless cited Almanac context or a high-confidence missing-context signal exists.
 
 ## Canonical State Boundary
 
@@ -437,7 +792,7 @@ That makes the hosted product a governed maintenance layer over project memory:
 - CODEOWNERS-aware or configured maintainer routing for Almanac update PRs and subsystem-specific context.
 - Scheduled Garden runs for stale pages, dead file references, unresolved questions, and broken source links.
 - Hosted viewer and search for humans who will not browse markdown pages directly.
-- MCP or API retrieval that returns cited repo memory packets to agents.
+- MCP or API retrieval that returns cited Almanac context packets to agents.
 - Multi-repo indexes without hiding canonical pages in a hosted database.
 
 ## Buyer And Payment Thesis
@@ -472,7 +827,7 @@ The strongest OSS social protocol is: if a contribution was AI-assisted, cite th
 
 ## Open Questions
 
-The remaining product questions are operational, not category-level. PR-time comments need a noise budget before developers mute them. Post-merge Almanac update PRs need a batching rule so the system does not create doc churn. Remote Absorb jobs need a minimum evidence bundle before they can edit the repo-owned Almanac. Blocking checks should start as opt-in because false-positive wiki drift can damage trust. Org-level almanacs need a clear boundary between same-repo memory and cross-repo architecture memory.
+The remaining product questions are operational, not category-level. PR-time comments need a noise budget before developers mute them. Post-merge Almanac update PRs need a batching rule so the system does not create doc churn. Remote Absorb jobs need a minimum evidence bundle before they can edit the repo-owned Almanac. Blocking checks should start as opt-in because false-positive wiki drift can damage trust. Org-level almanacs need a clear boundary between same-repo Almanac pages and cross-repo architecture Almanac pages.
 
 ## Related Pages
 

@@ -1,29 +1,65 @@
 ---
 title: Open-Source Almanac
-summary: Open-source Almanac is the free public-repo product direction where CodeAlmanac reduces maintainer attention cost by giving contributors and AI agents reviewed project memory before they open issues or pull requests.
-topics: [product-positioning, competitive-research, wiki-design]
+summary: >-
+  Open-source Almanac is the free public-repo product direction where CodeAlmanac reduces maintainer
+  attention cost by giving contributors and AI agents reviewed project memory before they open
+  issues or pull requests.
+topics:
+  - product-positioning
+  - competitive-research
+  - wiki-design
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: yc-market-scan
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the YC CLI market scan that identified OSS maintainers and AI-forward tiny teams as
+      the recommended first beachhead.
+  - id: oss-maintainer-research
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
+    note: >-
+      Records the Reddit-focused maintainer research that reframed the OSS pain as low-context
+      issues, low-context pull requests, review burden, and AI-slop amplification rather than demand
+      for a wiki.
+  - id: 2024-tidelift-state-of-the-open-source-maintainer-report
+    type: web
+    url: >-
+      https://4008838.fs1.hubspotusercontent-na1.net/hubfs/4008838/2024-tidelift-state-of-the-open-source-maintainer-report.pdf
+    note: Migrated from legacy sources.
+  - id: octoverse-2024
+    type: web
+    url: https://github.blog/news-insights/octoverse/octoverse-2024/
+    note: Migrated from legacy sources.
+  - id: understanding-the-state-of-open-source-funding-in-2024
+    type: web
+    url: https://www.linuxfoundation.org/blog/understanding-the-state-of-open-source-funding-in-2024
+    note: Migrated from legacy sources.
+  - id: scorecard
+    type: web
+    url: https://github.com/ossf/scorecard
+    note: Migrated from legacy sources.
+  - id: creating-a-default-community-health-file
+    type: web
+    url: >-
+      https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file
+    note: Migrated from legacy sources.
+  - id: '178'
+    type: web
+    url: https://github.com/ossf/wg-vulnerability-disclosures/issues/178
+    note: Migrated from legacy sources.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
   - docs/strategy/2026-05-29-open-source-almanac-concept.md
   - docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
   - docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
-  - https://4008838.fs1.hubspotusercontent-na1.net/hubfs/4008838/2024-tidelift-state-of-the-open-source-maintainer-report.pdf
-  - https://github.blog/news-insights/octoverse/octoverse-2024/
-  - https://www.linuxfoundation.org/blog/understanding-the-state-of-open-source-funding-in-2024
-  - https://github.com/ossf/scorecard
-  - https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file
-  - https://github.com/ossf/wg-vulnerability-disclosures/issues/178
-  - id: yc-market-scan
-    type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the YC CLI market scan that identified OSS maintainers and AI-forward tiny teams as the recommended first beachhead.
-  - id: oss-maintainer-research
-    type: conversation
-    path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
-    note: Records the Reddit-focused maintainer research that reframed the OSS pain as low-context issues, low-context pull requests, review burden, and AI-slop amplification rather than demand for a wiki.
 status: active
-verified: 2026-06-01
+verified: 2026-06-01T00:00:00.000Z
+
 ---
 
 # Open-Source Almanac
@@ -41,6 +77,8 @@ The core open-source pain is attention scarcity. The Tidelift 2024 maintainer re
 AI raises the cost of bad contributions. GitHub Octoverse 2024 reported broad AI-tool adoption among open-source respondents, and OpenSSF vulnerability-disclosure discussions identify low-quality AI-generated reports and contributions as a current maintainer burden. Almanac's OSS wedge should therefore be "better AI-assisted contributions," not "AI maintains your project."
 
 The 2026-05-31 Reddit-focused maintainer research sharpened this from "maintainers repeat themselves" to "low-context issues and pull requests consume maintainer attention." Maintainers complained that contributors ignore guides and PR templates, submit work without enough documentation for review, and use AI to produce plausible but low-effort pull requests. The product implication is that Almanac OSS should reduce review and triage load by making existing project context hard to miss at issue and PR time; it should not ask maintainers to maintain another broad wiki surface. [@oss-maintainer-research]
+
+The follow-up research found direct demand for triage, duplicate detection, first-pass PR review, contributor gating, and surfacing the right contribution guidance at issue or pull-request time. That is the product job to test first. A public Almanac page is useful when it becomes cited context inside those workflows, not when it exists as another destination maintainers must tend. [@oss-maintainer-research]
 
 ## Product Shape
 
@@ -82,6 +120,8 @@ The social protocol is more useful than abstract AI disclosure: if a contributio
 
 The first OSS workflow should stay narrower than a general issue bot. PR Context Cards should cite one to three relevant Almanac pages when touched files or issue labels match known project memory. `/almanac note` should let a maintainer turn a review comment or issue reply into a durable decision candidate at the moment the explanation appears. Repeated-answer detection should propose memory pages only when the same maintainer explanation pattern recurs, because broad automatic summarization would recreate the documentation burden this product is meant to reduce. [@yc-market-scan]
 
+New issue creation matters mostly as a pre-PR alignment and slop-filter moment. The useful prompt is not "read the whole wiki"; it is "what prior decision, contribution rule, compatibility policy, or known limitation does this issue or pull request touch?" That keeps Almanac OSS attached to maintainer work rather than to generic documentation browsing. [@oss-maintainer-research]
+
 ## Free Boundary
 
 The public-repo product should be genuinely free because the strategic value is making an Almanac root a normal repository convention. Public repo indexing, local CLI use, hosted read-only rendering, limited context comments, post-merge Almanac update PRs, maintainer routing suggestions, and badges such as "Almanac maintained" or "AI contribution guide available" belong in the free tier.
@@ -98,6 +138,8 @@ Do not generate a giant wiki on day one. A new stale surface is hostile to maint
 
 Do not make hidden hosted memory canonical for public repositories. Public projects need public, reviewable memory that future contributors and agents can inspect.
 
+Do not assume OSS automation competitors stop at documentation checks. [[dosu|Dosu]] already packages public-repo self-documenting PRs, issue labeling, deduplication, public-space Q&A, and MCP as free OSS-maintainer value. Almanac OSS should therefore win on quieter cited project memory and Git-reviewed Almanac updates, not on becoming a general issue-response bot.
+
 ## Positioning
 
 The maintainer-facing sentence is: "Write it once, cite it forever, keep it current through PRs."
@@ -110,4 +152,4 @@ The first useful moment should be a pull request receiving a short cited note th
 
 ## Related Pages
 
-[[customer-segmentation]] explains why OSS maintainers are one of the first customer groups instead of a later enterprise segment. [[github-native-wiki-maintenance]] explains the remote GitHub App loop that OSS Almanac should reuse. [[company-brain]] explains the broader market category of agent-readable operational memory. [[just-in-time-context-surfacing]] explains why context should appear before action rather than live only in a separate wiki browser. [[almanac-product-family]] explains why "Almanac" should be the product noun across scoped knowledge products.
+[[customer-segmentation]] explains why OSS maintainers are one of the first customer groups instead of a later enterprise segment. [[github-native-wiki-maintenance]] explains the remote GitHub App loop that OSS Almanac should reuse. [[dosu]] explains the closest OSS support and self-documenting-PR competitor. [[company-brain]] explains the broader market category of agent-readable operational memory. [[just-in-time-context-surfacing]] explains why context should appear before action rather than live only in a separate wiki browser. [[almanac-product-family]] explains why "Almanac" should be the product noun across scoped knowledge products.

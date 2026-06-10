@@ -1,65 +1,153 @@
 ---
 title: Wiki Organization Primitives
-summary: Almanac's current storage primitives are pages, links, topics, and lineage metadata, while anchors, hubs, redirects, and gardening remain editorial conventions layered on top.
-topics: [decisions, systems, agents, wiki-design, prompt-system]
-files:
-  - AGENTS.md
-  - .almanac/README.md
-  - .gitignore
-  - docs/plans/2026-05-10-harness-process-architecture.md
-  - prompts/operations/build.md
-  - prompts/operations/absorb.md
-  - prompts/operations/garden.md
-  - src/cli.ts
-  - src/wiki/indexer/index.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/automation.ts
+summary: >-
+  Almanac's current storage primitives are pages, links, topics, and lineage metadata, while
+  anchors, hubs, redirects, and gardening remain editorial conventions layered on top.
+topics:
+  - decisions
+  - systems
+  - agents
+  - wiki-design
+  - prompt-system
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-50-50-019e6b34-4f03-7073-b36a-76aba85b3dcf.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
-  - https://diataxis.fr/
-  - https://diataxis.fr/tutorials/
-  - https://diataxis.fr/how-to-guides/
-  - https://diataxis.fr/reference/
-  - https://diataxis.fr/explanation/
-  - https://diataxis.fr/map/
-  - https://diataxis.fr/complex-hierarchies/
-  - https://www.writethedocs.org/guide/
-  - https://www.writethedocs.org/guide/docs-as-code/
-  - https://www.writethedocs.org/guide/writing/beginners-guide-to-docs/
-  - https://www.writethedocs.org/guide/starting/
-  - https://www.writethedocs.org/guide/writing/mindshare/
-  - https://www.writethedocs.org/guide/writing/docs-principles/
-  - https://www.writethedocs.org/guide/writing/style-guides/
-verified: 2026-05-28
+  - id: repo-browse-projection-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T12-52-48-019ea3a5-20e5-7d90-9b55-31a2dacc1048.jsonl
+    note: >-
+      Records the design critique that flat graph storage does not provide a curated GitHub browsing
+      experience, and that folders should be considered only as a presentation projection over
+      graph-addressed pages.
+  - id: opendeepwiki-comparison-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T12-52-48-019ea3a5-20e5-7d90-9b55-31a2dacc1048.jsonl
+    note: >-
+      Records the comparison between OpenDeepWiki's catalog-first generated documentation pipeline
+      and CodeAlmanac's project-memory lifecycle.
+  - id: readme
+    type: file
+    path: .almanac/README.md
+    note: Defines this repo wiki's notability bar, topic taxonomy, page shapes, writing conventions, and source frontmatter expectations.
+  - id: source
+    type: file
+    path: .gitignore
+    note: Shows that local index, run, and log artifacts are ignored while committed markdown remains the portable wiki layer.
+  - id: build
+    type: file
+    path: prompts/operations/build.md
+    note: Defines how Build identifies initial page anchors and scaffolds a new wiki.
+  - id: absorb
+    type: file
+    path: prompts/operations/absorb.md
+    note: Defines how Absorb updates existing pages, creates new pages, and treats source material as input rather than page output.
+  - id: garden
+    type: file
+    path: prompts/operations/garden.md
+    note: Defines Garden's graph-maintenance workflow, including decided review items, source cleanup, merge/split/archive decisions, and topic repair.
+  - id: index
+    type: file
+    path: src/wiki/indexer/index.ts
+    note: Implements the derived SQLite projection over page frontmatter, links, file references, topics, sources, and summary fields.
+  - id: diataxis-fr
+    type: web
+    url: https://diataxis.fr/
+    note: Defines the four Diataxis documentation modes used here as reader-purpose vocabulary, not as top-level Almanac topics.
+  - id: tutorials
+    type: web
+    url: https://diataxis.fr/tutorials/
+    note: Migrated from legacy sources.
+  - id: how-to-guides
+    type: web
+    url: https://diataxis.fr/how-to-guides/
+    note: Migrated from legacy sources.
+  - id: reference
+    type: web
+    url: https://diataxis.fr/reference/
+    note: Migrated from legacy sources.
+  - id: explanation
+    type: web
+    url: https://diataxis.fr/explanation/
+    note: Migrated from legacy sources.
+  - id: complex-hierarchies
+    type: web
+    url: https://diataxis.fr/complex-hierarchies/
+    note: Supports the warning against copying Diataxis as a rigid hierarchy.
+  - id: guide
+    type: web
+    url: https://www.writethedocs.org/guide/
+    note: Supports the operating model that documentation needs ongoing ownership and placement decisions.
+  - id: docs-as-code
+    type: web
+    url: https://www.writethedocs.org/guide/docs-as-code/
+    note: Supports the docs-as-code model that wiki source should stay plain text near the project and be reviewed through Git.
+  - id: starting
+    type: web
+    url: https://www.writethedocs.org/guide/starting/
+    note: Migrated from legacy sources.
+  - id: docs-principles
+    type: web
+    url: https://www.writethedocs.org/guide/writing/docs-principles/
+    note: Migrated from legacy sources.
+  - id: organization-doctrine-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-50-50-019e6b34-4f03-7073-b36a-76aba85b3dcf.jsonl
+    note: >-
+      Records the organization discussion that rejected `subject:` and `type:` frontmatter,
+      proposed prompt-level organization doctrine, and identified anchors, hubs, and Garden as
+      editorial primitives.
+  - id: subject-neighborhood-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
+    note: >-
+      Records the subject-neighborhood, Superpaper, composition-planning, and prose/table guidance
+      that shaped the page's anchor and hub rules.
+  - id: source-provenance-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
+    note: >-
+      Records the source/link quality discussion that led to structured sources and claim-level
+      provenance guidance.
+verified: 2026-06-07
+
 ---
 
 # Wiki Organization Primitives
 
-Almanac already has three core wiki primitives: pages, double-bracket links, and a topic DAG. That is enough to store knowledge and query it, but it is not enough to keep the wiki coherent as capture volume grows. The missing pieces are editorial rather than storage-oriented: canonical homes for subjects, curated navigation for dense areas, explicit structural operations, and a maintenance loop that protects the graph over time.
+Almanac already has three core wiki primitives: pages, double-bracket links, and a topic DAG. That is enough to store knowledge and query it, but it is not enough to keep the wiki coherent as capture volume grows. The missing pieces are editorial rather than storage-oriented: canonical homes for subjects, curated navigation for dense areas, explicit structural operations, and a maintenance loop that protects the graph over time. [@organization-doctrine-session]
 
-This matters because a self-updating wiki fails by drift, not by lack of content. If the system can only create pages and append to pages, it tends to overproduce narrow pages, under-merge overlap, and leave readers with a technically linked graph that is still hard to traverse. V1 addresses part of that gap by making Garden a first-class operation beside Build and Absorb; anchors, hub pages, redirects, and alias behavior are still editorial primitives rather than enforced storage objects.
+This matters because a self-updating wiki fails by drift, not by lack of content. If the system can only create pages and append to pages, it tends to overproduce narrow pages, under-merge overlap, and leave readers with a technically linked graph that is still hard to traverse. V1 addresses part of that gap by making Garden a first-class operation beside Build and Absorb; anchors, hub pages, redirects, and alias behavior are still editorial primitives rather than enforced storage objects. [@garden]
 
 [[documenting-software-architectures]] sharpened the organization model by distinguishing views from beyond-view material. CodeAlmanac can use module-style prose for implementation responsibilities, component-and-connector-style prose for runtime flows, allocation-style prose for source/index/viewer packaging, and cross-view prose for rationale, glossary terms, mappings, and currentness. That vocabulary should shape page leads, hubs, links, and section boundaries; it should not become frontmatter schema.
 
-The 2026-05-27 design discussion rejected adding `subject:` and `type:` frontmatter for organization. `subject: capture` duplicates what strong slugs, titles, links, topics, and hubs already express, and it risks becoming a shadow folder hierarchy. `type: runtime-view` turns editorial roles into schema before the system has a mechanical need to query them. The durable rule is to use metadata only for facts the system needs to query mechanically; editorial meaning belongs in page names, opening paragraphs, links, topic membership, and hub prose.
+The 2026-05-27 design discussion rejected adding `subject:` and `type:` frontmatter for organization. `subject: capture` duplicates what strong slugs, titles, links, topics, and hubs already express, and it risks becoming a shadow folder hierarchy. `type: runtime-view` turns editorial roles into schema before the system has a mechanical need to query them. The durable rule is to use metadata only for facts the system needs to query mechanically; editorial meaning belongs in page names, opening paragraphs, links, topic membership, and hub prose. [@organization-doctrine-session]
 
-A later 2026-05-27 discussion connected that model to Diataxis and Write the Docs. The durable conclusion is that CodeAlmanac needs a global graph-organization doctrine in addition to page notability and syntax rules. The likely product shape is a fourth base prompt module, `prompts/base/organization.md`, loaded between `prompts/base/syntax.md` and the selected operation prompt by [[operation-prompts]]. That module should define good wiki shape rather than add a rigid workflow: canonical homes, nearby sources, scoped repetition, currentness discipline, recurring Garden work, topics as browse neighborhoods, hubs as reading paths, and anchors as source-of-truth pages.
+A later 2026-05-27 discussion connected that model to Diataxis and Write the Docs. The durable conclusion is that CodeAlmanac needs a global graph-organization doctrine in addition to page notability and syntax rules. The likely product shape is a fourth base prompt module, `prompts/base/organization.md`, loaded between `prompts/base/syntax.md` and the selected operation prompt by [[operation-prompts]]. That module should define good wiki shape rather than add a rigid workflow: canonical homes, nearby sources, scoped repetition, currentness discipline, recurring Garden work, topics as browse neighborhoods, hubs as reading paths, and anchors as source-of-truth pages. [@organization-doctrine-session] [@diataxis-fr] [@guide]
 
 A 2026-05-28 manual discussion sharpened the public-facing quality bar for codebase wikis: a good codebase wiki lets a competent future agent or human make a safer code change faster. The manual should define editorial judgment rather than only formatting rules. Its core subjects are what deserves a page, how canonical entities and hubs work, how Diataxis maps onto agent-facing pages, why human-readable neutral prose matters, and how currentness and Garden keep the graph trustworthy.
 
-A second 2026-05-28 organization discussion added the subject-neighborhood rule: a page is the unit of reading, but a neighborhood is the unit of understanding for major subjects. A serious subsystem or external dependency should not be forced into one oversized page. It should have an anchor page plus supporting pages for behavior, structure, contracts, rationale, constraints, failure modes, workflows, and sources when those subtopics have independent value.
+A second 2026-05-28 organization discussion added the subject-neighborhood rule: a page is the unit of reading, but a neighborhood is the unit of understanding for major subjects. A serious subsystem or external dependency should not be forced into one oversized page. It should have an anchor page plus supporting pages for behavior, structure, contracts, rationale, constraints, failure modes, workflows, and sources when those subtopics have independent value. [@subject-neighborhood-session]
 
-A later 2026-05-28 manual discussion made sources and links the central quality problem for Almanac pages. Sources answer why a reader should believe a claim; links answer where the reader should go next. The product direction is claim-level traceability without unreadable citation clutter: substantial pages should expose source IDs, cite non-obvious claims close to the claim, and make web sources first-class alongside files, commits, PRs, conversations, manual notes, and prior wiki pages. The 2026-05-28 [[source-provenance]] implementation made structured `sources:` the canonical provenance field and derives file-aware retrieval from `sources[type=file]`, legacy `files:`, and inline file or folder wikilinks.
+A later 2026-05-28 manual discussion made sources and links the central quality problem for Almanac pages. Sources answer why a reader should believe a claim; links answer where the reader should go next. The product direction is claim-level traceability without unreadable citation clutter: substantial pages should expose source IDs, cite non-obvious claims close to the claim, and make web sources first-class alongside files, commits, PRs, conversations, manual notes, and prior wiki pages. The 2026-05-28 [[source-provenance]] implementation made structured `sources:` the canonical provenance field and derives file-aware retrieval from `sources[type=file]`, legacy `files:`, and inline file or folder wikilinks. [@source-provenance-session]
 
-A follow-up critique from the same 2026-05-27 Codex session added a sharper writing-order rule: page composition must be planned before article prose starts. When a source batch contains several adjacent entities or facts, the agent should first decide the page set, the scope of each page, the facts each page excludes, and which neighboring page owns those excluded facts. That planning step is editorial doctrine, not a proposal/apply workflow; the final wiki should contain article prose, not the planning scratchpad, unless the plan itself becomes durable product memory.
+A follow-up critique from the same 2026-05-27 Codex session added a sharper writing-order rule: page composition must be planned before article prose starts. When a source batch contains several adjacent entities or facts, the agent should first decide the page set, the scope of each page, the facts each page excludes, and which neighboring page owns those excluded facts. That planning step is editorial doctrine, not a proposal/apply workflow; the final wiki should contain article prose, not the planning scratchpad, unless the plan itself becomes durable product memory. [@subject-neighborhood-session]
 
-The same session compared Almanac to [[superpaper]], an Obsidian-first personal knowledge system in `/Users/rohan/Documents/life`. The durable product distinction is that Almanac creates a project memory layer beside a repo, while Superpaper treats the vault itself as the primary knowledge graph. Almanac should borrow Superpaper's neighborhood retrieval, living-charter discipline, front-door knowledge map, and visible category-hub pattern, but it should not create a duplicate `.almanac/pages/` graph inside an existing Obsidian or Superpaper vault.
+The same session compared Almanac to [[superpaper]], an Obsidian-first personal knowledge system in `/Users/rohan/Documents/life`. The durable product distinction is that Almanac creates a project memory layer beside a repo, while Superpaper treats the vault itself as the primary knowledge graph. Almanac should borrow Superpaper's neighborhood retrieval, living-charter discipline, front-door knowledge map, and visible category-hub pattern, but it should not create a duplicate `.almanac/pages/` graph inside an existing Obsidian or Superpaper vault. [@subject-neighborhood-session]
+
+A 2026-06-07 design critique separated graph storage from repo presentation. Flat `.almanac/pages/` is coherent for slug identity, links, topics, backlinks, and indexing, but it is weak as the default GitHub browsing experience because humans see a long undifferentiated file list before they see reading order or page neighborhoods. The product rule that emerged is that a page can stay graph-addressed while also being presented through a curated browse layer; `topic` remains graph classification, `folder` or nav placement is a primary human shelf, a hub/index page is the reading path, `sources:` is evidence, and `slug` is stable identity. [@repo-browse-projection-session]
+
+The same critique treated source bloat as an organization problem. A page should not collect every file, web page, or conversation the agent happened to inspect. It should list sources that support claims a future reader may need to audit or retrieve, and the source note should explain the relevance. Oversized source lists make pages look less curated even when every source is real. [@repo-browse-projection-session]
+
+The same session's [[opendeepwiki|OpenDeepWiki]] comparison made the browse-layer problem more concrete. OpenDeepWiki feels readable because it plans a hierarchical catalog before prose generation, treats parent nodes as navigation domains, and writes content only to leaf nodes. CodeAlmanac should copy the information-architecture lesson, not the database-backed generated-docs product model: Build and Garden need an internal package or catalog-planning step that decides the front door, hubs, navigation shelves, leaf pages, page purposes, source expectations, and scope exclusions before article prose starts. [@opendeepwiki-comparison-session]
+
+The resulting invariant is that hubs route and leaves explain. A dense area should not ask one page to be both the navigation map and the full deep dive. In Almanac terms, a hub or browse projection can organize architecture, workflows, decisions, constraints, failure modes, reference, and product-internal shelves, while graph identity still comes from stable slugs, links, topics, backlinks, sources, and lineage. [@opendeepwiki-comparison-session]
 
 ## What Almanac has now
 
-The committed design and implementation provide these primitives:
+The committed design and implementation provide these primitives. [@readme] [@index] [@build] [@absorb] [@garden]
 
 - **Page**: one markdown file per slug in `.almanac/pages/`
 - **Link**: unified double-bracket syntax for page, file, folder, and cross-wiki references
@@ -73,9 +161,9 @@ These are real primitives, not just conventions. The SQLite index persists them,
 
 ## Committed state versus local derived state
 
-The portable wiki is the markdown layer committed in the repo: `[[.almanac/pages/]]`, `[[.almanac/README.md]]`, and `[[.almanac/topics.yaml]]`. That is the project memory collaborators receive through normal git sync even if their machine has never installed the `almanac` CLI.
+The portable wiki is the markdown layer committed in the repo: `[[.almanac/pages/]]`, `[[.almanac/README.md]]`, and `[[.almanac/topics.yaml]]`. That is the project memory collaborators receive through normal git sync even if their machine has never installed the `almanac` CLI. [@readme]
 
-The disposable local layer is ignored by git. `[[./.gitignore]]` excludes `.almanac/index.db`, its WAL/SHM companions, `.almanac/runs/`, and `.almanac/logs/`. Those files are machine-local query and run artifacts, not part of the shared wiki corpus.
+The disposable local layer is ignored by git. `[[./.gitignore]]` excludes `.almanac/index.db`, its WAL/SHM companions, `.almanac/jobs/`, and `.almanac/logs/`. Those files are machine-local query and job artifacts, not part of the shared wiki corpus. [@source]
 
 That split defines the no-install collaborator behavior. A contributor without `almanac` can still read the committed markdown files directly, but cannot run query commands such as `search`, `show`, or `health`, and will not have scheduled capture or Garden automation on that machine. If they later install the CLI, query commands recreate the local SQLite index from the committed markdown corpus and automation can then be enabled through setup.
 
@@ -95,7 +183,7 @@ Without these, the agent can still edit files, but the default behavior is biase
 
 A codebase wiki should organize around named project subjects before it organizes around note genres. A subject is the stable thing the project reasons about: a subsystem, command, operation, dependency, external competitor, product idea, or architectural concern. The subject page is the canonical home, and adjacent pages or sections answer specific reader questions about that subject.
 
-For a subsystem such as capture, the cluster can contain an overview, implementation-responsibility prose, runtime-behavior prose, file-and-state-placement prose, an interface page for transcripts or run records, and rationale pages for decisions such as scheduler-backed capture. For an external product such as [[agentmemory-competitor]], the cluster can contain an external-reference page, a competitive-analysis section, and a product-positioning contrast.
+For a subsystem such as capture, the cluster can contain an overview, implementation-responsibility prose, runtime-behavior prose, file-and-state-placement prose, an interface page for transcripts or job records, and rationale pages for decisions such as scheduler-backed capture. For an external product such as [[agentmemory-competitor]], the cluster can contain an external-reference page, a competitive-analysis section, and a product-positioning contrast.
 
 This model makes naming more important than genre metadata. `agentmemory` should be a canonical subject name because agents and humans will search for that entity directly. A page named `agentmemory-competitor` is acceptable while the page's job is comparison, but a mature graph should avoid hiding first-class entities behind only genre-prefixed names.
 
@@ -109,15 +197,15 @@ The manual itself should follow the same wiki rules it teaches. Instead of prese
 
 The manual should prefer readable wikilinks in flowing prose. The canonical syntax is slug plus display text separated by a pipe, so a sentence should display "the Absorb operation" while targeting the relevant operation slug when the slug would interrupt reading. Slug-only links remain acceptable in title-like references such as "See [[capture-flow]]", but article prose should usually link the concept with natural display text.
 
-Diataxis is useful to CodeAlmanac because it treats documentation structure as a map of reader needs rather than a list of content types. Its four needs map imperfectly but usefully onto an agent-facing wiki: tutorials become starting hubs, how-to guides become workflow pages, reference becomes contracts and schemas, and explanation becomes decisions, rationale, architecture, and gotchas. CodeAlmanac should not copy Diataxis as four top-level wiki buckets because the primary reader is a future coding agent acting on a codebase, not a human learning a product from scratch.
+Diataxis is useful to CodeAlmanac because it treats documentation structure as a map of reader needs rather than a list of content types. Its four needs map imperfectly but usefully onto an agent-facing wiki: tutorials become starting hubs, how-to guides become workflow pages, reference becomes contracts and schemas, and explanation becomes decisions, rationale, architecture, and gotchas. CodeAlmanac should not copy Diataxis as four top-level wiki buckets because the primary reader is a future coding agent acting on a codebase, not a human learning a product from scratch. [@diataxis-fr] [@tutorials] [@how-to-guides] [@reference] [@explanation] [@complex-hierarchies]
 
 Superpaper sharpens the same rule from the other direction. Its `type` and `categories` axes fit a personal Obsidian vault because the vault is the product and the note graph is the interface. Almanac should not import that schema into codebase wikis unless a mechanical query need appears; its editorial meaning still belongs in strong slugs, leads, topics, links, backlinks, and hubs.
 
-Write the Docs sharpens the operating model in four places. First, "where does this belong?" is a first-class documentation design question, so Almanac prompts should answer anchor, hub, workflow page, reference page, decision page, archive, or no-op before asking for new prose. Second, documentation needs ongoing care, so Garden is the maintenance loop that prevents graph drift rather than a cosmetic cleanup command. Third, docs tolerate scoped repetition better than code: a hub can repeat a subsystem purpose and a workflow page can repeat a warning from a contract page as long as canonical truth still has one home. Fourth, stale current docs are riskier than missing ideal docs, so Garden should prioritize wrong invariants near code over filling every theoretical page role.
+Write the Docs sharpens the operating model in four places. First, "where does this belong?" is a first-class documentation design question, so Almanac prompts should answer anchor, hub, workflow page, reference page, decision page, archive, or no-op before asking for new prose. Second, documentation needs ongoing care, so Garden is the maintenance loop that prevents graph drift rather than a cosmetic cleanup command. Third, docs tolerate scoped repetition better than code: a hub can repeat a subsystem purpose and a workflow page can repeat a warning from a contract page as long as canonical truth still has one home. Fourth, stale current docs are riskier than missing ideal docs, so Garden should prioritize wrong invariants near code over filling every theoretical page role. [@guide] [@starting] [@docs-principles]
 
 Composition planning is the operational form of "where does this belong?" Before writing from a dense source set, Build and Absorb should identify the smallest coherent page set that avoids both cramming and thinning. Each planned page needs a positive scope, explicit exclusions, and links to adjacent pages that own repeated or nearby facts. For example, an organization source set can have one company anchor page, separate governance, equity, employment, tax identity, and person pages, and a record-inventory page only if the document set itself is a subject. The anchor can mention that the board changed, but the detailed consent mechanics belong in the governance page.
 
-The same critique clarified that prose-first does not mean prose-only. Quick-fact tables, infobox-style summaries, timelines, and bullet lists are valid when they improve scanning and do not become a substitute for sourced article prose. A table of legal name, entity type, incorporation date, EIN, E-Verify ID, principal office, and worksite is useful on a company entity page because it gives a compact current snapshot; the governing claims still need to appear in the article body with their source context.
+The same critique clarified that prose-first does not mean prose-only. Quick-fact tables, infobox-style summaries, timelines, and bullet lists are valid when they improve scanning and do not become a substitute for sourced article prose. A table of legal name, entity type, incorporation date, EIN, E-Verify ID, principal office, and worksite is useful on a company entity page because it gives a compact current snapshot; the governing claims still need to appear in the article body with their source context. [@subject-neighborhood-session]
 
 ## Anchor pages
 
@@ -132,7 +220,7 @@ Examples in this repo behave like anchors even though the storage model does not
 - [[wiki-lifecycle-operations]]
 - [[process-manager-runs]]
 
-The Build operation prompt is the first place that identifies anchors for a new wiki. Absorb and Garden should protect those anchors by updating the canonical page unless the new material clearly deserves an independent subject.
+The Build operation prompt is the first place that identifies anchors for a new wiki. Absorb and Garden should protect those anchors by updating the canonical page unless the new material clearly deserves an independent subject. [@build] [@absorb] [@garden]
 
 Anchor pages are how the wiki gets a single source of truth for major subjects. Without them, every ingest has to rediscover where a fact belongs.
 
@@ -170,6 +258,14 @@ Topics cannot express that kind of editorial ordering or annotation. A topic is 
 GitHub Wiki is a useful external reference because its visible model is pages, links, a Home page, a custom sidebar, page history, and a separate Git-backed wiki repository. It is not primarily a folder-first docs tree. The lesson for CodeAlmanac is that a wiki can stay page-centric while still giving humans a default navigation path.
 
 For Almanac, the analogous primitives are markdown pages, wikilinks, Git history, topic and file-aware retrieval, and `almanac serve` as the local viewer. Folders or separate browse maps should not become a second organization system. The durable organization still comes from strong slugs, titles, leads, topics, links, backlinks, file references, sources, lineage, and currentness.
+
+## Repo browse projection
+
+A browse projection is a human-facing arrangement over the graph, not a replacement for the graph. It can be a docs tree, nav file, sidebar, or generated viewer route that groups pages under labels such as architecture, workflows, decisions, reference, and product. Its job is to make the first repo-open experience legible; it must not make a page's conceptual membership depend on one folder.
+
+The clean invariant is: graph identity owns meaning, and browse placement owns first-read ergonomics. Pages should remain addressable by stable slug, topics should remain multi-parent reading neighborhoods, hubs should remain prose maps, and source refs should remain evidence and retrieval handles. A folder or nav entry can say "put this page on the architecture shelf for GitHub readers" without preventing the same page from belonging to `wiki-design`, `decisions`, and `prompt-system` topics.
+
+This resolves the tension between flat `.almanac/pages/` and GitHub readability without copying Diataxis or Mintlify as storage doctrine. Diataxis still informs page jobs, and Mintlify-style navigation still illustrates curated docs presentation, but CodeAlmanac's durable model is graph-addressed project memory with an optional browse projection for humans and teams. [@repo-browse-projection-session]
 
 ## Why the structural operations need to be explicit
 
@@ -246,7 +342,7 @@ The remaining problems are editorial structure, not storage integrity. The `agen
 
 The audit identified three practical next moves: add narrower topics such as `wiki-design`, `external-references`, `competitive-research`, `architecture`, and `prompts`; add hub pages for architecture, agent runtime, wiki design, and product positioning when clusters become hard to traverse; and strengthen cross-links from weakly connected pages such as [[global-agent-instructions]] and [[claude-agent-sdk]]. It should not introduce frontmatter page types unless a future query feature creates a concrete mechanical need.
 
-Three deeper organizational gaps remain after V1.
+Four deeper organizational gaps remain after V1.
 
 1. **Anchors are informal.** Build identifies them through the operation prompt, but the storage model and subsequent Absorb/Garden runs have no explicit mechanism to protect them from fragmentation.
 
@@ -254,13 +350,15 @@ Three deeper organizational gaps remain after V1.
 
 3. **Redirects are under-modeled.** The design has archival lineage (`superseded_by`, `archived_at`) but no lightweight equivalent for alternate names or collapsed pages that should resolve to a canonical home.
 
-These are design gaps, not indexing gaps. The storage model is already strong enough to support all three.
+4. **Repo presentation is unresolved.** The flat page corpus is correct for local indexing and slug stability, but it does not by itself create a curated GitHub reading experience. A future design needs to decide whether `docs/almanac/`, a nav file, `almanac serve`, or another projection becomes the default public/team surface. [@repo-browse-projection-session]
+
+These are design gaps, not indexing gaps. The storage model is already strong enough to support them.
 
 ## Git history and wiki pollution
 
 Git is the right history layer for wiki files. A second bespoke per-page version system is unnecessary.
 
-Write the Docs' docs-as-code model reinforces the same product shape: wiki source should remain plain text near the code, reviewable through normal Git workflows, and maintained as part of developer work rather than hidden in a separate content store.
+Write the Docs' docs-as-code model reinforces the same product shape: wiki source should remain plain text near the code, reviewable through normal Git workflows, and maintained as part of developer work rather than hidden in a separate content store. [@docs-as-code]
 
 For codebase wikis, the useful split is:
 

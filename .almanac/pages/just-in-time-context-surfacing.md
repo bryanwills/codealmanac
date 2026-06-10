@@ -9,6 +9,10 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: Records the HN and YC validation pass that narrowed the product hypothesis from repo-owned wiki demand to context freshness, bounded retrieval, provenance, and stale-context detection.
+  - id: cli-review-wedge-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T14-10-43-019ea3ec-7755-7d03-b5bb-753ed523503d.jsonl
+    note: Records the conclusion that `almanac review --agent` should bring memory-aware review into the active coding loop before PR review.
 status: active
 verified: 2026-06-01
 ---
@@ -22,6 +26,8 @@ The distinction is automatic surfacing, not automatic believing. CodeAlmanac sho
 The 2026-05-27 [[codex-supermemory]] session reinforced the boundary by showing automatic recall in a non-code Gmail workflow launched from the CodeAlmanac repo. The injected memory helped the assistant continue a prior task, but it also mixed personal task context into a project workspace. CodeAlmanac's version should therefore surface repo-governed, file-aware evidence packets rather than broad personal or cross-project memory blocks.
 
 The 2026-05-31 HN and YC validation pass made this direction the safest product hypothesis rather than only an activation improvement. The evidence showed developers struggling with context decay, repeated setup, stale instructions, and trust in documentation, but it did not show clear demand for a full repo-owned wiki. The testable promise is narrower: before an agent touches a pull request or file, it should read only the two or three relevant durable notes, with provenance and stale-context signals visible. [@market-validation]
+
+The 2026-06-07 CLI review discussion made `almanac review --agent` the first concrete product surface for this promise. Developers and coding agents often want review while the branch is still plastic, before a formal pull request review. CodeAlmanac's version should review the work against maintained project memory: relevant pages for changed files, violated decisions or invariants, missing wiki updates, and cited next context. [@cli-review-wedge-session]
 
 ## Runtime Shape
 
@@ -81,6 +87,8 @@ A future CLI surface could prototype the mechanism before editor or agent hooks 
 almanac context --for src/capture/sweep.ts --mode pre-edit
 almanac context --diff
 almanac context --prompt "fix capture automation"
+almanac review --agent
+almanac review --since main
 ```
 
-These commands are product sketches, not current implemented surface. The durable requirement is the behavior: retrieve from the wiki, rank for actionability, show only a few cited constraints, stay silent when confidence is low, and preserve the repo-owned wiki as the canonical artifact.
+These commands are product sketches, not current implemented surface. The durable requirement is the behavior: retrieve from the wiki, rank for actionability, show only a few cited constraints, stay silent when confidence is low for context-only surfacing, and preserve the repo-owned wiki as the canonical artifact. The review variant can be more explicit than pre-edit context because the user has asked for judgment over a diff; it should still stay Almanac-native rather than become a generic code-review engine. [@cli-review-wedge-session]

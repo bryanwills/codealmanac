@@ -1,33 +1,64 @@
 ---
 title: Wiki Lifecycle Operations
-summary: Build, Absorb, and Garden are Almanac's three AI write operations, and each constructs provider-neutral run specs rather than owning provider behavior directly.
-topics: [agents, flows, cli]
-files:
-  - src/operations/build.ts
-  - src/operations/absorb.ts
-  - src/operations/garden.ts
-  - src/operations/types.ts
-  - src/cli/commands/operations.ts
+summary: >-
+  Build, Absorb, and Garden are Almanac's three AI write operations, and each constructs
+  provider-neutral run specs rather than owning provider behavior directly.
+topics:
+  - agents
+  - flows
+  - cli
 sources:
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-verified: 2026-05-28
+  - id: build
+    type: file
+    path: src/operations/build.ts
+    note: Constructs Build operation specs and first-wiki runtime context.
+  - id: absorb
+    type: file
+    path: src/operations/absorb.ts
+    note: Constructs Absorb operation specs for transcript, path, and source-aware inputs.
+  - id: garden
+    type: file
+    path: src/operations/garden.ts
+    note: Constructs Garden operation specs for whole-graph wiki maintenance.
+  - id: types
+    type: file
+    path: src/operations/types.ts
+    note: Defines operation-level request, result, prompt, and metadata contracts.
+  - id: operations
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Starts lifecycle operation jobs from CLI command handling.
+  - id: provider-automation-boundary-plan
+    type: file
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Records the refactor plan that separated provider runtime execution from lifecycle command and automation concerns.
+  - id: provider-boundary-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+    note: Records the lifecycle-provider boundary discussion that shaped the operation/provider split.
+  - id: lifecycle-provenance-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Records the capture-sweep incident analysis that added lifecycle provenance and protection requirements.
+verified: 2026-05-28T00:00:00.000Z
+
 ---
 
 # Wiki Lifecycle Operations
 
-V1 names the AI write surface as three product operations: Build, Absorb, and Garden. The [[lifecycle-cli]] expresses user intent, but the operation layer owns wiki semantics and constructs the provider-neutral `AgentRunSpec` that [[process-manager-runs]] executes through [[harness-providers]]. [[lifecycle-architecture]] is the reading map for the surrounding CLI, prompt, run-record, provider, and automation pages.
+V1 names the AI write surface as three product operations: Build, Absorb, and Garden. The [[lifecycle-cli]] expresses user intent, but the operation layer owns wiki semantics and constructs the provider-neutral `OperationSpec` that [[process-manager-runs]] executes through [[harness-providers]]. [[lifecycle-architecture]] is the reading map for the surrounding CLI, prompt, job-record, provider, and automation pages. [@build] [@absorb] [@garden] [@types] [@operations]
 
 ## Operation meanings
 
-Build creates the first useful wiki for a repo. It is exposed as `almanac init` and documented in [[build-operation]].
+Build creates the first useful wiki for a repo. It is exposed as `almanac init` and documented in [[build-operation]]. [@build]
 
-Absorb improves the wiki from bounded starting context. `almanac capture` calls Absorb with coding-session transcript context; [[ingest-operation]] (`almanac ingest <file-or-folder>`) calls the same operation with user-provided file or folder context. Absorb is not a public command name in the current CLI.
+Absorb improves the wiki from bounded starting context. `almanac sync` calls Absorb with quiet coding-session transcript context, while `almanac absorb <inputs...>` and [[ingest-operation]] (`almanac ingest <file-or-folder>`) call the same operation with user-provided file or folder context. [@absorb]
 
 The connector-facing local command should extend `ingest` rather than expose `absorb` as the front-facing verb. A source-aware form such as `almanac ingest github:pr:123` would parse source addresses, let source briefs attach connector guidance and provenance hints, enable operation-level connector runtime access, and then run the same Absorb operation algorithm against the current working tree. [[evidence-bundles]] records that boundary so GitHub PRs, issues, git ranges, and future connectors do not become one-off prompt-text adapters.
 
-Garden improves the wiki as a whole graph. `almanac garden` gives the agent the existing `.almanac/` graph and asks for merge, split, archive, relink, retopic, and no-op judgment without a session-specific source. Those graph-shape outcomes are the editorial layer described in [[wiki-organization-primitives]].
+Garden improves the wiki as a whole graph. `almanac garden` gives the agent the existing `.almanac/` graph and asks for merge, split, archive, relink, retopic, and no-op judgment without a session-specific source. Those graph-shape outcomes are the editorial layer described in [[wiki-organization-primitives]]. [@garden]
 
 Future lifecycle work may add a verification-oriented algorithm that audits wiki claims against code, docs, prompts, tests, and history. That algorithm should differ from deterministic `health`: it would fact-check semantic claims and either edit clear truth drift or emit [[wiki-clarifications]] when the source of truth depends on missing human context.
 
@@ -53,11 +84,11 @@ Operations choose:
 - requested base tools
 - run metadata such as operation, target kind, and target paths
 
-Operations do not know how Claude, Codex, or Cursor run. They also do not create proposal JSON, reviewer state machines, dry-run artifacts, or source/evidence pipeline objects. When judgment is needed, the prompt owns it.
+Operations do not know how Claude, Codex, or Cursor run. They also do not create proposal JSON, reviewer state machines, dry-run artifacts, or source/evidence pipeline objects. When judgment is needed, the prompt owns it. [@provider-automation-boundary-plan] [@provider-boundary-session]
 
 ## Provenance and protection policy
 
-The 2026-05-28 capture-sweep incident made one cross-operation requirement explicit: automated write operations need provenance, ownership, and protection boundaries before they invoke an LLM or mutate wiki state. [[capture-automation]] applies the observed fix to scheduled Absorb by excluding CodeAlmanac maintenance transcripts and reserving candidate work before token spend. The incident did not show Garden deleting protected pages; Garden enters the policy because it is the operation allowed to merge, archive, relink, and retopic wiki memory.
+The 2026-05-28 capture-sweep incident made one cross-operation requirement explicit: automated write operations need provenance, ownership, and protection boundaries before they invoke an LLM or mutate wiki state. [[capture-automation]] applies the observed fix to scheduled Absorb by excluding CodeAlmanac maintenance transcripts and reserving candidate work before token spend. The incident did not show Garden deleting protected pages; Garden enters the policy because it is the operation allowed to merge, archive, relink, and retopic wiki memory. [@lifecycle-provenance-session]
 
 Absorb must distinguish user/project evidence from CodeAlmanac's own maintenance exhaust. Garden must not archive, delete, or rewrite protected Almanac-owned system memory just because it looks generated, stale, or low-quality in isolation. Build must not overwrite existing wiki structure without knowing whether pages are user-authored, system-authored, generated, protected, stale, or superseded.
 

@@ -1,27 +1,77 @@
 ---
 title: Self Update
-summary: Almanac self-update uses a background notifier plus an idempotent global npm install path, and scheduled self-update runs the normal `almanac update` command.
-topics: [cli, systems, automation, decisions]
-files:
-  - src/cli/commands/update.ts
-  - src/platform/update/check.ts
-  - src/platform/update/notifier-worker.ts
-  - src/platform/update/announce.ts
-  - src/platform/update/state.ts
-  - src/platform/update/install.ts
-  - src/platform/update/lock.ts
-  - src/platform/update/version.ts
-  - src/cli/commands/doctor/updates.ts
-  - src/cli/sqlite-free.ts
-  - src/platform/automation/tasks.ts
-  - src/cli/commands/automation.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/setup/automation-step.ts
+summary: >-
+  Almanac self-update uses a background notifier plus an idempotent global npm install path, and
+  scheduled self-update runs the normal `almanac update` command.
+topics:
+  - cli
+  - systems
+  - automation
+  - decisions
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
+  - id: update
+    type: file
+    path: src/cli/commands/update.ts
+    note: Migrated from legacy files.
+  - id: check
+    type: file
+    path: src/platform/update/check.ts
+    note: Migrated from legacy files.
+  - id: notifier-worker
+    type: file
+    path: src/platform/update/notifier-worker.ts
+    note: Migrated from legacy files.
+  - id: announce
+    type: file
+    path: src/platform/update/announce.ts
+    note: Migrated from legacy files.
+  - id: state
+    type: file
+    path: src/platform/update/state.ts
+    note: Migrated from legacy files.
+  - id: install
+    type: file
+    path: src/platform/update/install.ts
+    note: Migrated from legacy files.
+  - id: lock
+    type: file
+    path: src/platform/update/lock.ts
+    note: Migrated from legacy files.
+  - id: version
+    type: file
+    path: src/platform/update/version.ts
+    note: Migrated from legacy files.
+  - id: updates
+    type: file
+    path: src/cli/commands/doctor/updates.ts
+    note: Migrated from legacy files.
+  - id: sqlite-free
+    type: file
+    path: src/cli/sqlite-free.ts
+    note: Migrated from legacy files.
+  - id: tasks
+    type: file
+    path: src/platform/automation/tasks.ts
+    note: Migrated from legacy files.
+  - id: automation
+    type: file
+    path: src/cli/commands/automation.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: automation-step
+    type: file
+    path: src/cli/commands/setup/automation-step.ts
+    note: Migrated from legacy files.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
 status: active
-verified: 2026-05-14
+verified: 2026-05-14T00:00:00.000Z
+
 ---
 
 # Self Update

@@ -1,12 +1,41 @@
 ---
 title: Codex Supermemory
-summary: Codex Supermemory is a lightweight Supermemory hook integration whose smooth prompt-time recall sharpens CodeAlmanac's activation-gap lesson.
-topics: [product-positioning, agents, competitive-research]
-files:
-  - docs/strategy/codealmanac-vs-deepwiki-supermemory.md
+summary: >-
+  Codex Supermemory is a lightweight Supermemory hook integration whose smooth prompt-time recall
+  sharpens CodeAlmanac's activation-gap lesson.
+topics:
+  - product-positioning
+  - agents
+  - competitive-research
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-11-37-019e6b10-6850-7512-ac56-e74118e4c6d2.jsonl
+  - id: codealmanac-vs-deepwiki-supermemory
+    type: file
+    path: docs/strategy/codealmanac-vs-deepwiki-supermemory.md
+    note: Migrated from legacy files.
+  - id: supermemory
+    type: web
+    url: https://github.com/supermemoryai/supermemory
+    note: Migrated from legacy sources.
+  - id: how-it-works
+    type: web
+    url: https://supermemory.ai/docs/concepts/how-it-works
+    note: Migrated from legacy sources.
+  - id: graph-memory
+    type: web
+    url: https://supermemory.ai/docs/concepts/graph-memory
+    note: Migrated from legacy sources.
+  - id: memory-vs-rag
+    type: web
+    url: https://supermemory.ai/docs/concepts/memory-vs-rag
+    note: Migrated from legacy sources.
+  - id: user-profiles
+    type: web
+    url: https://supermemory.ai/docs/concepts/user-profiles
+    note: Migrated from legacy sources.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-11-37-019e6b10-6850-7512-ac56-e74118e4c6d2.jsonl
   - /Users/rohan/.codex/hooks.json
   - /Users/rohan/.codex/supermemory/recall.js
   - /Users/rohan/.codex/supermemory/flush.js
@@ -14,12 +43,8 @@ sources:
   - /Users/rohan/.codex/supermemory/save-memory.js
   - /Users/rohan/.codex/supermemory/forget-memory.js
   - /Users/rohan/.codex/supermemory/login.js
-  - https://github.com/supermemoryai/supermemory
-  - https://supermemory.ai/docs/concepts/how-it-works
-  - https://supermemory.ai/docs/concepts/graph-memory
-  - https://supermemory.ai/docs/concepts/memory-vs-rag
-  - https://supermemory.ai/docs/concepts/user-profiles
-verified: 2026-05-27
+verified: 2026-05-27T00:00:00.000Z
+
 ---
 
 `codex-supermemory` is the Codex-specific Supermemory integration tested during the 2026-05-19 competitor evaluation. It installed `codex-supermemory@1.0.5`, copied hook scripts into `~/.codex/supermemory/`, added Supermemory skills under `~/.codex/skills/`, enabled Codex hooks, and used Supermemory's hosted API instead of a local daemon.

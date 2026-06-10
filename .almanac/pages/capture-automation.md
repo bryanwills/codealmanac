@@ -1,66 +1,204 @@
 ---
-title: Capture Automation
-summary: CodeAlmanac's auto-capture contract is scheduler-backed quiet-session capture.
-topics: [flows, agents, cli, automation]
-files:
-  - docs/plans/2026-05-11-scheduled-quiet-session-capture.md
-  - src/cli/commands/capture-sweep.ts
-  - src/capture/discovery/
-  - src/capture/ledger.ts
-  - src/capture/lock.ts
-  - src/capture/sweep.ts
-  - src/process/records.ts
-  - src/paths.ts
-  - src/cli/commands/automation.ts
-  - src/platform/automation/tasks.ts
-  - src/platform/automation/launchd.ts
-  - src/platform/automation/legacy-hooks.ts
-  - src/config/index.ts
-  - src/capture/input.ts
-  - src/cli/commands/operations.ts
-  - src/cli/commands/setup/index.ts
-  - src/cli/commands/uninstall.ts
-  - src/cli/register-setup-commands.ts
-  - src/cli.ts
-  - src/harness/providers/claude.ts
-  - src/harness/providers/codex/request.ts
-  - src/harness/providers/codex/app-server.ts
-  - test/setup.test.ts
-  - test/automation.test.ts
-  - test/paths.test.ts
+title: Sync Automation
+summary: CodeAlmanac's automatic session-memory contract is scheduler-backed quiet-session sync.
+topics:
+  - flows
+  - agents
+  - cli
+  - automation
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
   - id: github-issue-11
     type: web
     url: https://github.com/AlmanacCode/codealmanac/issues/11
-    retrieved_at: 2026-05-31
-    note: Reports the capture-sweep recursion incident, the two distinct failure causes, and the roughly 85% Codex usage spike from repeated Absorb jobs.
+    retrieved_at: 2026-05-31T00:00:00.000Z
+    note: >-
+      Reports the capture-sweep recursion incident, the two distinct failure causes, and the roughly
+      85% Codex usage spike from repeated Absorb jobs.
+  - id: legacy-hooks-implementation
+    type: file
+    path: src/platform/automation/legacy-hooks.ts
+    note: Shows which provider hook files cleanupLegacyHooks currently scans.
+  - id: session-2026-06-07-cowork-hook
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T17-40-59-019ea4ac-f859-7aa0-aa2d-8b94a4640473.jsonl
+    note: Records the manual cleanup of an Almanac SessionEnd hook from Claude cowork settings.
+  - id: sync-refactor-commit
+    type: commit
+    rev: 6fc4124bec3da04242077dcd01b26482d6f1126d
+    note: >-
+      Renamed the public automatic-session coordinator from capture sweep to sync, renamed manual
+      capture input to absorb, and added automation migration for legacy capture-sweep jobs.
+  - id: sync-refactor-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T17-38-44-019ea4aa-e76e-7841-94a0-b00f3c24ccf8.jsonl
+    note: >-
+      Records the final merged refactor summary and verification for the sync/absorb vocabulary
+      change.
+  - id: migrate-automation-command
+    type: file
+    path: src/cli/commands/migrate.ts
+    note: >-
+      Implements `almanac migrate automation` by detecting legacy capture-sweep launchd jobs,
+      installing sync automation, and removing the old plist.
+  - id: legacy-capture-detection
+    type: file
+    path: src/platform/automation/legacy-capture.ts
+    note: Detects legacy launchd plists whose ProgramArguments still invoke `capture sweep`.
+  - id: sync-task-definition
+    type: file
+    path: src/platform/automation/tasks.ts
+    note: >-
+      Defines the current sync, Garden, and update scheduled tasks plus the legacy capture-sweep
+      label and plist path.
+  - id: 2026-05-11-scheduled-quiet-session-capture
+    type: file
+    path: docs/plans/2026-05-11-scheduled-quiet-session-capture.md
+    note: Migrated from legacy files.
+  - id: sync
+    type: file
+    path: src/cli/commands/sync.ts
+    note: Migrated from legacy files.
+  - id: discovery
+    type: file
+    path: src/sync/discovery/
+    note: Migrated from legacy files.
+  - id: ledger
+    type: file
+    path: src/sync/ledger.ts
+    note: Migrated from legacy files.
+  - id: lock
+    type: file
+    path: src/sync/lock.ts
+    note: Migrated from legacy files.
+  - id: sweep
+    type: file
+    path: src/sync/sweep.ts
+    note: Migrated from legacy files.
+  - id: records
+    type: file
+    path: src/jobs/records.ts
+    note: Migrated from legacy files.
+  - id: paths
+    type: file
+    path: src/paths.ts
+    note: Migrated from legacy files.
+  - id: automation
+    type: file
+    path: src/cli/commands/automation.ts
+    note: Migrated from legacy files.
+  - id: tasks
+    type: file
+    path: src/platform/automation/tasks.ts
+    note: Migrated from legacy files.
+  - id: launchd
+    type: file
+    path: src/platform/automation/launchd.ts
+    note: Migrated from legacy files.
+  - id: legacy-capture
+    type: file
+    path: src/platform/automation/legacy-capture.ts
+    note: Migrated from legacy files.
+  - id: legacy-hooks
+    type: file
+    path: src/platform/automation/legacy-hooks.ts
+    note: Migrated from legacy files.
+  - id: migrate
+    type: file
+    path: src/cli/commands/migrate.ts
+    note: Migrated from legacy files.
+  - id: register-edit-commands
+    type: file
+    path: src/cli/register-edit-commands.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/config/index.ts
+    note: Migrated from legacy files.
+  - id: store
+    type: file
+    path: src/config/store.ts
+    note: Migrated from legacy files.
+  - id: schema
+    type: file
+    path: src/config/schema.ts
+    note: Migrated from legacy files.
+  - id: operations
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Migrated from legacy files.
+  - id: index-2
+    type: file
+    path: src/cli/commands/setup/index.ts
+    note: Migrated from legacy files.
+  - id: uninstall
+    type: file
+    path: src/cli/commands/uninstall.ts
+    note: Migrated from legacy files.
+  - id: register-setup-commands
+    type: file
+    path: src/cli/register-setup-commands.ts
+    note: Migrated from legacy files.
+  - id: cli
+    type: file
+    path: src/cli.ts
+    note: Migrated from legacy files.
+  - id: claude
+    type: file
+    path: src/harness/providers/claude.ts
+    note: Migrated from legacy files.
+  - id: request
+    type: file
+    path: src/harness/providers/codex/request.ts
+    note: Migrated from legacy files.
+  - id: app-server
+    type: file
+    path: src/harness/providers/codex/app-server.ts
+    note: Migrated from legacy files.
+  - id: setup-test
+    type: file
+    path: test/setup.test.ts
+    note: Migrated from legacy files.
+  - id: automation-test
+    type: file
+    path: test/automation.test.ts
+    note: Migrated from legacy files.
+  - id: paths-test
+    type: file
+    path: test/paths.test.ts
+    note: Migrated from legacy files.
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
+  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 status: implemented
-verified: 2026-05-29
+verified: 2026-06-08T00:00:00.000Z
+
 ---
 
-# Capture Automation
+# Sync Automation
 
-CodeAlmanac auto-capture is now quiet-session capture: provider-neutral scanning of session transcripts that treats inactivity as a synthetic session boundary. The 2026-05-11 capture discussion ended with a stronger conclusion than its earlier intermediate drafts: scheduler-backed quiet-session capture is the v1 automatic-capture contract because "session end" semantics differ across Claude, Codex, and likely Cursor.
+CodeAlmanac automatic session-memory is now quiet-session sync: provider-neutral scanning of session transcripts that treats inactivity as a synthetic session boundary. The 2026-05-11 capture discussion ended with a stronger conclusion than its earlier intermediate drafts: scheduler-backed quiet-session sync is the v1 automatic-session contract because "session end" semantics differ across Claude, Codex, and likely Cursor.
 
 The practical design goal is not "run exactly when an app says the session ended." The durable contract is "capture a session once its transcript has been quiet long enough to absorb safely." By the end of the same discussion, the preferred first shipping mechanism had also become clearer: use an OS scheduler to wake a deterministic sweep command on a configurable interval, with a default of about five hours, instead of requiring a permanently running daemon.
 
-The concrete review artifact for that direction is [[docs/plans/2026-05-11-scheduled-quiet-session-capture.md]]. The implementation follows its first shipping shape: `almanac capture sweep` plus `almanac automation install|status|uninstall`.
+The concrete review artifact for that direction is [[docs/plans/2026-05-11-scheduled-quiet-session-capture.md]]. The implementation has since renamed the coordinator from `capture sweep` to `almanac sync`; the current scheduler surface is `almanac sync` plus `almanac automation install|status|uninstall`.
 
 ## Current implementation caveats
 
 The same 2026-05-11 session ended with a code review of the shipped scheduler path, and the fixes became part of the automation contract:
 
-- Setup and uninstall treat scheduler automation as the only public auto-capture path and also clean up legacy Claude/Codex/Cursor hook installs privately.
+- Setup and uninstall treat scheduler automation as the only public automatic-session path and also clean up legacy Claude/Codex/Cursor hook installs privately.
 - Legacy hook cleanup has to recognize multiple provider-era names for the same idea, including `SessionEnd`, `Stop`, and `sessionEnd`, so scheduler migration does not assume one canonical hook label.
 - That cleanup is content-based and recursive, not just key-based: it removes old `almanac-capture.sh` command objects from wrapped and unwrapped hook shapes, then prunes now-empty event arrays or wrapper containers so setup/uninstall can heal provider hook files in place.
-- `runAutomationInstall()` still defaults to absolute `node` and `dist/codealmanac.js` program arguments, but setup overrides that when it was launched from an ephemeral `npx` install. After setup successfully installs a durable global package, the plist switches to `/usr/bin/env almanac capture sweep --quiet ...`; if that durable install fails or is skipped, setup skips scheduler installation rather than pinning launchd to the ephemeral cache path.
-- `runAutomationInstall()` records `automation.capture_since` in `~/.almanac/config.toml` the first time scheduled capture is enabled, and later reinstall runs preserve the original activation baseline.
-- `runAutomationInstall()` migrates legacy JSON config into TOML before writing `automation.capture_since`, so enabling automation does not discard older agent settings during the same write.
-- `almanac capture sweep` skips transcript files whose mtime predates `automation.capture_since` with the `before-automation-activation` reason, and for transcripts that span that boundary it starts at the first line whose own timestamp is at or after the activation time.
+- `runAutomationInstall()` still defaults to absolute `node` and `dist/codealmanac.js` program arguments, but setup overrides that when it was launched from an ephemeral `npx` install. After setup successfully installs a durable global package, the plist switches to `/usr/bin/env almanac sync --quiet ...`; if that durable install fails or is skipped, setup skips scheduler installation rather than pinning launchd to the ephemeral cache path.
+- `runAutomationInstall()` records `automation.sync_since` in `~/.almanac/config.toml` the first time scheduled sync is enabled, and later reinstall runs preserve the original activation baseline.
+- `runAutomationInstall()` migrates legacy JSON config into TOML before writing `automation.sync_since`, so enabling automation does not discard older agent settings during the same write.
+- `almanac sync` skips transcript files whose mtime predates `automation.sync_since` with the `before-automation-activation` reason, and for transcripts that span that boundary it starts at the first line whose own timestamp is at or after the activation time.
 - A continued transcript whose file mtime is new enough but whose lines do not carry timestamps is treated as `unchanged` on a fresh ledger rather than being backfilled speculatively.
 - The sqlite-free fast path in [[lifecycle-cli]] handles `automation install|status|uninstall` before Commander loads, and validates `automation install --every` explicitly.
 - Transcript metadata discovery reads only an initial header chunk for the first lines rather than loading whole transcript files during metadata scanning.
@@ -75,7 +213,7 @@ The old hook investigation documented the mismatch clearly:
 
 That means hook-driven automation couples CodeAlmanac to each provider's lifecycle model. A provider-neutral scanner gives CodeAlmanac its own timing and dedupe rules instead of inheriting whatever "done" means in the foreground app.
 
-Because there were no external users whose existing hook workflows had to be preserved, v1 does not present hook install and scheduled sweep as two coequal auto-capture products. The documented automatic path is scheduler-backed quiet-session capture.
+Because there were no external users whose existing hook workflows had to be preserved, v1 does not present hook install and scheduled sweep as two coequal automatic-session products. The documented automatic path is scheduler-backed quiet-session sync.
 
 ## Codex hook-name provenance
 
@@ -95,6 +233,8 @@ That is why [[src/cli/commands/automation.ts]] removes CodeAlmanac-owned legacy 
 - `~/.cursor/hooks.json` with `sessionEnd`
 
 Future agents should read this as a cleanup invariant, not just historical trivia: if scheduler migration ever regresses, the likely cause is overfitting to one provider's current hook spelling or wrapper shape.
+
+A 2026-06-07 support run found another observed Claude location: `~/.claude/cowork_settings.json` contained `SessionEnd -> /Users/rohan/.claude/hooks/almanac-capture.sh`, while the script was already absent. The current `cleanupLegacyHooks()` implementation scans `~/.claude/settings.json`, `~/.codex/hooks.json`, and `~/.cursor/hooks.json`, so it would not remove that alternate Claude settings entry. Manual cleanup and any future migration patch should include `cowork_settings.json` instead of treating `settings.json` as the complete Claude hook surface. [@session-2026-06-07-cowork-hook][@legacy-hooks-implementation]
 
 ## Product contract
 
@@ -123,13 +263,13 @@ Two cheap deterministic boundaries now belong to the capture contract:
 - provenance boundary: classify whether a transcript is ordinary project work, a helper/subagent transcript, or an internal CodeAlmanac maintenance run
 - ownership boundary: reserve the source range or repo-level work before model reasoning starts, so parallel sweeps cannot independently spend tokens on the same candidate
 
-This is a requirements lesson, not only a local bug fix. The LLM should decide whether claimed project-work evidence contains durable wiki knowledge. The sweep, ledger, and run-record layers should decide whether the candidate is in scope, unclaimed, and safe to process. In the desired architecture, `classifyCandidate(transcript)` produces a stable source category, tags, operation hints, eligibility, and skip reason before `applyCapturePolicy(candidate)` decides whether capture may start.
+This is a requirements lesson, not only a local bug fix. The LLM should decide whether claimed project-work evidence contains durable wiki knowledge. The sweep, ledger, and job-record layers should decide whether the candidate is in scope, unclaimed, and safe to process. In the desired architecture, `classifyCandidate(transcript)` produces a stable source category, tags, operation hints, eligibility, and skip reason before `applyCapturePolicy(candidate)` decides whether capture may start.
 
 The same session checked the current Claude and Codex local run surfaces for a native session tag. Claude SDK query options expose `persistSession` and `title`, and the installed SDK also exposes `tagSession(sessionId, tag | null)` plus a `tag` field on session info. Codex does not expose the same provider-native tag in the current local surfaces: Codex CLI exposes `--ephemeral`, and the Codex app-server thread start path uses `ephemeral: true` but no Almanac-specific tag field. The settled product rule after the 2026-05-28 discussion is stricter than "tag if possible": Almanac maintenance provider sessions should be non-persistent by default, and provider-native tags or Almanac-owned sidecar provenance should be fallback mechanisms only when a provider transcript must persist.
 
-The audit boundary is separate from provider transcript persistence. CodeAlmanac's durable audit trail is [[process-manager-runs]]: `.almanac/runs/<run-id>.json`, `.jsonl`, `.spec.json`, page-change summaries, job logs, and viewer job detail. Provider-owned Claude or Codex session history is optional debug material and should not be the canonical record for Build, Absorb, or Garden. A maintenance run can therefore use non-persistent provider sessions without losing the user-visible job transcript, as long as the process manager keeps its run records and `almanac jobs` / `almanac serve` continue to render them.
+The audit boundary is separate from provider transcript persistence. CodeAlmanac's durable audit trail is [[process-manager-runs]]: `.almanac/jobs/<job-id>.json`, `.jsonl`, `.spec.json`, page-change summaries, job logs, and viewer job detail. Provider-owned Claude or Codex session history is optional debug material and should not be the canonical record for Build, Absorb, or Garden. A maintenance job can therefore use non-persistent provider sessions without losing the user-visible job transcript, as long as the jobs layer keeps its job records and `almanac jobs` / `almanac serve` continue to render them.
 
-The current implementation avoids provider-owned maintenance transcripts instead of tagging them after the fact. Build, Absorb, and Garden specs set `AgentRunSpec.providerSession.persistence = "ephemeral"`; Claude, Codex app-server, and Codex exec map that provider-neutral intent to their native non-persistence controls. CodeAlmanac no longer injects marker environment variables into maintenance sessions or scans provider transcript contents for those markers. `.almanac/runs/` is the durable audit trail.
+The current implementation avoids provider-owned maintenance transcripts instead of tagging them after the fact. Build, Absorb, and Garden specs set `OperationSpec.providerSession.persistence = "ephemeral"`; Claude, Codex app-server, and Codex exec map that provider-neutral intent to their native non-persistence controls. CodeAlmanac no longer injects marker environment variables into maintenance sessions or scans provider transcript contents for those markers. `.almanac/jobs/` is the durable audit trail.
 
 ## Long-term scheduler contract
 
@@ -139,10 +279,10 @@ The durable contract proposed in the 2026-05-11 session is:
 2. Detect new or changed session transcripts across supported apps.
 3. Record durable per-source cursors such as transcript path, mtime, session id, offset, or content hash.
 4. Treat a transcript as capturable only after it has stayed unchanged for the quiet window.
-5. Start `almanac capture` only when there is new eligible material.
+5. Start background Absorb only when there is new eligible material.
 6. Deduplicate aggressively so retries or overlapping sweeps do not double-write wiki pages.
 
-This reframes auto-capture as "background gardening/capture" rather than live sync.
+This reframes automatic session memory as background wiki maintenance rather than live synchronization.
 
 The important distinction is that polling frequency is not capture frequency. A sweep may run every 5-10 minutes, but it should usually do nothing except cheap filesystem checks. Capture only starts once a transcript has stayed unchanged for the quiet window and has not already been absorbed at the same content version.
 
@@ -178,12 +318,12 @@ By the end of the session, the preferred near-term implementation was more concr
 
 In other words, the product boundary is still quiet-session capture, but the first operational shape is "scheduled sweep with configurable cadence," not "always-on daemon."
 
-The command surface is:
+The command surface implemented after the 2026-06-08 vocabulary refactor is:
 
-- `almanac capture sweep`
-- `almanac capture sweep --quiet 45m`
-- `almanac capture sweep --apps claude,codex`
-- `almanac capture sweep --dry-run`
+- `almanac sync`
+- `almanac sync --quiet 45m`
+- `almanac sync --from claude,codex`
+- `almanac sync status`
 
 The matching install surface for automation is:
 
@@ -192,20 +332,21 @@ The matching install surface for automation is:
 - `almanac automation uninstall`
 - `almanac automation install --every 5h`
 
-The same discussion briefly revisited whether scheduler controls should live under `capture` instead, for example `almanac capture schedule ...`. But the final plan edit in that session explicitly normalized the recommendation back to `almanac automation <install|status|uninstall>`. The durable boundary stayed the same either way: one command family decides capture eligibility (`capture sweep`), and the other only manages whether the operating system wakes that sweep automatically.
+The same discussion briefly revisited whether scheduler controls should live under `capture` instead, for example `almanac capture schedule ...`. But the final plan edit in that session explicitly normalized the recommendation back to `almanac automation <install|status|uninstall>`, and the later refactor moved the eligibility command itself to `almanac sync`. The durable boundary stayed the same either way: one command family decides transcript eligibility (`sync`), and the other only manages whether the operating system wakes that coordinator automatically. [@sync-refactor-commit]
 
 ## Why automation is separate from sweep
 
-The late-session "what are these commands?" exchange clarified an important UX boundary: `almanac capture sweep` and `almanac automation ...` are meant to solve different problems.
+The late-session "what are these commands?" exchange clarified an important UX boundary: the sync coordinator and `almanac automation ...` are meant to solve different problems.
 
-`almanac capture sweep` is the work command. It scans transcripts, applies quiet-window and dedupe rules, and starts normal capture runs for any newly eligible session material.
+`almanac sync` is the work command. It scans transcripts, applies quiet-window and dedupe rules, and starts normal Absorb runs for newly eligible session material. `almanac sync status` computes the same eligibility and cursor ranges without enqueueing Absorb jobs or writing sync ledger state. [@sync-refactor-commit]
 
-`almanac automation install`, `status`, and `uninstall` are scheduler-management commands. They would not decide capture eligibility themselves. Their job is only to register, inspect, or remove the OS-owned wakeup that later runs `almanac capture sweep` on a cadence.
+`almanac automation install`, `status`, and `uninstall` are scheduler-management commands. They do not decide transcript eligibility themselves. Their job is only to register, inspect, or remove the OS-owned wakeup that later runs `almanac sync` on a cadence.
 
 The durable distinction is:
 
-- `capture sweep`: decide what to capture
-- `automation install|status|uninstall`: decide whether the operating system should run that sweep automatically
+- `sync`: decide which quiet transcript continuations should become Absorb runs
+- `sync status`: preview that decision without starting runs or mutating ledger state
+- `automation install|status|uninstall`: decide whether the operating system should run sync automatically
 
 That split keeps manual and automatic behavior aligned. A future bug in scheduling should not change capture semantics, and a future change in capture eligibility should not require redefining what "installed automation" means.
 
@@ -219,9 +360,9 @@ The preferred onboarding shape discussed in the session was:
 
 1. `codealmanac` or `codealmanac setup` asks whether to enable background automatic capture.
 2. Accepting that prompt installs the scheduler-backed sweep.
-3. Power-user commands such as `almanac capture sweep` and scheduler-management commands remain available for inspection and control.
+3. Power-user commands such as `almanac sync`, `almanac sync status`, and scheduler-management commands remain available for inspection and control.
 
-Later turns in the same session made the v1 product decision stricter than that intermediate framing: setup should replace the hook prompt, and the documented automatic-capture path should be scheduler-only rather than "hooks plus scheduler." Setup now asks about automatic wiki updates and uses `--skip-automation` / `--auto-capture-every` for automation controls.
+Later turns in the same session made the v1 product decision stricter than that intermediate framing: setup should replace the hook prompt, and the documented automatic-session path should be scheduler-only rather than "hooks plus scheduler." Setup now installs scheduled sync and Garden by default, with `--skip-automation`, `--sync-every`, and `--sync-quiet` controlling the sync scheduler path.
 
 The same plan revision also proposed the likely replacement wording:
 
@@ -260,7 +401,7 @@ Future edits should preserve that distinction unless the proposal itself changes
 
 The session explicitly rejected the idea that CodeAlmanac itself should keep a sleeping process alive to count time. The intended wakeup mechanism is platform-owned scheduling:
 
-- macOS: `launchd`, likely via `~/Library/LaunchAgents/com.codealmanac.capture-sweep.plist`
+- macOS: `launchd`, currently via `~/Library/LaunchAgents/com.codealmanac.sync.plist`
 - Linux: `systemd --user` timer, with cron as fallback
 - Windows: Task Scheduler later if Windows support is added
 
@@ -272,9 +413,9 @@ That keeps the system debuggable:
 - tests can target sweep logic without involving `launchd`
 - scheduler bugs stay small and platform-specific
 
-The same session tightened that separation one step further: the scheduler entry should only need wakeup-level state such as interval, command path, and log paths. Sweep behavior such as enabled apps, quiet window, and other capture defaults should live in CodeAlmanac-owned config that `almanac capture sweep` reads when it starts. For the first version, even that split can stay minimal: the wakeup cadence may still be the only scheduler-owned knob, and changing it would rewrite or reload the platform scheduler entry.
+The same session tightened that separation one step further: the scheduler entry should only need wakeup-level state such as interval, command path, and log paths. Sync behavior such as enabled apps, quiet window, and other defaults should live in CodeAlmanac-owned config or the sync command itself rather than in launchd. For the first version, even that split can stay minimal: the wakeup cadence may still be the only scheduler-owned knob, and changing it would rewrite or reload the platform scheduler entry.
 
-The current macOS implementation now follows that stronger shape, but with one setup-time distinction. Direct installs still write launchd `ProgramArguments` as the absolute Node executable plus the resolved `dist/codealmanac.js` entrypoint, then append `capture sweep`. Setup switches to `/usr/bin/env almanac ...` only after it has first converted an ephemeral `npx` launch into a durable global install. If that durable install does not happen, setup leaves automation uninstalled instead of writing a launchd entry that points into the temporary `npx` cache.
+The current macOS implementation now follows that stronger shape, but with one setup-time distinction. Direct installs still write launchd `ProgramArguments` as the absolute Node executable plus the resolved `dist/codealmanac.js` entrypoint, then append `sync --quiet <duration>`. Setup switches to `/usr/bin/env almanac ...` only after it has first converted an ephemeral `npx` launch into a durable global install. If that durable install does not happen, setup leaves automation uninstalled instead of writing a launchd entry that points into the temporary `npx` cache. [@sync-task-definition]
 
 That direct-install shape has one operational consequence that surfaced during the 2026-05-13 Garden smoke test. If launchd is pinned to an absolute Node path such as `~/.nvm/versions/node/v24.15.0/bin/node`, rebuilding `better-sqlite3` from a shell running a different Node version repairs the shell runtime, not the scheduled job. The reliable fix is to rebuild with the exact `node` or `npm` from the plist command path, or to prepend that Node version's bin directory to `PATH` before running `npm rebuild better-sqlite3`.
 
@@ -286,7 +427,7 @@ The 2026-05-29 per-wiki queue and ephemeral-session fix was verified with the in
 
 The follow-up provider-process cleanup was verified with in-repo process-tree fixtures rather than live Claude or Codex credentials. The relevant tests prove that the managed child process boundary terminates a spawned child plus grandchild on POSIX, escalates when graceful termination is ignored, and that the Claude SDK spawn hook and Codex app-server timeout path both route through that boundary. Windows provider-process cleanup is intentionally unsupported until there is a tested implementation, and the managed helper fails clearly there instead of pretending to own provider-created child trees.
 
-The same review also did a more realistic manual smoke pass on `almanac capture sweep` itself. That run surfaced and then fixed a concrete CLI regression: `capture sweep --json` initially printed human-readable text because the `--json` flag was being captured on the parent `capture` command instead of the `sweep` subcommand. After the fix, dry-run emitted structured JSON again, still avoided writing `.almanac/runs/capture-ledger.json`, and confirmed mixed discovery from real local transcript stores rather than only fixture data.
+The same review also did a more realistic manual smoke pass on the pre-rename `almanac capture sweep` command. That run surfaced and then fixed a concrete CLI regression: `capture sweep --json` initially printed human-readable text because the `--json` flag was being captured on the parent `capture` command instead of the `sweep` subcommand. The current command surface resolves the same verification need with `almanac sync status --json`, which previews candidates without writing `.almanac/jobs/sync-ledger.json`. [@sync-refactor-commit]
 
 One specific observation from that smoke pass is worth keeping as a sanity anchor for future regressions: on the developer's machine, the fixed dry-run reported 478 eligible sessions across both apps, split between 255 Claude sessions and 223 Codex sessions, with one additional Codex session skipped. The exact counts are temporal, but the durable lesson is that Codex discovery was verified against a live transcript corpus after the scheduler refactor and should not be treated as merely test-only behavior.
 
@@ -297,11 +438,11 @@ That machine-level macOS smoke test was completed on 2026-05-12. The important p
 - The same plist also wrote `EnvironmentVariables.PATH`, preserving the install-time shell PATH so launchd could find user-managed CLIs such as a Codex binary installed under `nvm`.
 - A temporary stress configuration of `--every 1m --quiet 1s` produced real scheduled sweeps, started Codex absorb jobs successfully after the PATH fix, and those jobs completed with wiki page updates rather than failing at process startup.
 
-Future debugging around scheduled capture should still treat "repo tests passed" and "launchd actually invoked the sweep on this machine" as separate claims, but that separation is now a verification workflow lesson rather than an untested gap.
+Future debugging around scheduled sync should still treat "repo tests passed" and "launchd actually invoked the sync command on this machine" as separate claims, but that separation is now a verification workflow lesson rather than an untested gap.
 
 ## Global scope and first-run backlog
 
-The same smoke-test thread clarified one easy-to-miss operational boundary: `almanac capture sweep` is not scoped to the current repo. Discovery walks the user's global Claude and Codex transcript stores, recovers each transcript's recorded `cwd`, then maps that `cwd` upward to the nearest repo containing `.almanac/`.
+The same smoke-test thread clarified one easy-to-miss operational boundary: `almanac sync` is not scoped to the current repo. Discovery walks the user's global Claude and Codex transcript stores, recovers each transcript's recorded `cwd`, then maps that `cwd` upward to the nearest repo containing `.almanac/`.
 
 That means one manual or scheduled sweep can enqueue work for multiple repos at once. On the developer's machine during the first real dry-run after the scheduler refactor, the eligible backlog mapped to four repos, not just `codealmanac`.
 
@@ -328,21 +469,21 @@ Future work in this area should preserve the distinction between:
 - new transcript activity that happened after automation became active
 - repo-local ledger progress for transcripts that were actually eligible to capture
 
-The implementation stores that baseline as `automation.capture_since` in the global config schema. `runAutomationInstall()` writes it only when no valid value already exists, which keeps setup and reinstall idempotent: re-running setup refreshes the launchd plist but does not accidentally move the capture boundary forward and skip active post-install sessions.
+The implementation stores that baseline as `automation.sync_since` in the global config schema. `runAutomationInstall()` writes it only when no valid value already exists, which keeps setup and reinstall idempotent: re-running setup refreshes the launchd plist but does not accidentally move the sync boundary forward and skip active post-install sessions. Legacy `automation.capture_since` values are canonicalized to `automation.sync_since` instead of becoming a parallel config key. [@sync-refactor-commit]
 
-The review follow-up on 2026-05-13 made that boundary more precise for fresh ledgers. If a transcript started before automation was enabled but later gained new lines, sweep does not have to drop the entire file. When transcript lines carry their own timestamps, the fresh ledger starts at the first line at or after `automation.capture_since` and captures only the post-activation continuation. When the transcript lacks line timestamps, sweep refuses to infer the boundary and treats the file as already covered until newer appended content makes the continuation explicit.
+The review follow-up on 2026-05-13 made that boundary more precise for fresh ledgers. If a transcript started before automation was enabled but later gained new lines, sync does not have to drop the entire file. When transcript lines carry their own timestamps, the fresh ledger starts at the first line at or after `automation.sync_since` and absorbs only the post-activation continuation. When the transcript lacks line timestamps, sync refuses to infer the boundary and treats the file as already covered until newer appended content makes the continuation explicit.
 
 ## Manual smoke ladder
 
 The same session also converged on a practical verification ladder that future debugging should reuse instead of jumping straight to `launchd`:
 
-1. Build and inspect command help: `npm run build`, `node dist/codealmanac.js --help`, `node dist/codealmanac.js automation --help`, `node dist/codealmanac.js capture sweep --help`.
-2. Run `node dist/codealmanac.js capture sweep --dry-run --json` to verify discovery, option parsing, and ledger read-only behavior.
-3. Run a real manual sweep such as `node dist/codealmanac.js capture sweep --quiet 1s --json` and inspect `.almanac/runs/capture-ledger.json` for pending cursor state.
-4. Install and inspect automation with `node dist/codealmanac.js automation install`, `automation status`, and the generated `~/Library/LaunchAgents/com.codealmanac.capture-sweep.plist`.
-5. Only then treat `launchctl kickstart -k gui/$(id -u)/com.codealmanac.capture-sweep` plus log inspection under `~/.almanac/logs/` as the machine-level proof that macOS actually runs the job.
+1. Build and inspect command help: `npm run build`, `node dist/codealmanac.js --help`, `node dist/codealmanac.js automation --help`, `node dist/codealmanac.js sync --help`, and `node dist/codealmanac.js sync status --help`.
+2. Run `node dist/codealmanac.js sync status --json` to verify discovery, option parsing, and ledger read-only behavior.
+3. Run a real manual sync such as `node dist/codealmanac.js sync --quiet 1s --json` and inspect `.almanac/jobs/sync-ledger.json` for pending cursor state.
+4. Install and inspect automation with `node dist/codealmanac.js automation install`, `automation status`, and the generated `~/Library/LaunchAgents/com.codealmanac.sync.plist`.
+5. Only then treat `launchctl kickstart -k gui/$(id -u)/com.codealmanac.sync` plus log inspection under `~/.almanac/logs/` as the machine-level proof that macOS actually runs the job.
 
-This ladder matters because the session found a real regression at step 2 before any OS-level scheduling was involved: help output looked correct, but `capture sweep --json` initially failed at runtime until the command started reading merged parent/leaf options.
+This ladder matters because the session found a real regression at step 2 before any OS-level scheduling was involved: help output looked correct, but the old `capture sweep --json` initially failed at runtime until the command started reading merged parent/leaf options.
 
 One later operational lesson from the same ladder is easy to miss: changing the scheduler interval does not stop absorb jobs that were already spawned by an earlier sweep. In the 2026-05-12 `1m / 1s` stress test, reinstalling automation back to `5h / 45m` changed future wakeups but did not cancel already-running absorb jobs. Debugging "is automation still spawning new work?" therefore has to distinguish between:
 
@@ -358,18 +499,18 @@ The 2026-05-11 discussion ended with two different "default" ideas that should n
 - long-term scanner posture: wake every few minutes and cheaply discover quiet sessions
 - first shipping scheduler posture: configurable interval with a default around `5h`
 
-The shared capture defaults under either posture were:
+The shared sync defaults under either posture were:
 
 - quiet window: about 30-60 minutes
 - apps: Claude and Codex first
-- concurrency: at most one active capture sweep per wiki
+- concurrency: at most one active sync sweep per wiki
 - live sweep fan-out: enqueue every eligible transcript range, then let the per-wiki operation worker serialize execution
 
 The per-wiki operation queue replaced the old live sweep fan-out cap after issue #11 showed that one sweep can enqueue several overlapping transcripts for the same repo and make independent Absorb agents race to create the same pages. Sweep now enqueues eligible transcript ranges, and the process manager serializes the resulting Absorb runs with Build and Garden work for the same wiki.
 
 The 2026-05-12 launchd stress test added one more practical calibration to those defaults. Extremely aggressive settings such as `--every 1m --quiet 1s` are useful for proving the scheduler and PATH wiring, but they are intentionally unrealistic for normal use: an active transcript can become re-eligible almost immediately after each new burst of conversation, which leads to many continuation captures against the same session over a short period. The product-level conclusion is not that the scheduler is broken; it is that the calm default posture (`5h` interval, `45m` quiet window) is part of the operational contract, not just a convenience.
 
-That stress test also made a subtler ownership rule visible. The repo-local `capture-sweep.lock` only prevents overlapping sweeps from mutating the same wiki at the same time; it does not protect against a later sweep that starts after the earlier one released its lock but before the absorb job it spawned has finished. Preventing repeated continuation captures for the same transcript therefore depends on the sweep ledger and operation queue together:
+That stress test also made a subtler ownership rule visible. The repo-local `sync.lock` only prevents overlapping sweeps from mutating the same wiki at the same time; it does not protect against a later sweep that starts after the earlier one released its lock but before the Absorb job it spawned has finished. Preventing repeated continuation captures for the same transcript therefore depends on the sweep ledger and operation queue together:
 
 - the repo lock serializes sweep-side ledger mutation and enqueue decisions
 - the [[capture-ledger]] `pending` state reserves a transcript's new cursor range until the corresponding background run resolves
@@ -389,16 +530,16 @@ The scheduler mechanism is platform-owned:
 - Linux: `systemd --user` timer, with cron as a weaker fallback
 - Windows: Task Scheduler if Windows support is added later
 
-The agent-facing command discussed in the session was conceptually a sweep such as `almanac capture sweep --quiet 45m`, run by the platform scheduler on a configurable cadence. Early in the discussion that cadence was imagined as every few minutes; later turns settled on "default around five hours, user-configurable" for the first implementation.
+The agent-facing command discussed in the session was conceptually a sweep such as `almanac capture sweep --quiet 45m`, run by the platform scheduler on a configurable cadence. The implemented command is now `almanac sync --quiet 45m`, but the scheduling lesson is unchanged: early discussion imagined a cadence of every few minutes, while later turns settled on a default around five hours for the first implementation. [@sync-refactor-commit]
 
 Two product constraints came through clearly:
 
 - automatic capture should be opt-in
 - the installed background behavior should be visible and inspectable through CodeAlmanac UX rather than feeling mysterious
 
-## Sweep mechanics
+## Sync mechanics
 
-The discussion converged on the deterministic sweep command shape `almanac capture sweep --quiet 45m`.
+The discussion converged on a deterministic sweep command shape, now implemented as `almanac sync --quiet 45m`.
 
 The intended mechanics are:
 
@@ -410,36 +551,36 @@ The intended mechanics are:
 6. Compute a content fingerprint only for quiet candidates.
 7. Skip versions already captured.
 8. Acquire a singleton lock for the wiki so overlapping sweeps cannot race.
-9. Enqueue normal `almanac capture` work for the eligible transcript.
+9. Enqueue normal background Absorb work for the eligible transcript continuation.
 10. Record transcript identity, cursor state, run id, and status.
 
 The "map each transcript to a repo" step means the scheduler is expected to run globally, not from inside one specific repo. A single sweep may see transcripts from many working directories, recover each transcript's `cwd` or repo hint, walk upward to the nearest parent containing `.almanac/`, and skip sessions whose repo tree has no wiki. In practice the mapping is:
 
 - transcript metadata -> working directory
 - working directory -> nearest ancestor with `.almanac/`
-- nearest `.almanac/` -> repo-local ledger and `almanac capture` run
+- nearest `.almanac/` -> repo-local ledger and Absorb run
 
 That is why one installed `launchd` or `systemd --user` job can service every repo on the machine that has adopted CodeAlmanac. The scheduler itself is global plumbing; capture ownership stays repo-local after the transcript is mapped.
 
 The walk-up rule is intentionally the only inference. It is acceptable because it matches the existing `findNearestAlmanacDir()` contract in [[src/paths.ts]] and handles agents launched from repo subdirectories, but it should not grow fuzzy fallback behavior. If a transcript has no `cwd`, if the `cwd` has no enclosing `.almanac/`, or if the nearest `.almanac/` is not the intended repo, sweep should skip or surface that reason rather than searching the registry by path similarity. Nested repos remain a closest-wiki-wins case, the same as ordinary CLI commands that resolve the current wiki from `cwd`.
 
-For the proposed first version, the unit of work is intentionally small: one eligible transcript continuation becomes one capture job. The sweep may discover many eligible transcripts in one pass, but it should enqueue them as separate `almanac capture` runs rather than batch several sessions into one Absorb prompt. That keeps retry, dedupe, and repo attribution simple while the ledger and scheduler contracts are still new.
+For the proposed first version, the unit of work is intentionally small: one eligible transcript continuation becomes one Absorb job. The sweep may discover many eligible transcripts in one pass, but it should enqueue them as separate background Absorb runs rather than batch several sessions into one prompt. That keeps retry, dedupe, and repo attribution simple while the ledger and scheduler contracts are still new.
 
 Later turns refined that final step into a two-phase cursor model rather than "mark captured as soon as a job is queued." The shipped v1 posture is:
 
-- when the sweep enqueues a capture, record pending cursor fields plus `pendingRunId`
-- on the next sweep, reconcile any `queued` or `running` ledger entries against `.almanac/runs/<run-id>.json`
-- only promote the pending cursor to the durable "captured through here" cursor after the background capture job actually finished successfully
+- when the sweep enqueues Absorb, record pending cursor fields plus `pendingJobId`
+- on the next sweep, reconcile any `queued` or `running` ledger entries against `.almanac/jobs/<job-id>.json`
+- only promote the pending cursor to the durable "absorbed through here" cursor after the background Absorb job actually finished successfully
 
-The implementation also now takes the concurrency requirement literally: each repo acquires `.almanac/runs/capture-sweep.lock` before mutating ledger state or enqueueing work, so overlapping sweeps skip that repo instead of racing to enqueue duplicate captures.
+The implementation also now takes the concurrency requirement literally: each repo acquires `.almanac/jobs/sync.lock` before mutating ledger state or enqueueing work, so overlapping sweeps skip that repo instead of racing to enqueue duplicate captures.
 
 The per-wiki single-writer operation queue described in [[process-manager-runs]] is now the concurrency abstraction for scheduled capture. Sweep enqueues eligible transcript work, and the process manager serializes Build, Absorb, and Garden execution against the wiki. Any future backlog cap should be named and implemented as queue policy rather than as a capture-specific concurrency flag.
 
 That recommendation preserves dedupe without pretending a queued background job already succeeded.
 
-The session started with a loose repo-local ledger idea and later narrowed it to a stronger v1 recommendation: store sweep-owned cursor state under `.almanac/runs/capture-ledger.json`.
+The session started with a loose repo-local ledger idea and later narrowed it to a stronger v1 recommendation: store sweep-owned cursor state under a repo-local ignored runtime path. The current file is `.almanac/jobs/sync-ledger.json`; `src/sync/ledger.ts` still reads legacy `.almanac/runs/sync-ledger.json` and `.almanac/runs/capture-ledger.json` when the current sync ledger is absent, so the command and storage rename do not discard old cursor history. [@sync-refactor-commit]
 
-That recommendation matters because it keeps scheduler state repo-local instead of global user state, and it colocates reconciliation with the existing [[process-manager-runs]] records the sweep already needs to inspect. The stronger invariant is still more important than the exact filename: quiet-session automation needs durable dedupe state, overlap protection, and reconciliation against background capture job results. But as of the 2026-05-11 discussion, `.almanac/runs/capture-ledger.json` is the current recommended home rather than an unresolved placeholder. See [[capture-ledger]] for the state model.
+That recommendation matters because it keeps scheduler state repo-local instead of global user state, and it colocates reconciliation with the existing [[process-manager-runs]] records the sweep already needs to inspect. The stronger invariant is still more important than the exact filename: quiet-session automation needs durable dedupe state, overlap protection, and reconciliation against background Absorb job results. See [[capture-ledger]] for the state model.
 
 The transcript discovery scope discussed for the first version was explicitly multi-provider, but not "all apps":
 
@@ -467,14 +608,14 @@ Claude repo mapping is expected to be easier because project folder names encode
 
 The 2026-05-11 session clarified one operational detail that is easy to hand-wave but important for future implementation: CodeAlmanac is not meant to keep its own sleeping background process alive.
 
-On macOS, scheduler install writes user `launchd` entries for capture and Garden:
+On macOS, scheduler install writes user `launchd` entries for sync and Garden:
 
-- `~/Library/LaunchAgents/com.codealmanac.capture-sweep.plist`
+- `~/Library/LaunchAgents/com.codealmanac.sync.plist`
 - `~/Library/LaunchAgents/com.codealmanac.garden.plist`
 
-The capture plist owns the sweep wakeup interval, likely via `StartInterval = 18000` for the default five-hour cadence, and launches a fresh CLI process each time:
+The sync plist owns the sweep wakeup interval, using `StartInterval = 18000` for the default five-hour cadence, and launches a fresh CLI process each time:
 
-- command: `almanac capture sweep`
+- command: `almanac sync --quiet 45m`
 - stdout/stderr: user-visible log files under a CodeAlmanac-owned log directory
 
 The Garden plist owns graph-maintenance cadence, using `StartInterval = 14400` for the default four-hour cadence:
@@ -488,10 +629,10 @@ The Garden plist owns graph-maintenance cadence, using `StartInterval = 14400` f
 This separation is part of the product contract, not just an implementation convenience:
 
 - scheduler layer: owns wakeup timing and process launch
-- sweep layer: owns transcript discovery, quiet-window checks, repo mapping, dedupe, ledger reconciliation, and capture enqueueing
-- Garden operation: owns graph-wide wiki maintenance and runs on its own cadence rather than as a capture-sweep substep
+- sweep layer: owns transcript discovery, quiet-window checks, repo mapping, dedupe, ledger reconciliation, and Absorb enqueueing
+- Garden operation: owns graph-wide wiki maintenance and runs on its own cadence rather than as a sync substep
 
-Because of that split, `almanac capture sweep` must remain runnable by hand for debugging. Automatic capture should be the scheduler invoking the same deterministic sweep command a user can run manually, not a hidden alternate code path.
+Because of that split, `almanac sync` and `almanac sync status` must remain runnable by hand for debugging. Automatic capture should be the scheduler invoking the same deterministic sync command a user can run manually, not a hidden alternate code path.
 
 ## Cursor and continuation-capture model
 
@@ -525,15 +666,16 @@ The discussion's preferred fallback posture was conservative:
 
 If a future implementation session needs the shortest faithful restatement of the current plan, it is:
 
-- introduce `almanac capture sweep` as the only place that decides session eligibility
+- use `almanac sync` as the only place that decides session eligibility
+- use `almanac sync status` for read-only verification instead of a dry-run flag
 - add scheduler install/status/uninstall commands that only manage OS scheduling
 - start with Claude and Codex transcript discovery
 - use per-transcript cursors as described in [[capture-ledger]] so append-only sessions capture only new continuation instead of replaying whole transcripts
-- replace setup's hook install prompt with scheduled auto-capture installation
+- replace setup's hook install prompt with scheduled sync installation
 - treat hook-based auto-capture as historical/current plumbing to remove or hide, not as a coequal v1 automation path
 - keep backlog entries durable when a sweep hits caps or transient failures
 
-[[capture-flow]] remains the source of truth for how manual and scheduled capture bridge into Absorb.
+[[capture-flow]] remains the source of truth for how manual and scheduled sync bridge into Absorb.
 
 ## Backlog and throttling invariants
 
@@ -552,7 +694,7 @@ This yields the key invariant for future scheduler work: CodeAlmanac may delay c
 
 ## Relationship to current V1 behavior
 
-V1 supports explicit `almanac capture` runs, scheduler-backed `almanac capture sweep`, and scheduler-backed `almanac garden`. The old hook path is historical context, not current product surface.
+V1 supports explicit `almanac absorb` runs, scheduler-backed `almanac sync`, and scheduler-backed `almanac garden`. The old hook path and the old `capture sweep` spelling are historical context, not current product surface. Legacy launchd jobs whose plist still invokes `capture sweep` are reported by `automation status` and `doctor`, and `almanac migrate automation` replaces them with sync automation while preserving interval and quiet-window settings. [@migrate-automation-command] [@legacy-capture-detection]
 
 Future work in this area should keep three layers separate:
 
@@ -562,7 +704,7 @@ Future work in this area should keep three layers separate:
 
 That separation helps avoid repeating the mistaken assumption that Codex `Stop` is equivalent to a true session-finished event.
 
-`[[capture-flow]]` has the right boundary for this design: transcript resolution happens before Absorb, and no-op captures are normal. The scheduler extends that model from "explicit args or Claude discovery" toward "periodic multi-app discovery with persisted cursors."
+`[[capture-flow]]` has the right boundary for this design: transcript resolution happens before Absorb, and no-op sync runs are normal. The scheduler extends that model from explicit inputs toward periodic multi-app discovery with persisted cursors.
 
 `[[process-manager-runs]]` is also the right place to preserve run visibility and the per-wiki single-writer queue. Scheduled capture uses sweep locks and pending ledger ownership for transcript-range reservation, then enqueues Absorb work for the per-wiki process worker to serialize with Build and Garden jobs against the same `.almanac/` directory.
 
@@ -572,8 +714,8 @@ The intended posture is background wiki maintenance, not live synchronization. "
 
 ## Open questions
 
-- Should the recommended `.almanac/runs/capture-ledger.json` file remain a plain JSON ledger, or eventually move into SQLite once sweep state grows more relational?
-- Where should the automation activation timestamp live so sweeps can ignore pre-install history without smuggling global scheduler state into each repo ledger?
+- Should `.almanac/jobs/sync-ledger.json` remain a plain JSON ledger, or eventually move into SQLite once sweep state grows more relational?
+- Should `automation.sync_since` stay user-level only as sync grows, or should future hosted/runtime modes need a separate activation boundary?
 - Should the first scheduler version ship with a generous default cap, or with no cap until backlog accounting exists?
 - Should the first scheduler version eventually add caps/backoff controls, or is the current no-cap sweep acceptable until real usage suggests otherwise?
 

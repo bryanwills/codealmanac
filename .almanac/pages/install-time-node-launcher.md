@@ -1,24 +1,66 @@
 ---
 title: Install-Time Node Launcher
-summary: Installed package bins run through `dist/launcher.js`, which records and reuses the installing Node executable so `better-sqlite3` keeps loading after shell or Node-manager changes.
-topics: [cli, systems, storage]
-files:
-  - package.json
-  - scripts/postinstall.cjs
-  - bin/install-launchers.ts
-  - bin/launcher.ts
-  - src/platform/install/launcher-runtime.ts
-  - src/abi-guard.ts
-  - src/cli.ts
-  - src/platform/install/global.ts
-  - test/launcher-runtime.test.ts
-  - test/global-bootstrap.test.ts
-  - test/cli.test.ts
-  - tsup.config.ts
+summary: >-
+  Installed package bins run through `dist/launcher.js`, which records and reuses the installing
+  Node executable so `better-sqlite3` keeps loading after shell or Node-manager changes.
+topics:
+  - cli
+  - systems
+  - storage
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-46-05-019e2316-ec37-75a1-9e29-c1b5edb40354.jsonl
-verified: 2026-05-13
+  - id: package
+    type: file
+    path: package.json
+    note: Migrated from legacy files.
+  - id: postinstall
+    type: file
+    path: scripts/postinstall.cjs
+    note: Migrated from legacy files.
+  - id: install-launchers
+    type: file
+    path: bin/install-launchers.ts
+    note: Migrated from legacy files.
+  - id: launcher
+    type: file
+    path: bin/launcher.ts
+    note: Migrated from legacy files.
+  - id: launcher-runtime
+    type: file
+    path: src/platform/install/launcher-runtime.ts
+    note: Migrated from legacy files.
+  - id: abi-guard
+    type: file
+    path: src/abi-guard.ts
+    note: Migrated from legacy files.
+  - id: cli
+    type: file
+    path: src/cli.ts
+    note: Migrated from legacy files.
+  - id: global
+    type: file
+    path: src/platform/install/global.ts
+    note: Migrated from legacy files.
+  - id: launcher-runtime-test
+    type: file
+    path: test/launcher-runtime.test.ts
+    note: Migrated from legacy files.
+  - id: global-bootstrap-test
+    type: file
+    path: test/global-bootstrap.test.ts
+    note: Migrated from legacy files.
+  - id: cli-test
+    type: file
+    path: test/cli.test.ts
+    note: Migrated from legacy files.
+  - id: tsup-config
+    type: file
+    path: tsup.config.ts
+    note: Migrated from legacy files.
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-46-05-019e2316-ec37-75a1-9e29-c1b5edb40354.jsonl
+verified: 2026-05-13T00:00:00.000Z
 status: active
+
 ---
 
 # Install-Time Node Launcher

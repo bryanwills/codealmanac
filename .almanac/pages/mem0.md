@@ -1,10 +1,60 @@
 ---
 title: Mem0
-summary: Mem0 is an operational agent-memory layer whose extraction and retrieval model clarifies how CodeAlmanac differs from runtime memory stores.
-topics: [product-positioning, competitive-research]
+summary: >-
+  Mem0 is an operational agent-memory layer whose extraction and retrieval model clarifies how
+  CodeAlmanac differs from runtime memory stores.
+topics:
+  - product-positioning
+  - competitive-research
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T20-19-07-019e4364-e949-7d40-969e-a5baf98aa944.jsonl
+  - id: mem0
+    type: web
+    url: https://github.com/mem0ai/mem0
+    note: Migrated from legacy sources.
+  - id: '2504'
+    type: web
+    url: https://arxiv.org/abs/2504.19413
+    note: Migrated from legacy sources.
+  - id: platform-v2-to-v3
+    type: web
+    url: https://docs.mem0.ai/migration/platform-v2-to-v3
+    note: Migrated from legacy sources.
+  - id: oss-v2-to-v3
+    type: web
+    url: https://docs.mem0.ai/migration/oss-v2-to-v3
+    note: Migrated from legacy sources.
+  - id: cli
+    type: web
+    url: https://docs.mem0.ai/platform/cli
+    note: Migrated from legacy sources.
+  - id: mem0-mcp
+    type: web
+    url: https://docs.mem0.ai/platform/mem0-mcp
+    note: Migrated from legacy sources.
+  - id: graph-memory
+    type: web
+    url: https://docs.mem0.ai/open-source/features/graph-memory
+    note: Migrated from legacy sources.
+  - id: langmem
+    type: web
+    url: https://langchain-ai.github.io/langmem/
+    note: Migrated from legacy sources.
+  - id: graphiti
+    type: web
+    url: https://github.com/getzep/graphiti
+    note: Migrated from legacy sources.
+  - id: understanding-the-graph
+    type: web
+    url: https://help.getzep.com/v2/understanding-the-graph
+    note: Migrated from legacy sources.
+  - id: memory
+    type: web
+    url: https://docs.langchain.com/oss/javascript/langgraph/memory
+    note: Migrated from legacy sources.
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T20-19-07-019e4364-e949-7d40-969e-a5baf98aa944.jsonl
   - /Users/rohan/Desktop/Projects/mem0/mem0/memory/main.py
   - /Users/rohan/Desktop/Projects/mem0/mem0/configs/prompts.py
   - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-memory.md
@@ -12,18 +62,8 @@ sources:
   - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-search-pipeline.md
   - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-entity-linking.md
   - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-storage-and-history.md
-  - https://github.com/mem0ai/mem0
-  - https://arxiv.org/abs/2504.19413
-  - https://docs.mem0.ai/migration/platform-v2-to-v3
-  - https://docs.mem0.ai/migration/oss-v2-to-v3
-  - https://docs.mem0.ai/platform/cli
-  - https://docs.mem0.ai/platform/mem0-mcp
-  - https://docs.mem0.ai/open-source/features/graph-memory
-  - https://langchain-ai.github.io/langmem/
-  - https://github.com/getzep/graphiti
-  - https://help.getzep.com/v2/understanding-the-graph
-  - https://docs.langchain.com/oss/javascript/langgraph/memory
-verified: 2026-05-20
+verified: 2026-05-20T00:00:00.000Z
+
 ---
 
 `Mem0` is an agent-memory product and open-source project inspected during the 2026-05-20 memory-competitor research thread. It competes with CodeAlmanac at the broad "agents should remember across interactions" layer, but its core artifact is a runtime memory store rather than a repo-owned wiki.

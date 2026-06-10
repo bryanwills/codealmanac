@@ -1,41 +1,80 @@
 ---
 title: Lifecycle Architecture
-summary: Lifecycle architecture is the reading map for Almanac's AI write operations, provider execution layer, run records, CLI commands, and scheduled maintenance tasks.
-topics: [agents, flows, cli, systems]
-files:
-  - src/operations/
-  - src/cli/commands/operations.ts
-  - src/cli/register-wiki-lifecycle-commands.ts
-  - src/process/
-  - src/harness/
-  - src/platform/automation/
+summary: >-
+  Lifecycle architecture is the reading map for Almanac's AI write operations, provider execution
+  layer, job records, CLI commands, and scheduled maintenance tasks.
+topics:
+  - agents
+  - flows
+  - cli
+  - systems
 sources:
-  - prompts/base/purpose.md
-  - prompts/base/notability.md
-  - prompts/operations/build.md
-  - prompts/operations/absorb.md
-  - prompts/operations/garden.md
+  - id: operations
+    type: file
+    path: src/operations/
+    note: Defines the Build, Absorb, Garden, and shared operation modules that construct provider-neutral operation specs.
+  - id: operation-command
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Implements command helpers that start foreground and background lifecycle operation runs.
+  - id: register-wiki-lifecycle-commands
+    type: file
+    path: src/cli/register-wiki-lifecycle-commands.ts
+    note: Registers the public lifecycle command surface for init, absorb, ingest, sync, garden, and jobs-related routing.
+  - id: jobs-layer
+    type: file
+    path: src/jobs/
+    note: Stores durable job records, logs, snapshots, queue behavior, and background worker execution for lifecycle runs.
+  - id: harness
+    type: file
+    path: src/harness/
+    note: Defines the provider-neutral harness request and provider adapters that execute operation specs.
+  - id: automation
+    type: file
+    path: src/platform/automation/
+    note: Implements scheduled sync, Garden, and update task configuration for recurring lifecycle work.
+  - id: purpose-prompt
+    type: file
+    path: prompts/base/purpose.md
+    note: Defines Almanac's project-memory purpose for lifecycle operations.
+  - id: notability-prompt
+    type: file
+    path: prompts/base/notability.md
+    note: Defines page notability and graph-structure rules used by lifecycle operations.
+  - id: build-prompt
+    type: file
+    path: prompts/operations/build.md
+    note: Defines the Build operation's first-wiki algorithm.
+  - id: absorb-prompt
+    type: file
+    path: prompts/operations/absorb.md
+    note: Defines the Absorb operation's source-distillation algorithm.
+  - id: garden-prompt
+    type: file
+    path: prompts/operations/garden.md
+    note: Defines the Garden operation's graph-maintenance algorithm.
 status: active
-verified: 2026-05-14
+verified: 2026-05-14T00:00:00.000Z
+
 ---
 
 # Lifecycle Architecture
 
-Lifecycle architecture is the cluster that explains how Almanac performs write-capable wiki work. It spans product operations, command routing, provider-neutral execution specs, provider adapters, durable run records, transcript capture, and scheduled maintenance.
+Lifecycle architecture is the cluster that explains how Almanac performs write-capable wiki work. It spans product operations, command routing, provider-neutral execution specs, provider adapters, durable job records, transcript sync, and scheduled maintenance. [@operations] [@operation-command] [@jobs-layer] [@harness] [@automation]
 
-Start with [[wiki-lifecycle-operations]] when the question is "what semantic operation is this?" Start with [[lifecycle-cli]] when the question is "what command did the user run?" Start with [[process-manager-runs]] when the question is "what happened during a run?" Start with [[harness-providers]] when the question is "how does this reach Claude, Codex, Cursor, or another runtime?"
+Start with [[wiki-lifecycle-operations]] when the question is "what semantic operation is this?" Start with [[lifecycle-cli]] when the question is "what command did the user run?" Start with [[process-manager-runs]] when the question is "what happened during a job?" Start with [[harness-providers]] when the question is "how does this reach Claude, Codex, Cursor, or another runtime?"
 
 ## Core Read Order
 
 [[wiki-lifecycle-operations]] is the conceptual overview. Build, Absorb, and Garden are semantic modes encoded by prompts and operation code, not generic names for "run an agent."
 
-[[operation-prompts]] explains the base doctrine and operation-specific algorithms that give Build, Absorb, and Garden their judgment rules. Prompt edits are the first place to improve wiki-writing behavior when the missing behavior is editorial judgment rather than deterministic plumbing.
+[[operation-prompts]] explains the base doctrine and operation-specific algorithms that give Build, Absorb, and Garden their judgment rules. Prompt edits are the first place to improve wiki-writing behavior when the missing behavior is editorial judgment rather than deterministic plumbing. [@purpose-prompt] [@notability-prompt] [@build-prompt] [@absorb-prompt] [@garden-prompt]
 
-[[lifecycle-cli]] maps public commands to operations and process-manager behavior. It is the command-surface reference for `init`, `capture`, `ingest`, `garden`, `jobs`, `serve`, `setup`, and `automation`.
+[[lifecycle-cli]] maps public commands to operations and job behavior. It is the command-surface reference for `init`, `absorb`, `ingest`, `sync`, `garden`, `jobs`, `serve`, `setup`, and `automation`. [@register-wiki-lifecycle-commands]
 
-[[process-manager-runs]] owns run records, background spawn, event logs, cancellation, snapshots, reindex-on-success, and jobs inspection. It is the storage and observability layer for operation execution.
+[[process-manager-runs]] owns job records, background spawn, event logs, cancellation, snapshots, reindex-on-success, and jobs inspection. It is the storage and observability layer for operation execution.
 
-[[harness-providers]] owns the runtime adapter boundary. Operations create provider-neutral `AgentRunSpec` values; adapters translate those specs into Claude SDK calls, Codex app-server turns, Cursor placeholders, or future runtimes.
+[[harness-providers]] owns the runtime adapter boundary. Operations create provider-neutral `OperationSpec` values; adapters translate those specs into Claude SDK calls, Codex app-server turns, Cursor placeholders, or future runtimes.
 
 ## Operation Pages
 
@@ -47,13 +86,13 @@ Start with [[wiki-lifecycle-operations]] when the question is "what semantic ope
 
 [[capture-automation]] and [[capture-ledger]] explain scheduled quiet-session capture. Read them together when changing sweep eligibility, quiet windows, dedupe, pending reconciliation, or cursor semantics.
 
-[[automation]] explains recurring scheduled tasks: capture sweep, Garden, and opt-in self-update. [[self-update]] is the global package mutation path scheduled automation can invoke, but package mutation remains owned by the update command.
+[[automation]] explains recurring scheduled tasks: sync, Garden, and opt-in self-update. [[self-update]] is the global package mutation path scheduled automation can invoke, but package mutation remains owned by the update command.
 
 ## Boundaries To Preserve
 
-Operations own wiki semantics and construct run specs. They do not know provider SDKs, prompt transport protocols, launchd details, or run-record file formats.
+Operations own wiki semantics and construct operation specs. They do not know provider SDKs, prompt transport protocols, launchd details, or job-record file formats.
 
-The process manager owns execution lifecycle and durable observability. It does not decide whether a transcript is worth capturing, whether a page deserves to exist, or how provider-specific auth works.
+The jobs layer owns execution lifecycle and durable observability. It does not decide whether a transcript is worth syncing, whether a page deserves to exist, or how provider-specific auth works.
 
 Harness providers own runtime execution truth. They must reject unsupported spec fields or report unsupported capabilities rather than silently pretending a provider honored a request.
 
@@ -63,6 +102,6 @@ Agent readiness, auth checks, global instruction installation, and persisted pro
 
 ## Historical Context
 
-[[sessionend-hook]] is archived history for hook-based automatic capture. Current automatic capture is scheduler-only and must pass through sweep, ledger, and process-manager records.
+[[sessionend-hook]] is archived history for hook-based automatic capture. Current automatic sync is scheduler-only and must pass through sync sweep, ledger, and job records.
 
 The deleted `almanac bootstrap` and old writer/reviewer capture pipeline are historical names. Current runtime guidance should point to [[build-operation]], [[wiki-lifecycle-operations]], [[operation-prompts]], and [[process-manager-runs]].

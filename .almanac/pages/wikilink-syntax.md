@@ -1,11 +1,25 @@
 ---
 title: Wikilink Syntax
-summary: Almanac uses one double-bracket syntax for page, file, folder, and cross-wiki references, and the indexer classifies each link by its contents.
-topics: [systems, decisions]
-files:
-  - src/wiki/indexer/wikilinks.ts
-  - src/wiki/indexer/index.ts
-  - src/wiki/indexer/schema.ts
+summary: >-
+  Almanac uses one double-bracket syntax for page, file, folder, and cross-wiki references, and the
+  indexer classifies each link by its contents.
+topics:
+  - systems
+  - decisions
+sources:
+  - id: wikilinks
+    type: file
+    path: src/wiki/indexer/wikilinks.ts
+    note: Migrated from legacy files.
+  - id: index
+    type: file
+    path: src/wiki/indexer/index.ts
+    note: Migrated from legacy files.
+  - id: schema
+    type: file
+    path: src/wiki/indexer/schema.ts
+    note: Migrated from legacy files.
+
 ---
 
 # Wikilink Syntax

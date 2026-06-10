@@ -35,6 +35,10 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/06/03/rollout-2026-06-03T15-00-37-019e8f12-d796-7bb0-94d7-a98a4de5c44e.jsonl
     note: Records the plain-language Reddit launch framing that describes Almanac as preserving scattered architecture context without becoming hidden hosted memory.
+  - id: cli-review-wedge-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T14-10-43-019ea3ec-7755-7d03-b5bb-753ed523503d.jsonl
+    note: Records the product conclusion that inner-loop CLI review should check code changes against repo-owned Almanac memory, while hosted compute remains the paid team default.
 status: active
 verified: 2026-06-01
 ---
@@ -43,7 +47,7 @@ verified: 2026-06-01
 
 Almanac is the product name for a maintained body of useful knowledge over a project-scoped source world. [[company-brain]] remains useful as market-category language, but the product vocabulary should use "Almanac" for the artifact a user creates, asks, reviews, and gardens.
 
-CodeAlmanac is the codebase-shaped member of this family. Its source world is a repository: source files, tests, docs, commits, sessions, and project decisions. The current implementation stores maintained knowledge in `.almanac/pages/`, `.almanac/topics.yaml`, and `.almanac/README.md`, with local derived state in `.almanac/index.db` and `.almanac/runs/`.
+CodeAlmanac is the codebase-shaped member of this family. Its source world is a repository: source files, tests, docs, commits, sessions, and project decisions. The current implementation stores maintained knowledge in `.almanac/pages/`, `.almanac/topics.yaml`, and `.almanac/README.md`, with local derived state in `.almanac/index.db` and `.almanac/jobs/`.
 
 The 2026-06-03 Reddit launch framing described the user problem as architecture and decision context scattering across AI chats, commits, pull requests, Slack, and individual memory. The product response should stay plain: Almanac is a self-updating repo wiki that preserves decisions, cross-file system explanations, rejected approaches, invariants, and already-debugged gotchas in readable Markdown, with Garden preventing the wiki from turning into a pile of notes and Git review preventing the memory layer from becoming a hidden hosted graph. [@reddit-launch-post-session]
 
@@ -52,6 +56,8 @@ The 2026-05-28 remote-product discussion tested whether public and team reposito
 The product split should make `almanac` the general engine, but profile names are not the starting primitive. The reusable model should first define objects and operations that keep the CodeAlmanac knowledge model transferable: projects, sources, source adapters, source records, extracts, pages, topics, runs, triggers, indexing, `ask`, `search`, `show`, Absorb, Garden, and `serve`. Code-specific behavior can then be expressed as repo-aware source adapters, file and folder wikilinks, coding-session capture, code-specific README instructions, AGENTS.md installation, and query affordances such as `--mentions src/path`.
 
 The 2026-05-31 product-packaging discussion settled that CodeAlmanac should be one product with one core loop, not separate products for solo developers, OSS maintainers, and teams. The loop is: work happens in a source system, durable project memory is identified, that memory is written as repo-owned Markdown, and future work receives the memory at the right moment. Audience lanes only change the source systems and surfaces: individual developers use local CLI and agent capture, OSS maintainers use GitHub issues and pull requests, and teams add hosted dashboards, policies, and connectors. [@product-packaging-session]
+
+The 2026-06-07 CLI review discussion sharpened the developer-time surface for CodeAlmanac. The remote PR workflow remains necessary for GitHub-native maintenance, but the sharper wedge is review while code is still being written: `almanac review` or `almanac review --agent` should check changed work against repo-owned project memory rather than compete as a generic bug-finding reviewer. Its output should identify relevant Almanac pages, violated invariants or prior decisions, missing wiki updates, and next context for the coding agent. [@cli-review-wedge-session]
 
 The business model follows the same split. [[almanac-business-model]] defines the open layer as the local CLI, repo-owned memory format, local indexing, and individual capture or absorb workflows, while the paid layer is hosted coordination for teams: connectors, GitHub checks, Almanac update PRs, review queues, permissions, policy, audit logs, and hosted agent context. This makes the free product the trust substrate instead of a crippled funnel.
 
@@ -122,6 +128,8 @@ First-run setup needs two valid paths. `almanac init llm-wiki` creates a new pro
 Project resolution should prefer an explicit project argument, then the nearest `.almanac/` from the current working directory, then the active project from user config, then an error with setup help. That order keeps scripts deterministic, preserves the current walk-up behavior for repo-local use, and lets non-code Almanacs feel like named projects rather than hidden folders.
 
 `almanac add <file-or-folder-or-url>` should begin with source ingestion, not page creation. It should preserve or reference the original according to project policy, fingerprint it, extract text and metadata, index it, run Absorb when the source changes durable understanding, and print the pages updated, pages created, and useful next questions. The command is the CLI equivalent of the GUI Add Sources action.
+
+For CodeAlmanac, `almanac review` should become a CLI review surface over the same memory loop. The command should inspect the current diff or a requested base such as `--since main`, retrieve the pages and source evidence relevant to the changed files, and return Almanac-native findings: cited decisions, constraints, stale or missing wiki updates, and context the coding agent should read before continuing. `--agent` should optimize structure for coding agents; it should not redefine the product as a general code reviewer. [@cli-review-wedge-session]
 
 ## General Directory Shape
 
@@ -260,7 +268,7 @@ A first-run user flow should feel like creating a project that can learn from so
 5. The user reads and edits through `almanac serve` or by opening markdown files directly.
 6. Later drops reconcile against existing pages instead of overwriting human-authored synthesis silently.
 
-An agent using the almanac should start from `.almanac/README.md`, then search or read `.almanac/pages/` for current synthesis, then inspect `sources/` only when evidence is needed. It should treat `.almanac/index.db`, `.almanac/runs/`, extraction caches, and event logs as machine state and should not make raw extracted text or run logs into user-facing knowledge unless the content changes a maintained page.
+An agent using the almanac should start from `.almanac/README.md`, then search or read `.almanac/pages/` for current synthesis, then inspect `sources/` only when evidence is needed. It should treat `.almanac/index.db`, `.almanac/jobs/`, extraction caches, and event logs as machine state and should not make raw extracted text or job logs into user-facing knowledge unless the content changes a maintained page.
 
 The agent query contract should stay command-shaped instead of requiring the agent to read the whole folder. The durable retrieval path is `almanac search "<query>"`, `almanac show <page>`, topic browsing, backlinks, source inspection for cited evidence, and eventually `almanac ask "<question>"` for synthesized answers over the same index. That contract keeps the maintained pages as the first retrieval surface, with sources as evidence and `.almanac/` as derived state.
 
@@ -286,11 +294,11 @@ tracked:
 ignored by default:
   sources/
   .almanac/index.db
-  .almanac/runs/
+  .almanac/jobs/
   .almanac/extracted/
 ```
 
-`.almanac/README.md`, `.almanac/pages/`, `.almanac/topics.yaml`, and source metadata are reviewable product memory. `sources/` can contain passports, bank documents, emails, medical records, contracts, and receipts, so publishing it should be explicit opt-in. A public research Almanac can opt into tracking public source files or source references when the corpus is meant to be shared. `.almanac/index.db`, `.almanac/runs/`, extracted text, fingerprints, and event logs are local machine state. A later company mode can allow selected public or company-safe source folders, but v0 should make source publication a deliberate choice.
+`.almanac/README.md`, `.almanac/pages/`, `.almanac/topics.yaml`, and source metadata are reviewable product memory. `sources/` can contain passports, bank documents, emails, medical records, contracts, and receipts, so publishing it should be explicit opt-in. A public research Almanac can opt into tracking public source files or source references when the corpus is meant to be shared. `.almanac/index.db`, `.almanac/jobs/`, extracted text, fingerprints, and event logs are local machine state. A later company mode can allow selected public or company-safe source folders, but v0 should make source publication a deliberate choice.
 
 ## Team Source Systems
 

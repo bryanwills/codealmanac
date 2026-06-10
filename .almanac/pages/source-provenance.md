@@ -29,8 +29,8 @@ sources:
     note: Reports source-health categories and runs deterministic source frontmatter fixes.
   - id: source-rewriter
     type: file
-    path: src/wiki/health/legacy-frontmatter-fix.ts
-    note: Rewrites safe legacy frontmatter into structured sources.
+    path: src/wiki/sources/maintenance.ts
+    note: Rewrites safe legacy frontmatter into structured sources for `almanac migrate legacy-sources`.
   - id: show-command
     type: file
     path: src/cli/commands/show.ts
@@ -138,7 +138,7 @@ GitHub pull requests fit the current `pr` source type because a PR is a durable 
 
 The 2026-05-29 GitHub connector research made this boundary sharper: `sources:` and `page_sources` are page-provenance machinery, not the ingestion model for webhooks, linked issues, review comments, branch-scoped source handles, or duplicate delivery handling. Connector ingestion should use source adapters and [[evidence-bundles|evidence bundles]] that carry trigger identity, addressable source refs, branch context, provenance metadata, and dedupe keys as run input or run sidecar data. PR-time review notes should also be separate output objects rather than page edits, so page frontmatter remains the durable citation layer for claims that actually land in the wiki. [@lifecycle-provenance-session]
 
-The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/ingest/source-ref.ts` and `src/ingest/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps health checks and deterministic source-frontmatter repair in `[[src/wiki/health/]]`, and leaves `[[src/cli/commands/health/index.ts]]` as terminal orchestration for `health --fix`. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
+The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/absorb/source-ref.ts` and `src/absorb/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps source-health checks and deterministic source-frontmatter migration in `[[src/wiki/sources/]]`, and leaves `[[src/cli/commands/migrate.ts]]` as terminal orchestration for `almanac migrate legacy-sources`. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
 
 The same source can support current truth, historical context, rejected alternatives, or unresolved questions depending on the claim that cites it. The first implementation does not add source status fields because the underlying problem is simpler: each `note` must state what the source supports. A fixed issue should be cited as the original report plus the current fix source; a brainstorming conversation should be cited as brainstorming unless code, tests, or prompts implemented the idea; and a PR discussion that changed before merge should not be cited as current behavior without a current code or prompt source. [@implementation-session]
 
@@ -176,11 +176,11 @@ The transition from `files:` to `sources[type=file]` is deterministic because ag
 
 Legacy compatibility is a temporary parsing and rewrite concern, not the conceptual source model. `[[src/wiki/indexer/page-sources.ts]]` isolates legacy handling so `[[src/wiki/indexer/index.ts]]` consumes one normalized `pageSources` and `fileRefs` model instead of looping over `files:` and `sources:` in multiple places. [@source-normalizer] [@indexer-integration]
 
-The deterministic migration surface is `almanac health --fix`, not a separate `almanac sources migrate` command, Garden-owned cleanup, or package-update side effect. `health --fix` may rewrite wiki pages only for safe mechanical source-frontmatter fixes, must not invoke AI, and must not alter page body prose.
+The deterministic migration surface is `almanac migrate legacy-sources`, not Garden-owned cleanup, package-update side effects, or a mutating `health --fix` mode. The migration may rewrite wiki pages only for safe mechanical source-frontmatter fixes, must not invoke AI, and must not alter page body prose.
 
-The rewriter in `[[src/wiki/health/legacy-frontmatter-fix.ts]]` preserves unrelated frontmatter fields, preserves body bytes, converts legacy `files:` entries into `sources` entries with `type: file`, converts legacy string URL entries in `sources:` into `type: web` entries, and removes `files:` only after conversion. Ambiguous non-URL legacy source strings remain unchanged and are reported as not fixable. [@source-rewriter]
+The rewriter in `[[src/wiki/sources/maintenance.ts]]` preserves unrelated frontmatter fields, preserves body bytes, converts legacy `files:` entries into `sources` entries with `type: file`, converts legacy string URL entries in `sources:` into `type: web` entries, and removes `files:` only after conversion. Ambiguous non-URL legacy source strings remain unchanged and are reported as not fixable. [@source-rewriter]
 
-The command-local placement of the rewriter is not a general rule that health repair logic belongs under `src/cli/commands/`. If health checks, reports, or fixers become reusable domain logic outside one CLI entrypoint, the cleaner boundary is `src/wiki/health/` with `src/cli/commands/health/index.ts` left as terminal orchestration. `src/migrations/` should stay unused until Almanac has ordered, versioned migration infrastructure with durable migration state; this frontmatter rewriter is a deterministic `health --fix` repair, not that system. [@source-architecture-session]
+The source-maintenance placement is not a general rule that migrations belong under the indexer. If Almanac later gets ordered, versioned migrations with durable migration state, those should have their own migration infrastructure. This frontmatter rewriter is a deterministic wiki-source maintenance command, not a schema migration system. [@source-architecture-session]
 
 The migration must not invent citation markers in prose. Generated source IDs come from basenames, domains, or other deterministic target-derived names, with numeric suffixes for collisions. Migrated file entries use conservative notes such as `Migrated from legacy files.` until Garden or a future human edit can state source relevance more precisely.
 
@@ -198,11 +198,11 @@ A future `almanac sources` command should behave like source-aware `--mentions`,
 
 The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show.ts]]` renders a compact source summary in the metadata header, `[[src/wiki/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
 
-The health implementation in `[[src/wiki/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, `unfixable_sources` records ambiguous legacy source strings, and `health --fix` performs only deterministic frontmatter rewrites for safe legacy cases through a separate repair API from read-only report collection. [@health-command]
+The health implementation in `[[src/wiki/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, and `unfixable_sources` records ambiguous legacy source strings. `almanac health` is report-only for source migration and warns users to run `almanac migrate legacy-sources` when legacy frontmatter is present. [@health-command]
 
 ## Prompt And Manual Guidance
 
-`[[prompts/base/syntax.md]]` teaches `sources:` as the provenance field and describes `files:` as legacy compatibility. The operation prompts for [[build-operation|Build]], [[wiki-lifecycle-operations|Absorb]], and [[wiki-lifecycle-operations|Garden]] bias new or substantially edited pages toward structured `sources:`. Garden may recommend or run `almanac health --fix` during wiki maintenance, but Garden is not the migration engine and package updates must not create surprise wiki diffs. [@syntax-prompt] [@operation-prompts] [@absorb-prompt] [@garden-prompt]
+`[[prompts/base/syntax.md]]` teaches `sources:` as the provenance field and describes `files:` as legacy compatibility. The operation prompts for [[build-operation|Build]], [[wiki-lifecycle-operations|Absorb]], and [[wiki-lifecycle-operations|Garden]] bias new or substantially edited pages toward structured `sources:`. Garden may recommend `almanac migrate legacy-sources` during wiki maintenance, but Garden is not the migration engine and package updates must not create surprise wiki diffs. [@syntax-prompt] [@operation-prompts] [@absorb-prompt] [@garden-prompt]
 
 The manual seed is `docs/manual/good-codebase-wikis.md`. It treats sources and links as separate quality primitives: sources make claims trustworthy, and links make the graph navigable. The manual also preserves the page-title and subject-neighborhood guidance described by [[wiki-organization-primitives]]. [@manual-seed]
 
@@ -211,7 +211,7 @@ The manual seed is `docs/manual/good-codebase-wikis.md`. It treats sources and l
 The implementation settled three boundaries during review:
 
 - `unused_sources` warns for every indexed source, including file sources.
-- `health --fix` does not require a clean working tree; it performs deterministic page rewrites and relies on normal Git review.
+- `almanac migrate legacy-sources` does not require a clean working tree; it performs deterministic page rewrites and relies on normal Git review.
 - Legacy URL conversion does not synthesize `retrieved_at`, because invented retrieval dates would misrepresent evidence.
 
 ## Open Questions

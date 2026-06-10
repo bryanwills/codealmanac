@@ -1,18 +1,44 @@
 ---
 title: Pitch Deck Fundraising
-summary: "Investor decks for CodeAlmanac should use a 10-15 slide narrative spine that earns a meeting, not a comprehensive product explanation."
-topics: [fundraising, product-positioning]
+summary: >-
+  Investor decks for CodeAlmanac should use a 10-15 slide narrative spine that earns a meeting, not
+  a comprehensive product explanation.
+topics:
+  - fundraising
+  - product-positioning
 sources:
+  - id: the-only-10-slides-you-need-in-your-pitch
+    type: web
+    url: https://guykawasaki.com/the-only-10-slides-you-need-in-your-pitch/
+    note: Migrated from legacy sources.
+  - id: writing-a-business-plan
+    type: web
+    url: https://www.sequoiacap.com/article/writing-a-business-plan/
+    note: Migrated from legacy sources.
+  - id: 4t-how-to-build-your-seed-round-pitch-deck
+    type: web
+    url: https://www.ycombinator.com/library/4T-how-to-build-your-seed-round-pitch-deck
+    note: Migrated from legacy sources.
+  - id: 6z-how-to-build-a-great-series-a-pitch-and-deck
+    type: web
+    url: https://www.ycombinator.com/library/6Z-how-to-build-a-great-series-a-pitch-and-deck
+    note: Migrated from legacy sources.
+  - id: 7-deadly-pitch-deck-sins-according-to-a-vc
+    type: web
+    url: https://news.crunchbase.com/venture/7-deadly-pitch-deck-sins-according-to-a-vc/
+    note: Migrated from legacy sources.
+  - id: docsend-com
+    type: web
+    url: https://www.docsend.com/
+    note: Migrated from legacy sources.
+  - id: what-we-look-for-in-applications
+    type: web
+    url: https://speedrun.substack.com/p/what-we-look-for-in-applications
+    note: Migrated from legacy sources.
   - /tmp/pitch-deck-research.md
-  - https://guykawasaki.com/the-only-10-slides-you-need-in-your-pitch/
-  - https://www.sequoiacap.com/article/writing-a-business-plan/
-  - https://www.ycombinator.com/library/4T-how-to-build-your-seed-round-pitch-deck
-  - https://www.ycombinator.com/library/6Z-how-to-build-a-great-series-a-pitch-and-deck
-  - https://news.crunchbase.com/venture/7-deadly-pitch-deck-sins-according-to-a-vc/
-  - https://www.docsend.com/
-  - https://speedrun.substack.com/p/what-we-look-for-in-applications
 status: active
-verified: 2026-05-20
+verified: 2026-05-20T00:00:00.000Z
+
 ---
 
 # Pitch Deck Fundraising

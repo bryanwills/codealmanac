@@ -1,36 +1,71 @@
 ---
-title: Capture Flow
-summary: "`almanac capture` resolves transcript inputs and runs the Absorb operation, while `capture sweep` adds scheduled quiet-transcript discovery for Claude and Codex."
-topics: [agents, flows]
-files:
-  - src/cli/commands/operations.ts
-  - src/cli/register-wiki-lifecycle-commands.ts
-  - src/capture/input.ts
-  - src/operations/absorb.ts
-  - prompts/operations/absorb.md
-  - src/cli/commands/capture-sweep.ts
-  - src/capture/discovery/
-  - src/capture/discovery/jsonl.ts
-  - src/capture/ledger.ts
-  - src/capture/lock.ts
-  - src/capture/sweep.ts
-  - src/process/background.ts
-  - src/cli/commands/automation.ts
+title: Sync Flow
+summary: >-
+  `almanac sync` discovers quiet Claude and Codex transcripts, maps them to repo wikis, and starts
+  background Absorb runs for uncaptured transcript ranges.
+topics:
+  - agents
+  - flows
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T21-33-50-019e1a76-701d-7583-a76c-b3739632ee9b.jsonl
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/20/rollout-2026-05-20T15-35-32-019e4787-a409-7403-88d3-fde980bdba3b.jsonl
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-  - https://openai.com/api/pricing/
-  - https://developers.openai.com/api/docs/models/gpt-5.5
+  - id: operations
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Migrated from legacy files.
+  - id: register-wiki-lifecycle-commands
+    type: file
+    path: src/cli/register-wiki-lifecycle-commands.ts
+    note: Migrated from legacy files.
+  - id: absorb
+    type: file
+    path: src/operations/absorb.ts
+    note: Migrated from legacy files.
+  - id: absorb-2
+    type: file
+    path: prompts/operations/absorb.md
+    note: Migrated from legacy files.
+  - id: sync
+    type: file
+    path: src/cli/commands/sync.ts
+    note: Migrated from legacy files.
+  - id: discovery
+    type: file
+    path: src/sync/discovery/
+    note: Migrated from legacy files.
+  - id: jsonl
+    type: file
+    path: src/sync/discovery/jsonl.ts
+    note: Migrated from legacy files.
+  - id: ledger
+    type: file
+    path: src/sync/ledger.ts
+    note: Migrated from legacy files.
+  - id: lock
+    type: file
+    path: src/sync/lock.ts
+    note: Migrated from legacy files.
+  - id: sweep
+    type: file
+    path: src/sync/sweep.ts
+    note: Migrated from legacy files.
+  - id: background
+    type: file
+    path: src/jobs/start.ts
+    note: Migrated from legacy files.
+  - id: automation
+    type: file
+    path: src/cli/commands/automation.ts
+    note: Migrated from legacy files.
+  - id: pricing
+    type: web
+    url: https://openai.com/api/pricing/
+    note: Migrated from legacy sources.
+  - id: gpt-5
+    type: web
+    url: https://developers.openai.com/api/docs/models/gpt-5.5
+    note: Migrated from legacy sources.
   - id: capture-discovery-cwd
     type: file
-    path: src/capture/discovery/jsonl.ts
+    path: src/sync/discovery/jsonl.ts
     note: Candidate discovery maps each transcript's recorded cwd to the nearest repo root containing .almanac.
   - id: absorb-noop-contract
     type: file
@@ -40,12 +75,27 @@ sources:
     type: transcript
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T10-54-13-019ead85-4907-76b2-b07f-2f843f0d836a.jsonl
     note: Records a Codex maintenance session that left a repo-mapped but project-unrelated transcript note uncommitted, clarifying the boundary between repo ownership and project relevance.
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T21-33-50-019e1a76-701d-7583-a76c-b3739632ee9b.jsonl
+  - >-
+    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
+  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
+  - >-
+    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 verified: 2026-06-09
 ---
 
-# Capture Flow
+# Sync Flow
 
-`almanac capture` is the session-ingest command for the V1 Absorb operation. It resolves one or more coding-session transcript files, builds command context, and calls [[wiki-lifecycle-operations]] with `targetKind: "session"`. The operation then runs through [[process-manager-runs]] and [[harness-providers]] like every other AI write path.
+`almanac sync` is the quiet-transcript coordinator for the V1 Absorb operation. It scans Claude and Codex session stores, maps transcript candidates to repos with `.almanac/`, applies the activation and quiet-window rules, reconciles repo-local ledger state, and starts background [[wiki-lifecycle-operations|Absorb]] runs with `targetKind: "session"` for ranges the ledger does not yet own. Those runs then go through [[process-manager-runs]] and [[harness-providers]] like every other AI write path.
 
 The old hardcoded writer/reviewer capture pipeline was removed. There is no `prompts/writer.md`, `prompts/reviewer.md`, `src/cli/commands/capture.ts`, `src/agent/sdk.ts`, or capture-specific `StreamingFormatter` in V1. Old root-level `.capture-*.log` provider logs were replaced by [[process-manager-runs]] JSON/JSONL records.
 
@@ -59,7 +109,7 @@ Transcript tails can also be incomplete. A 2026-05-14 Codex transcript ended aft
 
 The same lesson shapes transcript discovery tooling, not just wiki prose. The scheduled sweep's metadata pass only reads an initial header chunk and first lines to recover fields such as session id and cwd, instead of eagerly loading whole transcript files during candidate discovery. That keeps the cheap path cheap, but it also limits how much noisy or sensitive transcript content routine automation touches before a session is even eligible for capture.
 
-Almanac maintenance runs request non-persistent provider sessions through `AgentRunSpec.providerSession.persistence = "ephemeral"` and keep their durable transcript under `.almanac/runs/`. Sweep discovery no longer scans provider transcript contents for CodeAlmanac marker environment variables; the prevention path is to avoid creating provider-history maintenance transcripts in the first place.
+Almanac maintenance jobs request non-persistent provider sessions through `OperationSpec.providerSession.persistence = "ephemeral"` and keep their durable transcript under `.almanac/jobs/`. Sync discovery no longer scans provider transcript contents for CodeAlmanac marker environment variables; the prevention path is to avoid creating provider-history maintenance transcripts in the first place.
 
 Later turns in the same 2026-05-11 session pushed this one step further for actual Absorb work: large JSONL transcripts should be treated as structured event streams, not as text blobs to read linearly into context. The durable recommendation was to extract the useful capture signal structurally:
 
@@ -95,109 +145,86 @@ The same measurement also showed one subtle interpretation trap: first and last 
 
 ## Command surface
 
-The public command is `almanac capture [sessionFiles...]`, with alias `almanac c`.
+The public automatic-session command is `almanac sync`. It defaults to scanning Claude and Codex transcript stores, uses a `45m` quiet window, and starts background Absorb runs for eligible transcript continuations. `almanac sync status` runs the same discovery and cursor evaluation without enqueueing Absorb jobs or writing `sync-ledger.json`.
 
 The currently wired flags are:
 
-- `--app <app>`
-- `--session <id>`
-- `--since <duration-or-date>`
-- `--limit <n>`
-- `--all`
-- `--all-apps`
+- `--from <apps>` for `claude`, `codex`, or both
+- `--quiet <duration>` with a default of `45m`
 - `--using <provider[/model]>`
-- `--foreground`
-- `--json`
-- `-y, --yes`
-
-`almanac capture sweep` is a subcommand, not another transcript-file argument. Its key flags are:
-
-- `--apps <apps>` for `claude`, `codex`, or both
-- `--quiet <duration>` with a default of 45m
-- `--using <provider[/model]>`
-- `--dry-run`
 - `--json`
 
 The durable behavioral split is more important than the spelling of each flag:
 
-- transcript files can always be passed explicitly
-- discovery mode is still Claude-first today
-- background execution is the default, and `--foreground` opts into attached streaming
-- `--json` only applies to background start responses, not foreground runs
-
-One implementation gotcha from the 2026-05-11/2026-05-12 sweep smoke tests is easy to miss when extending this command surface: `capture` and `capture sweep` both define `--json`. In Commander, invoking `almanac capture sweep --json` can therefore put the flag on the parent `capture` command rather than the leaf subcommand action args. `register-wiki-lifecycle-commands.ts` now reads `command.optsWithGlobals()` for `capture sweep` and `capture status` so shared or parent-level flags do not disappear at runtime even when help output looks correct.
+- `sync status` is read-only and reports ready ranges
+- `sync` writes sync ledger state and starts background Absorb jobs
+- discovery is provider-store-specific, but the Absorb run is provider-neutral after a transcript path is selected
+- `--json` emits the structured summary for agent and automation consumers
 
 ## Transcript resolution
 
-Resolution lives in `src/capture/input.ts` before Absorb starts:
+Resolution lives under `src/sync/discovery/` and `src/sync/sweep.ts` before Absorb starts:
 
-- Explicit transcript file args are validated and passed through.
-- No-arg capture defaults to Claude transcript discovery.
-- `--session <id>` finds a matching Claude `<id>.jsonl`.
-- `--since`, `--limit`, and `--all` filter Claude discovery.
-- Codex/Cursor discovery and `--all-apps` still fail clearly unless transcript files are provided.
+- `discoverClaude()` scans Claude project transcripts.
+- `discoverCodex()` scans Codex session transcripts.
+- Codex transcripts marked with `payload.thread_source === "subagent"` are ignored.
+- Candidate records carry `app`, `sessionId`, `transcriptPath`, `repoRoot`, and `mtimeMs`.
+- `executeSyncSweep()` applies the quiet window, activation baseline, internal-maintenance-session exclusion, repo lock, ledger reconciliation, and cursor decision.
 
-The important current implementation boundary is that `runCaptureCommand()` resolves a concrete list of transcript file paths first, then passes those absolute paths into `runAbsorbOperation()` as normal session targets. There is no capture-time notion of "read only bytes N-M from this transcript" in today's command surface.
+The important current implementation boundary is that `runSyncCommand()` resolves concrete transcript candidates first, then starts `operations.absorb(...)` with the original absolute transcript path as the session target. There is no sync-time notion of "read only bytes N-M from this transcript" in the operation target list.
 
-That boundary also matters at prompt-construction time. `captureContext()` in [[src/cli/commands/operations.ts]] does not inline transcript contents into the Absorb prompt or try to pre-truncate the session into the context window. It appends a command-context block listing the resolved session/transcript file paths, then relies on the Absorb agent's normal filesystem/search tools to inspect the transcript lazily in chunks as needed. For large or noisy transcripts, "capture input" therefore means "here are the files to examine," not "here is the whole transcript stuffed into the model context."
+That boundary also matters at prompt-construction time. `syncAbsorbContext()` in [[src/cli/commands/sync.ts]] does not inline transcript contents into the Absorb prompt or try to pre-truncate the session into the context window. It appends a command-context block with the app, session id, transcript path, and cursor note, then relies on the Absorb agent's normal filesystem/search tools to inspect the transcript lazily in chunks as needed. For large or noisy transcripts, "sync input" means "here is the file and cursor range to examine," not "here is the whole transcript stuffed into the model context."
 
-The scheduler path extends this resolver boundary rather than replacing it. `capture sweep` discovers candidate transcript files itself, but it still starts normal capture jobs with ordinary transcript paths and additional cursor context.
+The scheduler path extends this resolver boundary rather than replacing it. Scheduled automation invokes `almanac sync --quiet <duration>`, and sync still starts normal background Absorb jobs with ordinary transcript paths and additional cursor context.
 
-The first scheduled discovery implementation scans Claude transcripts under `~/.claude/projects/**/*.jsonl` and Codex transcripts under `~/.codex/sessions/**/*.jsonl`. Claude subagent paths are ignored, and Codex transcripts marked with `payload.thread_source === "subagent"` are ignored. Provider-specific transcript scanning lives under `[[src/capture/discovery/]]` because it scans historical transcript stores; it is not part of the runtime adapter boundary in `[[harness-providers]]`.
+The first scheduled discovery implementation scans Claude transcripts under `~/.claude/projects/**/*.jsonl` and Codex transcripts under `~/.codex/sessions/**/*.jsonl`. Provider-specific transcript scanning lives under `[[src/sync/discovery/]]` because it scans historical transcript stores; it is not part of the runtime adapter boundary in `[[harness-providers]]`.
 
 The 2026-05-13 review discussion clarified the ownership boundary for this discovery code. Claude and Codex transcript scanning is provider-specific source discovery, not [[harness-providers]] execution behavior. The transcripts being scanned are external agent-app session histories that may come from ordinary user work outside CodeAlmanac's own Build, Absorb, or Garden runs. They therefore should not be treated as harness run history, even though the scanners are app-specific.
 
-Continuation capture keeps passing the original transcript path into capture, and adds cursor context telling Absorb what transcript prefix was already captured. That preserves the "agent inspects files lazily" contract while avoiding temp delta transcript files or byte-range semantics in `almanac capture`.
+Continuation sync keeps passing the original transcript path into Absorb, and adds cursor context telling Absorb what transcript prefix was already absorbed. That preserves the "agent inspects files lazily" contract while avoiding temp delta transcript files or byte-range semantics.
 
-The sweep's state helpers now live beside capture. `[[src/capture/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, and initial cursor calculation. `[[src/capture/lock.ts]]` owns repo-level sweep locking and stale-lock recovery. `[[src/capture/sweep.ts]]` owns the sweep coordinator: eligibility checks, lock acquisition, ledger reconciliation, cursor validation, capture enqueueing, cursor context, capture-start result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/capture-sweep.ts]]` parses CLI options, loads config and discovery inputs, adapts `runCaptureCommand()` to a typed capture-start result, and renders command output.
+The sweep's state helpers now live beside sync. `[[src/sync/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, legacy `capture-ledger.json` reading, and initial cursor calculation. `[[src/sync/lock.ts]]` owns repo-level sync locking and stale-lock recovery. `[[src/sync/sweep.ts]]` owns the coordinator: eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, Absorb enqueueing, cursor context, start-result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/sync.ts]]` parses CLI options, loads config and discovery inputs, adapts `operations.absorb(...)` to a typed sync-start result, and renders command output.
 
-The current sweep implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/cli/commands/capture-sweep.ts]] appends a second command-context block with the transcript identity and cursor boundary:
+The current sync implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/sync/sweep.ts]] appends a cursor note with the transcript identity and cursor boundary:
 
 ```text
-Scheduled capture cursor:
+Sync cursor:
 - App: codex|claude
 - Session id: <session-id>
 - Transcript: <absolute transcript path>
-- Previously captured through line: <N>
-- Previously captured through byte: <B>
+- Previously absorbed through line: <N>
+- Previously absorbed through byte: <B>
 - Focus on line <N+1> onward.
 - You may inspect earlier lines only for context.
 - Do not re-document decisions already captured unless newer lines amend, invalidate, or add important nuance to them.
 ```
 
-This matters operationally because the prompt does not inline the uncaptured chat tail. When an operator wants to verify why a run became eligible or what slice of an active conversation Absorb was asked to analyze, the authoritative artifact is `.almanac/runs/<run-id>.spec.json`, not the viewer transcript alone.
+This matters operationally because the prompt does not inline the uncaptured chat tail. When an operator wants to verify why a job became eligible or what slice of an active conversation Absorb was asked to analyze, the authoritative artifact is `.almanac/jobs/<job-id>.spec.json`, not the viewer transcript alone.
 
 One open operational consequence from the same session is that "pass the original transcript path" is still compatible with a smarter first step inside Absorb. Future prompt or tooling work can keep the current command surface while instructing the agent to parse JSONL structurally before reading deeply, and can optionally add a cheap preflight size estimator or cap for unusually large first-run backlogs. Neither behavior is part of the current implementation.
 
-Discovery first tries to match transcripts by directory name hash, which is the fast path with no transcript-content IO. If no matches are found, it falls back to content scanning: each transcript is opened, and `readHead(path, 4096)` checks whether the first 4 KB contains `"cwd":"<repoRoot>"`. One known performance issue remains in that fallback: `readHead` currently calls `readFile()` to load the entire file into memory before slicing. On a Claude projects directory with many large session files this causes hundreds of MB of unnecessary IO at `almanac capture` startup. The fix is to use `fs.open().read()` or a bounded stream limited to 4,096 bytes.
+Discovery first tries to match transcripts by directory name hash, which is the fast path with no transcript-content IO. If no matches are found, it falls back to content scanning: each transcript is opened, and `readHead(path, 4096)` checks whether the first 4 KB contains `"cwd":"<repoRoot>"`. One known performance issue remains in that fallback: `readHead` currently calls `readFile()` to load the entire file into memory before slicing. On a Claude projects directory with many large session files this causes hundreds of MB of unnecessary IO at `almanac sync` startup. The fix is to use `fs.open().read()` or a bounded stream limited to 4,096 bytes.
 
-## Sweep dry-run semantics
+## Sync status semantics
 
-`almanac capture sweep --dry-run` is a verification path, not a background-start variant. It should discover the same candidates and compute the same cursor ranges as a real sweep, but it must not enqueue capture jobs or create/update [[capture-ledger]] state.
-
-The late 2026-05-11 smoke test found two behavior details worth preserving:
-
-- JSON output for dry-run has to honor the same merged option handling as the live command, or `--json` can silently fall back to human text.
-- Human-readable dry-run output should say `would start`, not `started`, because no capture job was actually enqueued.
-
-The current implementation reflects both rules. The focused sweep tests also lock in one more behavioral claim: mixed-app dry-run discovery is real, not theoretical. A real smoke test against the developer's local transcript stores found both Claude and Codex candidates, with Codex sessions contributing substantial eligible work rather than being absent from the discovery set.
+`almanac sync status` is the verification path. It discovers the same candidates and computes the same cursor ranges as a live sync, but it does not enqueue Absorb jobs or create/update [[capture-ledger|sync ledger]] state. This keeps the current CLI aligned with the repo's "no dry-run flags" doctrine while preserving the operator need to see which transcript ranges are ready.
 
 ## Absorb execution
 
-Capture appends session-file context to `prompts/operations/absorb.md` through [[operation-prompts]]. `src/operations/absorb.ts` requests read, write, edit, search, and shell tools, sets `metadata.operation = "absorb"`, and defaults to background execution unless `--foreground` is passed.
+Sync appends session-file context to `prompts/operations/absorb.md` through [[operation-prompts]]. `src/operations/absorb.ts` requests read, write, edit, search, and shell tools, sets `metadata.operation = "absorb"`, and `src/cli/commands/sync.ts` always starts background Absorb jobs for eligible transcripts.
 
 Provider-specific behavior is adapter-owned. Claude may support helper agents through [[harness-providers]], but Capture no longer hardcodes a reviewer subagent or a capture-only SDK wrapper.
 
-## No-op captures
+## No-op sync runs
 
-Capture can produce no page changes if the transcript does not meet the notability bar. In V1 the observable record is a completed run with zero created, updated, and archived pages in `.almanac/runs/`.
+Sync-started Absorb jobs can produce no page changes if the transcript does not meet the notability bar. In V1 the observable record is a completed job with zero created, updated, and archived pages in `.almanac/jobs/`.
 
 Repo mapping is only an ownership decision, not a relevance decision. Discovery maps a transcript to a wiki by recovering its recorded `cwd` and walking upward to the nearest `.almanac/`, but Absorb still has to decide whether the conversation improves durable project memory. A 2026-06-09 Codex maintenance session preserved that boundary explicitly: a local wiki edit that referenced a personal, repo-unrelated transcript was deliberately left uncommitted because repo attribution alone did not make the session relevant to CodeAlmanac. [@capture-discovery-cwd] [@absorb-noop-contract] [@capture-session-2026-06-09]
 
 ## Log files
 
-Raw provider events are normalized and written to `.almanac/runs/<run-id>.jsonl`. Run status, target paths, provider/model, PID, summary counts, and errors live in `.almanac/runs/<run-id>.json`.
+Raw provider events are normalized and written to `.almanac/jobs/<job-id>.jsonl`. Job status, target paths, provider/model, PID, summary counts, and errors live in `.almanac/jobs/<job-id>.json`.
 
 ## Scheduled automation
 
-Automatic capture is scheduler-driven. `almanac automation install` writes a macOS launchd plist that runs `almanac capture sweep` every 5h by default, alongside the separate scheduled Garden plist described in [[capture-automation]]. Sweep applies quiet-window and ledger rules in-process, so launchd is only the wakeup mechanism; it does not own capture state.
+Automatic session sync is scheduler-driven. `almanac automation install` writes a macOS launchd plist that runs `almanac sync --quiet 45m` every 5h by default, alongside the separate scheduled Garden plist described in [[capture-automation]]. Sync applies quiet-window and ledger rules in-process, so launchd is only the wakeup mechanism; it does not own transcript state.
