@@ -6,8 +6,8 @@ import { dirname, join } from "node:path";
 import type { SessionCandidate, SweepApp } from "./discovery/index.js";
 import { objectField, parseJsonObject, stringField } from "./discovery/jsonl.js";
 import { getRepoAlmanacDir } from "../paths.js";
-import { readRunRecord, runRecordPath } from "../process/records.js";
-import type { RunRecord } from "../process/types.js";
+import { readJobRecord, resolveJobRecordPath } from "../jobs/records.js";
+import type { JobRecord } from "../jobs/types.js";
 
 export type LedgerStatus = "done" | "pending" | "failed" | "needs_attention";
 
@@ -20,11 +20,11 @@ export interface LedgerEntry {
   lastAbsorbedLine: number;
   lastAbsorbedPrefixHash: string;
   lastAbsorbedAt?: string;
-  lastRunId?: string;
+  lastJobId?: string;
   pendingToSize?: number;
   pendingToLine?: number;
   pendingPrefixHash?: string;
-  pendingRunId?: string;
+  pendingJobId?: string;
   pendingStartedAt?: string;
   lastError?: string;
 }
@@ -79,8 +79,8 @@ export async function reconcileLedger(
   now: Date,
 ): Promise<void> {
   for (const entry of Object.values(ledger.sessions)) {
-    if (entry.status !== "pending" || entry.pendingRunId === undefined) continue;
-    const record = await readRunRecord(runRecordPath(repoRoot, entry.pendingRunId));
+    if (entry.status !== "pending" || entry.pendingJobId === undefined) continue;
+    const record = await readJobRecord(await resolveJobRecordPath(repoRoot, entry.pendingJobId));
     if (record === null || record.status === "queued" || record.status === "running") {
       continue;
     }
@@ -90,12 +90,12 @@ export async function reconcileLedger(
       entry.lastAbsorbedLine = entry.pendingToLine ?? entry.lastAbsorbedLine;
       entry.lastAbsorbedPrefixHash = entry.pendingPrefixHash ?? entry.lastAbsorbedPrefixHash;
       entry.lastAbsorbedAt = now.toISOString();
-      entry.lastRunId = entry.pendingRunId;
+      entry.lastJobId = entry.pendingJobId;
       clearPending(entry);
     } else {
       entry.status = "failed";
-      entry.lastRunId = entry.pendingRunId;
-      entry.lastError = terminalRunError(record);
+      entry.lastJobId = entry.pendingJobId;
+      entry.lastError = terminalJobError(record);
       clearPending(entry);
     }
   }
@@ -141,6 +141,10 @@ export function countLines(content: string): number {
 }
 
 function syncLedgerPath(repoRoot: string): string {
+  return join(getRepoAlmanacDir(repoRoot), "jobs", "sync-ledger.json");
+}
+
+function legacySyncLedgerPath(repoRoot: string): string {
   return join(getRepoAlmanacDir(repoRoot), "runs", "sync-ledger.json");
 }
 
@@ -149,10 +153,14 @@ function legacyCaptureLedgerPath(repoRoot: string): string {
 }
 
 function existingLedgerPath(repoRoot: string): string {
-  const current = syncLedgerPath(repoRoot);
-  if (existsSync(current)) return current;
-  const legacy = legacyCaptureLedgerPath(repoRoot);
-  return existsSync(legacy) ? legacy : current;
+  for (const candidate of [
+    syncLedgerPath(repoRoot),
+    legacySyncLedgerPath(repoRoot),
+    legacyCaptureLedgerPath(repoRoot),
+  ]) {
+    if (existsSync(candidate)) return candidate;
+  }
+  return syncLedgerPath(repoRoot);
 }
 
 function emptyLedger(): SyncLedger {
@@ -205,11 +213,11 @@ function normalizeLedgerEntry(value: unknown): LedgerEntry | null {
     lastAbsorbedLine,
     lastAbsorbedPrefixHash,
     lastAbsorbedAt: stringValue(raw.lastAbsorbedAt) ?? stringValue(raw.lastCapturedAt),
-    lastRunId: stringValue(raw.lastRunId),
+    lastJobId: stringValue(raw.lastJobId),
     pendingToSize: numberValue(raw.pendingToSize),
     pendingToLine: numberValue(raw.pendingToLine),
     pendingPrefixHash: stringValue(raw.pendingPrefixHash),
-    pendingRunId: stringValue(raw.pendingRunId),
+    pendingJobId: stringValue(raw.pendingJobId) ?? stringValue(raw.pendingRunId),
     pendingStartedAt: stringValue(raw.pendingStartedAt),
     lastError: stringValue(raw.lastError),
   });
@@ -275,7 +283,7 @@ function transcriptLineTimestamp(line: string): number | null {
   return Number.isFinite(ms) ? ms : null;
 }
 
-function terminalRunError(record: RunRecord): string {
+function terminalJobError(record: JobRecord): string {
   return record.error ?? record.failure?.message ?? `sync absorb ${record.status}`;
 }
 
@@ -283,6 +291,6 @@ function clearPending(entry: LedgerEntry): void {
   delete entry.pendingToSize;
   delete entry.pendingToLine;
   delete entry.pendingPrefixHash;
-  delete entry.pendingRunId;
+  delete entry.pendingJobId;
   delete entry.pendingStartedAt;
 }

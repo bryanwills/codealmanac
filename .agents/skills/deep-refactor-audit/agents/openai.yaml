@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Refactor Audit"
+  short_description: "Aggressive no-code architecture audit"
+  default_prompt: "Use $deep-refactor-audit to critically audit this codebase architecture, question accidental complexity, and produce a no-code refactor report."

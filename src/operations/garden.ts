@@ -1,11 +1,11 @@
-import type { AgentRunSpec } from "../harness/types.js";
+import type { OperationSpec } from "./spec.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
-  StartBackgroundProcess,
-  StartForegroundProcess,
+  StartBackgroundJob,
+  StartForegroundJob,
 } from "./types.js";
 import { createOperationRunSpec, runOperationProcess } from "./run.js";
 
@@ -14,17 +14,17 @@ export interface GardenOperationOptions {
   provider?: OperationProviderSelection;
   background?: boolean;
   context?: string;
-  runId?: string;
+  jobId?: string;
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
-  startForeground?: StartForegroundProcess;
-  startBackground?: StartBackgroundProcess;
+  startForeground?: StartForegroundJob;
+  startBackground?: StartBackgroundJob;
 }
 
 export async function createGardenRunSpec(args: {
   repoRoot: string;
   provider?: OperationProviderSelection;
   context?: string;
-}): Promise<AgentRunSpec> {
+}): Promise<OperationSpec> {
   return createOperationRunSpec({
     operation: "garden",
     promptName: "operations/garden",
@@ -51,7 +51,7 @@ export async function runGardenOperation(
     repoRoot,
     spec,
     background: options.background !== false,
-    runId: options.runId,
+    jobId: options.jobId,
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,

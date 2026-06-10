@@ -1,13 +1,13 @@
 import type { HarnessResult } from "../events.js";
 import type {
-  AgentRunSpec,
   HarnessProvider,
   HarnessRunHooks,
   ProviderStatus,
 } from "../types.js";
+import type { OperationSpec } from "../../operations/spec.js";
 import { runCodexAppServer } from "./codex/app-server.js";
 import { unsupportedCodexSpecFields } from "./codex/request.js";
-import { defaultCommandExists, defaultRunStatus } from "./codex/status.js";
+import { defaultCommandExists, defaultJobStatus } from "./codex/status.js";
 import { HARNESS_PROVIDER_METADATA } from "./metadata.js";
 
 export type { CodexAppServerRequest } from "./codex/request.js";
@@ -24,7 +24,7 @@ export {
 } from "./codex/events.js";
 
 export type CodexAppServerRunFn = (
-  spec: AgentRunSpec,
+  spec: OperationSpec,
   hooks?: HarnessRunHooks,
 ) => Promise<HarnessResult>;
 
@@ -42,7 +42,7 @@ export function createCodexHarnessProvider(
 ): HarnessProvider {
   const metadata = HARNESS_PROVIDER_METADATA.codex;
   const commandExists = deps.commandExists ?? defaultCommandExists;
-  const runStatus = deps.runStatus ?? defaultRunStatus;
+  const runStatus = deps.runStatus ?? defaultJobStatus;
   const runAppServer = deps.runAppServer ?? runCodexAppServer;
 
   return {

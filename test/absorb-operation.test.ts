@@ -8,7 +8,7 @@ import {
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 describe("absorb operation", () => {
-  it("creates an absorb AgentRunSpec from prompt plus caller context", async () => {
+  it("creates an absorb OperationSpec from prompt plus caller context", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "absorb-spec");
       const transcript = join(repo, "session.jsonl");
@@ -64,13 +64,13 @@ describe("absorb operation", () => {
         context: `Absorb path: ${target}`,
         targetKind: "path",
         targetPaths: [target],
-        runId: "run_20260509201200_absorb",
+        jobId: "run_20260509201200_absorb",
         startBackground: async (options) => ({
-          runId: options.runId ?? "generated",
+          jobId: options.jobId ?? "generated",
           childPid: 456,
           record: {
             version: 1,
-            id: options.runId ?? "generated",
+            id: options.jobId ?? "generated",
             operation: "absorb",
             status: "queued",
             repoRoot: options.repoRoot,
@@ -84,7 +84,7 @@ describe("absorb operation", () => {
 
       expect(result).toMatchObject({
         mode: "background",
-        runId: "run_20260509201200_absorb",
+        jobId: "run_20260509201200_absorb",
         background: {
           childPid: 456,
           record: { status: "queued", operation: "absorb" },
@@ -102,12 +102,12 @@ describe("absorb operation", () => {
         cwd: repo,
         background: false,
         context: "Manual absorb.",
-        runId: "run_20260509201300_absorb_fg",
+        jobId: "run_20260509201300_absorb_fg",
         startForeground: async (options) => ({
-          runId: options.runId ?? "generated",
+          jobId: options.jobId ?? "generated",
           record: {
             version: 1,
-            id: options.runId ?? "generated",
+            id: options.jobId ?? "generated",
             operation: "absorb",
             status: "done",
             repoRoot: options.repoRoot,
@@ -122,7 +122,7 @@ describe("absorb operation", () => {
 
       expect(result).toMatchObject({
         mode: "foreground",
-        runId: "run_20260509201300_absorb_fg",
+        jobId: "run_20260509201300_absorb_fg",
         foreground: {
           record: { status: "done", operation: "absorb" },
         },

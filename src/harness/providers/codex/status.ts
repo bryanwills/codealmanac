@@ -7,7 +7,7 @@ export function defaultCommandExists(command: string): boolean {
   return result.status === 0 && result.stdout.trim().length > 0;
 }
 
-export function defaultRunStatus(
+export function defaultJobStatus(
   command: string,
   args: string[],
 ): Promise<{ ok: boolean; detail: string }> {

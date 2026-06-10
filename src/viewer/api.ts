@@ -53,7 +53,7 @@ export interface ViewerApi {
   file(path: string): Promise<{ path: string; pages: ViewerPageSummary[] }>;
   review(): Promise<ViewerReview>;
   jobs(): Promise<{ runs: ViewerJobRun[] }>;
-  job(runId: string): Promise<ViewerJobDetail | null>;
+  job(jobId: string): Promise<ViewerJobDetail | null>;
 }
 
 export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
@@ -141,9 +141,9 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
       return getViewerJobs(ctx.repoRoot);
     },
 
-    async job(runId) {
+    async job(jobId) {
       return withFreshDb(ctx.repoRoot, async (db) => {
-        return getViewerJobDetail(ctx.repoRoot, runId, db);
+        return getViewerJobDetail(ctx.repoRoot, jobId, db);
       });
     },
   };

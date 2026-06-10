@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { runSyncCommand } from "../src/cli/commands/sync.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/config/index.js";
-import { runRecordPath, writeRunRecord } from "../src/process/index.js";
+import { jobRecordPath, writeJobRecord } from "../src/jobs/index.js";
 
 describe("almanac sync", () => {
   it("identifies ready Claude and Codex transcripts mapped to .almanac repos", async () => {
@@ -61,7 +61,7 @@ describe("almanac sync", () => {
       expect(parsed.data.summary.ready).toHaveLength(2);
       expect(parsed.data.summary.ready.map((s: { app: string }) => s.app).sort())
         .toEqual(["claude", "codex"]);
-      expect(existsSync(join(repo, ".almanac", "runs", "sync-ledger.json")))
+      expect(existsSync(join(repo, ".almanac", "jobs", "sync-ledger.json")))
         .toBe(false);
     });
   });
@@ -95,13 +95,13 @@ describe("almanac sync", () => {
         startBackground: async (options) => {
           started.push(options.spec.metadata?.targetPaths?.[0] ?? "missing");
           runIndex += 1;
-          const runId = `run_enqueued_${runIndex}`;
+          const jobId = `run_enqueued_${runIndex}`;
           return {
-            runId,
+            jobId,
             childPid: 123,
             record: {
               version: 1,
-              id: runId,
+              id: jobId,
               operation: "absorb",
               status: "queued",
               repoRoot: options.repoRoot,
@@ -126,7 +126,7 @@ describe("almanac sync", () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
-      await writeRunRecord(runRecordPath(repo, "run_active_absorb"), {
+      await writeJobRecord(jobRecordPath(repo, "run_active_absorb"), {
         version: 1,
         id: "run_active_absorb",
         operation: "absorb",
@@ -155,7 +155,7 @@ describe("almanac sync", () => {
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
         startBackground: async (options) => ({
-          runId: "run_queued_after_active",
+          jobId: "run_queued_after_active",
           childPid: 123,
           record: {
             version: 1,
@@ -174,7 +174,7 @@ describe("almanac sync", () => {
       const parsed = JSON.parse(result.stdout);
       expect(parsed.data.summary.started).toHaveLength(1);
       expect(parsed.data.summary.started[0]).toMatchObject({
-        runId: "run_queued_after_active",
+        jobId: "run_queued_after_active",
       });
       expect(parsed.data.summary.skipped).toEqual([]);
     });
@@ -352,11 +352,11 @@ describe("almanac sync", () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
-      await mkdir(join(repo, ".almanac", "runs", "sync.lock"), {
+      await mkdir(join(repo, ".almanac", "jobs", "sync.lock"), {
         recursive: true,
       });
       await writeFile(
-        join(repo, ".almanac", "runs", "sync.lock", "owner.json"),
+        join(repo, ".almanac", "jobs", "sync.lock", "owner.json"),
         JSON.stringify({
           pid: process.pid,
           startedAt: "2026-05-11T11:59:00.000Z",
@@ -393,7 +393,7 @@ describe("almanac sync", () => {
     });
   });
 
-  it("skips transcripts whose session id belongs to a running Almanac run record", async () => {
+  it("skips transcripts whose session id belongs to a running Almanac job record", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
@@ -410,7 +410,7 @@ describe("almanac sync", () => {
       );
       const old = new Date("2026-05-11T10:00:00.000Z");
       await utimes(transcript, old, old);
-      await writeRunRecord(runRecordPath(repo, "run_20260511110000_internal"), {
+      await writeJobRecord(jobRecordPath(repo, "run_20260511110000_internal"), {
         version: 1,
         id: "run_20260511110000_internal",
         operation: "absorb",
@@ -445,7 +445,7 @@ describe("almanac sync", () => {
     });
   });
 
-  it("ignores malformed provider session ids in historical run records", async () => {
+  it("ignores malformed provider session ids in historical job records", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
@@ -464,7 +464,7 @@ describe("almanac sync", () => {
       await utimes(transcript, old, old);
       await mkdir(join(repo, ".almanac", "runs"), { recursive: true });
       await writeFile(
-        runRecordPath(repo, "run_20260511110000_malformed"),
+        join(repo, ".almanac", "runs", "run_20260511110000_malformed.json"),
         `${JSON.stringify({
           version: 1,
           id: "run_20260511110000_malformed",
@@ -487,7 +487,7 @@ describe("almanac sync", () => {
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
         startBackground: async (options) => ({
-          runId: "run_external",
+          jobId: "run_external",
           childPid: 123,
           record: {
             version: 1,
@@ -515,7 +515,7 @@ describe("almanac sync", () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "repo");
       await scaffoldWiki(repo);
-      const lock = join(repo, ".almanac", "runs", "sync.lock");
+      const lock = join(repo, ".almanac", "jobs", "sync.lock");
       await mkdir(lock, { recursive: true });
       await writeFile(
         join(lock, "owner.json"),
@@ -547,7 +547,7 @@ describe("almanac sync", () => {
         quiet: "45m",
         now: new Date("2026-05-11T12:00:00.000Z"),
         startBackground: async (options) => ({
-          runId: "run_recovered_lock",
+          jobId: "run_recovered_lock",
           childPid: 123,
           record: {
             version: 1,
@@ -567,7 +567,7 @@ describe("almanac sync", () => {
       const parsed = JSON.parse(result.stdout);
       expect(parsed.data.summary.started).toHaveLength(1);
       expect(parsed.data.summary.started[0]).toMatchObject({
-        runId: "run_recovered_lock",
+        jobId: "run_recovered_lock",
       });
       await expect(readFile(lock, "utf8")).rejects.toThrow();
       await rm(lock, { recursive: true, force: true });

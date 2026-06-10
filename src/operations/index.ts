@@ -26,6 +26,8 @@ export type {
   OperationMode,
   OperationProviderSelection,
   OperationRunResult,
-  StartBackgroundProcess,
-  StartForegroundProcess,
+  StartBackgroundJob,
+  StartForegroundJob,
 } from "./types.js";
+export { summarizeOperationOutput } from "./output.js";
+export type { OperationAgentSpec, OperationKind, OperationSpec, ProviderSessionPersistence } from "./spec.js";

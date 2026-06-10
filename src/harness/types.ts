@@ -1,56 +1,8 @@
 import type { HarnessEvent, HarnessResult } from "./events.js";
-import type { FinalOutputSpec } from "./final-output.js";
-import type { ToolRequest } from "./tools.js";
 import type { AgentProviderId } from "../agent/provider-id.js";
+import type { OperationSpec } from "../operations/spec.js";
 
 export type HarnessProviderId = AgentProviderId;
-export type OperationKind = "build" | "absorb" | "garden";
-export type ProviderSessionPersistence = "ephemeral" | "persistent";
-
-export interface AgentSpec {
-  description: string;
-  prompt: string;
-  tools?: ToolRequest[];
-  model?: string;
-  effort?: string;
-  skills?: string[];
-  mcpServers?: Record<string, unknown>;
-  maxTurns?: number;
-}
-
-export interface AgentRunSpec {
-  provider: {
-    id: HarnessProviderId;
-    model?: string;
-    effort?: string;
-  };
-  cwd: string;
-  systemPrompt?: string;
-  prompt: string;
-  tools?: ToolRequest[];
-  agents?: Record<string, AgentSpec>;
-  skills?: string[];
-  mcpServers?: Record<string, unknown>;
-  /**
-   * Whether the run needs outbound network access (e.g. the agent will use
-   * `gh` to reach api.github.com). Sandboxed providers gate the network on
-   * this.
-   */
-  networkAccess?: boolean;
-  limits?: {
-    maxTurns?: number;
-    maxCostUsd?: number;
-  };
-  providerSession?: {
-    persistence?: ProviderSessionPersistence;
-  };
-  output?: FinalOutputSpec;
-  metadata?: {
-    operation: OperationKind;
-    targetKind?: string;
-    targetPaths?: string[];
-  };
-}
 
 export interface HarnessCapabilities {
   nonInteractive: boolean;
@@ -104,5 +56,5 @@ export interface HarnessRunHooks {
 export interface HarnessProvider {
   metadata: ProviderMetadata;
   checkStatus(): Promise<ProviderStatus>;
-  run(spec: AgentRunSpec, hooks?: HarnessRunHooks): Promise<HarnessResult>;
+  run(spec: OperationSpec, hooks?: HarnessRunHooks): Promise<HarnessResult>;
 }

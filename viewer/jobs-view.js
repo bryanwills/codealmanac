@@ -35,8 +35,8 @@ export function createJobsView(deps) {
     wireListFilters();
   }
 
-  async function renderDetail(runId) {
-    const detail = await deps.api(deps.jobPath(runId));
+  async function renderDetail(jobId) {
+    const detail = await deps.api(deps.jobPath(jobId));
     const run = detail.run;
     const agents = detail.agents ?? [];
     const transcript = buildTranscript(detail.events, agents, { mode: transcriptMode });
@@ -99,8 +99,8 @@ export function createJobsView(deps) {
     clearPoll();
     pollTimer = window.setTimeout(() => {
       pollTimer = null;
-      if (deps.isCurrentJobRoute(runId)) {
-        renderDetail(runId).catch((error) => deps.renderError(error));
+      if (deps.isCurrentJobRoute(jobId)) {
+        renderDetail(jobId).catch((error) => deps.renderError(error));
       }
     }, 1500);
   }
@@ -681,7 +681,7 @@ export function createJobsView(deps) {
         const mode = button.getAttribute("data-transcript-mode") === "debug" ? "debug" : "normal";
         if (mode === transcriptMode) return;
         transcriptMode = mode;
-        renderDetail(runId).catch((error) => deps.renderError(error));
+        renderDetail(jobId).catch((error) => deps.renderError(error));
       });
     });
 

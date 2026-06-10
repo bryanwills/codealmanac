@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { createClaudeHarnessProvider } from "../src/harness/providers/claude.js";
-import type { AgentRunSpec } from "../src/harness/types.js";
+import type { OperationSpec } from "../src/operations/spec.js";
 import {
   createProcessTreeFixture,
   isProcessAlive,
@@ -12,7 +12,7 @@ import {
 } from "./helpers.js";
 
 describe("Claude harness provider", () => {
-  it("maps AgentRunSpec to Claude SDK query options", async () => {
+  it("maps OperationSpec to Claude SDK query options", async () => {
     const calls: unknown[] = [];
     const provider = createClaudeHarnessProvider({
       resolveExecutable: () => "/usr/local/bin/claude",
@@ -46,7 +46,7 @@ describe("Claude harness provider", () => {
       },
     });
 
-    const spec: AgentRunSpec = {
+    const spec: OperationSpec = {
       provider: {
         id: "claude",
         model: "claude-opus-4-6",

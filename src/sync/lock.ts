@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
@@ -7,7 +8,18 @@ import { getRepoAlmanacDir } from "../paths.js";
 const SYNC_LOCK_STALE_MS = 60 * 60 * 1000;
 
 export function syncLockPath(repoRoot: string): string {
+  return join(getRepoAlmanacDir(repoRoot), "jobs", "sync.lock");
+}
+
+function legacySyncLockPath(repoRoot: string): string {
   return join(getRepoAlmanacDir(repoRoot), "runs", "sync.lock");
+}
+
+function existingSyncLockPath(repoRoot: string): string {
+  const primary = syncLockPath(repoRoot);
+  if (existsSync(primary)) return primary;
+  const legacy = legacySyncLockPath(repoRoot);
+  return existsSync(legacy) ? legacy : primary;
 }
 
 export async function acquireRepoSyncLock(repoRoot: string, now: Date): Promise<boolean> {
@@ -19,10 +31,11 @@ export async function acquireRepoSyncLock(repoRoot: string, now: Date): Promise<
 
 export async function releaseRepoSyncLock(repoRoot: string): Promise<void> {
   await rm(syncLockPath(repoRoot), { recursive: true, force: true });
+  await rm(legacySyncLockPath(repoRoot), { recursive: true, force: true });
 }
 
 function lockOwnerPath(repoRoot: string): string {
-  return join(syncLockPath(repoRoot), "owner.json");
+  return join(existingSyncLockPath(repoRoot), "owner.json");
 }
 
 async function tryCreateRepoLock(repoRoot: string, now: Date): Promise<boolean> {

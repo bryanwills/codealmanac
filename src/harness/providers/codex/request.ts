@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import type { AgentRunSpec } from "../../types.js";
+import type { OperationSpec } from "../../../operations/spec.js";
 
 export interface CodexAppServerRequest {
   command: "codex";
@@ -9,7 +9,7 @@ export interface CodexAppServerRequest {
   env: NodeJS.ProcessEnv;
 }
 
-export function buildCodexAppServerRequest(spec: AgentRunSpec): CodexAppServerRequest {
+export function buildCodexAppServerRequest(spec: OperationSpec): CodexAppServerRequest {
   const unsupported = unsupportedCodexSpecFields(spec);
   if (unsupported.length > 0) {
     throw new Error(
@@ -24,7 +24,7 @@ export function buildCodexAppServerRequest(spec: AgentRunSpec): CodexAppServerRe
   };
 }
 
-export function unsupportedCodexSpecFields(spec: AgentRunSpec): string[] {
+export function unsupportedCodexSpecFields(spec: OperationSpec): string[] {
   const unsupported: string[] = [];
   if (spec.skills !== undefined && spec.skills.length > 0) unsupported.push("skills");
   if (spec.mcpServers !== undefined && Object.keys(spec.mcpServers).length > 0) {
@@ -34,7 +34,7 @@ export function unsupportedCodexSpecFields(spec: AgentRunSpec): string[] {
   return unsupported;
 }
 
-export function combineCodexPrompt(spec: AgentRunSpec): string {
+export function combineCodexPrompt(spec: OperationSpec): string {
   const blocks = [spec.systemPrompt, spec.prompt].filter(
     (block): block is string => block !== undefined && block.trim().length > 0,
   );

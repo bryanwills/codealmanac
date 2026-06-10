@@ -80,8 +80,8 @@ export async function initWiki(options: InitOptions): Promise<InitResult> {
  * Ensure `.gitignore` in the repo root contains the Almanac-derived
  * runtime files that should never be committed.
  *
- * The SQLite index is derived from markdown pages. Run records are local
- * process state and JSONL event logs; they can be large and are not wiki
+ * The SQLite index is derived from markdown pages. Job records are local
+ * lifecycle state and JSONL event logs; they can be large and are not wiki
  * content.
  *
  * We add the block regardless of whether the file exists (creating
@@ -100,7 +100,7 @@ async function ensureGitignoreHasRuntimeArtifacts(cwd: string): Promise<void> {
     ".almanac/index.db",
     ".almanac/index.db-wal",
     ".almanac/index.db-shm",
-    ".almanac/runs/",
+    ".almanac/jobs/",
   ];
 
   let existing = "";

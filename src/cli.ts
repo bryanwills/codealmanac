@@ -105,9 +105,9 @@ export async function run(argv: string[], deps: RunDeps = {}): Promise<void> {
 }
 
 async function tryRunInternalJob(args: string[]): Promise<boolean> {
-  if (args[0] !== "__run-worker") return false;
-  const { runBackgroundWorker } = await import("./process/index.js");
-  await runBackgroundWorker({
+  if (args[0] !== "__job-worker" && args[0] !== "__run-worker") return false;
+  const { runJobWorker } = await import("./jobs/index.js");
+  await runJobWorker({
     repoRoot: process.cwd(),
   });
   return true;

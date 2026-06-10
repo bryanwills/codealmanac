@@ -197,7 +197,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
 
   jobs
     .command("list", { isDefault: true })
-    .description("list runs for this wiki")
+    .description("list jobs for this wiki")
     .option("--json", "emit structured JSON")
     .action(async (opts: { json?: boolean }) => {
       const { runJobsList } = await import("./commands/jobs.js");
@@ -210,13 +210,13 @@ export function registerWikiLifecycleCommands(program: Command): void {
 
   jobs
     .command("show <run-id>")
-    .description("show one run record")
+    .description("show one job record")
     .option("--json", "emit structured JSON")
-    .action(async (runId: string, opts: { json?: boolean }) => {
+    .action(async (jobId: string, opts: { json?: boolean }) => {
       const { runJobsShow } = await import("./commands/jobs.js");
       const result = await runJobsShow({
         cwd: process.cwd(),
-        runId,
+        jobId,
         json: opts.json,
       });
       emit(result);
@@ -226,11 +226,11 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .command("logs <run-id>")
     .description("print a run's JSONL event log")
     .option("--json", "emit structured errors as JSON")
-    .action(async (runId: string, opts: { json?: boolean }) => {
+    .action(async (jobId: string, opts: { json?: boolean }) => {
       const { runJobsLogs } = await import("./commands/jobs.js");
       const result = await runJobsLogs({
         cwd: process.cwd(),
-        runId,
+        jobId,
         json: opts.json,
       });
       emit(result);
@@ -238,13 +238,13 @@ export function registerWikiLifecycleCommands(program: Command): void {
 
   jobs
     .command("attach <run-id>")
-    .description("stream a run log until the job exits")
+    .description("stream a job log until the job exits")
     .option("--json", "emit structured errors as JSON")
-    .action(async (runId: string, opts: { json?: boolean }) => {
+    .action(async (jobId: string, opts: { json?: boolean }) => {
       const { streamJobsAttach } = await import("./commands/jobs.js");
       const result = await streamJobsAttach({
         cwd: process.cwd(),
-        runId,
+        jobId,
         json: opts.json,
       });
       emit(result);
@@ -254,11 +254,11 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .command("cancel <run-id>")
     .description("cancel a running or queued job")
     .option("--json", "emit structured JSON")
-    .action(async (runId: string, opts: { json?: boolean }) => {
+    .action(async (jobId: string, opts: { json?: boolean }) => {
       const { runJobsCancel } = await import("./commands/jobs.js");
       const result = await runJobsCancel({
         cwd: process.cwd(),
-        runId,
+        jobId,
         json: opts.json,
       });
       emit(result);

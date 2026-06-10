@@ -119,7 +119,7 @@ The markdown pages are the source of truth. `index.db` is a derived cache used b
 Almanac has two kinds of commands:
 
 - **Write-capable lifecycle commands**: `init`, `absorb`, `sync`, and `garden` can invoke your configured AI provider. `ingest` is an alias for `absorb`.
-- **Local query and organization commands**: `search`, `show`, `topics`, `tag`, `health`, `list`, `jobs`, and `automation` operate on local files, SQLite, or run records.
+- **Local query and organization commands**: `search`, `show`, `topics`, `tag`, `health`, `list`, `jobs`, and `automation` operate on local files, SQLite, or job records.
 
 Scheduled automation runs `almanac sync` and `almanac garden`. Sync scans Claude and Codex transcript stores, ignores transcripts from before automation was enabled, waits for active transcripts to become quiet, maps each transcript back to the nearest repo with `.almanac/`, and starts ordinary background Absorb jobs for new material. Garden periodically maintains the wiki graph.
 

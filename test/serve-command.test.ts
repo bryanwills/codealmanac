@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  buildQueuedRunRecord,
-  runRecordPath,
-  writeRunRecord,
-} from "../src/process/index.js";
+  buildQueuedJobRecord,
+  jobRecordPath,
+  writeJobRecord,
+} from "../src/jobs/index.js";
 import { addEntry } from "../src/wiki/registry/index.js";
 import { startViewerServer } from "../src/viewer/server.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
@@ -19,8 +19,8 @@ describe("viewer server", () => {
         "sync-flow",
         "---\ntitle: Sync Flow\ntopics: [flows]\n---\n\n# Sync Flow\n\nBody.\n",
       );
-      const record = buildQueuedRunRecord({
-        runId: "run_20260510123000_server",
+      const record = buildQueuedJobRecord({
+        jobId: "run_20260510123000_server",
         repoRoot: repo,
         queuedAt: new Date("2026-05-10T12:30:00.000Z"),
         spec: {
@@ -30,7 +30,7 @@ describe("viewer server", () => {
           metadata: { operation: "absorb" },
         },
       });
-      await writeRunRecord(runRecordPath(repo, record.id), record);
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
 
       await addEntry({
         name: "alpha",

@@ -193,7 +193,7 @@ by scheduled automation and can also be run manually for debugging.
 | `--json` | Emit structured sync output. |
 
 Sync passes the original transcript path to Absorb and adds cursor guidance from
-`.almanac/runs/sync-ledger.json`, so the agent focuses on lines/bytes after the
+`.almanac/jobs/sync-ledger.json`, so the agent focuses on lines/bytes after the
 last successful absorb.
 
 #### `almanac garden`
@@ -211,15 +211,15 @@ Maintain the wiki as a graph: page boundaries, links, topics, hubs, stale claims
 
 #### `almanac jobs`
 
-Inspect and manage Almanac runs stored under `.almanac/runs/`.
+Inspect and manage Almanac jobs stored under `.almanac/jobs/`.
 
 ```bash
 almanac jobs
 almanac jobs list
-almanac jobs show <run-id>
-almanac jobs logs <run-id>
-almanac jobs attach <run-id>
-almanac jobs cancel <run-id>
+almanac jobs show <job-id>
+almanac jobs logs <job-id>
+almanac jobs attach <job-id>
+almanac jobs cancel <job-id>
 ```
 
 Each jobs subcommand accepts `--json`. `attach` streams the JSONL event log until the run reaches `done`, `failed`, `cancelled`, or `stale`.
@@ -613,7 +613,7 @@ almanac doctor --json | jq '.install[] | select(.status == "problem")'
 2. Ignore transcripts older than `automation.sync_since`, which setup records the first time sync is enabled.
 3. Ignore transcripts whose mtime is still inside the quiet window.
 4. Recover the transcript cwd/session metadata and map each transcript back to the nearest repo with `.almanac/`.
-5. Reconcile `.almanac/runs/sync-ledger.json` against background run records.
+5. Reconcile `.almanac/jobs/sync-ledger.json` against background job records.
 6. Start an ordinary background Absorb job only for new eligible material, with cursor guidance telling the agent where new lines begin.
 
 The scheduler is only a wakeup mechanism. Sync owns transcript eligibility, dedupe, cursor state, and run enqueueing.
@@ -642,7 +642,7 @@ almanac doctor              # catch-all — reports automation state + last abso
 almanac automation status   # scheduler entry
 almanac sync status
 almanac jobs
-ls -lah .almanac/runs/
+ls -lah .almanac/jobs/
 ```
 
 Installed but no job: the scheduler has not reached its next wakeup, the transcript is still inside the quiet window, the transcript predates `automation.sync_since`, there is no new content past the ledger cursor, or no `.almanac/` exists upward from the transcript cwd (silent correct no-op).
@@ -650,8 +650,8 @@ Installed but no job: the scheduler has not reached its next wakeup, the transcr
 ### Diagnosing "sync ran but wrote nothing"
 
 ```bash
-almanac jobs show <run-id>
-almanac jobs logs <run-id>
+almanac jobs show <job-id>
+almanac jobs logs <job-id>
 ```
 
 Common causes:
@@ -840,7 +840,7 @@ almanac doctor              # reports automation state + last absorb age + auth
 almanac automation status   # scheduler installed?
 almanac sync status --json
 almanac jobs
-ls -lah .almanac/runs/
+ls -lah .almanac/jobs/
 ```
 
 No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, the transcript predates `automation.sync_since`, or the transcript maps to no repo with `.almanac/`. If automation is missing, `almanac doctor` reports `install.automation: problem` with `run: almanac automation install`.
@@ -855,10 +855,10 @@ Case sensitivity on Linux. Schema v2 stores `original_path` for case-preserving 
 
 ### Forensics files
 
-- `.almanac/runs/<run-id>.json` — Almanac run record with status, provider, model, timings, log path, and failure metadata.
-- `.almanac/runs/<run-id>.jsonl` — provider event log for the run. Read with `almanac jobs logs <run-id>`.
-- `.almanac/runs/sync-ledger.json` — sync cursor and pending-run state used to dedupe scheduled absorbs.
-- `.almanac/runs/sync.lock` — repo-local sync lock used to avoid overlapping sync enqueue races.
+- `.almanac/jobs/<job-id>.json` — Almanac job record with status, provider, model, timings, log path, and failure metadata.
+- `.almanac/jobs/<job-id>.jsonl` — provider event log for the job. Read with `almanac jobs logs <job-id>`.
+- `.almanac/jobs/sync-ledger.json` — sync cursor and pending-job state used to dedupe scheduled absorbs.
+- `.almanac/jobs/sync.lock` — repo-local sync lock used to avoid overlapping sync enqueue races.
 
 ---
 

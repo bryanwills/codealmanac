@@ -33,7 +33,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_default_provider",
+            jobId: "run_default_provider",
             childPid: 123,
             record: {
               version: 1,
@@ -70,7 +70,7 @@ describe("operation command wrappers", () => {
         cwd: repo,
         using: "codex/gpt-5.4",
         startForeground: async (options) => ({
-          runId: "run_init",
+          jobId: "run_init",
           record: {
             version: 1,
             id: "run_init",
@@ -129,7 +129,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_config_provider",
+            jobId: "run_config_provider",
             childPid: 123,
             record: {
               version: 1,
@@ -168,7 +168,7 @@ describe("operation command wrappers", () => {
         cwd: repo,
         using: "cursor",
         startForeground: async (options) => ({
-          runId: "run_failed",
+          jobId: "run_failed",
           record: {
             version: 1,
             id: "run_failed",
@@ -203,7 +203,7 @@ describe("operation command wrappers", () => {
         cwd: repo,
         using: "codex/gpt-5.5",
         startForeground: async (options) => ({
-          runId: "run_failed_structured",
+          jobId: "run_failed_structured",
           record: {
             version: 1,
             id: "run_failed_structured",
@@ -274,7 +274,7 @@ describe("operation command wrappers", () => {
         using: "claude/claude-sonnet-4-6",
         json: true,
         startBackground: async (options) => ({
-          runId: "run_absorb",
+          jobId: "run_absorb",
           childPid: 4321,
           record: {
             version: 1,
@@ -297,7 +297,7 @@ describe("operation command wrappers", () => {
         message: "absorb started: run_absorb",
         data: {
           operation: "absorb",
-          runId: "run_absorb",
+          jobId: "run_absorb",
           mode: "background",
           status: "queued",
         },
@@ -325,7 +325,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_github_absorb",
+            jobId: "run_github_absorb",
             childPid: 4321,
             record: {
               version: 1,
@@ -399,7 +399,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_multi_pr_absorb",
+            jobId: "run_multi_pr_absorb",
             childPid: 4321,
             record: {
               version: 1,
@@ -451,7 +451,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_github_issue_absorb",
+            jobId: "run_github_issue_absorb",
             childPid: 4321,
             record: {
               version: 1,
@@ -506,7 +506,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_web_absorb",
+            jobId: "run_web_absorb",
             childPid: 4321,
             record: {
               version: 1,
@@ -593,7 +593,7 @@ describe("operation command wrappers", () => {
         startBackground: async (options) => {
           seen.push(options);
           return {
-            runId: "run_mixed_absorb",
+            jobId: "run_mixed_absorb",
             childPid: 4321,
             record: {
               version: 1,

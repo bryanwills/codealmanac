@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   isToolId,
   uniqueToolRequests,
-  type AgentRunSpec,
+  type OperationSpec,
   type HarnessEvent,
   type HarnessProvider,
 } from "../src/harness/index.js";
@@ -41,7 +41,7 @@ describe("harness base tools", () => {
 
 describe("harness types", () => {
   it("allow operation code to describe a provider-neutral agent run", () => {
-    const spec: AgentRunSpec = {
+    const spec: OperationSpec = {
       provider: { id: "claude", model: "claude-sonnet-4-6" },
       cwd: "/repo",
       systemPrompt: "system",

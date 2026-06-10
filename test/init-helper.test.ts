@@ -96,7 +96,7 @@ describe("initWiki (internal helper)", () => {
       expect(lines.filter((l) => l === ".almanac/index.db-shm")).toHaveLength(
         1,
       );
-      expect(lines.filter((l) => l === ".almanac/runs/")).toHaveLength(1);
+      expect(lines.filter((l) => l === ".almanac/jobs/")).toHaveLength(1);
       expect(lines.filter((l) => l === "# codealmanac")).toHaveLength(1);
     });
   });
@@ -198,13 +198,13 @@ describe("initWiki (internal helper)", () => {
 
   // The block codealmanac writes to .gitignore: one header line + three
   // SQLite sidecar entries (the DB itself and the WAL/SHM files that appear
-  // during active reindexing) + the local run record/log directory.
+  // during active reindexing) + the local job record/log directory.
   const GITIGNORE_BLOCK =
     "# codealmanac\n" +
     ".almanac/index.db\n" +
     ".almanac/index.db-wal\n" +
     ".almanac/index.db-shm\n" +
-    ".almanac/runs/\n";
+    ".almanac/jobs/\n";
 
   it("does not create a blank line separator when .gitignore is absent", async () => {
     await withTempHome(async (home) => {
@@ -269,7 +269,7 @@ describe("initWiki (internal helper)", () => {
       expect(lines.filter((l) => l === ".almanac/index.db-shm")).toHaveLength(
         1,
       );
-      expect(lines.filter((l) => l === ".almanac/runs/")).toHaveLength(1);
+      expect(lines.filter((l) => l === ".almanac/jobs/")).toHaveLength(1);
     });
   });
 });

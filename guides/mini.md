@@ -213,7 +213,7 @@ almanac doctor              # install.automation: ok/problem, wiki.absorb: last 
 almanac automation status   # scheduler status
 almanac sync status
 almanac jobs
-ls -lah .almanac/runs/
+ls -lah .almanac/jobs/
 ```
 No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Sync ran but wrote nothing -> Absorb found no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
 

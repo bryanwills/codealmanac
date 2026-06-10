@@ -13,14 +13,14 @@ import {
   writeLedger,
 } from "./ledger.js";
 import { acquireRepoSyncLock, releaseRepoSyncLock } from "./lock.js";
-import { listRunRecords } from "../process/index.js";
+import { listJobRecords } from "../jobs/index.js";
 
 export interface SyncStarted {
   app: SweepApp;
   sessionId: string;
   transcriptPath: string;
   repoRoot: string;
-  runId: string;
+  jobId: string;
   fromLine: number;
   toLine: number;
 }
@@ -59,7 +59,7 @@ export interface StartSyncAbsorbArgs {
 }
 
 export type StartSyncAbsorbResult =
-  | { ok: true; runId: string }
+  | { ok: true; jobId: string }
   | { ok: false; error: string };
 
 export type StartSyncAbsorbFn = (
@@ -173,7 +173,7 @@ export async function executeSyncSweep(args: {
       }
       ledger.sessions[key] = enqueue.entry;
       await writeLedger(candidate.repoRoot, ledger, args.now);
-      summary.started.push(startedSummary(candidate, enqueue.runId, decision));
+      summary.started.push(startedSummary(candidate, enqueue.jobId, decision));
     }
 
     if (args.mode === "sync") {
@@ -195,7 +195,7 @@ async function isInternalAlmanacSession(
   let ids = cache.get(candidate.repoRoot);
   if (ids === undefined) {
     ids = new Set(
-      (await listRunRecords(candidate.repoRoot))
+      (await listJobRecords(candidate.repoRoot))
         .map((record) => record.providerSessionId)
         .filter((id): id is string => typeof id === "string" && id.length > 0),
     );
@@ -288,7 +288,7 @@ async function enqueueAbsorb(args: {
   now: Date;
   startAbsorb: StartSyncAbsorbFn;
 }): Promise<
-  | { ok: true; runId: string; entry: SyncLedger["sessions"][string] }
+  | { ok: true; jobId: string; entry: SyncLedger["sessions"][string] }
   | { ok: false; reason: string; entry: SyncLedger["sessions"][string] }
 > {
   const result = await args.startAbsorb({
@@ -314,16 +314,16 @@ async function enqueueAbsorb(args: {
   const pendingCursor = syncCursor(args.snapshot.content, args.snapshot.currentLine);
   return {
     ok: true,
-    runId: result.runId,
+    jobId: result.jobId,
     entry: {
       ...args.entry,
       status: "pending",
       pendingToSize: pendingCursor.size,
       pendingToLine: pendingCursor.line,
       pendingPrefixHash: pendingCursor.prefixHash,
-      pendingRunId: result.runId,
+      pendingJobId: result.jobId,
       pendingStartedAt: args.now.toISOString(),
-      lastRunId: result.runId,
+      lastJobId: result.jobId,
       lastError: undefined,
     },
   };
@@ -331,7 +331,7 @@ async function enqueueAbsorb(args: {
 
 function startedSummary(
   candidate: SessionCandidate,
-  runId: string,
+  jobId: string,
   decision: Extract<SyncCursorDecision, { kind: "ready" }>,
 ): SyncStarted {
   return {
@@ -339,7 +339,7 @@ function startedSummary(
     sessionId: candidate.sessionId,
     transcriptPath: candidate.transcriptPath,
     repoRoot: candidate.repoRoot,
-    runId,
+    jobId,
     fromLine: decision.fromLine,
     toLine: decision.toLine,
   };

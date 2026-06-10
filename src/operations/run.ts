@@ -1,21 +1,18 @@
 import { joinPrompts, loadPrompt } from "../agent/prompts.js";
 import type { HarnessEvent } from "../harness/events.js";
 import type { FinalOutputSpec } from "../harness/final-output.js";
-import type {
-  AgentRunSpec,
-  OperationKind,
-} from "../harness/types.js";
+import type { OperationKind, OperationSpec } from "./spec.js";
 import type { ToolRequest } from "../harness/tools.js";
 import {
-  startBackgroundProcess,
-  startForegroundProcess,
-} from "../process/index.js";
+  startBackgroundJob,
+  startForegroundJob,
+} from "../jobs/index.js";
 import { readConfig } from "../config/index.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
-  StartBackgroundProcess,
-  StartForegroundProcess,
+  StartBackgroundJob,
+  StartForegroundJob,
 } from "./types.js";
 
 const DEFAULT_MAX_TURNS = 150;
@@ -44,7 +41,7 @@ export async function createOperationRunSpec(args: {
   targetPaths?: string[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
-}): Promise<AgentRunSpec> {
+}): Promise<OperationSpec> {
   const basePrompts = await Promise.all(
     BASE_PROMPTS.map((name) => loadPrompt(name)),
   );
@@ -81,29 +78,29 @@ export async function createOperationRunSpec(args: {
 
 export async function runOperationProcess(args: {
   repoRoot: string;
-  spec: AgentRunSpec;
+  spec: OperationSpec;
   background: boolean;
-  runId?: string;
+  jobId?: string;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
-  startForeground?: StartForegroundProcess;
-  startBackground?: StartBackgroundProcess;
+  startForeground?: StartForegroundJob;
+  startBackground?: StartBackgroundJob;
 }): Promise<OperationRunResult> {
   if (args.background) {
-    const background = await (args.startBackground ?? startBackgroundProcess)({
+    const background = await (args.startBackground ?? startBackgroundJob)({
       repoRoot: args.repoRoot,
       spec: args.spec,
-      runId: args.runId,
+      jobId: args.jobId,
     });
-    return { mode: "background", runId: background.runId, background };
+    return { mode: "background", jobId: background.jobId, background };
   }
 
-  const foreground = await (args.startForeground ?? startForegroundProcess)({
+  const foreground = await (args.startForeground ?? startForegroundJob)({
     repoRoot: args.repoRoot,
     spec: args.spec,
-    runId: args.runId,
+    jobId: args.jobId,
     onEvent: args.onEvent,
   });
-  return { mode: "foreground", runId: foreground.runId, foreground };
+  return { mode: "foreground", jobId: foreground.jobId, foreground };
 }
 
 function operationRuntimeContext(repoRoot: string): string {

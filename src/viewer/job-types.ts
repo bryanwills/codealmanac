@@ -1,23 +1,12 @@
-import type { HarnessEvent, RunActor } from "../harness/events.js";
-import type { RunView } from "../process/index.js";
+import type {
+  JobAgentTrace,
+  JobLogEvent,
+  JobRunProjection,
+  JobWarning,
+} from "../jobs/projections/types.js";
 
-export type ViewerJobLogEvent =
-  | {
-      line: number;
-      timestamp: string | null;
-      event: HarnessEvent;
-      version?: number;
-      sequence?: number;
-      runId?: string;
-      actor?: RunActor;
-      raw?: unknown;
-    }
-  | { line: number; invalid: true; raw: string; error: string };
-
-export interface ViewerJobRun extends RunView {
-  displayTitle: string;
-  displaySubtitle: string | null;
-  transcriptSource: "claude" | "codex" | "file" | null;
+export type ViewerJobLogEvent = JobLogEvent;
+export interface ViewerJobRun extends JobRunProjection {
   pageChangeDetails?: ViewerJobPageChangeDetails;
 }
 
@@ -40,29 +29,5 @@ export interface ViewerJobDetail {
   warnings: ViewerRunWarning[];
 }
 
-export interface ViewerAgentTrace {
-  threadId: string;
-  role: "root" | "helper" | "unknown";
-  label: string;
-  parentThreadId: string | null;
-  prompt?: string;
-  status: string;
-  eventCount: number;
-  toolCount: number;
-  finalMessage?: string;
-  children: string[];
-}
-
-export interface ViewerRunWarning {
-  code:
-    | "unknown_actor_events"
-    | "helper_result_used_as_done"
-    | "done_source_not_root"
-    | "zero_page_build"
-    | "mcp_used_in_build"
-    | "unattributed_done";
-  severity: "info" | "warning" | "error";
-  message: string;
-  eventSequence?: number;
-  threadId?: string;
-}
+export type ViewerAgentTrace = JobAgentTrace;
+export type ViewerRunWarning = JobWarning;

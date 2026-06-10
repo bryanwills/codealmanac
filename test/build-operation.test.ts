@@ -10,7 +10,7 @@ import { runConfigSet } from "../src/cli/commands/config.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("build operation", () => {
-  it("creates a build AgentRunSpec from the operation prompt and runtime context", async () => {
+  it("creates a build OperationSpec from the operation prompt and runtime context", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "build-spec");
       const spec = await createBuildRunSpec({
@@ -84,15 +84,15 @@ describe("build operation", () => {
 
       const result = await runBuildOperation({
         cwd: repo,
-        runId: "run_20260509201000_build",
+        jobId: "run_20260509201000_build",
         provider: { id: "claude", model: "claude-sonnet-4-6" },
         startForeground: async (options) => {
           started.push(options);
           return {
-            runId: options.runId ?? "generated",
+            jobId: options.jobId ?? "generated",
             record: {
               version: 1,
-              id: options.runId ?? "generated",
+              id: options.jobId ?? "generated",
               operation: "build",
               status: "done",
               repoRoot: options.repoRoot,
@@ -108,11 +108,11 @@ describe("build operation", () => {
       });
 
       expect(result.mode).toBe("foreground");
-      expect(result.runId).toBe("run_20260509201000_build");
+      expect(result.jobId).toBe("run_20260509201000_build");
       expect(started).toHaveLength(1);
       expect(started[0]).toMatchObject({
         repoRoot: repo,
-        runId: "run_20260509201000_build",
+        jobId: "run_20260509201000_build",
         spec: {
           provider: { id: "claude", model: "claude-sonnet-4-6" },
           metadata: { operation: "build" },
@@ -122,7 +122,7 @@ describe("build operation", () => {
         readFile(join(repo, ".almanac", "README.md"), "utf8"),
       ).resolves.toContain("This is the Almanac wiki");
       await expect(readFile(join(repo, ".gitignore"), "utf8")).resolves.toContain(
-        ".almanac/runs/",
+        ".almanac/jobs/",
       );
     });
   });
@@ -134,13 +134,13 @@ describe("build operation", () => {
       const result = await runBuildOperation({
         cwd: repo,
         background: true,
-        runId: "run_20260509201100_build_bg",
+        jobId: "run_20260509201100_build_bg",
         startBackground: async (options) => ({
-          runId: options.runId ?? "generated",
+          jobId: options.jobId ?? "generated",
           childPid: 123,
           record: {
             version: 1,
-            id: options.runId ?? "generated",
+            id: options.jobId ?? "generated",
             operation: "build",
             status: "queued",
             repoRoot: options.repoRoot,
@@ -154,7 +154,7 @@ describe("build operation", () => {
 
       expect(result).toMatchObject({
         mode: "background",
-        runId: "run_20260509201100_build_bg",
+        jobId: "run_20260509201100_build_bg",
         background: {
           childPid: 123,
           record: { status: "queued", operation: "build" },
@@ -169,7 +169,7 @@ describe("build operation", () => {
       await runBuildOperation({
         cwd: repo,
         startForeground: async (options) => ({
-          runId: "run_first",
+          jobId: "run_first",
           record: {
             version: 1,
             id: "run_first",

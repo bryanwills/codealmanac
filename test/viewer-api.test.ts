@@ -4,13 +4,13 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  buildStartedRunRecord,
-  finishRunRecord,
-  runLogPath,
-  runRecordPath,
-  writeRunRecord,
-  writeRunSpec,
-} from "../src/process/index.js";
+  buildStartedJobRecord,
+  finishJobRecord,
+  jobLogPath,
+  jobRecordPath,
+  writeJobRecord,
+  writeJobSpec,
+} from "../src/jobs/index.js";
 import { createViewerApi } from "../src/viewer/api.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 
@@ -241,8 +241,8 @@ items:
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
-      const started = buildStartedRunRecord({
-        runId: "run_20260510120000_viewer",
+      const started = buildStartedJobRecord({
+        jobId: "run_20260510120000_viewer",
         repoRoot: repo,
         startedAt: new Date("2026-05-10T12:00:00.000Z"),
         pid: process.pid,
@@ -257,7 +257,7 @@ items:
           },
         },
       });
-      const finished = finishRunRecord({
+      const finished = finishJobRecord({
         record: started,
         status: "done",
         finishedAt: new Date("2026-05-10T12:01:00.000Z"),
@@ -271,7 +271,7 @@ items:
         },
         pageChanges: {
           version: 1,
-          runId: started.id,
+          jobId: started.id,
           created: ["new-page"],
           updated: ["viewer-jobs", "viewer-api"],
           archived: [],
@@ -279,9 +279,9 @@ items:
           summary: "Updated viewer jobs.",
         },
       });
-      await writeRunRecord(runRecordPath(repo, finished.id), finished);
+      await writeJobRecord(jobRecordPath(repo, finished.id), finished);
       await writeFile(
-        runLogPath(repo, finished.id),
+        jobLogPath(repo, finished.id),
         [
           JSON.stringify({
             timestamp: "2026-05-10T12:00:30.000Z",
@@ -352,8 +352,8 @@ items:
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
       const transcript = join(home, ".claude", "projects", "r", "session-1.jsonl");
-      const started = buildStartedRunRecord({
-        runId: "run_20260510121000_session",
+      const started = buildStartedJobRecord({
+        jobId: "run_20260510121000_session",
         repoRoot: repo,
         startedAt: new Date("2026-05-10T12:10:00.000Z"),
         pid: process.pid,
@@ -368,8 +368,8 @@ items:
           },
         },
       });
-      await writeRunRecord(runRecordPath(repo, started.id), started);
-      await writeRunSpec(repo, started.id, {
+      await writeJobRecord(jobRecordPath(repo, started.id), started);
+      await writeJobSpec(repo, started.id, {
         provider: { id: "codex", model: "gpt-5.4" },
         cwd: repo,
         prompt: [
@@ -405,8 +405,8 @@ items:
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
-      const started = buildStartedRunRecord({
-        runId: "run_20260510120500_secure",
+      const started = buildStartedJobRecord({
+        jobId: "run_20260510120500_secure",
         repoRoot: repo,
         startedAt: new Date("2026-05-10T12:05:00.000Z"),
         pid: process.pid,
@@ -426,7 +426,7 @@ items:
         })}\n`,
         "utf8",
       );
-      await writeRunRecord(runRecordPath(repo, started.id), {
+      await writeJobRecord(jobRecordPath(repo, started.id), {
         ...started,
         logPath: leakedLogPath,
       });

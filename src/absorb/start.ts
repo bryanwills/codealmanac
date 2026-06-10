@@ -9,8 +9,8 @@ import {
 import type {
   OperationProviderSelection,
   OperationRunResult,
-  StartBackgroundProcess,
-  StartForegroundProcess,
+  StartBackgroundJob,
+  StartForegroundJob,
 } from "../operations/types.js";
 import { renderAbsorbInputContext } from "./context.js";
 import {
@@ -32,12 +32,12 @@ export interface StartAbsorbRunOptions {
   foreground?: boolean;
   resolveSource?: ResolveSourceFn;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
-  startForeground?: StartForegroundProcess;
-  startBackground?: StartBackgroundProcess;
+  startForeground?: StartForegroundJob;
+  startBackground?: StartBackgroundJob;
 }
 
 export interface AbsorbRunStart {
-  runId: string;
+  jobId: string;
   result: OperationRunResult;
   input: ResolvedAbsorbInput;
 }
@@ -70,7 +70,7 @@ export async function startAbsorbRun(
     startBackground: options.startBackground,
   });
   return {
-    runId: result.runId,
+    jobId: result.jobId,
     result,
     input: input.value,
   };

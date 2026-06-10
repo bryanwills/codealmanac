@@ -1,9 +1,9 @@
 import type {
-  AgentRunSpec,
   HarnessProvider,
   ProviderMetadata,
   ProviderStatus,
 } from "../types.js";
+import type { OperationSpec } from "../../operations/spec.js";
 
 export function createNotImplementedProvider(
   metadata: ProviderMetadata,
@@ -16,7 +16,7 @@ export function createNotImplementedProvider(
       authenticated: false,
       detail: `${metadata.displayName} harness adapter is not implemented yet`,
     }),
-    run: async (spec: AgentRunSpec) => ({
+    run: async (spec: OperationSpec) => ({
       success: false,
       result: "",
       error:

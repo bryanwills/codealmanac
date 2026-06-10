@@ -1,14 +1,12 @@
 export type {
-  AgentRunSpec,
-  AgentSpec,
   HarnessCapabilities,
   HarnessProvider,
   HarnessProviderId,
   HarnessRunHooks,
-  OperationKind,
   ProviderMetadata,
   ProviderStatus,
 } from "./types.js";
+export type { OperationSpec, OperationAgentSpec, OperationKind } from "../operations/spec.js";
 export type {
   AgentUsage,
   HarnessEvent,

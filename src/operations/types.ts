@@ -1,9 +1,10 @@
-import type { AgentRunSpec, HarnessProviderId } from "../harness/types.js";
+import type { HarnessProviderId } from "../harness/types.js";
+import type { OperationSpec } from "./spec.js";
 import type { HarnessEvent } from "../harness/events.js";
 import type {
-  StartBackgroundProcessResult,
-  StartProcessResult,
-} from "../process/index.js";
+  StartBackgroundJobResult,
+  StartJobResult,
+} from "../jobs/index.js";
 
 export interface OperationProviderSelection {
   id: HarnessProviderId;
@@ -15,20 +16,20 @@ export type OperationMode = "foreground" | "background";
 
 export interface OperationRunResult {
   mode: OperationMode;
-  runId: string;
-  foreground?: StartProcessResult;
-  background?: StartBackgroundProcessResult;
+  jobId: string;
+  foreground?: StartJobResult;
+  background?: StartBackgroundJobResult;
 }
 
-export type StartForegroundProcess = (options: {
+export type StartForegroundJob = (options: {
   repoRoot: string;
-  spec: AgentRunSpec;
-  runId?: string;
+  spec: OperationSpec;
+  jobId?: string;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
-}) => Promise<StartProcessResult>;
+}) => Promise<StartJobResult>;
 
-export type StartBackgroundProcess = (options: {
+export type StartBackgroundJob = (options: {
   repoRoot: string;
-  spec: AgentRunSpec;
-  runId?: string;
-}) => Promise<StartBackgroundProcessResult>;
+  spec: OperationSpec;
+  jobId?: string;
+}) => Promise<StartBackgroundJobResult>;

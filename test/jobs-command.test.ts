@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
@@ -10,21 +11,21 @@ import {
   runJobsShow,
 } from "../src/cli/commands/jobs.js";
 import {
-  buildQueuedRunRecord,
-  buildStartedRunRecord,
-  runLogPath,
-  runRecordPath,
-  writeRunRecord,
-} from "../src/process/index.js";
+  buildQueuedJobRecord,
+  buildStartedJobRecord,
+  jobLogPath,
+  jobRecordPath,
+  writeJobRecord,
+} from "../src/jobs/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("jobs command", () => {
-  it("lists run records for the current wiki", async () => {
+  it("lists job records for the current wiki", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "jobs-list");
       await initWiki({ cwd: repo, name: "jobs-list", description: "" });
-      const first = buildQueuedRunRecord({
-        runId: "run_20260509202000_first",
+      const first = buildQueuedJobRecord({
+        jobId: "run_20260509202000_first",
         repoRoot: repo,
         queuedAt: new Date("2026-05-09T20:20:00.000Z"),
         spec: {
@@ -34,8 +35,8 @@ describe("jobs command", () => {
           metadata: { operation: "build" },
         },
       });
-      const second = buildStartedRunRecord({
-        runId: "run_20260509202100_second",
+      const second = buildStartedJobRecord({
+        jobId: "run_20260509202100_second",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T20:21:00.000Z"),
         pid: 99999,
@@ -46,8 +47,8 @@ describe("jobs command", () => {
           metadata: { operation: "garden" },
         },
       });
-      await writeRunRecord(runRecordPath(repo, first.id), first);
-      await writeRunRecord(runRecordPath(repo, second.id), second);
+      await writeJobRecord(jobRecordPath(repo, first.id), first);
+      await writeJobRecord(jobRecordPath(repo, second.id), second);
 
       const text = await runJobsList({
         cwd: repo,
@@ -65,7 +66,7 @@ describe("jobs command", () => {
         now: () => new Date("2026-05-09T20:22:00.000Z"),
         isPidAlive: () => false,
       });
-      expect(JSON.parse(json.stdout).runs).toHaveLength(2);
+      expect(JSON.parse(json.stdout).jobs).toHaveLength(2);
     });
   });
 
@@ -74,8 +75,8 @@ describe("jobs command", () => {
       const repo = await makeRepo(home, "jobs-show");
       await initWiki({ cwd: repo, name: "jobs-show", description: "" });
       const record = {
-        ...buildStartedRunRecord({
-          runId: "run_20260509202200_show",
+        ...buildStartedJobRecord({
+          jobId: "run_20260509202200_show",
           repoRoot: repo,
           startedAt: new Date("2026-05-09T20:22:00.000Z"),
           pid: 123,
@@ -88,7 +89,7 @@ describe("jobs command", () => {
         }),
         pageChanges: {
           version: 1 as const,
-          runId: "run_20260509202200_show",
+          jobId: "run_20260509202200_show",
           created: ["new-page"],
           updated: ["sync-flow", "process-manager-runs"],
           archived: [],
@@ -96,16 +97,16 @@ describe("jobs command", () => {
           summary: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
       };
-      await writeRunRecord(runRecordPath(repo, record.id), record);
-      await writeFile(runLogPath(repo, record.id), "{\"type\":\"text\"}\n");
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
+      await writeFile(jobLogPath(repo, record.id), "{\"type\":\"text\"}\n");
 
       const show = await runJobsShow({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         now: () => new Date("2026-05-09T20:22:30.000Z"),
         isPidAlive: () => true,
       });
-      expect(show.stdout).toContain("Run: run_20260509202200_show");
+      expect(show.stdout).toContain("Job: run_20260509202200_show");
       expect(show.stdout).toContain("Status: running");
       expect(show.stdout).toContain("Provider: claude/claude-sonnet-4-6");
       expect(show.stdout).toContain(
@@ -119,7 +120,34 @@ describe("jobs command", () => {
         "Updated: sync-flow, process-manager-runs",
       );
 
-      const logs = await runJobsLogs({ cwd: repo, runId: record.id });
+      const logs = await runJobsLogs({ cwd: repo, jobId: record.id });
+      expect(logs.stdout).toBe("{\"type\":\"text\"}\n");
+    });
+  });
+
+  it("reads job logs from resolved storage when a legacy logPath is stale", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "jobs-stale-log-path");
+      await initWiki({ cwd: repo, name: "jobs-stale-log-path", description: "" });
+      const record = {
+        ...buildStartedJobRecord({
+          jobId: "job_20260509202200_deadbeef",
+          repoRoot: repo,
+          startedAt: new Date("2026-05-09T20:22:00.000Z"),
+          spec: {
+            provider: { id: "claude" },
+            cwd: repo,
+            prompt: "absorb",
+            metadata: { operation: "absorb" },
+          },
+        }),
+        logPath: join(repo, ".almanac", "runs", "job_20260509202200_deadbeef.jsonl"),
+      };
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
+      await writeFile(jobLogPath(repo, record.id), "{\"type\":\"text\"}\n");
+
+      const logs = await runJobsLogs({ cwd: repo, jobId: record.id });
+
       expect(logs.stdout).toBe("{\"type\":\"text\"}\n");
     });
   });
@@ -129,8 +157,8 @@ describe("jobs command", () => {
       const repo = await makeRepo(home, "jobs-show-failure");
       await initWiki({ cwd: repo, name: "jobs-show-failure", description: "" });
       const record = {
-        ...buildStartedRunRecord({
-          runId: "run_20260509202230_failure",
+        ...buildStartedJobRecord({
+          jobId: "run_20260509202230_failure",
           repoRoot: repo,
           startedAt: new Date("2026-05-09T20:22:30.000Z"),
           pid: 123,
@@ -153,11 +181,11 @@ describe("jobs command", () => {
           raw: "unexpected status 400 Bad Request",
         },
       };
-      await writeRunRecord(runRecordPath(repo, record.id), record);
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
 
       const show = await runJobsShow({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         now: () => new Date("2026-05-09T20:22:40.000Z"),
         isPidAlive: () => false,
       });
@@ -168,7 +196,7 @@ describe("jobs command", () => {
         "Fix: Upgrade Codex, or run with --using codex/<supported-model>.",
       );
 
-      const json = await runJobsShow({ cwd: repo, runId: record.id, json: true });
+      const json = await runJobsShow({ cwd: repo, jobId: record.id, json: true });
       expect(JSON.parse(json.stdout)).toMatchObject({
         failure: {
           code: "codex.model_requires_newer_cli",
@@ -178,12 +206,12 @@ describe("jobs command", () => {
     });
   });
 
-  it("cancels queued or running jobs by updating the run record", async () => {
+  it("cancels queued or running jobs by updating the job record", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "jobs-cancel");
       await initWiki({ cwd: repo, name: "jobs-cancel", description: "" });
-      const record = buildQueuedRunRecord({
-        runId: "run_20260509202300_cancel",
+      const record = buildQueuedJobRecord({
+        jobId: "run_20260509202300_cancel",
         repoRoot: repo,
         queuedAt: new Date("2026-05-09T20:23:00.000Z"),
         spec: {
@@ -193,22 +221,22 @@ describe("jobs command", () => {
           metadata: { operation: "garden" },
         },
       });
-      await writeRunRecord(runRecordPath(repo, record.id), record);
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
 
       const cancelled = await runJobsCancel({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         json: true,
         now: () => new Date("2026-05-09T20:23:30.000Z"),
       });
       expect(JSON.parse(cancelled.stdout)).toMatchObject({
         type: "success",
-        data: { runId: record.id, status: "cancelled" },
+        data: { jobId: record.id, status: "cancelled" },
       });
 
       const show = await runJobsShow({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         json: true,
       });
       expect(JSON.parse(show.stdout)).toMatchObject({
@@ -222,8 +250,8 @@ describe("jobs command", () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "jobs-attach");
       await initWiki({ cwd: repo, name: "jobs-attach", description: "" });
-      const record = buildStartedRunRecord({
-        runId: "run_20260509202400_attach",
+      const record = buildStartedJobRecord({
+        jobId: "run_20260509202400_attach",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T20:24:00.000Z"),
         spec: {
@@ -239,13 +267,13 @@ describe("jobs command", () => {
         finishedAt: "2026-05-09T20:24:01.000Z",
         durationMs: 1000,
       };
-      await writeRunRecord(runRecordPath(repo, record.id), finished);
-      await writeFile(runLogPath(repo, record.id), "{\"event\":\"done\"}\n");
+      await writeJobRecord(jobRecordPath(repo, record.id), finished);
+      await writeFile(jobLogPath(repo, record.id), "{\"event\":\"done\"}\n");
       let streamed = "";
 
       const result = await streamJobsAttach({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         write: (chunk) => {
           streamed += chunk;
         },
@@ -261,8 +289,8 @@ describe("jobs command", () => {
       const repo = await makeRepo(home, "jobs-attach-failure");
       await initWiki({ cwd: repo, name: "jobs-attach-failure", description: "" });
       const record = {
-        ...buildStartedRunRecord({
-          runId: "run_20260509202430_attach_failure",
+        ...buildStartedJobRecord({
+          jobId: "run_20260509202430_attach_failure",
           repoRoot: repo,
           startedAt: new Date("2026-05-09T20:24:30.000Z"),
           spec: {
@@ -283,13 +311,13 @@ describe("jobs command", () => {
           fix: "Upgrade Codex, or run with --using codex/<supported-model>.",
         },
       };
-      await writeRunRecord(runRecordPath(repo, record.id), record);
-      await writeFile(runLogPath(repo, record.id), "");
+      await writeJobRecord(jobRecordPath(repo, record.id), record);
+      await writeFile(jobLogPath(repo, record.id), "");
       let streamed = "";
 
       const result = await streamJobsAttach({
         cwd: repo,
-        runId: record.id,
+        jobId: record.id,
         write: (chunk) => {
           streamed += chunk;
         },

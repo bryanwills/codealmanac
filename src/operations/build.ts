@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { AgentRunSpec } from "../harness/types.js";
+import type { OperationSpec } from "./spec.js";
 import { initWiki } from "../init/scaffold.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
-  StartBackgroundProcess,
-  StartForegroundProcess,
+  StartBackgroundJob,
+  StartForegroundJob,
 } from "./types.js";
 import { OperationError } from "./errors.js";
 import { createOperationRunSpec, runOperationProcess } from "./run.js";
@@ -19,17 +19,17 @@ export interface BuildOperationOptions {
   background?: boolean;
   context?: string;
   force?: boolean;
-  runId?: string;
+  jobId?: string;
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
-  startForeground?: StartForegroundProcess;
-  startBackground?: StartBackgroundProcess;
+  startForeground?: StartForegroundJob;
+  startBackground?: StartBackgroundJob;
 }
 
 export async function createBuildRunSpec(args: {
   repoRoot: string;
   provider?: OperationProviderSelection;
   context?: string;
-}): Promise<AgentRunSpec> {
+}): Promise<OperationSpec> {
   return createOperationRunSpec({
     operation: "build",
     promptName: "operations/build",
@@ -67,7 +67,7 @@ export async function runBuildOperation(
     repoRoot,
     spec,
     background: options.background === true,
-    runId: options.runId,
+    jobId: options.jobId,
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,

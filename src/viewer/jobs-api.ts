@@ -22,10 +22,10 @@ export async function getViewerJobs(
 
 export async function getViewerJobDetail(
   repoRoot: string,
-  runId: string,
+  jobId: string,
   db: Database.Database,
 ): Promise<ViewerJobDetail | null> {
-  const detail = await getViewerJob(repoRoot, runId);
+  const detail = await getViewerJob(repoRoot, jobId);
   if (detail === null) return null;
   return {
     ...detail,

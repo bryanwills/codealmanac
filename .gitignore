@@ -14,6 +14,7 @@ install-runtime.json
 .almanac/index.db
 .almanac/index.db-wal
 .almanac/index.db-shm
+.almanac/jobs/
 .almanac/runs/
 .almanac/logs/
 .almanac/.capture-*

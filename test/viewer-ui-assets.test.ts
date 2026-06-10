@@ -92,9 +92,9 @@ describe("viewer UI assets", () => {
     expect(searchSuggestionsJs).toContain("deps.suggestPath");
     expect(searchSuggestionsJs).not.toContain("/api/suggest");
     expect(jobsJs).toContain("deps.jobsPath()");
-    expect(jobsJs).toContain("deps.jobPath(runId)");
+    expect(jobsJs).toContain("deps.jobPath(jobId)");
     expect(jobsJs).toContain("deps.jobRoute(run.id)");
-    expect(jobsJs).toContain("deps.isCurrentJobRoute(runId)");
+    expect(jobsJs).toContain("deps.isCurrentJobRoute(jobId)");
     expect(jobsJs).toContain("deps.pageActions()");
     expect(jobsJs).toContain("schedulePoll");
     expect(appJs).not.toContain("Start with the map");

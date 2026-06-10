@@ -7,8 +7,8 @@ import * as operations from "../../operations/index.js";
 export { parseUsing } from "../../operations/index.js";
 
 export interface OperationCommandDeps {
-  startForeground?: operations.StartForegroundProcess;
-  startBackground?: operations.StartBackgroundProcess;
+  startForeground?: operations.StartForegroundJob;
+  startBackground?: operations.StartBackgroundJob;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
 }
 
@@ -152,13 +152,13 @@ function renderOperationResult(
         type: "error",
         message: renderOperationFailureMessage({
           operation,
-          runId: result.runId,
+          jobId: result.jobId,
           error: foregroundResult?.error,
           failure,
         }),
         data: {
           operation,
-          runId: result.runId,
+          jobId: result.jobId,
           mode: result.mode,
           status,
           pid: record?.pid,
@@ -171,8 +171,8 @@ function renderOperationResult(
     );
   }
   const message = result.mode === "background"
-    ? `${operation} started: ${result.runId}`
-    : `${operation} finished: ${result.runId}`;
+    ? `${operation} started: ${result.jobId}`
+    : `${operation} finished: ${result.jobId}`;
   const stdout = operation === "init" && result.mode === "foreground"
     ? `${message}\nBrowse the wiki: almanac serve\n`
     : undefined;
@@ -183,7 +183,7 @@ function renderOperationResult(
       message,
       data: {
         operation,
-        runId: result.runId,
+        jobId: result.jobId,
         mode: result.mode,
         status,
         pid: record?.pid,
@@ -196,11 +196,11 @@ function renderOperationResult(
 
 function renderOperationFailureMessage(args: {
   operation: string;
-  runId: string;
+  jobId: string;
   error?: string;
   failure?: import("../../harness/events.js").HarnessFailure;
 }): string {
-  const lines = [`${args.operation} failed: ${args.runId}`];
+  const lines = [`${args.operation} failed: ${args.jobId}`];
   if (args.failure !== undefined) {
     lines.push(`Reason: ${args.failure.message}`);
     if (args.failure.fix !== undefined) lines.push(`Fix: ${args.failure.fix}`);

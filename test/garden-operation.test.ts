@@ -8,7 +8,7 @@ import {
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 describe("garden operation", () => {
-  it("creates a garden AgentRunSpec for wiki maintenance", async () => {
+  it("creates a garden OperationSpec for wiki maintenance", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "garden-spec");
       const spec = await createGardenRunSpec({
@@ -64,13 +64,13 @@ describe("garden operation", () => {
 
       const result = await runGardenOperation({
         cwd: repo,
-        runId: "run_20260509201400_garden",
+        jobId: "run_20260509201400_garden",
         startBackground: async (options) => ({
-          runId: options.runId ?? "generated",
+          jobId: options.jobId ?? "generated",
           childPid: 222,
           record: {
             version: 1,
-            id: options.runId ?? "generated",
+            id: options.jobId ?? "generated",
             operation: "garden",
             status: "queued",
             repoRoot: options.repoRoot,
@@ -84,7 +84,7 @@ describe("garden operation", () => {
 
       expect(result).toMatchObject({
         mode: "background",
-        runId: "run_20260509201400_garden",
+        jobId: "run_20260509201400_garden",
         background: {
           childPid: 222,
           record: { status: "queued", operation: "garden" },
@@ -101,12 +101,12 @@ describe("garden operation", () => {
       const result = await runGardenOperation({
         cwd: repo,
         background: false,
-        runId: "run_20260509201500_garden_fg",
+        jobId: "run_20260509201500_garden_fg",
         startForeground: async (options) => ({
-          runId: options.runId ?? "generated",
+          jobId: options.jobId ?? "generated",
           record: {
             version: 1,
-            id: options.runId ?? "generated",
+            id: options.jobId ?? "generated",
             operation: "garden",
             status: "done",
             repoRoot: options.repoRoot,
@@ -121,7 +121,7 @@ describe("garden operation", () => {
 
       expect(result).toMatchObject({
         mode: "foreground",
-        runId: "run_20260509201500_garden_fg",
+        jobId: "run_20260509201500_garden_fg",
         foreground: {
           record: { status: "done", operation: "garden" },
         },

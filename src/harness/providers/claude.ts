@@ -13,12 +13,11 @@ import {
 import type { RunActor } from "../events.js";
 import type { ToolRequest } from "../tools.js";
 import type {
-  AgentRunSpec,
-  AgentSpec,
   HarnessProvider,
   HarnessRunHooks,
   ProviderStatus,
 } from "../types.js";
+import type { OperationAgentSpec, OperationSpec } from "../../operations/spec.js";
 import type { FinalOutputResult, FinalOutputSpec } from "../final-output.js";
 import { HARNESS_PROVIDER_METADATA } from "./metadata.js";
 import {
@@ -26,7 +25,7 @@ import {
   resolveClaudeExecutable,
   type ClaudeAuthStatus,
 } from "../../agent/auth/claude.js";
-import { spawnManagedChildProcess } from "../../process/managed-child.js";
+import { spawnManagedChildProcess } from "../process/managed-child.js";
 
 type ClaudeQuery = AsyncIterable<SDKMessage>;
 type ClaudeQueryFn = (params: {
@@ -84,7 +83,7 @@ export function createClaudeHarnessProvider(
 export const claudeHarnessProvider = createClaudeHarnessProvider();
 
 async function runClaudeHarness(
-  spec: AgentRunSpec,
+  spec: OperationSpec,
   hooks: HarnessRunHooks | undefined,
   queryFn: ClaudeQueryFn,
   resolveExecutable: () => string | undefined,
@@ -260,7 +259,7 @@ function classifyClaudeFailure(
 }
 
 function buildClaudeOptions(
-  spec: AgentRunSpec,
+  spec: OperationSpec,
   resolveExecutable: () => string | undefined,
 ): ClaudeOptions {
   const tools = toClaudeTools(spec.tools ?? []);
@@ -346,7 +345,7 @@ function spawnClaudeCodeProcessGroup(
 }
 
 function toClaudeAgents(
-  agents: Record<string, AgentSpec>,
+  agents: Record<string, OperationAgentSpec>,
 ): Record<string, AgentDefinition> {
   const out: Record<string, AgentDefinition> = {};
   for (const [name, agent] of Object.entries(agents)) {

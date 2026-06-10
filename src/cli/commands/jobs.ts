@@ -6,15 +6,16 @@ import { UserFacingError } from "../../errors.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { formatTextTable } from "./table.js";
 import {
-  finishRunRecord,
-  markRunCancelled,
-  listRunRecords,
-  readRunRecord,
-  runRecordPath,
-  toRunView,
-  writeRunRecord,
-} from "../../process/index.js";
-import type { RunView } from "../../process/index.js";
+  finishJobRecord,
+  markJobCancelled,
+  listJobRecords,
+  readJobRecord,
+  resolveJobLogPath,
+  resolveJobRecordPath,
+  toJobView,
+  writeJobRecord,
+} from "../../jobs/index.js";
+import type { JobView } from "../../jobs/index.js";
 
 export interface JobsOptions {
   cwd: string;
@@ -24,7 +25,7 @@ export interface JobsOptions {
 }
 
 export interface JobByIdOptions extends JobsOptions {
-  runId: string;
+  jobId: string;
 }
 
 export interface JobAttachStreamOptions extends JobByIdOptions {
@@ -38,10 +39,10 @@ export async function runJobsList(
   const repoRoot = resolveWikiOrResult(options.cwd, options.json);
   if (typeof repoRoot !== "string") return repoRoot;
 
-  const views = await listRunViews(repoRoot, options);
+  const views = await listJobViews(repoRoot, options);
   if (options.json === true) {
     return {
-      stdout: `${JSON.stringify({ runs: views }, null, 2)}\n`,
+      stdout: `${JSON.stringify({ jobs: views }, null, 2)}\n`,
       stderr: "",
       exitCode: 0,
     };
@@ -59,8 +60,8 @@ export async function runJobsShow(
 ): Promise<CommandResult> {
   const repoRoot = resolveWikiOrResult(options.cwd, options.json);
   if (typeof repoRoot !== "string") return repoRoot;
-  const view = await readRunView(repoRoot, options);
-  if (view === null) return missingRun(options.runId, options.json);
+  const view = await readJobView(repoRoot, options);
+  if (view === null) return missingJob(options.jobId, options.json);
 
   if (options.json === true) {
     return {
@@ -73,7 +74,7 @@ export async function runJobsShow(
   return {
     stdout:
       [
-        `Run: ${view.id}`,
+        `Job: ${view.id}`,
         `Operation: ${view.operation}`,
         `Status: ${view.displayStatus}`,
         `Provider: ${view.provider}${view.model !== undefined ? `/${view.model}` : ""}`,
@@ -95,7 +96,7 @@ export async function runJobsShow(
   };
 }
 
-function formatPageChanges(view: RunView): string[] {
+function formatPageChanges(view: JobView): string[] {
   const changes = view.pageChanges;
   if (changes === undefined) return [];
   const total =
@@ -123,11 +124,12 @@ export async function runJobsLogs(
 ): Promise<CommandResult> {
   const repoRoot = resolveWikiOrResult(options.cwd, options.json);
   if (typeof repoRoot !== "string") return repoRoot;
-  const record = await readRunRecord(runRecordPath(repoRoot, options.runId));
-  if (record === null) return missingRun(options.runId, options.json);
+  const record = await readJobRecord(await resolveJobRecordPath(repoRoot, options.jobId));
+  if (record === null) return missingJob(options.jobId, options.json);
   try {
+    const logPath = await resolveJobLogPath(repoRoot, record.id);
     return {
-      stdout: await readFile(record.logPath, "utf8"),
+      stdout: await readFile(logPath, "utf8"),
       stderr: "",
       exitCode: 0,
     };
@@ -161,16 +163,20 @@ export async function streamJobsAttach(
 ): Promise<CommandResult> {
   const repoRoot = resolveWikiOrResult(options.cwd, options.json);
   if (typeof repoRoot !== "string") return repoRoot;
-  const initial = await readRunRecord(runRecordPath(repoRoot, options.runId));
-  if (initial === null) return missingRun(options.runId, options.json);
+  const initial = await readJobRecord(await resolveJobRecordPath(repoRoot, options.jobId));
+  if (initial === null) return missingJob(options.jobId, options.json);
 
   const write = options.write ?? ((chunk: string) => process.stdout.write(chunk));
   let offset = 0;
   while (true) {
-    const record = await readRunRecord(runRecordPath(repoRoot, options.runId));
-    if (record === null) return missingRun(options.runId, options.json);
-    offset = await writeLogChunk(record.logPath, offset, write);
-    const view = toRunView({
+    const record = await readJobRecord(await resolveJobRecordPath(repoRoot, options.jobId));
+    if (record === null) return missingJob(options.jobId, options.json);
+    offset = await writeLogChunk(
+      await resolveJobLogPath(repoRoot, record.id),
+      offset,
+      write,
+    );
+    const view = toJobView({
       record,
       now: options.now?.() ?? new Date(),
       isPidAlive: options.isPidAlive ?? isPidAlive,
@@ -194,21 +200,21 @@ export async function runJobsCancel(
 ): Promise<CommandResult> {
   const repoRoot = resolveWikiOrResult(options.cwd, options.json);
   if (typeof repoRoot !== "string") return repoRoot;
-  const path = runRecordPath(repoRoot, options.runId);
-  const record = await readRunRecord(path);
-  if (record === null) return missingRun(options.runId, options.json);
+  const path = await resolveJobRecordPath(repoRoot, options.jobId);
+  const record = await readJobRecord(path);
+  if (record === null) return missingJob(options.jobId, options.json);
   if (record.status === "done" || record.status === "failed" || record.status === "cancelled") {
     return renderOutcome(
       {
         type: "noop",
         message: `job already ${record.status}: ${record.id}`,
-        data: { runId: record.id, status: record.status },
+        data: { jobId: record.id, status: record.status },
       },
       { json: options.json },
     );
   }
 
-  await markRunCancelled(repoRoot, record.id);
+  await markJobCancelled(repoRoot, record.id);
 
   if (record.pid > 0) {
     try {
@@ -219,29 +225,29 @@ export async function runJobsCancel(
     }
   }
 
-  const cancelled = finishRunRecord({
+  const cancelled = finishJobRecord({
     record,
     status: "cancelled",
     finishedAt: options.now?.() ?? new Date(),
   });
-  await writeRunRecord(path, cancelled);
+  await writeJobRecord(path, cancelled);
   return renderOutcome(
     {
       type: "success",
       message: `cancelled job: ${record.id}`,
-      data: { runId: record.id, status: "cancelled" },
+      data: { jobId: record.id, status: "cancelled" },
     },
     { json: options.json },
   );
 }
 
-async function listRunViews(
+async function listJobViews(
   repoRoot: string,
   options: JobsOptions,
-): Promise<RunView[]> {
-  const records = await listRunRecords(repoRoot);
+): Promise<JobView[]> {
+  const records = await listJobRecords(repoRoot);
   return records.map((record) =>
-    toRunView({
+    toJobView({
       record,
       now: options.now?.() ?? new Date(),
       isPidAlive: options.isPidAlive ?? isPidAlive,
@@ -249,13 +255,13 @@ async function listRunViews(
   );
 }
 
-async function readRunView(
+async function readJobView(
   repoRoot: string,
   options: JobByIdOptions,
-): Promise<RunView | null> {
-  const record = await readRunRecord(runRecordPath(repoRoot, options.runId));
+): Promise<JobView | null> {
+  const record = await readJobRecord(await resolveJobRecordPath(repoRoot, options.jobId));
   if (record === null) return null;
-  return toRunView({
+  return toJobView({
     record,
     now: options.now?.() ?? new Date(),
     isPidAlive: options.isPidAlive ?? isPidAlive,
@@ -280,9 +286,9 @@ function resolveWikiOrResult(
   );
 }
 
-function missingRun(runId: string, json: boolean | undefined): CommandResult {
+function missingJob(jobId: string, json: boolean | undefined): CommandResult {
   return renderOutcome(
-    { type: "error", message: `run not found: ${runId}` },
+    { type: "error", message: `job not found: ${jobId}` },
     { json },
   );
 }
@@ -327,7 +333,7 @@ function formatMs(ms: number): string {
   return `${Math.round(minutes / 60)}h`;
 }
 
-function formatJobRows(views: RunView[]): string[] {
+function formatJobRows(views: JobView[]): string[] {
   return formatTextTable({
     headers: ["ID", "OPERATION", "STATUS", "ELAPSED"],
     rows: views.map((view) => [
@@ -339,7 +345,7 @@ function formatJobRows(views: RunView[]): string[] {
   });
 }
 
-function terminalAttachSummary(view: RunView): string {
+function terminalAttachSummary(view: JobView): string {
   if (view.displayStatus !== "failed" && view.displayStatus !== "stale") {
     return "";
   }

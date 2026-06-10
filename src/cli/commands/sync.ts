@@ -17,7 +17,7 @@ export interface SyncCommandOptions {
   now?: Date;
   homeDir?: string;
   configPath?: string;
-  startBackground?: operations.StartBackgroundProcess;
+  startBackground?: operations.StartBackgroundJob;
 }
 
 const DEFAULT_QUIET = "45m";
@@ -67,7 +67,7 @@ export async function runSyncCommand(
           targetPaths: [candidate.transcriptPath],
           startBackground: options.startBackground,
         });
-        return { ok: true, runId: result.runId };
+        return { ok: true, jobId: result.jobId };
       } catch (err: unknown) {
         return { ok: false, error: err instanceof Error ? err.message : String(err) };
       }
@@ -152,7 +152,7 @@ function renderSyncSummary(
   }
   for (const started of summary.started) {
     lines.push(
-      `  - started ${started.app} ${started.sessionId}: ${started.runId} ` +
+      `  - started ${started.app} ${started.sessionId}: ${started.jobId} ` +
         `(lines ${started.fromLine}-${started.toLine})`,
     );
   }

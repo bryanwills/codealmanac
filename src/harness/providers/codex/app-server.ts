@@ -1,6 +1,7 @@
 import type { HarnessResult } from "../../events.js";
-import type { AgentRunSpec, HarnessRunHooks } from "../../types.js";
-import { spawnManagedChildProcess } from "../../../process/managed-child.js";
+import type { HarnessRunHooks } from "../../types.js";
+import type { OperationSpec } from "../../../operations/spec.js";
+import { spawnManagedChildProcess } from "../../process/managed-child.js";
 import {
   buildCodexAppServerRequest,
   codexClientVersion,
@@ -43,7 +44,7 @@ const CODEX_APP_SERVER_TURN_TIMEOUT_ENV =
   "CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS";
 
 export async function runCodexAppServer(
-  spec: AgentRunSpec,
+  spec: OperationSpec,
   hooks?: HarnessRunHooks,
 ): Promise<HarnessResult> {
   const request = buildCodexAppServerRequest(spec);
@@ -358,7 +359,7 @@ export async function runCodexAppServer(
   });
 }
 
-function requiresNetworkAccess(spec: AgentRunSpec): boolean {
+function requiresNetworkAccess(spec: OperationSpec): boolean {
   return spec.networkAccess === true;
 }
 
@@ -380,7 +381,7 @@ async function terminateManagedChildSafely(
   managed: ReturnType<typeof spawnManagedChildProcess>,
 ): Promise<string | undefined> {
   try {
-    await managed.terminate();
+    await managed.terminate({ graceMs: 500 });
     return undefined;
   } catch (err: unknown) {
     return `Provider process cleanup failed: ${err instanceof Error ? err.message : String(err)}`;
