@@ -33,15 +33,15 @@ sources:
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: Records the CodeAlmanac product discussion comparing Dosu, repo-owned Almanac updates, PR-time documentation maintenance, and OSS maintainer workflows.
   - id: dosu-experiment-session
-    type: transcript
+    type: conversation
     path: /Users/kushagrachitkara/.claude/projects/-Users-kushagrachitkara-Downloads-reverie-codealmanac/767924bf-14a8-48e3-8c5c-a69523619cb9.jsonl
     note: Claude session that tested Dosu MCP retrieval and write tools while asking whether Dosu could draft AGENTS.md and whether sources can be added through CLI or MCP.
   - id: dosu-codex-setup-session
-    type: transcript
+    type: conversation
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T15-28-27-019eae80-59af-7060-b6de-e0f8d96d48ca.jsonl
     note: Codex session that ran `npx @dosu/cli setup --agent --tool codex`, checked whether setup wrote Codex MCP config, and concluded that the deployment still needed a connected source before retrieval worked.
   - id: dosu-codex-empty-deployment-session
-    type: transcript
+    type: conversation
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T15-41-37-019eae8c-665b-7842-ac31-481c789a6451.jsonl
     note: Codex session that retried Dosu after authentication, confirmed the deployment had zero connected data sources, checked the public-library fallback for `codealmanac`, and rejected `generate_documentation` as ungrounded for AGENTS.md drafting.
 status: active

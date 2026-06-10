@@ -4,7 +4,7 @@ summary: Moxie Docs is a close hosted GitHub-repo documentation competitor that 
 topics: [competitive-research, product-positioning]
 sources:
   - id: moxie-eval-session
-    type: transcript
+    type: conversation
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T15-29-43-019eae81-80e8-7b82-95bd-2c491fd3872a.jsonl
     note: Records the public-site and setup-flow evaluation of Moxie Docs, including homepage copy, the GitHub OAuth handoff, the in-app-browser failure, and the Chrome dashboard state after session reuse.
   - id: moxie-home

@@ -72,7 +72,7 @@ sources:
     path: prompts/operations/absorb.md
     note: The Absorb prompt says transcript inputs are raw material and instructs the agent to no-op when the input does not improve durable project memory.
   - id: capture-session-2026-06-09
-    type: transcript
+    type: conversation
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T10-54-13-019ead85-4907-76b2-b07f-2f843f0d836a.jsonl
     note: Records a Codex maintenance session that left a repo-mapped but project-unrelated transcript note uncommitted, clarifying the boundary between repo ownership and project relevance.
   - >-
