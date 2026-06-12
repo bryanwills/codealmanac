@@ -42,6 +42,19 @@ const CODEX_APP_SERVER_RPC_TIMEOUT_ENV =
 const CODEX_APP_SERVER_TURN_TIMEOUT_MS = 30 * 60_000;
 const CODEX_APP_SERVER_TURN_TIMEOUT_ENV =
   "CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS";
+const CODEX_APP_SERVER_SANDBOX_MODE_ENV =
+  "CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE";
+
+type CodexAppServerSandboxMode = "workspace-write" | "danger-full-access";
+type CodexAppServerSandboxPolicy =
+  | { type: "dangerFullAccess" }
+  | {
+      type: "workspaceWrite";
+      writableRoots: string[];
+      networkAccess: boolean;
+      excludeTmpdirEnvVar: boolean;
+      excludeSlashTmp: boolean;
+    };
 
 export async function runCodexAppServer(
   spec: OperationSpec,
@@ -50,6 +63,16 @@ export async function runCodexAppServer(
   const request = buildCodexAppServerRequest(spec);
   const rpcTimeoutMs = codexAppServerRpcTimeoutMs(request.env);
   const turnTimeoutMs = codexAppServerTurnTimeoutMs(request.env);
+  let sandboxMode: CodexAppServerSandboxMode;
+  try {
+    sandboxMode = codexAppServerSandboxMode(request.env);
+  } catch (err: unknown) {
+    return {
+      success: false,
+      result: "",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
   return new Promise((resolve) => {
     const managed = spawnManagedChildProcess(request.command, request.args, {
       cwd: request.cwd,
@@ -308,7 +331,7 @@ export async function runCodexAppServer(
             cwd: spec.cwd,
             model: spec.provider.model ?? null,
             approvalPolicy: "never",
-            sandbox: "workspace-write",
+            sandbox: sandboxMode,
             developerInstructions: spec.systemPrompt ?? null,
             ephemeral: spec.providerSession?.persistence === "ephemeral",
           }),
@@ -336,13 +359,7 @@ export async function runCodexAppServer(
               },
             ],
             approvalPolicy: "never",
-            sandboxPolicy: {
-              type: "workspaceWrite",
-              writableRoots: [spec.cwd],
-              networkAccess: requiresNetworkAccess(spec),
-              excludeTmpdirEnvVar: false,
-              excludeSlashTmp: false,
-            },
+            sandboxPolicy: codexAppServerSandboxPolicy(spec, sandboxMode),
             model: spec.provider.model ?? null,
             effort: spec.provider.effort ?? null,
             outputSchema:
@@ -361,6 +378,37 @@ export async function runCodexAppServer(
 
 function requiresNetworkAccess(spec: OperationSpec): boolean {
   return spec.networkAccess === true;
+}
+
+function codexAppServerSandboxPolicy(
+  spec: OperationSpec,
+  mode: CodexAppServerSandboxMode,
+): CodexAppServerSandboxPolicy {
+  if (mode === "danger-full-access") {
+    return { type: "dangerFullAccess" };
+  }
+  return {
+    type: "workspaceWrite",
+    writableRoots: [spec.cwd],
+    networkAccess: requiresNetworkAccess(spec),
+    excludeTmpdirEnvVar: false,
+    excludeSlashTmp: false,
+  };
+}
+
+function codexAppServerSandboxMode(
+  env: NodeJS.ProcessEnv,
+): CodexAppServerSandboxMode {
+  const mode = env[CODEX_APP_SERVER_SANDBOX_MODE_ENV];
+  if (mode === undefined || mode === "" || mode === "workspace-write") {
+    return "workspace-write";
+  }
+  if (mode === "danger-full-access") {
+    return "danger-full-access";
+  }
+  throw new Error(
+    `${CODEX_APP_SERVER_SANDBOX_MODE_ENV} must be workspace-write or danger-full-access`,
+  );
 }
 
 function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () => void {
