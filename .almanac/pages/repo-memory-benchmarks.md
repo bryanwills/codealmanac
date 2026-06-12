@@ -2,24 +2,39 @@
 title: Repo Memory Benchmarks
 summary: Codealmanac's strongest product evidence is that repo memory improves coding outcomes, not just that a benchmark can retrieve prior chat memories.
 topics: [product-positioning, agents]
-files:
-  - src/commands/search.ts
-  - src/commands/show.ts
-  - src/commands/operations.ts
-  - src/commands/capture-sweep.ts
-  - src/indexer/index.ts
-  - prompts/base/notability.md
-  - prompts/operations/absorb.md
 sources:
-  - /Users/kushagrachitkara/.codex/sessions/2026/05/19/rollout-2026-05-19T22-18-59-019e43d2-a98d-7940-b552-03658988fcf4.jsonl
+  - id: search-command
+    type: file
+    path: src/cli/commands/search.ts
+    note: Implements the retrieval command surface used by benchmark tasks.
+  - id: show-command
+    type: file
+    path: src/cli/commands/show.ts
+    note: Implements the structured page-read surface used during benchmark tasks.
+  - id: sync-command
+    type: file
+    path: src/cli/commands/sync.ts
+    note: Implements cross-session transcript discovery and Absorb enqueueing for continuity benchmarks.
+  - id: absorb-operation
+    type: file
+    path: src/operations/absorb.ts
+    note: Defines the Absorb operation boundary used when sync starts background memory-capture jobs.
+  - id: absorb-prompt
+    type: file
+    path: prompts/operations/absorb.md
+    note: Defines the wiki-writing behavior for post-session memory capture.
+  - id: benchmark-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/19/rollout-2026-05-19T22-18-59-019e43d2-a98d-7940-b552-03658988fcf4.jsonl
+    note: Records the benchmark framing, benchmark families, and product-evidence hierarchy.
 verified: 2026-05-20
 ---
 
 # Repo Memory Benchmarks
 
-Codealmanac should not pitch itself with a single "we scored X on LongMemEval" claim. The durable product claim is stronger and more specific: project memory should make coding agents make fewer context mistakes, rediscover less prior work, and finish real repo tasks faster.
+Codealmanac should not pitch itself with a single "we scored X on LongMemEval" claim. The durable product claim is stronger and more specific: project memory should make coding agents make fewer context mistakes, rediscover less prior work, and finish real repo tasks faster. [@benchmark-session]
 
-LongMemEval-style retrieval is still relevant, but only as the narrow retrieval slice of a broader benchmark story. The current product surface already spans retrieval (`[[src/commands/search.ts]]`, `[[src/commands/show.ts]]`), memory capture (`[[prompts/operations/absorb.md]]`, `[[src/commands/operations.ts]]`), and continuity across sessions (`[[src/commands/capture-sweep.ts]]`). Evaluation should therefore measure the full loop rather than only "can the model recall an old conversation."
+LongMemEval-style retrieval is still relevant, but only as the narrow retrieval slice of a broader benchmark story. The current product surface already spans retrieval (`[[src/cli/commands/search.ts]]`, `[[src/cli/commands/show.ts]]`), memory capture (`[[prompts/operations/absorb.md]]`, `[[src/operations/absorb.ts]]`), and continuity across sessions (`[[src/cli/commands/sync.ts]]`). Evaluation should therefore measure the full loop rather than only "can the model recall an old conversation." [@search-command] [@show-command] [@absorb-prompt] [@absorb-operation] [@sync-command]
 
 ## What the benchmark has to prove
 
@@ -33,7 +48,7 @@ The product question is not "can the system retrieve a remembered fact." The pro
 
 Use issue-like coding tasks plus touched-file hints, then score whether search retrieves the wiki page that contains the relevant invariant, decision, or gotcha. The natural metrics are `Recall@1`, `Recall@3`, `Recall@5`, and `MRR`.
 
-This is the closest equivalent to LongMemEval, but scoped to repo work. A representative task shape is "fix a bug in `[[src/commands/capture-sweep.ts]]`" with a gold answer page such as [[capture-ledger]] or [[capture-flow]].
+This is the closest equivalent to LongMemEval, but scoped to repo work. A representative task shape is "fix a bug in `[[src/cli/commands/sync.ts]]`" with a gold answer page such as [[capture-ledger]] or [[capture-flow]].
 
 ### Bad edit prevention
 
@@ -96,7 +111,7 @@ This is the broadest framing of the category: a new coding agent joining an exis
 
 ## Recommended benchmark stack
 
-The transcript's proposed benchmark set is a compact four-part stack:
+The transcript's proposed benchmark set is a compact four-part stack: [@benchmark-session]
 
 - `CodeMemEval-R`: retrieval over repo tasks, scored with `R@1`, `R@3`, `R@5`, and `MRR`
 - `CodeMemEval-Act`: task execution with success rate plus bad-edit prevention
@@ -107,6 +122,6 @@ That stack keeps retrieval in scope without letting it dominate the story. The e
 
 ## Product claim this supports
 
-The durable investor and product line is that Codealmanac is not just documentation and not just chat-memory retrieval. It is infrastructure for making coding agents compound: the system preserves project-specific understanding, surfaces it at the moment of work, and changes real coding outcomes across sessions.
+The durable investor and product line is that Codealmanac is not just documentation and not just chat-memory retrieval. It is infrastructure for making coding agents compound: the system preserves project-specific understanding, surfaces it at the moment of work, and changes real coding outcomes across sessions. [@benchmark-session]
 
 Related pages: [[capture-flow]], [[capture-ledger]], [[sqlite-indexer]], [[provider-lifecycle-boundary]], [[operation-prompts]]
