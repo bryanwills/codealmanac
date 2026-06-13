@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import type Database from "better-sqlite3";
@@ -7,7 +6,7 @@ import { ensureFreshIndex } from "../wiki/indexer/index.js";
 import { openIndex } from "../wiki/indexer/schema.js";
 import * as wikiQuery from "../wiki/query/index.js";
 import { toKebabCase } from "../slug.js";
-import { topicsYamlPath } from "../wiki/topics/paths.js";
+import { topicsYamlPaths } from "../wiki/locations.js";
 import {
   getViewerJobDetail,
   getViewerJobs,
@@ -61,7 +60,7 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
     async overview() {
       return withFreshDb(ctx.repoRoot, (db) => {
         const topicNavigation = {
-          source: existsSync(topicsYamlPath(ctx.repoRoot)) ? "curated" as const : "tags" as const,
+          source: topicsYamlPaths(ctx.repoRoot).length > 0 ? "curated" as const : "tags" as const,
           sidebarLimit: SIDEBAR_TAG_LIMIT,
         };
         const counts = db
