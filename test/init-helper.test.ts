@@ -8,7 +8,7 @@ import { readRegistry } from "../src/wiki/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("initWiki (internal helper)", () => {
-  it("creates the .almanac/ directory structure", async () => {
+  it("creates runtime state and the visible docs wiki structure", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "example");
 
@@ -20,23 +20,29 @@ describe("initWiki (internal helper)", () => {
 
       expect(result.created).toBe(true);
       expect(existsSync(join(repo, ".almanac"))).toBe(true);
-      expect(existsSync(join(repo, ".almanac", "pages"))).toBe(true);
-      expect(existsSync(join(repo, ".almanac", "README.md"))).toBe(true);
+      expect(existsSync(join(repo, "docs", "almanac", "README.md"))).toBe(
+        true,
+      );
+      expect(existsSync(join(repo, "docs", "almanac", "topics.yaml"))).toBe(
+        true,
+      );
+      expect(existsSync(join(repo, "docs", "almanac", "_manual"))).toBe(true);
+      expect(existsSync(join(repo, "docs", "almanac", "_meta"))).toBe(true);
     });
   });
 
-  it("writes a non-empty starter README with the notability bar", async () => {
+  it("writes a non-empty starter README for human-first onboarding", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "example");
       await initWiki({ cwd: repo, name: "example", description: "" });
       const readme = await readFile(
-        join(repo, ".almanac", "README.md"),
+        join(repo, "docs", "almanac", "README.md"),
         "utf8",
       );
-      expect(readme).toMatch(/Notability bar/);
-      expect(readme).toMatch(/non-obvious knowledge/);
-      expect(readme).toMatch(/Topic taxonomy/);
-      expect(readme).toMatch(/\[\[.+\]\]/); // example wikilink
+      expect(readme).toMatch(/page_id: codebase-wiki/);
+      expect(readme).toMatch(/new maintainer/);
+      expect(readme).toMatch(/Readable wiki content lives in `docs\/almanac\/`/);
+      expect(readme).toMatch(/`_manual\/`/);
     });
   });
 
@@ -113,7 +119,7 @@ describe("initWiki (internal helper)", () => {
 
       // Customize the README to prove re-run doesn't clobber user edits.
       await writeFile(
-        join(repo, ".almanac", "README.md"),
+        join(repo, "docs", "almanac", "README.md"),
         "user-edited content",
         "utf8",
       );
@@ -126,7 +132,7 @@ describe("initWiki (internal helper)", () => {
       expect(second.created).toBe(false);
 
       const readme = await readFile(
-        join(repo, ".almanac", "README.md"),
+        join(repo, "docs", "almanac", "README.md"),
         "utf8",
       );
       expect(readme).toBe("user-edited content");

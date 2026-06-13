@@ -1,9 +1,8 @@
-import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import fg from "fast-glob";
 
 import type { OperationSpec } from "./spec.js";
 import { initWiki } from "../init/scaffold.js";
+import { wikiPageRoots } from "../wiki/locations.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
@@ -49,7 +48,7 @@ export async function runBuildOperation(
   const pageCount = await countWikiPages(repoRoot);
   if (pageCount > 0 && options.force !== true) {
     throw new OperationError(
-      `.almanac/ already initialized with ${pageCount} page${pageCount === 1 ? "" : "s"}; pass --force to rebuild`,
+      `wiki already initialized with ${pageCount} page${pageCount === 1 ? "" : "s"}; pass --force to rebuild`,
       {
         outcome: "needs-action",
         fix: "run: almanac init --force",
@@ -75,8 +74,19 @@ export async function runBuildOperation(
 }
 
 async function countWikiPages(repoRoot: string): Promise<number> {
-  const pagesDir = join(repoRoot, ".almanac", "pages");
-  if (!existsSync(pagesDir)) return 0;
-  const entries = await readdir(pagesDir);
-  return entries.filter((entry) => entry.endsWith(".md")).length;
+  const roots = wikiPageRoots(repoRoot);
+  let count = 0;
+  for (const root of roots) {
+    const entries = await fg("**/*.md", {
+      cwd: root.dir,
+      absolute: false,
+      onlyFiles: true,
+      ignore:
+        root.label === "docs/almanac"
+          ? ["README.md", "_manual/**", "_meta/**"]
+          : [],
+    });
+    count += entries.length;
+  }
+  return count;
 }

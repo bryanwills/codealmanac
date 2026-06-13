@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
@@ -34,6 +34,153 @@ async function captureStderr<T>(
 }
 
 describe("indexer", () => {
+  it("indexes nested docs/almanac pages by page_id", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      const docsDir = join(repo, "docs", "almanac", "architecture");
+      await mkdir(docsDir, { recursive: true });
+      await writeFile(
+        join(docsDir, "README.md"),
+        `---
+page_id: architecture
+title: Architecture
+topics: [architecture]
+sources:
+  - id: indexer-source
+    type: file
+    path: src/wiki/indexer/index.ts
+    note: Supports the page_id indexing behavior.
+---
+
+# Architecture
+
+The architecture page links to [[search]] and [[src/wiki/indexer/]].
+`,
+        "utf8",
+      );
+
+      const result = await runIndexer({ repoRoot: repo });
+      expect(result.changed).toBe(1);
+      expect(result.total).toBe(1);
+
+      const db = openIndex(join(repo, ".almanac", "index.db"));
+      try {
+        const pages = db
+          .prepare("SELECT slug, title, file_path FROM pages")
+          .all();
+        expect(pages).toEqual([
+          {
+            slug: "architecture",
+            title: "Architecture",
+            file_path: join(docsDir, "README.md"),
+          },
+        ]);
+        const links = db
+          .prepare("SELECT target_slug FROM wikilinks WHERE source_slug = ?")
+          .all("architecture");
+        expect(links).toEqual([{ target_slug: "search" }]);
+      } finally {
+        db.close();
+      }
+    });
+  });
+
+  it("prefers docs/almanac pages over legacy .almanac/pages collisions", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await scaffoldWiki(repo);
+      await writePage(repo, "architecture", "# Legacy Architecture\n");
+
+      const docsDir = join(repo, "docs", "almanac", "architecture");
+      await mkdir(docsDir, { recursive: true });
+      await writeFile(
+        join(docsDir, "README.md"),
+        `---
+page_id: architecture
+title: Canonical Architecture
+topics: [architecture]
+---
+
+# Canonical Architecture
+`,
+        "utf8",
+      );
+
+      const { result, stderr } = await captureStderr(() =>
+        runIndexer({ repoRoot: repo }),
+      );
+      expect(result.total).toBe(1);
+      expect(result.filesSeen).toBe(2);
+      expect(result.filesSkipped).toBe(1);
+      expect(stderr).toMatch(/collides with an earlier file/);
+
+      const db = openIndex(join(repo, ".almanac", "index.db"));
+      try {
+        const page = db
+          .prepare("SELECT slug, title, file_path FROM pages")
+          .get() as { slug: string; title: string; file_path: string };
+        expect(page).toEqual({
+          slug: "architecture",
+          title: "Canonical Architecture",
+          file_path: join(docsDir, "README.md"),
+        });
+      } finally {
+        db.close();
+      }
+    });
+  });
+
+  it("uses docs/almanac/topics.yaml instead of legacy topics when both exist", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await scaffoldWiki(repo);
+      await writeFile(
+        join(repo, ".almanac", "topics.yaml"),
+        `topics:
+  - slug: architecture
+    title: Legacy Architecture
+    description: Legacy topic description.
+    parents: []
+`,
+        "utf8",
+      );
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+      await writeFile(
+        join(repo, "docs", "almanac", "topics.yaml"),
+        `topics:
+  - slug: architecture
+    title: Canonical Architecture
+    description: Canonical topic description.
+    parents: []
+`,
+        "utf8",
+      );
+      await writePage(
+        repo,
+        "architecture",
+        "---\ntopics: [architecture]\n---\n\n# Architecture\n",
+      );
+
+      await runIndexer({ repoRoot: repo });
+
+      const db = openIndex(join(repo, ".almanac", "index.db"));
+      try {
+        const topic = db
+          .prepare(
+            "SELECT slug, title, description FROM topics WHERE slug = ?",
+          )
+          .get("architecture");
+        expect(topic).toEqual({
+          slug: "architecture",
+          title: "Canonical Architecture",
+          description: "Canonical topic description.",
+        });
+      } finally {
+        db.close();
+      }
+    });
+  });
+
   it("indexes pages on first run", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

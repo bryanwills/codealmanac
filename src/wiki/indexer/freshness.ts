@@ -1,6 +1,4 @@
 import { existsSync, statSync } from "node:fs";
-import { join } from "node:path";
-
 import fg from "fast-glob";
 
 // Glob is relative to `.almanac/pages/`, so this is every markdown page
@@ -41,11 +39,10 @@ export function pagesNewerThan(pagesDir: string, dbPath: string): boolean {
  * metadata yet", not "the index is stale".
  */
 export function topicsYamlNewerThan(
-  almanacDir: string,
+  topicsYamlPath: string,
   dbPath: string,
 ): boolean {
-  const path = join(almanacDir, "topics.yaml");
-  if (!existsSync(path)) return false;
+  if (!existsSync(topicsYamlPath)) return false;
   let dbMtime: number;
   try {
     dbMtime = statSync(dbPath).mtimeMs;
@@ -53,7 +50,7 @@ export function topicsYamlNewerThan(
     return true;
   }
   try {
-    const st = statSync(path);
+    const st = statSync(topicsYamlPath);
     return st.mtimeMs > dbMtime;
   } catch {
     return false;

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, statSync } from "node:fs";
-import { readFile, utimes } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { mkdir, readFile, utimes } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
 import type Database from "better-sqlite3";
@@ -25,8 +25,14 @@ import {
   type IndexedPageSource,
 } from "./page-sources.js";
 import { isIndexSchemaStale, openIndex } from "./schema.js";
-import { applyTopicsYaml, TOPICS_YAML_FILENAME } from "./topics-yaml.js";
+import { applyTopicsYaml } from "./topics-yaml.js";
 import { extractWikilinks } from "./wikilinks.js";
+import {
+  indexDbPath,
+  topicsYamlPaths,
+  wikiPageRoots,
+  type WikiPageRoot,
+} from "../locations.js";
 
 export interface IndexContext {
   /** Absolute path to the repo root (the dir containing `.almanac/`). */
@@ -74,29 +80,35 @@ export interface IndexResult {
  * warnings (slug collisions, bad frontmatter) still go to stderr.
  */
 export async function ensureFreshIndex(ctx: IndexContext): Promise<IndexResult> {
-  const almanacDir = join(ctx.repoRoot, ".almanac");
-  const dbPath = join(almanacDir, "index.db");
-  const pagesDir = join(almanacDir, "pages");
+  const dbPath = indexDbPath(ctx.repoRoot);
+  const pageRoots = wikiPageRoots(ctx.repoRoot);
 
-  if (!existsSync(pagesDir)) {
-    // No pages dir = nothing to index. Open/create the DB so downstream
+  if (pageRoots.length === 0) {
+    // No content root = nothing to index. Open/create the DB so downstream
     // queries can run against an empty schema rather than crashing on a
     // missing file.
+    await mkdir(dirname(dbPath), { recursive: true });
     const db = openIndex(dbPath);
     db.close();
     return emptyResult();
   }
 
-  if (indexNeedsRefresh({ almanacDir, dbPath, pagesDir })) {
+  if (
+    indexNeedsRefresh({
+      dbPath,
+      pageRoots,
+      topicsYamlPaths: topicsYamlPaths(ctx.repoRoot),
+    })
+  ) {
     return runIndexer(ctx);
   }
   return emptyResult();
 }
 
 function indexNeedsRefresh(args: {
-  almanacDir: string;
   dbPath: string;
-  pagesDir: string;
+  pageRoots: WikiPageRoot[];
+  topicsYamlPaths: string[];
 }): boolean {
   if (!existsSync(args.dbPath)) return true;
   if (isIndexSchemaStale(args.dbPath)) return true;
@@ -105,8 +117,8 @@ function indexNeedsRefresh(args: {
   // reindex: users can still change `.almanac/pages/` directly via
   // manual edits, git pulls, merges, or branch switches.
   return (
-    pagesNewerThan(args.pagesDir, args.dbPath) ||
-    topicsYamlNewerThan(args.almanacDir, args.dbPath)
+    args.pageRoots.some((root) => pagesNewerThan(root.dir, args.dbPath)) ||
+    args.topicsYamlPaths.some((path) => topicsYamlNewerThan(path, args.dbPath))
   );
 }
 
@@ -126,21 +138,23 @@ function emptyResult(): IndexResult {
  * the indexer unconditionally. Exposed for `almanac reindex`.
  */
 export async function runIndexer(ctx: IndexContext): Promise<IndexResult> {
-  const almanacDir = join(ctx.repoRoot, ".almanac");
-  const dbPath = join(almanacDir, "index.db");
-  const pagesDir = join(almanacDir, "pages");
+  const dbPath = indexDbPath(ctx.repoRoot);
+  const pageRoots = wikiPageRoots(ctx.repoRoot);
 
+  await mkdir(dirname(dbPath), { recursive: true });
   const db = openIndex(dbPath);
   let result: IndexResult;
   try {
-    result = await indexPagesInto(db, pagesDir);
+    result = await indexPagesInto(db, pageRoots);
     // After pages are indexed, reconcile the topics table against
-    // `.almanac/topics.yaml` (if present). `indexPagesInto` has already
+    // topics.yaml (if present). `indexPagesInto` has already
     // lazily inserted rows for every topic slug mentioned in page
     // frontmatter with a title-cased title; `applyTopicsYaml` now
     // promotes the declared title/description and rewrites parent edges
     // for those topics that live in the file.
-    await applyTopicsYaml(db, join(almanacDir, TOPICS_YAML_FILENAME));
+    for (const path of topicsYamlPaths(ctx.repoRoot)) {
+      await applyTopicsYaml(db, path);
+    }
   } finally {
     db.close();
   }
@@ -170,15 +184,8 @@ interface ExistingRow {
 
 async function indexPagesInto(
   db: Database.Database,
-  pagesDir: string,
+  pageRoots: WikiPageRoot[],
 ): Promise<IndexResult> {
-  const files = await fg(PAGES_GLOB, {
-    cwd: pagesDir,
-    absolute: false,
-    onlyFiles: true,
-    caseSensitiveMatch: true,
-  });
-
   // Load the current state of the index into memory so we can diff against
   // what's on disk. This is cheap even at 10k pages (one INTEGER + two
   // short strings per row).
@@ -210,104 +217,122 @@ async function indexPagesInto(
   }> = [];
   const seenSlugs = new Set<string>();
   let filesSkipped = 0;
+  let filesSeen = 0;
 
-  for (const rel of files) {
-    const fullPath = join(pagesDir, rel);
-    const base = basename(rel, ".md");
-    const slug = toKebabCase(base);
-    if (slug.length === 0) {
-      process.stderr.write(
-        `almanac: skipping "${rel}" — filename has no slug-able characters\n`,
-      );
-      filesSkipped++;
-      continue;
-    }
-    if (slug !== base) {
-      // Filename isn't already canonical kebab-case. Warn, but still
-      // index under the canonical slug. `almanac health` (slice 3) will
-      // surface these as a proper report.
-      process.stderr.write(
-        `almanac: warning — "${rel}" is not canonical; indexed as slug "${slug}"\n`,
-      );
-    }
-    if (seenSlugs.has(slug)) {
-      // Two files slugify to the same slug. Keep the first, skip the
-      // rest — health will flag this properly in slice 3.
-      process.stderr.write(
-        `almanac: warning — slug "${slug}" collides with an earlier file; skipping "${rel}"\n`,
-      );
-      filesSkipped++;
-      continue;
-    }
+  for (const root of pageRoots) {
+    const files = await fg(PAGES_GLOB, {
+      cwd: root.dir,
+      absolute: false,
+      onlyFiles: true,
+      caseSensitiveMatch: true,
+    });
+    filesSeen += files.length;
 
-    // `fast-glob` gave us the list in one shot, but by the time we stat
-    // and read each file it can have been deleted, renamed, or swapped
-    // (editors that save via rename-swap expose this briefly). A single
-    // such race shouldn't tank the whole reindex — matches the malformed-
-    // YAML behavior ("one bad file doesn't stop the others"). We narrow
-    // to ENOENT/EACCES so genuine I/O failures (EIO, EMFILE, etc.) still
-    // surface.
-    let st: ReturnType<typeof statSync>;
-    let raw: string;
-    try {
-      st = statSync(fullPath);
-      raw = await readFile(fullPath, "utf8");
-    } catch (err: unknown) {
-      if (
-        err instanceof Error &&
-        "code" in err &&
-        (err.code === "ENOENT" || err.code === "EACCES")
-      ) {
+    for (const rel of files) {
+      const fullPath = join(root.dir, rel);
+      const displayPath = join(root.label, rel);
+
+      // `fast-glob` gave us the list in one shot, but by the time we stat
+      // and read each file it can have been deleted, renamed, or swapped
+      // (editors that save via rename-swap expose this briefly). A single
+      // such race shouldn't tank the whole reindex — matches the malformed-
+      // YAML behavior ("one bad file doesn't stop the others"). We narrow
+      // to ENOENT/EACCES so genuine I/O failures (EIO, EMFILE, etc.) still
+      // surface.
+      let st: ReturnType<typeof statSync>;
+      let raw: string;
+      try {
+        st = statSync(fullPath);
+        raw = await readFile(fullPath, "utf8");
+      } catch (err: unknown) {
+        if (
+          err instanceof Error &&
+          "code" in err &&
+          (err.code === "ENOENT" || err.code === "EACCES")
+        ) {
+          process.stderr.write(
+            `almanac: skipping "${displayPath}" — ${err.message}\n`,
+          );
+          filesSkipped++;
+          continue;
+        }
+        throw err;
+      }
+
+      const fm = parseFrontmatter(raw);
+      const base = basename(rel, ".md");
+      const slugSource = fm.page_id ?? base;
+      const slug = toKebabCase(slugSource);
+      if (slug.length === 0) {
         process.stderr.write(
-          `almanac: skipping "${rel}" — ${err.message}\n`,
+          `almanac: skipping "${displayPath}" — page_id or filename has no slug-able characters\n`,
         );
         filesSkipped++;
         continue;
       }
-      throw err;
+      if (fm.page_id !== undefined && slug !== fm.page_id) {
+        process.stderr.write(
+          `almanac: warning — "${displayPath}" has non-canonical page_id "${fm.page_id}"; indexed as slug "${slug}"\n`,
+        );
+      } else if (fm.page_id === undefined && slug !== base) {
+        // Filename isn't already canonical kebab-case. Warn, but still
+        // index under the canonical slug. `almanac health` (slice 3) will
+        // surface these as a proper report.
+        process.stderr.write(
+          `almanac: warning — "${displayPath}" is not canonical; indexed as slug "${slug}"\n`,
+        );
+      }
+      if (seenSlugs.has(slug)) {
+        // Two files resolve to the same slug. Keep the first, skip the
+        // rest — health will flag this properly in slice 3.
+        process.stderr.write(
+          `almanac: warning — slug "${slug}" collides with an earlier file; skipping "${displayPath}"\n`,
+        );
+        filesSkipped++;
+        continue;
+      }
+
+      seenSlugs.add(slug);
+      const updatedAt = Math.floor(st.mtimeMs / 1000);
+
+      // Content-hash skip: if the hash matches what's in the DB and the
+      // file path hasn't moved, we can leave this page's rows alone. This
+      // is the fast-path for "user ran a query; one page was touched".
+      const contentHash = hashContent(raw);
+      const existing = existingBySlug.get(slug);
+      if (
+        existing !== undefined &&
+        existing.content_hash === contentHash &&
+        existing.file_path === fullPath
+      ) {
+        continue;
+      }
+
+      const title = fm.title ?? firstH1(fm.body) ?? base;
+      const links = extractWikilinks(fm.body);
+      const normalizedSources = normalizePageSources({
+        sources: fm.sources,
+        legacyFiles: fm.files,
+        legacySourceStrings: fm.legacySourceStrings,
+      });
+
+      planned.push({
+        slug,
+        title,
+        summary: fm.summary,
+        filePath: rel,
+        fullPath,
+        contentHash,
+        updatedAt,
+        archivedAt: fm.archived_at,
+        supersededBy: fm.superseded_by,
+        topics: fm.topics,
+        sourceFileRefs: normalizedSources.fileRefs,
+        pageSources: normalizedSources.sources,
+        wikilinks: links,
+        content: fm.body,
+      });
     }
-
-    seenSlugs.add(slug);
-    const updatedAt = Math.floor(st.mtimeMs / 1000);
-
-    // Content-hash skip: if the hash matches what's in the DB and the
-    // file path hasn't moved, we can leave this page's rows alone. This
-    // is the fast-path for "user ran a query; one page was touched".
-    const contentHash = hashContent(raw);
-    const existing = existingBySlug.get(slug);
-    if (
-      existing !== undefined &&
-      existing.content_hash === contentHash &&
-      existing.file_path === fullPath
-    ) {
-      continue;
-    }
-
-    const fm = parseFrontmatter(raw);
-    const title = fm.title ?? firstH1(fm.body) ?? base;
-    const links = extractWikilinks(fm.body);
-    const normalizedSources = normalizePageSources({
-      sources: fm.sources,
-      legacyFiles: fm.files,
-      legacySourceStrings: fm.legacySourceStrings,
-    });
-
-    planned.push({
-      slug,
-      title,
-      summary: fm.summary,
-      filePath: rel,
-      fullPath,
-      contentHash,
-      updatedAt,
-      archivedAt: fm.archived_at,
-      supersededBy: fm.superseded_by,
-      topics: fm.topics,
-      sourceFileRefs: normalizedSources.fileRefs,
-      pageSources: normalizedSources.sources,
-      wikilinks: links,
-      content: fm.body,
-    });
   }
 
   // Compute deletions: anything in the DB whose slug isn't on disk
@@ -495,7 +520,7 @@ async function indexPagesInto(
     removed: toDelete.length,
     total: pagesIndexed,
     pagesIndexed,
-    filesSeen: files.length,
+    filesSeen,
     filesSkipped,
   };
 }

@@ -34,7 +34,10 @@ describe("garden operation", () => {
         metadata: {
           operation: "garden",
           targetKind: "wiki",
-          targetPaths: [`${repo}/.almanac`],
+          targetPaths: [
+            join(repo, "docs", "almanac"),
+            join(repo, ".almanac", "review.yaml"),
+          ],
         },
       });
       expect(spec.prompt).toContain("Almanac is cultivated project memory");

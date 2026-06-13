@@ -1,10 +1,8 @@
-import { join } from "node:path";
-
 import type { HarnessResult } from "../harness/events.js";
 import type { FinalOutputResult } from "../harness/final-output.js";
 import { summarizeOperationOutput } from "../operations/output.js";
 import { runIndexer } from "../wiki/indexer/index.js";
-import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
+import { diffPageSnapshots, snapshotWikiPages } from "./snapshots.js";
 import type {
   JobOperationOutput,
   JobPageChanges,
@@ -13,7 +11,7 @@ import type {
 import type { PageSnapshot } from "./snapshots.js";
 
 export interface JobWikiSnapshot {
-  pagesDir: string;
+  repoRoot: string;
   before: PageSnapshot;
 }
 
@@ -24,10 +22,9 @@ export interface JobWikiEffects {
 }
 
 export async function snapshotJobWiki(repoRoot: string): Promise<JobWikiSnapshot> {
-  const pagesDir = join(repoRoot, ".almanac", "pages");
   return {
-    pagesDir,
-    before: await snapshotPages(pagesDir),
+    repoRoot,
+    before: await snapshotWikiPages(repoRoot),
   };
 }
 
@@ -36,7 +33,7 @@ export async function collectJobWikiEffects(args: {
   jobId: string;
   result: HarnessResult;
 }): Promise<JobWikiEffects> {
-  const after = await snapshotPages(args.snapshot.pagesDir);
+  const after = await snapshotWikiPages(args.snapshot.repoRoot);
   const delta = diffPageSnapshots(args.snapshot.before, after);
   const summary: JobSummary = {
     created: delta.created.length,

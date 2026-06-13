@@ -1,6 +1,7 @@
 import yaml from "js-yaml";
 
 export interface Frontmatter {
+  page_id?: string;
   title?: string;
   summary?: string;
   topics: string[];
@@ -109,6 +110,7 @@ export function parseFrontmatter(raw: string): Frontmatter {
   const obj = parsed as Record<string, unknown>;
 
   return {
+    page_id: coerceString(obj.page_id),
     title: coerceString(obj.title),
     summary: coerceString(obj.summary),
     topics: coerceStringArray(obj.topics),

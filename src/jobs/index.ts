@@ -36,6 +36,7 @@ export {
   diffPageSnapshots,
   isNoopPageDelta,
   snapshotPages,
+  snapshotWikiPages,
 } from "./snapshots.js";
 export type { JobLogEntry } from "./logs.js";
 export type {

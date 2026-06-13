@@ -1,11 +1,14 @@
-import { join } from "node:path";
+import {
+  canonicalTopicsYamlPath,
+  indexDbPath as repoIndexDbPath,
+} from "../locations.js";
 
 /**
- * `.almanac/topics.yaml` inside a given repo root. Single helper so no
+ * `docs/almanac/topics.yaml` inside a given repo root. Single helper so no
  * caller has to remember where the file lives.
  */
 export function topicsYamlPath(repoRoot: string): string {
-  return join(repoRoot, ".almanac", "topics.yaml");
+  return canonicalTopicsYamlPath(repoRoot);
 }
 
 /**
@@ -13,5 +16,5 @@ export function topicsYamlPath(repoRoot: string): string {
  * so the topics commands don't have to import from scattered places.
  */
 export function indexDbPath(repoRoot: string): string {
-  return join(repoRoot, ".almanac", "index.db");
+  return repoIndexDbPath(repoRoot);
 }

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -119,7 +119,7 @@ describe("build operation", () => {
         },
       });
       await expect(
-        readFile(join(repo, ".almanac", "README.md"), "utf8"),
+        readFile(join(repo, "docs", "almanac", "README.md"), "utf8"),
       ).resolves.toContain("This is the Almanac wiki");
       await expect(readFile(join(repo, ".gitignore"), "utf8")).resolves.toContain(
         ".almanac/jobs/",
@@ -184,8 +184,9 @@ describe("build operation", () => {
           result: { success: true, result: "done" },
         }),
       });
+      await mkdir(join(repo, "docs", "almanac", "concepts"), { recursive: true });
       await writeFile(
-        join(repo, ".almanac", "pages", "existing.md"),
+        join(repo, "docs", "almanac", "concepts", "existing.md"),
         "# Existing\n",
       );
 

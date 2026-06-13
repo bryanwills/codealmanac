@@ -2,13 +2,18 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 
-import { findNearestAlmanacDir, getRepoAlmanacDir } from "../paths.js";
+import { findNearestAlmanacDir } from "../paths.js";
 import { toKebabCase } from "../slug.js";
 import {
   addEntry,
   ensureGlobalDir,
   type RegistryEntry,
 } from "../wiki/registry/index.js";
+import {
+  canonicalTopicsYamlPath,
+  canonicalWikiDir,
+  runtimeDir,
+} from "../wiki/locations.js";
 
 export interface InitOptions {
   cwd: string;
@@ -19,16 +24,16 @@ export interface InitOptions {
 export interface InitResult {
   entry: RegistryEntry;
   almanacDir: string;
-  created: boolean; // false if .almanac/ already existed (idempotent re-init)
+  created: boolean; // false if runtime/content directories already existed
 }
 
 /**
- * Scaffold `.almanac/` in the repo and register it globally.
+ * Scaffold an Almanac runtime directory plus visible docs wiki and register it globally.
  *
- * Idempotent: running `init` on a repo that already has `.almanac/` is
- * fine — we re-register (refreshing the name/description) and skip
- * anything that already exists. We never overwrite a user-authored
- * `README.md` or touch existing pages.
+ * Idempotent: running `init` on a repo that already has `.almanac/` or
+ * `docs/almanac/` is fine — we re-register (refreshing the name/description)
+ * and skip anything that already exists. We never overwrite user-authored
+ * docs or touch existing pages.
  *
  * If `cwd` lives inside a subdirectory of an existing wiki, we walk up to
  * the wiki root and operate there. `almanac init` from `src/nested/`
@@ -41,16 +46,32 @@ export async function initWiki(options: InitOptions): Promise<InitResult> {
   // cwd as the new wiki root.
   const repoRoot = findNearestAlmanacDir(options.cwd) ?? options.cwd;
 
-  const almanacDir = getRepoAlmanacDir(repoRoot);
-  const pagesDir = join(almanacDir, "pages");
-  const readmePath = join(almanacDir, "README.md");
+  const almanacDir = runtimeDir(repoRoot);
+  const wikiDir = canonicalWikiDir(repoRoot);
+  const readmePath = join(wikiDir, "README.md");
+  const manualDir = join(wikiDir, "_manual");
+  const metaDir = join(wikiDir, "_meta");
+  const topicsPath = canonicalTopicsYamlPath(repoRoot);
 
-  const alreadyExisted = existsSync(almanacDir);
+  const alreadyExisted = existsSync(almanacDir) || existsSync(wikiDir);
 
-  await mkdir(pagesDir, { recursive: true });
+  await mkdir(almanacDir, { recursive: true });
+  await mkdir(manualDir, { recursive: true });
+  await mkdir(metaDir, { recursive: true });
 
   if (!existsSync(readmePath)) {
     await writeFile(readmePath, starterReadme(), "utf8");
+  }
+  if (!existsSync(topicsPath)) {
+    await writeFile(topicsPath, starterTopicsYaml(), "utf8");
+  }
+  const manualReadme = join(manualDir, "README.md");
+  if (!existsSync(manualReadme)) {
+    await writeFile(manualReadme, starterManualReadme(), "utf8");
+  }
+  const conventionsPath = join(metaDir, "wiki-conventions.md");
+  if (!existsSync(conventionsPath)) {
+    await writeFile(conventionsPath, starterWikiConventions(), "utf8");
   }
 
   await ensureGitignoreHasRuntimeArtifacts(repoRoot);
@@ -130,86 +151,125 @@ async function ensureGitignoreHasRuntimeArtifacts(cwd: string): Promise<void> {
 }
 
 /**
- * The starter `.almanac/README.md` content. Based on the "Wiki README" and
- * "Notability bar" sections of the design spec. Kept opinionated but short
- * (~70 lines) — the user is expected to edit it to fit the repo.
+ * The starter `docs/almanac/README.md` content. Kept opinionated but short —
+ * the user is expected to edit it to fit the repo.
  */
 function starterReadme(): string {
-  return `# Wiki
+  return `---
+page_id: codebase-wiki
+title: Codebase Wiki
+topics: [concepts]
+---
+
+# Codebase Wiki
 
 This is the Almanac wiki for this repository. It captures the knowledge
 the code itself can't say — decisions, flows, invariants, gotchas, incidents.
 
-The primary reader is an AI coding agent. The secondary reader is a human
-skimming to understand the shape of the codebase. Write accordingly: dense,
-factual, linked.
+The primary reader is a new maintainer: a human joining the repository or an
+agent starting with no prior context. Write pages as readable articles that are
+also easy for agents to query, verify, and update.
 
-## Notability bar
+## Where To Start
 
-Write a page when there is **non-obvious knowledge that will help a future
-agent**. Specifically:
+- Start with this page for the shape of the wiki.
+- Read \`_manual/README.md\` before creating or reorganizing pages.
+- Read \`_meta/wiki-conventions.md\` before changing local names, folders,
+  topics, or recurring section shapes.
 
-- A decision that took discussion, research, or trial-and-error
-- A gotcha discovered through failure
-- A cross-cutting flow that spans multiple files and isn't obvious from any
-  one of them
-- A constraint or invariant not visible from the code
-- An entity (technology, service, system) referenced by multiple pages
+## Main Sections
 
-Do not write pages that restate what the code does. Do not write pages of
-inference — only of observation. Silence is an acceptable outcome.
+- \`concepts/\` explains the vocabulary a new reader needs first.
+- \`architecture/\` explains how the repository works.
+- \`guides/\` explains common tasks.
+- \`reference/\` records exact public contracts.
+- \`decisions/\` records accepted choices and their rationale.
+- \`incidents/\` records failures, migrations, and lessons that still matter.
+- \`active/\` holds current investigations until they are folded into durable pages.
+- \`context/\` holds product, market, competitor, and strategy background.
+- \`_manual/\` defines how to maintain this wiki.
+- \`_meta/\` records local conventions and coverage notes.
 
-## Topic taxonomy
+## Runtime State
 
-Topics form a DAG; pages can belong to multiple topics. Start with these and
-grow as the wiki does:
+Readable wiki content lives in \`docs/almanac/\`. Local runtime state lives in
+\`.almanac/\`, including the SQLite index and job records.
+`;
+}
 
-- \`stack\` — technologies and services we use (frameworks, databases, APIs)
-- \`systems\` — custom systems we built (auth, billing, search)
-- \`flows\` — multi-file processes end-to-end (checkout-flow, publish-flow)
-- \`decisions\` — "why X over Y"
-- \`incidents\` — recorded failures and their fixes
-- \`concepts\` — shared vocabulary specific to this codebase
+function starterTopicsYaml(): string {
+  return `topics:
+  - slug: concepts
+    title: Concepts
+    description: Core vocabulary and mental models for this codebase
+    parents: []
+  - slug: architecture
+    title: Architecture
+    description: Repository structure, subsystem boundaries, and runtime flows
+    parents: []
+  - slug: guides
+    title: Guides
+    description: Task-oriented documentation for maintainers
+    parents: []
+  - slug: reference
+    title: Reference
+    description: Exact public contracts such as commands, formats, and config
+    parents: []
+  - slug: decisions
+    title: Decisions
+    description: Accepted choices and the reasoning behind them
+    parents: []
+  - slug: incidents
+    title: Incidents
+    description: Failures, migrations, and lessons that still shape work
+    parents: []
+  - slug: active
+    title: Active
+    description: Current investigations and design threads not yet folded into durable pages
+    parents: []
+  - slug: context
+    title: Context
+    description: Product, market, competitor, and strategy background
+    parents: []
+`;
+}
 
-Domain topics (\`auth\`, \`payments\`, \`frontend\`, \`backend\`) live alongside
-these. A page about JWT rotation belongs to both \`auth\` and \`decisions\`.
+function starterManualReadme(): string {
+  return `---
+page_id: wiki-manual
+title: Wiki Manual
+topics: []
+---
 
-## Page shapes
+# Wiki Manual
 
-Four shapes cover most of what gets written. They are suggestions, not a
-schema — a page that fits none of them is fine.
+This manual defines how this codebase wiki should be written and maintained.
+Read it before creating, moving, merging, or substantially rewriting pages.
 
-- **Entity** — a stable named thing (Supabase, Stripe, the search service)
-- **Decision** — why we chose X over Y
-- **Flow** — how a multi-file process works end-to-end
-- **Gotcha** — a specific surprise, failure, or constraint
+The wiki should read like careful documentation for a new maintainer. It should
+also remain queryable by agents through \`page_id\`, topics, wikilinks, source
+records, and citations.
+`;
+}
 
-## Writing conventions
+function starterWikiConventions(): string {
+  return `---
+page_id: wiki-conventions
+title: Wiki Conventions
+topics: []
+---
 
-- Every sentence contains a specific fact. If it doesn't, cut it.
-- Neutral tone. "is", not "serves as". No "plays a pivotal role", no
-  interpretive "-ing" clauses, no vague attribution ("experts argue").
-- No hedging or knowledge-gap disclaimers. If you don't know, don't write
-  the sentence.
-- Prose first. Bullets for genuine lists. Tables only for structured
-  comparison.
-- No formulaic conclusions. End with the last substantive fact.
+# Wiki Conventions
 
-## Linking
+This file records local conventions for this repository's Almanac wiki. Update
+it when the wiki develops naming, folder, source, citation, or linking rules
+that future maintainers should follow.
 
-One \`[[...]]\` syntax for everything, disambiguated by content:
+## Starting Rules
 
-- \`[[checkout-flow]]\` — page slug
-- \`[[src/checkout/handler.ts]]\` — file reference
-- \`[[src/checkout/]]\` — folder reference (trailing slash)
-- \`[[other-wiki:slug]]\` — cross-wiki reference
-
-Every page should link to at least one entity when possible. A page with no
-entity link is suspect.
-
-## Pages live in \`.almanac/pages/\`
-
-One markdown file per page, kebab-case slug. Frontmatter carries \`topics:\`
-and optional \`files:\`. The rest is prose.
+- Use \`docs/almanac/\` for readable wiki content.
+- Use \`.almanac/\` for runtime state such as \`index.db\` and jobs.
+- Use \`_manual/\` for wiki doctrine and \`_meta/\` for local maintenance notes.
+- Prefer stable \`page_id\` values so files can move without changing links.
 `;
 }

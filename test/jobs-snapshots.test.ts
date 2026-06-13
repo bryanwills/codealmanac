@@ -6,6 +6,7 @@ import {
   diffPageSnapshots,
   isNoopPageDelta,
   snapshotPages,
+  snapshotWikiPages,
 } from "../src/jobs/index.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 
@@ -37,6 +38,24 @@ describe("process page snapshots", () => {
       expect(snapshot.get("active")?.archived).toBe(false);
       expect(snapshot.get("archived")?.archived).toBe(true);
       expect(snapshot.get("active")?.hash).toMatch(/^[0-9a-f]{64}$/);
+    });
+  });
+
+  it("snapshots canonical docs/almanac pages by page_id", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "snapshot-docs");
+      const docsDir = join(repo, "docs", "almanac", "architecture");
+      await mkdir(docsDir, { recursive: true });
+      await writeFile(
+        join(docsDir, "README.md"),
+        "---\npage_id: architecture\n---\n# Architecture\n",
+        "utf8",
+      );
+
+      const snapshot = await snapshotWikiPages(repo);
+
+      expect([...snapshot.keys()]).toEqual(["architecture"]);
+      expect(snapshot.get("architecture")?.hash).toMatch(/^[0-9a-f]{64}$/);
     });
   });
 

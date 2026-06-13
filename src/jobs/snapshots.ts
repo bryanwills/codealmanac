@@ -1,8 +1,12 @@
 import { createHash } from "node:crypto";
 import { existsSync, statSync } from "node:fs";
-import { readFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { readFile } from "node:fs/promises";
+import { basename, join } from "node:path";
 
+import fg from "fast-glob";
+
+import { toKebabCase } from "../slug.js";
+import { wikiPageRoots, type WikiPageRoot } from "../wiki/locations.js";
 import { parseFrontmatter } from "../wiki/indexer/frontmatter.js";
 
 export interface PageSnapshotEntry {
@@ -21,31 +25,48 @@ export interface PageSnapshotDelta {
 }
 
 export async function snapshotPages(pagesDir: string): Promise<PageSnapshot> {
+  return snapshotPageRoots([{ dir: pagesDir, label: pagesDir }]);
+}
+
+export async function snapshotWikiPages(repoRoot: string): Promise<PageSnapshot> {
+  return snapshotPageRoots(wikiPageRoots(repoRoot));
+}
+
+async function snapshotPageRoots(
+  pageRoots: WikiPageRoot[],
+): Promise<PageSnapshot> {
   const out: PageSnapshot = new Map();
-  if (!existsSync(pagesDir)) return out;
 
-  let entries: string[];
-  try {
-    entries = await readdir(pagesDir);
-  } catch {
-    return out;
-  }
-
-  for (const entry of entries) {
-    if (!entry.endsWith(".md")) continue;
-    const slug = entry.slice(0, -3);
-    const full = join(pagesDir, entry);
+  for (const root of pageRoots) {
+    if (!existsSync(root.dir)) continue;
+    let entries: string[];
     try {
-      const st = statSync(full);
-      if (!st.isFile()) continue;
-      const content = await readFile(full, "utf8");
-      out.set(slug, {
-        slug,
-        hash: createHash("sha256").update(content).digest("hex"),
-        archived: parseFrontmatter(content).archived_at !== null,
+      entries = await fg("**/*.md", {
+        cwd: root.dir,
+        absolute: false,
+        onlyFiles: true,
       });
     } catch {
       continue;
+    }
+
+    for (const entry of entries) {
+      const full = join(root.dir, entry);
+      try {
+        const st = statSync(full);
+        if (!st.isFile()) continue;
+        const content = await readFile(full, "utf8");
+        const fm = parseFrontmatter(content);
+        const slug = toKebabCase(fm.page_id ?? basename(entry, ".md"));
+        if (slug.length === 0 || out.has(slug)) continue;
+        out.set(slug, {
+          slug,
+          hash: createHash("sha256").update(content).digest("hex"),
+          archived: fm.archived_at !== null,
+        });
+      } catch {
+        continue;
+      }
     }
   }
 
