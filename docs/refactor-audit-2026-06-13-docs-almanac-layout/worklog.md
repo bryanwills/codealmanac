@@ -18,6 +18,11 @@
   - `Mill`: migration architecture and wiki/manual maintainability.
   - `Faraday`: touched code boundaries, hand-rolled path policy, compatibility
     layers.
+- `Faraday` completed and confirmed no shipping blocker remained after the
+  review fixes. Its main recommendation was to introduce a first-class
+  `WikiWorkspace` boundary for layout state.
+- `Mill` did not complete within the wait window and was shut down. Its report
+  is not included in this audit.
 
 ## Current Conclusion
 
