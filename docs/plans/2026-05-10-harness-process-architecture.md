@@ -761,7 +761,7 @@ type HarnessEvent =
   | { type: "text"; content: string }
   | { type: "tool_use"; id?: string; tool: string; input?: string }
   | { type: "tool_result"; id?: string; content?: unknown; isError?: boolean }
-  | { type: "tool_summary"; summary: string }
+  | { type: "tool_description"; summary: string }
   | { type: "context_usage"; usage: AgentUsage }
   | { type: "error"; error: string }
   | { type: "done"; result?: string; providerSessionId?: string; costUsd?: number };

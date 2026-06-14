@@ -1,6 +1,6 @@
 ---
 title: Verification Workflow
-summary: CodeAlmanac verification requires build, TypeScript typecheck, and Vitest because `npm test` does not run `tsc --noEmit`.
+description: CodeAlmanac verification requires build, TypeScript typecheck, and Vitest because `npm test` does not run `tsc --noEmit`.
 topics: [automation, flows]
 sources:
   - id: package-scripts
@@ -22,7 +22,7 @@ sources:
   - id: typecheck-fix-commit
     type: commit
     rev: 3b6d7fc
-    note: Fixes strict TypeScript errors in review lookup narrowing, source normalization, and review summary parsing after CI caught them.
+    note: Fixes strict TypeScript errors in review lookup narrowing, source normalization, and review description parsing after CI caught them.
 status: active
 ---
 
@@ -32,7 +32,7 @@ CodeAlmanac's local verification loop needs three separate checks: `npm run buil
 
 The GitHub Actions CI workflow runs on every push and pull request. It installs dependencies with `npm ci`, runs `npm run build`, runs `npx tsc --noEmit`, and then runs `npm test` on Node 20 and Node 22. A local green Vitest run is therefore not equivalent to a green CI run. [@ci-workflow]
 
-The 2026-05-28 [[source-provenance]] implementation exposed this gap. The full Vitest suite passed locally, but CI failed on TypeScript errors in review lookup narrowing, normalized source construction, and review summary parsing. Commit `3b6d7fc` fixed those errors by using an explicit union guard, removing an unsafe generic cast from source normalization, and handling a possibly missing regex capture group. [@source-provenance-session] [@typecheck-fix-commit]
+The 2026-05-28 [[source-provenance]] implementation exposed this gap. The full Vitest suite passed locally, but CI failed on TypeScript errors in review lookup narrowing, normalized source construction, and review description parsing. Commit `3b6d7fc` fixed those errors by using an explicit union guard, removing an unsafe generic cast from source normalization, and handling a possibly missing regex capture group. [@source-provenance-session] [@typecheck-fix-commit]
 
 The pull request template already asks contributors to report build, typecheck, and test commands. Future implementation sessions should treat that as the minimum verification set before pushing TypeScript changes, especially changes touching shared model types, parser normalization, command return unions, or indexed projections. [@pr-template]
 

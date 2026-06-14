@@ -305,7 +305,7 @@ describe("registerCommands", () => {
       "--mentions <path>",
     );
     expect(optionFlags(findCommand(program, ["search"]))).toContain(
-      "--summaries",
+      "--descriptions",
     );
     expect(optionFlags(findCommand(program, ["search"]))).toContain(
       "--verbose",
@@ -357,8 +357,8 @@ describe("resolveSearchOutputMode", () => {
     }
   });
 
-  it("maps --verbose to summary output", () => {
-    expect(resolveSearchOutputMode({ verbose: true })).toBe("summaries");
+  it("maps --verbose to description output", () => {
+    expect(resolveSearchOutputMode({ verbose: true })).toBe("descriptions");
   });
 });
 

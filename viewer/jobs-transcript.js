@@ -48,7 +48,7 @@ export function buildTranscript(entries, agents = [], options = {}) {
       if (!event.error) continue;
     }
 
-    if (mode !== "debug" && (event.type === "tool_summary" || event.type === "context_usage")) {
+    if (mode !== "debug" && (event.type === "tool_description" || event.type === "context_usage")) {
       continue;
     }
 
@@ -139,8 +139,8 @@ export function buildTranscript(entries, agents = [], options = {}) {
       continue;
     }
 
-    if (event.type === "tool_summary") {
-      transcript.push({ type: "status", timestamp: entry.timestamp, tone: "neutral", title: "Tool summary", detail: event.summary, actor });
+    if (event.type === "tool_description") {
+      transcript.push({ type: "status", timestamp: entry.timestamp, tone: "neutral", title: "Tool description", detail: event.description, actor });
       continue;
     }
 
@@ -222,9 +222,9 @@ export function getToolCardModel(step) {
     target ??
     display.path ??
     display.command ??
-    display.summary ??
+    display.description ??
     getInputPreview(step.input) ??
-    resultDisplay.summary ??
+    resultDisplay.description ??
     "";
   const status = resultDisplay.status ?? display.status ?? (step.hasResult ? "completed" : "started");
   const isError = Boolean(step.isError) || status === "failed";
@@ -297,7 +297,7 @@ function titleFromToolName(name, kind) {
 
 function toolTarget(name, display, args) {
   if (display.path) return compactPath(display.path);
-  if (display.command) return display.summary ?? display.command;
+  if (display.command) return display.description ?? display.command;
   if (typeof args?.file_path === "string") return compactPath(args.file_path);
   if (typeof args?.path === "string") return compactPath(args.path);
   if (typeof args?.command === "string") return args.description ?? args.command;

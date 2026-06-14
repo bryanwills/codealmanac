@@ -1,6 +1,6 @@
 ---
 title: Sync Flow
-summary: >-
+description: >-
   `almanac sync` discovers quiet Claude and Codex transcripts, maps them to repo wikis, and starts
   background Absorb runs for uncaptured transcript ranges.
 topics:
@@ -159,7 +159,7 @@ The durable behavioral split is more important than the spelling of each flag:
 - `sync status` is read-only and reports ready ranges
 - `sync` writes sync ledger state and starts background Absorb jobs
 - discovery is provider-store-specific, but the Absorb run is provider-neutral after a transcript path is selected
-- `--json` emits the structured summary for agent and automation consumers
+- `--json` emits the structured sync report for agent and automation consumers
 
 ## Transcript resolution
 
@@ -183,7 +183,7 @@ The 2026-05-13 review discussion clarified the ownership boundary for this disco
 
 Continuation sync keeps passing the original transcript path into Absorb, and adds cursor context telling Absorb what transcript prefix was already absorbed. That preserves the "agent inspects files lazily" contract while avoiding temp delta transcript files or byte-range semantics.
 
-The sweep's state helpers now live beside sync. `[[src/sync/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, legacy `capture-ledger.json` reading, and initial cursor calculation. `[[src/sync/lock.ts]]` owns repo-level sync locking and stale-lock recovery. `[[src/sync/sweep.ts]]` owns the coordinator: eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, Absorb enqueueing, cursor context, start-result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/sync.ts]]` parses CLI options, loads config and discovery inputs, adapts `operations.absorb(...)` to a typed sync-start result, and renders command output.
+The sweep's state helpers now live beside sync. `[[src/sync/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, legacy `capture-ledger.json` reading, and initial cursor calculation. `[[src/sync/lock.ts]]` owns repo-level sync locking and stale-lock recovery. `[[src/sync/sweep.ts]]` owns the coordinator: eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, Absorb enqueueing, cursor context, start-result handling, and sync result construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and result recording. `[[src/cli/commands/sync.ts]]` parses CLI options, loads config and discovery inputs, adapts `operations.absorb(...)` to a typed sync-start result, and renders command output.
 
 The current sync implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/sync/sweep.ts]] appends a cursor note with the transcript identity and cursor boundary:
 
@@ -223,7 +223,7 @@ Repo mapping is only an ownership decision, not a relevance decision. Discovery 
 
 ## Log files
 
-Raw provider events are normalized and written to `.almanac/jobs/<job-id>.jsonl`. Job status, target paths, provider/model, PID, summary counts, and errors live in `.almanac/jobs/<job-id>.json`.
+Raw provider events are normalized and written to `.almanac/jobs/<job-id>.jsonl`. Job status, target paths, provider/model, PID, aggregate counts, and errors live in `.almanac/jobs/<job-id>.json`.
 
 ## Scheduled automation
 

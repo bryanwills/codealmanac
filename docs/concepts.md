@@ -127,8 +127,8 @@ Automatic capture is scheduler-driven. `almanac automation install` registers a 
 
 Everything is designed to pipe. Commands that feed another command should use
 slug-only output; `--json` gives structured output; `show --stdin` emits JSON
-Lines; `--stdin` accepts piped input where supported. `search --summaries`
-adds one-line summaries for scan-friendly terminal browsing, while
+Lines; `--stdin` accepts piped input where supported. `search --descriptions`
+adds one-line descriptions for scan-friendly terminal browsing, while
 `search --slugs` forces slug-only output.
 
 ```bash

@@ -91,7 +91,7 @@ hook without importing concrete operation report contracts.
 ### Viewer query projection may drift from CLI query projection
 
 `src/viewer/api.ts` reuses `getPageView()` and search helper builders, but owns
-its own SQL for recent pages, search, topic pages, page summaries, and file
+its own SQL for recent pages, search, topic pages, page previews, and file
 mentions.
 
 This may be acceptable because the viewer has different UX needs. The risk is

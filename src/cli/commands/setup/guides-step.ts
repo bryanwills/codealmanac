@@ -42,15 +42,15 @@ export async function runGuidesSetupStep(args: {
 
   if (guidesAction === "install") {
     try {
-      const summary = await installAgentInstructions({
+      const result = await installAgentInstructions({
         claudeDir: args.options.claudeDir ?? path.join(homedir(), ".claude"),
         codexDir: args.options.codexDir ?? path.join(homedir(), ".codex"),
         guidesDir: args.options.guidesDir ?? resolveGuidesDir(),
       });
-      const guidesSummary = summary.anyChanges
+      const guidesDescription = result.anyChanges
         ? "Agent instructions added"
         : `Agent instructions ${DIM}already added${RST}`;
-      stepDone(args.out, guidesSummary);
+      stepDone(args.out, guidesDescription);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       return {

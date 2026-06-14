@@ -45,14 +45,14 @@ describe("job foreground execution", () => {
           });
           return {
             success: true,
-            result: "{\"version\":1,\"summary\":\"### Almanac updated\\n\\nChanged one page.\"}",
+            result: "{\"version\":1,\"description\":\"### Almanac updated\\n\\nChanged one page.\"}",
             output: {
               kind: "json_schema",
               name: "almanac_operation_report_v1",
-              text: "{\"version\":1,\"summary\":\"### Almanac updated\\n\\nChanged one page.\"}",
+              text: "{\"version\":1,\"description\":\"### Almanac updated\\n\\nChanged one page.\"}",
               value: {
                 version: 1,
-                summary: "### Almanac updated\n\nChanged one page.",
+                description: "### Almanac updated\n\nChanged one page.",
               },
             },
             providerSessionId: "provider-1",
@@ -84,14 +84,14 @@ describe("job foreground execution", () => {
           updated: [],
           archived: [],
           deleted: [],
-          summary: "### Almanac updated\n\nChanged one page.",
+          description: "### Almanac updated\n\nChanged one page.",
         },
         operationOutput: {
           version: 1,
           contract: "almanac_operation_report_v1",
           value: {
             version: 1,
-            summary: "### Almanac updated\n\nChanged one page.",
+            description: "### Almanac updated\n\nChanged one page.",
           },
         },
       });
@@ -107,7 +107,7 @@ describe("job foreground execution", () => {
     });
   });
 
-  it("uses structured summary only for the Almanac operation report contract", async () => {
+  it("uses structured description only for the Almanac operation report contract", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "foreground-unrelated-output");
       const pagesDir = await scaffoldWiki(repo);
@@ -130,12 +130,12 @@ describe("job foreground execution", () => {
           await writeFile(join(pagesDir, "other.md"), "# Other\n", "utf8");
           return {
             success: true,
-            result: "Fallback summary\n\nDetails.",
+            result: "Fallback description\n\nDetails.",
             output: {
               kind: "json_schema",
               name: "unrelated_contract_v1",
-              text: "{\"summary\":\"Do not use this\"}",
-              value: { summary: "Do not use this" },
+              text: "{\"description\":\"Do not use this\"}",
+              value: { description: "Do not use this" },
             },
           };
         },
@@ -145,11 +145,11 @@ describe("job foreground execution", () => {
         status: "done",
         pageChanges: {
           created: ["other"],
-          summary: "Fallback summary",
+          description: "Fallback description",
         },
         operationOutput: {
           contract: "unrelated_contract_v1",
-          value: { summary: "Do not use this" },
+          value: { description: "Do not use this" },
         },
       });
     });
@@ -429,7 +429,7 @@ describe("job foreground execution", () => {
         updated: [],
         archived: [],
         deleted: [],
-        summary: "done",
+        description: "done",
       });
       await expect(readJobRecord(jobRecordPath(repo, result.jobId))).resolves.toMatchObject({
         status: "failed",

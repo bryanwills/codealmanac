@@ -1,6 +1,6 @@
 ---
 title: Lifecycle Architecture
-summary: >-
+description: >-
   Lifecycle architecture is the reading map for Almanac's AI write operations, provider execution
   layer, job records, CLI commands, and scheduled maintenance tasks.
 topics:

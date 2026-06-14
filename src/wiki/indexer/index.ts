@@ -202,7 +202,7 @@ async function indexPagesInto(
   const planned: Array<{
     slug: string;
     title: string;
-    summary: string | undefined;
+    description: string | undefined;
     filePath: string;
     fullPath: string;
     contentHash: string;
@@ -319,7 +319,7 @@ async function indexPagesInto(
       planned.push({
         slug,
         title,
-        summary: fm.summary,
+        description: fm.description,
         filePath: rel,
         fullPath,
         contentHash,
@@ -350,11 +350,11 @@ async function indexPagesInto(
   const replacePage = db.prepare<
     [string, string, string | null, string, string, number, number | null, string | null]
   >(
-    `INSERT INTO pages (slug, title, summary, file_path, content_hash, updated_at, archived_at, superseded_by)
+    `INSERT INTO pages (slug, title, description, file_path, content_hash, updated_at, archived_at, superseded_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(slug) DO UPDATE SET
        title         = excluded.title,
-       summary       = excluded.summary,
+       description   = excluded.description,
        file_path     = excluded.file_path,
        content_hash  = excluded.content_hash,
        updated_at    = excluded.updated_at,
@@ -444,7 +444,7 @@ async function indexPagesInto(
       replacePage.run(
         p.slug,
         p.title,
-        p.summary ?? null,
+        p.description ?? null,
         p.fullPath,
         p.contentHash,
         p.updatedAt,
@@ -508,7 +508,7 @@ async function indexPagesInto(
       insertFts.run(
         p.slug,
         p.title,
-        [p.summary, p.content].filter((part) => part !== undefined).join("\n\n"),
+        [p.description, p.content].filter((part) => part !== undefined).join("\n\n"),
       );
     }
   });

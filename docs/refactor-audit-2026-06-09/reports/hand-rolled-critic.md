@@ -421,7 +421,7 @@ The page model:
 ```yaml
 ---
 title: Natural Subject Name
-summary: One factual sentence that explains why an agent opens this page.
+description: One factual sentence that explains why an agent opens this page.
 topics: [stable-topic, another-topic]
 sources:
   - id: current-code

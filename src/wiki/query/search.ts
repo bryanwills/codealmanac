@@ -28,7 +28,7 @@ export interface SearchPageOptions {
 export interface SearchPageResult {
   slug: string;
   title: string | null;
-  summary: string | null;
+  description: string | null;
   updated_at: number;
   archived_at: number | null;
   superseded_by: string | null;
@@ -47,7 +47,7 @@ export function searchPages(
   return rows.map((row) => ({
     slug: row.slug,
     title: row.title,
-    summary: row.summary,
+    description: row.description,
     updated_at: row.updated_at,
     archived_at: row.archived_at,
     superseded_by: row.superseded_by,
@@ -58,7 +58,7 @@ export function searchPages(
 interface PageRow {
   slug: string;
   title: string | null;
-  summary: string | null;
+  description: string | null;
   updated_at: number;
   archived_at: number | null;
   superseded_by: string | null;

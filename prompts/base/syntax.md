@@ -12,6 +12,7 @@ Use a small YAML frontmatter block for identity, retrieval, and evidence:
 ---
 page_id: provider-harness
 title: Provider Harness
+description: Provider runtime metadata and execution behavior.
 topics: [architecture, agents]
 sources:
   - id: provider-registry
@@ -25,8 +26,9 @@ sources:
 ---
 ```
 
-`page_id`, `title`, `topics`, and `sources` are the normal fields for new
-pages. `summary` is optional; the lead should usually do the summary work.
+`page_id`, `title`, `description`, `topics`, and `sources` are the normal fields
+for new pages. `description` is optional; the lead should usually do the preview
+work.
 
 `page_id` is the stable wiki identity. It should be kebab-case and unique across
 the wiki, independent of the file path.
@@ -115,7 +117,7 @@ Only create a git commit when the runtime context says auto-commit is enabled.
 When it is enabled, commit only wiki source changes and use:
 
 ```text
-almanac: <imperative one-line summary>
+almanac: <imperative one-line description>
 
 <optional body explaining what changed and why>
 ```

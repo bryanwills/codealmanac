@@ -12,7 +12,7 @@ export type ReviewStatus = "open" | "decided" | "applied";
 export interface ReviewItem {
   id: string;
   status: ReviewStatus;
-  summary: string;
+  description: string;
   created_at: string;
   body: string;
   decided_at: string | null;
@@ -115,7 +115,7 @@ export async function writeReviewFile(path: string, file: ReviewFile): Promise<v
     items: file.items.map((item) => ({
       id: item.id,
       status: item.status,
-      summary: item.summary,
+      description: item.description,
       created_at: item.created_at,
       body: item.body,
       decided_at: item.decided_at,
@@ -144,20 +144,20 @@ export async function writeReviewFile(path: string, file: ReviewFile): Promise<v
   await rename(tmpPath, path);
 }
 
-export function summaryFromMarkdown(markdown: string): string {
+export function descriptionFromMarkdown(markdown: string): string {
   let firstNonEmpty = "";
   for (const line of markdown.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
     const heading = /^#{1,6}\s+(.+?)\s*#*$/.exec(trimmed);
-    if (heading !== null) return cleanSummary(heading[1] ?? "");
+    if (heading !== null) return cleanDescription(heading[1] ?? "");
     if (firstNonEmpty.length === 0) firstNonEmpty = trimmed;
   }
-  return cleanSummary(firstNonEmpty);
+  return cleanDescription(firstNonEmpty);
 }
 
-export function nextReviewId(summary: string, items: ReviewItem[]): string {
-  const base = toKebabCase(summary).slice(0, 80).replace(/-+$/g, "") || "review-item";
+export function nextReviewId(description: string, items: ReviewItem[]): string {
+  const base = toKebabCase(description).slice(0, 80).replace(/-+$/g, "") || "review-item";
   const existing = new Set(items.map((item) => item.id));
   if (!existing.has(base)) return base;
   for (let i = 2; ; i += 1) {
@@ -173,13 +173,18 @@ function normalizeReviewItem(
 ): ReviewItem {
   const id = requiredString(item.id, "id", index, path);
   const status = requiredStatus(item.status, index, path);
-  const summary = requiredString(item.summary, "summary", index, path);
+  const description = requiredString(
+    item.description,
+    "description",
+    index,
+    path,
+  );
   const createdAt = requiredString(item.created_at, "created_at", index, path);
   const body = requiredString(item.body, "body", index, path);
   return {
     id,
     status,
-    summary,
+    description,
     created_at: createdAt,
     body,
     decided_at: nullableString(item.decided_at),
@@ -220,7 +225,7 @@ function nullableString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
-function cleanSummary(value: string): string {
+function cleanDescription(value: string): string {
   return value
     .replace(/\s+/g, " ")
     .replace(/^[-*]\s+/, "")

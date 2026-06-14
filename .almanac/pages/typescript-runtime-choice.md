@@ -1,6 +1,6 @@
 ---
 title: TypeScript Runtime Choice
-summary: CodeAlmanac should stay TypeScript while it remains an npm-installed developer CLI, even though a Python port is technically feasible.
+description: CodeAlmanac should stay TypeScript while it remains an npm-installed developer CLI, even though a Python port is technically feasible.
 topics: [decisions, stack, cli]
 sources:
   - id: porting-session

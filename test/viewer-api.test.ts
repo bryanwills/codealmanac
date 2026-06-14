@@ -39,7 +39,7 @@ async function seedViewerWiki(repo: string): Promise<void> {
     "sqlite-indexer",
     `---
 title: SQLite Indexer
-summary: Derived search index for wiki pages.
+description: Derived search index for wiki pages.
 topics: [storage, systems, agents]
 sources:
   - id: indexer
@@ -146,7 +146,7 @@ describe("viewer api", () => {
 items:
   - id: source-conflict
     status: open
-    summary: Source conflict
+    description: Source conflict
     created_at: "2026-05-28T12:00:00.000Z"
     body: |
       # Source conflict
@@ -158,7 +158,7 @@ items:
     application: null
   - id: applied-conflict
     status: applied
-    summary: Applied conflict
+    description: Applied conflict
     created_at: "2026-05-28T13:00:00.000Z"
     body: |
       # Applied conflict
@@ -177,7 +177,7 @@ items:
       expect(review.items.map((item) => item.id)).toEqual(["source-conflict", "applied-conflict"]);
       expect(review.items[0]).toMatchObject({
         status: "open",
-        summary: "Source conflict",
+        description: "Source conflict",
       });
     });
   });
@@ -295,7 +295,7 @@ items:
           updated: ["viewer-jobs", "viewer-api"],
           archived: [],
           deleted: [],
-          summary: "Updated viewer jobs.",
+          description: "Updated viewer jobs.",
         },
       });
       await writeJobRecord(jobRecordPath(repo, finished.id), finished);

@@ -32,7 +32,7 @@ const SCHEMA_DDL = `
 CREATE TABLE IF NOT EXISTS pages (
   slug          TEXT PRIMARY KEY,
   title         TEXT,
-  summary       TEXT,
+  description   TEXT,
   file_path     TEXT NOT NULL,
   content_hash  TEXT NOT NULL,
   updated_at    INTEGER NOT NULL,
@@ -113,8 +113,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_pages USING fts5(slug, title, content);
  *   2 — slice-3-review: added `file_refs.original_path`
  *   3 — added `pages.summary`
  *   4 — added `page_sources`
+ *   5 — renamed page preview text from `summary` to `description`
  */
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 export function isIndexSchemaStale(dbPath: string): boolean {
   let db: Database.Database;
@@ -162,33 +163,15 @@ export function openIndex(dbPath: string): Database.Database {
   const rawVersion = db.pragma("user_version", { simple: true });
   const currentVersion = typeof rawVersion === "number" ? rawVersion : 0;
   if (currentVersion < SCHEMA_VERSION) {
-    if (currentVersion < 2) {
-      // Drop tables whose shape changed. `file_refs` got `original_path`
-      // as of v2; easiest to drop it entirely so CREATE IF NOT EXISTS
-      // runs with the new definition. Pages/topics/links are untouched.
-      db.exec("DROP TABLE IF EXISTS file_refs");
-    }
-    if (currentVersion < 3) {
-      try {
-        db.exec("ALTER TABLE pages ADD COLUMN summary TEXT");
-      } catch {
-        // pages table may not exist yet, or a partially migrated DB may
-        // already have the column. The schema DDL below covers fresh DBs.
-      }
-    }
-    if (currentVersion < 4) {
-      db.exec("DROP TABLE IF EXISTS page_sources");
-    }
-    // The indexer's fast-path skips pages whose content_hash matches.
-    // After metadata/table migrations, clear the hash column so the next
-    // reindex treats every page as changed and repopulates derived rows.
-    // Table may not exist yet on a brand-new DB, so swallow errors.
-    try {
-      db.exec("UPDATE pages SET content_hash = ''");
-    } catch {
-      // pages table didn't exist yet; the upcoming CREATE IF NOT EXISTS
-      // takes care of a fresh install.
-    }
+    // All page projection tables are derived from markdown. Dropping them
+    // is cleaner than carrying ALTER TABLE branches for renamed metadata.
+    db.exec("DROP TABLE IF EXISTS fts_pages");
+    db.exec("DROP TABLE IF EXISTS cross_wiki_links");
+    db.exec("DROP TABLE IF EXISTS wikilinks");
+    db.exec("DROP TABLE IF EXISTS page_sources");
+    db.exec("DROP TABLE IF EXISTS file_refs");
+    db.exec("DROP TABLE IF EXISTS page_topics");
+    db.exec("DROP TABLE IF EXISTS pages");
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }
 

@@ -1,6 +1,6 @@
 ---
 title: Wiki Organization Primitives
-summary: >-
+description: >-
   Almanac's current storage primitives are pages, links, topics, and lineage metadata, while
   anchors, hubs, redirects, and gardening remain editorial conventions layered on top.
 topics:
@@ -48,7 +48,7 @@ sources:
   - id: index
     type: file
     path: src/wiki/indexer/index.ts
-    note: Implements the derived SQLite projection over page frontmatter, links, file references, topics, sources, and summary fields.
+    note: Implements the derived SQLite projection over page frontmatter, links, file references, topics, sources, and description fields.
   - id: diataxis-fr
     type: web
     url: https://diataxis.fr/

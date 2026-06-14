@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-summary: Getting Started is the wiki front door that routes future agents from task intent to the core CodeAlmanac pages and clusters.
+description: Getting Started is the wiki front door that routes future agents from task intent to the core CodeAlmanac pages and clusters.
 topics: [wiki-design, systems, flows, agents]
 sources:
   - id: wiki-readme

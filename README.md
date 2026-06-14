@@ -195,7 +195,7 @@ Almanac never stores provider credentials. Auth stays in each provider's normal 
 | `almanac doctor` | Check install, providers, automation, and wiki health. |
 
 Query commands and attached lifecycle runs are quiet by default. Use `--verbose` when you want human-readable
-context such as search summaries, page metadata, registry paths, or live agent tool activity. Run
+context such as search descriptions, page metadata, registry paths, or live agent tool activity. Run
 `almanac <command> --help` for the full flag surface.
 
 The default first build stays compact:

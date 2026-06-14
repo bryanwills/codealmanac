@@ -7,7 +7,7 @@ describe("parseFrontmatter", () => {
     const fm = parseFrontmatter(
       `---
 title: Checkout Flow
-summary: Checkout decisions and invariants for future agents.
+description: Checkout decisions and invariants for future agents.
 topics: [checkout, flows]
 files:
   - src/checkout/handler.ts
@@ -20,12 +20,26 @@ Body goes here.
 `,
     );
     expect(fm.title).toBe("Checkout Flow");
-    expect(fm.summary).toBe("Checkout decisions and invariants for future agents.");
+    expect(fm.description).toBe("Checkout decisions and invariants for future agents.");
     expect(fm.topics).toEqual(["checkout", "flows"]);
     expect(fm.files).toEqual(["src/checkout/handler.ts", "src/checkout/"]);
     expect(fm.sources).toEqual([]);
     expect(fm.legacySourceStrings).toEqual([]);
     expect(fm.body).toMatch(/^# Checkout Flow/m);
+  });
+
+  it("falls back to legacy summary frontmatter as a description", () => {
+    const fm = parseFrontmatter(
+      `---
+title: Legacy Page
+summary: Legacy page preview.
+---
+
+Body.
+`,
+    );
+
+    expect(fm.description).toBe("Legacy page preview.");
   });
 
   it("returns empty fields when frontmatter is absent", () => {

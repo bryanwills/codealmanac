@@ -379,8 +379,8 @@ export function formatForegroundEvent(event: HarnessEvent): string | null {
       return event.display !== undefined
         ? `[tool] ${formatToolDisplay("tool", event.display)}`
         : null;
-    case "tool_summary":
-      return `[tool] ${event.summary}`;
+    case "tool_description":
+      return `[tool] ${event.description}`;
     case "error":
       return null;
     case "done":
@@ -396,7 +396,7 @@ function formatToolDisplay(
 ): string {
   if (display === undefined) return fallbackTool;
   const title = display.title ?? fallbackTool;
-  const target = display.path ?? display.command ?? display.summary;
+  const target = display.path ?? display.command ?? display.description;
   const status =
     display.status === "completed" && display.exitCode !== undefined
       ? `exit ${display.exitCode}`

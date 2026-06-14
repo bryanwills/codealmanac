@@ -1,6 +1,6 @@
 ---
 title: Codex Supermemory
-summary: >-
+description: >-
   Codex Supermemory is a lightweight Supermemory hook integration whose smooth prompt-time recall
   sharpens CodeAlmanac's activation-gap lesson.
 topics:

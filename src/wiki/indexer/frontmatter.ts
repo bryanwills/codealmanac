@@ -3,7 +3,7 @@ import yaml from "js-yaml";
 export interface Frontmatter {
   page_id?: string;
   title?: string;
-  summary?: string;
+  description?: string;
   topics: string[];
   files: string[];
   sources: FrontmatterSource[];
@@ -112,7 +112,7 @@ export function parseFrontmatter(raw: string): Frontmatter {
   return {
     page_id: coerceString(obj.page_id),
     title: coerceString(obj.title),
-    summary: coerceString(obj.summary),
+    description: coerceDescription(obj),
     topics: coerceStringArray(obj.topics),
     files: coerceStringArray(obj.files),
     ...coerceSources(obj.sources),
@@ -121,6 +121,17 @@ export function parseFrontmatter(raw: string): Frontmatter {
     supersedes: coerceString(obj.supersedes) ?? null,
     body,
   };
+}
+
+function coerceDescription(obj: Record<string, unknown>): string | undefined {
+  return coerceString(obj.description) ?? coerceLegacySummary(obj.summary);
+}
+
+function coerceLegacySummary(value: unknown): string | undefined {
+  // Legacy read path only. Canonical frontmatter, SQLite rows, and API
+  // output use `description`; this keeps old pages readable until a
+  // mechanical frontmatter migration rewrites them.
+  return coerceString(value);
 }
 
 /**

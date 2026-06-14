@@ -1,6 +1,6 @@
 ---
 title: Install-Time Node Launcher
-summary: >-
+description: >-
   Installed package bins run through `dist/launcher.js`, which records and reuses the installing
   Node executable so `better-sqlite3` keeps loading after shell or Node-manager changes.
 topics:

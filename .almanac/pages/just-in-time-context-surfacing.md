@@ -1,6 +1,6 @@
 ---
 title: Just-In-Time Context Surfacing
-summary: Just-in-time context surfacing is the product direction where CodeAlmanac automatically shows a few cited, file-aware constraints before an agent makes risky edits.
+description: Just-in-time context surfacing is the product direction where CodeAlmanac automatically shows a few cited, file-aware constraints before an agent makes risky edits.
 topics: [product-positioning, agents]
 sources:
   - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
@@ -43,13 +43,13 @@ Retrieval should combine existing wiki structure rather than rely on semantic si
 
 - pages whose `files:` frontmatter mention the target file or folder
 - pages with wikilinks to the target paths
-- FTS matches in page bodies and summaries
+- FTS matches in page bodies and descriptions
 - topic matches for the affected subsystem
 - backlinks from architecture, decision, or lifecycle pages
 
 ## Context Construction
 
-The first implementation should use deterministic retrieval over SQLite, FTS5, path indexes, topics, wikilinks, and a derived section index. It does not need vectors for the v1 product shape. The useful unit is a cited evidence packet, not a page summary.
+The first implementation should use deterministic retrieval over SQLite, FTS5, path indexes, topics, wikilinks, and a derived section index. It does not need vectors for the v1 product shape. The useful unit is a cited evidence packet, not a page description.
 
 A `page_sections` index can split each page by heading and store the page slug, heading path, section text, section kind, related files, related topics, and priority. The initial section kind can be heuristic: headings with `Boundary`, `Invariant`, `Gotcha`, `Decision`, `Do Not`, or `Failure`; sentences with `must`, `never`, `do not`, `accepted model`, `rejected`, or `current path`; frontmatter topics; and proximity to file references. Garden or Absorb can later make section metadata more explicit, but v1 should not require a new block syntax.
 

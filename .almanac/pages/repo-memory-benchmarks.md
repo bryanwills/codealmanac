@@ -1,6 +1,6 @@
 ---
 title: Repo Memory Benchmarks
-summary: Codealmanac's strongest product evidence is that repo memory improves coding outcomes, not just that a benchmark can retrieve prior chat memories.
+description: Codealmanac's strongest product evidence is that repo memory improves coding outcomes, not just that a benchmark can retrieve prior chat memories.
 topics: [product-positioning, agents]
 sources:
   - id: search-command

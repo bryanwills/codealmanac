@@ -364,8 +364,8 @@ function metadataHeader(rec: ShowRecord): string {
   const lines: string[] = [];
   lines.push(`${DIM}slug:${RST}       ${BLUE}${rec.slug}${RST}`);
   lines.push(`${DIM}title:${RST}      ${rec.title ?? "—"}`);
-  if (rec.summary !== null && rec.summary.trim().length > 0) {
-    lines.push(`${DIM}summary:${RST}    ${rec.summary.trim()}`);
+  if (rec.description !== null && rec.description.trim().length > 0) {
+    lines.push(`${DIM}description:${RST} ${rec.description.trim()}`);
   }
   lines.push(
     `${DIM}topics:${RST}     ${rec.topics.length > 0 ? rec.topics.join(", ") : "—"}`,

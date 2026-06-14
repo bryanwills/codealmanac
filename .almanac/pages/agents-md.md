@@ -1,6 +1,6 @@
 ---
 title: AGENTS.md
-summary: >-
+description: >-
   Codex loads durable instructions from global and project `AGENTS.md` files, and CodeAlmanac setup
   writes its managed Codex guide inline into the active global file because Codex does not expand
   `@file` references there.

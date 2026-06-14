@@ -1,6 +1,6 @@
 ---
 title: Wiki Lifecycle Operations
-summary: >-
+description: >-
   Build, Absorb, and Garden are Almanac's three AI write operations, and each constructs
   provider-neutral run specs rather than owning provider behavior directly.
 topics:

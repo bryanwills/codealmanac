@@ -398,7 +398,7 @@ describe("almanac tag / untag", () => {
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("brand-new");
-      // The already-present topic shouldn't show up in the summary.
+      // The already-present topic shouldn't show up in the output.
       expect(result.stdout).not.toMatch(/tagged doc:.*existing.*brand-new/);
     });
   });

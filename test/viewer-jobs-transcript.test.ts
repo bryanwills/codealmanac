@@ -64,7 +64,7 @@ describe("viewer jobs transcript projection", () => {
       {
         line: 3,
         timestamp: "2026-05-11T01:00:02.000Z",
-        event: { type: "tool_summary", summary: "read package.json" },
+        event: { type: "tool_description", description: "read package.json" },
       },
       { line: 4, timestamp: "2026-05-11T01:00:03.000Z", event: { type: "text_delta", content: " after" } },
     ]);
@@ -88,13 +88,13 @@ describe("viewer jobs transcript projection", () => {
       {
         line: 2,
         timestamp: "2026-05-11T01:00:02.000Z",
-        event: { type: "tool_summary", summary: "read package.json" },
+        event: { type: "tool_description", description: "read package.json" },
       },
     ], [], { mode: "debug" });
 
     expect(transcript).toMatchObject([
       { type: "status", title: "Context usage" },
-      { type: "status", title: "Tool summary", detail: "read package.json" },
+      { type: "status", title: "Tool description", detail: "read package.json" },
     ]);
   });
 

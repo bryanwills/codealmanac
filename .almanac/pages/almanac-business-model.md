@@ -1,6 +1,6 @@
 ---
 title: Almanac Business Model
-summary: Almanac should keep the local repo-owned memory core open while charging for hosted coordination, governance, and cross-system workflow.
+description: Almanac should keep the local repo-owned memory core open while charging for hosted coordination, governance, and cross-system workflow.
 topics: [product-positioning, decisions]
 sources:
   - id: business-model-session

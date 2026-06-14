@@ -1,7 +1,7 @@
 import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../slug.js";
-import { pageSummaries, type PageSummary } from "./pages.js";
+import { pagePreviews, type PagePreview } from "./pages.js";
 
 export interface TopicSummary {
   slug: string;
@@ -17,7 +17,7 @@ export interface TopicDetail {
   description: string | null;
   parents: Array<{ slug: string; title: string | null }>;
   children: Array<{ slug: string; title: string | null; page_count: number }>;
-  pages: PageSummary[];
+  pages: PagePreview[];
 }
 
 export function topicSummaries(
@@ -97,9 +97,9 @@ export function topicDetail(
     )
     .all(slug);
 
-  const pages = pageSummaries(
+  const pages = pagePreviews(
     db,
-    `SELECT p.slug, p.title, p.summary, p.updated_at, p.archived_at, p.superseded_by
+    `SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
      FROM pages p
      JOIN page_topics pt ON pt.page_slug = p.slug
      WHERE p.archived_at IS NULL AND pt.topic_slug = ?

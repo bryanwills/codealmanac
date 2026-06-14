@@ -1,6 +1,6 @@
 ---
 title: Moxie Docs
-summary: Moxie Docs is a close hosted GitHub-repo documentation competitor that markets source-cited docs generation, drift checks on merge, MCP context for agents, and docs-only review PRs.
+description: Moxie Docs is a close hosted GitHub-repo documentation competitor that markets source-cited docs generation, drift checks on merge, MCP context for agents, and docs-only review PRs.
 topics: [competitive-research, product-positioning]
 sources:
   - id: moxie-eval-session

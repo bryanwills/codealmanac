@@ -1,6 +1,6 @@
 ---
 title: Mem0
-summary: >-
+description: >-
   Mem0 is an operational agent-memory layer whose extraction and retrieval model clarifies how
   CodeAlmanac differs from runtime memory stores.
 topics:

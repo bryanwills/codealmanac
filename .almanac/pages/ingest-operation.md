@@ -1,6 +1,6 @@
 ---
 title: Ingest Operation
-summary: "`almanac absorb` and its `ingest` alias run Absorb over bounded user-supplied paths, GitHub PR or issue refs, GitHub URLs, and generic web URLs."
+description: "`almanac absorb` and its `ingest` alias run Absorb over bounded user-supplied paths, GitHub PR or issue refs, GitHub URLs, and generic web URLs."
 topics: [agents, flows, cli]
 sources:
   - id: operations-command

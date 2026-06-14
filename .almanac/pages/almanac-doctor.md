@@ -1,6 +1,6 @@
 ---
 title: Almanac Doctor
-summary: >-
+description: >-
   `almanac doctor` reports install, agent, update, and wiki status, but it currently stops at
   diagnosis and prints `run:` hints instead of applying repairs.
 topics:

@@ -119,7 +119,7 @@ export function createSearchSuggestions(deps) {
   function suggestionRow(page, index) {
     const selected = index === selectedIndex;
     const topics = page.topics?.slice(0, 2).join(", ") ?? "";
-    const detail = page.summary || topics || page.slug;
+    const detail = page.description || topics || page.slug;
     return `
       <button
         class="ca-suggest-item ${selected ? "ca-suggest-item-selected" : ""}"

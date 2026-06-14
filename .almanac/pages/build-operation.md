@@ -1,6 +1,6 @@
 ---
 title: Build Operation
-summary: >-
+description: >-
   Build is the `almanac init` operation for first-pass project memory, not a generic compiler from
   arbitrary files to a wiki.
 topics:

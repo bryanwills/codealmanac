@@ -1,6 +1,6 @@
 ---
 title: Lifecycle CLI
-summary: >-
+description: >-
   The V1 lifecycle CLI routes Build, Absorb, Garden, and scheduled maintenance through
   backgroundable run infrastructure and sqlite-free install-management paths.
 topics:

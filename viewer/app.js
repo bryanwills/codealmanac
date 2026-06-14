@@ -452,10 +452,10 @@ function formatRelativeTime(epochSeconds) {
   return formatDate(epochSeconds);
 }
 
-async function optionalPage(summary) {
-  if (summary === undefined || summary === null) return null;
+async function optionalPage(preview) {
+  if (preview === undefined || preview === null) return null;
   try {
-    return await api(wikiApi(`/page/${encodeURIComponent(summary.slug)}`));
+    return await api(wikiApi(`/page/${encodeURIComponent(preview.slug)}`));
   } catch {
     return null;
   }
@@ -497,14 +497,14 @@ function renderPageArticle(page) {
   els.reader.innerHTML = `
     ${renderPageActions(wikiRoute("/"))}
     <article class="ca-article">
-      <div class="ca-prose">${renderMarkdown(page.body, { decorateTitle: true, summary: page.summary })}</div>
+      <div class="ca-prose">${renderMarkdown(page.body, { decorateTitle: true, description: page.description })}</div>
     </article>
   `;
 }
 
-function renderArticleSummary(summary) {
-  const text = summary?.trim();
-  return text ? `<p class="ca-article-summary">${escapeHtml(text)}</p>` : "";
+function renderArticleDescription(description) {
+  const text = description?.trim();
+  return text ? `<p class="ca-article-description">${escapeHtml(text)}</p>` : "";
 }
 
 async function renderTopic(slug) {
@@ -687,7 +687,7 @@ function reviewItem(item) {
       <header class="ca-review-item-head">
         <div>
           <span class="ca-review-status">${escapeHtml(item.status)}</span>
-          <h3>${escapeHtml(item.summary || item.id)}</h3>
+          <h3>${escapeHtml(item.description || item.id)}</h3>
         </div>
         <span class="ca-review-id">${escapeHtml(item.id)}</span>
       </header>
@@ -748,15 +748,15 @@ function clearPageRail() {
 function pageCard(page) {
   const relative = typeof page.updated_at === "number" ? formatRelativeTime(page.updated_at) : null;
   const topics = Array.isArray(page.topics) ? page.topics.slice(0, 2) : [];
-  const summaryRaw = (page.summary ?? "").trim();
-  const hasSummary = summaryRaw.length > 0;
-  const summaryHtml = hasSummary
-    ? renderCardSummary(summaryRaw)
-    : `<span class="ca-page-card-summary-empty">No summary recorded yet. The agents will fill this in on the next capture.</span>`;
+  const descriptionRaw = (page.description ?? "").trim();
+  const hasDescription = descriptionRaw.length > 0;
+  const descriptionHtml = hasDescription
+    ? renderCardDescription(descriptionRaw)
+    : `<span class="ca-page-card-description-empty">No description recorded yet. The agents will fill this in on the next capture.</span>`;
   return `
     <article class="ca-page-card" data-route="${escapeAttr(wikiRoute(`/page/${page.slug}`))}">
       <h3 class="ca-page-card-title">${escapeHtml(pageTitle(page))}</h3>
-      <p class="ca-page-card-summary">${summaryHtml}</p>
+      <p class="ca-page-card-description">${descriptionHtml}</p>
       <footer class="ca-page-card-meta">
         ${topics.length > 0 ? `<span class="ca-page-card-meta-topics">${topics.map(escapeHtml).join(" · ")}</span>` : ""}
         ${topics.length > 0 && relative !== null ? `<span class="ca-page-card-meta-sep" aria-hidden="true">·</span>` : ""}
@@ -767,7 +767,7 @@ function pageCard(page) {
   `;
 }
 
-function renderCardSummary(text) {
+function renderCardDescription(text) {
   return escapeHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
@@ -838,7 +838,7 @@ function renderMarkdown(source, options = {}) {
     if (line.startsWith("### ")) blocks.push(`<h3>${inline(line.slice(4))}</h3>`);
     else if (line.startsWith("## ")) blocks.push(`<h2>${inline(line.slice(3))}</h2>`);
     else if (line.startsWith("# ")) {
-      blocks.push(renderHeading(line.slice(2), decorateTitle && !decoratedHeading, options.summary));
+      blocks.push(renderHeading(line.slice(2), decorateTitle && !decoratedHeading, options.description));
       decoratedHeading = true;
     }
     else if (line.startsWith("- ")) blocks.push(`<p>• ${inline(line.slice(2))}</p>`);
@@ -848,11 +848,11 @@ function renderMarkdown(source, options = {}) {
   return blocks.filter(Boolean).join("\n");
 }
 
-function renderHeading(text, decorated, summary = null) {
+function renderHeading(text, decorated, description = null) {
   const level = decorated ? "h1" : "h2";
   const heading = `<${level}>${inline(text)}</${level}>`;
   if (!decorated) return heading;
-  return `${heading}\n${renderArticleSummary(summary)}\n<div class="ca-page-ornament" aria-hidden="true"><span>✥</span></div>`;
+  return `${heading}\n${renderArticleDescription(description)}\n<div class="ca-page-ornament" aria-hidden="true"><span>✥</span></div>`;
 }
 
 function inline(text) {

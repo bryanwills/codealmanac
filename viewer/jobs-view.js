@@ -70,7 +70,7 @@ export function createJobsView(deps) {
         <div class="ca-job-overview-head">
           <div>
             <h1 class="ca-display-h1">${deps.escapeHtml(run.displayTitle)}</h1>
-            ${run.displaySubtitle ? `<p class="ca-job-overview-subtitle">${linkedChangeSummary(run) || deps.escapeHtml(cleanSummary(run.displaySubtitle))}</p>` : ""}
+            ${run.displaySubtitle ? `<p class="ca-job-overview-subtitle">${linkedChangeDescription(run) || deps.escapeHtml(cleanDescription(run.displaySubtitle))}</p>` : ""}
           </div>
         </div>
         <div class="ca-run-metric-grid">
@@ -258,7 +258,7 @@ export function createJobsView(deps) {
           </span>
           ${run.transcriptSource ? `<span class="ca-log-source">${deps.escapeHtml(transcriptSourceLabel(run))}</span>` : ""}
           <span class="ca-log-title">${deps.escapeHtml(run.displayTitle)}</span>
-          <span class="ca-log-summary">${deps.escapeHtml(cleanSummary(run.displaySubtitle ?? runFallbackSubtitle(run)))}</span>
+          <span class="ca-log-description">${deps.escapeHtml(cleanDescription(run.displaySubtitle ?? runFallbackSubtitle(run)))}</span>
           ${impactRow(run)}
         </span>
         <span class="ca-log-status">${listStatusChip(run.displayStatus)}</span>
@@ -346,7 +346,7 @@ export function createJobsView(deps) {
               </div>`
             : `<p class="ca-job-card-empty">No wiki pages changed.</p>`
         }
-        ${run.pageChanges?.summary ? `<p class="ca-job-change-summary">${linkedChangeSummary(run)}</p>` : ""}
+        ${run.pageChanges?.description ? `<p class="ca-job-change-description">${linkedChangeDescription(run)}</p>` : ""}
       </article>
     `;
   }
@@ -589,7 +589,7 @@ export function createJobsView(deps) {
             <pre>${deps.escapeHtml(agent.prompt)}</pre>
           </details>
         ` : ""}
-        ${agent.finalMessage ? `<p>${deps.escapeHtml(cleanSummary(agent.finalMessage))}</p>` : ""}
+        ${agent.finalMessage ? `<p>${deps.escapeHtml(cleanDescription(agent.finalMessage))}</p>` : ""}
       </article>
     `;
   }
@@ -782,7 +782,7 @@ export function createJobsView(deps) {
       <div class="ca-activity-flow" data-actor-filter="root" data-kind-filter="tool">
         ${timeOffsetCell(entry.timestamp, startMs)}
         <details class="ca-activity-card">
-          <summary class="ca-activity-summary">
+          <summary class="ca-activity-disclosure">
             <span class="ca-activity-icon" aria-hidden="true">⌘</span>
             <span class="ca-activity-title">${deps.escapeHtml(entry.title)}</span>
           </summary>
@@ -1130,7 +1130,7 @@ export function createJobsView(deps) {
       <div class="ca-tool-flow ca-tool-${deps.escapeAttr(model.kind)} ${actorClass(step.actor)}" ${actorData(step.actor, "tool")}>
         ${timeOffsetCell(step.timestamp, startMs)}
         <details class="ca-tool-card">
-          <summary class="ca-tool-summary">
+          <summary class="ca-tool-disclosure">
             <span class="ca-tool-step-icon">${deps.escapeHtml(model.icon)}</span>
             <span class="ca-tool-copy">
               ${actorPill(step.actor, mode)}
@@ -1350,7 +1350,7 @@ export function createJobsView(deps) {
     ].filter(Boolean).join(" · ");
   }
 
-  function cleanSummary(value) {
+  function cleanDescription(value) {
     return String(value)
       .replace(/\*\*/g, "")
       .replace(/`([^`]+)`/g, "$1")
@@ -1358,8 +1358,8 @@ export function createJobsView(deps) {
       .trim();
   }
 
-  function linkedChangeSummary(run) {
-    const summary = cleanSummary(run.pageChanges?.summary ?? "");
+  function linkedChangeDescription(run) {
+    const description = cleanDescription(run.pageChanges?.description ?? "");
     const refs = new Map();
     const details = run.pageChangeDetails ?? pageChangeDetailsFromSlugs(run.pageChanges);
     for (const kind of ["created", "updated", "archived"]) {
@@ -1368,16 +1368,16 @@ export function createJobsView(deps) {
     let html = "";
     let index = 0;
     const linkPattern = /\[([^\]]+)\]\(([^)]*\/([^/)]+)\.md)\)/g;
-    for (const match of summary.matchAll(linkPattern)) {
+    for (const match of description.matchAll(linkPattern)) {
       const start = match.index ?? 0;
       const slug = match[3];
-      html += deps.escapeHtml(summary.slice(index, start));
+      html += deps.escapeHtml(description.slice(index, start));
       const title = refs.get(slug) ?? match[1].replace(/\.md$/, "");
       const href = deps.pageRoute(slug);
       html += `<a href="${deps.escapeAttr(href)}" data-route="${deps.escapeAttr(href)}">${deps.escapeHtml(title)}</a>`;
       index = start + match[0].length;
     }
-    html += deps.escapeHtml(summary.slice(index));
+    html += deps.escapeHtml(description.slice(index));
     return html;
   }
 

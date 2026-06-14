@@ -1,6 +1,6 @@
 ---
 title: Claude Agent SDK
-summary: >-
+description: >-
   `@anthropic-ai/claude-agent-sdk` is isolated behind the Claude harness adapter, which maps Almanac
   run specs to Claude tools, auth checks, events, and limits.
 topics:

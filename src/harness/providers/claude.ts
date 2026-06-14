@@ -490,7 +490,7 @@ function toHarnessEvents(
   }
 
   if (message.type === "tool_use_summary") {
-    return [{ type: "tool_summary", summary: message.summary, actor }];
+    return [{ type: "tool_description", description: message.summary, actor }];
   }
 
   if (message.type === "result" && message.subtype !== "success") {

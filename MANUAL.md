@@ -112,7 +112,7 @@ real code exists.
   semantics with regexes over prose, prompts, logs, or final assistant text.
   Regex is fine for syntax we own (frontmatter fences, wikilinks, durations,
   path normalization, known URL forms) or as a documented compatibility shim.
-  It is not a product boundary for summaries, actions, identities, state
+  It is not a product boundary for descriptions, actions, identities, state
   transitions, or other durable meaning. Before adding extraction logic, check
   whether the tool already supports structured output, metadata, JSON mode,
   result files, or a typed event.

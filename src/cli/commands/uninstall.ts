@@ -114,10 +114,10 @@ export async function runUninstall(
     );
   }
   if (removeGuides) {
-    const summary = await removeAgentInstructions({ claudeDir, codexDir });
-    if (summary.anyChanges) {
+    const result = await removeAgentInstructions({ claudeDir, codexDir });
+    if (result.anyChanges) {
       out.write(
-        `  ${BLUE}\u25c7${RST}  Guides removed (${summary.filesTouched.join(", ")})\n`,
+        `  ${BLUE}\u25c7${RST}  Guides removed (${result.filesTouched.join(", ")})\n`,
       );
     } else {
       out.write(`  ${DIM}\u25cb  Guides not installed${RST}\n`);

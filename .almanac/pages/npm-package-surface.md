@@ -1,6 +1,6 @@
 ---
 title: NPM Package Surface
-summary: The published `codealmanac` package surface is controlled by `package.json`, and licensing changes must keep npm metadata, tarball contents, and README text in sync.
+description: The published `codealmanac` package surface is controlled by `package.json`, and licensing changes must keep npm metadata, tarball contents, and README text in sync.
 topics: [decisions]
 sources:
   - id: package-metadata

@@ -1,6 +1,6 @@
 ---
 title: Hosted Deployment Environment
-summary: Almanac for GitHub currently uses the `usealmanac` repository and a `codealmanac` provider namespace across Vercel, Render, Supabase, Modal, and Doppler.
+description: Almanac for GitHub currently uses the `usealmanac` repository and a `codealmanac` provider namespace across Vercel, Render, Supabase, Modal, and Doppler.
 topics: [product-positioning, stack]
 sources:
   - id: external-providers-doc

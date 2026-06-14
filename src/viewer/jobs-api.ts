@@ -54,7 +54,7 @@ function pageChangeRefs(
   slugs: string[],
 ): Array<{ slug: string; title: string | null }> {
   return slugs.map((slug) => {
-    const page = query.pages.pageSummaryBySlug(db, slug);
+    const page = query.pages.pagePreviewBySlug(db, slug);
     return { slug, title: page?.title ?? null };
   });
 }

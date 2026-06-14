@@ -44,7 +44,7 @@ describe("garden operation", () => {
       expect(spec.prompt).toContain("Page Selection And Organization");
       expect(spec.prompt).toContain("Page Syntax And Writing Conventions");
       expect(spec.prompt).toContain("Source Control Hygiene");
-      expect(spec.prompt).toContain("almanac: <imperative one-line summary>");
+      expect(spec.prompt).toContain("almanac: <imperative one-line description>");
       expect(spec.prompt).toContain(".almanac/review.yaml");
       expect(spec.prompt).toContain("Garden Operation");
       expect(spec.prompt).toContain(`Wiki content directory: ${repo}/docs/almanac`);

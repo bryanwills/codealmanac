@@ -1,6 +1,6 @@
 ---
 title: Self Update
-summary: >-
+description: >-
   Almanac self-update uses a background notifier plus an idempotent global npm install path, and
   scheduled self-update runs the normal `almanac update` command.
 topics:

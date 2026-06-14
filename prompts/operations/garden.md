@@ -15,7 +15,7 @@ decided item, read it with `almanac review show <id>`, apply the decision to the
 relevant wiki pages, then mark it applied with:
 
 ```bash
-almanac review apply <id> "summary of edits"
+almanac review apply <id> "description of edits"
 ```
 
 These items are human/editor decisions waiting for agent implementation. Handle

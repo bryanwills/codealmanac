@@ -52,7 +52,7 @@ Define `almanac_operation_report_v1` with `{version: 1, summary: string}` and ad
 - Modify: `src/process/manager.ts`
 - Test: `test/process-manager.test.ts`, `test/process-records.test.ts`
 
-Persist operation output in run records as `{version, contract, value}`. Keep `pageChanges.summary` for compatibility, but prefer structured `summary` when the output contract provides one; fallback to legacy first-line summary only for runs without structured output.
+Persist operation output in run records as `{version, contract, value}`. Keep `pageChanges.description` for compatibility, but prefer structured `summary` when the output contract provides one; fallback to legacy first-line summary only for runs without structured output.
 
 ### Task 5: Verification
 

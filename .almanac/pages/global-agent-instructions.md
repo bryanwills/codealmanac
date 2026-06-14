@@ -1,6 +1,6 @@
 ---
 title: Global Agent Instructions
-summary: >-
+description: >-
   `almanac setup` installs global Claude and Codex instruction artifacts differently: Claude reads
   copied guide files plus a `CLAUDE.md` import, while Codex reads an inline managed block in the
   active global AGENTS file.

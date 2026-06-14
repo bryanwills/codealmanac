@@ -269,7 +269,7 @@
 
 .ca-log-entry:hover .ca-log-title { color: var(--ca-accent); }
 
-.ca-log-summary {
+.ca-log-description {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -629,7 +629,7 @@
   color: var(--ca-muted);
 }
 
-.ca-job-change-summary,
+.ca-job-change-description,
 .ca-job-card-empty {
   margin: 16px 0 0;
   color: var(--ca-muted);
@@ -638,7 +638,7 @@
   line-height: 1.6;
 }
 
-.ca-job-change-summary p {
+.ca-job-change-description p {
   margin: 0;
 }
 
@@ -1370,8 +1370,8 @@
   background: var(--ca-paper);
 }
 
-.ca-tool-summary,
-.ca-activity-summary {
+.ca-tool-disclosure,
+.ca-activity-disclosure {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1383,17 +1383,17 @@
   text-align: left;
 }
 
-.ca-tool-summary::-webkit-details-marker,
-.ca-activity-summary::-webkit-details-marker { display: none; }
+.ca-tool-disclosure::-webkit-details-marker,
+.ca-activity-disclosure::-webkit-details-marker { display: none; }
 
-.ca-tool-card[open] .ca-tool-summary,
-.ca-activity-card[open] .ca-activity-summary {
+.ca-tool-card[open] .ca-tool-disclosure,
+.ca-activity-card[open] .ca-activity-disclosure {
   border-bottom: 1px solid var(--ca-border-light);
   background: var(--ca-bg);
 }
 
-.ca-tool-summary::after,
-.ca-activity-summary::after {
+.ca-tool-disclosure::after,
+.ca-activity-disclosure::after {
   content: "▾";
   margin-left: auto;
   color: var(--ca-faint);
@@ -1403,8 +1403,8 @@
   transition: transform 0.2s ease;
 }
 
-.ca-tool-card[open] .ca-tool-summary::after,
-.ca-activity-card[open] .ca-activity-summary::after { transform: rotate(180deg); }
+.ca-tool-card[open] .ca-tool-disclosure::after,
+.ca-activity-card[open] .ca-activity-disclosure::after { transform: rotate(180deg); }
 
 .ca-activity-card {
   overflow: hidden;
@@ -1460,20 +1460,20 @@
   background: transparent;
 }
 
-.ca-terminal-normal .ca-activity-summary {
+.ca-terminal-normal .ca-activity-disclosure {
   padding: 5px 0;
 }
 
-.ca-terminal-normal .ca-activity-card[open] .ca-activity-summary {
+.ca-terminal-normal .ca-activity-card[open] .ca-activity-disclosure {
   border-bottom: 0;
   background: transparent;
 }
 
-.ca-terminal-normal .ca-activity-summary:hover .ca-activity-title {
+.ca-terminal-normal .ca-activity-disclosure:hover .ca-activity-title {
   color: var(--ca-accent);
 }
 
-.ca-terminal-normal .ca-activity-summary::after {
+.ca-terminal-normal .ca-activity-disclosure::after {
   margin-left: 8px;
 }
 

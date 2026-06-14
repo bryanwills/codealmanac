@@ -1,6 +1,6 @@
 ---
 title: Wikilink Syntax
-summary: >-
+description: >-
   Almanac uses one double-bracket syntax for page, file, folder, and cross-wiki references, and the
   indexer classifies each link by its contents.
 topics:

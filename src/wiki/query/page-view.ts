@@ -5,7 +5,7 @@ import type Database from "better-sqlite3";
 export interface PageView {
   slug: string;
   title: string | null;
-  summary: string | null;
+  description: string | null;
   file_path: string;
   updated_at: number;
   archived_at: number | null;
@@ -38,14 +38,14 @@ export async function getPageView(
       {
         slug: string;
         title: string | null;
-        summary: string | null;
+        description: string | null;
         file_path: string;
         updated_at: number;
         archived_at: number | null;
         superseded_by: string | null;
       }
     >(
-      "SELECT slug, title, summary, file_path, updated_at, archived_at, superseded_by FROM pages WHERE slug = ?",
+      "SELECT slug, title, description, file_path, updated_at, archived_at, superseded_by FROM pages WHERE slug = ?",
     )
     .get(slug);
   if (pageRow === undefined) return null;
@@ -130,7 +130,7 @@ export async function getPageView(
   return {
     slug: pageRow.slug,
     title: pageRow.title,
-    summary: pageRow.summary,
+    description: pageRow.description,
     file_path: pageRow.file_path,
     updated_at: pageRow.updated_at,
     archived_at: pageRow.archived_at,

@@ -1,6 +1,6 @@
 ---
 title: Topic DAG
-summary: >-
+description: >-
   Topics are a multi-parent DAG stored in `.almanac/topics.yaml`, while page membership stays in
   frontmatter and is reconciled at query time.
 topics:

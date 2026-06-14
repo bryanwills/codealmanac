@@ -1,6 +1,6 @@
 ---
 title: Evidence Bundles
-summary: Evidence bundles are the connector-ingestion manifest that gives Almanac operations stable source handles, connector runtime access, branch context, and dedupe identity before agent reasoning begins.
+description: Evidence bundles are the connector-ingestion manifest that gives Almanac operations stable source handles, connector runtime access, branch context, and dedupe identity before agent reasoning begins.
 topics: [wiki-design, product-positioning, agents]
 sources:
   - id: github-context-research
@@ -165,7 +165,7 @@ The agent response can have several shapes:
 - `wiki_patch` edits the Almanac root and asks the publisher to open or update an Almanac update PR.
 - `review_note` posts a bounded PR-time comment or check when existing project memory changes review behavior.
 - `source_question` asks a maintainer to clarify source material that is likely durable but not safely inferable.
-- `no_change_summary` records that the agent inspected the source handles and found no durable memory change.
+- `no_change_description` records that the agent inspected the source handles and found no durable memory change.
 - `publisher_action` asks the publisher to perform a connector-specific side effect such as opening a GitHub pull request, posting a check, or leaving a queued candidate.
 
 This response boundary keeps connector code from becoming a hidden relevance engine. The connector exposes source refs and tools, the operation prompt tells the agent what happened, the agent decides what output is warranted, and the publisher performs the external write. [@connector-session]

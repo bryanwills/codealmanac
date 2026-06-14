@@ -2,7 +2,7 @@ import type { JsonObject, FinalOutputSpec } from "../harness/final-output.js";
 
 export interface AlmanacOperationReport {
   version: 1;
-  summary: string;
+  description: string;
 }
 
 export const ALMANAC_OPERATION_REPORT_NAME = "almanac_operation_report_v1";
@@ -10,13 +10,13 @@ export const ALMANAC_OPERATION_REPORT_NAME = "almanac_operation_report_v1";
 export const ALMANAC_OPERATION_REPORT_SCHEMA: JsonObject = {
   type: "object",
   additionalProperties: false,
-  required: ["version", "summary"],
+  required: ["version", "description"],
   properties: {
     version: { type: "number", enum: [1] },
-    summary: {
+    description: {
       type: "string",
       description:
-        "User-facing markdown summary of what Almanac changed and why.",
+        "User-facing markdown description of what Almanac changed and why.",
     },
   },
 };
@@ -35,18 +35,18 @@ export function parseAlmanacOperationReport(
   }
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record);
-  if (!keys.every((key) => key === "version" || key === "summary")) {
+  if (!keys.every((key) => key === "version" || key === "description")) {
     throw new Error("unexpected Almanac operation report field");
   }
   if (record.version !== 1) {
     throw new Error("unsupported Almanac operation report version");
   }
-  if (typeof record.summary !== "string" || record.summary.trim().length === 0) {
-    throw new Error("expected non-empty Almanac operation report summary");
+  if (typeof record.description !== "string" || record.description.trim().length === 0) {
+    throw new Error("expected non-empty Almanac operation report description");
   }
   return {
     version: 1,
-    summary: record.summary,
+    description: record.description,
   };
 }
 
@@ -58,7 +58,7 @@ export function githubPullRequestReportInstructions(args: {
     "",
     `At the end of the operation, return structured output matching \`${ALMANAC_OPERATION_REPORT_NAME}\`.`,
     "",
-    "The `summary` field is the complete markdown body that Almanac will show in the sticky GitHub PR comment after the run finishes.",
+    "The `description` field is the complete markdown body that Almanac will show in the sticky GitHub PR comment after the run finishes.",
     "Write it for the PR reviewer. It should explain the final result of the Almanac run, not the internal steps you took.",
     "",
     "Use one of these shapes.",
@@ -80,7 +80,7 @@ export function githubPullRequestReportInstructions(args: {
     "",
     `Almanac checked this pull request and did not find durable project knowledge that needs to be added to \`${args.almanacRoot}\`.`,
     "",
-    "Rules for the `summary` field:",
+    "Rules for the `description` field:",
     "- Include the markdown heading.",
     "- Keep it concise.",
     "- Mention changed Almanac pages when files changed.",

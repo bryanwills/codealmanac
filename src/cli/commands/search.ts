@@ -21,7 +21,7 @@ export interface SearchOptions {
   limit?: number;
 }
 
-export type SearchOutputMode = "slugs" | "summaries" | "json";
+export type SearchOutputMode = "slugs" | "descriptions" | "json";
 
 export type SearchResult = query.search.SearchPageResult;
 
@@ -84,8 +84,8 @@ function formatResults(
 
 function formatSearchResult(row: SearchResult): string {
   const head = `${BLUE}${row.slug}${RST}`;
-  if (row.summary === null || row.summary.trim().length === 0) return head;
-  return `${head}\n  ${row.summary.trim()}`;
+  if (row.description === null || row.description.trim().length === 0) return head;
+  return `${head}\n  ${row.description.trim()}`;
 }
 
 function buildStderr(rows: SearchResult[], options: SearchOptions): string {

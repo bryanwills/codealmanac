@@ -76,7 +76,7 @@ function buildFtsSearchSqlPlan(
 ): SearchSqlPlan {
   return {
     sql: `
-      SELECT p.slug, p.title, p.summary, p.updated_at, p.archived_at, p.superseded_by
+      SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
       FROM pages p
       JOIN fts_pages f ON f.slug = p.slug
       WHERE fts_pages MATCH ?
@@ -91,7 +91,7 @@ function buildListSearchSql(whereClauses: string[]): string {
   const where =
     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
   return `
-    SELECT p.slug, p.title, p.summary, p.updated_at, p.archived_at, p.superseded_by
+    SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
     FROM pages p
     ${where}
     ORDER BY p.updated_at DESC, p.slug ASC

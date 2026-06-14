@@ -1,6 +1,6 @@
 ---
 title: Job Runs
-summary: >-
+description: >-
   The jobs layer is the durable run-recording layer for Build, Absorb, and Garden, including
   background spawn, event logs, page snapshots, and jobs inspection.
 topics:
@@ -16,13 +16,13 @@ sources:
     note: >-
       Distinguishes the capture-sweep recursion incident from the provider child-process cascade
       tracked in issue #10.
-  - id: hosted-summary-contract-session
+  - id: hosted-description-contract-session
     type: conversation
     path: >-
       /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: >-
       Records the 2026-06-07 hosted GitHub App discussion that rejected first-line result scraping
-      as the PR-summary contract.
+      as the PR description contract.
   - id: jobs-refactor-session
     type: conversation
     path: >-
@@ -123,7 +123,7 @@ Current job records are per wiki under `.almanac/jobs/`; `src/jobs/records.ts` s
 .almanac/jobs/<job-id>.cancel
 ```
 
-The JSON record stores status, operation, provider, model, PID, target metadata, log path, timestamps, final summary counts, page changes, optional structured operation output, and errors. The JSONL file stores normalized `HarnessEvent` records from [[harness-providers]], including structured tool display details and final output when an adapter can provide them. The spec file stores the serialized `OperationSpec` that the child process rehydrates, including the exact prompt string, cwd, provider/model selection, targets, output contract, and operation metadata. For sync debugging this file is the inspectable answer to "what prompt, output schema, and transcript context were actually sent for this job." The optional cancel marker is a race guard so a queued cancellation cannot be overwritten during child startup. New wiki scaffolding gitignores `.almanac/jobs/` and `.almanac/index.db`.
+The JSON record stores status, operation, provider, model, PID, target metadata, log path, timestamps, final `JobSummary` counts, page changes, optional structured operation output, and errors. The JSONL file stores normalized `HarnessEvent` records from [[harness-providers]], including structured tool display details and final output when an adapter can provide them. The spec file stores the serialized `OperationSpec` that the child process rehydrates, including the exact prompt string, cwd, provider/model selection, targets, output contract, and operation metadata. For sync debugging this file is the inspectable answer to "what prompt, output schema, and transcript context were actually sent for this job." The optional cancel marker is a race guard so a queued cancellation cannot be overwritten during child startup. New wiki scaffolding gitignores `.almanac/jobs/` and `.almanac/index.db`.
 
 These job records are CodeAlmanac's canonical job transcript and audit record. Provider-owned Claude or Codex session history is secondary debug material and may be non-persistent for Almanac maintenance jobs. The user-visible transcript feature belongs to `.almanac/jobs/<job-id>.jsonl`, `almanac jobs logs <job-id>`, and the `almanac serve` jobs UI, not to the provider's own session store.
 
@@ -163,15 +163,15 @@ The single-writer queue does not replace source provenance. Provider sessions fo
 
 ## Snapshot accounting
 
-The job executor snapshots `.almanac/pages/*.md` before and after the harness run. `[[src/jobs/snapshots.ts]]` computes created, updated, archived, and deleted slug lists from page hashes and archive metadata. `[[src/jobs/wiki-effects.ts]]` writes those lists into `JobRecord.pageChanges` and derives the numeric `JobSummary` counts from the same delta. On success the executor runs the SQLite indexer; on failure it still records the event log, final error, summary counts, and page changes observed before finalization.
+The job executor snapshots `.almanac/pages/*.md` before and after the harness run. `[[src/jobs/snapshots.ts]]` computes created, updated, archived, and deleted slug lists from page hashes and archive metadata. `[[src/jobs/wiki-effects.ts]]` writes those lists into `JobRecord.pageChanges` and derives the numeric `JobSummary` counts from the same delta. On success the executor runs the SQLite indexer; on failure it still records the event log, final error, `JobSummary` counts, and page changes observed before finalization.
 
 ## Wiki-effect artifact design
 
 A 2026-05-14 design discussion treated per-job page changes as a job-manager concern, not as special `jobs show` behavior. The current snapshot layer already has the right boundary because every write-capable Build, Absorb, and Garden job passes through it before terminal record finalization.
 
-The implemented shape is a first-class run metadata contract that records the wiki effect of a run: created, updated, archived, and deleted page slugs, with optional richer summary or diff data later. The stable product question is "what did this run do to my wiki?", and page-level slugs answer that without forcing the CLI or viewer to recompute changes from live page files after the run.
+The implemented shape is a first-class run metadata contract that records the wiki effect of a run: created, updated, archived, and deleted page slugs, with optional richer description or diff data later. The stable product question is "what did this run do to my wiki?", and page-level slugs answer that without forcing the CLI or viewer to recompute changes from live page files after the run.
 
-The 2026-05-14 review tightened the storage boundary: store slug-level page changes in the JSON job record first, not in a sibling `.almanac/jobs/<job-id>.changes.json` file. The JSON record is already the lifecycle source of truth, and a sibling changes file would need atomic coordination with terminal status, cancellation, cleanup, JSON output, and viewer detail loading. A later `changesPath` artifact is still plausible for full diffs or larger payloads, but the job record should carry the summary and artifact pointer if that layer appears.
+The 2026-05-14 review tightened the storage boundary: store slug-level page changes in the JSON job record first, not in a sibling `.almanac/jobs/<job-id>.changes.json` file. The JSON record is already the lifecycle source of truth, and a sibling changes file would need atomic coordination with terminal status, cancellation, cleanup, JSON output, and viewer detail loading. A later `changesPath` artifact is still plausible for full diffs or larger payloads, but the job record should carry the description and artifact pointer if that layer appears.
 
 The recommended contract is versioned run metadata:
 
@@ -183,15 +183,15 @@ pageChanges?: {
   updated: string[];
   archived: string[];
   deleted: string[];
-  summary?: string;
+  description?: string;
 }
 ```
 
-`summary` is now compatibility display metadata, not the product boundary for final-output meaning. When the provider returns the `almanac_operation_report_v1` structured final output, the job-effects layer validates that named contract and copies its `summary` into `pageChanges.summary`; otherwise it falls back to the old first-meaningful-line summary capped at 500 characters. The typed result itself is stored separately as `operationOutput: { version: 1, contract, value }`. Counts for `jobs show`, JSON output, capture automation, and the viewer are derived from the same snapshot delta that produces `pageChanges`, rather than from a second comparison path. Computing old changed slug sets on demand from current page files is not reliable because later runs can rewrite, archive, or delete the same pages after the before/after snapshots for the older run are gone.
+`description` is display metadata, not the product boundary for final-output meaning. When the provider returns the `almanac_operation_report_v1` structured final output, the job-effects layer validates that named contract and copies its `description` into `pageChanges.description`; otherwise it falls back to the old first-meaningful-line description capped at 500 characters. The typed result itself is stored separately as `operationOutput: { version: 1, contract, value }`. Counts for `jobs show`, JSON output, capture automation, and the viewer are derived from the same snapshot delta that produces `pageChanges`, rather than from a second comparison path. Computing old changed slug sets on demand from current page files is not reliable because later runs can rewrite, archive, or delete the same pages after the before/after snapshots for the older run are gone.
 
-The 2026-06-07 hosted GitHub App discussion exposed first-line harness-result scraping as the wrong boundary for PR-ready human messages. The current compatibility path in `[[src/jobs/wiki-effects.ts]]` may derive a display summary from the final assistant result, but that is acceptable only as a best-effort jobs-list snippet, not as the contract for a sticky GitHub comment or hosted product summary. When a downstream feature needs a formatted explanation, changed-file list, action label, or other shaped output, the agent run should produce that shape through an explicit prompt or structured output contract and the host should validate it, rather than relying on first-line markdown scraping. [@hosted-summary-contract-session]
+The 2026-06-07 hosted GitHub App discussion exposed first-line harness-result scraping as the wrong boundary for PR-ready human messages. The current compatibility path in `[[src/jobs/wiki-effects.ts]]` may derive a display description from the final assistant result, but that is acceptable only as a best-effort jobs-list snippet, not as the contract for a sticky GitHub comment or hosted product description. When a downstream feature needs a formatted explanation, changed-file list, action label, or other shaped output, the agent run should produce that shape through an explicit prompt or structured output contract and the host should validate it, rather than relying on first-line markdown scraping. [@hosted-description-contract-session]
 
-Two review constraints protect that contract. If post-harness finalization fails after the page delta has been computed, the failed terminal record should still preserve `summary` and `pageChanges`; failed jobs are one of the cases where operators most need to know what changed before the failure. Readers also need to validate `pageChanges` when present, including `version === 1`, `jobId`, and all four slug arrays, because old records omit the field and malformed persisted metadata should not crash `jobs show` or the viewer.
+Two review constraints protect that contract. If post-harness finalization fails after the page delta has been computed, the failed terminal record should still preserve `JobSummary` counts and `pageChanges`; failed jobs are one of the cases where operators most need to know what changed before the failure. Readers also need to validate `pageChanges` when present, including `version === 1`, `jobId`, and all four slug arrays, because old records omit the field and malformed persisted metadata should not crash `jobs show` or the viewer.
 
 ## Jobs CLI
 

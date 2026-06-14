@@ -73,11 +73,11 @@ export function probeBetterSqlite3(): SqliteProbeResult {
     const Database = req("better-sqlite3") as typeof import("better-sqlite3");
     const db = new Database(":memory:");
     db.close();
-    return { ok: true, summary: "native binding loads cleanly" };
+    return { ok: true, description: "native binding loads cleanly" };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const firstLine = msg.split("\n")[0] ?? msg;
-    return { ok: false, summary: firstLine };
+    return { ok: false, description: firstLine };
   }
 }
 

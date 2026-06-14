@@ -27,7 +27,7 @@ async function seed(repo: string): Promise<void> {
     "checkout-flow",
     `---
 title: Checkout Flow
-summary: Checkout flow explains the entrypoint and related payment links.
+description: Checkout flow explains the entrypoint and related payment links.
 topics: [checkout, flows]
 sources:
   - id: checkout-folder
@@ -88,7 +88,7 @@ describe("almanac show — default view", () => {
       const r = await runShow({ cwd: repo, slug: "checkout-flow" });
       expect(r.exitCode).toBe(0);
       expect(r.stdout).not.toMatch(/^slug:/m);
-      expect(r.stdout).not.toMatch(/^summary:/m);
+      expect(r.stdout).not.toMatch(/^description:/m);
       expect(r.stdout).not.toMatch(/\n---\n/);
       expect(r.stdout).toMatch(/# Checkout Flow/);
       expect(r.stdout).toMatch(/\[\[stripe-async\]\]/);
@@ -106,7 +106,7 @@ describe("almanac show — default view", () => {
       });
       expect(r.exitCode).toBe(0);
       expect(r.stdout).toMatch(/slug:\s+checkout-flow/);
-      expect(r.stdout).toMatch(/summary:\s+Checkout flow explains/);
+      expect(r.stdout).toMatch(/description:\s+Checkout flow explains/);
       expect(r.stdout).toMatch(/topics:\s+checkout, flows/);
       expect(r.stdout).toMatch(/sources:\s+checkout-docs \(web\), checkout-folder \(file: src\/checkout\/\), checkout-handler \(file: src\/checkout\/handler.ts\)/);
       expect(r.stdout).toMatch(/\n---\n/);
@@ -185,7 +185,7 @@ describe("almanac show — view modes", () => {
       const parsed = JSON.parse(r.stdout);
       expect(Array.isArray(parsed)).toBe(false);
       expect(parsed.slug).toBe("checkout-flow");
-      expect(parsed.summary).toBe(
+      expect(parsed.description).toBe(
         "Checkout flow explains the entrypoint and related payment links.",
       );
       expect(parsed.topics).toEqual(["checkout", "flows"]);

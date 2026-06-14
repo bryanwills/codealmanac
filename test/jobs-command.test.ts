@@ -94,7 +94,7 @@ describe("jobs command", () => {
           updated: ["sync-flow", "process-manager-runs"],
           archived: [],
           deleted: [],
-          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
+          description: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
       };
       await writeJobRecord(jobRecordPath(repo, record.id), record);
@@ -110,7 +110,7 @@ describe("jobs command", () => {
       expect(show.stdout).toContain("Status: running");
       expect(show.stdout).toContain("Provider: claude/claude-sonnet-4-6");
       expect(show.stdout).toContain(
-        "Summary: Updated sync/run lifecycle docs after scheduled absorb.",
+        "Description: Updated sync/run lifecycle docs after scheduled absorb.",
       );
       expect(show.stdout).toContain(
         "Changes: 1 created, 2 updated, 0 archived, 0 deleted",
@@ -284,7 +284,7 @@ describe("jobs command", () => {
     });
   });
 
-  it("streams a terminal failure summary when attaching to a failed job", async () => {
+  it("streams a terminal failure message when attaching to a failed job", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "jobs-attach-failure");
       await initWiki({ cwd: repo, name: "jobs-attach-failure", description: "" });

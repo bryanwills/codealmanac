@@ -100,6 +100,6 @@ export interface AgentDoctorCheck {
 
 export interface SqliteProbeResult {
   ok: boolean;
-  /** Human-readable summary of the probe outcome. */
-  summary: string;
+  /** Human-readable description of the probe outcome. */
+  description: string;
 }

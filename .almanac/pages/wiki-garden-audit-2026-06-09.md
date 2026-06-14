@@ -1,6 +1,6 @@
 ---
 title: Wiki Garden Audit 2026-06-09
-summary: The 2026-06-09 garden audit concluded that the wiki's storage graph should stay, while retrieval quality needs hubs, source hygiene, topic repair, and split/merge work.
+description: The 2026-06-09 garden audit concluded that the wiki's storage graph should stay, while retrieval quality needs hubs, source hygiene, topic repair, and split/merge work.
 topics: [wiki-design, decisions, prompt-system]
 sources:
   - id: audit-session

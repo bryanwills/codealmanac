@@ -67,7 +67,7 @@ export function codexItemDisplay(
     return {
       kind: "web",
       title: "Web search",
-      summary: stringField(item, "query"),
+      description: stringField(item, "query"),
       status: itemStatus(item, fallbackStatus),
       ...providerDisplayIds(providerIds),
     };

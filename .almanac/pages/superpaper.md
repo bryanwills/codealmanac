@@ -1,6 +1,6 @@
 ---
 title: Superpaper
-summary: Superpaper is an Obsidian-first personal knowledge system whose operating discipline informs Almanac, while its schema and vault ownership model should not be copied into codebase wikis.
+description: Superpaper is an Obsidian-first personal knowledge system whose operating discipline informs Almanac, while its schema and vault ownership model should not be copied into codebase wikis.
 topics: [wiki-design, product-positioning, agents, competitive-research]
 sources:
   - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl

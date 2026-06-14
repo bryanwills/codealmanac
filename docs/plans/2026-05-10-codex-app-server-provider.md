@@ -130,8 +130,8 @@ The runtime must manage:
 Map app-server notifications to the existing `HarnessEvent` model:
 
 - `item/agentMessage/delta` -> `text_delta`
-- `item/plan/delta` -> `tool_summary` or `text_delta` with a clear prefix
-- `turn/plan/updated` -> `tool_summary`
+- `item/plan/delta` -> `tool_description` or `text_delta` with a clear prefix
+- `turn/plan/updated` -> `tool_description`
 - `item/started`:
   - commandExecution -> `tool_use` with `display.kind = "shell"`
   - fileChange -> `tool_use` with `display.kind = "edit"`
@@ -141,7 +141,7 @@ Map app-server notifications to the existing `HarnessEvent` model:
   - imageView -> `tool_use`
   - collabAgentToolCall -> `tool_use` with `display.kind = "agent"`
 - `item/completed` -> matching `tool_result`
-- `commandExecutionOutputDelta` -> `tool_summary` for now, preserving output
+- `commandExecutionOutputDelta` -> `tool_description` for now, preserving output
   without overwhelming foreground output
 - `thread/tokenUsage/updated` -> `context_usage`
 - `turn/completed` -> terminal `done` and final `HarnessResult`

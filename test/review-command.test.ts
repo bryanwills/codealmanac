@@ -41,7 +41,7 @@ describe("review command", () => {
         {
           id: "which-page-should-own-source-conflict-guidance",
           status: "open",
-          summary: "Which page should own source-conflict guidance?",
+          description: "Which page should own source-conflict guidance?",
           created_at: "2026-05-28T12:00:00.000Z",
           decided_at: null,
           applied_at: null,
@@ -64,7 +64,7 @@ describe("review command", () => {
     });
   });
 
-  it("prefers the first markdown heading over preamble text for the summary", async () => {
+  it("prefers the first markdown heading over preamble text for the description", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "review-heading");
       await scaffoldWiki(repo);
@@ -77,7 +77,7 @@ describe("review command", () => {
       const file = await loadReviewFile(join(repo, ".almanac", "review.yaml"));
       expect(file.items[0]).toMatchObject({
         id: "actual-conflict-title",
-        summary: "Actual conflict title",
+        description: "Actual conflict title",
       });
     });
   });

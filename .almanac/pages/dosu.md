@@ -1,6 +1,6 @@
 ---
 title: Dosu
-summary: Dosu is a hosted knowledge and documentation competitor whose public product spans PR-time docs drift, OSS Q&A, MCP context, and agent-instruction maintenance, while 2026-06-09 experiments showed separate gates for setup, source connection, knowledge submission, and curated retrieval.
+description: Dosu is a hosted knowledge and documentation competitor whose public product spans PR-time docs drift, OSS Q&A, MCP context, and agent-instruction maintenance, while 2026-06-09 experiments showed separate gates for setup, source connection, knowledge submission, and curated retrieval.
 topics: [product-positioning, competitive-research]
 sources:
   - id: dosu-maintain-docs

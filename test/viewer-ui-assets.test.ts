@@ -57,9 +57,9 @@ describe("viewer UI assets", () => {
     expect(appJs).toContain("Back");
     expect(appJs).not.toContain("ca-page-header");
     expect(appJs).toContain("renderHeading");
-    expect(appJs).toContain("renderMarkdown(page.body, { decorateTitle: true, summary: page.summary })");
+    expect(appJs).toContain("renderMarkdown(page.body, { decorateTitle: true, description: page.description })");
     expect(appJs).toContain("function renderMarkdown(source, options = {})");
-    expect(appJs).toContain("renderArticleSummary");
+    expect(appJs).toContain("renderArticleDescription");
     expect(appJs).toContain('const level = decorated ? "h1" : "h2";');
     expect(appJs).toContain("ca-page-ornament");
     expect(appJs).toContain('wikiPath === "/jobs"');
@@ -83,11 +83,11 @@ describe("viewer UI assets", () => {
     expect(jobsJs).toContain("groupByDay");
     expect(jobsJs).toContain("logEntry");
     expect(jobsJs).toContain("statusMark");
-    expect(jobsJs).toContain("cleanSummary");
+    expect(jobsJs).toContain("cleanDescription");
     expect(jobsJs).toContain("displayTitle");
     expect(jobsJs).toContain("displaySubtitle");
     expect(jobsJs).toContain("ca-tool-card");
-    expect(jobsJs).toContain("ca-tool-summary");
+    expect(jobsJs).toContain("ca-tool-disclosure");
     expect(jobsTranscriptJs).toContain("export function buildTranscript");
     expect(jobsTranscriptJs).toContain("getToolCardModel");
     expect(jobsTranscriptJs).toContain("toolsById");
@@ -121,7 +121,7 @@ describe("viewer UI assets", () => {
     expect(appCss).toContain("JetBrains Mono");
     expect(appCss).toContain(".ca-page-actions");
     expect(appCss).toContain(".ca-back-button");
-    expect(appCss).toContain(".ca-article-summary");
+    expect(appCss).toContain(".ca-article-description");
     expect(appCss).toContain(".ca-page-ornament");
     expect(appCss).toContain(".ca-link-button");
     expect(appCss).not.toContain("brightness(0.68)");
@@ -136,7 +136,7 @@ describe("viewer UI assets", () => {
     expect(jobsCss).toContain(".ca-chat-bubble");
     expect(jobsCss).toContain(".ca-tool-step");
     expect(jobsCss).toContain(".ca-tool-card");
-    expect(jobsCss).toContain(".ca-tool-summary");
+    expect(jobsCss).toContain(".ca-tool-disclosure");
     expect(jobsCss).toContain(".ca-tool-facts");
     expect(jobsCss).not.toContain(".ca-event-row");
     expect(jobsCss).not.toContain(".ca-job-impact");

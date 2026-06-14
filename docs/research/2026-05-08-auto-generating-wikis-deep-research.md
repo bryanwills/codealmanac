@@ -487,7 +487,7 @@ Crosses authors / projects / orgs introduces:
 
 ## Source log
 
-Every URL fetched by this subagent in producing this note, with one-line summaries:
+Every URL fetched by this subagent in producing this note, with one-line descriptions:
 
 - `arxiv.org/abs/2402.14207` — STORM paper abstract page; v2 Apr 8 2024, NAACL 2024.
 - `github.com/stanford-oval/storm` — STORM/Co-STORM impl; latest news, install, API surface.

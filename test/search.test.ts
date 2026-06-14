@@ -298,12 +298,12 @@ body
       expect(Array.isArray(parsed)).toBe(true);
       expect(parsed.length).toBe(1);
       expect(parsed[0].slug).toBe("stripe-async");
-      expect(parsed[0].summary).toBeNull();
+      expect(parsed[0].description).toBeNull();
       expect(parsed[0].topics).toEqual(["payments", "stack"]);
     });
   });
 
-  it("--summaries includes summaries when pages define them", async () => {
+  it("--descriptions includes descriptions when pages define them", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -312,7 +312,7 @@ body
         "checkout-flow",
         `---
 title: Checkout Flow
-summary: Checkout sessions enter through the operation harness.
+description: Checkout sessions enter through the operation harness.
 topics: [checkout]
 ---
 
@@ -326,7 +326,7 @@ checkout body
         cwd: repo,
         query: "operation harness",
         topics: [],
-        output: "summaries",
+        output: "descriptions",
       });
       expect(r.stdout).toBe(
         "checkout-flow\n  Checkout sessions enter through the operation harness.\n",
@@ -342,7 +342,7 @@ checkout body
         repo,
         "checkout-flow",
         `---
-summary: Checkout sessions enter through the operation harness.
+description: Checkout sessions enter through the operation harness.
 topics: [checkout]
 ---
 
@@ -368,7 +368,7 @@ checkout body
         repo,
         "checkout-flow",
         `---
-summary: Checkout sessions enter through the operation harness.
+description: Checkout sessions enter through the operation harness.
 topics: [checkout]
 ---
 

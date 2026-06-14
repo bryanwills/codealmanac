@@ -41,7 +41,7 @@ export interface HarnessToolDisplay {
   status?: "started" | "completed" | "failed" | "declined";
   exitCode?: number | null;
   durationMs?: number | null;
-  summary?: string;
+  description?: string;
   providerThreadId?: string;
   providerTurnId?: string;
 }
@@ -79,7 +79,7 @@ export type HarnessEvent = HarnessEventEnvelopeFields &
       isError?: boolean;
       display?: HarnessToolDisplay;
     }
-  | { type: "tool_summary"; summary: string }
+  | { type: "tool_description"; description: string }
   | { type: "context_usage"; usage: AgentUsage }
   | { type: "provider_session"; providerSessionId: string }
   | { type: "error"; error: string; failure?: HarnessFailure }

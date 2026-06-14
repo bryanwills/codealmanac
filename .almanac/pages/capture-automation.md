@@ -1,6 +1,6 @@
 ---
 title: Sync Automation
-summary: CodeAlmanac's automatic session-memory contract is scheduler-backed quiet-session sync.
+description: CodeAlmanac's automatic session-memory contract is scheduler-backed quiet-session sync.
 topics:
   - flows
   - agents
@@ -267,7 +267,7 @@ This is a requirements lesson, not only a local bug fix. The LLM should decide w
 
 The same session checked the current Claude and Codex local run surfaces for a native session tag. Claude SDK query options expose `persistSession` and `title`, and the installed SDK also exposes `tagSession(sessionId, tag | null)` plus a `tag` field on session info. Codex does not expose the same provider-native tag in the current local surfaces: Codex CLI exposes `--ephemeral`, and the Codex app-server thread start path uses `ephemeral: true` but no Almanac-specific tag field. The settled product rule after the 2026-05-28 discussion is stricter than "tag if possible": Almanac maintenance provider sessions should be non-persistent by default, and provider-native tags or Almanac-owned sidecar provenance should be fallback mechanisms only when a provider transcript must persist.
 
-The audit boundary is separate from provider transcript persistence. CodeAlmanac's durable audit trail is [[process-manager-runs]]: `.almanac/jobs/<job-id>.json`, `.jsonl`, `.spec.json`, page-change summaries, job logs, and viewer job detail. Provider-owned Claude or Codex session history is optional debug material and should not be the canonical record for Build, Absorb, or Garden. A maintenance job can therefore use non-persistent provider sessions without losing the user-visible job transcript, as long as the jobs layer keeps its job records and `almanac jobs` / `almanac serve` continue to render them.
+The audit boundary is separate from provider transcript persistence. CodeAlmanac's durable audit trail is [[process-manager-runs]]: `.almanac/jobs/<job-id>.json`, `.jsonl`, `.spec.json`, page-change descriptions, job logs, and viewer job detail. Provider-owned Claude or Codex session history is optional debug material and should not be the canonical record for Build, Absorb, or Garden. A maintenance job can therefore use non-persistent provider sessions without losing the user-visible job transcript, as long as the jobs layer keeps its job records and `almanac jobs` / `almanac serve` continue to render them.
 
 The current implementation avoids provider-owned maintenance transcripts instead of tagging them after the fact. Build, Absorb, and Garden specs set `OperationSpec.providerSession.persistence = "ephemeral"`; Claude, Codex app-server, and Codex exec map that provider-neutral intent to their native non-persistence controls. CodeAlmanac no longer injects marker environment variables into maintenance sessions or scans provider transcript contents for those markers. `.almanac/jobs/` is the durable audit trail.
 

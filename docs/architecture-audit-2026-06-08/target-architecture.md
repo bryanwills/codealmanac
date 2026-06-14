@@ -195,7 +195,7 @@ The viewer and CLI need shared read models:
 
 ```text
 src/wiki/query/pages.ts
-  PageSummary
+  PagePreview
   recentPages()
   pagesBySlug()
   searchPages()

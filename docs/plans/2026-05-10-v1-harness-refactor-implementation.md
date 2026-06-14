@@ -248,7 +248,7 @@ export interface AgentRunSpec {
 **Steps:**
 1. Define `ToolRequest` base tools: `read`, `write`, `edit`, `search`, `shell`, `web`, `mcp`.
 2. Define `AgentSpec` without any reviewer/scout-specific logic.
-3. Define `HarnessEvent`: `text_delta`, `text`, `tool_use`, `tool_result`, `tool_summary`, `context_usage`, `error`, `done`.
+3. Define `HarnessEvent`: `text_delta`, `text`, `tool_use`, `tool_result`, `tool_description`, `context_usage`, `error`, `done`.
 4. Define `HarnessCapabilities`.
 5. Do not import Claude SDK types in provider-neutral files.
 6. Commit and push.

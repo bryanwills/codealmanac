@@ -1,6 +1,6 @@
 ---
 title: OpenDeepWiki
-summary: OpenDeepWiki is a generated codebase-documentation reference whose catalog-first pipeline shows why planned navigation can make AI-written repo docs easier to read.
+description: OpenDeepWiki is a generated codebase-documentation reference whose catalog-first pipeline shows why planned navigation can make AI-written repo docs easier to read.
 topics: [competitive-research, wiki-design, prompt-system]
 sources:
   - id: comparison-session

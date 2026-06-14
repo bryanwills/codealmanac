@@ -21,14 +21,14 @@ export interface ViewerApiContext {
   repoRoot: string;
 }
 
-export type ViewerPageSummary = wikiQuery.PageSummary;
+export type ViewerPagePreview = wikiQuery.PagePreview;
 
 export interface ViewerOverview {
   repoRoot: string;
   wikiTitle: string;
   pageCount: number;
   topicCount: number;
-  recentPages: ViewerPageSummary[];
+  recentPages: ViewerPagePreview[];
   topics: ViewerTopicSummary[];
   rootTopics: ViewerTopicSummary[];
   topicNavigation: {
@@ -36,8 +36,8 @@ export interface ViewerOverview {
     sidebarLimit: number;
   };
   featuredPages: {
-    frontDoor: ViewerPageSummary | null;
-    gettingStarted: ViewerPageSummary | null;
+    frontDoor: ViewerPagePreview | null;
+    gettingStarted: ViewerPagePreview | null;
   };
 }
 
@@ -48,9 +48,9 @@ export interface ViewerApi {
   overview(): Promise<ViewerOverview>;
   page(slug: string): Promise<wikiQuery.PageView | null>;
   topic(slug: string): Promise<ViewerTopic | null>;
-  search(query: string): Promise<{ query: string; pages: ViewerPageSummary[] }>;
-  suggest(query: string): Promise<{ query: string; pages: ViewerPageSummary[] }>;
-  file(path: string): Promise<{ path: string; pages: ViewerPageSummary[] }>;
+  search(query: string): Promise<{ query: string; pages: ViewerPagePreview[] }>;
+  suggest(query: string): Promise<{ query: string; pages: ViewerPagePreview[] }>;
+  file(path: string): Promise<{ path: string; pages: ViewerPagePreview[] }>;
   review(): Promise<ViewerReview>;
   jobs(): Promise<{ runs: ViewerJobRun[] }>;
   job(jobId: string): Promise<ViewerJobDetail | null>;
@@ -72,10 +72,10 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
           )
           .get() ?? { page_count: 0, topic_count: 0 };
 
-        const gettingStarted = wikiQuery.pages.pageSummaryBySlug(db, "getting-started");
+        const gettingStarted = wikiQuery.pages.pagePreviewBySlug(db, "getting-started");
         const frontDoor =
-          wikiQuery.pages.pageSummaryBySlug(db, "codealmanac-wiki") ??
-          wikiQuery.pages.pageSummaryBySlug(db, "codebase-wiki") ??
+          wikiQuery.pages.pagePreviewBySlug(db, "codealmanac-wiki") ??
+          wikiQuery.pages.pagePreviewBySlug(db, "codebase-wiki") ??
           gettingStarted;
 
         return {

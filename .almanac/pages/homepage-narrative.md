@@ -1,6 +1,6 @@
 ---
 title: Homepage Narrative
-summary: The public Almanac homepage should separate source-ingestion proof from the animated wiki demo, then establish local ownership and trust before pricing.
+description: The public Almanac homepage should separate source-ingestion proof from the animated wiki demo, then establish local ownership and trust before pricing.
 topics: [product-positioning]
 sources:
   - id: homepage-narrative-session

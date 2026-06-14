@@ -71,11 +71,11 @@ Most actual read projections still live in command or viewer modules:
 - `src/viewer/api.ts:406-436` owns topic summary SQL and parent attachment.
 - `src/cli/commands/topics/list.ts:23-42` owns another topic summary/count projection.
 
-Some divergence is intentional: CLI search uses token-prefix FTS (`src/cli/commands/search.ts:220-231`), while viewer submitted search uses quoted term FTS and suggestions use quoted prefix FTS (`src/viewer/api.ts:217-237`). That should stay explicit. The problem is that pagination, archive filtering, page summary shape, topic attachment, file mention matching, and topic counts are not centralized.
+Some divergence is intentional: CLI search uses token-prefix FTS (`src/cli/commands/search.ts:220-231`), while viewer submitted search uses quoted term FTS and suggestions use quoted prefix FTS (`src/viewer/api.ts:217-237`). That should stay explicit. The problem is that pagination, archive filtering, page description shape, topic attachment, file mention matching, and topic counts are not centralized.
 
 Recommended shape:
 
-- Add `src/wiki/query/pages.ts` with a `PageSummary` type, `recentPages()`, `pagesBySlug()`, `searchPages()`, and `pagesMentioningPath()`.
+- Add `src/wiki/query/pages.ts` with a `PagePreview` type, `recentPages()`, `pagesBySlug()`, `searchPages()`, and `pagesMentioningPath()`.
 - Add `src/wiki/query/topics.ts` with `topicSummaryList()`, `topicDetail()`, `pagesDirectlyTagged()`, and `pagesForSubtree()`.
 - Keep FTS query expression builders in `src/wiki/query/search.ts`, but have both CLI and viewer pass their chosen expression into shared page-query functions.
 - Leave command files responsible for flags and text formatting only.
@@ -181,7 +181,7 @@ Partially. `src/wiki/indexer/` and `src/wiki/registry/` are understandable. `src
 
 ### Does Viewer Code Duplicate Query Projections?
 
-Yes. `src/viewer/api.ts` duplicates page summary, FTS result, file mention, topic summary, and topic detail SQL that should live under `src/wiki/query/`.
+Yes. `src/viewer/api.ts` duplicates page description, FTS result, file mention, topic summary, and topic detail SQL that should live under `src/wiki/query/`.
 
 ### Does Health Have Cleanup Logic That Belongs Elsewhere?
 

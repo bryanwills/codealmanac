@@ -35,7 +35,7 @@
 2. Add `overview()` returning wiki title, page count, topic count, recent pages, and root topics.
 3. Add `page(slug)` returning a `PageView` or `null`.
 4. Add `topic(slug)` returning topic metadata, parents, children, and active pages.
-5. Add `search(query)` returning active page summaries from FTS when query is present, otherwise recent pages.
+5. Add `search(query)` returning active page previews from FTS when query is present, otherwise recent pages.
 6. Add `file(path)` returning pages from `file_refs` using the same path matching semantics as `search --mentions`.
 7. Run `npm test -- viewer-api.test.ts`.
 

@@ -1,6 +1,6 @@
 ---
 title: Customer Segmentation
-summary: Customer segmentation defines the first CodeAlmanac customer groups by their project-memory pain, source locations, query moments, and product fit.
+description: Customer segmentation defines the first CodeAlmanac customer groups by their project-memory pain, source locations, query moments, and product fit.
 topics: [product-positioning]
 sources:
   - id: segmentation-session

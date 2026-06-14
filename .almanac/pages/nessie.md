@@ -1,6 +1,6 @@
 ---
 title: Nessie
-summary: Nessie is an AI-conversation memory layer that auto-syncs chats across tools and structures them into queryable context for humans and agents.
+description: Nessie is an AI-conversation memory layer that auto-syncs chats across tools and structures them into queryable context for humans and agents.
 topics: [product-positioning, competitive-research]
 sources:
   - id: nessie-home

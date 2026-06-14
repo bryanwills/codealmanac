@@ -190,7 +190,7 @@ topics: [architecture]
         "checkout-flow",
         `---
 title: Checkout Flow
-summary: Checkout flow summary for search results.
+description: Checkout flow description for search results.
 topics: [checkout, flows]
 files:
   - src/checkout/handler.ts
@@ -211,12 +211,12 @@ The handler at [[src/checkout/handler.ts]] validates things. See
 
       const db = openIndex(join(repo, ".almanac", "index.db"));
       try {
-        const pages = db.prepare("SELECT slug, title, summary FROM pages").all();
+        const pages = db.prepare("SELECT slug, title, description FROM pages").all();
         expect(pages).toEqual([
           {
             slug: "checkout-flow",
             title: "Checkout Flow",
-            summary: "Checkout flow summary for search results.",
+            description: "Checkout flow description for search results.",
           },
         ]);
 
@@ -580,21 +580,21 @@ Body.
       await scaffoldWiki(repo);
       await writePage(
         repo,
-        "summary-only",
+        "description-only",
         `---
-title: Summary Only
-summary: Operation harness terms live only in the summary.
+title: Description Only
+description: Operation harness terms live only in the description.
 topics: [x]
 ---
 
-# Summary Only
+# Description Only
 
 Body without the indexed phrase.
 `,
       );
 
       const dbPath = join(repo, ".almanac", "index.db");
-      const pagePath = join(repo, ".almanac", "pages", "summary-only.md");
+      const pagePath = join(repo, ".almanac", "pages", "description-only.md");
       const oldDb = new Database(dbPath);
       try {
         oldDb.exec(`
@@ -615,7 +615,7 @@ Body without the indexed phrase.
               (slug, title, file_path, content_hash, updated_at, archived_at, superseded_by)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
           )
-          .run("summary-only", "Summary Only", pagePath, "old-hash", 1, null, null);
+          .run("description-only", "Description Only", pagePath, "old-hash", 1, null, null);
       } finally {
         oldDb.close();
       }
@@ -626,19 +626,19 @@ Body without the indexed phrase.
       const db = openIndex(dbPath);
       try {
         const page = db
-          .prepare("SELECT summary, content_hash FROM pages WHERE slug = ?")
-          .get("summary-only") as
-          | { summary: string | null; content_hash: string }
+          .prepare("SELECT description, content_hash FROM pages WHERE slug = ?")
+          .get("description-only") as
+          | { description: string | null; content_hash: string }
           | undefined;
-        expect(page?.summary).toBe(
-          "Operation harness terms live only in the summary.",
+        expect(page?.description).toBe(
+          "Operation harness terms live only in the description.",
         );
         expect(page?.content_hash).not.toBe("old-hash");
 
         const fts = db
           .prepare("SELECT slug FROM fts_pages WHERE fts_pages MATCH ?")
           .all("operation* AND harness*");
-        expect(fts).toEqual([{ slug: "summary-only" }]);
+        expect(fts).toEqual([{ slug: "description-only" }]);
       } finally {
         db.close();
       }
@@ -651,7 +651,7 @@ Body without the indexed phrase.
       await scaffoldWiki(repo);
       const raw = `---
 title: Source Page
-summary: Source page summary.
+description: Source page description.
 topics: [x]
 sources:
   - id: schema
@@ -692,7 +692,7 @@ Body.
           .run(
             "source-page",
             "Source Page",
-            "Source page summary.",
+            "Source page description.",
             pagePath,
             createHash("sha256").update(raw).digest("hex"),
             1,

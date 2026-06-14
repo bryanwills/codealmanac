@@ -34,7 +34,7 @@ export async function gatherInstallChecks(
     key: "install.sqlite",
     message: sqlite.ok
       ? `better-sqlite3 native binding OK (Node ${nodeVersion})`
-      : `better-sqlite3 native binding failed: ${sqlite.summary}`,
+      : `better-sqlite3 native binding failed: ${sqlite.description}`,
     fix: sqlite.ok
       ? undefined
       : "run: npm rebuild better-sqlite3 (in the install directory)",

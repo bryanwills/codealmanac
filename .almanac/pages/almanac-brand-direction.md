@@ -1,6 +1,6 @@
 ---
 title: Almanac Brand Direction
-summary: "June 2026 brand work left Almanac with two active logo lanes: a celestial instrument symbol tied to the product name and a faceted negative-space letterform tied to the dev-tool lane."
+description: "June 2026 brand work left Almanac with two active logo lanes: a celestial instrument symbol tied to the product name and a faceted negative-space letterform tied to the dev-tool lane."
 topics: [product-positioning, decisions]
 sources:
   - id: celestial-mark-session

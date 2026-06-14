@@ -80,8 +80,8 @@ export async function runJobsShow(
         `Provider: ${view.provider}${view.model !== undefined ? `/${view.model}` : ""}`,
         `Elapsed: ${formatMs(view.elapsedMs)}`,
         `Log: ${view.logPath}`,
-        view.pageChanges?.summary !== undefined
-          ? `Summary: ${view.pageChanges.summary}`
+        view.pageChanges?.description !== undefined
+          ? `Description: ${view.pageChanges.description}`
           : undefined,
         ...formatPageChanges(view),
         view.failure !== undefined
@@ -187,8 +187,8 @@ export async function streamJobsAttach(
       view.displayStatus === "cancelled" ||
       view.displayStatus === "stale"
     ) {
-      const summary = terminalAttachSummary(view);
-      if (summary.length > 0) write(summary);
+      const message = terminalAttachMessage(view);
+      if (message.length > 0) write(message);
       return { stdout: "", stderr: "", exitCode: 0 };
     }
     await sleep(options.pollMs ?? 500);
@@ -345,7 +345,7 @@ function formatJobRows(views: JobView[]): string[] {
   });
 }
 
-function terminalAttachSummary(view: JobView): string {
+function terminalAttachMessage(view: JobView): string {
   if (view.displayStatus !== "failed" && view.displayStatus !== "stale") {
     return "";
   }

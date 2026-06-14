@@ -1,6 +1,6 @@
 ---
 title: Sync Ledger
-summary: >-
+description: >-
   The sync ledger is repo-local sweep state that dedupes transcript absorption, tracks pending
   cursors, and reconciles background job outcomes before advancing cursors.
 topics:

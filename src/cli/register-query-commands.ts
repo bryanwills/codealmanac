@@ -8,7 +8,7 @@ import {
   readStdin,
 } from "./helpers.js";
 
-export type SearchOutputMode = "slugs" | "summaries" | "json";
+export type SearchOutputMode = "slugs" | "descriptions" | "json";
 
 export function registerQueryCommands(program: Command): void {
   program
@@ -47,8 +47,8 @@ export function registerQueryCommands(program: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "emit structured JSON")
     .option("--slugs", "emit only result slugs, one per line")
-    .option("--summaries", "emit result slugs with one-line summaries")
-    .option("--verbose", "emit result slugs with one-line summaries")
+    .option("--descriptions", "emit result slugs with one-line descriptions")
+    .option("--verbose", "emit result slugs with one-line descriptions")
     .option("--limit <n>", "cap results", parsePositiveInt)
     .action(
       async (
@@ -64,7 +64,7 @@ export function registerQueryCommands(program: Command): void {
           wiki?: string;
           json?: boolean;
           slugs?: boolean;
-          summaries?: boolean;
+          descriptions?: boolean;
           verbose?: boolean;
           limit?: number;
         },
@@ -215,13 +215,13 @@ export function registerQueryCommands(program: Command): void {
 export function resolveSearchOutputMode(opts: {
   json?: boolean;
   slugs?: boolean;
-  summaries?: boolean;
+  descriptions?: boolean;
   verbose?: boolean;
 }): SearchOutputMode {
   if (opts.json === true) return "json";
   if (opts.slugs === true) return "slugs";
-  if (opts.summaries === true || opts.verbose === true) {
-    return "summaries";
+  if (opts.descriptions === true || opts.verbose === true) {
+    return "descriptions";
   }
   return "slugs";
 }

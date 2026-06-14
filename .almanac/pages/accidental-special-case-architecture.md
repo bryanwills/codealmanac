@@ -1,6 +1,6 @@
 ---
 title: Accidental Special-Case Architecture
-summary: >-
+description: >-
   CodeAlmanac treats one-off mechanisms as provisional architecture because AI-assisted
   implementation can leave locally effective special paths that were never deliberately accepted.
 topics:

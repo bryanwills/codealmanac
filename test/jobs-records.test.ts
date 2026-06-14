@@ -131,7 +131,7 @@ describe("job records", () => {
     });
   });
 
-  it("finishes job records with duration and summary", async () => {
+  it("finishes job records with duration and page-change description", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "finish-record");
       await scaffoldWiki(repo);
@@ -160,14 +160,14 @@ describe("job records", () => {
           updated: ["sync-flow", "process-manager-runs"],
           archived: [],
           deleted: [],
-          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
+          description: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
         operationOutput: {
           version: 1,
           contract: "almanac_operation_report_v1",
           value: {
             version: 1,
-            summary: "### Almanac updated",
+            description: "### Almanac updated",
           },
         },
       });
@@ -181,12 +181,12 @@ describe("job records", () => {
         pageChanges: {
           created: ["new-page"],
           updated: ["sync-flow", "process-manager-runs"],
-          summary: "Updated sync/run lifecycle docs after scheduled absorb.",
+          description: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
         operationOutput: {
           contract: "almanac_operation_report_v1",
           value: {
-            summary: "### Almanac updated",
+            description: "### Almanac updated",
           },
         },
       });

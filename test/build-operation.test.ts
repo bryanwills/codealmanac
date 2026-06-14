@@ -43,7 +43,7 @@ describe("build operation", () => {
       expect(spec.prompt).toContain("Page Selection And Organization");
       expect(spec.prompt).toContain("Page Syntax And Writing Conventions");
       expect(spec.prompt).toContain("Source Control Hygiene");
-      expect(spec.prompt).toContain("almanac: <imperative one-line summary>");
+      expect(spec.prompt).toContain("almanac: <imperative one-line description>");
       expect(spec.prompt).toContain("Auto-commit wiki source changes: enabled");
       expect(spec.prompt).toContain(
         "If durable wiki source files changed, commit only `docs/almanac/`, `.almanac/review.yaml`, and any legacy `.almanac/pages/` or `.almanac/topics.yaml` files you intentionally maintained",

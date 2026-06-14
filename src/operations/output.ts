@@ -4,9 +4,9 @@ import {
   parseAlmanacOperationReport,
 } from "./reports.js";
 
-export function summarizeOperationOutput(
+export function describeOperationOutput(
   output: JobOperationOutput | undefined,
 ): string | undefined {
   if (output?.contract !== ALMANAC_OPERATION_REPORT_NAME) return undefined;
-  return parseAlmanacOperationReport(output.value).summary;
+  return parseAlmanacOperationReport(output.value).description;
 }

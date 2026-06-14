@@ -524,15 +524,15 @@ git commit -m "refactor: simplify sqlite-free cli recovery"
 
 ```ts
 // src/wiki/query/pages.ts
-export interface PageSummary { ... }
-export function recentPages(db, options): PageSummary[] { ... }
-export function searchPages(db, options): PageSummary[] { ... }
-export function pagesMentioningPath(db, path, options): PageSummary[] { ... }
+export interface PagePreview { ... }
+export function recentPages(db, options): PagePreview[] { ... }
+export function searchPages(db, options): PagePreview[] { ... }
+export function pagesMentioningPath(db, path, options): PagePreview[] { ... }
 
 // src/wiki/query/topics.ts
 export function topicSummaries(db, options): TopicSummary[] { ... }
 export function topicDetail(db, slug, options): TopicDetail | null { ... }
-export function pagesForTopicSubtree(db, slug, options): PageSummary[] { ... }
+export function pagesForTopicSubtree(db, slug, options): PagePreview[] { ... }
 ```
 
 `src/viewer/server.ts` composes APIs. `almanac serve` help should say either "local Almanac console" or be scoped down to current wiki. Recommended decision: call it local console, because it already exposes global registry/jobs/review behavior.
@@ -544,7 +544,7 @@ Add tests asserting CLI and viewer agree on:
 - archive filters;
 - topic counts;
 - file mention semantics;
-- page summary slugs/titles/topics;
+- page description slugs/titles/topics;
 - topic subtree page membership.
 
 Use existing fixtures from `test/helpers.ts`.

@@ -46,7 +46,7 @@ export function mapCodexAppServerNotification(
 
   if (notification.method === "item/plan/delta") {
     const delta = stringField(params, "delta");
-    return delta !== undefined ? [{ type: "tool_summary", summary: delta, actor }] : [];
+    return delta !== undefined ? [{ type: "tool_description", description: delta, actor }] : [];
   }
 
   if (notification.method === "turn/plan/updated") {
@@ -56,8 +56,8 @@ export function mapCodexAppServerNotification(
           .map((step) => stringField(asRecord(step), "step"))
           .filter((step): step is string => step !== undefined)
       : [];
-    const summary = [explanation, ...plan].filter(Boolean).join(" | ");
-    return summary.length > 0 ? [{ type: "tool_summary", summary, actor }] : [];
+    const description = [explanation, ...plan].filter(Boolean).join(" | ");
+    return description.length > 0 ? [{ type: "tool_description", description, actor }] : [];
   }
 
   if (notification.method === "thread/tokenUsage/updated") {
@@ -150,7 +150,7 @@ export function mapCodexAppServerNotification(
     const delta =
       stringField(params, "delta") ?? decodeBase64(stringField(params, "deltaBase64"));
     return delta !== undefined && delta.trim().length > 0
-      ? [{ type: "tool_summary", summary: delta.trim(), actor }]
+      ? [{ type: "tool_description", description: delta.trim(), actor }]
       : [];
   }
 
@@ -180,7 +180,7 @@ export function mapCodexAppServerNotification(
 
   if (notification.method === "warning") {
     const message = stringField(params, "message") ?? "Codex warning";
-    return [{ type: "tool_summary", summary: `Warning: ${message}`, actor }];
+    return [{ type: "tool_description", description: `Warning: ${message}`, actor }];
   }
 
   if (notification.method === "error") {

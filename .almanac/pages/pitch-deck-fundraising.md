@@ -1,6 +1,6 @@
 ---
 title: Pitch Deck Fundraising
-summary: >-
+description: >-
   Investor decks for CodeAlmanac should use a 10-15 slide narrative spine that earns a meeting, not
   a comprehensive product explanation.
 topics:

@@ -166,7 +166,7 @@ describe("job worker background execution", () => {
           updated: [],
           archived: [],
           deleted: [],
-          summary: "garden",
+          description: "garden",
         },
       });
       await expect(readFile(result!.logPath, "utf8")).resolves.toContain(

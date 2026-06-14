@@ -1,6 +1,6 @@
 ---
 title: Open-Source Almanac
-summary: >-
+description: >-
   Open-source Almanac is the free public-repo product direction where CodeAlmanac reduces maintainer
   attention cost by giving contributors and AI agents reviewed project memory before they open
   issues or pull requests.

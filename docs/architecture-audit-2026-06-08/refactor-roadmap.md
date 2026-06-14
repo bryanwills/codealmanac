@@ -153,7 +153,7 @@ Implementation direction:
 
 - Add `src/wiki/query/pages.ts`.
 - Add `src/wiki/query/topics.ts`.
-- Move page summary, topic detail, topic list/count, and path mention
+- Move page description, topic detail, topic list/count, and path mention
   projections out of CLI/viewer modules.
 - Split `src/viewer/api.ts` into wiki, jobs, review, and connections modules.
 - Decide whether `serve` is global local console or current-wiki viewer and
@@ -162,7 +162,7 @@ Implementation direction:
 Tests:
 
 - CLI `search`, `show`, `topics`, and viewer API agree on archive filters,
-  topic counts, file mention semantics, and page summaries.
+  topic counts, file mention semantics, and page previews.
 - Global viewer behavior is covered if retained.
 - Binding help/docs reflect exposed scope.
 

@@ -188,7 +188,7 @@ describe("Claude harness provider", () => {
             permission_denials: [],
             structured_output: {
               version: 1,
-              summary: "### Almanac updated\n\nChanged one page.",
+              description: "### Almanac updated\n\nChanged one page.",
             },
             uuid: "uuid",
             session_id: "claude-session",
@@ -209,9 +209,9 @@ describe("Claude harness provider", () => {
             type: "object",
             properties: {
               version: { type: "number", enum: [1] },
-              summary: { type: "string" },
+              description: { type: "string" },
             },
-            required: ["version", "summary"],
+            required: ["version", "description"],
           },
         },
         metadata: { operation: "absorb" },
@@ -226,7 +226,7 @@ describe("Claude harness provider", () => {
         text: "final text",
         value: {
           version: 1,
-          summary: "### Almanac updated\n\nChanged one page.",
+          description: "### Almanac updated\n\nChanged one page.",
         },
       },
     });
@@ -236,7 +236,7 @@ describe("Claude harness provider", () => {
         schema: {
           type: "object",
           properties: {
-            summary: { type: "string" },
+            description: { type: "string" },
           },
         },
       },
@@ -547,7 +547,7 @@ describe("Claude harness provider", () => {
         isError: undefined,
         actor: expect.objectContaining({ role: "root" }),
       },
-      { type: "tool_summary", summary: "read package.json", actor: expect.objectContaining({ role: "root" }) },
+      { type: "tool_description", description: "read package.json", actor: expect.objectContaining({ role: "root" }) },
       {
         type: "done",
         result: "done",

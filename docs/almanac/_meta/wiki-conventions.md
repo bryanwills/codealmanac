@@ -20,7 +20,7 @@ folder, naming, source, citation, migration, or coverage rules change.
 - `docs/almanac/topics.yaml` is the canonical topic file.
 - `.almanac/` stores runtime state and legacy pages during migration.
 - New pages use `page_id`, `title`, `topics`, and `sources`.
-- `summary` is optional; the lead should usually summarize the page.
+- `description` is optional; the lead should usually preview the page.
 - `_manual/` explains how to maintain the wiki.
 - `_meta/` records conventions, coverage, migration state, and source gaps.
 

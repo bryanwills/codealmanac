@@ -38,7 +38,7 @@ rl.on("line", (line) => {
     return;
   }
   if (msg.method === "turn/start") {
-    if (msg.params.outputSchema?.properties?.summary?.type !== "string") {
+    if (msg.params.outputSchema?.properties?.description?.type !== "string") {
       send({ method: "error", params: { error: { message: "missing output schema" } } });
       return;
     }
@@ -51,7 +51,7 @@ rl.on("line", (line) => {
         item: {
           type: "agentMessage",
           id: "msg-1",
-          text: "{\\"version\\":1,\\"summary\\":\\"### Almanac updated\\\\n\\\\nChanged one page.\\"}"
+          text: "{\\"version\\":1,\\"description\\":\\"### Almanac updated\\\\n\\\\nChanged one page.\\"}"
         }
       }
     });
@@ -85,9 +85,9 @@ rl.on("line", (line) => {
                 type: "object",
                 properties: {
                   version: { type: "number", enum: [1] },
-                  summary: { type: "string" },
+                  description: { type: "string" },
                 },
-                required: ["version", "summary"],
+                required: ["version", "description"],
               },
             },
             metadata: { operation: "absorb" },
@@ -105,7 +105,7 @@ rl.on("line", (line) => {
           name: "almanac_operation_report_v1",
           value: {
             version: 1,
-            summary: "### Almanac updated\n\nChanged one page.",
+            description: "### Almanac updated\n\nChanged one page.",
           },
         },
       });
@@ -343,8 +343,8 @@ rl.on("line", (line) => {
       ),
     ).toMatchObject([
       {
-        type: "tool_summary",
-        summary: "Warning: auth token refresh failed but turn continues",
+        type: "tool_description",
+        description: "Warning: auth token refresh failed but turn continues",
         actor: expect.objectContaining({ role: "unknown" }),
       },
     ]);
@@ -530,8 +530,8 @@ rl.on("line", (line) => {
             }),
           }),
           expect.objectContaining({
-            type: "tool_summary",
-            summary: "Warning: non-terminal warning",
+            type: "tool_description",
+            description: "Warning: non-terminal warning",
           }),
           expect.objectContaining({ type: "text_delta", content: "done" }),
           expect.objectContaining({ type: "text", content: "final text" }),

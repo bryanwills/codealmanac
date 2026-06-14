@@ -1,6 +1,6 @@
 ---
 title: Almanac Product Family
-summary: Almanac is the product name for project-scoped, maintained knowledge layers whose user-facing loop is adding sources and querying knowledge.
+description: Almanac is the product name for project-scoped, maintained knowledge layers whose user-facing loop is adding sources and querying knowledge.
 topics: [product-positioning, wiki-design]
 sources:
   - id: product-scope-session

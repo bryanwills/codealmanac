@@ -5,7 +5,7 @@ import {
   reviewYamlPath,
   type ReviewItem,
   type ReviewStatus,
-  summaryFromMarkdown,
+  descriptionFromMarkdown,
   writeReviewFile,
 } from "../../review/store.js";
 import type { CommandResult } from "../helpers.js";
@@ -39,16 +39,16 @@ export async function runReviewAdd(
   const markdown = readMarkdown(options);
   if (markdown === null) return missingMarkdown("review add");
 
-  const summary = summaryFromMarkdown(markdown);
-  if (summary.length === 0) return missingMarkdown("review add");
+  const description = descriptionFromMarkdown(markdown);
+  if (description.length === 0) return missingMarkdown("review add");
 
   const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
   const path = reviewYamlPath(repoRoot);
   const file = await loadReviewFile(path);
   const item: ReviewItem = {
-    id: nextReviewId(summary, file.items),
+    id: nextReviewId(description, file.items),
     status: "open",
-    summary,
+    description,
     created_at: timestamp(options.now),
     body: markdown,
     decided_at: null,
@@ -86,7 +86,7 @@ export async function runReviewList(
 
   return ok(
     items
-      .map((item) => `${item.status.padEnd(7)} ${item.id}  ${item.summary}`)
+      .map((item) => `${item.status.padEnd(7)} ${item.id}  ${item.description}`)
       .join("\n") + "\n",
   );
 }
@@ -193,7 +193,7 @@ function renderReviewItem(item: ReviewItem): string {
   const lines = [
     `id: ${item.id}`,
     `status: ${item.status}`,
-    `summary: ${item.summary}`,
+    `description: ${item.description}`,
     `created: ${item.created_at}`,
   ];
   if (item.decided_at !== null) lines.push(`decided: ${item.decided_at}`);

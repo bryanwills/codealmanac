@@ -597,7 +597,7 @@ a { color: var(--ca-accent); text-decoration: none; }
   color: var(--ca-accent);
 }
 
-.ca-page-card-summary {
+.ca-page-card-description {
   position: relative;
   margin: 0;
   display: -webkit-box;
@@ -612,8 +612,8 @@ a { color: var(--ca-accent); text-decoration: none; }
   letter-spacing: -0.001em;
 }
 
-.ca-page-card-summary code,
-.ca-page-card-summary .ca-file-code {
+.ca-page-card-description code,
+.ca-page-card-description .ca-file-code {
   display: inline;
   padding: 1px 5px;
   border-radius: 3px;
@@ -623,7 +623,7 @@ a { color: var(--ca-accent); text-decoration: none; }
   font-size: 0.86em;
 }
 
-.ca-page-card-summary-empty {
+.ca-page-card-description-empty {
   color: var(--ca-faint);
   font-family: var(--ca-italic);
   font-style: italic;
@@ -1004,7 +1004,7 @@ a { color: var(--ca-accent); text-decoration: none; }
   margin: 0 auto;
 }
 
-.ca-article-summary {
+.ca-article-description {
   margin: 0 0 18px;
   color: var(--ca-muted);
   font-family: var(--ca-italic);

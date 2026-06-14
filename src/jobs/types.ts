@@ -23,7 +23,7 @@ export interface JobPageChanges {
   updated: string[];
   archived: string[];
   deleted: string[];
-  summary?: string;
+  description?: string;
 }
 
 export interface JobOperationOutput {

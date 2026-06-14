@@ -151,7 +151,7 @@ export async function runTag(options: TagOptions): Promise<TagCommandOutput> {
     await writeTopicsFile(yamlPath, file);
   }
 
-  const summary: string[] = [];
+  const messages: string[] = [];
   let taggedPages = 0;
   for (const { page, filePath } of resolved) {
     const result = await rewritePageTopics(filePath, (current) => {
@@ -168,9 +168,9 @@ export async function runTag(options: TagOptions): Promise<TagCommandOutput> {
       // Reporting every requested topic (including ones the page
       // already had) reads like false positives in commit diffs.
       const added = result.after.filter((t) => !result.before.includes(t));
-      summary.push(`tagged ${page}: ${added.join(", ")}`);
+      messages.push(`tagged ${page}: ${added.join(", ")}`);
     } else {
-      summary.push(
+      messages.push(
         `no change ${page} (already tagged with ${topics.join(", ")})`,
       );
     }
@@ -185,7 +185,7 @@ export async function runTag(options: TagOptions): Promise<TagCommandOutput> {
 
   const stderr = missing.map((p) => `almanac: no such page "${p}"\n`).join("");
   return {
-    stdout: summary.length > 0 ? `${summary.join("\n")}\n` : "",
+    stdout: messages.length > 0 ? `${messages.join("\n")}\n` : "",
     stderr,
     exitCode: missing.length > 0 ? 1 : 0,
   };

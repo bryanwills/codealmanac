@@ -1,6 +1,6 @@
 ---
 title: Legacy SessionEnd Hook
-summary: Hook-based auto-capture is historical; scheduler-backed quiet-session sync supersedes it.
+description: Hook-based auto-capture is historical; scheduler-backed quiet-session sync supersedes it.
 topics: [agents, flows, cli]
 sources:
   - id: automation-command

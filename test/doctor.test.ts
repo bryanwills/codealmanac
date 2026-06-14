@@ -48,7 +48,7 @@ const LOGGED_IN_STDOUT = JSON.stringify({
   subscriptionType: "Pro",
 });
 const LOGGED_OUT_STDOUT = JSON.stringify({ loggedIn: false });
-const SQLITE_OK = { ok: true, summary: "native binding loads cleanly" };
+const SQLITE_OK = { ok: true, description: "native binding loads cleanly" };
 
 async function scaffoldHealthyInstall(home: string): Promise<{
   claudeDir: string;

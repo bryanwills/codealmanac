@@ -1,6 +1,6 @@
 ---
 title: Deep Refactor Audit
-summary: The deep refactor audit skill is a repo-owned agent workflow for no-code architecture critique that forces feature, dependency, hand-rolled machinery, and accidental-complexity questions before implementation.
+description: The deep refactor audit skill is a repo-owned agent workflow for no-code architecture critique that forces feature, dependency, hand-rolled machinery, and accidental-complexity questions before implementation.
 topics: [agents, prompt-system, decisions]
 sources:
   - id: repo-skill

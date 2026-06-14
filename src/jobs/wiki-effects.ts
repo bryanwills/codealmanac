@@ -1,6 +1,6 @@
 import type { HarnessResult } from "../harness/events.js";
 import type { FinalOutputResult } from "../harness/final-output.js";
-import { summarizeOperationOutput } from "../operations/output.js";
+import { describeOperationOutput } from "../operations/output.js";
 import { runIndexer } from "../wiki/indexer/index.js";
 import { diffPageSnapshots, snapshotWikiPages } from "./snapshots.js";
 import type {
@@ -45,9 +45,9 @@ export async function collectJobWikiEffects(args: {
     usage: args.result.usage,
   };
   const operationOutput = jobOperationOutput(args.result.output);
-  const resultSummary =
-    summarizeOperationOutput(operationOutput) ??
-    harnessResultSummary(args.result.result);
+  const resultDescription =
+    describeOperationOutput(operationOutput) ??
+    harnessResultDescription(args.result.result);
   const pageChanges: JobPageChanges = {
     version: 1,
     jobId: args.jobId,
@@ -55,7 +55,7 @@ export async function collectJobWikiEffects(args: {
     updated: delta.updated,
     archived: delta.archived,
     deleted: delta.deleted,
-    ...(resultSummary !== undefined ? { summary: resultSummary } : {}),
+    ...(resultDescription !== undefined ? { description: resultDescription } : {}),
   };
   return { summary, pageChanges, operationOutput };
 }
@@ -64,7 +64,7 @@ export async function reindexSuccessfulJob(repoRoot: string): Promise<void> {
   await runIndexer({ repoRoot });
 }
 
-function harnessResultSummary(result: string): string | undefined {
+function harnessResultDescription(result: string): string | undefined {
   for (const rawLine of result.split(/\r?\n/)) {
     const line = rawLine.replace(/^#+\s*/, "").trim();
     if (line.length === 0 || line === "---") continue;

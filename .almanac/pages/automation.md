@@ -1,6 +1,6 @@
 ---
 title: Automation
-summary: >-
+description: >-
   Automation is the macOS launchd layer that schedules known Almanac maintenance tasks: sync,
   Garden, and opt-in self-update.
 topics:

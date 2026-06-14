@@ -273,7 +273,7 @@ function isJobPageChanges(value: unknown): value is JobPageChanges {
     isStringArray(v.updated) &&
     isStringArray(v.archived) &&
     isStringArray(v.deleted) &&
-    (v.summary === undefined || typeof v.summary === "string")
+    (v.description === undefined || typeof v.description === "string")
   );
 }
 
