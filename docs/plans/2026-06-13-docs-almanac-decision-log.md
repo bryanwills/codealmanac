@@ -73,3 +73,37 @@ semantically migrated.
 
 Why: the structure should be visible now, while full migration remains a
 separate content-quality task.
+
+## 9. Repo Detection Uses Tracked Docs Or Runtime State
+
+A repo is an Almanac wiki when it has either `.almanac/` runtime state or a
+tracked canonical marker such as `docs/almanac/README.md` or
+`docs/almanac/topics.yaml`.
+
+Why: after a clean clone, empty `.almanac/` runtime directories may not exist,
+but the tracked documentation wiki still must be discoverable from subfolders.
+
+## 10. Legacy Topic Writes Stay Legacy Until Canonical Topics Exist
+
+Topic mutation commands write `docs/almanac/topics.yaml` only when that
+canonical file exists or the repo is already a canonical docs wiki without a
+legacy topics file. Legacy-only repos keep writing `.almanac/topics.yaml`.
+
+Why: a single `tag` or `topics create` command must not create a partial
+canonical topic file that shadows a richer legacy topic DAG.
+
+## 11. Health Uses `page_id` For Collision Checks
+
+`almanac health` checks slug collisions across all wiki content roots and uses
+`page_id` before filenames.
+
+Why: nested docs pages often use `README.md`; collision detection must match the
+same page identity model as the indexer.
+
+## 12. Viewer Front Door Means README
+
+The viewer now treats the canonical front door as the README-backed page and
+falls back to legacy `getting-started` only for old wikis.
+
+Why: Build no longer creates `getting-started.md`, but old viewer URLs should
+still avoid a hard break during migration.

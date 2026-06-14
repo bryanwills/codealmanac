@@ -1,8 +1,7 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 import { UserFacingError } from "../../errors.js";
-import { findNearestAlmanacDir } from "../../paths.js";
+import { findNearestAlmanacDir, hasRepoAlmanacMarker } from "../../paths.js";
 import { findEntry } from "../registry/index.js";
 
 /**
@@ -38,7 +37,7 @@ export async function resolveWikiRoot(params: {
         { data: { wiki: params.wiki } },
       );
     }
-    if (!existsSync(join(entry.path, ".almanac"))) {
+    if (!existsSync(entry.path) || !hasRepoAlmanacMarker(entry.path)) {
       throw new UserFacingError(
         `wiki "${params.wiki}" path is unreachable (${entry.path})`,
         { data: { wiki: params.wiki, path: entry.path } },

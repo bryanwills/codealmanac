@@ -166,7 +166,7 @@ export async function writeTopicsFile(
   };
 
   const header =
-    `# .almanac/topics.yaml — source of truth for topic metadata.\n` +
+    `# topics.yaml — source of truth for topic metadata.\n` +
     `# Managed by \`almanac topics\` commands. User-added comments\n` +
     `# between entries will be stripped on the next write (js-yaml\n` +
     `# doesn't round-trip comments). Edit at your own risk — or use the\n` +

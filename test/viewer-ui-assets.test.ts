@@ -28,6 +28,7 @@ describe("viewer UI assets", () => {
     expect(indexHtml).not.toContain("Backlinks");
     expect(indexHtml).not.toContain("recent-list");
     expect(appJs).not.toContain("recentList");
+    expect(appJs).toContain("featuredPages?.frontDoor");
     expect(appJs).toContain("featuredPages?.gettingStarted");
     expect(appJs).not.toContain("featuredPages?.projectOverview");
     expect(appJs).not.toContain("projectOverview");
@@ -45,7 +46,9 @@ describe("viewer UI assets", () => {
     expect(appJs).toContain("ca-topic-strip");
     expect(appJs).toContain("state.overview.featuredPages");
     expect(appJs).toContain('wikiPath === "/getting-started"');
-    expect(appJs).toContain("renderGettingStarted");
+    expect(appJs).toContain("renderFrontDoor");
+    expect(appJs).toContain("docs/almanac/README.md");
+    expect(appJs).not.toContain(".almanac/pages/getting-started.md");
     expect(appJs).toContain("renderPageActions");
     expect(appJs).toContain("goBack");
     expect(appJs).toContain("almanacHistoryIndex");

@@ -184,6 +184,42 @@ describe("almanac health", () => {
     });
   });
 
+  it("reports slug-collisions from duplicate docs/almanac page_id values", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await mkdir(join(repo, "docs", "almanac", "architecture"), {
+        recursive: true,
+      });
+      await mkdir(join(repo, "docs", "almanac", "guides"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(repo, "docs", "almanac", "README.md"),
+        "---\npage_id: codebase-wiki\n---\n\n# Codebase Wiki\n",
+        "utf8",
+      );
+      await writeFile(
+        join(repo, "docs", "almanac", "architecture", "README.md"),
+        "---\npage_id: duplicate\n---\n\n# Architecture\n\nBody.\n",
+        "utf8",
+      );
+      await writeFile(
+        join(repo, "docs", "almanac", "guides", "README.md"),
+        "---\npage_id: duplicate\n---\n\n# Guides\n\nBody.\n",
+        "utf8",
+      );
+
+      const result = await runHealth({ cwd: repo, json: true });
+      const report = JSON.parse(result.stdout);
+      expect(report.slug_collisions).toEqual([
+        {
+          slug: "duplicate",
+          paths: ["architecture/README.md", "guides/README.md"],
+        },
+      ]);
+    });
+  });
+
   it("--topic scopes page-scoped categories to the subtree", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

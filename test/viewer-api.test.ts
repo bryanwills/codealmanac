@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -90,6 +90,7 @@ describe("viewer api", () => {
       expect(overview.topics.find((t) => t.slug === "systems")?.parents).toEqual([]);
       expect(overview.topics.find((t) => t.slug === "storage")?.parents).toEqual(["systems"]);
       expect(overview.topics.find((t) => t.slug === "agents")?.parents).toEqual(["systems"]);
+      expect(overview.featuredPages.frontDoor).toBeNull();
       expect(overview.featuredPages.gettingStarted).toBeNull();
 
       const page = await api.page("sqlite-indexer");
@@ -181,7 +182,24 @@ items:
     });
   });
 
-  it("reports markdown-backed getting-started when it exists", async () => {
+  it("reports markdown-backed front door when docs/almanac README exists", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+      await writeFile(
+        join(repo, "docs", "almanac", "README.md"),
+        "---\npage_id: codebase-wiki\ntitle: Codebase Wiki\ntopics: [concepts]\n---\n\n# Codebase Wiki\n\nStart here.\n",
+      );
+
+      const api = createViewerApi({ repoRoot: repo });
+      const overview = await api.overview();
+
+      expect(overview.featuredPages.frontDoor?.slug).toBe("codebase-wiki");
+      expect(overview.featuredPages.gettingStarted).toBeNull();
+    });
+  });
+
+  it("uses legacy getting-started as the front-door fallback", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
@@ -194,6 +212,7 @@ items:
       const api = createViewerApi({ repoRoot: repo });
       const overview = await api.overview();
 
+      expect(overview.featuredPages.frontDoor?.slug).toBe("getting-started");
       expect(overview.featuredPages.gettingStarted?.slug).toBe("getting-started");
     });
   });

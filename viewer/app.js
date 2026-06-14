@@ -157,7 +157,7 @@ async function route(pathname, search = "", push = true) {
   }
 
   if (wikiPath === "/getting-started") {
-    await renderGettingStarted();
+    await renderFrontDoor();
     clearPageRail();
     return;
   }
@@ -461,23 +461,24 @@ async function optionalPage(summary) {
   }
 }
 
-async function renderGettingStarted() {
-  const gettingStarted = await optionalPage(
-    state.overview.featuredPages?.gettingStarted,
+async function renderFrontDoor() {
+  const frontDoor = await optionalPage(
+    state.overview.featuredPages?.frontDoor
+      ?? state.overview.featuredPages?.gettingStarted,
   );
-  if (gettingStarted !== null) {
-    rememberPages([gettingStarted]);
-    renderPageArticle(gettingStarted);
+  if (frontDoor !== null) {
+    rememberPages([frontDoor]);
+    renderPageArticle(frontDoor);
     return;
   }
 
-  document.title = `Getting started — ${state.currentWiki}`;
+  document.title = `Wiki front door — ${state.currentWiki}`;
   els.reader.innerHTML = `
     ${renderPageActions(wikiRoute("/"))}
     <section class="ca-hero">
-      <h1 class="ca-display-h1">No getting started page</h1>
+      <h1 class="ca-display-h1">No wiki front door</h1>
       <p class="ca-lede">
-        Add <span class="ca-file-code">.almanac/pages/getting-started.md</span> to show page content here.
+        Add <span class="ca-file-code">docs/almanac/README.md</span> to show page content here.
       </p>
     </section>
   `;

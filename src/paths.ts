@@ -2,6 +2,12 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import {
+  CANONICAL_WIKI_DIR,
+  RUNTIME_DIR,
+  TOPICS_YAML,
+} from "./wiki/locations.js";
+
 /**
  * Absolute path to the user-level `~/.almanac/` directory.
  *
@@ -30,14 +36,32 @@ export function getRegistryPath(): string {
  * to walk upward like git does.
  */
 export function getRepoAlmanacDir(cwd: string): string {
-  return join(cwd, ".almanac");
+  return join(cwd, RUNTIME_DIR);
 }
 
 /**
- * Walk upward from `startDir` looking for a directory that contains
- * `.almanac/`. Returns the absolute path to the repo root (the directory
- * containing `.almanac/`), or `null` if none is found before hitting the
- * filesystem root.
+ * True when `repoRoot` has either the legacy/runtime marker or the canonical
+ * tracked docs wiki marker.
+ *
+ * `docs/almanac/README.md` and `docs/almanac/topics.yaml` are used as markers
+ * instead of the directory alone so a random empty `docs/almanac/` folder does
+ * not automatically become a wiki root.
+ */
+export function hasRepoAlmanacMarker(repoRoot: string): boolean {
+  const runtime = join(repoRoot, RUNTIME_DIR);
+  if (runtime !== getGlobalAlmanacDir() && existsSync(runtime)) {
+    return true;
+  }
+  return (
+    existsSync(join(repoRoot, CANONICAL_WIKI_DIR, "README.md")) ||
+    existsSync(join(repoRoot, CANONICAL_WIKI_DIR, TOPICS_YAML))
+  );
+}
+
+/**
+ * Walk upward from `startDir` looking for a directory that contains an Almanac
+ * wiki marker. Returns the absolute path to the repo root, or `null` if none
+ * is found before hitting the filesystem root.
  *
  * Mirrors how `git` locates the enclosing repository. This lets `almanac`
  * work from any subdirectory inside a repo, not just the root.
@@ -56,8 +80,12 @@ export function findNearestAlmanacDir(startDir: string): string | null {
   // Walk until we hit the filesystem root. `dirname("/")` returns `"/"`,
   // so the loop terminates when we stop ascending.
   while (true) {
-    const candidate = join(current, ".almanac");
-    if (candidate !== globalDir && existsSync(candidate)) {
+    const candidate = join(current, RUNTIME_DIR);
+    if (
+      (candidate !== globalDir && existsSync(candidate)) ||
+      existsSync(join(current, CANONICAL_WIKI_DIR, "README.md")) ||
+      existsSync(join(current, CANONICAL_WIKI_DIR, TOPICS_YAML))
+    ) {
       return current;
     }
     const parent = dirname(current);

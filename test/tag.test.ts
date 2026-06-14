@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -57,6 +57,45 @@ describe("almanac tag / untag", () => {
       const t = file.topics.find((x) => x.slug === "brand-new");
       expect(t).toBeDefined();
       expect(t?.title).toBe("Brand New");
+    });
+  });
+
+  it("keeps legacy topics.yaml as the write target in legacy-only repos", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await scaffoldWiki(repo);
+      await writeFile(
+        join(repo, ".almanac", "topics.yaml"),
+        `topics:
+  - slug: systems
+    title: Systems
+    description: Custom subsystems.
+    parents: []
+  - slug: storage
+    title: Storage
+    description: Persistence layer.
+    parents: [systems]
+`,
+        "utf8",
+      );
+      await writePage(repo, "doc", "---\ntopics: [storage]\n---\n\nbody content.\n");
+      await runIndexer({ repoRoot: repo });
+
+      await runTag({
+        cwd: repo,
+        page: "doc",
+        topics: ["brand-new"],
+      });
+
+      expect(existsSync(join(repo, "docs", "almanac", "topics.yaml"))).toBe(false);
+      const file = await loadTopicsFile(join(repo, ".almanac", "topics.yaml"));
+      expect(file.topics.find((t) => t.slug === "systems")?.title).toBe("Systems");
+      expect(file.topics.find((t) => t.slug === "storage")?.parents).toEqual([
+        "systems",
+      ]);
+      expect(file.topics.find((t) => t.slug === "brand-new")?.title).toBe(
+        "Brand New",
+      );
     });
   });
 

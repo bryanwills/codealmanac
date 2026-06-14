@@ -10,6 +10,7 @@ import type {
 } from "../src/agent/readiness/providers/claude/index.js";
 import { hasImportLine, runSetup } from "../src/cli/commands/setup/index.js";
 import { runAutomationSetupStep } from "../src/cli/commands/setup/automation-step.js";
+import { countExistingPages } from "../src/cli/commands/setup/next-steps.js";
 import { readConfig, writeConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 
@@ -85,6 +86,23 @@ afterEach(() => {
 });
 
 describe("codealmanac setup", () => {
+  it("counts docs/almanac pages for setup next steps", async () => {
+    await withTempHome(async (home) => {
+      const repo = join(home, "repo");
+      await mkdir(join(repo, "docs", "almanac", "architecture"), {
+        recursive: true,
+      });
+      await mkdir(join(repo, "src"), { recursive: true });
+      await writeFile(join(repo, "docs", "almanac", "README.md"), "# Wiki\n");
+      await writeFile(
+        join(repo, "docs", "almanac", "architecture", "README.md"),
+        "# Architecture\n",
+      );
+
+      expect(countExistingPages(join(repo, "src"))).toBe(2);
+    });
+  });
+
   it("installs automation + guides + CLAUDE.md import when --yes", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);

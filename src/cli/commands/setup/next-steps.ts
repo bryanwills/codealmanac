@@ -1,5 +1,8 @@
-import { existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import path from "node:path";
+
+import { findNearestAlmanacDir } from "../../../paths.js";
+import { wikiPageRoots } from "../../../wiki/locations.js";
 
 const RST = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -63,29 +66,32 @@ export function printNextSteps(
 }
 
 /**
- * Count `.md` files in `.almanac/pages/` under the current working
- * directory or any parent. Returns 0 when no wiki is found or the pages
- * directory is empty.
+ * Count `.md` wiki files under the current working directory or any parent.
+ * Returns 0 when no wiki is found or the content roots are empty.
  */
 export function countExistingPages(cwd: string): number {
   try {
-    let dir = cwd;
-    for (let i = 0; i < 10; i++) {
-      const pagesDir = path.join(dir, ".almanac", "pages");
-      if (existsSync(pagesDir)) {
-        try {
-          const entries = readdirSync(pagesDir);
-          return entries.filter((e) => e.endsWith(".md")).length;
-        } catch {
-          return 0;
-        }
-      }
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
+    const repoRoot = findNearestAlmanacDir(cwd);
+    if (repoRoot === null) return 0;
+    return wikiPageRoots(repoRoot).reduce(
+      (count, root) => count + countMarkdownFiles(root.dir),
+      0,
+    );
   } catch {
     // Swallow — never crash setup because of this.
   }
   return 0;
+}
+
+function countMarkdownFiles(dir: string): number {
+  let count = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      count += countMarkdownFiles(fullPath);
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      count += 1;
+    }
+  }
+  return count;
 }

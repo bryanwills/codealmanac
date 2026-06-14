@@ -12,6 +12,13 @@ import { findEntry } from "../registry/index.js";
 import { toKebabCase } from "../../slug.js";
 import * as sources from "../sources/index.js";
 import {
+  hasRepoAlmanacMarker,
+} from "../../paths.js";
+import {
+  wikiPageRoots,
+  type WikiPageRoot,
+} from "../locations.js";
+import {
   inPageScope,
   resolveHealthScope,
   type HealthScope,
@@ -58,7 +65,6 @@ export async function collectHealthReport(
 ): Promise<HealthReport> {
   const repoRoot = options.repoRoot;
   const almanacDir = join(repoRoot, ".almanac");
-  const pagesDir = join(almanacDir, "pages");
   const staleSeconds = options.staleSeconds ?? DEFAULT_STALE_SECONDS;
 
   await ensureFreshIndex({ repoRoot });
@@ -81,8 +87,8 @@ export async function collectHealthReport(
       unfixable_sources: sourceFindings.unfixable_sources,
       duplicate_sources: sourceFindings.duplicate_sources,
       empty_topics: findEmptyTopics(db, scope),
-      empty_pages: await findEmptyPages(db, scope, pagesDir),
-      slug_collisions: await findSlugCollisions(pagesDir),
+      empty_pages: await findEmptyPages(db, scope),
+      slug_collisions: await findSlugCollisions(wikiPageRoots(repoRoot)),
     };
   } finally {
     db.close();
@@ -245,7 +251,7 @@ async function findBrokenXwiki(
     let ok = reachableCache.get(r.target_wiki);
     if (ok === undefined) {
       const entry = await findEntry({ name: r.target_wiki });
-      ok = entry !== null && existsSync(join(entry.path, ".almanac"));
+      ok = entry !== null && hasRepoAlmanacMarker(entry.path);
       reachableCache.set(r.target_wiki, ok);
     }
     if (!ok) {
@@ -290,7 +296,6 @@ function findEmptyTopics(
 async function findEmptyPages(
   db: Database.Database,
   scope: HealthScope,
-  pagesDir: string,
 ): Promise<{ slug: string }[]> {
   const rows = db
     .prepare<[], { slug: string; file_path: string }>(
@@ -314,10 +319,6 @@ async function findEmptyPages(
     // one-sentence paragraph counts as content; a page with only a
     // heading (or a heading + whitespace) does not.
     //
-    // `pagesDir` is accepted for parity with future content-resolution
-    // checks (e.g., resolving includes); referenced so lint doesn't
-    // complain about an unused parameter.
-    void pagesDir;
     const hasSubstance = body
       .split(/\r?\n/)
       .some((l) => {
@@ -334,29 +335,37 @@ async function findEmptyPages(
 }
 
 /**
- * Walk `.almanac/pages/` and group filenames by their kebab-cased
- * slug. Any slug with >1 filename is a collision. We rescan rather
- * than reading a persisted table — indexing surfaces collisions only
- * as warnings, so a dedicated rescan gives us a definitive answer
- * without adding a new table.
+ * Walk wiki content roots and group files by their canonical page slug.
+ * `page_id` wins over filename so nested `README.md` pages are checked
+ * against the same identity model the indexer uses.
  */
 async function findSlugCollisions(
-  pagesDir: string,
+  pageRoots: WikiPageRoot[],
 ): Promise<{ slug: string; paths: string[] }[]> {
-  if (!existsSync(pagesDir)) return [];
-  const files = await fg("**/*.md", {
-    cwd: pagesDir,
-    absolute: false,
-    onlyFiles: true,
-    caseSensitiveMatch: true,
-  });
+  if (pageRoots.length === 0) return [];
   const bySlug = new Map<string, string[]>();
-  for (const rel of files) {
-    const slug = toKebabCase(basename(rel, ".md"));
-    if (slug.length === 0) continue;
-    const list = bySlug.get(slug) ?? [];
-    list.push(rel);
-    bySlug.set(slug, list);
+  const qualify = pageRoots.length > 1;
+  for (const root of pageRoots) {
+    const files = await fg("**/*.md", {
+      cwd: root.dir,
+      absolute: false,
+      onlyFiles: true,
+      caseSensitiveMatch: true,
+    });
+    for (const rel of files) {
+      let pageId: string | undefined;
+      try {
+        const raw = await readFile(join(root.dir, rel), "utf8");
+        pageId = parseFrontmatter(raw).page_id;
+      } catch {
+        pageId = undefined;
+      }
+      const slug = toKebabCase(pageId ?? basename(rel, ".md"));
+      if (slug.length === 0) continue;
+      const list = bySlug.get(slug) ?? [];
+      list.push(qualify ? join(root.label, rel) : rel);
+      bySlug.set(slug, list);
+    }
   }
   const out: { slug: string; paths: string[] }[] = [];
   for (const [slug, paths] of bySlug.entries()) {

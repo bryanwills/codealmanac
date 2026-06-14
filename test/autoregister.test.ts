@@ -43,6 +43,24 @@ describe("autoRegisterIfNeeded", () => {
     });
   });
 
+  it("silently registers a repo that only has docs/almanac tracked content", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "docs-only");
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+      await writeFile(
+        join(repo, "docs", "almanac", "README.md"),
+        "# Codebase Wiki\n",
+        "utf8",
+      );
+
+      const entry = await autoRegisterIfNeeded(join(repo, "src"));
+
+      expect(entry).not.toBeNull();
+      expect(entry?.name).toBe("docs-only");
+      expect(entry?.path).toBe(repo);
+    });
+  });
+
   it("returns null when there is no enclosing .almanac/", async () => {
     await withTempHome(async (home) => {
       const bare = await makeRepo(home, "plain-dir");

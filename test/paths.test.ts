@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -99,6 +99,21 @@ describe("findNearestAlmanacDir", () => {
       const nested = join(repo, "src", "deep");
       await mkdir(nested, { recursive: true });
       expect(findNearestAlmanacDir(nested)).toBe(repo);
+    });
+  });
+
+  it("finds a docs/almanac wiki root without a runtime .almanac directory", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "docs-wiki");
+      await mkdir(join(repo, "src", "deep"), { recursive: true });
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+      await writeFile(
+        join(repo, "docs", "almanac", "README.md"),
+        "# Wiki\n",
+        "utf8",
+      );
+
+      expect(findNearestAlmanacDir(join(repo, "src", "deep"))).toBe(repo);
     });
   });
 

@@ -36,6 +36,7 @@ export interface ViewerOverview {
     sidebarLimit: number;
   };
   featuredPages: {
+    frontDoor: ViewerPageSummary | null;
     gettingStarted: ViewerPageSummary | null;
   };
 }
@@ -71,6 +72,12 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
           )
           .get() ?? { page_count: 0, topic_count: 0 };
 
+        const gettingStarted = wikiQuery.pages.pageSummaryBySlug(db, "getting-started");
+        const frontDoor =
+          wikiQuery.pages.pageSummaryBySlug(db, "codealmanac-wiki") ??
+          wikiQuery.pages.pageSummaryBySlug(db, "codebase-wiki") ??
+          gettingStarted;
+
         return {
           repoRoot: ctx.repoRoot,
           wikiTitle: "Almanac",
@@ -85,7 +92,8 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
           }),
           topicNavigation,
           featuredPages: {
-            gettingStarted: wikiQuery.pages.pageSummaryBySlug(db, "getting-started"),
+            frontDoor,
+            gettingStarted,
           },
         };
       });

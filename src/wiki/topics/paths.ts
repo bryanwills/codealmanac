@@ -1,6 +1,10 @@
+import { existsSync } from "node:fs";
+
 import {
+  canonicalWikiDir,
   canonicalTopicsYamlPath,
   indexDbPath as repoIndexDbPath,
+  legacyTopicsYamlPath,
 } from "../locations.js";
 
 /**
@@ -8,7 +12,13 @@ import {
  * caller has to remember where the file lives.
  */
 export function topicsYamlPath(repoRoot: string): string {
-  return canonicalTopicsYamlPath(repoRoot);
+  const canonical = canonicalTopicsYamlPath(repoRoot);
+  if (existsSync(canonical)) return canonical;
+
+  const legacy = legacyTopicsYamlPath(repoRoot);
+  if (existsSync(legacy)) return legacy;
+
+  return existsSync(canonicalWikiDir(repoRoot)) ? canonical : legacy;
 }
 
 /**
