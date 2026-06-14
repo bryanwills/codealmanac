@@ -20,23 +20,17 @@ describe("process page snapshots", () => {
     });
   });
 
-  it("snapshots markdown pages and archive state", async () => {
+  it("snapshots markdown pages", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "snapshot-pages");
       await scaffoldWiki(repo);
       await writePage(repo, "active", "---\ntitle: Active\n---\n# Active\n");
-      await writePage(
-        repo,
-        "archived",
-        "---\ntitle: Archived\narchived_at: 2026-05-09\n---\n# Archived\n",
-      );
-      await writeFile(join(repo, ".almanac", "pages", "ignore.txt"), "x", "utf8");
+      await writePage(repo, "second", "---\ntitle: Second\n---\n# Second\n");
+      await writeFile(join(repo, "docs", "almanac", "ignore.txt"), "x", "utf8");
 
-      const snapshot = await snapshotPages(join(repo, ".almanac", "pages"));
+      const snapshot = await snapshotPages(join(repo, "docs", "almanac"));
 
-      expect([...snapshot.keys()].sort()).toEqual(["active", "archived"]);
-      expect(snapshot.get("active")?.archived).toBe(false);
-      expect(snapshot.get("archived")?.archived).toBe(true);
+      expect([...snapshot.keys()].sort()).toEqual(["active", "second"]);
       expect(snapshot.get("active")?.hash).toMatch(/^[0-9a-f]{64}$/);
     });
   });
@@ -59,22 +53,16 @@ describe("process page snapshots", () => {
     });
   });
 
-  it("counts created, updated, archived, and deleted page changes", async () => {
+  it("counts created, updated, and deleted page changes", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "snapshot-delta");
       const pagesDir = await scaffoldWiki(repo);
       await writePage(repo, "updated", "# Before\n");
-      await writePage(repo, "archived", "# Before archive\n");
       await writePage(repo, "deleted", "# Delete me\n");
 
       const before = await snapshotPages(pagesDir);
 
       await writePage(repo, "updated", "# After\n");
-      await writePage(
-        repo,
-        "archived",
-        "---\narchived_at: 2026-05-09\n---\n# Before archive\n",
-      );
       await writePage(repo, "created", "# New\n");
       await rm(join(pagesDir, "deleted.md"));
 
@@ -83,7 +71,6 @@ describe("process page snapshots", () => {
       expect(diffPageSnapshots(before, after)).toEqual({
         created: ["created"],
         updated: ["updated"],
-        archived: ["archived"],
         deleted: ["deleted"],
       });
     });
@@ -91,10 +78,10 @@ describe("process page snapshots", () => {
 
   it("detects no-op page deltas", () => {
     expect(
-      isNoopPageDelta({ created: [], updated: [], archived: [], deleted: [] }),
+      isNoopPageDelta({ created: [], updated: [], deleted: [] }),
     ).toBe(true);
     expect(
-      isNoopPageDelta({ created: [], updated: ["x"], archived: [], deleted: [] }),
+      isNoopPageDelta({ created: [], updated: ["x"], deleted: [] }),
     ).toBe(false);
   });
 

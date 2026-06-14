@@ -121,11 +121,6 @@ async function handleApi(
     return;
   }
 
-  if (wikiPath === "/review") {
-    sendJson(res, 200, await wikiApi.review());
-    return;
-  }
-
   if (wikiPath === "/jobs") {
     sendJson(res, 200, await wikiApi.jobs());
     return;

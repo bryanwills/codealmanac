@@ -72,7 +72,6 @@ describe("job foreground execution", () => {
         summary: {
           created: 1,
           updated: 0,
-          archived: 0,
           deleted: 0,
           costUsd: 0.2,
           turns: 4,
@@ -82,7 +81,6 @@ describe("job foreground execution", () => {
           jobId: "run_20260509195500_success",
           created: ["new-page"],
           updated: [],
-          archived: [],
           deleted: [],
           description: "### Almanac updated\n\nChanged one page.",
         },
@@ -234,7 +232,6 @@ describe("job foreground execution", () => {
         summary: {
           created: 0,
           updated: 0,
-          archived: 0,
           deleted: 0,
         },
         pageChanges: {
@@ -242,7 +239,6 @@ describe("job foreground execution", () => {
           jobId: "run_20260509195500_failure",
           created: [],
           updated: [],
-          archived: [],
           deleted: [],
         },
       });
@@ -419,7 +415,6 @@ describe("job foreground execution", () => {
       expect(result.record.summary).toMatchObject({
         created: 1,
         updated: 0,
-        archived: 0,
         deleted: 0,
       });
       expect(result.record.pageChanges).toMatchObject({
@@ -427,7 +422,6 @@ describe("job foreground execution", () => {
         jobId: "run_20260509204100_finalization",
         created: ["new-page"],
         updated: [],
-        archived: [],
         deleted: [],
         description: "done",
       });

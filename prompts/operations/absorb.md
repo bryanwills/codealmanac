@@ -14,8 +14,7 @@ other pointer. Treat that input as raw material, not as the output.
 1. Understand the starting context and what kind of input it is.
 2. Extract candidate durable learnings, changed assumptions, project-world
    connections, risks, decisions, incidents, and synthesis updates.
-3. Inspect the current wiki for the right home before creating pages. Check
-   both `docs/almanac/` and legacy `.almanac/pages/` during migration.
+3. Inspect the current `docs/almanac/` wiki for the right home before creating pages.
 4. Verify important claims against code, tests, docs, sources, git history, or
    the provided context when useful.
 5. Prefer updating existing evolving pages over creating new pages.

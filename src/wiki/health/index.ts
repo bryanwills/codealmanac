@@ -39,8 +39,6 @@ export interface HealthReport {
   broken_xwiki: { source_slug: string; target_wiki: string; target_slug: string }[];
   missing_sources: { slug: string; source_id: string }[];
   unused_sources: { slug: string; source_id: string }[];
-  legacy_frontmatter: { slug: string; fields: string[] }[];
-  unfixable_sources: { slug: string; source: string }[];
   duplicate_sources: { slug: string; source_id: string }[];
   empty_topics: { slug: string }[];
   empty_pages: { slug: string }[];
@@ -83,8 +81,6 @@ export async function collectHealthReport(
       broken_xwiki: await findBrokenXwiki(db, scope),
       missing_sources: sourceFindings.missing_sources,
       unused_sources: sourceFindings.unused_sources,
-      legacy_frontmatter: sourceFindings.legacy_frontmatter,
-      unfixable_sources: sourceFindings.unfixable_sources,
       duplicate_sources: sourceFindings.duplicate_sources,
       empty_topics: findEmptyTopics(db, scope),
       empty_pages: await findEmptyPages(db, scope),
@@ -99,11 +95,6 @@ export async function collectHealthReport(
 // individual checks
 // ─────────────────────────────────────────────────────────────────────
 
-/**
- * Pages with zero `topics:`. Archived pages are exempt — the spec
- * excludes them from search by default and they're inherently
- * "retired", not "abandoned".
- */
 function findOrphans(
   db: Database.Database,
   scope: HealthScope,
@@ -111,8 +102,7 @@ function findOrphans(
   const rows = db
     .prepare<[], { slug: string }>(
       `SELECT p.slug FROM pages p
-       WHERE p.archived_at IS NULL
-         AND NOT EXISTS (
+       WHERE NOT EXISTS (
            SELECT 1 FROM page_topics pt WHERE pt.page_slug = p.slug
          )
        ORDER BY p.slug`,
@@ -136,7 +126,7 @@ function findStale(
   const rows = db
     .prepare<[number], { slug: string; updated_at: number }>(
       `SELECT slug, updated_at FROM pages
-       WHERE archived_at IS NULL AND updated_at < ?
+       WHERE updated_at < ?
        ORDER BY updated_at ASC`,
     )
     .all(threshold);
@@ -151,11 +141,6 @@ function findStale(
 /**
  * `file_refs` whose target paths no longer exist on disk. We `stat`
  * each referenced path, relative to the repo root, and report misses.
- *
- * Only checks active pages — archived pages are allowed to reference
- * files that have since been deleted (that's often why they were
- * archived in the first place).
- *
  * We stat the `original_path` (author's casing) rather than the
  * lowercased `path` — on case-sensitive filesystems like Linux, stat
  * of a lowercased alias of `src/Dockerfile` returns ENOENT even
@@ -176,7 +161,6 @@ async function findDeadRefs(
       `SELECT p.slug, r.path, r.original_path, r.is_dir
        FROM file_refs r
        JOIN pages p ON p.slug = r.page_slug
-       WHERE p.archived_at IS NULL
        ORDER BY p.slug, r.path`,
     )
     .all();
@@ -196,9 +180,6 @@ async function findDeadRefs(
 
 /**
  * Wikilinks whose target slug has no row in `pages`. Every other
- * page-scoped check filters archived source pages out; this one and
- * `findBrokenXwiki` follow the same rule so the report doesn't flag
- * broken links from pages that have been retired.
  */
 function findBrokenLinks(
   db: Database.Database,
@@ -210,7 +191,7 @@ function findBrokenLinks(
        FROM wikilinks w
        JOIN pages src ON src.slug = w.source_slug
        LEFT JOIN pages tgt ON tgt.slug = w.target_slug
-       WHERE tgt.slug IS NULL AND src.archived_at IS NULL
+       WHERE tgt.slug IS NULL
        ORDER BY w.source_slug, w.target_slug`,
     )
     .all();
@@ -233,13 +214,9 @@ async function findBrokenXwiki(
       [],
       { source_slug: string; target_wiki: string; target_slug: string }
     >(
-      // Same archived-source filter as `findBrokenLinks`. Retired pages
-      // shouldn't spam the report with links to wikis that may have
-      // been intentionally retired too.
       `SELECT x.source_slug, x.target_wiki, x.target_slug
        FROM cross_wiki_links x
        JOIN pages src ON src.slug = x.source_slug
-       WHERE src.archived_at IS NULL
        ORDER BY x.source_slug, x.target_wiki, x.target_slug`,
     )
     .all();
@@ -289,9 +266,6 @@ function findEmptyTopics(
  * lines, the remaining non-blank non-whitespace content is < 40
  * characters. This matches the test from the plan: "a page with only
  * frontmatter + heading is empty; with a paragraph it's not."
- *
- * Archived pages are exempt — deliberately minimal archive stubs
- * shouldn't be flagged.
  */
 async function findEmptyPages(
   db: Database.Database,
@@ -300,7 +274,6 @@ async function findEmptyPages(
   const rows = db
     .prepare<[], { slug: string; file_path: string }>(
       `SELECT slug, file_path FROM pages
-       WHERE archived_at IS NULL
        ORDER BY slug`,
     )
     .all();

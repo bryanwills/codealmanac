@@ -21,7 +21,7 @@ describe("viewer UI assets", () => {
     expect(indexHtml).toContain('class="ca-brand ca-brand-route"');
     expect(indexHtml).toContain('data-route="/"');
     expect(indexHtml).toContain('class="ca-topbar-link is-active">Library</button>');
-    expect(indexHtml).toContain('data-route="/review"');
+    expect(indexHtml).not.toContain('data-route="/review"');
     expect(indexHtml).toContain('data-route="/jobs"');
     expect(indexHtml).not.toContain("Local wiki viewer");
     expect(indexHtml).toContain("Linked from");
@@ -29,7 +29,7 @@ describe("viewer UI assets", () => {
     expect(indexHtml).not.toContain("recent-list");
     expect(appJs).not.toContain("recentList");
     expect(appJs).toContain("featuredPages?.frontDoor");
-    expect(appJs).toContain("featuredPages?.gettingStarted");
+    expect(appJs).not.toContain("featuredPages?.gettingStarted");
     expect(appJs).not.toContain("featuredPages?.projectOverview");
     expect(appJs).not.toContain("projectOverview");
     expect(appJs).not.toContain("const projectOverview = await optionalPage");
@@ -45,7 +45,7 @@ describe("viewer UI assets", () => {
     expect(appJs).toContain("topic.parents");
     expect(appJs).toContain("ca-topic-strip");
     expect(appJs).toContain("state.overview.featuredPages");
-    expect(appJs).toContain('wikiPath === "/getting-started"');
+    expect(appJs).toContain('wikiPath === "/start"');
     expect(appJs).toContain("renderFrontDoor");
     expect(appJs).toContain("docs/almanac/README.md");
     expect(appJs).not.toContain(".almanac/pages/getting-started.md");
@@ -63,11 +63,11 @@ describe("viewer UI assets", () => {
     expect(appJs).toContain('const level = decorated ? "h1" : "h2";');
     expect(appJs).toContain("ca-page-ornament");
     expect(appJs).toContain('wikiPath === "/jobs"');
-    expect(appJs).toContain('wikiPath === "/review"');
-    expect(appJs).toContain("renderReview");
-    expect(appJs).toContain('wikiApi("/review")');
-    expect(appJs).toContain("reviewSection");
-    expect(appJs).toContain("reviewItem");
+    expect(appJs).not.toContain('wikiPath === "/review"');
+    expect(appJs).not.toContain("renderReview");
+    expect(appJs).not.toContain('wikiApi("/review")');
+    expect(appJs).not.toContain("reviewSection");
+    expect(appJs).not.toContain("reviewItem");
     expect(appJs).toContain('wikiPath.startsWith("/jobs/")');
     expect(appJs).toContain('import { createJobsView } from "./jobs-view.js"');
     expect(appJs).toContain('import { createSearchSuggestions } from "./search-suggestions.js"');
@@ -148,8 +148,8 @@ describe("viewer UI assets", () => {
     expect(appCss).toContain(".ca-suggest-item");
     expect(appCss).toContain(".ca-library-grid");
     expect(appCss).toContain(".ca-wiki-card-stats");
-    expect(appCss).toContain(".ca-review-section");
-    expect(appCss).toContain(".ca-review-item");
+    expect(appCss).not.toContain(".ca-review-section");
+    expect(appCss).not.toContain(".ca-review-item");
     expect(appCss).toContain("overflow-wrap: anywhere");
   });
 });

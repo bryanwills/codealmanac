@@ -9,9 +9,10 @@ describe("parseFrontmatter", () => {
 title: Checkout Flow
 description: Checkout decisions and invariants for future agents.
 topics: [checkout, flows]
-files:
-  - src/checkout/handler.ts
-  - src/checkout/
+sources:
+  - id: checkout-handler
+    type: file
+    path: src/checkout/handler.ts
 ---
 
 # Checkout Flow
@@ -22,9 +23,13 @@ Body goes here.
     expect(fm.title).toBe("Checkout Flow");
     expect(fm.description).toBe("Checkout decisions and invariants for future agents.");
     expect(fm.topics).toEqual(["checkout", "flows"]);
-    expect(fm.files).toEqual(["src/checkout/handler.ts", "src/checkout/"]);
-    expect(fm.sources).toEqual([]);
-    expect(fm.legacySourceStrings).toEqual([]);
+    expect(fm.sources).toEqual([
+      {
+        id: "checkout-handler",
+        type: "file",
+        path: "src/checkout/handler.ts",
+      },
+    ]);
     expect(fm.body).toMatch(/^# Checkout Flow/m);
   });
 
@@ -45,14 +50,12 @@ Body.
   it("returns empty fields when frontmatter is absent", () => {
     const fm = parseFrontmatter("# Just a heading\n\nNo frontmatter.\n");
     expect(fm.topics).toEqual([]);
-    expect(fm.files).toEqual([]);
     expect(fm.sources).toEqual([]);
-    expect(fm.legacySourceStrings).toEqual([]);
     expect(fm.title).toBeUndefined();
     expect(fm.body).toMatch(/^# Just a heading/);
   });
 
-  it("parses structured sources and legacy source strings", () => {
+  it("parses structured sources and ignores source strings", () => {
     const fm = parseFrontmatter(
       `---
 title: Absorb
@@ -72,8 +75,6 @@ sources:
     number: 42
     note: User-reported regression.
   - https://legacy.example.com/docs
-files:
-  - src/legacy.ts
 ---
 
 Body.
@@ -102,8 +103,6 @@ Body.
         note: "User-reported regression.",
       },
     ]);
-    expect(fm.files).toEqual(["src/legacy.ts"]);
-    expect(fm.legacySourceStrings).toEqual(["https://legacy.example.com/docs"]);
   });
 
   it("ignores malformed structured sources", () => {
@@ -171,56 +170,10 @@ body
     }
   });
 
-  it("coerces archived_at from a YAML date", () => {
-    const fm = parseFrontmatter(
-      `---
-title: old
-archived_at: 2026-04-15
----
-`,
-    );
-    expect(fm.archived_at).not.toBeNull();
-    const asDate = new Date((fm.archived_at ?? 0) * 1000);
-    expect(asDate.getUTCFullYear()).toBe(2026);
-    expect(asDate.getUTCMonth()).toBe(3); // April
-    expect(asDate.getUTCDate()).toBe(15);
-  });
-
-  it("coerces archived_at from an ISO string", () => {
-    const fm = parseFrontmatter(
-      `---
-archived_at: "2026-04-15T12:00:00Z"
----
-`,
-    );
-    expect(fm.archived_at).not.toBeNull();
-  });
-
-  it("leaves archived_at null for garbage input", () => {
-    const fm = parseFrontmatter(
-      `---
-archived_at: "not a date"
----
-`,
-    );
-    expect(fm.archived_at).toBeNull();
-  });
-
   it("ignores a --- that isn't on line 1", () => {
     const fm = parseFrontmatter("# Heading\n\n---\n\nSection break.\n");
     expect(fm.topics).toEqual([]);
     expect(fm.body).toMatch(/Section break/);
-  });
-
-  it("captures superseded_by and supersedes as strings", () => {
-    const fm = parseFrontmatter(
-      `---
-title: old
-superseded_by: stripe-async
----
-`,
-    );
-    expect(fm.superseded_by).toBe("stripe-async");
   });
 });
 

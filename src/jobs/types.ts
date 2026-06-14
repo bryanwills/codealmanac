@@ -9,7 +9,6 @@ export type DisplayJobStatus = JobStatus | "stale";
 export interface JobSummary {
   created: number;
   updated: number;
-  archived: number;
   deleted: number;
   costUsd?: number;
   turns?: number;
@@ -21,7 +20,6 @@ export interface JobPageChanges {
   jobId: string;
   created: string[];
   updated: string[];
-  archived: string[];
   deleted: string[];
   description?: string;
 }

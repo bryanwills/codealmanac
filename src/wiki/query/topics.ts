@@ -42,7 +42,7 @@ export function topicSummaries(
               (SELECT COUNT(*)
                  FROM page_topics pt
                  JOIN pages p ON p.slug = pt.page_slug
-                 WHERE pt.topic_slug = t.slug AND p.archived_at IS NULL
+                 WHERE pt.topic_slug = t.slug
               ) AS page_count
        FROM topics t
        ${rootJoin}
@@ -90,7 +90,7 @@ export function topicDetail(
        FROM topic_parents tp
        JOIN topics t ON t.slug = tp.child_slug
        LEFT JOIN page_topics pt ON pt.topic_slug = t.slug
-       LEFT JOIN pages p ON p.slug = pt.page_slug AND p.archived_at IS NULL
+       LEFT JOIN pages p ON p.slug = pt.page_slug
        WHERE tp.parent_slug = ?
        GROUP BY t.slug, t.title
        ORDER BY t.slug`,
@@ -99,10 +99,10 @@ export function topicDetail(
 
   const pages = pagePreviews(
     db,
-    `SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+    `SELECT p.slug, p.title, p.description, p.updated_at
      FROM pages p
      JOIN page_topics pt ON pt.page_slug = p.slug
-     WHERE p.archived_at IS NULL AND pt.topic_slug = ?
+     WHERE pt.topic_slug = ?
      ORDER BY p.updated_at DESC, p.slug ASC
      LIMIT 100`,
     [slug],

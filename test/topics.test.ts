@@ -263,7 +263,7 @@ describe("almanac topics", () => {
       expect(result.exitCode).toBe(0);
 
       const page = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(page).toMatch(/topics: \[session-tokens\]/);
@@ -294,29 +294,22 @@ describe("almanac topics", () => {
     });
   });
 
-  it("list page_count excludes archived pages (consistency with show)", async () => {
-    // Regression: `topics list` used COUNT(*) across `page_topics`
-    // without filtering archived sources, while `topics show` did —
-    // producing inconsistent numbers. Now both exclude archived.
+  it("list page_count includes current pages in the topic", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
-      await writePage(repo, "active", "---\ntopics: [shared]\n---\n\nbody.\n");
-      await writePage(
-        repo,
-        "retired",
-        "---\ntopics: [shared]\narchived_at: 2025-01-01\n---\n\nbody.\n",
-      );
+      await writePage(repo, "first", "---\ntopics: [shared]\n---\n\nbody.\n");
+      await writePage(repo, "second", "---\ntopics: [shared]\n---\n\nbody.\n");
       await runIndexer({ repoRoot: repo });
 
       const result = await runTopicsList({ cwd: repo, json: true });
       const rows = JSON.parse(result.stdout);
       const shared = rows.find((r: { slug: string }) => r.slug === "shared");
-      expect(shared?.page_count).toBe(1);
+      expect(shared?.page_count).toBe(2);
 
       const text = await runTopicsList({ cwd: repo });
       expect(text.stdout).toContain("TOPIC   PAGES");
-      expect(text.stdout).toContain("shared  (1 page)");
+      expect(text.stdout).toContain("shared  (2 pages)");
     });
   });
 
@@ -435,7 +428,7 @@ describe("almanac topics", () => {
       expect(result.exitCode).toBe(0);
 
       const page = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(page).toMatch(/topics: \[other\]/);

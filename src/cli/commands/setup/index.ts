@@ -215,7 +215,7 @@ export async function runSetup(
   // Detect whether the current working directory is inside a repo that
   // already has a wiki with pages. This fixes Bug #6 from
   // codealmanac-known-bugs.md: Engineer B clones a repo that already has
-  // `.almanac/pages/` (committed by Engineer A) and gets told to run
+  // `docs/almanac/` (committed by Engineer A) and gets told to run
   // `almanac init`, which is wrong — the wiki already exists.
   const existingPageCount = countExistingPages(process.cwd());
   printNextSteps(out, existingPageCount);

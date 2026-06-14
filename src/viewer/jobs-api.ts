@@ -44,7 +44,6 @@ function pageChangeDetails(
   return {
     created: pageChangeRefs(db, changes.created),
     updated: pageChangeRefs(db, changes.updated),
-    archived: pageChangeRefs(db, changes.archived),
     deleted: changes.deleted.map((slug) => ({ slug, title: null })),
   };
 }

@@ -305,7 +305,6 @@
 
 .ca-log-impact-part[data-tone="created"] { color: var(--ca-accent); }
 .ca-log-impact-part[data-tone="updated"] { color: var(--ca-sage); }
-.ca-log-impact-part[data-tone="archived"] { color: var(--ca-rust); }
 
 /* Trailing status chip column (right side) */
 .ca-log-status {
@@ -581,7 +580,6 @@
   color: var(--ca-accent);
 }
 
-.ca-page-change-archived .ca-page-change-label span,
 .ca-page-change-deleted .ca-page-change-label span {
   color: var(--ca-rust);
 }

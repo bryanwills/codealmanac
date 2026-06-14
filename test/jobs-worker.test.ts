@@ -156,7 +156,6 @@ describe("job worker background execution", () => {
         summary: {
           created: 1,
           updated: 0,
-          archived: 0,
           deleted: 0,
         },
         pageChanges: {
@@ -164,7 +163,6 @@ describe("job worker background execution", () => {
           jobId: "run_20260509195700_child",
           created: ["gardened"],
           updated: [],
-          archived: [],
           deleted: [],
           description: "garden",
         },

@@ -6,21 +6,20 @@ Date: 2026-06-13
 
 Readable wiki pages now belong under `docs/almanac/`. `.almanac/` stays as the
 runtime directory for generated local state such as `index.db`, jobs, runs, and
-review queues.
+other process artifacts.
 
 Why: the wiki is meant to be read by humans and agents. Putting durable prose
 under `docs/` makes it visible in the normal documentation surface instead of
 hiding it beside runtime state.
 
-## 2. Legacy Pages Stay Indexed During Migration
+## 2. Canonical Content Is Not Mixed With Runtime State
 
-The indexer reads `docs/almanac/` first and `.almanac/pages/` second. If both
-roots contain the same page slug, the docs page wins and the legacy page is
-skipped with a warning.
+The indexer reads page source only from `docs/almanac/`. `.almanac/` is runtime
+state and is not a second authoring tree.
 
-Why: existing repos should not lose query coverage while migrating. The new
-layout still needs a clear precedence rule so stale legacy pages cannot override
-new docs.
+Why: mixed content roots make every command encode layout policy and create a
+permanent compatibility burden. The clean model is easier for humans, agents,
+tests, and docs tooling to reason about.
 
 ## 3. Nested Pages Use `page_id`
 
@@ -32,8 +31,7 @@ when a page moves from `architecture.md` to `architecture/README.md`.
 
 ## 4. Topics Remain YAML
 
-`docs/almanac/topics.yaml` is the canonical topic file when present. Legacy
-`.almanac/topics.yaml` is used only when the canonical file does not exist.
+`docs/almanac/topics.yaml` is the canonical topic file.
 
 Why: topics are source-controlled organization data. SQLite remains the derived
 query index, not the authoring source.
@@ -68,35 +66,27 @@ auditable and editable.
 
 The initial `concepts/`, `architecture/`, `guides/`, `reference/`,
 `decisions/`, `incidents/`, `active/`, and `context/` pages explain what belongs
-in each section. They do not claim the legacy `.almanac/pages/` corpus has been
-semantically migrated.
+in each section. They do not claim the old corpus has been semantically
+migrated.
 
 Why: the structure should be visible now, while full migration remains a
 separate content-quality task.
 
-## 9. Repo Detection Uses Tracked Docs Or Runtime State
+## 9. Repo Detection Uses The Canonical Docs Directory
 
-A repo is an Almanac wiki when it has either `.almanac/` runtime state or a
-tracked canonical marker such as `docs/almanac/README.md` or
-`docs/almanac/topics.yaml`.
+A repo is an Almanac wiki when it has `docs/almanac/`.
 
-Why: after a clean clone, empty `.almanac/` runtime directories may not exist,
-but the tracked documentation wiki still must be discoverable from subfolders.
+Why: an initialized wiki may be empty before build writes pages, and a clean
+clone must still be discoverable from subfolders. Runtime state alone is not a
+wiki marker.
 
-## 10. Legacy Topic Metadata Must Not Be Shadowed
+## 10. Topic Commands Write The Canonical Topic File
 
-Topic mutation commands write `docs/almanac/topics.yaml` only when that
-canonical file exists or the repo is already a canonical docs wiki without a
-legacy topics file. Legacy-only repos keep writing `.almanac/topics.yaml`.
+Topic mutation commands write `docs/almanac/topics.yaml`.
 
-When `init` creates `docs/almanac/topics.yaml` in a repo that already has
-legacy `.almanac/topics.yaml`, it copies the legacy topic file instead of
-writing the starter topic scaffold.
-
-Why: a single `tag` or `topics create` command must not create a partial
-canonical topic file that shadows a richer legacy topic DAG. The same rule
-applies to `init` because `build` calls `init` before deciding whether the wiki
-already has pages.
+Why: one source of truth is simpler than keeping a compatibility target alive.
+Repos that need old data moved should run an explicit one-time migration before
+using current commands.
 
 ## 11. Health Uses `page_id` For Collision Checks
 
@@ -108,8 +98,18 @@ same page identity model as the indexer.
 
 ## 12. Viewer Front Door Means README
 
-The viewer now treats the canonical front door as the README-backed page and
-falls back to legacy `getting-started` only for old wikis.
+The viewer treats the canonical front door as the README-backed page.
 
-Why: Build no longer creates `getting-started.md`, but old viewer URLs should
-still avoid a hard break during migration.
+Why: Build no longer creates a second orientation page. One front door keeps the
+viewer and docs tree aligned.
+
+## 13. `sources:` Is Canonical Provenance
+
+Page frontmatter uses `sources:` for authored provenance. `type: file` source
+entries and inline file/folder wikilinks derive `file_refs` for `--mentions`,
+`show --files`, and dead-reference health checks. There is no separate authored
+`files:` field.
+
+Why: two authored fields for the same page-to-code relationship can disagree.
+One canonical provenance field keeps citation evidence and file mention indexing
+aligned.

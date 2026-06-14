@@ -102,16 +102,14 @@ function formatPageChanges(view: JobView): string[] {
   const total =
     changes.created.length +
     changes.updated.length +
-    changes.archived.length +
     changes.deleted.length;
   if (total === 0) return ["Changes: none"];
   const lines = [
-    `Changes: ${changes.created.length} created, ${changes.updated.length} updated, ${changes.archived.length} archived, ${changes.deleted.length} deleted`,
+    `Changes: ${changes.created.length} created, ${changes.updated.length} updated, ${changes.deleted.length} deleted`,
   ];
   for (const [label, slugs] of [
     ["Created", changes.created],
     ["Updated", changes.updated],
-    ["Archived", changes.archived],
     ["Deleted", changes.deleted],
   ] as const) {
     if (slugs.length > 0) lines.push(`${label}: ${slugs.join(", ")}`);
@@ -276,7 +274,7 @@ function resolveWikiOrResult(
   if (repoRoot !== null) return repoRoot;
   return renderError(
     new UserFacingError(
-      "no .almanac/ found in this directory or any parent",
+      "no Almanac wiki found in this directory or any parent",
       {
         outcome: "needs-action",
         fix: "run: almanac init",

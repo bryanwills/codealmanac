@@ -8,16 +8,16 @@ import { autoRegisterIfNeeded } from "../src/wiki/registry/autoregister.js";
 import { readRegistry, addEntry } from "../src/wiki/registry/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
-async function scaffoldDotAlmanac(repo: string): Promise<void> {
-  await mkdir(join(repo, ".almanac", "pages"), { recursive: true });
-  await writeFile(join(repo, ".almanac", "README.md"), "# scaffolded", "utf8");
+async function scaffoldDocsAlmanac(repo: string): Promise<void> {
+  await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+  await writeFile(join(repo, "docs", "almanac", "README.md"), "# scaffolded", "utf8");
 }
 
 describe("autoRegisterIfNeeded", () => {
-  it("silently registers a repo that has .almanac/ but no registry entry", async () => {
+  it("silently registers a repo that has docs/almanac but no registry entry", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "auto-repo");
-      await scaffoldDotAlmanac(repo);
+      await scaffoldDocsAlmanac(repo);
 
       const entry = await autoRegisterIfNeeded(repo);
       expect(entry).not.toBeNull();
@@ -61,7 +61,7 @@ describe("autoRegisterIfNeeded", () => {
     });
   });
 
-  it("returns null when there is no enclosing .almanac/", async () => {
+  it("returns null when there is no enclosing docs/almanac wiki", async () => {
     await withTempHome(async (home) => {
       const bare = await makeRepo(home, "plain-dir");
       const entry = await autoRegisterIfNeeded(bare);
@@ -70,10 +70,10 @@ describe("autoRegisterIfNeeded", () => {
     });
   });
 
-  it("walks up from a subdirectory to find .almanac/", async () => {
+  it("walks up from a subdirectory to find docs/almanac", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "deep");
-      await scaffoldDotAlmanac(repo);
+      await scaffoldDocsAlmanac(repo);
       const nested = join(repo, "src", "lib");
       await mkdir(nested, { recursive: true });
 
@@ -96,7 +96,7 @@ describe("autoRegisterIfNeeded", () => {
       // New repo happens to live in a directory that kebab-cases to the
       // same name.
       const clash = await makeRepo(home, "shared-name");
-      await scaffoldDotAlmanac(clash);
+      await scaffoldDocsAlmanac(clash);
 
       const entry = await autoRegisterIfNeeded(clash);
       expect(entry?.name).toBe("shared-name-2");
@@ -115,7 +115,7 @@ describe("autoRegisterIfNeeded", () => {
     // surface the error so the user sees the problem immediately.
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "auto-repo");
-      await scaffoldDotAlmanac(repo);
+      await scaffoldDocsAlmanac(repo);
 
       // Corrupt the registry on disk.
       const registryPath = getRegistryPath();

@@ -47,7 +47,6 @@ describe("absorb operation", () => {
       expect(spec.prompt).toContain("almanac: <imperative one-line description>");
       expect(spec.prompt).toContain("Auto-commit wiki source changes: enabled");
       expect(spec.prompt).toContain(`Wiki content directory: ${repo}/docs/almanac`);
-      expect(spec.prompt).toContain(".almanac/review.yaml");
       expect(spec.prompt).toContain("Absorb Operation");
       expect(spec.prompt).toContain("Put unsettled current work in `active/`");
       expect(spec.prompt).toContain("Preserve old knowledge when it explains the current state");
@@ -142,7 +141,7 @@ describe("absorb operation", () => {
           cwd: repo,
           context: "No wiki.",
         }),
-      ).rejects.toThrow("no .almanac/");
+      ).rejects.toThrow("no Almanac wiki");
     });
   });
 });

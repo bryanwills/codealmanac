@@ -38,7 +38,6 @@ export async function collectJobWikiEffects(args: {
   const summary: JobSummary = {
     created: delta.created.length,
     updated: delta.updated.length,
-    archived: delta.archived.length,
     deleted: delta.deleted.length,
     costUsd: args.result.costUsd,
     turns: args.result.turns,
@@ -53,7 +52,6 @@ export async function collectJobWikiEffects(args: {
     jobId: args.jobId,
     created: delta.created,
     updated: delta.updated,
-    archived: delta.archived,
     deleted: delta.deleted,
     ...(resultDescription !== undefined ? { description: resultDescription } : {}),
   };

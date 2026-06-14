@@ -18,7 +18,7 @@ export class OperationError extends UserFacingError {
 export class MissingWikiError extends OperationError {
   constructor() {
     super(
-      "no .almanac/ found in this directory or any parent",
+      "no Almanac wiki found in this directory or any parent",
       {
         outcome: "needs-action",
         fix: "run: almanac init",

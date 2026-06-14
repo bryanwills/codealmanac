@@ -15,7 +15,7 @@ import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
  *   - `--json`: structured JSON, single object for positional, null for
  *     missing, JSON Lines for `--stdin`
  *   - Field flags: `--title`, `--topics`, `--files`, `--links`,
- *     `--backlinks`, `--xwiki`, `--lineage`, `--updated`, `--path`
+ *     `--backlinks`, `--xwiki`, `--updated`, `--path`
  *   - Composed field flags: labeled sections, canonical order
  *   - `--stdin`: JSON Lines output, one record per line
  */
@@ -57,7 +57,6 @@ A second paragraph that should NOT appear under --lead.
     `---
 title: Stripe Async
 topics: [payments]
-supersedes: stripe-sync
 ---
 
 # Stripe Async
@@ -71,8 +70,6 @@ See [[checkout-flow]].
     `---
 title: Stripe Sync
 topics: [payments]
-archived_at: 2026-04-15
-superseded_by: stripe-async
 ---
 
 # Stripe Sync
@@ -197,7 +194,6 @@ describe("almanac show — view modes", () => {
           title: null,
           retrieved_at: null,
           note: "External checkout reference.",
-          legacy: false,
         },
         {
           id: "checkout-folder",
@@ -206,7 +202,6 @@ describe("almanac show — view modes", () => {
           title: null,
           retrieved_at: null,
           note: "Contains checkout implementation files.",
-          legacy: false,
         },
         {
           id: "checkout-handler",
@@ -215,7 +210,6 @@ describe("almanac show — view modes", () => {
           title: null,
           retrieved_at: null,
           note: "Implements checkout handling.",
-          legacy: false,
         },
       ]);
       expect(parsed.wikilinks_out).toEqual(["stripe-async"]);
@@ -334,40 +328,6 @@ describe("almanac show — single field flags (bare output)", () => {
     });
   });
 
-  it("--lineage prints archived_at / superseded_by / supersedes", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await seed(repo);
-      const archived = await runShow({
-        cwd: repo,
-        slug: "stripe-sync",
-        lineage: true,
-      });
-      expect(archived.stdout).toMatch(/archived_at:/);
-      expect(archived.stdout).toMatch(/superseded_by: stripe-async/);
-
-      const asyncR = await runShow({
-        cwd: repo,
-        slug: "stripe-async",
-        lineage: true,
-      });
-      expect(asyncR.stdout).toMatch(/supersedes: stripe-sync/);
-    });
-  });
-
-  it("--lineage is empty for a page with no lineage", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await seed(repo);
-      const r = await runShow({
-        cwd: repo,
-        slug: "checkout-flow",
-        lineage: true,
-      });
-      expect(r.stdout).toBe("");
-    });
-  });
-
   it("--updated prints an ISO-8601 timestamp", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
@@ -391,7 +351,7 @@ describe("almanac show — single field flags (bare output)", () => {
         path: true,
       });
       expect(r.stdout.trim()).toMatch(
-        /\/\.almanac\/pages\/checkout-flow\.md$/,
+        /\/docs\/almanac\/checkout-flow\.md$/,
       );
     });
   });

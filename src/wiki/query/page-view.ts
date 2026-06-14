@@ -8,9 +8,6 @@ export interface PageView {
   description: string | null;
   file_path: string;
   updated_at: number;
-  archived_at: number | null;
-  superseded_by: string | null;
-  supersedes: string[];
   topics: string[];
   file_refs: Array<{ path: string; is_dir: boolean }>;
   sources: Array<{
@@ -20,7 +17,6 @@ export interface PageView {
     title: string | null;
     retrieved_at: string | null;
     note: string | null;
-    legacy: boolean;
   }>;
   wikilinks_out: string[];
   wikilinks_in: string[];
@@ -41,11 +37,9 @@ export async function getPageView(
         description: string | null;
         file_path: string;
         updated_at: number;
-        archived_at: number | null;
-        superseded_by: string | null;
       }
     >(
-      "SELECT slug, title, description, file_path, updated_at, archived_at, superseded_by FROM pages WHERE slug = ?",
+      "SELECT slug, title, description, file_path, updated_at FROM pages WHERE slug = ?",
     )
     .get(slug);
   if (pageRow === undefined) return null;
@@ -74,10 +68,9 @@ export async function getPageView(
         title: string | null;
         retrieved_at: string | null;
         note: string | null;
-        legacy: number;
       }
     >(
-      `SELECT source_id, source_type, target, title, retrieved_at, note, legacy
+      `SELECT source_id, source_type, target, title, retrieved_at, note
        FROM page_sources WHERE page_slug = ? ORDER BY source_id`,
     )
     .all(slug)
@@ -88,7 +81,6 @@ export async function getPageView(
       title: r.title,
       retrieved_at: r.retrieved_at,
       note: r.note,
-      legacy: r.legacy === 1,
     }));
 
   const linksOut = db
@@ -112,13 +104,6 @@ export async function getPageView(
     .all(slug)
     .map((r) => ({ wiki: r.target_wiki, target: r.target_slug }));
 
-  const supersedesRows = db
-    .prepare<[string], { slug: string }>(
-      "SELECT slug FROM pages WHERE superseded_by = ? ORDER BY slug",
-    )
-    .all(slug)
-    .map((r) => r.slug);
-
   let body = "";
   try {
     body = stripFrontmatter(await readFile(pageRow.file_path, "utf8"));
@@ -133,9 +118,6 @@ export async function getPageView(
     description: pageRow.description,
     file_path: pageRow.file_path,
     updated_at: pageRow.updated_at,
-    archived_at: pageRow.archived_at,
-    superseded_by: pageRow.superseded_by,
-    supersedes: supersedesRows,
     topics,
     file_refs: refs,
     sources,

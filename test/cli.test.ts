@@ -223,7 +223,6 @@ describe("registerCommands", () => {
       "show",
       "health",
       "list",
-      "review",
       "tag",
       "untag",
       "migrate",
@@ -255,8 +254,6 @@ describe("registerCommands", () => {
         "delete",
         "describe",
       ]);
-    expect(findCommand(program, ["review"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["add", "list", "show", "decide", "apply", "reopen"]);
     expect(findCommand(program, ["automation"]).commands.map((cmd) => cmd.name()))
       .toEqual(["install", "uninstall", "status"]);
     expect(findCommand(program, ["jobs"]).commands.map((cmd) => cmd.name()))
@@ -266,7 +263,7 @@ describe("registerCommands", () => {
     expect(findCommand(program, ["config"]).commands.map((cmd) => cmd.name()))
       .toEqual(["list", "get", "set", "unset"]);
     expect(findCommand(program, ["migrate"]).commands.map((cmd) => cmd.name()))
-      .toEqual(["legacy-sources", "automation"]);
+      .toEqual(["automation"]);
     expect(findCommand(program, ["sync"]).commands.map((cmd) => cmd.name()))
       .toEqual(["status"]);
 
@@ -392,10 +389,10 @@ describe("formatForegroundEvent", () => {
         display: {
           kind: "read",
           title: "Reading file",
-          path: ".almanac/pages/farzapedia.md",
+          path: "docs/almanac/competitors/farzapedia.md",
         },
       }),
-    ).toBe("[tool] Reading file .almanac/pages/farzapedia.md");
+    ).toBe("[tool] Reading file docs/almanac/competitors/farzapedia.md");
     expect(
       formatForegroundEvent({
         type: "tool_result",
@@ -741,7 +738,7 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       expect(stderr).toBe("");
       expect(JSON.parse(stdout)).toMatchObject({
         type: "needs-action",
-        message: "no .almanac/ found in this directory or any parent",
+        message: "no Almanac wiki found in this directory or any parent",
         fix: "run: almanac init",
       });
     });

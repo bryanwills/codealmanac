@@ -14,8 +14,6 @@ export interface SearchOptions {
   since?: string;
   stale?: string;
   orphan?: boolean;
-  includeArchive?: boolean;
-  archived?: boolean;
   wiki?: string;
   output?: SearchOutputMode;
   limit?: number;

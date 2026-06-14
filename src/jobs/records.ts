@@ -271,7 +271,6 @@ function isJobPageChanges(value: unknown): value is JobPageChanges {
     (typeof v.jobId === "string" || typeof (v as { runId?: unknown }).runId === "string") &&
     isStringArray(v.created) &&
     isStringArray(v.updated) &&
-    isStringArray(v.archived) &&
     isStringArray(v.deleted) &&
     (v.description === undefined || typeof v.description === "string")
   );

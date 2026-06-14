@@ -24,7 +24,7 @@ import * as query from "../../wiki/query/index.js";
  *        --lead   first paragraph of body only (cheap preview)
  *   3. **Field flags** (composable). Each selects one "field" of the page:
  *        --title / --topics / --files / --links / --backlinks / --xwiki
- *        --lineage / --updated / --path
+ *        --updated / --path
  *      A single field → bare, pipe-friendly output (one item per line).
  *      Multiple fields → labeled sections, one per flag.
  *
@@ -54,7 +54,6 @@ export interface ShowOptions {
   links?: boolean;
   backlinks?: boolean;
   xwiki?: boolean;
-  lineage?: boolean;
   updated?: boolean;
   path?: boolean;
 }
@@ -163,7 +162,6 @@ type FieldName =
   | "links"
   | "backlinks"
   | "xwiki"
-  | "lineage"
   | "updated"
   | "path";
 
@@ -174,7 +172,6 @@ const FIELD_ORDER: FieldName[] = [
   "links",
   "backlinks",
   "xwiki",
-  "lineage",
   "updated",
   "path",
 ];
@@ -244,8 +241,6 @@ function bodyOnly(rec: ShowRecord): string {
  *   --links      → one outgoing slug per line
  *   --backlinks  → one incoming slug per line
  *   --xwiki      → one `wiki:slug` per line
- *   --lineage    → archived_at / supersedes / superseded_by, one per line
- *                  (only the ones that exist — silent when all absent)
  *   --updated    → ISO-8601 UTC timestamp
  *   --path       → absolute file path (replaces the old `almanac path`)
  */
@@ -267,21 +262,6 @@ function bareField(rec: ShowRecord, field: FieldName): string {
       return rec.cross_wiki_links
         .map((x) => `${x.wiki}:${x.target}\n`)
         .join("");
-    case "lineage": {
-      const lines: string[] = [];
-      if (rec.archived_at !== null) {
-        lines.push(
-          `archived_at: ${new Date(rec.archived_at * 1000).toISOString()}`,
-        );
-      }
-      if (rec.superseded_by !== null) {
-        lines.push(`superseded_by: ${rec.superseded_by}`);
-      }
-      if (rec.supersedes.length > 0) {
-        lines.push(`supersedes: ${rec.supersedes.join(", ")}`);
-      }
-      return lines.length > 0 ? `${lines.join("\n")}\n` : "";
-    }
     case "updated":
       return `${new Date(rec.updated_at * 1000).toISOString()}\n`;
     case "path":
@@ -325,22 +305,6 @@ function labeledSection(rec: ShowRecord, field: FieldName): string {
         "xwiki",
         rec.cross_wiki_links.map((x) => `${x.wiki}:${x.target}`),
       );
-    case "lineage": {
-      const lines: string[] = [`${DIM}lineage:${RST}`];
-      if (rec.archived_at !== null) {
-        lines.push(
-          `  ${DIM}archived_at:${RST} ${new Date(rec.archived_at * 1000).toISOString()}`,
-        );
-      }
-      if (rec.superseded_by !== null) {
-        lines.push(`  ${DIM}superseded_by:${RST} ${rec.superseded_by}`);
-      }
-      if (rec.supersedes.length > 0) {
-        lines.push(`  ${DIM}supersedes:${RST} ${rec.supersedes.join(", ")}`);
-      }
-      if (lines.length === 1) lines.push("  —");
-      return lines.join("\n") + "\n";
-    }
     case "updated":
       return `${DIM}updated:${RST} ${new Date(rec.updated_at * 1000).toISOString()}\n`;
     case "path":
@@ -403,18 +367,6 @@ function metadataHeader(rec: ShowRecord): string {
         .join(", ")}`,
     );
   }
-  if (rec.archived_at !== null) {
-    lines.push(
-      `${DIM}archived:${RST}   ${new Date(rec.archived_at * 1000).toISOString()}`,
-    );
-  }
-  if (rec.superseded_by !== null) {
-    lines.push(`${DIM}superseded_by:${RST} ${rec.superseded_by}`);
-  }
-  if (rec.supersedes.length > 0) {
-    lines.push(`${DIM}supersedes:${RST} ${rec.supersedes.join(", ")}`);
-  }
-
   return lines.join("\n");
 }
 

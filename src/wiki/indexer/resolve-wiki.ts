@@ -13,10 +13,9 @@ import { findEntry } from "../registry/index.js";
  *      missing (unmounted drive, deleted repo). No silent fallback, which
  *      would hide the real problem from the user.
  *   2. default — walk up from `cwd` like git does. Fails if we're not
- *      inside a `.almanac/` repo.
+ *      inside a repo with `docs/almanac/` wiki markers.
  *
- * Returns the absolute path to the repo root (the directory containing
- * `.almanac/`).
+ * Returns the absolute path to the repo root.
  *
  * NOTE (spec contract, not yet implemented): when `--all` lands in a
  * future slice, it must silently skip wikis whose paths have gone
@@ -49,7 +48,7 @@ export async function resolveWikiRoot(params: {
   const nearest = findNearestAlmanacDir(params.cwd);
   if (nearest === null) {
     throw new UserFacingError(
-      "no .almanac/ found in this directory or any parent",
+      "no Almanac wiki found in this directory or any parent",
       {
         outcome: "needs-action",
         fix: "run: almanac init",

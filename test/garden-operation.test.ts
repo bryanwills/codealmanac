@@ -34,10 +34,7 @@ describe("garden operation", () => {
         metadata: {
           operation: "garden",
           targetKind: "wiki",
-          targetPaths: [
-            join(repo, "docs", "almanac"),
-            join(repo, ".almanac", "review.yaml"),
-          ],
+          targetPaths: [join(repo, "docs", "almanac")],
         },
       });
       expect(spec.prompt).toContain("Almanac is cultivated project memory");
@@ -45,17 +42,9 @@ describe("garden operation", () => {
       expect(spec.prompt).toContain("Page Syntax And Writing Conventions");
       expect(spec.prompt).toContain("Source Control Hygiene");
       expect(spec.prompt).toContain("almanac: <imperative one-line description>");
-      expect(spec.prompt).toContain(".almanac/review.yaml");
       expect(spec.prompt).toContain("Garden Operation");
       expect(spec.prompt).toContain(`Wiki content directory: ${repo}/docs/almanac`);
-      expect(spec.prompt).toContain("almanac review list --status decided");
-      expect(spec.prompt).toContain("almanac review show <id>");
-      expect(spec.prompt).toContain("almanac review apply <id>");
-      expect(spec.prompt).toContain("Use `almanac review add` only for unresolved source conflicts.");
-      expect(spec.prompt).toContain("Do not use review for feature ideas");
-      expect(spec.prompt).toContain("questions the code already answers");
       expect(spec.prompt).toContain("old active notes");
-      expect(spec.prompt).toContain("the disagreeing sources");
       expect(spec.prompt).toContain(`Repository root: ${repo}`);
       expect(spec.prompt).toContain("Focus on stale pages.");
     });
@@ -138,7 +127,7 @@ describe("garden operation", () => {
       const repo = await makeRepo(home, "garden-no-wiki");
 
       await expect(runGardenOperation({ cwd: repo })).rejects.toThrow(
-        "no .almanac/",
+        "no Almanac wiki",
       );
     });
   });

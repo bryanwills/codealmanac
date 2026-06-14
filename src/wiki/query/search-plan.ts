@@ -9,8 +9,6 @@ export interface SearchPlanOptions {
   since?: string;
   stale?: string;
   orphan?: boolean;
-  includeArchive?: boolean;
-  archived?: boolean;
 }
 
 export interface SearchSqlPlan {
@@ -21,12 +19,6 @@ export interface SearchSqlPlan {
 export function buildSearchSqlPlan(options: SearchPlanOptions): SearchSqlPlan {
   const whereClauses: string[] = [];
   const params: (string | number)[] = [];
-
-  if (options.archived === true) {
-    whereClauses.push("p.archived_at IS NOT NULL");
-  } else if (options.includeArchive !== true) {
-    whereClauses.push("p.archived_at IS NULL");
-  }
 
   for (const rawTopic of options.topics) {
     const topicSlug = slugForTopic(rawTopic);
@@ -76,7 +68,7 @@ function buildFtsSearchSqlPlan(
 ): SearchSqlPlan {
   return {
     sql: `
-      SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+      SELECT p.slug, p.title, p.description, p.updated_at
       FROM pages p
       JOIN fts_pages f ON f.slug = p.slug
       WHERE fts_pages MATCH ?
@@ -91,7 +83,7 @@ function buildListSearchSql(whereClauses: string[]): string {
   const where =
     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
   return `
-    SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+    SELECT p.slug, p.title, p.description, p.updated_at
     FROM pages p
     ${where}
     ORDER BY p.updated_at DESC, p.slug ASC

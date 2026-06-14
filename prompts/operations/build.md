@@ -30,9 +30,8 @@ for this operation.
 Use filesystem reads, shell/search commands, and direct writes under
 `docs/almanac/`. Local runtime state under `.almanac/` is not wiki prose.
 
-Existing `.almanac/pages/` pages may be present during migration. Read them as
-source material and preserve useful knowledge, but write new canonical pages in
-`docs/almanac/`.
+The durable wiki source is `docs/almanac/`. Do not create or maintain
+`.almanac/pages/` or `.almanac/topics.yaml`.
 
 ## Algorithm
 

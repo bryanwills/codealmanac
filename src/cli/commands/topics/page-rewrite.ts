@@ -9,7 +9,7 @@ import {
 import { wikiPageRoots } from "../../../wiki/locations.js";
 
 /**
- * Apply a `topic-list transform` to every `.almanac/pages/*.md` file
+ * Apply a `topic-list transform` to every markdown file under `docs/almanac`
  * whose frontmatter contains a relevant topic. Returns the number of
  * files actually changed.
  *

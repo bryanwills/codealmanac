@@ -1,7 +1,7 @@
 import type { OperationSpec } from "./spec.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import { MissingWikiError } from "./errors.js";
-import { canonicalWikiDir, reviewYamlPath } from "../wiki/locations.js";
+import { canonicalWikiDir } from "../wiki/locations.js";
 import type {
   OperationProviderSelection,
   OperationRunResult,
@@ -33,7 +33,7 @@ export async function createGardenRunSpec(args: {
     repoRoot: args.repoRoot,
     context: args.context,
     targetKind: "wiki",
-    targetPaths: [canonicalWikiDir(args.repoRoot), reviewYamlPath(args.repoRoot)],
+    targetPaths: [canonicalWikiDir(args.repoRoot)],
   });
 }
 

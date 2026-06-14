@@ -85,23 +85,21 @@ The architecture page links to [[search]] and [[src/wiki/indexer/]].
     });
   });
 
-  it("prefers docs/almanac pages over legacy .almanac/pages collisions", async () => {
+  it("skips duplicate slugs within docs/almanac", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
-      await writePage(repo, "architecture", "# Legacy Architecture\n");
+      await writePage(repo, "architecture", "# Architecture\n");
 
-      const docsDir = join(repo, "docs", "almanac", "architecture");
-      await mkdir(docsDir, { recursive: true });
       await writeFile(
-        join(docsDir, "README.md"),
+        join(repo, "docs", "almanac", "duplicate.md"),
         `---
 page_id: architecture
-title: Canonical Architecture
+title: Duplicate Architecture
 topics: [architecture]
 ---
 
-# Canonical Architecture
+# Duplicate Architecture
 `,
         "utf8",
       );
@@ -121,8 +119,8 @@ topics: [architecture]
           .get() as { slug: string; title: string; file_path: string };
         expect(page).toEqual({
           slug: "architecture",
-          title: "Canonical Architecture",
-          file_path: join(docsDir, "README.md"),
+          title: "Architecture",
+          file_path: join(repo, "docs", "almanac", "architecture.md"),
         });
       } finally {
         db.close();
@@ -130,21 +128,10 @@ topics: [architecture]
     });
   });
 
-  it("uses docs/almanac/topics.yaml instead of legacy topics when both exist", async () => {
+  it("uses docs/almanac/topics.yaml for topic metadata", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
-      await writeFile(
-        join(repo, ".almanac", "topics.yaml"),
-        `topics:
-  - slug: architecture
-    title: Legacy Architecture
-    description: Legacy topic description.
-    parents: []
-`,
-        "utf8",
-      );
-      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
       await writeFile(
         join(repo, "docs", "almanac", "topics.yaml"),
         `topics:
@@ -192,9 +179,13 @@ topics: [architecture]
 title: Checkout Flow
 description: Checkout flow description for search results.
 topics: [checkout, flows]
-files:
-  - src/checkout/handler.ts
-  - src/checkout/
+sources:
+  - id: checkout-handler
+    type: file
+    path: src/checkout/handler.ts
+  - id: checkout-folder
+    type: file
+    path: src/checkout/
 ---
 
 # Checkout Flow
@@ -296,7 +287,7 @@ The handler at [[src/checkout/handler.ts]] validates things. See
       await writePage(repo, "b", "---\ntopics: [x]\n---\n\nbody b\n");
       await runIndexer({ repoRoot: repo });
 
-      await rm(join(repo, ".almanac", "pages", "b.md"));
+      await rm(join(repo, "docs", "almanac", "b.md"));
       const result = await runIndexer({ repoRoot: repo });
       expect(result.removed).toBe(1);
       expect(result.total).toBe(1);
@@ -307,46 +298,6 @@ The handler at [[src/checkout/handler.ts]] validates things. See
           .prepare("SELECT slug FROM pages ORDER BY slug")
           .all();
         expect(remaining).toEqual([{ slug: "a" }]);
-      } finally {
-        db.close();
-      }
-    });
-  });
-
-  it("stores archived_at and superseded_by", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writePage(
-        repo,
-        "stripe-sync",
-        `---
-title: Stripe Sync
-topics: [payments, archive]
-archived_at: 2026-04-15
-superseded_by: stripe-async
----
-
-# Old doc
-`,
-      );
-      await runIndexer({ repoRoot: repo });
-
-      const db = openIndex(join(repo, ".almanac", "index.db"));
-      try {
-        const row = db
-          .prepare(
-            "SELECT slug, archived_at, superseded_by FROM pages WHERE slug = ?",
-          )
-          .get("stripe-sync") as
-          | {
-              slug: string;
-              archived_at: number | null;
-              superseded_by: string | null;
-            }
-          | undefined;
-        expect(row?.archived_at).not.toBeNull();
-        expect(row?.superseded_by).toBe("stripe-async");
       } finally {
         db.close();
       }
@@ -403,37 +354,34 @@ Body.
 
         const sources = db
           .prepare(
-            `SELECT source_id, source_type, target, title, retrieved_at, note, legacy
+            `SELECT source_id, source_type, target, title, retrieved_at, note
              FROM page_sources WHERE page_slug = ? ORDER BY source_id`,
           )
           .all("source-backed");
         expect(sources).toEqual([
-            {
-              source_id: "docs",
-              source_type: "web",
-              target: "https://example.com/docs",
-              title: "Example Docs",
-              retrieved_at: "2026-05-28",
-              note: "Documents external behavior.",
-              legacy: 0,
-            },
-            {
-              source_id: "issue-42",
-              source_type: "issue",
-              target: "42",
-              title: null,
-              retrieved_at: null,
-              note: "Bug report.",
-              legacy: 0,
-            },
-            {
+          {
+            source_id: "docs",
+            source_type: "web",
+            target: "https://example.com/docs",
+            title: "Example Docs",
+            retrieved_at: "2026-05-28",
+            note: "Documents external behavior.",
+          },
+          {
+            source_id: "issue-42",
+            source_type: "issue",
+            target: "42",
+            title: null,
+            retrieved_at: null,
+            note: "Bug report.",
+          },
+          {
             source_id: "schema",
             source_type: "file",
             target: "src/wiki/indexer/schema.ts",
             title: null,
             retrieved_at: null,
             note: "Defines index tables.",
-            legacy: 0,
           },
         ]);
       } finally {
@@ -478,13 +426,13 @@ Body.
     });
   });
 
-  it("isolates legacy files and URL sources as legacy page sources", async () => {
+  it("does not index retired files frontmatter or string sources", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await scaffoldWiki(repo);
       await writePage(
         repo,
-        "legacy-source-backed",
+        "retired-frontmatter",
         `---
 topics: [x]
 files:
@@ -504,31 +452,16 @@ Body.
       try {
         const refs = db
           .prepare("SELECT path FROM file_refs WHERE page_slug = ?")
-          .all("legacy-source-backed");
-        expect(refs).toEqual([{ path: "src/legacy.ts" }]);
+          .all("retired-frontmatter");
+        expect(refs).toEqual([]);
 
         const sources = db
           .prepare(
-            `SELECT source_id, source_type, target, note, legacy
+            `SELECT source_id, source_type, target, note
              FROM page_sources WHERE page_slug = ? ORDER BY source_type, source_id`,
           )
-          .all("legacy-source-backed");
-        expect(sources).toEqual([
-          {
-            source_id: "legacy",
-            source_type: "file",
-            target: "src/legacy.ts",
-            note: "Migrated from legacy files.",
-            legacy: 1,
-          },
-          {
-            source_id: "legacy-docs",
-            source_type: "web",
-            target: "https://example.com/legacy-docs",
-            note: "Migrated from legacy sources.",
-            legacy: 1,
-          },
-        ]);
+          .all("retired-frontmatter");
+        expect(sources).toEqual([]);
       } finally {
         db.close();
       }
@@ -594,7 +527,7 @@ Body without the indexed phrase.
       );
 
       const dbPath = join(repo, ".almanac", "index.db");
-      const pagePath = join(repo, ".almanac", "pages", "description-only.md");
+      const pagePath = join(repo, "docs", "almanac", "description-only.md");
       const oldDb = new Database(dbPath);
       try {
         oldDb.exec(`
@@ -603,19 +536,17 @@ Body without the indexed phrase.
             title         TEXT,
             file_path     TEXT NOT NULL,
             content_hash  TEXT NOT NULL,
-            updated_at    INTEGER NOT NULL,
-            archived_at   INTEGER,
-            superseded_by TEXT
+            updated_at    INTEGER NOT NULL
           );
           PRAGMA user_version = 2;
         `);
         oldDb
           .prepare(
             `INSERT INTO pages
-              (slug, title, file_path, content_hash, updated_at, archived_at, superseded_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              (slug, title, file_path, content_hash, updated_at)
+             VALUES (?, ?, ?, ?, ?)`,
           )
-          .run("description-only", "Description Only", pagePath, "old-hash", 1, null, null);
+          .run("description-only", "Description Only", pagePath, "old-hash", 1);
       } finally {
         oldDb.close();
       }
@@ -667,7 +598,7 @@ Body.
       await writePage(repo, "source-page", raw);
 
       const dbPath = join(repo, ".almanac", "index.db");
-      const pagePath = join(repo, ".almanac", "pages", "source-page.md");
+      const pagePath = join(repo, "docs", "almanac", "source-page.md");
       const oldDb = new Database(dbPath);
       try {
         oldDb.exec(`
@@ -677,17 +608,15 @@ Body.
             summary       TEXT,
             file_path     TEXT NOT NULL,
             content_hash  TEXT NOT NULL,
-            updated_at    INTEGER NOT NULL,
-            archived_at   INTEGER,
-            superseded_by TEXT
+            updated_at    INTEGER NOT NULL
           );
           PRAGMA user_version = 3;
         `);
         oldDb
           .prepare(
             `INSERT INTO pages
-              (slug, title, summary, file_path, content_hash, updated_at, archived_at, superseded_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              (slug, title, summary, file_path, content_hash, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)`,
           )
           .run(
             "source-page",
@@ -696,8 +625,6 @@ Body.
             pagePath,
             createHash("sha256").update(raw).digest("hex"),
             1,
-            null,
-            null,
           );
       } finally {
         oldDb.close();
@@ -762,7 +689,7 @@ Body.
       // Filename is `Checkout_Flow.md` — non-canonical. Slug should be
       // `checkout-flow`.
       await writeFile(
-        join(repo, ".almanac", "pages", "Checkout_Flow.md"),
+        join(repo, "docs", "almanac", "Checkout_Flow.md"),
         "---\ntopics: [x]\n---\n\nbody\n",
         "utf8",
       );
@@ -805,12 +732,12 @@ Body.
       // We want `Checkout_Flow.md` indexed (alphabetical winner on the
       // fast-glob output) and `checkout flow.md` skipped with a warning.
       await writeFile(
-        join(repo, ".almanac", "pages", "Checkout_Flow.md"),
+        join(repo, "docs", "almanac", "Checkout_Flow.md"),
         "---\ntopics: [x]\n---\n\nbody A\n",
         "utf8",
       );
       await writeFile(
-        join(repo, ".almanac", "pages", "checkout flow.md"),
+        join(repo, "docs", "almanac", "checkout flow.md"),
         "---\ntopics: [y]\n---\n\nbody B\n",
         "utf8",
       );
@@ -873,7 +800,7 @@ Body.
       await writePage(repo, "good", "---\ntopics: [x]\n---\n\nbody\n");
 
       const { symlink } = await import("node:fs/promises");
-      const pagesDir = join(repo, ".almanac", "pages");
+      const pagesDir = join(repo, "docs", "almanac");
       await symlink(
         join(pagesDir, "nonexistent.md"),
         join(pagesDir, "broken.md"),
@@ -947,7 +874,7 @@ Body.
       expect(result.changed).toBe(1);
 
       const body = await readFile(
-        join(repo, ".almanac", "pages", "a.md"),
+        join(repo, "docs", "almanac", "a.md"),
         "utf8",
       );
       expect(body).toMatch(/v2/);

@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -34,7 +34,7 @@ describe("almanac tag / untag", () => {
       expect(result.exitCode).toBe(0);
 
       const page = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(page).toMatch(/topics: \[existing, auth, jwt\]/);
@@ -60,45 +60,6 @@ describe("almanac tag / untag", () => {
     });
   });
 
-  it("keeps legacy topics.yaml as the write target in legacy-only repos", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writeFile(
-        join(repo, ".almanac", "topics.yaml"),
-        `topics:
-  - slug: systems
-    title: Systems
-    description: Custom subsystems.
-    parents: []
-  - slug: storage
-    title: Storage
-    description: Persistence layer.
-    parents: [systems]
-`,
-        "utf8",
-      );
-      await writePage(repo, "doc", "---\ntopics: [storage]\n---\n\nbody content.\n");
-      await runIndexer({ repoRoot: repo });
-
-      await runTag({
-        cwd: repo,
-        page: "doc",
-        topics: ["brand-new"],
-      });
-
-      expect(existsSync(join(repo, "docs", "almanac", "topics.yaml"))).toBe(false);
-      const file = await loadTopicsFile(join(repo, ".almanac", "topics.yaml"));
-      expect(file.topics.find((t) => t.slug === "systems")?.title).toBe("Systems");
-      expect(file.topics.find((t) => t.slug === "storage")?.parents).toEqual([
-        "systems",
-      ]);
-      expect(file.topics.find((t) => t.slug === "brand-new")?.title).toBe(
-        "Brand New",
-      );
-    });
-  });
-
   it("preserves the page body and other frontmatter fields byte-exact", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
@@ -106,7 +67,7 @@ describe("almanac tag / untag", () => {
       const body =
         "# Doc\n\nMulti-paragraph body.\n\nWith `inline code` and [[link]].\n\n- list item\n- another\n";
       const original =
-        "---\ntitle: Doc\ntopics: [one]\nfiles:\n  - src/a.ts\n---\n" + body;
+        "---\ntitle: Doc\ntopics: [one]\nsources:\n  - id: a\n    type: file\n    path: src/a.ts\n---\n" + body;
       await writePage(repo, "doc", original);
       await runIndexer({ repoRoot: repo });
 
@@ -116,7 +77,7 @@ describe("almanac tag / untag", () => {
         topics: ["two"],
       });
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
 
@@ -125,9 +86,9 @@ describe("almanac tag / untag", () => {
       expect(bodyIdx).toBeGreaterThan(0);
       expect(after.slice(bodyIdx)).toBe(body);
 
-      // `title:` and `files:` keys survived.
+      // `title:` and `sources:` keys survived.
       expect(after).toMatch(/title: Doc/);
-      expect(after).toMatch(/files:\n\s+- src\/a\.ts/);
+      expect(after).toMatch(/sources:\n\s+- id: a\n\s+type: file\n\s+path: src\/a\.ts/);
     });
   });
 
@@ -143,7 +104,7 @@ describe("almanac tag / untag", () => {
       await runIndexer({ repoRoot: repo });
 
       const before = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       const result = await runTag({
@@ -153,7 +114,7 @@ describe("almanac tag / untag", () => {
       });
       expect(result.exitCode).toBe(0);
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(after).toBe(before);
@@ -177,11 +138,11 @@ describe("almanac tag / untag", () => {
       expect(result.exitCode).toBe(0);
 
       const a = await readFile(
-        join(repo, ".almanac", "pages", "a.md"),
+        join(repo, "docs", "almanac", "a.md"),
         "utf8",
       );
       const b = await readFile(
-        join(repo, ".almanac", "pages", "b.md"),
+        join(repo, "docs", "almanac", "b.md"),
         "utf8",
       );
       expect(a).toMatch(/topics: \[arch\]/);
@@ -209,7 +170,7 @@ describe("almanac tag / untag", () => {
       expect(result.exitCode).toBe(0);
 
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(after).toMatch(/topics: \[a, c\]/);
@@ -233,7 +194,7 @@ describe("almanac tag / untag", () => {
       });
       expect(result.exitCode).toBe(0);
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       expect(after).toBe(raw);
@@ -329,7 +290,7 @@ describe("almanac tag / untag", () => {
       });
       expect(result.exitCode).toBe(0);
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       // Flow-style replacement on the key line.
@@ -362,7 +323,7 @@ describe("almanac tag / untag", () => {
       expect(result.exitCode).toBe(0);
 
       const after = await readFile(
-        join(repo, ".almanac", "pages", "doc.md"),
+        join(repo, "docs", "almanac", "doc.md"),
         "utf8",
       );
       // Every frontmatter newline is still CRLF. Body bytes are
@@ -464,7 +425,7 @@ describe("almanac tag / untag", () => {
 
         await runTag({ cwd: repo, page: "doc", topics: ["two"] });
         const after = await readFile(
-          join(repo, ".almanac", "pages", "doc.md"),
+          join(repo, "docs", "almanac", "doc.md"),
           "utf8",
         );
 

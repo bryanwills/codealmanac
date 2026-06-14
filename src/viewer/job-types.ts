@@ -18,7 +18,6 @@ export interface ViewerJobPageChangeRef {
 export interface ViewerJobPageChangeDetails {
   created: ViewerJobPageChangeRef[];
   updated: ViewerJobPageChangeRef[];
-  archived: ViewerJobPageChangeRef[];
   deleted: ViewerJobPageChangeRef[];
 }
 

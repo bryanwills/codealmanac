@@ -93,7 +93,7 @@ describe("almanac automation", () => {
     await withTempHome(async (home) => {
       const repo = join(home, "repo");
       const nested = join(repo, "src", "nested");
-      await mkdir(join(repo, ".almanac"), { recursive: true });
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
       await mkdir(nested, { recursive: true });
       const plistPath = join(
         home,

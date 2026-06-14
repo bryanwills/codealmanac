@@ -88,7 +88,7 @@ export async function runConfigSet(opts: {
     const file = targetConfigPath(opts.project === true);
     if (file === null) {
       return needsAction(
-        "no .almanac/ found for project config",
+        "no Almanac wiki found for project config",
         "run: almanac init",
       );
     }
@@ -117,7 +117,7 @@ export async function runConfigUnset(opts: {
   const file = targetConfigPath(opts.project === true);
   if (file === null) {
     return needsAction(
-      "no .almanac/ found for project config",
+      "no Almanac wiki found for project config",
       "run: almanac init",
     );
   }

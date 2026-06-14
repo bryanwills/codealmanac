@@ -46,18 +46,19 @@ export async function makeRepo(parent: string, name: string): Promise<string> {
 }
 
 /**
- * Create a wiki with `.almanac/pages/` scaffolded inside the given repo.
- * Doesn't touch the registry — callers that need registration can wrap
- * with `initWiki`.
+ * Create a wiki with `docs/almanac/` source files and `.almanac/` runtime
+ * state scaffolded inside the given repo. Doesn't touch the registry —
+ * callers that need registration can wrap with `initWiki`.
  */
 export async function scaffoldWiki(repo: string): Promise<string> {
-  const pagesDir = join(repo, ".almanac", "pages");
+  await mkdir(join(repo, ".almanac"), { recursive: true });
+  const pagesDir = join(repo, "docs", "almanac");
   await mkdir(pagesDir, { recursive: true });
   return pagesDir;
 }
 
 /**
- * Write a markdown page under `.almanac/pages/<slug>.md` and optionally
+ * Write a markdown page under `docs/almanac/<slug>.md` and optionally
  * stamp its mtime for freshness tests. Returns the absolute path.
  */
 export async function writePage(
@@ -66,7 +67,7 @@ export async function writePage(
   contents: string,
   opts?: { mtime?: Date },
 ): Promise<string> {
-  const pagesDir = join(repo, ".almanac", "pages");
+  const pagesDir = join(repo, "docs", "almanac");
   await mkdir(pagesDir, { recursive: true });
   const path = join(pagesDir, `${slug}.md`);
   await writeFile(path, contents, "utf8");

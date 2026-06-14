@@ -23,7 +23,7 @@ export function pagesDirectlyTagged(
       `SELECT pt.page_slug
        FROM page_topics pt
        JOIN pages p ON p.slug = pt.page_slug
-       WHERE pt.topic_slug = ? AND p.archived_at IS NULL
+       WHERE pt.topic_slug = ?
        ORDER BY pt.page_slug`,
     )
     .all(slug)
@@ -43,7 +43,7 @@ export function pagesForSubtree(
       `SELECT DISTINCT pt.page_slug
        FROM page_topics pt
        JOIN pages p ON p.slug = pt.page_slug
-       WHERE pt.topic_slug IN (${placeholders}) AND p.archived_at IS NULL
+       WHERE pt.topic_slug IN (${placeholders})
        ORDER BY pt.page_slug`,
     )
     .all(...slugs);

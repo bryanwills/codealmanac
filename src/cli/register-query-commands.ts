@@ -42,8 +42,6 @@ export function registerQueryCommands(program: Command): void {
     .option("--since <duration>", "updated within duration, by file mtime (e.g. 2w, 30d)")
     .option("--stale <duration>", "NOT updated within duration, by file mtime")
     .option("--orphan", "pages with no topics")
-    .option("--include-archive", "include archived pages")
-    .option("--archived", "archived pages only")
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "emit structured JSON")
     .option("--slugs", "emit only result slugs, one per line")
@@ -59,8 +57,6 @@ export function registerQueryCommands(program: Command): void {
           since?: string;
           stale?: string;
           orphan?: boolean;
-          includeArchive?: boolean;
-          archived?: boolean;
           wiki?: string;
           json?: boolean;
           slugs?: boolean;
@@ -79,8 +75,6 @@ export function registerQueryCommands(program: Command): void {
           since: opts.since,
           stale: opts.stale,
           orphan: opts.orphan,
-          includeArchive: opts.includeArchive,
-          archived: opts.archived,
           wiki: opts.wiki,
           output: resolveSearchOutputMode(opts),
           limit: opts.limit,
@@ -105,7 +99,6 @@ export function registerQueryCommands(program: Command): void {
     .option("--links", "print outgoing wikilinks")
     .option("--backlinks", "print incoming wikilinks")
     .option("--xwiki", "print cross-wiki links")
-    .option("--lineage", "print archived_at / supersedes / superseded_by")
     .option("--updated", "print updated timestamp")
     .option("--path", "print absolute file path")
     .action(
@@ -125,7 +118,6 @@ export function registerQueryCommands(program: Command): void {
           links?: boolean;
           backlinks?: boolean;
           xwiki?: boolean;
-          lineage?: boolean;
           updated?: boolean;
           path?: boolean;
         },
@@ -149,7 +141,6 @@ export function registerQueryCommands(program: Command): void {
           links: opts.links,
           backlinks: opts.backlinks,
           xwiki: opts.xwiki,
-          lineage: opts.lineage,
           updated: opts.updated,
           path: opts.path,
         });

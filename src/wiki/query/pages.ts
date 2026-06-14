@@ -11,8 +11,6 @@ export interface PagePreview {
   title: string | null;
   description: string | null;
   updated_at: number;
-  archived_at: number | null;
-  superseded_by: string | null;
   topics: string[];
 }
 
@@ -22,9 +20,8 @@ export function recentPages(
 ): PagePreview[] {
   return pagePreviews(
     db,
-    `SELECT slug, title, description, updated_at, archived_at, superseded_by
+    `SELECT slug, title, description, updated_at
      FROM pages
-     WHERE archived_at IS NULL
      ORDER BY updated_at DESC, slug ASC
      LIMIT ${limit}`,
     [],
@@ -37,11 +34,25 @@ export function pagePreviewBySlug(
 ): PagePreview | null {
   return pagePreviews(
     db,
-    `SELECT slug, title, description, updated_at, archived_at, superseded_by
+    `SELECT slug, title, description, updated_at
      FROM pages
-     WHERE archived_at IS NULL AND slug = ?
+     WHERE slug = ?
      LIMIT 1`,
     [slug],
+  )[0] ?? null;
+}
+
+export function pagePreviewByFilePath(
+  db: Database.Database,
+  filePath: string,
+): PagePreview | null {
+  return pagePreviews(
+    db,
+    `SELECT slug, title, description, updated_at
+     FROM pages
+     WHERE file_path = ?
+     LIMIT 1`,
+    [filePath],
   )[0] ?? null;
 }
 
@@ -53,7 +64,7 @@ export function pagesBySlug(
   const placeholders = Array.from({ length: slugs.length }, () => "?").join(", ");
   return pagePreviews(
     db,
-    `SELECT slug, title, description, updated_at, archived_at, superseded_by
+    `SELECT slug, title, description, updated_at
      FROM pages
      WHERE slug IN (${placeholders})
      ORDER BY title COLLATE NOCASE, slug ASC`,
@@ -81,10 +92,10 @@ export function searchPages(
     query: trimmed,
     pages: pagePreviews(
       db,
-      `SELECT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+      `SELECT p.slug, p.title, p.description, p.updated_at
        FROM pages p
        JOIN fts_pages f ON f.slug = p.slug
-       WHERE p.archived_at IS NULL AND fts_pages MATCH ?
+       WHERE fts_pages MATCH ?
        ORDER BY f.rank ASC, p.updated_at DESC, p.slug ASC
        LIMIT ${args.limit}`,
       [ftsQuery],
@@ -129,10 +140,10 @@ export function pagePreviews(
 function fileMentionSql(input: string, limit: number): string {
   const mention = buildFileMentionFilter(input);
   if (mention.isDir) {
-    return `SELECT DISTINCT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+    return `SELECT DISTINCT p.slug, p.title, p.description, p.updated_at
             FROM pages p
             JOIN file_refs r ON r.page_slug = p.slug
-            WHERE p.archived_at IS NULL AND (r.path = ? OR r.path GLOB ?)
+            WHERE r.path = ? OR r.path GLOB ?
             ORDER BY p.updated_at DESC, p.slug ASC
             LIMIT ${limit}`;
   }
@@ -140,10 +151,10 @@ function fileMentionSql(input: string, limit: number): string {
   const folderClause = mention.parentFolders.length > 0
     ? `OR (r.is_dir = 1 AND r.path IN (${placeholders}))`
     : "";
-  return `SELECT DISTINCT p.slug, p.title, p.description, p.updated_at, p.archived_at, p.superseded_by
+  return `SELECT DISTINCT p.slug, p.title, p.description, p.updated_at
           FROM pages p
           JOIN file_refs r ON r.page_slug = p.slug
-          WHERE p.archived_at IS NULL AND (r.path = ? ${folderClause})
+          WHERE r.path = ? ${folderClause}
           ORDER BY p.updated_at DESC, p.slug ASC
           LIMIT ${limit}`;
 }

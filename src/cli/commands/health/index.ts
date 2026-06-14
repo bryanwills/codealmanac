@@ -41,14 +41,14 @@ export async function runHealth(
   if (options.json === true) {
     return {
       stdout: `${JSON.stringify(report, null, 2)}\n`,
-      stderr: migrationWarning(report),
+      stderr: "",
       exitCode: 0,
     };
   }
 
   return {
     stdout: formatReport(report),
-    stderr: migrationWarning(report),
+    stderr: "",
     exitCode: 0,
   };
 }
@@ -121,20 +121,6 @@ function formatReport(r: HealthReport): string {
   );
   sections.push(
     section(
-      "legacy-frontmatter",
-      r.legacy_frontmatter.length,
-      r.legacy_frontmatter.map((s) => `  ${BLUE}${s.slug}${RST} uses ${s.fields.join(", ")}`),
-    ),
-  );
-  sections.push(
-    section(
-      "unfixable-sources",
-      r.unfixable_sources.length,
-      r.unfixable_sources.map((s) => `  ${BLUE}${s.slug}${RST} has ambiguous legacy source ${s.source}`),
-    ),
-  );
-  sections.push(
-    section(
       "duplicate-sources",
       r.duplicate_sources.length,
       r.duplicate_sources.map((s) => `  ${BLUE}${s.slug}${RST} repeats ${s.source_id}`),
@@ -167,9 +153,4 @@ function formatReport(r: HealthReport): string {
 function section(label: string, count: number, lines: string[]): string {
   if (count === 0) return `${BOLD}${label}${RST} ${GREEN}(0): (ok)${RST}`;
   return `${BOLD}${label}${RST} ${RED}(${count})${RST}:\n${lines.join("\n")}`;
-}
-
-function migrationWarning(report: HealthReport): string {
-  if (report.legacy_frontmatter.length === 0) return "";
-  return "almanac: warning: legacy source frontmatter found; run `almanac migrate legacy-sources`.\n";
 }

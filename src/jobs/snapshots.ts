@@ -12,7 +12,6 @@ import { parseFrontmatter } from "../wiki/indexer/frontmatter.js";
 export interface PageSnapshotEntry {
   slug: string;
   hash: string;
-  archived: boolean;
 }
 
 export type PageSnapshot = Map<string, PageSnapshotEntry>;
@@ -20,7 +19,6 @@ export type PageSnapshot = Map<string, PageSnapshotEntry>;
 export interface PageSnapshotDelta {
   created: string[];
   updated: string[];
-  archived: string[];
   deleted: string[];
 }
 
@@ -62,7 +60,6 @@ async function snapshotPageRoots(
         out.set(slug, {
           slug,
           hash: createHash("sha256").update(content).digest("hex"),
-          archived: fm.archived_at !== null,
         });
       } catch {
         continue;
@@ -79,7 +76,6 @@ export function diffPageSnapshots(
 ): PageSnapshotDelta {
   const created: string[] = [];
   const updated: string[] = [];
-  const archived: string[] = [];
   const deleted: string[] = [];
 
   for (const [slug, entry] of after) {
@@ -88,12 +84,7 @@ export function diffPageSnapshots(
       created.push(slug);
       continue;
     }
-    if (prev.hash === entry.hash) continue;
-    if (!prev.archived && entry.archived) {
-      archived.push(slug);
-    } else {
-      updated.push(slug);
-    }
+    if (prev.hash !== entry.hash) updated.push(slug);
   }
 
   for (const slug of before.keys()) {
@@ -103,7 +94,6 @@ export function diffPageSnapshots(
   return {
     created: created.sort(),
     updated: updated.sort(),
-    archived: archived.sort(),
     deleted: deleted.sort(),
   };
 }
@@ -112,7 +102,6 @@ export function isNoopPageDelta(delta: PageSnapshotDelta): boolean {
   return (
     delta.created.length === 0 &&
     delta.updated.length === 0 &&
-    delta.archived.length === 0 &&
     delta.deleted.length === 0
   );
 }

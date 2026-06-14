@@ -16,7 +16,7 @@
  *   - Trailing `/` iff the caller says it's a directory
  *
  * The `isDir` flag is a signal carried alongside the path — we don't infer
- * it from the raw string here, because frontmatter `files:` entries and the
+ * it from the raw string here, because structured file sources and the
  * inline `[[...]]` classifier both decide directness themselves and pass
  * the answer in. Having one place decide and one place normalize keeps the
  * directory inference rule testable in isolation.
@@ -72,7 +72,7 @@ function normalizeShape(raw: string, isDir: boolean): string {
 
 /**
  * Infer `isDir` from the raw string the author wrote. Only used at the
- * point of parsing frontmatter `files:` entries and inline `[[...]]`
+ * point of parsing structured file sources and inline `[[...]]`
  * references — everywhere else, `isDir` is already known from context.
  *
  * Rule: trailing `/` (after backslash normalization) means directory.

@@ -92,7 +92,6 @@ describe("jobs command", () => {
           jobId: "run_20260509202200_show",
           created: ["new-page"],
           updated: ["sync-flow", "process-manager-runs"],
-          archived: [],
           deleted: [],
           description: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
@@ -113,7 +112,7 @@ describe("jobs command", () => {
         "Description: Updated sync/run lifecycle docs after scheduled absorb.",
       );
       expect(show.stdout).toContain(
-        "Changes: 1 created, 2 updated, 0 archived, 0 deleted",
+        "Changes: 1 created, 2 updated, 0 deleted",
       );
       expect(show.stdout).toContain("Created: new-page");
       expect(show.stdout).toContain(

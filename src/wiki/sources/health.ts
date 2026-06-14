@@ -8,8 +8,6 @@ import { inPageScope, type HealthScope } from "../health/scope.js";
 export interface SourceHealthFindings {
   missing_sources: { slug: string; source_id: string }[];
   unused_sources: { slug: string; source_id: string }[];
-  legacy_frontmatter: { slug: string; fields: string[] }[];
-  unfixable_sources: { slug: string; source: string }[];
   duplicate_sources: { slug: string; source_id: string }[];
 }
 
@@ -20,8 +18,6 @@ export async function collectSourceHealthFindings(
   return {
     missing_sources: await findMissingSources(db, scope),
     unused_sources: await findUnusedSources(db, scope),
-    legacy_frontmatter: await findLegacyFrontmatter(db, scope),
-    unfixable_sources: await findUnfixableSources(db, scope),
     duplicate_sources: await findDuplicateSources(db, scope),
   };
 }
@@ -68,39 +64,6 @@ async function findUnusedSources(
   return out;
 }
 
-async function findLegacyFrontmatter(
-  db: Database.Database,
-  scope: HealthScope,
-): Promise<{ slug: string; fields: string[] }[]> {
-  const out: { slug: string; fields: string[] }[] = [];
-  for (const row of pageRows(db)) {
-    if (!inPageScope(scope, row.slug)) continue;
-    const fm = await parsedFrontmatter(row.file_path);
-    if (fm === null) continue;
-    const fields: string[] = [];
-    if (fm.files.length > 0) fields.push("files");
-    if (fm.legacySourceStrings.length > 0) fields.push("sources");
-    if (fields.length > 0) out.push({ slug: row.slug, fields });
-  }
-  return out;
-}
-
-async function findUnfixableSources(
-  db: Database.Database,
-  scope: HealthScope,
-): Promise<{ slug: string; source: string }[]> {
-  const out: { slug: string; source: string }[] = [];
-  for (const row of pageRows(db)) {
-    if (!inPageScope(scope, row.slug)) continue;
-    const fm = await parsedFrontmatter(row.file_path);
-    if (fm === null) continue;
-    for (const source of fm.legacySourceStrings) {
-      if (!isHttpUrl(source)) out.push({ slug: row.slug, source });
-    }
-  }
-  return out;
-}
-
 async function findDuplicateSources(
   db: Database.Database,
   scope: HealthScope,
@@ -123,7 +86,6 @@ function pageRows(db: Database.Database): Array<{ slug: string; file_path: strin
   return db
     .prepare<[], { slug: string; file_path: string }>(
       `SELECT slug, file_path FROM pages
-       WHERE archived_at IS NULL
        ORDER BY slug`,
     )
     .all();
@@ -147,13 +109,4 @@ async function citationsForFile(filePath: string): Promise<Set<string>> {
     if (id !== undefined) out.add(id);
   }
   return out;
-}
-
-function isHttpUrl(raw: string): boolean {
-  try {
-    const url = new URL(raw);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
 }

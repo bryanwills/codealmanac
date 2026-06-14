@@ -6,7 +6,7 @@ sources:
   - id: decision-log
     type: file
     path: docs/plans/2026-06-13-docs-almanac-decision-log.md
-    note: Records current local conventions for docs/almanac and legacy compatibility.
+    note: Records local conventions for docs/almanac.
 ---
 
 # Wiki Conventions
@@ -18,15 +18,13 @@ folder, naming, source, citation, migration, or coverage rules change.
 
 - `docs/almanac/README.md` is the front door.
 - `docs/almanac/topics.yaml` is the canonical topic file.
-- `.almanac/` stores runtime state and legacy pages during migration.
+- `.almanac/` stores runtime state only.
 - New pages use `page_id`, `title`, `topics`, and `sources`.
 - `description` is optional; the lead should usually preview the page.
 - `_manual/` explains how to maintain the wiki.
-- `_meta/` records conventions, coverage, migration state, and source gaps.
+- `_meta/` records conventions, coverage, and source gaps.
 
-## Migration Convention
+## Old Knowledge
 
-Do not mechanically move every legacy page in one pass unless the task is a
-dedicated migration. When touching a subject, migrate or rewrite the relevant
-legacy knowledge into the new folder structure and cite the sources that support
-the current claims.
+When older context still explains the current repo, preserve it in the page that
+owns the subject. Do not maintain a second legacy page tree.

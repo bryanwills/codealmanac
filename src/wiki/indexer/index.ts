@@ -114,7 +114,7 @@ function indexNeedsRefresh(args: {
   if (isIndexSchemaStale(args.dbPath)) return true;
 
   // Keep read-side freshness even when CLI/agent write paths eagerly
-  // reindex: users can still change `.almanac/pages/` directly via
+  // reindex: users can still change `docs/almanac/` directly via
   // manual edits, git pulls, merges, or branch switches.
   return (
     args.pageRoots.some((root) => pagesNewerThan(root.dir, args.dbPath)) ||
@@ -207,8 +207,6 @@ async function indexPagesInto(
     fullPath: string;
     contentHash: string;
     updatedAt: number;
-    archivedAt: number | null;
-    supersededBy: string | null;
     topics: string[];
     sourceFileRefs: DerivedFileRef[];
     pageSources: IndexedPageSource[];
@@ -312,8 +310,6 @@ async function indexPagesInto(
       const links = extractWikilinks(fm.body);
       const normalizedSources = normalizePageSources({
         sources: fm.sources,
-        legacyFiles: fm.files,
-        legacySourceStrings: fm.legacySourceStrings,
       });
 
       planned.push({
@@ -324,8 +320,6 @@ async function indexPagesInto(
         fullPath,
         contentHash,
         updatedAt,
-        archivedAt: fm.archived_at,
-        supersededBy: fm.superseded_by,
         topics: fm.topics,
         sourceFileRefs: normalizedSources.fileRefs,
         pageSources: normalizedSources.sources,
@@ -348,18 +342,16 @@ async function indexPagesInto(
   );
 
   const replacePage = db.prepare<
-    [string, string, string | null, string, string, number, number | null, string | null]
+    [string, string, string | null, string, string, number]
   >(
-    `INSERT INTO pages (slug, title, description, file_path, content_hash, updated_at, archived_at, superseded_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO pages (slug, title, description, file_path, content_hash, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)
      ON CONFLICT(slug) DO UPDATE SET
        title         = excluded.title,
        description   = excluded.description,
        file_path     = excluded.file_path,
        content_hash  = excluded.content_hash,
-       updated_at    = excluded.updated_at,
-       archived_at   = excluded.archived_at,
-       superseded_by = excluded.superseded_by`,
+       updated_at    = excluded.updated_at`,
   );
 
   const deletePageTopics = db.prepare<[string]>(
@@ -369,7 +361,7 @@ async function indexPagesInto(
     "INSERT OR IGNORE INTO page_topics (page_slug, topic_slug) VALUES (?, ?)",
   );
   // Seed ad-hoc topics with a title-cased default. If the topic is
-  // later declared in `.almanac/topics.yaml`, `applyTopicsYaml` will
+  // later declared in `docs/almanac/topics.yaml`, `applyTopicsYaml` will
   // promote the title/description to whatever the file says. We set the
   // title here (rather than leaving NULL) so `topics list` and
   // `health --topic` have a display name even before a user writes to
@@ -389,11 +381,11 @@ async function indexPagesInto(
     "DELETE FROM page_sources WHERE page_slug = ?",
   );
   const insertPageSource = db.prepare<
-    [string, string, string, string, string | null, string | null, string | null, number]
+    [string, string, string, string, string | null, string | null, string | null]
   >(
     `INSERT OR IGNORE INTO page_sources
-       (page_slug, source_id, source_type, target, title, retrieved_at, note, legacy)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (page_slug, source_id, source_type, target, title, retrieved_at, note)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
 
   const deleteWikilinks = db.prepare<[string]>(
@@ -448,8 +440,6 @@ async function indexPagesInto(
         p.fullPath,
         p.contentHash,
         p.updatedAt,
-        p.archivedAt,
-        p.supersededBy,
       );
 
       for (const topic of p.topics) {
@@ -471,13 +461,11 @@ async function indexPagesInto(
           source.title ?? null,
           source.retrieved_at ?? null,
           source.note ?? null,
-          source.legacy ? 1 : 0,
         );
       }
 
-      // Source-derived file references. `src/wiki/indexer/page-sources.ts`
-      // is the only place that knows legacy `files:` can still become
-      // file refs; the indexer consumes the normalized model.
+      // Source-derived file references. Authored `sources: [{ type: "file" }]`
+      // becomes derived `file_refs` for --mentions and health checks.
       for (const ref of p.sourceFileRefs) {
         const raw = ref.rawPath;
         const isDir = looksLikeDir(raw);

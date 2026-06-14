@@ -58,6 +58,30 @@ describe("global viewer api", () => {
     });
   });
 
+  it("treats docs/almanac as the browseable wiki marker", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "docs-only");
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
+      await writePage(
+        repo,
+        "docs-page",
+        "---\ntitle: Docs Page\ntopics: [systems]\n---\n\n# Docs Page\n",
+      );
+      await rm(join(repo, ".almanac"), { recursive: true, force: true });
+      await addEntry({
+        name: "docs-only",
+        description: "Docs-only wiki",
+        path: repo,
+        registered_at: "2026-05-11T12:00:00.000Z",
+      });
+
+      const result = await createGlobalViewerApi().wikis();
+
+      expect(result.wikis.map((wiki) => wiki.name)).toEqual(["docs-only"]);
+      expect(result.wikis[0]?.pageCount).toBe(1);
+    });
+  });
+
   it("skips unreachable and non-wiki registry entries without dropping them", async () => {
     await withTempHome(async (home) => {
       const alpha = await makeRepo(home, "alpha");

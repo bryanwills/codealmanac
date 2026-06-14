@@ -149,14 +149,15 @@ conversation.
 - Only lifecycle operations invoke AI or write page prose. Read commands may
   refresh derived local index state and read committed markdown for display or
   validation. Organization commands may deterministically rewrite wiki metadata
-  through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
+  through explicit verbs such as `tag`, `topics`, and `migrate`.
 - **Intelligence lives in prompts, not pipelines.** No propose/review/apply
   state machines, no orchestration JSON schema between writer and reviewer, no
   `--dry-run` rehearsals. The writer owns outcomes.
-- Local-only (`.almanac/` per repo, `~/.almanac/registry.json` global); the
-  `.almanac/` namespace is **flat** — future features get peer files, not
-  subdirs.
+- Local-only (`docs/almanac/` per repo for durable wiki source, `.almanac/`
+  per repo for runtime state, `~/.almanac/registry.json` global).
 - One link syntax (`[[...]]`), disambiguated by content. `GLOB` not `LIKE` for
   path queries. Paths normalized on both sides of a comparison.
+- Authored page provenance is `sources:`. File sources and inline file/folder
+  links derive `file_refs`; there is no separate authored `files:` field.
 - Slices: plan → build → review → fix → next. The review pass is where latent
   bugs surface; don't collapse it.

@@ -1,8 +1,8 @@
 import { existsSync, statSync } from "node:fs";
 import fg from "fast-glob";
 
-// Glob is relative to `.almanac/pages/`, so this is every markdown page
-// beneath pages without repeating the `pages/` prefix.
+// Glob is relative to the wiki source directory, so this is every markdown page
+// beneath `docs/almanac/`.
 export const PAGES_GLOB = "**/*.md";
 
 /**

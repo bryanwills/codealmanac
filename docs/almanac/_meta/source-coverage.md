@@ -3,22 +3,20 @@ page_id: wiki-source-coverage
 title: Source Coverage
 topics: [concepts]
 sources:
-  - id: legacy-pages-list
+  - id: docs-layout-plan
     type: file
-    path: .almanac/pages/
-    note: The legacy corpus remains the main source of existing CodeAlmanac subsystem coverage during migration.
+    path: docs/plans/2026-06-13-docs-almanac-layout.md
+    note: Records the decision to make docs/almanac the durable wiki surface.
 ---
 
 # Source Coverage
 
-The new `docs/almanac/` tree is the canonical browse surface, but most detailed
-CodeAlmanac subsystem knowledge still lives in legacy `.almanac/pages/` during
-this migration.
+The `docs/almanac/` tree is the canonical browse surface and durable source of
+wiki truth. This page tracks broad coverage gaps that future Garden or Build
+runs should fill.
 
-Important legacy clusters include lifecycle operations, capture automation,
-provider harnesses, SQLite indexing, source provenance, wiki organization,
-competitors, product strategy, and local viewer behavior. [@legacy-pages-list]
+Important coverage areas include lifecycle operations, automation, provider
+harnesses, SQLite indexing, source provenance, wiki organization, competitors,
+product strategy, and local viewer behavior. [@docs-layout-plan]
 
-Treat this page as a coverage note, not as an index. As legacy pages are
-migrated into `docs/almanac/`, update or remove the corresponding coverage
-claim here.
+Treat this page as a coverage note, not as an index.

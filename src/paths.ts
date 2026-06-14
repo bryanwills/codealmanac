@@ -1,11 +1,9 @@
-import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
 import {
-  CANONICAL_WIKI_DIR,
+  hasCanonicalWikiDir,
   RUNTIME_DIR,
-  TOPICS_YAML,
 } from "./wiki/locations.js";
 
 /**
@@ -40,22 +38,14 @@ export function getRepoAlmanacDir(cwd: string): string {
 }
 
 /**
- * True when `repoRoot` has either the legacy/runtime marker or the canonical
- * tracked docs wiki marker.
+ * True when `repoRoot` has the canonical tracked docs wiki marker.
  *
- * `docs/almanac/README.md` and `docs/almanac/topics.yaml` are used as markers
- * instead of the directory alone so a random empty `docs/almanac/` folder does
- * not automatically become a wiki root.
+ * `docs/almanac/` is the durable wiki source directory, so its presence is
+ * enough to identify the repo root. `.almanac/` is runtime state; it is not by
+ * itself a readable wiki.
  */
 export function hasRepoAlmanacMarker(repoRoot: string): boolean {
-  const runtime = join(repoRoot, RUNTIME_DIR);
-  if (runtime !== getGlobalAlmanacDir() && existsSync(runtime)) {
-    return true;
-  }
-  return (
-    existsSync(join(repoRoot, CANONICAL_WIKI_DIR, "README.md")) ||
-    existsSync(join(repoRoot, CANONICAL_WIKI_DIR, TOPICS_YAML))
-  );
+  return hasCanonicalWikiDir(repoRoot);
 }
 
 /**
@@ -77,15 +67,9 @@ export function findNearestAlmanacDir(startDir: string): string | null {
   const globalDir = getGlobalAlmanacDir();
   let current = isAbsolute(startDir) ? startDir : resolve(startDir);
 
-  // Walk until we hit the filesystem root. `dirname("/")` returns `"/"`,
-  // so the loop terminates when we stop ascending.
   while (true) {
     const candidate = join(current, RUNTIME_DIR);
-    if (
-      (candidate !== globalDir && existsSync(candidate)) ||
-      existsSync(join(current, CANONICAL_WIKI_DIR, "README.md")) ||
-      existsSync(join(current, CANONICAL_WIKI_DIR, TOPICS_YAML))
-    ) {
+    if (candidate !== globalDir && hasRepoAlmanacMarker(current)) {
       return current;
     }
     const parent = dirname(current);

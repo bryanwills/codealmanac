@@ -1,6 +1,4 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-
+import { hasCanonicalWikiDir } from "../wiki/locations.js";
 import { readRegistry, type RegistryEntry } from "../wiki/registry/index.js";
 import { createViewerApi, type ViewerApi } from "./api.js";
 
@@ -68,5 +66,5 @@ export function createGlobalViewerApi(): GlobalViewerApi {
 }
 
 function isBrowseableWiki(entry: RegistryEntry): boolean {
-  return entry.path.length > 0 && existsSync(join(entry.path, ".almanac"));
+  return entry.path.length > 0 && hasCanonicalWikiDir(entry.path);
 }

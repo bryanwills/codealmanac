@@ -17,7 +17,7 @@ import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 async function seedViewerWiki(repo: string): Promise<void> {
   await scaffoldWiki(repo);
   await writeFile(
-    join(repo, ".almanac", "topics.yaml"),
+    join(repo, "docs", "almanac", "topics.yaml"),
     `topics:
   - slug: systems
     title: Systems
@@ -59,8 +59,10 @@ The indexer reads [[src/wiki/indexer/index.ts]] and links to [[wikilink-syntax]]
     `---
 title: Wikilink Syntax
 topics: [systems]
-files:
-  - src/wiki/indexer/
+sources:
+  - id: indexer-folder
+    type: file
+    path: src/wiki/indexer/
 ---
 
 # Wikilink Syntax
@@ -91,7 +93,6 @@ describe("viewer api", () => {
       expect(overview.topics.find((t) => t.slug === "storage")?.parents).toEqual(["systems"]);
       expect(overview.topics.find((t) => t.slug === "agents")?.parents).toEqual(["systems"]);
       expect(overview.featuredPages.frontDoor).toBeNull();
-      expect(overview.featuredPages.gettingStarted).toBeNull();
 
       const page = await api.page("sqlite-indexer");
       expect(page?.body).toContain("# SQLite Indexer");
@@ -107,7 +108,6 @@ describe("viewer api", () => {
           title: null,
           retrieved_at: null,
           note: "Implements indexing.",
-          legacy: false,
         },
       ]);
       expect(page?.wikilinks_out).toContain("wikilink-syntax");
@@ -136,84 +136,19 @@ describe("viewer api", () => {
     });
   });
 
-  it("returns review escalation items and counts", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writeFile(
-        join(repo, ".almanac", "review.yaml"),
-        `version: 1
-items:
-  - id: source-conflict
-    status: open
-    description: Source conflict
-    created_at: "2026-05-28T12:00:00.000Z"
-    body: |
-      # Source conflict
-
-      Two sources disagree.
-    decided_at: null
-    decision: null
-    applied_at: null
-    application: null
-  - id: applied-conflict
-    status: applied
-    description: Applied conflict
-    created_at: "2026-05-28T13:00:00.000Z"
-    body: |
-      # Applied conflict
-    decided_at: "2026-05-28T14:00:00.000Z"
-    decision: Use current code.
-    applied_at: "2026-05-28T15:00:00.000Z"
-    application: Updated the wiki.
-`,
-        "utf8",
-      );
-
-      const api = createViewerApi({ repoRoot: repo });
-      const review = await api.review();
-
-      expect(review.counts).toEqual({ open: 1, decided: 0, applied: 1 });
-      expect(review.items.map((item) => item.id)).toEqual(["source-conflict", "applied-conflict"]);
-      expect(review.items[0]).toMatchObject({
-        status: "open",
-        description: "Source conflict",
-      });
-    });
-  });
-
   it("reports markdown-backed front door when docs/almanac README exists", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await mkdir(join(repo, "docs", "almanac"), { recursive: true });
       await writeFile(
         join(repo, "docs", "almanac", "README.md"),
-        "---\npage_id: codebase-wiki\ntitle: Codebase Wiki\ntopics: [concepts]\n---\n\n# Codebase Wiki\n\nStart here.\n",
+        "---\npage_id: custom-front-door\ntitle: Codebase Wiki\ntopics: [concepts]\n---\n\n# Codebase Wiki\n\nStart here.\n",
       );
 
       const api = createViewerApi({ repoRoot: repo });
       const overview = await api.overview();
 
-      expect(overview.featuredPages.frontDoor?.slug).toBe("codebase-wiki");
-      expect(overview.featuredPages.gettingStarted).toBeNull();
-    });
-  });
-
-  it("uses legacy getting-started as the front-door fallback", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await scaffoldWiki(repo);
-      await writePage(
-        repo,
-        "getting-started",
-        "---\ntitle: Getting Started\ntopics: [product]\n---\n\n# Getting Started\n\nStart here.\n",
-      );
-
-      const api = createViewerApi({ repoRoot: repo });
-      const overview = await api.overview();
-
-      expect(overview.featuredPages.frontDoor?.slug).toBe("getting-started");
-      expect(overview.featuredPages.gettingStarted?.slug).toBe("getting-started");
+      expect(overview.featuredPages.frontDoor?.slug).toBe("custom-front-door");
     });
   });
 
@@ -284,7 +219,6 @@ items:
         summary: {
           created: 1,
           updated: 2,
-          archived: 0,
           deleted: 0,
           usage: { totalTokens: 1234 },
         },
@@ -293,7 +227,6 @@ items:
           jobId: started.id,
           created: ["new-page"],
           updated: ["viewer-jobs", "viewer-api"],
-          archived: [],
           deleted: [],
           description: "Updated viewer jobs.",
         },
@@ -343,7 +276,6 @@ items:
           { slug: "viewer-jobs", title: null },
           { slug: "viewer-api", title: null },
         ],
-        archived: [],
         deleted: [],
       });
       expect(detail?.events).toHaveLength(3);

@@ -6,14 +6,13 @@ import { ensureFreshIndex } from "../wiki/indexer/index.js";
 import { openIndex } from "../wiki/indexer/schema.js";
 import * as wikiQuery from "../wiki/query/index.js";
 import { toKebabCase } from "../slug.js";
-import { topicsYamlPaths } from "../wiki/locations.js";
+import { canonicalWikiDir, topicsYamlPaths } from "../wiki/locations.js";
 import {
   getViewerJobDetail,
   getViewerJobs,
   type ViewerJobDetail,
   type ViewerJobRun,
 } from "./jobs-api.js";
-import { getViewerReview, type ViewerReview } from "./review-api.js";
 
 const SIDEBAR_TAG_LIMIT = 8;
 
@@ -37,7 +36,6 @@ export interface ViewerOverview {
   };
   featuredPages: {
     frontDoor: ViewerPagePreview | null;
-    gettingStarted: ViewerPagePreview | null;
   };
 }
 
@@ -51,7 +49,6 @@ export interface ViewerApi {
   search(query: string): Promise<{ query: string; pages: ViewerPagePreview[] }>;
   suggest(query: string): Promise<{ query: string; pages: ViewerPagePreview[] }>;
   file(path: string): Promise<{ path: string; pages: ViewerPagePreview[] }>;
-  review(): Promise<ViewerReview>;
   jobs(): Promise<{ runs: ViewerJobRun[] }>;
   job(jobId: string): Promise<ViewerJobDetail | null>;
 }
@@ -67,16 +64,15 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
         const counts = db
           .prepare<[], { page_count: number; topic_count: number }>(
             `SELECT
-               (SELECT COUNT(*) FROM pages WHERE archived_at IS NULL) AS page_count,
+               (SELECT COUNT(*) FROM pages) AS page_count,
                (SELECT COUNT(*) FROM topics) AS topic_count`,
           )
           .get() ?? { page_count: 0, topic_count: 0 };
 
-        const gettingStarted = wikiQuery.pages.pagePreviewBySlug(db, "getting-started");
-        const frontDoor =
-          wikiQuery.pages.pagePreviewBySlug(db, "codealmanac-wiki") ??
-          wikiQuery.pages.pagePreviewBySlug(db, "codebase-wiki") ??
-          gettingStarted;
+        const frontDoor = wikiQuery.pages.pagePreviewByFilePath(
+          db,
+          join(canonicalWikiDir(ctx.repoRoot), "README.md"),
+        );
 
         return {
           repoRoot: ctx.repoRoot,
@@ -93,7 +89,6 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
           topicNavigation,
           featuredPages: {
             frontDoor,
-            gettingStarted,
           },
         };
       });
@@ -106,8 +101,6 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
         const relatedSlugs = Array.from(new Set([
           ...page.wikilinks_in,
           ...page.wikilinks_out,
-          ...page.supersedes,
-          ...(page.superseded_by !== null ? [page.superseded_by] : []),
         ]));
         const related_pages = wikiQuery.pages.pagesBySlug(db, relatedSlugs);
         return { ...page, related_pages };
@@ -138,10 +131,6 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
       return withFreshDb(ctx.repoRoot, (db) => {
         return wikiQuery.pages.pagesMentioningPath(db, path);
       });
-    },
-
-    async review() {
-      return getViewerReview(ctx.repoRoot);
     },
 
     async jobs() {

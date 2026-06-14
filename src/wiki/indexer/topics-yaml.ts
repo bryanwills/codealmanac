@@ -7,7 +7,7 @@ import { loadTopicsFile } from "../topics/yaml.js";
 export const TOPICS_YAML_FILENAME = "topics.yaml";
 
 /**
- * Apply the contents of `.almanac/topics.yaml` to SQLite.
+ * Apply the contents of `docs/almanac/topics.yaml` to SQLite.
  *
  * Called at the tail of every reindex. For each entry in the file we
  * upsert a row into `topics` and rewrite that topic's parent edges.

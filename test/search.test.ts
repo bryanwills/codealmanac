@@ -11,9 +11,13 @@ async function seedFixture(repo: string): Promise<void> {
     `---
 title: Checkout Flow
 topics: [checkout, flows]
-files:
-  - src/checkout/handler.ts
-  - src/checkout/
+sources:
+  - id: checkout-handler
+    type: file
+    path: src/checkout/handler.ts
+  - id: checkout-folder
+    type: file
+    path: src/checkout/
 ---
 
 # Checkout Flow
@@ -28,9 +32,10 @@ The handler at [[src/checkout/handler.ts]] validates the cart. See
     `---
 title: Stripe Async Pipeline
 topics: [payments, stack]
-files:
-  - src/payments/stripe.ts
-supersedes: stripe-sync
+sources:
+  - id: stripe
+    type: file
+    path: src/payments/stripe.ts
 ---
 
 # Stripe Async Pipeline
@@ -44,19 +49,17 @@ Replaces the synchronous approach. See [[checkout-flow]] for context.
     `---
 title: Stripe Sync
 topics: [payments, archive]
-archived_at: 2026-04-15
-superseded_by: stripe-async
 ---
 
 # Stripe Sync
 
-Previously we made synchronous Stripe calls inline.
+Previously we made inline Stripe calls.
 `,
   );
 }
 
 describe("almanac search", () => {
-  it("full-text matches via FTS5, archived excluded by default", async () => {
+  it("full-text matches via FTS5", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");
       await seedFixture(repo);
@@ -66,42 +69,7 @@ describe("almanac search", () => {
         query: "synchronous",
         topics: [],
       });
-      // Only stripe-async's body mentions "synchronous" (stripe-sync does
-      // too but is archived). This isolates the archived-default behavior
-      // without accidental multi-match.
       expect(r.stdout.trim().split("\n")).toEqual(["stripe-async"]);
-    });
-  });
-
-  it("--include-archive brings archived pages back into results", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await seedFixture(repo);
-
-      const r = await runSearch({
-        cwd: repo,
-        query: "synchronous",
-        topics: [],
-        includeArchive: true,
-      });
-      expect(r.stdout.trim().split("\n").sort()).toEqual([
-        "stripe-async",
-        "stripe-sync",
-      ]);
-    });
-  });
-
-  it("--archived returns archived pages only", async () => {
-    await withTempHome(async (home) => {
-      const repo = await makeRepo(home, "r");
-      await seedFixture(repo);
-
-      const r = await runSearch({
-        cwd: repo,
-        topics: [],
-        archived: true,
-      });
-      expect(r.stdout.trim().split("\n")).toEqual(["stripe-sync"]);
     });
   });
 
@@ -204,8 +172,10 @@ body
         "under",
         `---
 topics: [x]
-files:
-  - src/my_module/
+sources:
+  - id: module-folder
+    type: file
+    path: src/my_module/
 ---
 
 body
@@ -415,8 +385,10 @@ checkout body
         "route-a",
         `---
 topics: [routes]
-files:
-  - src/[id]/page.tsx
+sources:
+  - id: dynamic-route
+    type: file
+    path: src/[id]/page.tsx
 ---
 
 body
@@ -427,8 +399,10 @@ body
         "route-b",
         `---
 topics: [routes]
-files:
-  - src/abc/page.tsx
+sources:
+  - id: abc-route
+    type: file
+    path: src/abc/page.tsx
 ---
 
 body
@@ -454,8 +428,10 @@ body
         "checkout",
         `---
 topics: [x]
-files:
-  - src/checkout/
+sources:
+  - id: checkout-folder
+    type: file
+    path: src/checkout/
 ---
 
 body
@@ -483,8 +459,10 @@ body
         "literal",
         `---
 topics: [x]
-files:
-  - src/[id]/page.tsx
+sources:
+  - id: dynamic-route
+    type: file
+    path: src/[id]/page.tsx
 ---
 
 body
@@ -495,8 +473,10 @@ body
         "spurious",
         `---
 topics: [x]
-files:
-  - src/i/page.tsx
+sources:
+  - id: i-route
+    type: file
+    path: src/i/page.tsx
 ---
 
 body

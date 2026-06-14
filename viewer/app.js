@@ -156,7 +156,7 @@ async function route(pathname, search = "", push = true) {
     return;
   }
 
-  if (wikiPath === "/getting-started") {
+  if (wikiPath === "/start") {
     await renderFrontDoor();
     clearPageRail();
     return;
@@ -176,12 +176,6 @@ async function route(pathname, search = "", push = true) {
   if (wikiPath === "/search") {
     const params = new URLSearchParams(search);
     await renderSearch(params.get("q") ?? "");
-    clearPageRail();
-    return;
-  }
-
-  if (wikiPath === "/review") {
-    await renderReview();
     clearPageRail();
     return;
   }
@@ -269,7 +263,6 @@ function setActiveNav(pathname) {
     const active = route === "/"
       ? pathname === "/" || pathname.startsWith("/w/")
         && !pathname.includes("/jobs")
-        && !pathname.includes("/review")
         && !pathname.includes("/connections")
       : state.currentWiki !== null && (
         route === "/jobs"
@@ -463,8 +456,7 @@ async function optionalPage(preview) {
 
 async function renderFrontDoor() {
   const frontDoor = await optionalPage(
-    state.overview.featuredPages?.frontDoor
-      ?? state.overview.featuredPages?.gettingStarted,
+    state.overview.featuredPages?.frontDoor,
   );
   if (frontDoor !== null) {
     rememberPages([frontDoor]);
@@ -579,39 +571,6 @@ async function renderFile(path) {
   `;
 }
 
-async function renderReview() {
-  const result = await api(wikiApi("/review"));
-  document.title = `Review — ${state.currentWiki}`;
-  const items = Array.isArray(result.items) ? result.items : [];
-  const counts = result.counts ?? { open: 0, decided: 0, applied: 0 };
-  els.reader.innerHTML = `
-    ${renderPageActions(wikiRoute("/"))}
-    <section class="ca-hero">
-      <h1 class="ca-display-h1">Review</h1>
-      <p class="ca-lede">
-        Source conflicts that need a human decision before Garden can safely update the wiki.
-      </p>
-      <div class="ca-hero-strip" aria-label="Review state">
-        <span class="ca-hero-strip-cell">
-          <span class="ca-hero-strip-label">open</span>
-          <span class="ca-hero-strip-value">${escapeHtml(counts.open ?? 0)}</span>
-        </span>
-        <span class="ca-hero-strip-cell">
-          <span class="ca-hero-strip-label">decided</span>
-          <span class="ca-hero-strip-value">${escapeHtml(counts.decided ?? 0)}</span>
-        </span>
-        <span class="ca-hero-strip-cell">
-          <span class="ca-hero-strip-label">applied</span>
-          <span class="ca-hero-strip-value">${escapeHtml(counts.applied ?? 0)}</span>
-        </span>
-      </div>
-    </section>
-    ${reviewSection("Open", "Needs a human/editor decision.", items.filter((item) => item.status === "open"))}
-    ${reviewSection("Decided", "Ready for Garden to apply.", items.filter((item) => item.status === "decided"))}
-    ${reviewSection("Applied", "Already applied to the wiki.", items.filter((item) => item.status === "applied"))}
-  `;
-}
-
 async function renderConnections() {
   const result = await api(wikiApi("/connections"));
   const connectors = Array.isArray(result.connectors) ? result.connectors : [];
@@ -667,52 +626,6 @@ function connectionCard(connector) {
   `;
 }
 
-function reviewSection(title, emptyText, items) {
-  return `
-    <section class="ca-review-section" aria-label="${escapeAttr(title)} review items">
-      <div class="ca-review-section-head">
-        <h2>${escapeHtml(title)}</h2>
-        <span>${escapeHtml(items.length)}</span>
-      </div>
-      ${items.length > 0
-        ? `<div class="ca-review-list">${items.map(reviewItem).join("")}</div>`
-        : `<div class="ca-bento-empty">${escapeHtml(emptyText)}</div>`}
-    </section>
-  `;
-}
-
-function reviewItem(item) {
-  return `
-    <article class="ca-review-item ca-review-${escapeAttr(item.status)}">
-      <header class="ca-review-item-head">
-        <div>
-          <span class="ca-review-status">${escapeHtml(item.status)}</span>
-          <h3>${escapeHtml(item.description || item.id)}</h3>
-        </div>
-        <span class="ca-review-id">${escapeHtml(item.id)}</span>
-      </header>
-      <div class="ca-review-body ca-prose">${renderMarkdown(item.body || "")}</div>
-      ${item.decision ? `
-        <div class="ca-review-note">
-          <h4>Decision</h4>
-          <div class="ca-prose">${renderMarkdown(item.decision)}</div>
-        </div>
-      ` : ""}
-      ${item.application ? `
-        <div class="ca-review-note">
-          <h4>Application</h4>
-          <div class="ca-prose">${renderMarkdown(item.application)}</div>
-        </div>
-      ` : ""}
-      <footer class="ca-review-meta">
-        ${item.created_at ? `<span>Created ${escapeHtml(formatIsoDate(item.created_at))}</span>` : ""}
-        ${item.decided_at ? `<span>Decided ${escapeHtml(formatIsoDate(item.decided_at))}</span>` : ""}
-        ${item.applied_at ? `<span>Applied ${escapeHtml(formatIsoDate(item.applied_at))}</span>` : ""}
-      </footer>
-    </article>
-  `;
-}
-
 function renderPageRail(page) {
   els.pageMeta.innerHTML = `
     <div class="ca-meta-title">${escapeHtml(pageTitle(page))}</div>
@@ -724,8 +637,6 @@ function renderPageRail(page) {
       <span class="ca-meta-label">Markdown</span>
       <span class="ca-file-code">${escapeHtml(page.file_path)}</span>
     </div>
-    ${page.archived_at ? `<div class="ca-meta-line"><span class="ca-meta-label">Archived</span><span class="ca-meta-value">${new Date(page.archived_at * 1000).toLocaleDateString()}</span></div>` : ""}
-    ${page.superseded_by ? `<div class="ca-meta-line"><span class="ca-meta-label">Superseded by</span><a class="ca-meta-link" href="${escapeAttr(wikiRoute(`/page/${page.superseded_by}`))}" data-route="${escapeAttr(wikiRoute(`/page/${page.superseded_by}`))}">${escapeHtml(pageLabel(page.superseded_by))}</a></div>` : ""}
   `;
   els.backlinks.innerHTML = page.wikilinks_in.length > 0
     ? page.wikilinks_in.map((slug) => linkButton(pageLabel(slug), wikiRoute(`/page/${slug}`))).join("")

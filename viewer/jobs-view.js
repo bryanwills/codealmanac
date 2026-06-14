@@ -298,11 +298,9 @@ export function createJobsView(deps) {
   function impactParts(run) {
     const created = run.summary?.created ?? 0;
     const updated = run.summary?.updated ?? 0;
-    const archived = run.summary?.archived ?? 0;
     const parts = [];
     if (created > 0) parts.push({ tone: "created", text: `+${created} created` });
     if (updated > 0) parts.push({ tone: "updated", text: `${updated} updated` });
-    if (archived > 0) parts.push({ tone: "archived", text: `${archived} archived` });
     if (parts.length === 0 && run.displayStatus === "done") {
       parts.push({ tone: "muted", text: "no wiki changes" });
     }
@@ -331,7 +329,7 @@ export function createJobsView(deps) {
 
   function changesCard(run) {
     const details = run.pageChangeDetails ?? pageChangeDetailsFromSlugs(run.pageChanges);
-    const hasChanges = details && ["created", "updated", "archived", "deleted"]
+    const hasChanges = details && ["created", "updated", "deleted"]
       .some((kind) => details[kind]?.length > 0);
     return `
       <article class="ca-job-card ca-job-card-changes">
@@ -341,7 +339,6 @@ export function createJobsView(deps) {
             ? `<div class="ca-page-change-list">
                 ${pageChangeGroup("created", "Created", "+", details.created)}
                 ${pageChangeGroup("updated", "Updated", "~", details.updated)}
-                ${pageChangeGroup("archived", "Archived", "-", details.archived)}
                 ${pageChangeGroup("deleted", "Deleted", "x", details.deleted)}
               </div>`
             : `<p class="ca-job-card-empty">No wiki pages changed.</p>`
@@ -383,7 +380,6 @@ export function createJobsView(deps) {
     return {
       created: changes.created.map(ref),
       updated: changes.updated.map(ref),
-      archived: changes.archived.map(ref),
       deleted: changes.deleted.map(ref),
     };
   }
@@ -459,14 +455,12 @@ export function createJobsView(deps) {
     const cells = [];
     cells.push(heroCell("status", statusWord(run.displayStatus)));
     if (typeof run.elapsedMs === "number") cells.push(heroCell("elapsed", deps.formatElapsed(run.elapsedMs)));
-    if (run.summary?.created || run.summary?.updated || run.summary?.archived) {
+    if (run.summary?.created || run.summary?.updated) {
       const created = run.summary?.created ?? 0;
       const updated = run.summary?.updated ?? 0;
-      const archived = run.summary?.archived ?? 0;
       const bits = [];
       if (created) bits.push(`+${created}`);
       if (updated) bits.push(`~${updated}`);
-      if (archived) bits.push(`-${archived}`);
       cells.push(heroCell("pages", bits.join(" ")));
     }
     if (run.summary?.usage?.totalTokens !== undefined) {
@@ -489,7 +483,6 @@ export function createJobsView(deps) {
       ["Status", statusWord(run.displayStatus)],
       ["Created", String(run.summary?.created ?? 0)],
       ["Updated", String(run.summary?.updated ?? 0)],
-      ["Archived", String(run.summary?.archived ?? 0)],
     ];
     if (run.summary?.turns !== undefined) rows.push(["Turns", String(run.summary.turns)]);
     if (run.summary?.usage?.totalTokens !== undefined) {
@@ -1362,7 +1355,7 @@ export function createJobsView(deps) {
     const description = cleanDescription(run.pageChanges?.description ?? "");
     const refs = new Map();
     const details = run.pageChangeDetails ?? pageChangeDetailsFromSlugs(run.pageChanges);
-    for (const kind of ["created", "updated", "archived"]) {
+    for (const kind of ["created", "updated"]) {
       for (const page of details?.[kind] ?? []) refs.set(page.slug, page.title ?? pageTitleFromSlug(page.slug));
     }
     let html = "";
@@ -1396,7 +1389,7 @@ export function createJobsView(deps) {
   function pageSlugFromPath(path) {
     if (typeof path !== "string") return null;
     const normalized = path.replace(/\\/g, "/");
-    const match = normalized.match(/(?:^|\/)(?:\.almanac\/)?pages\/([^/]+)\.md$/);
+    const match = normalized.match(/(?:^|\/)docs\/almanac\/(?:.*\/)?([^/]+)\.md$/);
     return match ? match[1] : null;
   }
 

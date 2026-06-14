@@ -5,13 +5,13 @@
 > cleanly, and the wireframe-in-chat habit. Reason from it; don't bolt features
 > onto a misshapen base.
 
-codealmanac is a living wiki for codebases, maintained by AI coding agents. It documents what the code can't say — decisions, flows, invariants, incidents, gotchas — as atomic, interlinked markdown pages living at `.almanac/` in each repo. Primary consumer is the AI coding agent; humans benefit secondarily.
+codealmanac is a living wiki for codebases, maintained by AI coding agents. It documents what the code can't say — decisions, flows, invariants, incidents, gotchas — as atomic, interlinked markdown pages living at `docs/almanac/` in each repo. `.almanac/` is runtime state only. Primary consumer is a capable reader who may be human or an AI coding agent.
 
 **Full spec:** `/Users/rohan/Desktop/Projects/openalmanac/docs/ideas/codebase-wiki.md` — source of truth. Read it before making design changes. This file is the working context for implementation.
 
 ## Design philosophy
 
-Intelligence lives in prompts, not pipelines. When judgment is needed — deciding what a session produced, scoring notability, evaluating a proposed page against the graph — we hand a concrete-but-open prompt to an agent. We do not wrap agents in propose/review/apply state machines, intermediate proposal files, or `--dry-run` rehearsals. The writer owns outcomes and calls the reviewer as a subagent when it wants feedback; there is no orchestration JSON schema between them. Everything is **local-only** (`.almanac/` per repo, `~/.almanac/registry.json` globally, no hosted service), the `.almanac/` namespace is **flat** (no `.almanac/wiki/` subdir — future features get peer files), and only lifecycle operations invoke AI or write page prose. Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
+Intelligence lives in prompts, not pipelines. When judgment is needed — deciding what a session produced, scoring notability, evaluating a proposed page against the graph — we hand a concrete-but-open prompt to an agent. We do not wrap agents in propose/review/apply state machines, intermediate proposal files, or `--dry-run` rehearsals. The writer owns outcomes and calls the reviewer as a subagent when it wants feedback; there is no orchestration JSON schema between them. Everything is **local-only** (`docs/almanac/` per repo, `.almanac/` per-repo runtime, `~/.almanac/registry.json` globally, no hosted service), and only lifecycle operations invoke AI or write page prose. Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, and `migrate`.
 
 ## Engineering taste
 
@@ -35,14 +35,14 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | Directory | What it is | Key files |
 |-----------|-----------|-----------|
 | `bin/` | npm bin shim — error-formatter around `src/cli.ts` | `codealmanac.ts` |
-| `src/` | TypeScript source | `cli.ts` (commander wiring), `paths.ts` (walk-up to nearest `.almanac/`), `slug.ts` (kebab-case canonicalization) |
+| `src/` | TypeScript source | `cli.ts` (commander wiring), `paths.ts` (walk-up to nearest `docs/almanac/`), `slug.ts` (kebab-case canonicalization) |
 | `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show.ts`, `reindex.ts` |
 | `src/platform/` | Local machine integration for install, self-update, and scheduler automation | `install/`, `update/`, `automation/` |
 | `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
 | `src/agent/` | Agent facade, provider registry, provider adapters, prompt loading | `sdk.ts`, `types.ts`, `providers/` |
 | `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts`, `duration.ts` |
 | `src/wiki/registry/` | Global registry at `~/.almanac/registry.json` — atomic read/write + auto-register | `store.ts` (read/write), `index.ts` (facade), `autoregister.ts` |
-| `src/wiki/topics/` | Topic DAG serialized to `.almanac/topics.yaml` + page frontmatter rewrites (slice 3) | `yaml.ts`, `frontmatter-rewrite.ts` |
+| `src/wiki/topics/` | Topic DAG serialized to `docs/almanac/topics.yaml` + page frontmatter rewrites | `yaml.ts`, `frontmatter-rewrite.ts` |
 | `test/` | Vitest suites, one per feature area | `helpers.ts` (`withTempHome`, `makeRepo`, `writePage`), `*.test.ts` |
 | `prompts/` | Agent prompts bundled in the npm package | `bootstrap.md`, `writer.md`, `reviewer.md` |
 | `docs/plans/` | Slice-by-slice implementation plans + review-fix plans | `slice-N-*.md`, `fixes-slice-N-review.md` |
@@ -94,15 +94,15 @@ _Cross-cutting architectural choices. Keep current, concise, and explanatory. Up
 
 Design rules every change must respect. The spec has the full rationale; these are the ones that trip people up.
 
-- **Only lifecycle operations invoke AI or write page prose.** Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
-- **Reindex is silent and implicit.** Every query command compares `pages/*.md` mtimes against `index.db` and rebuilds if stale. No progress bars, no "indexing..." chatter, no opt-in flag. `almanac reindex` is the escape hatch for "I want to force it."
+- **Only lifecycle operations invoke AI or write page prose.** Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, and `migrate`.
+- **Reindex is silent and implicit.** Every query command compares `docs/almanac/**/*.md` mtimes against `.almanac/index.db` and rebuilds if stale. No progress bars, no "indexing..." chatter, no opt-in flag. `almanac reindex` is the escape hatch for "I want to force it."
 - **Unified `[[...]]` syntax.** One link form, disambiguated by content: contains `:` before `/` → cross-wiki; contains `/` → file ref (trailing `/` = folder); otherwise → page slug. Do not introduce a second link syntax.
 - **Use `GLOB` not `LIKE` for path queries**, and **escape `*?[` before concatenating stored paths into a GLOB pattern.** SQLite's `LIKE` treats `_` as a wildcard (spurious matches on `src/my_module/`); `GLOB` treats it literally. A Next.js-style stored path like `src/[id]/page.tsx` contains GLOB metacharacters — unescaped, it matches things it shouldn't. See `fixes-slice-2-review.md` for the bug and fix.
 - **Paths are normalized at index time and at query time.** Lowercase (macOS is case-insensitive), forward slashes, no `./` prefix, trailing slash iff directory, no redundant slashes. Normalize on both sides of a comparison.
-- **Slugs are kebab-case of the filename.** `checkout_flow`, `Checkout Flow.md`, `checkout-flow.md` all canonicalize to `checkout-flow`. Enforced at write time and checked by health.
+- **Page identity is kebab-case.** `page_id` is the stable identity when present; otherwise the filename is canonicalized. `checkout_flow`, `Checkout Flow.md`, and `checkout-flow.md` all canonicalize to `checkout-flow`. Health checks collisions.
+- **Sources are canonical provenance.** Authored frontmatter uses `sources:`. `type: file` sources and inline file/folder wikilinks derive `file_refs`; there is no separate authored `files:` field.
 - **DAG cycle prevention is belt-and-suspenders.** `CHECK (child_slug != parent_slug)` in the schema, pre-insert cycle check on `topics link`, and a depth cap of 32 on any recursive CTE.
-- **Registry entries are never auto-dropped.** Unreachable paths are silently skipped in `--all` queries. `almanac list --drop <name>` is the only explicit removal. Cloning a repo with a committed `.almanac/` that isn't registered triggers silent auto-registration on any command except `init` (which registers explicitly) and `list --drop` (intent is to shrink).
-- **Archived pages are excluded from search by default**, are not flagged for dead-refs by `health`, and keep their backlinks resolvable. `--include-archive` and `--archived` change scope.
+- **Registry entries are never auto-dropped.** Unreachable paths are silently skipped in `--all` queries. `almanac list --drop <name>` is the only explicit removal. Cloning a repo with committed `docs/almanac/` that isn't registered triggers silent auto-registration on any command except `init` (which registers explicitly) and `list --drop` (intent is to shrink).
 - **Prompts are shipped from the npm package.** They live in `prompts/` at repo root, are bundled into `files` in `package.json`, and the agent harness reads them from the package install path at runtime. They are not embedded as TS string literals.
 
 ## Philosophy anti-patterns
@@ -125,7 +125,7 @@ Things we do not do. If a plan proposes one, push back.
 - **Agent SDK reference:** `docs/research/agent-sdk.md` — version pin, auth, message types, streaming, subagent routing, pitfalls. Read before slice 4 or 5 work.
 - **Prompts:** `prompts/bootstrap.md`, `prompts/writer.md`, `prompts/reviewer.md`
 - **SQLite schema DDL:** `src/wiki/indexer/schema.ts` (single-source, applied idempotently on open)
-- **Init scaffolding:** `src/init/scaffold.ts` (creates `.almanac/`, starter README, runtime `.gitignore` entries, and registry entry)
+- **Init scaffolding:** `src/init/scaffold.ts` (creates `docs/almanac/`, runtime `.almanac/`, `.gitignore` entries, and registry entry)
 - **Registry I/O:** `src/wiki/registry/store.ts` (atomic read/write), `src/wiki/registry/index.ts` (facade), and `src/wiki/registry/autoregister.ts` (silent-on-command policy)
-- **Walk-up resolver:** `src/paths.ts` — nearest `.almanac/` from a `cwd`, like git's nearest `.git/`
+- **Walk-up resolver:** `src/paths.ts` — nearest `docs/almanac/` from a `cwd`, like git's nearest `.git/`
 - **Test sandbox helpers:** `test/helpers.ts`

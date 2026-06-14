@@ -42,10 +42,6 @@ explaining what it supports.
 Cite non-obvious claims with `[@source-id]`. Do not cite a source you did not
 inspect. Citations are evidence; wikilinks are navigation.
 
-Legacy `.almanac/pages/` content and legacy `files:` frontmatter may still
-exist during migration. Do not create new legacy pages unless you are explicitly
-maintaining an old-layout repo.
-
 ## Wikilinks
 
 Use one `[[...]]` syntax:
@@ -106,12 +102,9 @@ Write for humans first, with enough specificity for agents to verify.
 Before finishing a successful Build, Absorb, or Garden run, check whether you
 created, changed, deleted, retopiced, or moved durable wiki source files.
 
-Wiki source files are:
+Durable wiki source files are:
 
 - `docs/almanac/`
-- `.almanac/review.yaml`
-- legacy `.almanac/pages/` and `.almanac/topics.yaml` only when maintaining an
-  old-layout repo
 
 Only create a git commit when the runtime context says auto-commit is enabled.
 When it is enabled, commit only wiki source changes and use:

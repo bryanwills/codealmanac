@@ -95,7 +95,7 @@ describe("findNearestAlmanacDir", () => {
   it("finds a wiki root when one exists upward", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "wiki");
-      await mkdir(join(repo, ".almanac"), { recursive: true });
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
       const nested = join(repo, "src", "deep");
       await mkdir(nested, { recursive: true });
       expect(findNearestAlmanacDir(nested)).toBe(repo);

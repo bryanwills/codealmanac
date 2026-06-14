@@ -120,7 +120,7 @@ describe("almanac list", () => {
     // and register it silently.
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "sub-auto");
-      await mkdir(join(repo, ".almanac", "pages"), { recursive: true });
+      await mkdir(join(repo, "docs", "almanac"), { recursive: true });
 
       // Simulate the CLI's pre-list hook from a nested dir.
       const nested = join(repo, "src", "deep");

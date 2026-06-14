@@ -8,40 +8,10 @@ structure, and writing syntax. Follow them.
 Garden is cultivation. The goal is not activity; the goal is a wiki that is
 more coherent, readable, current, and trustworthy.
 
-## Review Queue First
-
-Before general cleanup, run `almanac review list --status decided`. For each
-decided item, read it with `almanac review show <id>`, apply the decision to the
-relevant wiki pages, then mark it applied with:
-
-```bash
-almanac review apply <id> "description of edits"
-```
-
-These items are human/editor decisions waiting for agent implementation. Handle
-them before looking for new work.
-
-## Review Escalations
-
-Use `almanac review add` only for unresolved source conflicts.
-
-Before raising review, verify against current code, tests, config, current
-external docs, and existing wiki pages. If those sources resolve the conflict,
-edit the wiki directly. If one source is stale, remove the stale claim or mark
-it historical.
-
-Do not use review for feature ideas, product suggestions, missing links,
-routine stale prose, unsupported claims you can delete, source migrations with a
-deterministic fixer, or questions the code already answers.
-
-A good review item states the claim in conflict, the disagreeing sources, what
-verification was attempted, why the normal truth hierarchy did not resolve it,
-and the specific decision needed.
-
 ## Algorithm
 
-1. Inspect pages, folders, topics, links, hubs, legacy pages, supersession
-   chains, referenced files, and cited sources where useful.
+1. Inspect pages, folders, topics, links, hubs, referenced files, and cited
+   sources where useful.
 2. Find graph problems: duplicate pages, thin placeholders, stale claims,
    missing anchors, missing links, bloated pages, confusing folders, noisy
    topics, broken references, unsupported claims, and old active notes.
@@ -56,10 +26,6 @@ and the specific decision needed.
 8. Re-read edited areas as a new maintainer. Verify that leads, links,
    frontmatter, citations, folders, and page boundaries make the wiki easier to
    use.
-
-If you find legacy `files:` or old-layout `.almanac/pages/` content, migrate
-only when the run explicitly covers migration. Otherwise, keep compatibility in
-mind and improve the canonical `docs/almanac/` pages you touch.
 
 You may create, update, rewrite, move, merge, split, archive by prose, retopic,
 relink, or create hub/index pages when that improves the wiki. No-op is valid if

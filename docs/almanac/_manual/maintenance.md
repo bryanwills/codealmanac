@@ -40,8 +40,8 @@ that should be folded into durable pages. [@prompt-garden]
 small. Once a thread becomes settled, move the useful knowledge into the right
 durable page and either delete the active note or rewrite it as a short pointer.
 
-## Migration
+## Old Knowledge
 
-Legacy `.almanac/pages/` pages remain indexed during migration. When a legacy
-page is migrated, keep the durable knowledge, improve citations, choose a
-readable folder home, and preserve useful history in the new page. [@decision-log]
+Keep older decisions, incidents, and abandoned approaches when they explain the
+current shape. Put that history in the durable page that owns the subject
+instead of keeping a parallel archive or legacy page tree. [@decision-log]

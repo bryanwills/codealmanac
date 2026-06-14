@@ -73,13 +73,6 @@ describe("viewer server", () => {
         };
         expect(jobs.runs.map((run) => run.id)).toEqual([record.id]);
 
-        const review = await fetch(`${server.url}/api/wikis/alpha/review`).then((r) => r.json()) as {
-          counts: { open: number; decided: number; applied: number };
-          items: unknown[];
-        };
-        expect(review.counts).toEqual({ open: 0, decided: 0, applied: 0 });
-        expect(review.items).toEqual([]);
-
         const job = await fetch(`${server.url}/api/wikis/alpha/jobs/${record.id}`).then((r) => r.json()) as {
           run: { id: string };
           events: unknown[];

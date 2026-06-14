@@ -35,9 +35,7 @@ CREATE TABLE IF NOT EXISTS pages (
   description   TEXT,
   file_path     TEXT NOT NULL,
   content_hash  TEXT NOT NULL,
-  updated_at    INTEGER NOT NULL,
-  archived_at   INTEGER,
-  superseded_by TEXT
+  updated_at    INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS topics (
@@ -76,7 +74,6 @@ CREATE TABLE IF NOT EXISTS page_sources (
   title        TEXT,
   retrieved_at TEXT,
   note         TEXT,
-  legacy       INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (page_slug, source_id)
 );
 CREATE INDEX IF NOT EXISTS idx_page_sources_type ON page_sources(source_type);
@@ -114,8 +111,10 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_pages USING fts5(slug, title, content);
  *   3 — added `pages.summary`
  *   4 — added `page_sources`
  *   5 — renamed page preview text from `summary` to `description`
+ *   6 — removed archive/supersession columns
+ *   7 — removed legacy source projection column
  */
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 7;
 
 export function isIndexSchemaStale(dbPath: string): boolean {
   let db: Database.Database;

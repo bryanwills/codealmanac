@@ -152,13 +152,12 @@ describe("job records", () => {
         status: "done",
         finishedAt: new Date("2026-05-09T19:51:03.000Z"),
         providerSessionId: "provider-session",
-        summary: { created: 1, updated: 2, archived: 0, deleted: 0, costUsd: 0.12 },
+        summary: { created: 1, updated: 2, deleted: 0, costUsd: 0.12 },
         pageChanges: {
           version: 1,
           jobId: started.id,
           created: ["new-page"],
           updated: ["sync-flow", "process-manager-runs"],
-          archived: [],
           deleted: [],
           description: "Updated sync/run lifecycle docs after scheduled absorb.",
         },
@@ -177,7 +176,7 @@ describe("job records", () => {
         providerSessionId: "provider-session",
         finishedAt: "2026-05-09T19:51:03.000Z",
         durationMs: 62000,
-        summary: { created: 1, updated: 2, archived: 0, deleted: 0, costUsd: 0.12 },
+        summary: { created: 1, updated: 2, deleted: 0, costUsd: 0.12 },
         pageChanges: {
           created: ["new-page"],
           updated: ["sync-flow", "process-manager-runs"],
@@ -216,7 +215,6 @@ describe("job records", () => {
           jobId: record.id,
           created: "new-page",
           updated: [],
-          archived: [],
           deleted: [],
         },
       })).toBe(false);
@@ -227,7 +225,6 @@ describe("job records", () => {
           jobId: record.id,
           created: [],
           updated: [],
-          archived: [],
           deleted: [],
         },
       })).toBe(false);

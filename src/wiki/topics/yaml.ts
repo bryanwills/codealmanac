@@ -8,7 +8,7 @@ import { UserFacingError } from "../../errors.js";
 import { toKebabCase } from "../../slug.js";
 
 /**
- * One entry in `.almanac/topics.yaml` — the source of truth for topic
+ * One entry in `docs/almanac/topics.yaml` — the source of truth for topic
  * metadata (title, description, DAG parents). Pages are still the source
  * of truth for which pages belong to which topics; this file only holds
  * the topic-level attributes.
@@ -33,7 +33,7 @@ export interface TopicsFile {
 }
 
 /**
- * Load `.almanac/topics.yaml` into a `TopicsFile`. A missing file is not
+ * Load `docs/almanac/topics.yaml` into a `TopicsFile`. A missing file is not
  * an error — it's the first-run state, which we treat as "no topic
  * metadata, only whatever the pages declare in frontmatter". Malformed
  * YAML IS an error; we surface it rather than silently clobbering the

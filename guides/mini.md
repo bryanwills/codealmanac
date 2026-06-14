@@ -1,252 +1,123 @@
-# Almanac — a wiki for this codebase, maintained for you
+# Almanac — A Wiki For This Codebase
 
-This repo has a `.almanac/` directory. It's a **living wiki** written for AI agents, documenting the things the code can't say: **why** it's shaped this way, **what was tried and failed**, **what must not be violated**, **how things flow end-to-end**, and **known gotchas** discovered through real debugging.
+This repo may have a durable wiki under `docs/almanac/`. It is written for
+humans and coding agents: concepts, decisions, flows, incidents, constraints,
+and change paths that the code alone does not explain.
 
-You are the primary reader. When the user asks you to do something, **check the wiki before you touch related code** — it will often answer the question the user didn't think to ask ("we tried that in March, here's why it broke").
+`.almanac/` is runtime state only: index database, jobs, logs, config, and sync
+ledger. Do not look there for wiki prose.
 
-You usually don't write the wiki during normal work. Scheduled sync periodically runs `almanac sync`, waits for Claude/Codex transcripts to go quiet, and starts a background Absorb job that writes or updates pages for new material. Your job during the session is: **read, use, occasionally fix obvious errors.**
+## Mental Model
 
----
+- **Pages** are Markdown files under `docs/almanac/`. `README.md` is the front
+  door. Nested folders are the browse structure.
+- **Page identity** comes from `page_id` when present; otherwise the filename is
+  kebab-cased. Use stable `page_id` values when pages may move.
+- **Topics** live in `docs/almanac/topics.yaml` and page frontmatter. They form a
+  DAG, not a folder replacement.
+- **Sources** live in frontmatter. `sources: [{ type: "file", path: "src/x.ts" }]`
+  is the authored way to connect a page to code. File sources and inline
+  `[[src/x.ts]]` links create derived file references for `--mentions`.
+- **Links** use one syntax:
+  - `[[checkout-flow]]` -> page
+  - `[[src/checkout/handler.ts]]` -> file
+  - `[[src/checkout/]]` -> folder
+  - `[[openalmanac:supabase]]` -> cross-wiki page
 
-## The mental model in 60 seconds
+Read `docs/almanac/README.md` first when the task touches a real subsystem.
 
-- **Pages** are markdown files in `.almanac/pages/` with YAML frontmatter. One page per stable concept: a technology we depend on (`supabase`), a multi-file flow (`checkout-flow`), a decision (`jwt-vs-sessions`), a gotcha (`stripe-webhook-deadlock`).
-- **Topics** organize pages. They form a **DAG** — each page has multiple topics, each topic can have multiple parents. Topics live in `.almanac/topics.yaml`.
-- **Links** use one syntax: `[[...]]`. The classifier looks at content:
-  - `[[checkout-flow]]` → page slug (no slash)
-  - `[[src/checkout/handler.ts]]` → file reference (has slash)
-  - `[[src/checkout/]]` → folder reference (trailing slash)
-  - `[[openalmanac:supabase]]` → cross-wiki reference (colon prefix)
-- **Frontmatter carries `topics:` and `files:`.** The `files:` list is load-bearing: it's how `almanac search --mentions src/foo.ts` finds pages about `src/foo.ts` even when the path isn't in the prose.
-- **The wiki evolves.** When facts change, existing pages get edited in place — git history is the archive. Fundamental reversals use a separate "archive" mechanism; you rarely need to worry about it.
+## When To Use It
 
-Read `.almanac/README.md` at the start of any session where the wiki is likely to be relevant. It carries this repo's **notability bar** (what deserves a page here) and topic taxonomy.
+Use the wiki before changing subsystems, external integrations, runtime flows,
+data models, job machinery, prompts, or anything with history.
 
----
+Skip it for pure typo fixes, tiny local edits, or when the user explicitly asks
+you to inspect one file.
 
-## When to reach for it
+Code is still the authority. If code and wiki disagree, trust code and mention
+the stale page in your response.
 
-**At the start of a task that touches real subsystems**, before you do anything else:
+## Core Commands
 
 ```bash
+almanac search "checkout timeout"
 almanac search --mentions src/checkout/handler.ts
 almanac search --mentions src/checkout/
-almanac search "checkout timeout"
-almanac search --topic checkout
+almanac search --topic auth
 ```
 
-The output is page slugs. Pick 1-3 that look relevant, `almanac show <slug>`, follow `[[wikilinks]]` the way you'd follow imports. Do this *before* grepping the codebase for unfamiliar behavior — the wiki tells you *why*, the code tells you *what*.
-
-**Skip the wiki when**: the task is a pure typo fix, styling tweak, scoped refactor inside one file you already understand, or anything where the user's request is literally "read this file and tell me X."
-
-**Trust the code over the wiki when they disagree.** Code is truth. If the wiki is wrong, fix the wiki — but don't propagate the wiki's error into code.
-
----
-
-## The commands you'll use
-
-Other commands exist (`list`, `tag`, `untag`, `automation`, `uninstall`, `doctor`, etc.) — most are administrative. See `almanac --help` or `@~/.claude/almanac-reference.md` for the full surface. In normal sessions you'll live in the four commands below.
-
-### 1. `almanac search` — the starting point
+`search` prints slugs. Empty stdout with `# 0 results` on stderr means the query
+worked and matched nothing.
 
 ```bash
-almanac search "<query>"                        # FTS
-almanac search --mentions src/path/to/file.ts   # pages referencing this file
-almanac search --mentions src/path/to/folder/   # pages referencing anything in this folder
-almanac search --topic auth                     # active pages in a topic
-almanac search --topic auth --topic decisions   # intersection
+almanac show checkout-flow
+almanac show checkout-flow --lead
+almanac show checkout-flow --meta
+almanac show checkout-flow --files
+almanac show checkout-flow --backlinks
 ```
 
-Useful when you need them:
-- `--since 2w` / `--stale 30d` — freshness filters
-- `--orphan` — pages with no topics (usually a bug to fix)
-- `--include-archive` — include historical pages when active wiki feels sparse
-- `--limit N`, `--json` — output control
-
-Returns slugs, one per line. Pipe-friendly. Filters AND-intersect.
-
-### 2. `almanac show <slug>` — read a page
+`--files` prints derived file references from structured file sources and inline
+file links.
 
 ```bash
-almanac show checkout-flow                 # metadata header + body (default)
-almanac show checkout-flow --body          # body only
-almanac show checkout-flow --meta          # metadata only
-almanac show checkout-flow --lead          # first paragraph (cheap preview)
-almanac show checkout-flow --backlinks     # pages linking TO this one
-almanac show checkout-flow --links         # pages this links out to
+almanac topics
+almanac topics show auth --descendants
+almanac health
+almanac serve
 ```
 
-`--lead` to triage long result lists. `--backlinks` before editing a load-bearing page — you want to know who depends on its current shape.
+Use `health` after moving/deleting code or cleaning the wiki. It reports graph
+and source problems; it does not rewrite pages.
 
-### 3. `almanac topics` — understand structure
+## Writing Pages
 
-```bash
-almanac topics                             # list all with page counts
-almanac topics show auth                   # description, parents, children, pages
-almanac topics show auth --descendants     # walks the DAG subtree
+You usually do not write pages during ordinary coding work. Scheduled sync and
+lifecycle jobs update the wiki from durable session knowledge. Write directly
+only when the user asks for wiki maintenance or an obvious correction is needed.
+
+Use this frontmatter shape:
+
+```yaml
+---
+page_id: checkout-flow
+title: Checkout Flow
+description: How checkout moves from request to paid order.
+topics: [flows, payments]
+sources:
+  - id: checkout-handler
+    type: file
+    path: src/checkout/handler.ts
+    note: Handles checkout submission.
+---
 ```
 
-`--descendants` is the right call for "everything tagged auth or under it" — subtopics like `jwt`, `sessions`, `oauth` get walked automatically.
+Then cite non-obvious claims with `[@checkout-handler]`.
 
-### 4. Read the file directly
+Writing standard:
 
-`.almanac/pages/<slug>.md` is just markdown. The Read tool works fine. The CLI is faster when you want composed metadata; Read is fine for scanning prose or editing.
-
-### 5. `almanac health` — when something feels off
-
-```bash
-almanac health                # 8-category graph integrity report
-almanac health --topic auth   # scope
-```
-
-Run when cleaning up the wiki, when the user reports broken links, or after you deleted/moved code and want to know which pages now reference dead files.
-
-Categories: `orphans`, `stale` (90+ days), `dead-refs`, `broken-links`, `broken-xwiki`, `empty-topics`, `empty-pages`, `slug-collisions`.
-
----
-
-## Decisions you'll face
-
-### "Search the wiki or just grep?"
-Search when the task is named: subsystem (checkout, auth, search), external service (Stripe, Supabase), cross-cutting concern (caching, sessions). Grep for mechanical tasks.
-
-### "The wiki says X. The code does Y. Which is right?"
-The code. Then fix the wiki — small fixes edit the page directly. Substantial changes: mention clearly in your response so the next scheduled sync has context to update the page.
-
-### "Should I create a new page mid-session?"
-Usually no. Absorb writes pages from session transcripts with full context. Exceptions: user explicitly asks, or you're doing deliberate wiki maintenance.
-
-When you do write: read `.almanac/README.md` for the notability bar, use `[[...]]` syntax, include `files:` frontmatter, keep every sentence factual, no speculation.
-
-### "New topic or existing?"
-Almost always existing. Skim `almanac topics` before creating. New topic is justified when multiple pages share a concept no current topic captures.
-
-### "Can I just `almanac tag`?"
-Yes — safe, idempotent, preserves body bytes. Use `almanac tag` / `untag` rather than hand-editing frontmatter.
-
-### "The wiki returned nothing. Now what?"
-Trust the silence. Empty stdout with `# 0 results` on stderr means the query ran cleanly and matched nothing — the wiki doesn't have a page on that yet, or the query needs to be broader. That is the answer, not a bug. Don't fall back to guessing; fall back to the code, and trust that sync will surface the knowledge the next time a session naturally discovers it.
-
-If stderr shows a real error (an `almanac:` prefix or a commander parse failure), the invocation is broken — re-read `almanac --help` for the right flags.
-
----
-
-## A concrete example
-
-User: *"the indexer isn't picking up my new page, what's going on?"*
-
-```bash
-# 1. Find pages touching the indexer
-$ almanac search --mentions src/indexer/
-sqlite-indexer
-wikilink-syntax
-
-# 2. Triage with --lead
-$ almanac show sqlite-indexer --lead
-The indexer (`src/indexer/`) builds and maintains `.almanac/index.db` — a
-SQLite database that powers all query commands (`search`, `show`, `health`,
-`topics show`). It runs silently before every query command, comparing page
-file mtimes against the stored `content_hash`; only changed or new pages are
-re-parsed.
-
-# 3. Read the most relevant
-$ almanac show sqlite-indexer
-# ...covers the schema, freshness rules, and where new pages get picked up
-
-# 4. Before you touch anything, check backlinks
-$ almanac show sqlite-indexer --backlinks
-```
-
-You now know: the indexer only re-parses pages whose mtime is newer than the stored `content_hash`, runs on every query command, and backing it is a schema you can read at `src/indexer/schema.ts`. The lead alone ruled out two entire hypotheses ("maybe it only indexes on startup", "maybe I need to restart something") before you read any source code.
-
-You don't write anything. After the transcript has been quiet long enough, scheduled sync reads the new session material, starts Absorb when there is eligible material, and writes or updates pages. Next session, a different agent running a related task sees it surface in `--mentions`.
-
----
-
-## What runs automatically (don't invoke these)
-
-- **`almanac sync`** — scans quiet Claude/Codex transcripts and starts background Absorb jobs for new material. The installed scheduler runs this for you.
-- **`almanac reindex`** — runs implicitly before every query when pages changed.
-
-Run `almanac init` yourself when you are creating the first wiki for a repo.
-
----
-
-## Cross-wiki references
-
-If the user has multiple repos with `.almanac/`, they're globally registered. Pages can reference other wikis with `[[wiki-name:slug]]`. `--wiki <name>` or `--all` span registered wikis. You rarely need this mid-session.
-
----
-
-## Writing conventions (if you do write)
-
-- **Every sentence contains a specific fact.** If the sentence could describe any codebase, cut it.
-- **Neutral tone.** "is", not "serves as". No promotional language, no "plays a pivotal role", no interpretive "-ing" clauses.
-- **No speculation.** If you don't know why, don't guess in prose.
-- **Prose first.** Bullets for genuine lists. Tables for structured comparison only.
-- **Reference code with `[[...]]`.** Inline mentions are fine but only `[[...]]` gets indexed.
-- **List files in frontmatter.** Pages about specific code need `files: [...]` to surface in `--mentions` queries.
-
-The Absorb/Garden prompts enforce these during wiki-writing runs. Stricter with yourself = less rework.
-
----
+- Every paragraph should contain concrete project facts.
+- Prefer prose over bullets unless the page is genuinely listing things.
+- Preserve old knowledge in prose when it explains the current design.
+- Do not speculate. Say what is known, or omit the claim.
+- Use `[[...]]` links when they help the reader move through related pages,
+  files, or folders.
 
 ## Troubleshooting
 
-### `almanac doctor` is the catchall
-When anything feels off and you don't know where to start, run `almanac doctor`. It reports the install (binary, native SQLite binding, provider readiness, scheduled automation, guides, CLAUDE.md import) and the current wiki (registered, page/topic counts, index freshness, last absorb age, health problems). Every problem comes with a one-line `run: ...` fix. Add `--json` for scripting.
-
-### "better-sqlite3 bindings failed"
-Node version or arch mismatch with the prebuilt native binding. `almanac doctor` reports this under `install.sqlite` with the raw error. Fix by rebuilding the native binding:
 ```bash
-npm rebuild better-sqlite3   # in the install directory
-```
-
-### "search returned nothing"
-Empty stdout plus `# 0 results` on stderr means the query ran and genuinely matched nothing. Don't retry with random flag permutations — either broaden the query, or accept the wiki hasn't covered that area yet. A real error would have come with an `almanac:`-prefixed stderr line.
-
-`--json` is silent on stderr — the `[]` array is the empty signal there.
-
-### "sync didn't run after my last session"
-```bash
-almanac doctor              # install.automation: ok/problem, wiki.absorb: last absorb age
-almanac automation status   # scheduler status
+almanac doctor
 almanac sync status
 almanac jobs
-ls -lah .almanac/jobs/
-```
-No jobs at all -> automation may be uninstalled, the scheduler has not reached its next interval, the transcript is still inside the quiet window, or the transcript maps to no repo with `.almanac/` (silent correct no-op). Sync ran but wrote nothing -> Absorb found no durable wiki change, or the session was pure-read. Use `almanac jobs show <run-id>` and `almanac jobs logs <run-id>` for details.
-
----
-
-## Staying current
-
-Almanac checks for updates in the background (once per 24h) after each
-command. When a new version is available, you'll see a stderr banner on
-every subsequent invocation:
-
-```
-! Almanac 0.1.6 available (you're on 0.1.5) — run: almanac update
+almanac jobs show <job-id>
+almanac jobs logs <job-id>
 ```
 
-The banner shows on every command until you update or dismiss it. Run:
+Runtime files live under `.almanac/jobs/` and `.almanac/index.db`. Durable wiki
+source lives under `docs/almanac/`.
 
-```bash
-almanac update              # upgrade to latest (foreground `npm i -g codealmanac@latest`)
-almanac update --dismiss    # skip this version; banner goes away until the next release
-almanac update --check      # check now without installing (bypasses 24h cache)
-almanac doctor              # see current update status + notifier setting
-```
+When in doubt:
 
-Auto-install is deliberately NOT the default — silent install without consent
-violates the trust contract, npm prefixes diverge across version managers, and a
-mid-invocation binary swap corrupts dynamic imports. Tier B (nag + manual
-install) is the design. See `almanac update --help` for the full flag set.
-
----
-
-## When in doubt
-
-- `.almanac/README.md` — repo-specific conventions + notability bar
-- `@~/.claude/almanac-reference.md` — full command reference with every flag
-- `almanac --help`, `almanac <command> --help` — built-in
+- `docs/almanac/README.md` — repo-specific reading map
+- `docs/almanac/_manual/` — wiki maintenance manual when present
+- `almanac --help` / `almanac <command> --help` — installed command surface

@@ -21,8 +21,6 @@ export interface SearchPageOptions {
   since?: string;
   stale?: string;
   orphan?: boolean;
-  includeArchive?: boolean;
-  archived?: boolean;
 }
 
 export interface SearchPageResult {
@@ -30,8 +28,6 @@ export interface SearchPageResult {
   title: string | null;
   description: string | null;
   updated_at: number;
-  archived_at: number | null;
-  superseded_by: string | null;
   topics: string[];
 }
 
@@ -49,8 +45,6 @@ export function searchPages(
     title: row.title,
     description: row.description,
     updated_at: row.updated_at,
-    archived_at: row.archived_at,
-    superseded_by: row.superseded_by,
     topics: topicStmt.all(row.slug).map((t) => t.topic_slug),
   }));
 }
@@ -60,6 +54,4 @@ interface PageRow {
   title: string | null;
   description: string | null;
   updated_at: number;
-  archived_at: number | null;
-  superseded_by: string | null;
 }
