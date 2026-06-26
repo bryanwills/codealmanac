@@ -135,6 +135,11 @@ describe("codealmanac setup", () => {
       });
 
       expect(res.exitCode).toBe(0);
+      expect(env.stdout()).toContain("\u2588\u2588\u2588\u2588\u2588\u2557");
+      expect(env.stdout()).toContain(
+        "a living wiki for codebases, for your agent",
+      );
+      expect(env.stdout()).toContain(" almanac ");
       expect(existsSync(env.plistPath)).toBe(false);
       expect(existsSync(env.gardenPlistPath)).toBe(false);
       const updatePlist = await readFile(env.updatePlistPath, "utf8");

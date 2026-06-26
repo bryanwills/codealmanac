@@ -1,12 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-const RST = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[2m";
-const WHITE_BOLD = "\x1b[1;37m";
-const BLUE = "\x1b[38;5;75m";
-const BLUE_DIM = "\x1b[38;5;69m";
+import { BLUE, BOLD, DIM, RST, renderNextStepsBox } from "./output.js";
 
 /**
  * Print the "Next steps" box. When `existingPageCount` is greater than 0,
@@ -18,47 +13,25 @@ export function printNextSteps(
   out: NodeJS.WritableStream,
   existingPageCount: number,
 ): void {
-  const innerW = 62;
-  const vis = (s: string): number =>
-    s.replace(/\x1b\[[0-9;]*m/g, "").length;
-  const row = (content: string): string => {
-    const padding = Math.max(0, innerW - vis(content));
-    return `  ${BLUE_DIM}\u2502${RST}${content}${" ".repeat(padding)}${BLUE_DIM}\u2502${RST}\n`;
-  };
-  const empty = row("");
-
-  out.write(`  ${BLUE_DIM}\u256d${"─".repeat(innerW)}\u256e${RST}\n`);
-  out.write(empty);
-  out.write(row(`  ${WHITE_BOLD}Next steps${RST}`));
-  out.write(empty);
-
   if (existingPageCount > 0) {
-    out.write(
-      row(
-        `  ${BLUE}\u25c7${RST}  This repo already has a wiki ${DIM}(${existingPageCount} page${existingPageCount === 1 ? "" : "s"})${RST}`,
-      ),
-    );
-    out.write(empty);
-    out.write(row(`  ${BLUE}1.${RST}  Start querying it locally:`));
-    out.write(row(`       ${BOLD}almanac search --mentions <file>${RST}`));
-    out.write(row(`       ${BOLD}almanac search "auth"${RST}`));
-    out.write(row(`  ${BLUE}2.${RST}  Read one of the result pages:`));
-    out.write(row(`       ${BOLD}almanac show <result-slug>${RST}`));
-  } else {
-    out.write(
-      row(`  ${BLUE}1.${RST}  Create this repo's wiki from the dashboard:`),
-    );
-    out.write(row(`       ${BOLD}https://codealmanac.com/dashboard${RST}`));
-    out.write(
-      row(
-        `  ${BLUE}2.${RST}  After .almanac/ lands, query locally:`,
-      ),
-    );
-    out.write(row(`       ${BOLD}almanac search "auth"${RST}`));
+    renderNextStepsBox(out, [
+      `  ${BLUE}\u25c7${RST}  This repo already has a wiki ${DIM}(${existingPageCount} page${existingPageCount === 1 ? "" : "s"})${RST}`,
+      "",
+      `  ${BLUE}1.${RST}  Start querying it locally:`,
+      `       ${BOLD}almanac search --mentions <file>${RST}`,
+      `       ${BOLD}almanac search "auth"${RST}`,
+      `  ${BLUE}2.${RST}  Read one of the result pages:`,
+      `       ${BOLD}almanac show <result-slug>${RST}`,
+    ]);
+    return;
   }
 
-  out.write(empty);
-  out.write(`  ${BLUE_DIM}\u2570${"─".repeat(innerW)}\u256f${RST}\n\n`);
+  renderNextStepsBox(out, [
+    `  ${BLUE}1.${RST}  Create this repo's wiki from the dashboard:`,
+    `       ${BOLD}https://codealmanac.com/dashboard${RST}`,
+    `  ${BLUE}2.${RST}  After .almanac/ lands, query locally:`,
+    `       ${BOLD}almanac search "auth"${RST}`,
+  ]);
 }
 
 /**
