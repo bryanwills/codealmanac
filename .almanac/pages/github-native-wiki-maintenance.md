@@ -290,6 +290,26 @@ sources:
       Records the 2026-06-05 terminal-race hardening after review: Modal spawn recording must not
       regress terminal runs, must still persist the Modal call id, and must suppress stale duplicate
       check publication when completion wins before the original webhook records a check id.
+  - id: usealmanac-codealmanac-command
+    type: file
+    path: /Users/rohan/Desktop/Projects/usealmanac/backend/src/almanac/services/updates/codealmanac.py
+    note: Defines the hosted worker command contract for pull-request and branch update runs.
+  - id: usealmanac-modal-worker
+    type: file
+    path: /Users/rohan/Desktop/Projects/usealmanac/backend/modal_app/updates_worker.py
+    note: Shows the Modal worker environment contract and its current hard-coded `.almanac` change collection.
+  - id: ingest-command
+    type: file
+    path: src/cli/commands/operations.ts
+    note: Keeps `ingest` as the public alias for the Absorb command path in the current source-aware CLI.
+  - id: source-ref-parser
+    type: file
+    path: src/absorb/source-ref.ts
+    note: Parses `github:pr:<number>` and other source refs used by the hosted pull-request command contract.
+  - id: usealmanac-compat-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/25/rollout-2026-06-25T19-09-46-019f01b0-b5bb-7c90-960d-e96cd55fdc93.jsonl
+    note: Records the 2026-06-25 compatibility check between CodeAlmanac branches and the live usealmanac Modal worker contract.
   - id: hosted-settings-session
     type: conversation
     path: >-
@@ -725,6 +745,10 @@ The Modal completion route uses the old backend's internal-secret pattern as a r
 Two hosted-loop invariants should be treated as repo-specific manual doctrine. First, durable run state must commit before any external worker spawn: the backend creates and commits a queued run, spawns Modal outside that transaction, then records the invocation in a second transaction or marks the run failed if spawn fails. Second, delivery mechanisms must be source-blind after policy selection: fork, writability, branch, and settings facts choose a `delivery_kind` before delivery starts, and the same-PR branch executor should only write to the resolved target instead of rechecking source facts such as `is_fork`. These rules belong in the hosted product's manual section because they are local invariants of the GitHub App and Modal loop, not universal CodeAlmanac doctrine. [@hosted-manual-alignment-session]
 
 The Modal spawn and completion paths have a specific race contract. Completion may win after the worker starts but before the webhook path records the Modal invocation or publishes its projected GitHub check. Spawn recording must therefore always persist `modal_call_id` while only promoting still-queued rows to `running` and `modal_spawned`; terminal rows keep their terminal status and step. After spawn recording or spawn failure handling, the webhook path must re-read the run. If completion already won and no `check_run_id` is recorded, the webhook path should return no surface so GitHub publishing no-ops, because the internal completion route is responsible for publishing and recording the first terminal check id. [@hosted-terminal-race-hardening-session]
+
+The current `usealmanac` Modal worker has a narrower executable contract than the hosted-product architecture. Pull-request runs execute `codealmanac ingest github:pr:<number> --foreground --using codex -y`, while branch initialization runs execute `codealmanac init --using codex -y`. The CodeAlmanac version deployed into Modal must therefore keep `ingest` as an Absorb alias and parse `github:pr:<number>` as a GitHub source ref rather than a filesystem path. At the 2026-06-25 branch comparison, `origin/dev` had that source-ref contract and `origin/main` did not, so `origin/main` was not compatible with the live usealmanac PR Modal path. [@usealmanac-codealmanac-command] [@ingest-command] [@source-ref-parser] [@usealmanac-compat-session]
+
+The same worker currently exports `CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE=danger-full-access` and collects changed files with `collect_almanac_changes(checkout.workspace, ".almanac", checkout.head_sha)`. A CodeAlmanac branch that writes durable wiki pages to `docs/almanac/` is not safely compatible with that worker until usealmanac collects the configured Almanac root instead of a hard-coded `.almanac` root. This is a delivery boundary: the agent may read the whole checkout, but the publisher must gather and commit only the configured wiki-root changes. [@usealmanac-modal-worker] [@usealmanac-compat-session]
 
 ## Branch Scope
 
