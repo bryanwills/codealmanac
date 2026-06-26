@@ -147,7 +147,7 @@ describe("codealmanac setup", () => {
       expect(updatePlist).toContain("<string>update</string>");
       await expect(readConfig()).resolves.toMatchObject({
         auto_commit: false,
-        agent: { default: "codex", models: { codex: "gpt-5.5" } },
+        agent: { default: "codex", models: { codex: null } },
         automation: { sync_since: null },
       });
       expect(await readFile(codexHooks, "utf8")).toContain("almanac-capture.sh");
@@ -156,6 +156,18 @@ describe("codealmanac setup", () => {
         .toContain("codealmanac (mini)");
       const claudeMd = await readFile(join(env.claudeDir, "CLAUDE.md"), "utf8");
       expect(hasImportLine(claudeMd)).toBe(true);
+      expect(await readFile(join(home, ".codex", "AGENTS.md"), "utf8"))
+        .toContain("codealmanac (mini)");
+      expect(await readFile(
+        join(home, ".cursor", "rules", "almanac", "RULE.md"),
+        "utf8",
+      )).toContain("alwaysApply: true");
+      expect(await readFile(
+        join(home, ".codeium", "windsurf", "memories", "global_rules.md"),
+        "utf8",
+      )).toContain("codealmanac (mini)");
+      expect(await readFile(join(home, ".config", "opencode", "AGENTS.md"), "utf8"))
+        .toContain("codealmanac (mini)");
     });
   });
 
@@ -166,9 +178,10 @@ describe("codealmanac setup", () => {
         yes: true,
         isTTY: false,
         spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
-        automationPlistPath: env.plistPath,
-        updatePlistPath: env.updatePlistPath,
-        automationExec: async () => ({}),
+          automationPlistPath: env.plistPath,
+          gardenPlistPath: env.gardenPlistPath,
+          updatePlistPath: env.updatePlistPath,
+          automationExec: async () => ({}),
         claudeDir: env.claudeDir,
         guidesDir: env.guidesDir,
         stdout: env.out,
@@ -267,6 +280,7 @@ describe("codealmanac setup", () => {
         interactive: true,
         options: {
           automationPlistPath: env.plistPath,
+          gardenPlistPath: env.gardenPlistPath,
           automationExec: async () => ({}),
         },
         ephemeral: false,
@@ -332,6 +346,31 @@ describe("codealmanac setup", () => {
     });
   });
 
+  it("default hosted setup disables an existing auto-commit opt-in", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffold(home);
+      await writeConfig({ auto_commit: true });
+
+      await runSetup({
+        yes: true,
+        isTTY: false,
+        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
+        automationPlistPath: env.plistPath,
+        updatePlistPath: env.updatePlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+        guidesDir: env.guidesDir,
+        stdout: env.out,
+      });
+
+      await expect(readConfig()).resolves.toMatchObject({
+        auto_commit: false,
+      });
+      expect(existsSync(env.plistPath)).toBe(false);
+      expect(existsSync(env.gardenPlistPath)).toBe(false);
+    });
+  });
+
   it("unattended setup preserves an existing auto-commit opt-out", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
@@ -378,7 +417,7 @@ describe("codealmanac setup", () => {
     });
   });
 
-  it("does not block setup when the selected agent is ready", async () => {
+  it("does not check local agent readiness in default hosted setup", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
       const res = await runSetup({
@@ -394,7 +433,7 @@ describe("codealmanac setup", () => {
       });
 
       expect(res.exitCode).toBe(0);
-      expect(env.stdout()).toMatch(/Agent:/);
+      expect(env.stdout()).not.toMatch(/Agent:/);
       expect(existsSync(env.plistPath)).toBe(false);
     });
   });
@@ -552,9 +591,43 @@ describe("codealmanac setup", () => {
     });
   });
 
+  it("self-managed setup disables auto-commit by default", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffold(home);
+      await writeConfig({ auto_commit: true });
+
+      const res = await runSetup({
+        yes: true,
+        automationEvery: "2h",
+        isTTY: false,
+        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
+        automationPlistPath: env.plistPath,
+        gardenPlistPath: env.gardenPlistPath,
+        updatePlistPath: env.updatePlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+        guidesDir: env.guidesDir,
+        stdout: env.out,
+      });
+
+      expect(res.exitCode).toBe(0);
+      await expect(readConfig()).resolves.toMatchObject({
+        auto_commit: false,
+      });
+    });
+  });
+
   it("interactive explicit sync flags install sync without a sync prompt", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
+      let answeredAutoCommit = false;
+      env.out.on("data", () => {
+        const text = env.stdout();
+        if (!answeredAutoCommit && text.includes("Commit Almanac wiki updates automatically?")) {
+          answeredAutoCommit = true;
+          queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+        }
+      });
       const res = await runSetup({
         isTTY: true,
         agent: "claude",
@@ -576,6 +649,7 @@ describe("codealmanac setup", () => {
       expect(env.stdout()).not.toContain("Keep your codebase wiki synced automatically?");
       expect(await readFile(env.plistPath, "utf8")).toContain("<string>sync</string>");
       expect(await readFile(env.gardenPlistPath, "utf8")).toContain("<string>garden</string>");
+      expect(answeredAutoCommit).toBe(true);
     });
   });
 });

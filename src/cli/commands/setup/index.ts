@@ -1,12 +1,13 @@
 import {
   type SpawnCliFn,
 } from "../../../agent/readiness/providers/claude/index.js";
+import type { InstructionTargetId } from "../../../agent/install-targets.js";
 export {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
   hasCodexInstructions,
 } from "../../../agent/instructions/codex.js";
-import { chooseDefaultAgent, type AgentChoice } from "./agent-choice.js";
+import { chooseDefaultAgent } from "./agent-choice.js";
 import { runAutoCommitSetupStep } from "./auto-commit-step.js";
 import {
   runAutoUpdateSetupStep,
@@ -48,26 +49,17 @@ export type AutomationExecFn = (
  *
  * Setup configures:
  *
- *   1. The default agent/model used by lifecycle commands.
+ *   1. Global agent instructions for the selected tools.
  *   2. A durable global install when running from an ephemeral `npx` path.
- *   3. Optional scheduled Almanac CLI self-update.
- *   4. The short "how to use Almanac" guide at
- *      `~/.claude/almanac.md`, sourced from `guides/mini.md` in the
- *      package.
- *   5. The full reference at `~/.claude/almanac-reference.md`,
- *      sourced from `guides/reference.md`.
- *   6. An `@~/.claude/almanac.md` import line in `~/.claude/CLAUDE.md`
- *      so Claude Code picks up the short guide globally.
- *   7. An inline managed Almanac section in `~/.codex/AGENTS.md`
- *      (or `AGENTS.override.md` when that is the active non-empty file).
- *      Codex does not expand Claude-style `@file` imports in AGENTS files,
- *      so the instructions must live inline to be model-visible.
+ *   3. Scheduled Almanac CLI self-update by default.
+ *   4. Optional self-managed local sync/Garden automation, only when the
+ *      user opts into handling automations themselves or passes explicit
+ *      automation flags.
+ *   5. Optional auto-commit for local lifecycle runs, only behind the
+ *      self-managed automation branch or explicit `--auto-commit`.
  *
- * Everything is idempotent — running setup again is safe.
- * Local sync/Garden automation is no longer part of default onboarding. It
- * remains available through `almanac automation install` and explicit legacy
- * setup flags. `--yes` or a non-TTY stdin skips prompts and uses setup-plan
- * defaults.
+ * Everything is idempotent — running setup again is safe. `--yes` or a
+ * non-TTY stdin skips prompts and uses setup-plan defaults.
  */
 
 export interface SetupOptions {
@@ -111,6 +103,14 @@ export interface SetupOptions {
   claudeDir?: string;
   /** Override `~/.codex/` dir for Codex instruction install. */
   codexDir?: string;
+  /** Override `~/.cursor/` dir for Cursor instruction install. */
+  cursorDir?: string;
+  /** Override `~/.codeium/windsurf/` dir for Windsurf instruction install. */
+  windsurfDir?: string;
+  /** Override `~/.config/opencode/` dir for OpenCode instruction install. */
+  opencodeDir?: string;
+  /** Override selected global instruction targets (tests/internal callers). */
+  instructionTargets?: InstructionTargetId[];
   /** Override the directory containing `mini.md` / `reference.md`. */
   guidesDir?: string;
   /** Override interactivity; defaults to `process.stdin.isTTY`. */
@@ -166,15 +166,90 @@ export async function runSetup(
   printBanner(out);
   printBadge(out);
 
-  let agentChoice: AgentChoice;
+  let nextStepsMode: "hosted" | "self-managed" = "hosted";
   try {
-    agentChoice = await chooseDefaultAgent({
+    const plan = await buildSetupPlan({ out, interactive, options });
+    nextStepsMode = plan.selfManagedAutomation ? "self-managed" : "hosted";
+
+    const guides = await runGuidesSetupStep({
       out,
-      interactive,
-      requested: options.agent,
-      requestedModel: options.model,
-      spawnCli: options.spawnCli,
+      options,
+      targets: plan.instructionTargets,
     });
+    if (!guides.ok) {
+      return { stdout: "", stderr: guides.stderr, exitCode: guides.exitCode };
+    }
+
+    const globalInstall = await runGlobalInstallStep({ out, interactive, options });
+
+    if (plan.cliAutoUpdate) {
+      if (globalInstall.ephemeral && !globalInstall.durableGlobalInstall) {
+        skipAutoUpdateSetupStep(out);
+      } else {
+        const update = await runAutoUpdateSetupStep({
+          out,
+          options: {
+            autoUpdateEvery: options.autoUpdateEvery,
+            updatePlistPath: options.updatePlistPath,
+            updateProgramArguments: globalInstall.ephemeral
+              ? globalUpdateProgramArguments()
+              : undefined,
+            automationExec: options.automationExec,
+          },
+        });
+        if (!update.ok) {
+          return { stdout: "", stderr: update.stderr, exitCode: update.exitCode };
+        }
+      }
+    }
+
+    if (plan.selfManagedAutomation) {
+      const agentChoice = await chooseDefaultAgent({
+        out,
+        interactive,
+        requested: options.agent,
+        requestedModel: options.model,
+        spawnCli: options.spawnCli,
+      });
+      if (!agentChoice.ok) {
+        return {
+          stdout: "",
+          stderr: `almanac: ${agentChoice.error}\n`,
+          exitCode: 1,
+        };
+      }
+      stepDone(
+        out,
+        `Agent: ${WHITE_BOLD}${agentChoice.provider}${RST}` +
+          ` (${agentChoice.model ?? "provider default"})`,
+      );
+      out.write(BAR + "\n");
+
+      const automation = await runAutomationSetupStep({
+        out,
+        interactive,
+        options,
+        ephemeral: globalInstall.ephemeral,
+        durableGlobalInstall: globalInstall.durableGlobalInstall,
+      });
+      if (!automation.ok) {
+        return { stdout: "", stderr: automation.stderr, exitCode: automation.exitCode };
+      }
+    }
+
+    if (plan.selfManagedAutomation || plan.autoCommit || options.autoCommit === false) {
+      await runAutoCommitSetupStep({
+        out,
+        interactive,
+        options: { autoCommit: plan.autoCommit },
+      });
+    } else if (plan.autoCommit === false) {
+      await runAutoCommitSetupStep({
+        out,
+        interactive: false,
+        options: { autoCommit: false },
+      });
+    }
   } catch (err: unknown) {
     if (isSetupInterrupted(err)) {
       return {
@@ -184,63 +259,6 @@ export async function runSetup(
       };
     }
     throw err;
-  }
-  if (!agentChoice.ok) {
-    return {
-      stdout: "",
-      stderr: `almanac: ${agentChoice.error}\n`,
-      exitCode: 1,
-    };
-  }
-  stepDone(
-    out,
-    `Agent: ${WHITE_BOLD}${agentChoice.provider}${RST}` +
-      ` (${agentChoice.model ?? "provider default"})`,
-  );
-  out.write(BAR + "\n");
-
-  const globalInstall = await runGlobalInstallStep({ out, interactive, options });
-  const plan = await buildSetupPlan({ out, interactive, options });
-  if (plan.syncAutomation) {
-    const automation = await runAutomationSetupStep({
-      out,
-      interactive,
-      options,
-      ephemeral: globalInstall.ephemeral,
-      durableGlobalInstall: globalInstall.durableGlobalInstall,
-    });
-    if (!automation.ok) {
-      return { stdout: "", stderr: automation.stderr, exitCode: automation.exitCode };
-    }
-  }
-  if (plan.cliAutoUpdate) {
-    if (globalInstall.ephemeral && !globalInstall.durableGlobalInstall) {
-      skipAutoUpdateSetupStep(out);
-    } else {
-      const update = await runAutoUpdateSetupStep({
-        out,
-        options: {
-          autoUpdateEvery: options.autoUpdateEvery,
-          updatePlistPath: options.updatePlistPath,
-          updateProgramArguments: globalInstall.ephemeral
-            ? globalUpdateProgramArguments()
-            : undefined,
-          automationExec: options.automationExec,
-        },
-      });
-      if (!update.ok) {
-        return { stdout: "", stderr: update.stderr, exitCode: update.exitCode };
-      }
-    }
-  }
-  if (plan.agentInstructions) {
-    const guides = await runGuidesSetupStep({ out, options });
-    if (!guides.ok) {
-      return { stdout: "", stderr: guides.stderr, exitCode: guides.exitCode };
-    }
-  }
-  if (plan.autoCommit || options.autoCommit === false) {
-    await runAutoCommitSetupStep({ out, interactive, options });
   }
 
   stepDone(out, `${BLUE}Setup complete${RST}`);
@@ -252,7 +270,7 @@ export async function runSetup(
   // `.almanac/pages/` (committed by Engineer A) and gets told to run
   // `almanac init`, which is wrong — the wiki already exists.
   const existingPageCount = countExistingPages(process.cwd());
-  printNextSteps(out, existingPageCount);
+  printNextSteps(out, existingPageCount, nextStepsMode);
 
   return { stdout: "", stderr: "", exitCode: 0 };
 }

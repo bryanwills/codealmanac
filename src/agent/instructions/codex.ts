@@ -1,9 +1,13 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+
+import { removeManagedBlock, upsertManagedBlock } from "./managed-block.js";
 
 export const CODEX_INSTRUCTIONS_START = "<!-- almanac:start -->";
 export const CODEX_INSTRUCTIONS_END = "<!-- almanac:end -->";
+export const LEGACY_CODEX_INSTRUCTIONS_START = "<!-- codealmanac:start -->";
+export const LEGACY_CODEX_INSTRUCTIONS_END = "<!-- codealmanac:end -->";
 
 // Codex treats @file references inside AGENTS.md as plain text rather than
 // expanding them like Claude does in CLAUDE.md. Keep the managed instructions
@@ -28,6 +32,49 @@ export async function ensureCodexInstructions(
   if (next === existing) return false;
   await writeFile(agentsPath, next, "utf8");
   return true;
+}
+
+export async function removeCodexInstructions(codexDir: string): Promise<string[]> {
+  const touched: string[] = [];
+  for (const agentsFile of [
+    path.join(codexDir, "AGENTS.md"),
+    path.join(codexDir, "AGENTS.override.md"),
+  ]) {
+    if (!existsSync(agentsFile)) continue;
+    const existing = await readFile(agentsFile, "utf8");
+    const current = removeManagedBlock(
+      existing,
+      CODEX_INSTRUCTIONS_START,
+      CODEX_INSTRUCTIONS_END,
+    );
+    const legacy = removeManagedBlock(
+      current.body,
+      LEGACY_CODEX_INSTRUCTIONS_START,
+      LEGACY_CODEX_INSTRUCTIONS_END,
+    );
+    if (!current.changed && !legacy.changed) continue;
+    if (legacy.body.trim().length === 0) {
+      await rm(agentsFile, { force: true });
+      touched.push(`${path.basename(agentsFile)} (deleted)`);
+    } else {
+      await writeFile(agentsFile, legacy.body, "utf8");
+      touched.push(path.basename(agentsFile));
+    }
+  }
+  return touched;
+}
+
+export async function codexInstructionBlockPresent(codexDir: string): Promise<boolean> {
+  for (const file of ["AGENTS.override.md", "AGENTS.md"]) {
+    const fullPath = path.join(codexDir, file);
+    if (!existsSync(fullPath)) continue;
+    try {
+      if (hasCodexInstructions(await readFile(fullPath, "utf8"))) return true;
+    } catch {
+      // Treat unreadable files as absent for doctor-style checks.
+    }
+  }
+  return false;
 }
 
 function formatCodexInstructions(guideContents: string): string {
@@ -56,22 +103,4 @@ export function hasCodexInstructions(contents: string): boolean {
     contents.includes(CODEX_INSTRUCTIONS_START) &&
     contents.includes(CODEX_INSTRUCTIONS_END)
   );
-}
-
-function upsertManagedBlock(
-  contents: string,
-  start: string,
-  end: string,
-  block: string,
-): string {
-  const startIndex = contents.indexOf(start);
-  const endIndex = contents.indexOf(end);
-  if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-    const afterEnd = endIndex + end.length;
-    return `${contents.slice(0, startIndex)}${block}${contents.slice(afterEnd)}`;
-  }
-
-  const sep =
-    contents.length === 0 ? "" : contents.endsWith("\n") ? "\n" : "\n\n";
-  return `${contents}${sep}${block}\n`;
 }

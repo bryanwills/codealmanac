@@ -2,10 +2,7 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
-import {
-  codexInstructionBlockPresent,
-  hasClaudeImportLine,
-} from "../../../agent/install-targets.js";
+import { checkAgentInstructions } from "../../../agent/install-targets.js";
 import type { ClaudeAuthStatus } from "../../../agent/readiness/providers/claude/index.js";
 import { defaultPlistPath } from "../automation.js";
 import { detectLegacyCaptureSweepAutomation } from "../../../platform/automation/legacy-capture.js";
@@ -51,8 +48,17 @@ export async function gatherInstallChecks(
 
   const claudeDir = options.claudeDir ?? path.join(homedir(), ".claude");
   const codexDir = options.codexDir ?? path.join(homedir(), ".codex");
+  const cursorDir = options.cursorDir ?? path.join(homedir(), ".cursor");
+  const windsurfDir = options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf");
+  const opencodeDir = options.opencodeDir ?? path.join(homedir(), ".config", "opencode");
   checks.push(describeGuides(claudeDir));
-  checks.push(await describeInstructionEntries({ claudeDir, codexDir }));
+  checks.push(await describeInstructionEntries({
+    claudeDir,
+    codexDir,
+    cursorDir,
+    windsurfDir,
+    opencodeDir,
+  }));
 
   return checks;
 }
@@ -144,10 +150,10 @@ async function describeAutomation(
     };
   }
   return {
-    status: "problem",
+    status: "info",
     key: "install.automation",
-    message: "sync automation not installed",
-    fix: "run: almanac automation install",
+    message: "local sync automation not installed (expected for hosted setup)",
+    fix: "run: almanac automation install  (for self-managed local updates)",
   };
 }
 
@@ -178,24 +184,12 @@ function describeGuides(claudeDir: string): Check {
 async function describeInstructionEntries(dirs: {
   claudeDir: string;
   codexDir: string;
+  cursorDir: string;
+  windsurfDir: string;
+  opencodeDir: string;
 }): Promise<Check> {
-  const missing: string[] = [];
-  const claudeMd = path.join(dirs.claudeDir, "CLAUDE.md");
-  if (!existsSync(claudeMd)) {
-    missing.push("CLAUDE.md import");
-  } else {
-    try {
-      const { readFile } = await import("node:fs/promises");
-      if (!hasClaudeImportLine(await readFile(claudeMd, "utf8"))) {
-        missing.push("CLAUDE.md import");
-      }
-    } catch {
-      missing.push("CLAUDE.md import");
-    }
-  }
-  if (!await codexInstructionBlockPresent(dirs.codexDir)) {
-    missing.push("Codex AGENTS.md instructions");
-  }
+  const check = await checkAgentInstructions(dirs);
+  const missing = check.missing;
   const ok = missing.length === 0;
   return {
     status: ok ? "ok" : "problem",

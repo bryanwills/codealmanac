@@ -303,7 +303,7 @@ function renderSelect<T>(
   return lines;
 }
 
-class SetupInterruptedError extends Error {
+export class SetupInterruptedError extends Error {
   constructor() {
     super("setup interrupted");
   }

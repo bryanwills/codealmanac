@@ -1,7 +1,10 @@
 import { homedir } from "node:os";
 import path from "node:path";
 
-import { installAgentInstructions } from "../../../agent/install-targets.js";
+import {
+  installAgentInstructions,
+  type InstructionTargetId,
+} from "../../../agent/install-targets.js";
 import {
   BAR,
   DIM,
@@ -15,6 +18,9 @@ export interface GuidesSetupStepOptions {
   skipGuides?: boolean;
   claudeDir?: string;
   codexDir?: string;
+  cursorDir?: string;
+  windsurfDir?: string;
+  opencodeDir?: string;
   guidesDir?: string;
 }
 
@@ -25,8 +31,9 @@ export type GuidesSetupStepResult =
 export async function runGuidesSetupStep(args: {
   out: NodeJS.WritableStream;
   options: GuidesSetupStepOptions;
+  targets: readonly InstructionTargetId[];
 }): Promise<GuidesSetupStepResult> {
-  if (args.options.skipGuides === true) {
+  if (args.options.skipGuides === true || args.targets.length === 0) {
     stepSkipped(args.out, `Agent instructions ${DIM}skipped${RST}`);
     args.out.write(BAR + "\n");
     return { ok: true };
@@ -34,8 +41,12 @@ export async function runGuidesSetupStep(args: {
 
   try {
     const summary = await installAgentInstructions({
+      targets: args.targets,
       claudeDir: args.options.claudeDir ?? path.join(homedir(), ".claude"),
       codexDir: args.options.codexDir ?? path.join(homedir(), ".codex"),
+      cursorDir: args.options.cursorDir ?? path.join(homedir(), ".cursor"),
+      windsurfDir: args.options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf"),
+      opencodeDir: args.options.opencodeDir ?? path.join(homedir(), ".config", "opencode"),
       guidesDir: args.options.guidesDir ?? resolveGuidesDir(),
     });
     const guidesSummary = summary.anyChanges

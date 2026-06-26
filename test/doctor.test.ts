@@ -72,6 +72,24 @@ async function scaffoldHealthyInstall(home: string): Promise<{
     `${CODEX_INSTRUCTIONS_START}\n# mini guide\n${CODEX_INSTRUCTIONS_END}\n`,
     "utf8",
   );
+  await mkdir(join(home, ".cursor", "rules", "almanac"), { recursive: true });
+  await writeFile(
+    join(home, ".cursor", "rules", "almanac", "RULE.md"),
+    "---\nalwaysApply: true\n---\n\n# mini guide\n",
+    "utf8",
+  );
+  await mkdir(join(home, ".codeium", "windsurf", "memories"), { recursive: true });
+  await writeFile(
+    join(home, ".codeium", "windsurf", "memories", "global_rules.md"),
+    "<!-- almanac:start -->\n# mini guide\n<!-- almanac:end -->\n",
+    "utf8",
+  );
+  await mkdir(join(home, ".config", "opencode"), { recursive: true });
+  await writeFile(
+    join(home, ".config", "opencode", "AGENTS.md"),
+    "<!-- almanac:start -->\n# mini guide\n<!-- almanac:end -->\n",
+    "utf8",
+  );
   return { claudeDir, plistPath };
 }
 
@@ -111,7 +129,7 @@ describe("almanac doctor", () => {
     });
   });
 
-  it("flags missing automation and suggests automation install", async () => {
+  it("reports missing local automation as optional for hosted setup", async () => {
     await withTempHome(async (home) => {
       const env = await scaffoldHealthyInstall(home);
       const missingPlist = join(home, "missing.plist");
@@ -131,7 +149,8 @@ describe("almanac doctor", () => {
       const automation = parsed.install.find(
         (c: { key: string }) => c.key === "install.automation",
       );
-      expect(automation.status).toBe("problem");
+      expect(automation.status).toBe("info");
+      expect(automation.message).toContain("expected for hosted setup");
       expect(automation.fix).toMatch(/almanac automation install/);
     });
   });

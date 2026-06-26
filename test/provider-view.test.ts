@@ -143,6 +143,34 @@ describe("provider setup view", () => {
     ])).toBe("codex");
   });
 
+  it("still recommends Codex when Claude is ready but Codex needs sign-in", () => {
+    expect(chooseRecommendedProvider([
+      statuses[0]!,
+      {
+        id: "codex",
+        installed: true,
+        authenticated: false,
+        readiness: "not_authenticated",
+        detail: "not logged in",
+        loginFix: "run: codex login",
+      },
+    ])).toBe("codex");
+  });
+
+  it("falls back to a ready agent when Codex is missing", () => {
+    expect(chooseRecommendedProvider([
+      statuses[0]!,
+      {
+        id: "codex",
+        installed: false,
+        authenticated: false,
+        readiness: "missing_executable",
+        detail: "codex not found",
+        installFix: "install codex",
+      },
+    ])).toBe("claude");
+  });
+
   it("parses provider/model shorthand without making it primary UX", () => {
     expect(parseAgentSelection("claude/opus")).toEqual({
       provider: "claude",

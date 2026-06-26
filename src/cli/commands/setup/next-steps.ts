@@ -12,8 +12,19 @@ import { BLUE, BOLD, DIM, RST, renderNextStepsBox } from "./output.js";
 export function printNextSteps(
   out: NodeJS.WritableStream,
   existingPageCount: number,
+  mode: "hosted" | "self-managed" = "hosted",
 ): void {
-  if (existingPageCount > 0) {
+  if (mode === "self-managed") {
+    renderNextStepsBox(out, [
+      `  ${BLUE}1.${RST}  Local automations are running:`,
+      `       ${BOLD}almanac sync --quiet 45m${RST}`,
+      `       ${BOLD}almanac garden${RST}`,
+      `  ${BLUE}2.${RST}  Query locally:`,
+      `       ${BOLD}almanac search "auth"${RST}`,
+      `       ${BOLD}almanac search --mentions <file>${RST}`,
+    ]);
+    return;
+  } else if (existingPageCount > 0) {
     renderNextStepsBox(out, [
       `  ${BLUE}\u25c7${RST}  This repo already has a wiki ${DIM}(${existingPageCount} page${existingPageCount === 1 ? "" : "s"})${RST}`,
       "",

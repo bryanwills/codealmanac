@@ -6,6 +6,7 @@ import {
   buildSetupPlan,
   SETUP_DEFAULTS,
 } from "../src/cli/commands/setup/setup-plan.js";
+import { DEFAULT_INSTRUCTION_TARGETS } from "../src/agent/install-targets.js";
 
 function setupOutput(): {
   out: PassThrough;
@@ -29,9 +30,9 @@ describe("setup plan", () => {
       interactive: false,
       options: {},
     })).resolves.toEqual({
-      syncAutomation: SETUP_DEFAULTS.syncAutomation,
+      instructionTargets: [...DEFAULT_INSTRUCTION_TARGETS],
       cliAutoUpdate: SETUP_DEFAULTS.cliAutoUpdate,
-      agentInstructions: SETUP_DEFAULTS.agentInstructions,
+      selfManagedAutomation: SETUP_DEFAULTS.selfManagedAutomation,
       autoCommit: SETUP_DEFAULTS.autoCommit,
     });
   });
@@ -47,9 +48,9 @@ describe("setup plan", () => {
         skipGuides: true,
       },
     })).resolves.toMatchObject({
-      syncAutomation: false,
+      instructionTargets: [],
       cliAutoUpdate: false,
-      agentInstructions: false,
+      selfManagedAutomation: false,
       autoCommit: false,
     });
   });
@@ -66,9 +67,9 @@ describe("setup plan", () => {
         autoCommit: true,
       },
     })).resolves.toMatchObject({
-      syncAutomation: true,
+      instructionTargets: [...DEFAULT_INSTRUCTION_TARGETS],
+      selfManagedAutomation: true,
       cliAutoUpdate: true,
-      agentInstructions: true,
       autoCommit: true,
     });
   });
@@ -89,16 +90,21 @@ describe("setup plan", () => {
 
   it("interactive answers override shown gate defaults", async () => {
     const { out, stdout } = setupOutput();
+    let answeredTargets = false;
     let answeredUpdate = false;
-    let answeredGuides = false;
+    let answeredAutomation = false;
     out.on("data", () => {
       const text = stdout();
+      if (!answeredTargets && text.includes("Select targets")) {
+        answeredTargets = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
       if (!answeredUpdate && text.includes("Keep the Almanac CLI updated automatically?")) {
         answeredUpdate = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("n\n")));
       }
-      if (!answeredGuides && text.includes("Add Almanac instructions for your AI agents?")) {
-        answeredGuides = true;
+      if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
+        answeredAutomation = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
       }
     });
@@ -108,12 +114,47 @@ describe("setup plan", () => {
       interactive: true,
       options: {},
     })).resolves.toMatchObject({
-      syncAutomation: false,
+      instructionTargets: [...DEFAULT_INSTRUCTION_TARGETS],
       cliAutoUpdate: false,
-      agentInstructions: true,
+      selfManagedAutomation: false,
       autoCommit: false,
     });
+    expect(answeredTargets).toBe(true);
     expect(answeredUpdate).toBe(true);
-    expect(answeredGuides).toBe(true);
+    expect(answeredAutomation).toBe(true);
+  });
+
+  it("interactive target selection can intentionally choose no targets", async () => {
+    const { out, stdout } = setupOutput();
+    let answeredTargets = false;
+    let answeredUpdate = false;
+    let answeredAutomation = false;
+    out.on("data", () => {
+      const text = stdout();
+      if (!answeredTargets && text.includes("Select targets")) {
+        answeredTargets = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("none\n")));
+      }
+      if (!answeredUpdate && text.includes("Keep the Almanac CLI updated automatically?")) {
+        answeredUpdate = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
+      if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
+        answeredAutomation = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
+    });
+
+    await expect(buildSetupPlan({
+      out,
+      interactive: true,
+      options: {},
+    })).resolves.toMatchObject({
+      instructionTargets: [],
+      cliAutoUpdate: true,
+      selfManagedAutomation: false,
+      autoCommit: false,
+    });
+    expect(answeredTargets).toBe(true);
   });
 });

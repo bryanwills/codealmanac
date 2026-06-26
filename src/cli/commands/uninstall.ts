@@ -27,8 +27,9 @@ type AutomationExecFn = (
  *   2. The guide files `~/.claude/almanac.md` and
  *      `~/.claude/almanac-reference.md`. Legacy `codealmanac*.md` guide
  *      files are removed too.
- *   3. The managed Almanac block from Codex's global AGENTS file.
-   *   4. The scheduled sync/Garden launchd jobs and legacy hook files.
+ *   3. Managed global instruction entries for Codex, Cursor, Windsurf,
+ *      and OpenCode.
+ *   4. The scheduled sync/Garden launchd jobs and legacy hook files.
  *
  * Flags:
  *   --yes           skip confirmations; remove everything
@@ -50,6 +51,9 @@ export interface UninstallOptions {
   automationExec?: AutomationExecFn;
   claudeDir?: string;
   codexDir?: string;
+  cursorDir?: string;
+  windsurfDir?: string;
+  opencodeDir?: string;
   isTTY?: boolean;
   stdout?: NodeJS.WritableStream;
 }
@@ -73,6 +77,9 @@ export async function runUninstall(
   const interactive = isTTY && options.yes !== true;
   const claudeDir = options.claudeDir ?? path.join(homedir(), ".claude");
   const codexDir = options.codexDir ?? path.join(homedir(), ".codex");
+  const cursorDir = options.cursorDir ?? path.join(homedir(), ".cursor");
+  const windsurfDir = options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf");
+  const opencodeDir = options.opencodeDir ?? path.join(homedir(), ".config", "opencode");
 
   out.write("\n");
 
@@ -114,7 +121,13 @@ export async function runUninstall(
     );
   }
   if (removeGuides) {
-    const summary = await removeAgentInstructions({ claudeDir, codexDir });
+    const summary = await removeAgentInstructions({
+      claudeDir,
+      codexDir,
+      cursorDir,
+      windsurfDir,
+      opencodeDir,
+    });
     if (summary.anyChanges) {
       out.write(
         `  ${BLUE}\u25c7${RST}  Guides removed (${summary.filesTouched.join(", ")})\n`,
