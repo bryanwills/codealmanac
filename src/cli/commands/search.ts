@@ -1,20 +1,11 @@
 import { BLUE, RST } from "../../ansi.js";
 import {
   searchWikiPages,
+  type SearchWikiPagesRequest,
   type WikiSearchResult,
 } from "../../services/wiki/search.js";
 
-export interface SearchOptions {
-  cwd: string;
-  query?: string;
-  topics: string[];
-  mentions?: string;
-  since?: string;
-  stale?: string;
-  orphan?: boolean;
-  includeArchive?: boolean;
-  archived?: boolean;
-  wiki?: string;
+export interface SearchOptions extends SearchWikiPagesRequest {
   output?: SearchOutputMode;
   limit?: number;
 }
@@ -32,14 +23,13 @@ export interface SearchCommandOutput {
 /**
  * `almanac search` — the core query surface.
  *
- * This command adapter resolves the target wiki, opens a fresh index,
- * delegates query mechanics to `wiki/query`, and renders the selected
- * output shape.
+ * This command adapter delegates wiki lookup to the wiki service and
+ * renders the selected CLI output shape.
  */
 export async function runSearch(
   options: SearchOptions,
 ): Promise<SearchCommandOutput> {
-  const rows = await searchWikiPages(options);
+  const rows = await searchWikiPages(toSearchWikiPagesRequest(options));
   const limited =
     options.limit !== undefined && options.limit >= 0
       ? rows.slice(0, options.limit)
@@ -48,6 +38,23 @@ export async function runSearch(
   const stdout = formatResults(limited, options);
   const stderr = buildStderr(limited, options);
   return { stdout, stderr, exitCode: 0 };
+}
+
+function toSearchWikiPagesRequest(
+  options: SearchOptions,
+): SearchWikiPagesRequest {
+  return {
+    cwd: options.cwd,
+    query: options.query,
+    topics: options.topics,
+    mentions: options.mentions,
+    since: options.since,
+    stale: options.stale,
+    orphan: options.orphan,
+    includeArchive: options.includeArchive,
+    archived: options.archived,
+    wiki: options.wiki,
+  };
 }
 
 function formatResults(
