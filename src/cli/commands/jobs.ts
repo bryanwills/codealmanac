@@ -49,7 +49,7 @@ export interface JobAttachStreamCommandOptions {
   json?: boolean;
   now?: () => Date;
   isPidAlive?: (pid: number) => boolean;
-  write?: (chunk: string) => void;
+  write: (chunk: string) => void;
   pollMs?: number;
 }
 
@@ -90,9 +90,8 @@ export async function runJobsAttach(
 export async function streamJobsAttach(
   options: JobAttachStreamCommandOptions,
 ): Promise<JobsCommandResult> {
-  const write = options.write ?? ((chunk: string) => process.stdout.write(chunk));
-  const result = await streamJobLog(toStreamJobLogRequest({ ...options, write }));
-  return renderStreamJobLogResult(result, options.json, write);
+  const result = await streamJobLog(toStreamJobLogRequest(options));
+  return renderStreamJobLogResult(result, options.json, options.write);
 }
 
 export async function runJobsCancel(
@@ -122,7 +121,7 @@ function toJobRequest(options: JobByIdCommandOptions): JobRequest {
 }
 
 function toStreamJobLogRequest(
-  options: JobAttachStreamCommandOptions & { write: (chunk: string) => void },
+  options: JobAttachStreamCommandOptions,
 ): StreamJobLogRequest {
   return {
     cwd: options.cwd,

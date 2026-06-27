@@ -815,3 +815,9 @@ One-hundred-twenty-third production slice:
 - Split serve startup rendering into `src/cli/commands/serve-render.ts`.
 - Moved the `almanac serve` startup URL and Ctrl+C instruction text out of `src/cli/commands/serve.ts`.
 - Kept `src/cli/commands/serve.ts` focused on viewer server lifetime, interrupt waiting, and guaranteed server cleanup.
+
+One-hundred-twenty-fourth production slice:
+
+- Made `streamJobsAttach` require an explicit stream writer instead of defaulting to `process.stdout`.
+- Moved the `jobs attach` stdout writer into `src/edges/cli/register-jobs-commands.ts`.
+- Kept `src/cli/commands/jobs.ts` focused on jobs service request mapping and command result rendering delegation.

@@ -58,6 +58,9 @@ export function registerJobsCommands(program: Command): void {
         cwd: process.cwd(),
         jobId,
         json: opts.json,
+        write: (chunk) => {
+          process.stdout.write(chunk);
+        },
       });
       emit(result);
     });

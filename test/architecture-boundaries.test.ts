@@ -514,6 +514,9 @@ describe("architecture boundaries", () => {
     const jobsServiceView = await readSource("src/services/jobs/view.ts");
     const jobsCommand = await readSource("src/cli/commands/jobs.ts");
     const jobsRender = await readSource("src/cli/commands/jobs-render.ts");
+    const jobsRegistration = await readSource(
+      "src/edges/cli/register-jobs-commands.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/cli/commands/jobs-format.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/jobs-render.ts"))).toBe(true);
@@ -541,6 +544,7 @@ describe("architecture boundaries", () => {
     expect(jobsCommand).not.toContain("resolveJobLogPath");
     expect(jobsCommand).not.toContain("finishJobRecord");
     expect(jobsCommand).not.toContain("process.kill");
+    expect(jobsCommand).not.toContain("process.stdout");
     expect(jobsCommand).not.toContain("JSON.stringify");
     expect(jobsCommand).not.toContain("formatJobRows");
     expect(jobsCommand).not.toContain("formatJobDetails");
@@ -555,6 +559,7 @@ describe("architecture boundaries", () => {
     expect(jobsRender).toContain("renderJobsShowResult");
     expect(jobsRender).toContain("renderStreamJobLogResult");
     expect(jobsRender).toContain("renderCancelJobResult");
+    expect(jobsRegistration).toContain("write: (chunk)");
     expect(jobsService).not.toContain("JobView as RuntimeJobView");
     expect(jobsService).not.toContain("function jobServiceViewFromRuntime");
     expect(jobsService).not.toContain("toJobView");
