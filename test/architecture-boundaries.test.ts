@@ -526,6 +526,8 @@ describe("architecture boundaries", () => {
     expect(reviewCommand).not.toContain("interface ReviewOptions");
     expect(reviewCommand).not.toContain("ReviewItemOptions extends ReviewOptions");
     expect(reviewCommand).not.toContain("renderOutcome");
+    expect(reviewCommand).not.toContain("switch (result.status)");
+    expect(reviewCommand).not.toContain("result.status ===");
     expect(reviewCommand).not.toContain("JSON.stringify");
     expect(reviewCommand).not.toContain("added review item:");
     expect(reviewCommand).not.toContain("Decision:");
@@ -533,7 +535,10 @@ describe("architecture boundaries", () => {
       "options: { cwd: string; wiki?: string; id: string; json?: boolean }",
     );
     expect(reviewCommand).toContain("interface ReviewShowOptions");
+    expect(reviewCommand).toContain("renderReviewAddResult");
     expect(reviewRender).toContain("renderOutcome");
+    expect(reviewRender).toContain("renderReviewAddResult");
+    expect(reviewRender).toContain("switch (result.status)");
     expect(reviewRender).toContain("added review item:");
     expect(reviewRender).toContain("Decision:");
 

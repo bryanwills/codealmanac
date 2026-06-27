@@ -31,6 +31,8 @@ Claude and Codex harness providers are created from an explicit runtime environm
 
 Command adapters shape requests and render results. Services own workflow decisions, validation, coordination, and user-visible product semantics.
 
+Command-private render modules own service-result-to-output branching. When a command receives a discriminated service result, the command should call the service and delegate the status-specific JSON/text/exit-code mapping to its render module instead of becoming a workflow decision layer.
+
 ### Stores and integrations stay mechanical
 
 Stores own persistence mechanics. Provider adapters, process spawning, app-server protocols, launchd, npm, and OS behavior stay in integration-shaped modules unless they are product service contracts.

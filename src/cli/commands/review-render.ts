@@ -1,4 +1,10 @@
 import type {
+  AddWikiReviewItemResult,
+  ApplyWikiReviewItemResult,
+  DecideWikiReviewItemResult,
+  GetWikiReviewItemResult,
+  ListWikiReviewItemsResult,
+  ReopenWikiReviewItemResult,
   WikiReviewItem,
   WikiReviewStatus,
 } from "../../services/wiki/review-types.js";
@@ -10,7 +16,86 @@ export interface ReviewCommandOutput {
   exitCode: number;
 }
 
-export function renderReviewAdded(
+export function renderReviewAddResult(
+  result: AddWikiReviewItemResult,
+  json?: boolean,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "added":
+      return renderReviewAdded(result.item, json);
+    case "missing-markdown":
+      return renderReviewMissingMarkdown("review add");
+  }
+}
+
+export function renderReviewListResult(
+  result: ListWikiReviewItemsResult,
+  json?: boolean,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "listed":
+      return renderReviewList(result.items, json);
+    case "invalid-status":
+      return renderReviewInvalidStatus(json);
+  }
+}
+
+export function renderReviewShowResult(
+  result: GetWikiReviewItemResult,
+  json?: boolean,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "found":
+      return renderReviewShow(result.item, json);
+    case "missing":
+      return renderReviewMissingItem(result.id);
+  }
+}
+
+export function renderReviewDecideResult(
+  result: DecideWikiReviewItemResult,
+  json?: boolean,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "decided":
+      return renderReviewDecided(result.item);
+    case "missing-markdown":
+      return renderReviewMissingMarkdown("review decide");
+    case "missing":
+      return renderReviewMissingItem(result.id);
+    case "already-applied":
+      return renderReviewAlreadyApplied(result.id, json);
+  }
+}
+
+export function renderReviewApplyResult(
+  result: ApplyWikiReviewItemResult,
+  json?: boolean,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "applied":
+      return renderReviewApplied(result.item);
+    case "missing-markdown":
+      return renderReviewMissingMarkdown("review apply");
+    case "missing":
+      return renderReviewMissingItem(result.id);
+    case "not-decided":
+      return renderReviewNotDecided(result.id, result.currentStatus, json);
+  }
+}
+
+export function renderReviewReopenResult(
+  result: ReopenWikiReviewItemResult,
+): ReviewCommandOutput {
+  switch (result.status) {
+    case "reopened":
+      return renderReviewReopened(result.item);
+    case "missing":
+      return renderReviewMissingItem(result.id);
+  }
+}
+
+function renderReviewAdded(
   item: WikiReviewItem,
   json?: boolean,
 ): ReviewCommandOutput {
@@ -18,7 +103,7 @@ export function renderReviewAdded(
   return ok(`added review item: ${item.id}\n`);
 }
 
-export function renderReviewList(
+function renderReviewList(
   items: WikiReviewItem[],
   json?: boolean,
 ): ReviewCommandOutput {
@@ -32,7 +117,7 @@ export function renderReviewList(
   );
 }
 
-export function renderReviewShow(
+function renderReviewShow(
   item: WikiReviewItem,
   json?: boolean,
 ): ReviewCommandOutput {
@@ -40,19 +125,19 @@ export function renderReviewShow(
   return ok(renderReviewItem(item));
 }
 
-export function renderReviewDecided(item: WikiReviewItem): ReviewCommandOutput {
+function renderReviewDecided(item: WikiReviewItem): ReviewCommandOutput {
   return ok(`decided review item: ${item.id}\n`);
 }
 
-export function renderReviewApplied(item: WikiReviewItem): ReviewCommandOutput {
+function renderReviewApplied(item: WikiReviewItem): ReviewCommandOutput {
   return ok(`applied review item: ${item.id}\n`);
 }
 
-export function renderReviewReopened(item: WikiReviewItem): ReviewCommandOutput {
+function renderReviewReopened(item: WikiReviewItem): ReviewCommandOutput {
   return ok(`reopened review item: ${item.id}\n`);
 }
 
-export function renderReviewMissingMarkdown(
+function renderReviewMissingMarkdown(
   commandName: string,
 ): ReviewCommandOutput {
   return renderReviewError(
@@ -60,21 +145,21 @@ export function renderReviewMissingMarkdown(
   );
 }
 
-export function renderReviewInvalidStatus(json?: boolean): ReviewCommandOutput {
+function renderReviewInvalidStatus(json?: boolean): ReviewCommandOutput {
   return renderReviewError(
     "review list --status must be open, decided, applied, or all",
     json,
   );
 }
 
-export function renderReviewMissingItem(
+function renderReviewMissingItem(
   id: string,
   json?: boolean,
 ): ReviewCommandOutput {
   return renderReviewError(`no review item "${id}"`, json);
 }
 
-export function renderReviewAlreadyApplied(
+function renderReviewAlreadyApplied(
   id: string,
   json?: boolean,
 ): ReviewCommandOutput {
@@ -84,7 +169,7 @@ export function renderReviewAlreadyApplied(
   );
 }
 
-export function renderReviewNotDecided(
+function renderReviewNotDecided(
   id: string,
   currentStatus: WikiReviewStatus,
   json?: boolean,

@@ -912,3 +912,10 @@ One-hundred-thirty-seventh production slice:
 - Split job-log command requests away from job-view requests so log reads do not need PID liveness.
 - Moved CLI jobs registration to provide `isLocalPidAlive` and `signalLocalPid` from the platform layer.
 - Added architecture guards so jobs services cannot reintroduce platform process ownership.
+
+One-hundred-thirty-eighth production slice:
+
+- Moved review command service-result rendering into `src/cli/commands/review-render.ts`.
+- Kept `src/cli/commands/review.ts` focused on request shaping, markdown/stdin input shaping, and review service verb calls.
+- Preserved status-specific JSON and text behavior while making the render module own service-result-to-output branching.
+- Added an architecture guard so the review command cannot reintroduce result-status switches or direct JSON/text rendering.

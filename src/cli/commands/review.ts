@@ -8,17 +8,12 @@ import {
   type WikiReviewStatus,
 } from "../../services/wiki/reviews.js";
 import {
-  renderReviewAdded,
-  renderReviewAlreadyApplied,
-  renderReviewApplied,
-  renderReviewDecided,
-  renderReviewInvalidStatus,
-  renderReviewList,
-  renderReviewMissingItem,
-  renderReviewMissingMarkdown,
-  renderReviewNotDecided,
-  renderReviewReopened,
-  renderReviewShow,
+  renderReviewAddResult,
+  renderReviewApplyResult,
+  renderReviewDecideResult,
+  renderReviewListResult,
+  renderReviewReopenResult,
+  renderReviewShowResult,
   type ReviewCommandOutput,
 } from "./review-render.js";
 
@@ -60,18 +55,15 @@ export interface ReviewListOptions {
 export async function runReviewAdd(
   options: ReviewAddOptions,
 ): Promise<ReviewCommandOutput> {
-  const result = await addWikiReviewItem({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    markdown: readMarkdown(options),
-    now: options.now,
-  });
-  switch (result.status) {
-    case "added":
-      return renderReviewAdded(result.item, options.json);
-    case "missing-markdown":
-      return renderReviewMissingMarkdown("review add");
-  }
+  return renderReviewAddResult(
+    await addWikiReviewItem({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      markdown: readMarkdown(options),
+      now: options.now,
+    }),
+    options.json,
+  );
 }
 
 export async function runReviewList(
@@ -83,86 +75,57 @@ export async function runReviewList(
     wiki: options.wiki,
     status,
   });
-  if (result.status === "invalid-status") {
-    return renderReviewInvalidStatus(options.json);
-  }
-  return renderReviewList(result.items, options.json);
+  return renderReviewListResult(result, options.json);
 }
 
 export async function runReviewShow(
   options: ReviewShowOptions,
 ): Promise<ReviewCommandOutput> {
-  const result = await getWikiReviewItem(options);
-  if (result.status === "missing") {
-    return renderReviewMissingItem(result.id);
-  }
-  return renderReviewShow(result.item, options.json);
+  return renderReviewShowResult(await getWikiReviewItem(options), options.json);
 }
 
 export async function runReviewDecide(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const result = await decideWikiReviewItem({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    id: options.id,
-    markdown: readMarkdown(options),
-    now: options.now,
-  });
-  switch (result.status) {
-    case "decided":
-      return renderReviewDecided(result.item);
-    case "missing-markdown":
-      return renderReviewMissingMarkdown("review decide");
-    case "missing":
-      return renderReviewMissingItem(result.id);
-    case "already-applied":
-      return renderReviewAlreadyApplied(result.id, options.json);
-  }
+  return renderReviewDecideResult(
+    await decideWikiReviewItem({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      id: options.id,
+      markdown: readMarkdown(options),
+      now: options.now,
+    }),
+    options.json,
+  );
 }
 
 export async function runReviewApply(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const result = await applyWikiReviewItem({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    id: options.id,
-    markdown: readMarkdown(options),
-    now: options.now,
-  });
-  switch (result.status) {
-    case "applied":
-      return renderReviewApplied(result.item);
-    case "missing-markdown":
-      return renderReviewMissingMarkdown("review apply");
-    case "missing":
-      return renderReviewMissingItem(result.id);
-    case "not-decided":
-      return renderReviewNotDecided(
-        result.id,
-        result.currentStatus,
-        options.json,
-      );
-  }
+  return renderReviewApplyResult(
+    await applyWikiReviewItem({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      id: options.id,
+      markdown: readMarkdown(options),
+      now: options.now,
+    }),
+    options.json,
+  );
 }
 
 export async function runReviewReopen(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const result = await reopenWikiReviewItem({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    id: options.id,
-    markdown: readMarkdown(options),
-    now: options.now,
-  });
-  switch (result.status) {
-    case "reopened":
-      return renderReviewReopened(result.item);
-    case "missing":
-      return renderReviewMissingItem(result.id);
-  }
+  return renderReviewReopenResult(
+    await reopenWikiReviewItem({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      id: options.id,
+      markdown: readMarkdown(options),
+      now: options.now,
+    }),
+  );
 }
 
 interface ReviewMarkdownInput {
