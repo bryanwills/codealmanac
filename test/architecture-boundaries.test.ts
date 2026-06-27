@@ -91,6 +91,16 @@ describe("architecture boundaries", () => {
     }
   });
 
+  it("keeps topic describe command adapter out of write mechanics", async () => {
+    const describeCommand = await readSource("src/cli/commands/topics/describe.ts");
+
+    expect(describeCommand).toContain("services/wiki/topics.js");
+    expect(describeCommand).not.toContain("wiki/indexer");
+    expect(describeCommand).not.toContain("wiki/topics/yaml");
+    expect(describeCommand).not.toContain("runIndexer");
+    expect(describeCommand).not.toContain("openFreshTopicsWorkspace");
+  });
+
   it("keeps registry persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);

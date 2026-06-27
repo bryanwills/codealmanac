@@ -2,11 +2,17 @@ import type Database from "better-sqlite3";
 import { join } from "node:path";
 
 import { toKebabCase } from "../../slug.js";
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
+import { ensureFreshIndex, runIndexer } from "../../wiki/indexer/index.js";
 import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 import { openIndex } from "../../wiki/indexer/schema.js";
 import * as query from "../../wiki/query/index.js";
 import { descendantsInDb } from "../../wiki/topics/dag.js";
+import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import {
+  ensureTopic,
+  loadTopicsFile,
+  writeTopicsFile,
+} from "../../wiki/topics/yaml.js";
 
 export type WikiTopicSummary = query.topics.TopicSummary;
 
@@ -18,6 +24,11 @@ export interface WikiTopicsRequest {
 export interface WikiTopicRequest extends WikiTopicsRequest {
   slug: string;
   descendants?: boolean;
+}
+
+export interface DescribeWikiTopicRequest extends WikiTopicsRequest {
+  slug: string;
+  description: string;
 }
 
 export interface WikiTopicRecord {
@@ -35,10 +46,15 @@ export type WikiTopicResult =
   | { status: "empty-slug" }
   | { status: "missing"; slug: string };
 
+export type DescribeWikiTopicResult =
+  | { status: "described"; slug: string }
+  | { status: "empty-slug" }
+  | { status: "missing"; slug: string };
+
 export async function listWikiTopics(
   request: WikiTopicsRequest,
 ): Promise<WikiTopicSummary[]> {
-  const db = await openFreshTopicIndex(request);
+  const { db } = await openFreshTopicIndex(request);
   try {
     return query.topics.topicSummaries(db, { order: "slug" });
   } finally {
@@ -52,7 +68,7 @@ export async function readWikiTopic(
   const slug = toKebabCase(request.slug);
   if (slug.length === 0) return { status: "empty-slug" };
 
-  const db = await openFreshTopicIndex(request);
+  const { db } = await openFreshTopicIndex(request);
   try {
     const detail = query.topics.topicDetail(db, slug);
     if (detail === null) return { status: "missing", slug };
@@ -78,15 +94,41 @@ export async function readWikiTopic(
   }
 }
 
+export async function describeWikiTopic(
+  request: DescribeWikiTopicRequest,
+): Promise<DescribeWikiTopicResult> {
+  const slug = toKebabCase(request.slug);
+  if (slug.length === 0) return { status: "empty-slug" };
+
+  const { repoRoot, db } = await openFreshTopicIndex(request);
+  try {
+    const detail = query.topics.topicDetail(db, slug);
+    if (detail === null) return { status: "missing", slug };
+
+    const yamlPath = topicsYamlPath(repoRoot);
+    const file = await loadTopicsFile(yamlPath);
+    const entry = ensureTopic(file, slug);
+    const text = request.description.trim();
+    entry.description = text.length === 0 ? null : text;
+
+    await writeTopicsFile(yamlPath, file);
+  } finally {
+    db.close();
+  }
+
+  await runIndexer({ repoRoot });
+  return { status: "described", slug };
+}
+
 async function openFreshTopicIndex(
   request: WikiTopicsRequest,
-): Promise<Database.Database> {
+): Promise<{ repoRoot: string; db: Database.Database }> {
   const repoRoot = await resolveWikiRoot({
     cwd: request.cwd,
     wiki: request.wiki,
   });
   await ensureFreshIndex({ repoRoot });
-  return openIndex(join(repoRoot, ".almanac", "index.db"));
+  return { repoRoot, db: openIndex(join(repoRoot, ".almanac", "index.db")) };
 }
 
 function pagesDirectlyTaggedWithTopic(
