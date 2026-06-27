@@ -1,7 +1,7 @@
 import type { SpawnCliFn } from "../../../agent/readiness/providers/claude/index.js";
 import type { ProviderStatus } from "../../../agent/types.js";
 import type { AgentProviderId } from "../../../config/index.js";
-import type { collectHealthReport } from "../../../wiki/health/index.js";
+import type { CollectWikiHealthReport } from "../../../services/wiki/doctor.js";
 
 export interface DoctorOptions {
   cwd: string;
@@ -54,7 +54,7 @@ export interface DoctorOptions {
    */
   sqliteProbe?: SqliteProbeResult;
   /** Override the health report collector (tests inject a canned report). */
-  collectHealthReportFn?: typeof collectHealthReport;
+  collectHealthReportFn?: CollectWikiHealthReport;
   /** Stdout sink. Tests collect here; production uses process.stdout. */
   stdout?: NodeJS.WritableStream;
   /** Test-only clock for "last absorb: Xh ago" rendering. */

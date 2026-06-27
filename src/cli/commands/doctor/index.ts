@@ -76,8 +76,8 @@ async function safeGatherWikiChecks(
   options: DoctorOptions,
 ): Promise<Check[]> {
   try {
-    const { gatherWikiChecks } = await import("./wiki.js");
-    return await gatherWikiChecks(options);
+    const { gatherWikiDoctorChecks } = await import("../../../services/wiki/doctor.js");
+    return await gatherWikiDoctorChecks(options);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return [

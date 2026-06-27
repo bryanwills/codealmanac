@@ -154,6 +154,18 @@ describe("architecture boundaries", () => {
     expect(migrateCommand).not.toContain("migrateLegacySourceFrontmatter");
   });
 
+  it("keeps doctor wiki checks out of the CLI command package", async () => {
+    const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
+    const doctorTypes = await readSource("src/cli/commands/doctor/types.ts");
+
+    expect(doctorIndex).toContain("services/wiki/doctor.js");
+    expect(doctorTypes).toContain("services/wiki/doctor.js");
+    expect(doctorIndex).not.toContain("./wiki.js");
+    expect(doctorTypes).not.toContain("wiki/health");
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/wiki.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/duration.ts"))).toBe(false);
+  });
+
   it("keeps registry persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);

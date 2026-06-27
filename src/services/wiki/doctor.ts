@@ -3,16 +3,37 @@ import path from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { ensureFreshIndex } from "../../../wiki/indexer/index.js";
-import { openIndex } from "../../../wiki/indexer/schema.js";
-import { findNearestAlmanacDir } from "../../../paths.js";
-import { findEntry } from "../../../stores/wiki-registry/index.js";
-import { collectHealthReport, type HealthReport } from "../../../wiki/health/index.js";
-import { formatDuration } from "./duration.js";
-import type { Check, DoctorOptions } from "./types.js";
+import { findNearestAlmanacDir } from "../../paths.js";
+import { formatDuration } from "../../shared/duration.js";
+import { findEntry } from "../../stores/wiki-registry/index.js";
+import {
+  collectHealthReport,
+  type HealthReport,
+} from "../../wiki/health/index.js";
+import { ensureFreshIndex } from "../../wiki/indexer/index.js";
+import { openIndex } from "../../wiki/indexer/schema.js";
 
-export async function gatherWikiChecks(options: DoctorOptions): Promise<Check[]> {
-  const checks: Check[] = [];
+export type CollectWikiHealthReport = typeof collectHealthReport;
+
+export interface WikiDoctorOptions {
+  cwd: string;
+  collectHealthReportFn?: CollectWikiHealthReport;
+  now?: () => Date;
+}
+
+export type WikiDoctorCheckStatus = "ok" | "problem" | "info";
+
+export interface WikiDoctorCheck {
+  status: WikiDoctorCheckStatus;
+  message: string;
+  fix?: string;
+  key: string;
+}
+
+export async function gatherWikiDoctorChecks(
+  options: WikiDoctorOptions,
+): Promise<WikiDoctorCheck[]> {
+  const checks: WikiDoctorCheck[] = [];
   const repoRoot = findNearestAlmanacDir(options.cwd);
 
   if (repoRoot === null) {
@@ -49,7 +70,7 @@ export async function gatherWikiChecks(options: DoctorOptions): Promise<Check[]>
   return checks;
 }
 
-async function describeRegistry(repoRoot: string): Promise<Check> {
+async function describeRegistry(repoRoot: string): Promise<WikiDoctorCheck> {
   try {
     const entry = await findEntry({ path: repoRoot });
     if (entry !== null) {
@@ -75,8 +96,8 @@ async function describeRegistry(repoRoot: string): Promise<Check> {
   }
 }
 
-function describeCounts(dbPath: string): Check[] {
-  const checks: Check[] = [];
+function describeCounts(dbPath: string): WikiDoctorCheck[] {
+  const checks: WikiDoctorCheck[] = [];
   let pageCount: number | null = null;
   let topicCount: number | null = null;
 
@@ -119,7 +140,7 @@ function countRows(db: Database.Database, table: string): number {
   return row?.n ?? 0;
 }
 
-function describeIndexFreshness(dbPath: string): Check {
+function describeIndexFreshness(dbPath: string): WikiDoctorCheck {
   if (!existsSync(dbPath)) {
     return {
       status: "info",
@@ -147,7 +168,7 @@ function describeIndexFreshness(dbPath: string): Check {
 function describeLastAbsorb(
   almanacDir: string,
   nowFn?: () => Date,
-): Check {
+): WikiDoctorCheck {
   if (!existsSync(almanacDir)) {
     return {
       status: "info",
@@ -166,23 +187,23 @@ function describeLastAbsorb(
       }
       return entries
         .filter(
-          (e) =>
-            e.startsWith(".absorb-") &&
-            (e.endsWith(".log") || e.endsWith(".jsonl")),
+          (entry) =>
+            entry.startsWith(".absorb-") &&
+            (entry.endsWith(".log") || entry.endsWith(".jsonl")),
         )
-        .map((e) => ({ dir, name: e }));
+        .map((entry) => ({ dir, name: entry }));
     })
-    .map((e) => {
+    .map((entry) => {
       try {
         return {
-          name: e.name,
-          mtime: statSync(path.join(e.dir, e.name)).mtimeMs,
+          name: entry.name,
+          mtime: statSync(path.join(entry.dir, entry.name)).mtimeMs,
         };
       } catch {
         return null;
       }
     })
-    .filter((e): e is { name: string; mtime: number } => e !== null);
+    .filter((entry): entry is { name: string; mtime: number } => entry !== null);
   if (absorbs.length === 0) {
     return {
       status: "info",
@@ -203,8 +224,8 @@ function describeLastAbsorb(
 
 async function describeHealth(
   repoRoot: string,
-  options: DoctorOptions,
-): Promise<Check> {
+  options: WikiDoctorOptions,
+): Promise<WikiDoctorCheck> {
   const healthFn = options.collectHealthReportFn ?? collectHealthReport;
   try {
     const report = await healthFn({ repoRoot });
@@ -246,8 +267,8 @@ const HEALTH_PROBLEM_KEYS: (keyof HealthReport)[] = [
 function countHealthProblems(report: Partial<HealthReport>): number {
   let total = 0;
   for (const key of HEALTH_PROBLEM_KEYS) {
-    const arr = report[key];
-    if (Array.isArray(arr)) total += arr.length;
+    const value = report[key];
+    if (Array.isArray(value)) total += value.length;
   }
   return total;
 }

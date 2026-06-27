@@ -21,8 +21,8 @@ sources:
     note: Migrated from legacy files.
   - id: wiki
     type: file
-    path: src/cli/commands/doctor/wiki.ts
-    note: Migrated from legacy files.
+    path: src/services/wiki/doctor.ts
+    note: Wiki doctor checks for repo, registry, index, absorb, and health state.
   - id: updates
     type: file
     path: src/cli/commands/doctor/updates.ts
@@ -63,9 +63,9 @@ status: active
 - install checks from [[src/cli/commands/doctor/install.ts]]
 - agent readiness checks
 - update-notifier checks from [[src/cli/commands/doctor/updates.ts]]
-- repo wiki checks from [[src/cli/commands/doctor/wiki.ts]]
+- repo wiki checks from [[src/services/wiki/doctor.ts]]
 
-The 2026-05-30 command-folder refactor kept the entrypoint thin and moved the old `doctor-checks/` modules into `src/cli/commands/doctor/`. That makes `doctor` match the repository convention for multi-file commands: the command root is `index.ts`, and command-private helpers live beside it.
+The 2026-05-30 command-folder refactor kept the entrypoint thin and moved the old `doctor-checks/` modules into `src/cli/commands/doctor/`. The later intentional-architecture rewrite moved wiki-specific doctor checks into `src/services/wiki/doctor.ts`, so `src/cli/commands/doctor/index.ts` composes report sections while the wiki service owns repo detection, registry lookup, index counts, absorb-log scan, and health summary.
 
 ## What install checks cover
 
@@ -101,7 +101,7 @@ The wiki section first resolves the nearest repo with `.almanac/`. When one exis
 - most recent absorb log age
 - an `almanac health` summary
 
-The "last absorb" line currently has a narrow scanner. [[src/cli/commands/doctor/wiki.ts]] checks `.almanac/logs` and `.almanac/` for `.absorb-*` log/jsonl files, but it does not scan `.almanac/jobs/` for the job records described in [[process-manager-runs]]. A 2026-05-13 support check found the same class of mismatch before the jobs storage rename: doctor reported an old last-capture artifact even though the job record, matching JSONL log, and hook log proved background capture had completed minutes earlier. When doctor and jobs disagree, trust the job record and hook log for recent background Absorb jobs.
+The "last absorb" line currently has a narrow scanner. [[src/services/wiki/doctor.ts]] checks `.almanac/logs` and `.almanac/` for `.absorb-*` log/jsonl files, but it does not scan `.almanac/jobs/` for the job records described in [[process-manager-runs]]. A 2026-05-13 support check found the same class of mismatch before the jobs storage rename: doctor reported an old last-capture artifact even though the job record, matching JSONL log, and hook log proved background capture had completed minutes earlier. When doctor and jobs disagree, trust the job record and hook log for recent background Absorb jobs.
 
 If wiki checks throw, [[src/cli/commands/doctor/index.ts]] degrades to a single `wiki.checks` problem entry instead of crashing the whole command.
 
