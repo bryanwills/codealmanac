@@ -37,12 +37,14 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `bin/` | npm bin shim — error-formatter around `src/cli.ts` | `codealmanac.ts` |
 | `src/` | TypeScript source | `cli.ts` (commander wiring), `paths.ts` (walk-up to nearest `.almanac/`), `slug.ts` (kebab-case canonicalization) |
 | `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show.ts`, `reindex.ts` |
+| `src/config/` | Config schema, TOML/JSON codec, raw-object editing, origin tracking, and global/project config store | `schema.ts`, `codec.ts`, `store.ts`, `editor.ts`, `providers.ts`, `origins.ts`, `paths.ts`, `index.ts` |
 | `src/platform/` | Local machine integration for install, self-update, and scheduler automation | `install/`, `update/`, `automation/` |
 | `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
 | `src/agent/` | Agent facade, provider registry, provider adapters, prompt loading | `sdk.ts`, `types.ts`, `providers/` |
 | `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/automation/` | Automation product workflows and scheduled-task planning over platform scheduler mechanics | `automation.ts`, `planning.ts`, `types.ts`, `index.ts` |
+| `src/services/config/` | User-facing config verbs and config-key catalog over persisted config mechanics | `config.ts`, `keys.ts`, `index.ts` |
 | `src/services/jobs/` | Job product workflows for CLI/viewer-facing list, read, log, stream, and cancel operations | `jobs.ts`, `types.ts`, `index.ts` |
 | `src/services/update/` | Self-update product workflow over registry, config, lock, state, and npm-install mechanics | `update.ts`, `types.ts`, `index.ts` |
 | `src/services/wiki/` | Wiki product workflows that coordinate stores/indexes/filesystem mechanics | `search.ts`, `page-view.ts`, `health.ts`, `registry.ts`, `autoregistration.ts`, `topic-read.ts`, `topic-description.ts`, `topic-graph-mutations.ts`, `topic-page-mutations.ts`, `topic-page-rewrite.ts`, `page-topic-mutations.ts`, `page-topic-pages.ts`, `page-topic-types.ts`, `reviews.ts`, `review-types.ts`, `review-text.ts`, `review-workspace.ts`, `source-migration.ts`, `doctor.ts`, `doctor-index.ts`, `doctor-health.ts`, `doctor-absorb.ts`, `doctor-registry.ts`, `doctor-types.ts` |

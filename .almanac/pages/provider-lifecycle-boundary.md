@@ -77,6 +77,10 @@ sources:
     type: file
     path: src/config/store.ts
     note: Migrated from legacy files.
+  - id: editor
+    type: file
+    path: src/config/editor.ts
+    note: Raw config object edit helpers.
   - id: paths
     type: file
     path: src/config/paths.ts
@@ -130,7 +134,7 @@ No production code path found in the 2026-05-14 review called `getAgentProvider(
 
 That setup/status responsibility is distinct from execution. It answers questions such as whether a provider CLI is installed and authenticated, which model choices should be shown, which fix command should be printed, and which provider-specific instruction files setup should write. Those are agent readiness concerns, not per-run execution concerns.
 
-The setup/status path is also distinct from persisted config. `src/config/index.ts` is now a stable facade over focused config modules: `src/config/schema.ts` owns defaults and normalization, `src/config/codec.ts` owns TOML/JSON parsing and serialization, `src/config/store.ts` owns filesystem reads/writes, legacy migration, config merging, and `automation.capture_since`, `src/config/origins.ts` owns origin reporting, `src/config/paths.ts` owns config path resolution, and `src/config/providers.ts` owns provider ids and feature-gated provider availability. `src/cli/commands/config.ts` and `src/cli/commands/config-keys.ts` expose config keys, `src/cli/commands/setup/index.ts` orchestrates first-run choices, and `src/cli/commands/agents.ts` manages agent choice and model choice after setup. Setup is a workflow over config, readiness, automation, and guide installation; it should not become the home for reusable provider readiness logic.
+The setup/status path is also distinct from persisted config. `src/config/index.ts` is now a stable facade over focused config modules: `src/config/schema.ts` owns defaults and normalization, `src/config/codec.ts` owns TOML/JSON parsing and serialization, `src/config/store.ts` owns config reads, legacy migration, config merging, and `automation.capture_since`, `src/config/editor.ts` owns raw-object config edits and atomic writes, `src/config/origins.ts` owns origin reporting, `src/config/paths.ts` owns config path resolution, and `src/config/providers.ts` owns provider ids and feature-gated provider availability. `src/services/config/` owns the user-facing config verbs and config-key catalog, `src/cli/commands/config.ts` renders the command surface, `src/cli/commands/setup/index.ts` orchestrates first-run choices, and `src/cli/commands/agents.ts` manages agent choice and model choice after setup. Setup is a workflow over config, readiness, automation, and guide installation; it should not become the home for reusable provider readiness logic.
 
 `src/config/providers.ts` is a small provider-id catalog, not a runtime provider layer. It owns `ALL_AGENT_PROVIDER_IDS`, Cursor enablement, enabled-provider lists, provider-id type guards, provider-list formatting, and disabled-provider messages because those facts are needed by config normalization and setup/status views. Runtime capabilities, transports, tool mapping, and execution behavior remain under `src/harness/providers/`.
 

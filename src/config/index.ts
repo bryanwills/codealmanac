@@ -3,6 +3,12 @@ export {
   serializeConfig,
 } from "./codec.js";
 export {
+  deleteNestedConfigValue,
+  readConfigObject,
+  setNestedConfigValue,
+  writeConfigObject,
+} from "./editor.js";
+export {
   getConfigPath,
   getLegacyConfigPath,
   getProjectConfigPath,

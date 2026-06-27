@@ -1,23 +1,13 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
-
 import {
   CONFIG_KEYS,
-  configEntries,
   formatConfigValue,
-  getConfigValue,
+  listConfigEntries,
   parseConfigKey,
-  setConfigValue,
-  type ConfigKey,
-} from "./config-keys.js";
-import {
-  getConfigPath,
-  getProjectConfigPath,
-  parseConfigText,
-  readConfig,
-  readConfigWithOrigins,
-  serializeConfig,
-} from "../../config/index.js";
+  readConfigEntry,
+  setConfigEntry,
+  unsetConfigEntry,
+  type ConfigRejectedMutation,
+} from "../../services/config/index.js";
 import type { CommandResult } from "../helpers.js";
 import { renderError, renderOutcome } from "../outcome.js";
 import { formatTextTable } from "./table.js";
@@ -28,11 +18,7 @@ export async function runConfigList(opts: {
   json?: boolean;
   showOrigin?: boolean;
 } = {}): Promise<ConfigResult> {
-  const { config, origins } = await readConfigWithOrigins({ cwd: process.cwd() });
-  const rows = configEntries(config).map((entry) => ({
-    ...entry,
-    origin: origins[entry.key] ?? "default",
-  }));
+  const rows = await listConfigEntries({ cwd: process.cwd() });
   if (opts.json === true) {
     return ok(`${JSON.stringify(rows, null, 2)}\n`);
   }
@@ -57,16 +43,14 @@ export async function runConfigGet(opts: {
 }): Promise<ConfigResult> {
   const key = parseConfigKey(opts.key);
   if (key === null) return unknownKey(opts.key);
-  const { config, origins } = await readConfigWithOrigins({ cwd: process.cwd() });
-  const value = getConfigValue(config, key);
-  const origin = origins[key] ?? "default";
+  const row = await readConfigEntry(key, { cwd: process.cwd() });
   if (opts.json === true) {
-    return ok(`${JSON.stringify({ key, value, origin }, null, 2)}\n`);
+    return ok(`${JSON.stringify(row, null, 2)}\n`);
   }
-  const rendered = formatConfigValue(value);
+  const rendered = formatConfigValue(row.value);
   return ok(
     opts.showOrigin === true
-      ? `${key}=${rendered} (${origin})\n`
+      ? `${key}=${rendered} (${row.origin})\n`
       : `${rendered}\n`,
   );
 }
@@ -78,27 +62,20 @@ export async function runConfigSet(opts: {
 }): Promise<ConfigResult> {
   const key = parseConfigKey(opts.key);
   if (key === null) return unknownKey(opts.key);
-  if (opts.project === true && isUserLevelOnlyKey(key)) {
-    return error(`${key} is user-level only`);
-  }
   if (opts.value === undefined) {
     return error(`missing value for ${key}`);
   }
   try {
-    const file = targetConfigPath(opts.project === true);
-    if (file === null) {
-      return needsAction(
-        "no .almanac/ found for project config",
-        "run: almanac init",
-      );
-    }
-    const next = setConfigValue(await readConfig({ cwd: process.cwd() }), key, opts.value);
-    const raw = ensureRawObject(await readRawConfig(file));
-    setRawConfigValue(raw, key, getConfigValue(next, key));
-    await writeRawConfig(raw, file);
+    const result = await setConfigEntry({
+      key,
+      value: opts.value,
+      project: opts.project === true,
+      cwd: process.cwd(),
+    });
+    if (result.status !== "set") return rejectedMutation(result);
     return ok(
-      `almanac: set ${key}=${formatConfigValue(getConfigValue(next, key))}` +
-        `${opts.project === true ? " in project config" : ""}.\n`,
+      `almanac: set ${key}=${formatConfigValue(result.value)}` +
+        `${result.project ? " in project config" : ""}.\n`,
     );
   } catch (err: unknown) {
     return renderError(err);
@@ -111,21 +88,14 @@ export async function runConfigUnset(opts: {
 }): Promise<ConfigResult> {
   const key = parseConfigKey(opts.key);
   if (key === null) return unknownKey(opts.key);
-  if (opts.project === true && isUserLevelOnlyKey(key)) {
-    return error(`${key} is user-level only`);
-  }
-  const file = targetConfigPath(opts.project === true);
-  if (file === null) {
-    return needsAction(
-      "no .almanac/ found for project config",
-      "run: almanac init",
-    );
-  }
-  const raw = ensureRawObject(await readRawConfig(file));
-  deleteRawConfigValue(raw, key);
-  await writeRawConfig(raw, file);
+  const result = await unsetConfigEntry({
+    key,
+    project: opts.project === true,
+    cwd: process.cwd(),
+  });
+  if (result.status !== "unset") return rejectedMutation(result);
   return ok(
-    `almanac: unset ${key}${opts.project === true ? " in project config" : ""}.\n`,
+    `almanac: unset ${key}${result.project ? " in project config" : ""}.\n`,
   );
 }
 
@@ -143,95 +113,15 @@ function error(message: string): ConfigResult {
   return renderOutcome({ type: "error", message });
 }
 
-function needsAction(message: string, fix: string): ConfigResult {
-  return renderOutcome({ type: "needs-action", message, fix });
-}
-
-function targetConfigPath(project: boolean): string | null {
-  return project ? getProjectConfigPath(process.cwd()) : getConfigPath();
-}
-
-function isUserLevelOnlyKey(key: ConfigKey): boolean {
-  return (
-    key === "update_notifier" ||
-    key === "auto_commit" ||
-    key === "automation.sync_since"
-  );
-}
-
-async function readRawConfig(file = getConfigPath()): Promise<unknown> {
-  try {
-    return parseConfigText(await readFile(file, "utf8"), file);
-  } catch {
-    return null;
-  }
-}
-
-async function writeRawConfig(
-  raw: Record<string, unknown>,
-  file = getConfigPath(),
-): Promise<void> {
-  await mkdir(dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
-  await writeFile(tmp, serializeConfig(raw, file), "utf8");
-  await rename(tmp, file);
-}
-
-function ensureRawObject(raw: unknown): Record<string, unknown> {
-  if (raw !== null && typeof raw === "object" && !Array.isArray(raw)) {
-    return raw as Record<string, unknown>;
-  }
-  return {};
-}
-
-function setRawConfigValue(
-  raw: Record<string, unknown>,
-  key: ConfigKey,
-  value: string | boolean | null,
-): void {
-  const parts = key.split(".");
-  let cursor = raw;
-  for (const part of parts.slice(0, -1)) {
-    const next = cursor[part];
-    if (next === null || typeof next !== "object" || Array.isArray(next)) {
-      cursor[part] = {};
-    }
-    cursor = cursor[part] as Record<string, unknown>;
-  }
-  const leaf = parts[parts.length - 1];
-  if (leaf !== undefined) cursor[leaf] = value;
-}
-
-function deleteRawConfigValue(raw: Record<string, unknown>, key: ConfigKey): void {
-  const parts = key.split(".");
-  const parents: Array<{ object: Record<string, unknown>; key: string }> = [];
-  let cursor: unknown = raw;
-  for (const part of parts.slice(0, -1)) {
-    if (cursor === null || typeof cursor !== "object" || Array.isArray(cursor)) {
-      return;
-    }
-    const object = cursor as Record<string, unknown>;
-    parents.push({ object, key: part });
-    cursor = object[part];
-  }
-  if (cursor === null || typeof cursor !== "object" || Array.isArray(cursor)) {
-    return;
-  }
-  const leaf = parts[parts.length - 1];
-  if (leaf === undefined) return;
-  delete (cursor as Record<string, unknown>)[leaf];
-
-  for (let i = parents.length - 1; i >= 0; i--) {
-    const parent = parents[i];
-    if (parent === undefined) continue;
-    const value = parent.object[parent.key];
-    if (
-      value !== null &&
-      typeof value === "object" &&
-      !Array.isArray(value) &&
-      Object.keys(value).length === 0
-    ) {
-      delete parent.object[parent.key];
-    }
+function rejectedMutation(result: ConfigRejectedMutation): ConfigResult {
+  switch (result.status) {
+    case "user-level-only":
+      return error(`${result.key} is user-level only`);
+    case "missing-project-config":
+      return renderOutcome({
+        type: "needs-action",
+        message: "no .almanac/ found for project config",
+        fix: "run: almanac init",
+      });
   }
 }

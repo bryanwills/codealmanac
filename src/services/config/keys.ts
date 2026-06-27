@@ -115,6 +115,14 @@ export function formatConfigValue(value: string | boolean | null): string {
   return String(value);
 }
 
+export function isUserLevelOnlyKey(key: ConfigKey): boolean {
+  return (
+    key === "update_notifier" ||
+    key === "auto_commit" ||
+    key === "automation.sync_since"
+  );
+}
+
 function providerFromModelKey(key: ConfigKey): AgentProviderId {
   const provider = key.slice("agent.models.".length);
   if (!isAgentProviderId(provider)) {

@@ -200,6 +200,20 @@ describe("architecture boundaries", () => {
     expect(updateCommand).not.toContain("spawn");
   });
 
+  it("keeps config command adapters out of config persistence mechanics", async () => {
+    const configCommand = await readSource("src/cli/commands/config.ts");
+
+    expect(configCommand).toContain("services/config/index.js");
+    expect(configCommand).not.toContain("../../config/index");
+    expect(configCommand).not.toContain("node:fs");
+    expect(configCommand).not.toContain("parseConfigText");
+    expect(configCommand).not.toContain("readConfig(");
+    expect(configCommand).not.toContain("readConfigWithOrigins(");
+    expect(configCommand).not.toContain("serializeConfig");
+    expect(configCommand).not.toContain("getProjectConfigPath");
+    expect(existsSync(join(ROOT, "src/cli/commands/config-keys.ts"))).toBe(false);
+  });
+
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
     const migrateCommand = await readSource("src/cli/commands/migrate.ts");
 
