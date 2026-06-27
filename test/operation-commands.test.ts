@@ -3,23 +3,25 @@ import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
 import {
-  parseUsing,
   runAbsorbCommand,
   runGardenCommand,
   runInitCommand,
 } from "../src/cli/commands/operations.js";
+import { parseLifecycleProviderSelection } from "../src/services/lifecycle/index.js";
 import { writeConfig } from "../src/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("operation command wrappers", () => {
   it("parses --using provider/model values", () => {
-    expect(parseUsing(undefined)).toEqual({ id: "codex" });
-    expect(parseUsing("codex")).toEqual({ id: "codex" });
-    expect(parseUsing("claude/claude-sonnet-4-6")).toEqual({
+    expect(parseLifecycleProviderSelection(undefined)).toEqual({ id: "codex" });
+    expect(parseLifecycleProviderSelection("codex")).toEqual({ id: "codex" });
+    expect(parseLifecycleProviderSelection("claude/claude-sonnet-4-6")).toEqual({
       id: "claude",
       model: "claude-sonnet-4-6",
     });
-    expect(() => parseUsing("bad")).toThrow("invalid --using");
+    expect(() => parseLifecycleProviderSelection("bad")).toThrow(
+      "invalid --using",
+    );
   });
 
   it("uses Codex as the built-in provider when no config or --using exists", async () => {

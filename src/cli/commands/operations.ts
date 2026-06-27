@@ -8,10 +8,8 @@ import {
   type GardenOperationWorkflowOptions,
   type InitOperationWorkflowOptions,
   type LifecycleOperationWorkflowResult,
-  type OperationRunResult,
+  type LifecycleOperationRunResult,
 } from "../../services/lifecycle/index.js";
-
-export { parseUsing } from "../../services/lifecycle/index.js";
 
 export interface InitCommandOptions extends InitOperationWorkflowOptions {
   cwd: string;
@@ -60,7 +58,7 @@ export async function runGardenCommand(
 
 function renderOperationResult(
   operation: string,
-  result: OperationRunResult,
+  result: LifecycleOperationRunResult,
   json: boolean | undefined,
 ): CommandResult {
   const record = result.background?.record ?? result.foreground?.record;

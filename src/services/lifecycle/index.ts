@@ -2,11 +2,11 @@ export {
   runAbsorbOperationWorkflow,
   runGardenOperationWorkflow,
   runInitOperationWorkflow,
+  parseLifecycleProviderSelection,
   type AbsorbOperationWorkflowOptions,
   type GardenOperationWorkflowOptions,
   type InitOperationWorkflowOptions,
   type LifecycleOperationKind,
+  type LifecycleOperationRunResult,
   type LifecycleOperationWorkflowResult,
 } from "./operations.js";
-export { parseUsing } from "../../operations/index.js";
-export type { OperationRunResult } from "../../operations/index.js";

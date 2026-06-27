@@ -37,11 +37,13 @@ export interface GardenOperationWorkflowOptions extends LifecycleOperationDeps {
   yes?: boolean;
 }
 
+export type LifecycleOperationRunResult = operations.OperationRunResult;
+
 export type LifecycleOperationWorkflowResult =
   | {
       status: "completed";
       operation: LifecycleOperationKind;
-      result: operations.OperationRunResult;
+      result: LifecycleOperationRunResult;
     }
   | { status: "json-foreground-unsupported" }
   | { status: "failed"; error: unknown };
@@ -130,6 +132,12 @@ export async function runGardenOperationWorkflow(
   } catch (error: unknown) {
     return { status: "failed", error };
   }
+}
+
+export function parseLifecycleProviderSelection(
+  value: string | undefined,
+): operations.OperationProviderSelection {
+  return operations.parseUsing(value);
 }
 
 async function resolveProvider(options: {

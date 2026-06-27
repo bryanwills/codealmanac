@@ -382,8 +382,10 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps lifecycle operation command adapters out of run-start mechanics", async () => {
+    const lifecycleServiceIndex = await readSource("src/services/lifecycle/index.ts");
     const operationsCommand = await readSource("src/cli/commands/operations.ts");
 
+    expect(lifecycleServiceIndex).not.toContain("../../operations");
     expect(operationsCommand).toContain("services/lifecycle/index.js");
     expect(operationsCommand).not.toContain("../../operations/index");
     expect(operationsCommand).not.toContain("../../absorb");

@@ -261,3 +261,9 @@ Thirty-third production slice:
 - Introduced `SyncWorkflowSummary` as the sync service-facing summary contract.
 - Removed the raw `SyncSummary` re-export from `src/services/sync/index.ts`.
 - Updated the sync command adapter to render the service-owned summary type instead of the lower-level sync subsystem type.
+
+Thirty-fourth production slice:
+
+- Introduced lifecycle-owned names for operation run results and provider selection parsing.
+- Removed raw `operations` re-exports from `src/services/lifecycle/index.ts`.
+- Updated the operation command adapter and tests to consume the lifecycle service contract instead of operation-layer symbols.
