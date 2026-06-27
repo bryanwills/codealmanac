@@ -629,3 +629,9 @@ Ninety-second production slice:
 - Split sync sweep read-model contracts, summary builders, skip builders, and cursor context text into `src/sync/sweep-results.ts`.
 - Moved `SyncSummary`/`SyncStarted`/`SyncReady`/`SyncSkipped` and the scheduled-sync cursor prompt text out of `src/sync/sweep.ts`.
 - Kept `src/sync/sweep.ts` focused on candidate iteration, quiet-window and activation gates, internal-run filtering, repo locks, ledger reconciliation, Absorb enqueueing, and ledger writes.
+
+Ninety-third production slice:
+
+- Split persisted config patch construction into `src/config/stored-patch.ts`.
+- Moved raw-object cloning, minimal stored-value updates, default pruning, legacy `capture_since` removal, and empty-object pruning out of `src/config/store.ts`.
+- Kept `src/config/store.ts` focused on config file paths, legacy config migration, raw config reads, user/project merge reads, atomic writes, and automation sync timestamp ensuring.

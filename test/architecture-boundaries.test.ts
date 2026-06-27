@@ -466,7 +466,10 @@ describe("architecture boundaries", () => {
 
   it("keeps config command adapters out of config persistence mechanics", async () => {
     const configCommand = await readSource("src/cli/commands/config.ts");
+    const configStore = await readSource("src/config/store.ts");
+    const configPatch = await readSource("src/config/stored-patch.ts");
 
+    expect(existsSync(join(ROOT, "src/config/stored-patch.ts"))).toBe(true);
     expect(configCommand).toContain("services/config/index.js");
     expect(configCommand).not.toContain("../../config/index");
     expect(configCommand).not.toContain("node:fs");
@@ -476,6 +479,11 @@ describe("architecture boundaries", () => {
     expect(configCommand).not.toContain("serializeConfig");
     expect(configCommand).not.toContain("getProjectConfigPath");
     expect(existsSync(join(ROOT, "src/cli/commands/config-keys.ts"))).toBe(false);
+    expect(configStore).not.toContain("function toStoredConfigPatch");
+    expect(configStore).not.toContain("function setStoredValue");
+    expect(configStore).not.toContain("function pruneEmptyObjects");
+    expect(configPatch).toContain("toStoredConfigPatch");
+    expect(configPatch).toContain("pruneEmptyObjects");
   });
 
   it("keeps agents command adapters out of readiness and config mechanics", async () => {
