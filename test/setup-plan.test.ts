@@ -17,6 +17,7 @@ function setupOptions(
   options: Omit<
     SetupOptions,
     | "cwd"
+    | "homeDir"
     | "pathEnvironment"
     | "environment"
     | "cliProgramArguments"
@@ -24,6 +25,7 @@ function setupOptions(
     | "stdin"
     | "stdout"
   > & {
+    homeDir?: string;
     pathEnvironment?: string;
     environment?: NodeJS.ProcessEnv;
     cliProgramArguments?: string[];
@@ -35,6 +37,7 @@ function setupOptions(
   return {
     ...options,
     cwd: TEST_CWD,
+    homeDir: options.homeDir ?? "/tmp/codealmanac-home",
     pathEnvironment: "pathEnvironment" in options
       ? options.pathEnvironment
       : process.env.PATH,

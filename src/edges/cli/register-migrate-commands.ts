@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { homedir } from "node:os";
 
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, readStdin } from "./helpers.js";
@@ -43,6 +44,7 @@ export function registerMigrateCommands(program: Command): void {
       const { runMigrateAutomation } = await import("../../cli/commands/migrate.js");
       const result = await runMigrateAutomation({
         cwd: process.cwd(),
+        homeDir: homedir(),
         pathEnvironment: process.env.PATH,
         cliProgramArguments: currentCliProgramArguments(),
         json: opts.json,

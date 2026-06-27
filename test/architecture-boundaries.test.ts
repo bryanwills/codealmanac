@@ -781,6 +781,10 @@ describe("architecture boundaries", () => {
     const automationServiceIndex = await readSource("src/services/automation/index.ts");
     const automationServiceTypes = await readSource("src/services/automation/types.ts");
     const automationPlanning = await readSource("src/services/automation/planning.ts");
+    const automationWorkflow = await readSource("src/services/automation/automation.ts");
+    const automationMigration = await readSource("src/services/automation/migration.ts");
+    const automationCatalog = await readSource("src/services/automation/catalog.ts");
+    const automationLegacyHooks = await readSource("src/services/automation/legacy-hooks.ts");
     const automationTasks = await readSource("src/platform/automation/tasks.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
     const automationRender = await readSource("src/cli/commands/automation-render.ts");
@@ -793,8 +797,15 @@ describe("architecture boundaries", () => {
     expect(automationServiceTypes).not.toContain("PlatformExecFn");
     expect(automationServiceTypes).not.toContain("PlatformScheduledTaskId");
     expect(automationServiceTypes).not.toContain("NodeJS.ProcessEnv");
+    expect(automationServiceTypes).toContain("homeDir: string");
     expect(automationPlanning).not.toContain("process.cwd()");
     expect(automationPlanning).not.toContain("process.env");
+    expect(automationPlanning).not.toContain("homedir");
+    expect(automationWorkflow).not.toContain("homedir");
+    expect(automationMigration).not.toContain("homedir");
+    expect(automationCatalog).not.toContain("homedir");
+    expect(automationLegacyHooks).not.toContain("homeDir?: string");
+    expect(automationLegacyHooks).not.toContain("= {}");
     expect(automationTasks).not.toContain("process.argv");
     expect(automationTasks).not.toContain("process.cwd()");
     expect(automationTasks).not.toContain("process.execPath");
@@ -814,8 +825,10 @@ describe("architecture boundaries", () => {
     expect(automationCommand).not.toContain("readLaunchdJobStatus");
     expect(automationCommand).not.toContain("TASK_LABELS");
     expect(automationCommand).not.toContain("formatAutomationStatusSection");
+    expect(automationCommand).not.toContain("defaultPlistPath");
     expect(automationCommand).not.toContain("automation installed");
     expect(automationCommand).not.toContain("legacy automation");
+    expect(automationServiceIndex).not.toContain("defaultSyncAutomationPlistPath");
     expect(automationRender).toContain("renderAutomationInstallResult");
     expect(automationRender).toContain("formatAutomationStatusSection");
   });
@@ -1206,6 +1219,7 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("process.stdout");
     expect(uninstallCommand).not.toContain("process.stdin.isTTY");
     expect(uninstallCommand).not.toContain("process.stdin");
+    expect(uninstallCommand).not.toContain("homedir");
     expect(uninstallRender).toContain("renderUninstallResult");
     expect(uninstallRender).toContain("formatAutomationResult");
     expect(uninstallRender).toContain("../../ansi-theme.js");
@@ -1493,6 +1507,7 @@ describe("architecture boundaries", () => {
 
     expect(automationCommand).toContain("AutomationInstallCommandOptions");
     expect(automationCommand).toContain("cwd: string");
+    expect(automationCommand).toContain("homeDir: string");
     expect(automationCommand).toContain("pathEnvironment: string | undefined");
     expect(automationCommand).toContain("toAutomationInstallOptions");
     expect(automationCommand).not.toContain(

@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { homedir } from "node:os";
 
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit } from "./helpers.js";
@@ -39,6 +40,7 @@ export function registerAutomationCommands(program: Command): void {
         gardenEvery: opts.gardenEvery,
         gardenOff: opts.gardenOff,
         cwd: process.cwd(),
+        homeDir: homedir(),
         pathEnvironment: process.env.PATH,
         cliProgramArguments: currentCliProgramArguments(),
       });
@@ -60,7 +62,10 @@ export function registerAutomationCommands(program: Command): void {
         emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
         return;
       }
-      const result = await runAutomationUninstall({ tasks: parsed.tasks });
+      const result = await runAutomationUninstall({
+        tasks: parsed.tasks,
+        homeDir: homedir(),
+      });
       emit(result);
     });
 
@@ -79,7 +84,10 @@ export function registerAutomationCommands(program: Command): void {
         emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
         return;
       }
-      const result = await runAutomationStatus({ tasks: parsed.tasks });
+      const result = await runAutomationStatus({
+        tasks: parsed.tasks,
+        homeDir: homedir(),
+      });
       emit(result);
     });
 }

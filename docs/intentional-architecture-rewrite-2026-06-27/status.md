@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 193 committed rewrite commits past `dev`. The worklog records 147 production slices so far.
+The branch has 194 committed rewrite commits past `dev`. The worklog records 148 production slices so far.
 
-The diff is broad: more than 300 files changed, with about 18.9k insertions and 10k deletions.
+The diff is broad: 350 files changed, with about 20.4k insertions and 10.6k deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -33,6 +33,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Review large files that remain large because of mixed ownership, not because the domain is naturally dense.
 - Audit viewer/server boundaries; most current work has focused on CLI, services, jobs, sync, automation, and providers.
 - Run another broad review pass over the full branch before calling the rewrite merge-ready.
+
+## Latest Checkpoint
+
+The latest slice made automation home-directory ownership explicit. CLI edges and command/setup adapters now pass `homeDir`; automation services no longer default to `homedir()` internally, legacy hook cleanup requires an explicit home, and the unused sync plist-path compatibility export is gone.
+
+Verification passed: `npm run lint`, focused automation/setup/CLI/boundary tests, full `npm test` with 655 tests, `npm run build`, `git diff --check`, `node dist/codealmanac.js --version`, and `node dist/codealmanac.js automation status`.
 
 ## Immediate Next Work
 

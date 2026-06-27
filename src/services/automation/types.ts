@@ -12,9 +12,9 @@ export interface AutomationInstallOptions {
   gardenEvery?: string;
   gardenOff?: boolean;
   cwd: string;
+  homeDir: string;
   pathEnvironment: string | undefined;
   cliProgramArguments: string[];
-  homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
@@ -28,7 +28,7 @@ export interface AutomationInstallOptions {
 
 export interface AutomationUninstallOptions {
   tasks?: AutomationTaskId[];
-  homeDir?: string;
+  homeDir: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
@@ -37,7 +37,7 @@ export interface AutomationUninstallOptions {
 
 export interface AutomationStatusOptions {
   tasks?: AutomationTaskId[];
-  homeDir?: string;
+  homeDir: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;

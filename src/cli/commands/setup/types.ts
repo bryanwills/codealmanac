@@ -41,6 +41,8 @@ export interface SetupOptions {
 
   /** Current working directory used for repo-local setup state. */
   cwd: string;
+  /** Home directory used for scheduler paths during setup. */
+  homeDir: string;
   /** PATH value inherited by launchd jobs during setup. */
   pathEnvironment: string | undefined;
   /** Current process environment used by provider readiness checks. */

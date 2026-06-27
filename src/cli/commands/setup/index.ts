@@ -122,6 +122,7 @@ export async function runSetup(
           theme,
           options: {
             cwd,
+            homeDir: options.homeDir,
             pathEnvironment: options.pathEnvironment,
             cliProgramArguments: options.cliProgramArguments,
             autoUpdateEvery: options.autoUpdateEvery,

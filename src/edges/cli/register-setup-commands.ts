@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { homedir } from "node:os";
 
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
@@ -66,6 +67,7 @@ export function registerSetupCommands(
           skipGuides: opts.skipGuides,
           autoCommit: opts.autoCommit,
           cwd: process.cwd(),
+          homeDir: homedir(),
           pathEnvironment: process.env.PATH,
           environment: process.env,
           cliProgramArguments: currentCliProgramArguments(),
@@ -166,6 +168,7 @@ export function registerSetupCommands(
           yes: opts.yes,
           keepAutomation: opts.keepAutomation,
           keepGuides: opts.keepGuides,
+          homeDir: homedir(),
           isTTY: process.stdin.isTTY === true,
           stdin: process.stdin,
           stdout: process.stdout,

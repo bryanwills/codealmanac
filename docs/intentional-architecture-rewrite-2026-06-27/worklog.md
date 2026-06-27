@@ -982,3 +982,10 @@ One-hundred-forty-seventh production slice:
 - Kept `src/services/diagnostics/updates.ts` focused on rendering update checks from typed facts.
 - Moved the pure version comparator from `src/platform/update/semver.ts` to `src/shared/version.ts` so service code no longer imports platform update mechanics for semver comparison.
 - Removed the doctor-only state reader from the update notifier worker and added boundary guards against diagnostics services re-owning update state/config reads.
+
+One-hundred-forty-eighth production slice:
+
+- Made automation `homeDir` explicit from CLI edges through command/setup adapters into automation services.
+- Removed `homedir()` defaults from automation planning, status, uninstall, migration, and legacy-hook cleanup service surfaces.
+- Removed the unused sync automation plist-path compatibility export from the automation service catalog.
+- Added boundary guards so automation services cannot reintroduce ambient home-directory ownership and command options keep carrying `homeDir` explicitly.

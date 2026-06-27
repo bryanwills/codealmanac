@@ -1,5 +1,3 @@
-import { homedir } from "node:os";
-
 import {
   readProgramArgumentAfter,
   removeLaunchdJob,
@@ -17,7 +15,7 @@ export interface MigrateLegacyAutomationOptions {
   cwd: string;
   pathEnvironment: string | undefined;
   cliProgramArguments: string[];
-  homeDir?: string;
+  homeDir: string;
   legacyPlistPath?: string;
   syncPlistPath?: string;
   exec?: AutomationExecFn;
@@ -44,7 +42,7 @@ export type MigrateLegacyAutomationResult =
 export async function migrateLegacyAutomation(
   options: MigrateLegacyAutomationOptions,
 ): Promise<MigrateLegacyAutomationResult> {
-  const home = options.homeDir ?? homedir();
+  const home = options.homeDir;
   const legacyPlistPath = options.legacyPlistPath ?? defaultCapturePlistPath(home);
   const syncPlistPath = options.syncPlistPath ?? defaultSyncPlistPath(home);
   const legacy = await detectLegacyCaptureSweepAutomation({
@@ -66,6 +64,7 @@ export async function migrateLegacyAutomation(
     every,
     quiet,
     cwd: options.cwd,
+    homeDir: home,
     pathEnvironment: options.pathEnvironment,
     cliProgramArguments: options.cliProgramArguments,
     plistPath: syncPlistPath,

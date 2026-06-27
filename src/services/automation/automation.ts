@@ -1,5 +1,4 @@
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
 
 import { ensureAutomationSyncSince } from "../../config/index.js";
 import {
@@ -57,9 +56,9 @@ export async function installAutomation(
 }
 
 export async function uninstallAutomation(
-  options: AutomationUninstallOptions = {},
+  options: AutomationUninstallOptions,
 ): Promise<AutomationUninstallResult> {
-  const home = options.homeDir ?? homedir();
+  const home = options.homeDir;
   const tasks = selectedTaskIds(options.tasks, false);
   const removed: string[] = [];
 
@@ -76,9 +75,9 @@ export async function uninstallAutomation(
 }
 
 export async function readAutomationStatus(
-  options: AutomationStatusOptions = {},
+  options: AutomationStatusOptions,
 ): Promise<AutomationStatusResult> {
-  const home = options.homeDir ?? homedir();
+  const home = options.homeDir;
   const tasks = selectedTaskIds(options.tasks, false);
   const sections: AutomationStatusResult["sections"] = [];
   const legacy = tasks.includes("sync")

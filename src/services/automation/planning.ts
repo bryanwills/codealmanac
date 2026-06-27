@@ -1,4 +1,3 @@
-import { homedir } from "node:os";
 import path from "node:path";
 
 import { buildLaunchPath } from "../../platform/automation/launchd.js";
@@ -55,7 +54,7 @@ export function buildAutomationInstallPlan(
 
   const taskIds = selectedTaskIds(options.tasks, true)
     .filter((id) => !(id === "garden" && options.gardenOff === true));
-  const home = options.homeDir ?? homedir();
+  const home = options.homeDir;
   const environmentVariables = {
     PATH: buildLaunchPath(home, options.pathEnvironment),
   };

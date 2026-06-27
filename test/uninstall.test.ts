@@ -52,6 +52,7 @@ describe("almanac uninstall", () => {
 
       const plain = await captureUninstallOutput({
         yes: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -61,6 +62,7 @@ describe("almanac uninstall", () => {
       });
       const colored = await captureUninstallOutput({
         yes: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -83,6 +85,7 @@ describe("almanac uninstall", () => {
 
       const res = await runUninstall({
         yes: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -115,6 +118,7 @@ describe("almanac uninstall", () => {
 
       await runUninstall({
         yes: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -133,6 +137,7 @@ describe("almanac uninstall", () => {
       const env = await scaffold(home);
       const res = await runUninstall({
         yes: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -156,6 +161,7 @@ describe("almanac uninstall", () => {
       await runUninstall({
         yes: true,
         keepAutomation: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -181,6 +187,7 @@ describe("almanac uninstall", () => {
       await runUninstall({
         yes: true,
         keepGuides: true,
+        homeDir: home,
         isTTY: false,
         automationPlistPath: env.plistPath,
         gardenPlistPath: env.gardenPlistPath,
@@ -206,6 +213,7 @@ describe("almanac uninstall", () => {
       answerPrompts(env.out, env.input, ["n\n", "\n"]);
 
       await runUninstall({
+        homeDir: home,
         isTTY: true,
         stdin: env.input,
         automationPlistPath: env.plistPath,

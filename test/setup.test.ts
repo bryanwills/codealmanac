@@ -54,6 +54,7 @@ function runSetup(
   options: Omit<
     SetupOptions,
     | "cwd"
+    | "homeDir"
     | "pathEnvironment"
     | "environment"
     | "cliProgramArguments"
@@ -62,6 +63,7 @@ function runSetup(
     | "stdout"
   > & {
     cwd?: string;
+    homeDir?: string;
     pathEnvironment?: string;
     environment?: NodeJS.ProcessEnv;
     cliProgramArguments?: string[];
@@ -73,6 +75,7 @@ function runSetup(
   return runSetupCommand({
     ...options,
     cwd: options.cwd ?? process.cwd(),
+    homeDir: options.homeDir ?? process.env.HOME ?? process.cwd(),
     pathEnvironment: "pathEnvironment" in options
       ? options.pathEnvironment
       : process.env.PATH,
@@ -350,6 +353,7 @@ describe("codealmanac setup", () => {
         interactive: true,
         options: {
           cwd: home,
+          homeDir: home,
           pathEnvironment: process.env.PATH,
           cliProgramArguments: TEST_CLI_PROGRAM_ARGUMENTS,
           automationPlistPath: env.plistPath,

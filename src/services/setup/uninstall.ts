@@ -13,6 +13,7 @@ import {
 export interface SetupUninstallOptions {
   removeAutomation: boolean;
   removeGuides: boolean;
+  homeDir: string;
   claudeDir: string;
   codexDir: string;
   cursorDir: string;
@@ -67,8 +68,9 @@ export function removeSetupManagedBlock(
 async function removeSetupAutomation(
   options: SetupUninstallOptions,
 ): Promise<SetupUninstallResult["automation"]> {
-  await cleanupLegacyAutomationHooks();
+  await cleanupLegacyAutomationHooks({ homeDir: options.homeDir });
   const result = await uninstallAutomation({
+    homeDir: options.homeDir,
     plistPath: options.automationPlistPath,
     gardenPlistPath: options.gardenPlistPath,
     exec: options.automationExec,

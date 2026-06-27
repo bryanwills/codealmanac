@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+
 import { runCodealmanacBootstrap } from "../../platform/install/global.js";
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
@@ -35,6 +37,7 @@ export async function tryRunSetupShortcut(args: {
   const setupOptions = {
     ...setupInvocation,
     cwd: process.cwd(),
+    homeDir: homedir(),
     pathEnvironment: process.env.PATH,
     environment: process.env,
     cliProgramArguments: currentCliProgramArguments(),

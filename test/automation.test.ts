@@ -272,6 +272,7 @@ describe("almanac automation", () => {
       });
 
       const result = await runAutomationStatus({
+        homeDir: home,
         plistPath,
         gardenPlistPath,
         exec: async (_file, args) => {
@@ -391,6 +392,7 @@ capture_since = "2026-05-12T05:10:00.000Z"
 
       const result = await runAutomationStatus({
         tasks: ["update"],
+        homeDir: home,
         updatePlistPath,
         exec: async () => ({}),
       });
@@ -418,6 +420,7 @@ capture_since = "2026-05-12T05:10:00.000Z"
 
       const result = await runAutomationUninstall({
         tasks: ["update"],
+        homeDir: home,
         updatePlistPath,
         exec: async () => ({}),
       });
@@ -492,8 +495,9 @@ capture_since = "2026-05-12T05:10:00.000Z"
 });
 
 type TestAutomationInstallOptions =
-  Omit<AutomationInstallCommandOptions, "cwd" | "pathEnvironment" | "cliProgramArguments"> & {
+  Omit<AutomationInstallCommandOptions, "cwd" | "homeDir" | "pathEnvironment" | "cliProgramArguments"> & {
     cwd?: string;
+    homeDir?: string;
     pathEnvironment?: string;
     cliProgramArguments?: string[];
   };
@@ -501,6 +505,7 @@ type TestAutomationInstallOptions =
 function runAutomationInstall(options: TestAutomationInstallOptions) {
   return runAutomationInstallCommand({
     cwd: process.cwd(),
+    homeDir: testHomeDir(options),
     pathEnvironment: testPathEnvironment(options),
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     ...options,
@@ -508,8 +513,9 @@ function runAutomationInstall(options: TestAutomationInstallOptions) {
 }
 
 type TestMigrateAutomationOptions =
-  Omit<MigrateAutomationOptions, "cwd" | "pathEnvironment" | "cliProgramArguments"> & {
+  Omit<MigrateAutomationOptions, "cwd" | "homeDir" | "pathEnvironment" | "cliProgramArguments"> & {
     cwd?: string;
+    homeDir?: string;
     pathEnvironment?: string;
     cliProgramArguments?: string[];
   };
@@ -517,10 +523,15 @@ type TestMigrateAutomationOptions =
 function runMigrateAutomation(options: TestMigrateAutomationOptions) {
   return runMigrateAutomationCommand({
     cwd: process.cwd(),
+    homeDir: testHomeDir(options),
     pathEnvironment: testPathEnvironment(options),
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     ...options,
   });
+}
+
+function testHomeDir(options: { homeDir?: string }) {
+  return options.homeDir ?? process.env.HOME ?? process.cwd();
 }
 
 function testPathEnvironment(options: { pathEnvironment?: string }) {

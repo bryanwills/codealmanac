@@ -1,5 +1,4 @@
 import {
-  defaultSyncAutomationPlistPath,
   installAutomation,
   readAutomationStatus,
   uninstallAutomation,
@@ -29,9 +28,9 @@ export interface AutomationInstallCommandOptions {
   gardenEvery?: string;
   gardenOff?: boolean;
   cwd: string;
+  homeDir: string;
   pathEnvironment: string | undefined;
   cliProgramArguments: string[];
-  homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
@@ -45,7 +44,7 @@ export interface AutomationInstallCommandOptions {
 
 export interface AutomationUninstallCommandOptions {
   tasks?: AutomationTaskId[];
-  homeDir?: string;
+  homeDir: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
@@ -54,7 +53,7 @@ export interface AutomationUninstallCommandOptions {
 
 export interface AutomationStatusCommandOptions {
   tasks?: AutomationTaskId[];
-  homeDir?: string;
+  homeDir: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
@@ -71,7 +70,7 @@ export async function runAutomationInstall(
 }
 
 export async function runAutomationUninstall(
-  options: AutomationUninstallCommandOptions = {},
+  options: AutomationUninstallCommandOptions,
 ): Promise<AutomationCommandResult> {
   return renderAutomationUninstallResult(
     await uninstallAutomation(toAutomationUninstallOptions(options)),
@@ -79,15 +78,11 @@ export async function runAutomationUninstall(
 }
 
 export async function runAutomationStatus(
-  options: AutomationStatusCommandOptions = {},
+  options: AutomationStatusCommandOptions,
 ): Promise<AutomationCommandResult> {
   return renderAutomationStatusResult(
     await readAutomationStatus(toAutomationStatusOptions(options)),
   );
-}
-
-export function defaultPlistPath(home?: string): string {
-  return defaultSyncAutomationPlistPath(home);
 }
 
 function toAutomationInstallOptions(

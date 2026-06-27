@@ -1,4 +1,3 @@
-import { homedir } from "node:os";
 import path from "node:path";
 
 import {
@@ -52,6 +51,7 @@ export interface UninstallOptions {
   yes?: boolean;
   keepAutomation?: boolean;
   keepGuides?: boolean;
+  homeDir: string;
 
   // ─── Injection points ────────────────────────────────────────────
   automationPlistPath?: string;
@@ -79,11 +79,11 @@ export async function runUninstall(
 ): Promise<UninstallResult> {
   const out = options.stdout;
   const interactive = options.isTTY && options.yes !== true;
-  const claudeDir = options.claudeDir ?? path.join(homedir(), ".claude");
-  const codexDir = options.codexDir ?? path.join(homedir(), ".codex");
-  const cursorDir = options.cursorDir ?? path.join(homedir(), ".cursor");
-  const windsurfDir = options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf");
-  const opencodeDir = options.opencodeDir ?? path.join(homedir(), ".config", "opencode");
+  const claudeDir = options.claudeDir ?? path.join(options.homeDir, ".claude");
+  const codexDir = options.codexDir ?? path.join(options.homeDir, ".codex");
+  const cursorDir = options.cursorDir ?? path.join(options.homeDir, ".cursor");
+  const windsurfDir = options.windsurfDir ?? path.join(options.homeDir, ".codeium", "windsurf");
+  const opencodeDir = options.opencodeDir ?? path.join(options.homeDir, ".config", "opencode");
   const renderOptions = { color: options.color };
 
   out.write(renderUninstallStart());
@@ -125,6 +125,7 @@ export async function runUninstall(
   const result = await uninstallSetup({
     removeAutomation,
     removeGuides,
+    homeDir: options.homeDir,
     automationPlistPath: options.automationPlistPath,
     gardenPlistPath: options.gardenPlistPath,
     automationExec: options.automationExec,
