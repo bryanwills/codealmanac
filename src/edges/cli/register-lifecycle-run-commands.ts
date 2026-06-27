@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
 import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
 
@@ -38,6 +39,7 @@ export function registerLifecycleRunCommands(program: Command): void {
           json: opts.json,
           force: opts.force,
           yes: opts.yes,
+          workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
           onEvent: opts.background === true
             ? undefined
@@ -80,6 +82,7 @@ function registerAbsorbCommand(program: Command): void {
           foreground: opts.foreground,
           json: opts.json,
           yes: opts.yes,
+          workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
@@ -119,6 +122,7 @@ function registerIngestCommand(program: Command): void {
           foreground: opts.foreground,
           json: opts.json,
           yes: opts.yes,
+          workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
@@ -154,6 +158,7 @@ export function registerGardenCommand(program: Command): void {
           foreground: opts.foreground,
           json: opts.json,
           yes: opts.yes,
+          workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)

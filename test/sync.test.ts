@@ -11,13 +11,20 @@ import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/config/index.js";
 import { jobRecordPath, writeJobRecord } from "../src/jobs/index.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: "node",
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function runSyncCommand(
-  options: Omit<SyncCommandOptions, "workerEnvironment"> & {
+  options: Omit<SyncCommandOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: SyncCommandOptions["workerProgram"];
   },
 ) {
   return runSyncCommandHandler({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }

@@ -6,6 +6,11 @@ export interface BackgroundChild {
   unref?: () => void;
 }
 
+export interface JobWorkerProgram {
+  command: string;
+  entrypoint: string;
+}
+
 export type SpawnBackgroundFn = (args: {
   command: string;
   args: string[];
@@ -15,14 +20,14 @@ export type SpawnBackgroundFn = (args: {
 
 export function startJobWorkerProcess(args: {
   repoRoot: string;
-  entrypoint: string;
+  workerProgram: JobWorkerProgram;
   environment: NodeJS.ProcessEnv;
   spawnBackground?: SpawnBackgroundFn;
 }): BackgroundChild {
   const spawnFn = args.spawnBackground ?? defaultSpawnBackground;
   return spawnFn({
-    command: process.execPath,
-    args: [args.entrypoint, "__job-worker"],
+    command: args.workerProgram.command,
+    args: [args.workerProgram.entrypoint, "__job-worker"],
     cwd: args.repoRoot,
     env: { ...args.environment },
   });

@@ -15,6 +15,7 @@ export interface SyncCommandOptions {
   homeDir?: string;
   configPath?: string;
   startBackground?: SyncWorkflowOptions["startBackground"];
+  workerProgram: SyncWorkflowOptions["workerProgram"];
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -45,6 +46,7 @@ function toSyncWorkflowOptions(
     homeDir: options.homeDir,
     configPath: options.configPath,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   };
 }

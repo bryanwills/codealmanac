@@ -61,6 +61,7 @@ export type {
 } from "./start.js";
 export type {
   BackgroundChild,
+  JobWorkerProgram,
   SpawnBackgroundFn,
 } from "./background-process.js";
 export type {

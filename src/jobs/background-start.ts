@@ -7,6 +7,7 @@ import {
 import { writeJobSpec } from "../stores/jobs/specs.js";
 import {
   startJobWorkerProcess,
+  type JobWorkerProgram,
   type SpawnBackgroundFn,
 } from "./background-process.js";
 import { createJobId } from "./ids.js";
@@ -22,7 +23,7 @@ export interface StartBackgroundJobOptions {
   jobId?: string;
   now?: () => Date;
   spawnBackground?: SpawnBackgroundFn;
-  entrypoint?: string;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -48,8 +49,7 @@ export async function startBackgroundJob(
   await writeJobRecord(recordPath, queued);
   await initializeJobLog(queued.logPath);
 
-  const entrypoint = options.entrypoint ?? process.argv[1];
-  if (entrypoint === undefined || entrypoint.length === 0) {
+  if (options.workerProgram.entrypoint.length === 0) {
     const error = "cannot start background process without an entrypoint";
     await markQueuedJobFailed({ recordPath, queued, now, error });
     throw new Error(error);
@@ -59,7 +59,7 @@ export async function startBackgroundJob(
   try {
     child = startJobWorkerProcess({
       repoRoot: options.repoRoot,
-      entrypoint,
+      workerProgram: options.workerProgram,
       environment: options.workerEnvironment,
       spawnBackground: options.spawnBackground,
     });

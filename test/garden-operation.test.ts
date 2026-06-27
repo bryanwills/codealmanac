@@ -8,13 +8,20 @@ import {
 } from "../src/operations/garden.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: "node",
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function runGardenOperation(
-  options: Omit<GardenOperationOptions, "workerEnvironment"> & {
+  options: Omit<GardenOperationOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: GardenOperationOptions["workerProgram"];
   },
 ) {
   return runGardenOperationCommand({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }

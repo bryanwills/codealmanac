@@ -14,35 +14,46 @@ import { parseLifecycleProviderSelection } from "../src/services/lifecycle/index
 import { writeConfig } from "../src/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: "node",
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function runInitCommand(
-  options: Omit<InitCommandOptions, "workerEnvironment"> & {
+  options: Omit<InitCommandOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: InitCommandOptions["workerProgram"];
   },
 ) {
   return runInitCommandHandler({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }
 
 function runAbsorbCommand(
-  options: Omit<AbsorbCommandOptions, "workerEnvironment"> & {
+  options: Omit<AbsorbCommandOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: AbsorbCommandOptions["workerProgram"];
   },
 ) {
   return runAbsorbCommandHandler({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }
 
 function runGardenCommand(
-  options: Omit<GardenCommandOptions, "workerEnvironment"> & {
+  options: Omit<GardenCommandOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: GardenCommandOptions["workerProgram"];
   },
 ) {
   return runGardenCommandHandler({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }

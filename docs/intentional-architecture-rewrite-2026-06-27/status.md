@@ -7,7 +7,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 The branch is clean and pushed.
 
-The rewrite has landed 172 commits past `dev`. The worklog records 126 production slices so far. The diff is broad: more than 300 files changed, with about 18k insertions and 9.8k deletions.
+The rewrite has landed 173 commits past `dev`. The worklog records 127 production slices so far. The diff is broad: more than 300 files changed, with about 18k insertions and 9.8k deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 

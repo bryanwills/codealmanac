@@ -834,3 +834,10 @@ One-hundred-twenty-sixth production slice:
 - Added `src/edges/cli/current-cli.ts` as the only owner of current CLI argv/path discovery for scheduled task commands.
 - Kept setup's ephemeral/global install commands as explicit per-task overrides for `/usr/bin/env almanac ...`.
 - Added architecture guards so the automation task catalog cannot reintroduce `process.argv`, `process.cwd()`, or `process.execPath`.
+
+One-hundred-twenty-seventh production slice:
+
+- Made background job startup receive an explicit worker program `{ command, entrypoint }` instead of reading `process.execPath` or `process.argv[1]` inside `src/jobs/`.
+- Reused the CLI-edge `currentCliNodeProgram()` helper for lifecycle commands and sync commands that can enqueue background jobs.
+- Threaded the worker program through lifecycle, operation, Absorb, and sync service contracts so background worker launch facts stay edge-owned.
+- Added architecture guards so `src/jobs/background-process.ts` cannot reintroduce `process.execPath` and `src/jobs/background-start.ts` cannot reintroduce `process.argv`.

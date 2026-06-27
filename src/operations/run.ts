@@ -6,6 +6,7 @@ import type { ToolRequest } from "../harness/tools.js";
 import {
   startBackgroundJob,
   startForegroundJob,
+  type JobWorkerProgram,
 } from "../jobs/index.js";
 import { readConfig } from "../config/index.js";
 import { PROVIDER_DEFINITIONS } from "../agent/provider-id.js";
@@ -88,6 +89,7 @@ export async function runOperationProcess(args: {
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }): Promise<OperationRunResult> {
   if (args.background) {
@@ -95,6 +97,7 @@ export async function runOperationProcess(args: {
       repoRoot: args.repoRoot,
       spec: args.spec,
       jobId: args.jobId,
+      workerProgram: args.workerProgram,
       workerEnvironment: args.workerEnvironment,
     });
     return { mode: "background", jobId: background.jobId, background };

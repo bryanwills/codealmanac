@@ -1,4 +1,7 @@
-import type { StartBackgroundJob } from "../../operations/index.js";
+import type {
+  JobWorkerProgram,
+  StartBackgroundJob,
+} from "../../operations/index.js";
 
 export interface SyncWorkflowOptions {
   mode?: "sync" | "status";
@@ -9,6 +12,7 @@ export interface SyncWorkflowOptions {
   homeDir?: string;
   configPath?: string;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 

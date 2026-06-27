@@ -2,6 +2,7 @@ import type { OperationSpec } from "./spec.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {
+  JobWorkerProgram,
   OperationProviderSelection,
   OperationRunResult,
   StartBackgroundJob,
@@ -18,6 +19,7 @@ export interface GardenOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -56,6 +58,7 @@ export async function runGardenOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   });
 }

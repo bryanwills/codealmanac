@@ -2,9 +2,12 @@ import type { HarnessProviderId } from "../harness/types.js";
 import type { OperationSpec } from "./spec.js";
 import type { HarnessEvent } from "../harness/events.js";
 import type {
+  JobWorkerProgram,
   StartBackgroundJobResult,
   StartJobResult,
 } from "../jobs/index.js";
+
+export type { JobWorkerProgram };
 
 export interface OperationProviderSelection {
   id: HarnessProviderId;
@@ -32,5 +35,6 @@ export type StartBackgroundJob = (options: {
   repoRoot: string;
   spec: OperationSpec;
   jobId?: string;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }) => Promise<StartBackgroundJobResult>;

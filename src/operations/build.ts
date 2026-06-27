@@ -5,6 +5,7 @@ import { join } from "node:path";
 import type { OperationSpec } from "./spec.js";
 import { initWiki } from "../init/scaffold.js";
 import type {
+  JobWorkerProgram,
   OperationProviderSelection,
   OperationRunResult,
   StartBackgroundJob,
@@ -23,6 +24,7 @@ export interface BuildOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -72,6 +74,7 @@ export async function runBuildOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   });
 }

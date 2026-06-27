@@ -16,13 +16,20 @@ import {
 } from "../src/jobs/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: process.execPath,
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function startBackgroundJob(
-  options: Omit<StartBackgroundJobOptions, "workerEnvironment"> & {
+  options: Omit<StartBackgroundJobOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: StartBackgroundJobOptions["workerProgram"];
   },
 ) {
   return startBackgroundJobCommand({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }
@@ -44,7 +51,6 @@ describe("job worker background execution", () => {
       const result = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509195600_background",
-        entrypoint: "/tmp/codealmanac.js",
         workerEnvironment,
         now: fixedClock(["2026-05-09T19:56:00.000Z"]),
         spec: {
@@ -111,7 +117,6 @@ describe("job worker background execution", () => {
       await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509195700_child",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T19:57:00.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -125,7 +130,6 @@ describe("job worker background execution", () => {
       await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509195630_first",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T19:56:30.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -200,7 +204,6 @@ describe("job worker background execution", () => {
         startBackgroundJob({
           repoRoot: repo,
           jobId: "run_20260509195800_failure",
-          entrypoint: "/tmp/codealmanac.js",
           now: fixedClock([
             "2026-05-09T19:58:00.000Z",
             "2026-05-09T19:58:01.000Z",
@@ -234,7 +237,6 @@ describe("job worker background execution", () => {
       const started = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509195900_cancelled",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T19:59:00.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -273,7 +275,6 @@ describe("job worker background execution", () => {
       const started = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509210500_cancel_marker",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T21:05:00.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -305,7 +306,6 @@ describe("job worker background execution", () => {
       await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509210600_locked",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T21:06:00.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -342,7 +342,6 @@ describe("job worker background execution", () => {
       const first = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509210700_first",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T21:07:00.000Z"]),
         spec: {
           provider: { id: "codex" },
@@ -355,7 +354,6 @@ describe("job worker background execution", () => {
       const second = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509210701_second",
-        entrypoint: "/tmp/codealmanac.js",
         now: fixedClock(["2026-05-09T21:07:01.000Z"]),
         spec: {
           provider: { id: "codex" },

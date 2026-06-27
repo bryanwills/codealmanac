@@ -57,6 +57,7 @@ export async function runSyncWorkflow(
               targetKind: "session",
               targetPaths: [candidate.transcriptPath],
               startBackground: options.startBackground,
+              workerProgram: options.workerProgram,
               workerEnvironment: options.workerEnvironment,
             });
             return { ok: true, jobId: result.jobId };

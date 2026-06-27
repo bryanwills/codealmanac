@@ -8,13 +8,20 @@ import {
 } from "../src/operations/absorb.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: "node",
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function runAbsorbOperation(
-  options: Omit<AbsorbOperationOptions, "workerEnvironment"> & {
+  options: Omit<AbsorbOperationOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: AbsorbOperationOptions["workerProgram"];
   },
 ) {
   return runAbsorbOperationCommand({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }

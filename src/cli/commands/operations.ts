@@ -5,6 +5,7 @@ import {
   type AbsorbOperationWorkflowOptions,
   type GardenOperationWorkflowOptions,
   type InitOperationWorkflowOptions,
+  type LifecycleJobWorkerProgram,
   type LifecycleAbsorbSourceResolver,
   type LifecycleOperationBackgroundStarter,
   type LifecycleOperationEventHandler,
@@ -27,6 +28,7 @@ export interface InitCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -40,6 +42,7 @@ export interface AbsorbCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
@@ -53,6 +56,7 @@ export interface GardenCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -98,6 +102,7 @@ function toInitOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   };
 }
@@ -115,6 +120,7 @@ function toAbsorbOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
     resolveSource: options.resolveSource,
   };
@@ -132,6 +138,7 @@ function toGardenOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   };
 }

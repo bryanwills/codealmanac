@@ -26,6 +26,7 @@ export type {
   OperationMode,
   OperationProviderSelection,
   OperationRunResult,
+  JobWorkerProgram,
   StartBackgroundJob,
   StartForegroundJob,
 } from "./types.js";

@@ -2,6 +2,7 @@ import type {
   HarnessEvent,
   HarnessResult,
 } from "../../harness/events.js";
+import type { JobWorkerProgram } from "../../jobs/index.js";
 import type { JobRecord } from "../../jobs/types.js";
 import type { AbsorbInputSource } from "../../absorb/input-source.js";
 import type { SourceRef } from "../../absorb/source-ref.js";
@@ -14,6 +15,7 @@ import {
 } from "./operation-results.js";
 
 export type LifecycleOperationKind = "init" | "absorb" | "garden";
+export type LifecycleJobWorkerProgram = JobWorkerProgram;
 
 export type LifecycleOperationEventHandler = (
   event: HarnessEvent,
@@ -30,6 +32,7 @@ export interface LifecycleBackgroundStartRequest {
   repoRoot: string;
   spec: OperationSpec;
   jobId?: string;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -66,6 +69,7 @@ export interface InitOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -79,6 +83,7 @@ export interface AbsorbOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
@@ -92,6 +97,7 @@ export interface GardenOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -133,6 +139,7 @@ export async function runInitOperationWorkflow(
           onEvent: options.onEvent,
           startForeground: options.startForeground,
           startBackground: options.startBackground,
+          workerProgram: options.workerProgram,
           workerEnvironment: options.workerEnvironment,
         }),
       ),
@@ -187,6 +194,7 @@ export async function runGardenOperationWorkflow(
           onEvent: options.onEvent,
           startForeground: options.startForeground,
           startBackground: options.startBackground,
+          workerProgram: options.workerProgram,
           workerEnvironment: options.workerEnvironment,
         }),
       ),

@@ -9,6 +9,7 @@ export {
   type LifecycleAbsorbSourceResolver,
   type LifecycleBackgroundStartRequest,
   type LifecycleBackgroundStartResult,
+  type LifecycleJobWorkerProgram,
   type LifecycleOperationBackgroundStarter,
   type LifecycleOperationEventHandler,
   type LifecycleOperationForegroundStarter,

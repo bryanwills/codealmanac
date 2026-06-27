@@ -3,10 +3,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export function currentCliProgramArguments(): string[] {
-  return [
-    process.execPath,
-    findPackageCliEntry() ?? currentCliEntrypointPath(),
-  ];
+  const program = currentCliNodeProgram();
+  return [program.command, program.entrypoint];
+}
+
+export interface CurrentCliNodeProgram {
+  command: string;
+  entrypoint: string;
+}
+
+export function currentCliNodeProgram(): CurrentCliNodeProgram {
+  return {
+    command: process.execPath,
+    entrypoint: findPackageCliEntry() ?? currentCliEntrypointPath(),
+  };
 }
 
 function currentCliEntrypointPath(): string {

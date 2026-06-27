@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
 
 export function registerSyncCommands(program: Command): void {
@@ -23,6 +24,7 @@ export function registerSyncCommands(program: Command): void {
         quiet: opts.quiet,
         using: opts.using,
         json: opts.json,
+        workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
       });
       emit(result);
@@ -51,6 +53,7 @@ export function registerSyncCommands(program: Command): void {
         from: opts.from ?? parentOpts.from,
         quiet: opts.quiet ?? parentOpts.quiet,
         json: opts.json ?? parentOpts.json,
+        workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
       });
       emit(result);

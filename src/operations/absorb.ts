@@ -3,6 +3,7 @@ import type { FinalOutputSpec } from "../harness/final-output.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {
+  JobWorkerProgram,
   OperationProviderSelection,
   OperationRunResult,
   StartBackgroundJob,
@@ -23,6 +24,7 @@ export interface AbsorbOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -71,6 +73,7 @@ export async function runAbsorbOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   });
 }

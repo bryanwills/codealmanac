@@ -680,7 +680,10 @@ describe("architecture boundaries", () => {
     expect(backgroundProcess).toContain("node:child_process");
     expect(backgroundProcess).toContain("export function startJobWorkerProcess");
     expect(backgroundProcess).not.toContain("process.env");
+    expect(backgroundProcess).not.toContain("process.execPath");
+    expect(backgroundStart).not.toContain("process.argv");
     expect(backgroundStart).toContain("workerEnvironment");
+    expect(backgroundStart).toContain("workerProgram");
   });
 
   it("keeps job spec and log persistence in explicit stores", () => {

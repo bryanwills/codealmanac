@@ -7,6 +7,7 @@ import {
   githubPullRequestReportInstructions,
 } from "../operations/reports.js";
 import type {
+  JobWorkerProgram,
   OperationProviderSelection,
   OperationRunResult,
   StartBackgroundJob,
@@ -34,6 +35,7 @@ export interface StartAbsorbRunOptions {
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
@@ -69,6 +71,7 @@ export async function startAbsorbRun(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
   });
   return {

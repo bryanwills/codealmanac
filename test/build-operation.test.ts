@@ -10,13 +10,20 @@ import {
 import { runConfigSet } from "../src/cli/commands/config.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
+const TEST_WORKER_PROGRAM = {
+  command: "node",
+  entrypoint: "/tmp/codealmanac.js",
+};
+
 function runBuildOperation(
-  options: Omit<BuildOperationOptions, "workerEnvironment"> & {
+  options: Omit<BuildOperationOptions, "workerEnvironment" | "workerProgram"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
+    workerProgram?: BuildOperationOptions["workerProgram"];
   },
 ) {
   return runBuildOperationCommand({
     ...options,
+    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
   });
 }
