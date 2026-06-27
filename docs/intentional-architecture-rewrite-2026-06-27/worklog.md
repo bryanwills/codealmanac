@@ -731,3 +731,9 @@ One-hundred-ninth production slice:
 - Split sync command rendering into `src/cli/commands/sync-render.ts`.
 - Moved sync success/error result rendering, status/live mode labels, ready/started item text, and needs-attention text out of `src/cli/commands/sync.ts`.
 - Kept `src/cli/commands/sync.ts` focused on command option contracts, sync workflow option conversion, and invoking the sync service workflow.
+
+One-hundred-tenth production slice:
+
+- Split tag and untag command rendering into `src/cli/commands/tag-render.ts`.
+- Moved tagged/no-change/missing-page output, validation error text, and tag/untag exit-code decisions out of `src/cli/commands/tag.ts`.
+- Kept `src/cli/commands/tag.ts` focused on command contracts and invoking page-topic mutation service workflows.

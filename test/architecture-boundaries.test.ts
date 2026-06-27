@@ -280,10 +280,12 @@ describe("architecture boundaries", () => {
 
   it("keeps tag command adapters out of page topic write mechanics", async () => {
     const tagCommand = await readSource("src/cli/commands/tag.ts");
+    const tagRender = await readSource("src/cli/commands/tag-render.ts");
     const pageTopicService = await readSource(
       "src/services/wiki/page-topic-mutations.ts",
     );
 
+    expect(existsSync(join(ROOT, "src/cli/commands/tag-render.ts"))).toBe(true);
     expect(tagCommand).toContain("services/wiki/page-topic-mutations.js");
     expect(tagCommand).not.toContain("wiki/indexer");
     expect(tagCommand).not.toContain("wiki/topics");
@@ -293,6 +295,13 @@ describe("architecture boundaries", () => {
     expect(tagCommand).not.toContain("rewritePageTopics");
     expect(tagCommand).not.toContain("loadTopicsFile");
     expect(tagCommand).not.toContain("writeTopicsFile");
+    expect(tagCommand).not.toContain("renderTaggedPages");
+    expect(tagCommand).not.toContain("renderMissingPages");
+    expect(tagCommand).not.toContain("no such page");
+    expect(tagCommand).not.toContain("tag requires");
+    expect(tagCommand).not.toContain("untagged");
+    expect(tagRender).toContain("renderTagResult");
+    expect(tagRender).toContain("renderUntagResult");
 
     expect(pageTopicService).not.toContain("SELECT file_path FROM pages");
     expect(pageTopicService).not.toContain("openIndex");
