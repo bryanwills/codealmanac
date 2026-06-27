@@ -11,12 +11,13 @@ import {
   type CodexAppServerSandboxMode,
 } from "./app-server-config.js";
 import { createCodexAppServerRpcTransport } from "./app-server-rpc.js";
+import {
+  codexNotificationTurnId,
+  isCodexRootThreadNotification,
+  isCodexRootTurnCompletion,
+} from "./app-server-root-turn.js";
 import { startCodexAppServerTurn } from "./app-server-session.js";
 import { classifyCodexFailure } from "./failures.js";
-import {
-  asRecord,
-  stringField,
-} from "./fields.js";
 import { toHarnessResult } from "./result.js";
 import { respondToCodexServerRequest } from "./server-requests.js";
 import type { CodexRunState, JsonRpcNotification } from "./types.js";
@@ -104,15 +105,19 @@ export async function runCodexAppServer(
     };
 
     const handleNotification = (message: JsonRpcNotification): void => {
-      const turnId = stringField(asRecord(message.params), "turnId");
+      const turnId = codexNotificationTurnId(message);
       if (
         activeTurnId === undefined &&
         turnId !== undefined &&
-        isRootThreadNotification(message, state)
+        isCodexRootThreadNotification({ message, state })
       ) {
         activeTurnId = turnId;
       }
-      const isRootCompletion = isRootTurnCompletion(message, state, activeTurnId);
+      const isRootCompletion = isCodexRootTurnCompletion({
+        message,
+        state,
+        activeTurnId,
+      });
       const events = mapCodexAppServerNotification(message, state, {
         activeTurnId,
         rootThreadId: state.rootThreadId,
@@ -238,34 +243,4 @@ async function terminateManagedChildSafely(
   } catch (err: unknown) {
     return `Provider process cleanup failed: ${err instanceof Error ? err.message : String(err)}`;
   }
-}
-
-function isRootTurnCompletion(
-  message: JsonRpcNotification,
-  state: CodexRunState,
-  activeTurnId: string | undefined,
-): boolean | undefined {
-  if (message.method !== "turn/completed") return undefined;
-  const params = asRecord(message.params);
-  const completedTurnId = stringField(params, "turnId");
-  const completedThreadId = stringField(params, "threadId");
-  const isRootTurn =
-    (state.rootTurnId !== undefined && completedTurnId === state.rootTurnId) ||
-    (state.rootTurnId === undefined &&
-      activeTurnId !== undefined &&
-      completedTurnId === activeTurnId);
-  const isRootThread =
-    state.rootThreadId !== undefined && completedThreadId === state.rootThreadId;
-  return isRootTurn || isRootThread;
-}
-
-function isRootThreadNotification(
-  message: JsonRpcNotification,
-  state: CodexRunState,
-): boolean {
-  const completedThreadId = stringField(asRecord(message.params), "threadId");
-  return (
-    state.rootThreadId !== undefined &&
-    completedThreadId === state.rootThreadId
-  );
 }

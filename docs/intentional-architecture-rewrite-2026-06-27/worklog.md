@@ -659,3 +659,9 @@ Ninety-seventh production slice:
 - Split sync workflow contracts into `src/services/sync/types.ts`.
 - Moved `SyncWorkflowOptions`, `SyncWorkflowSummary`, item shapes, and result union out of `src/services/sync/sync.ts`.
 - Kept `src/services/sync/sync.ts` focused on source parsing, sweep orchestration, provider selection, and Absorb handoff.
+
+Ninety-eighth production slice:
+
+- Split Codex app-server root turn detection into `src/harness/providers/codex/app-server-root-turn.ts`.
+- Moved root turn/thread completion checks and notification turn ID extraction out of the app-server process run loop.
+- Kept `src/harness/providers/codex/app-server.ts` focused on process lifecycle, RPC wiring, notification mapping, timeout handling, and result finalization.

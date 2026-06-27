@@ -852,11 +852,15 @@ describe("architecture boundaries", () => {
     const appServerSession = await readSource(
       "src/harness/providers/codex/app-server-session.ts",
     );
+    const appServerRootTurn = await readSource(
+      "src/harness/providers/codex/app-server-root-turn.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-config.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/harness/providers/codex/server-requests.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-session.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-rpc.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-root-turn.ts"))).toBe(true);
     expect(appServer).not.toContain("CODEALMANAC_CODEX_APP_SERVER");
     expect(appServer).not.toContain("function parsePositiveEnvInt");
     expect(appServer).not.toContain("interface PendingRequest");
@@ -871,6 +875,8 @@ describe("architecture boundaries", () => {
     expect(appServer).not.toContain("requestRpc(\"initialize\"");
     expect(appServer).not.toContain("requestRpc(\"thread/start\"");
     expect(appServer).not.toContain("requestRpc(\"turn/start\"");
+    expect(appServer).not.toContain("function isRootTurnCompletion");
+    expect(appServer).not.toContain("function isRootThreadNotification");
     expect(appServerSession).toContain("startCodexAppServerTurn");
     expect(appServerSession).toContain("requestRpc(\"initialize\"");
     expect(appServerSession).toContain("requestRpc(\"thread/start\"");
@@ -878,6 +884,8 @@ describe("architecture boundaries", () => {
     expect(appServerRpc).toContain("interface PendingRequest");
     expect(appServerRpc).toContain("pending.set");
     expect(appServerRpc).toContain("function handleResponse");
+    expect(appServerRootTurn).toContain("isCodexRootTurnCompletion");
+    expect(appServerRootTurn).toContain("isCodexRootThreadNotification");
   });
 
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
