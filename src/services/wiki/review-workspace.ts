@@ -15,7 +15,9 @@ export interface OpenWikiReviewFile {
   path: string;
 }
 
-export interface FoundWikiReviewItem extends OpenWikiReviewFile {
+export interface FoundWikiReviewItem {
+  file: ReviewFile;
+  path: string;
   item: ReviewItem;
 }
 
@@ -35,5 +37,11 @@ export async function findWikiReviewItem(
 ): Promise<FoundWikiReviewItem | null> {
   const opened = await openWikiReviewFile(request);
   const item = opened.file.items.find((candidate) => candidate.id === request.id);
-  return item === undefined ? null : { ...opened, item };
+  return item === undefined
+    ? null
+    : {
+        file: opened.file,
+        path: opened.path,
+        item,
+      };
 }

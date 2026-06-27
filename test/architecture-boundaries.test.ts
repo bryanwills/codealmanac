@@ -116,6 +116,9 @@ describe("architecture boundaries", () => {
     const topicsShowCommand = await readSource("src/cli/commands/topics/show.ts");
     const topicsReadCommand = await readSource("src/cli/commands/topics/read.ts");
     const topicTypes = await readSource("src/services/wiki/topic-types.ts");
+    const topicWorkspace = await readSource(
+      "src/services/wiki/topic-workspace.ts",
+    );
 
     for (const source of [topicsListCommand, topicsShowCommand, topicsReadCommand]) {
       expect(source).toContain("services/wiki/topics.js");
@@ -145,6 +148,9 @@ describe("architecture boundaries", () => {
     );
     expect(topicTypes).not.toContain(
       "DeleteWikiTopicRequest extends WikiTopicsRequest",
+    );
+    expect(topicWorkspace).not.toContain(
+      "EditableTopicWorkspace extends FreshTopicIndex",
     );
   });
 
@@ -217,6 +223,9 @@ describe("architecture boundaries", () => {
     const reviewCommand = await readSource("src/cli/commands/review.ts");
     const reviewService = await readSource("src/services/wiki/reviews.ts");
     const reviewTypes = await readSource("src/services/wiki/review-types.ts");
+    const reviewWorkspace = await readSource(
+      "src/services/wiki/review-workspace.ts",
+    );
 
     expect(reviewCommand).toContain("services/wiki/reviews.js");
     expect(reviewCommand).not.toContain("review/store");
@@ -256,6 +265,10 @@ describe("architecture boundaries", () => {
     expect(reviewTypes).not.toContain(
       "ChangeWikiReviewItemRequest extends WikiReviewItemRequest",
     );
+    expect(reviewWorkspace).not.toContain(
+      "FoundWikiReviewItem extends OpenWikiReviewFile",
+    );
+    expect(reviewWorkspace).not.toContain("{ ...opened, item }");
   });
 
   it("keeps the sync command owning its command contract", async () => {

@@ -17,7 +17,9 @@ export interface FreshTopicIndex {
   db: Database.Database;
 }
 
-export interface EditableTopicWorkspace extends FreshTopicIndex {
+export interface EditableTopicWorkspace {
+  repoRoot: string;
+  db: Database.Database;
   file: TopicsFile;
 }
 

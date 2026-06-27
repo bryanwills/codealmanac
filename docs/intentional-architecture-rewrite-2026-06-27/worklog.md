@@ -514,3 +514,9 @@ Seventy-third production slice:
 - Flattened lifecycle operation workflow option contracts in `src/services/lifecycle/operations.ts`.
 - Replaced the broad `LifecycleOperationDeps` base with explicit init, absorb, and garden workflow fields.
 - Added named lifecycle hook contracts so command options no longer index into workflow option interfaces for injected run hooks.
+
+Seventy-fourth production slice:
+
+- Flattened wiki topic and review workspace result contracts.
+- Made editable topic workspaces list `repoRoot`, `db`, and `file` directly instead of extending the fresh-index shape.
+- Made found review items list `file`, `path`, and `item` directly instead of extending the open-review-file shape.
