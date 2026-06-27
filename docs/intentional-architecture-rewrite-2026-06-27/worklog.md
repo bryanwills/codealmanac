@@ -785,3 +785,9 @@ One-hundred-eighteenth production slice:
 - Split uninstall command rendering into `src/cli/commands/uninstall-render.ts`.
 - Moved uninstall prompt text, kept-step lines, setup cleanup summaries, automation removal formatting, and completion text out of `src/cli/commands/uninstall.ts`.
 - Kept `src/cli/commands/uninstall.ts` focused on CLI option defaults, interactive yes/no decisions, and invoking the setup uninstall service.
+
+One-hundred-nineteenth production slice:
+
+- Split health command rendering into `src/cli/commands/health/render.ts`.
+- Moved health JSON output, text report sections, colorized category rows, and legacy-source migration warnings out of `src/cli/commands/health/index.ts`.
+- Kept `src/cli/commands/health/index.ts` focused on stale-duration parsing, stdin slug parsing, and invoking the wiki health service.

@@ -130,13 +130,23 @@ describe("architecture boundaries", () => {
 
   it("keeps health command adapters out of index storage mechanics", async () => {
     const healthCommand = await readSource("src/cli/commands/health/index.ts");
+    const healthRender = await readSource("src/cli/commands/health/render.ts");
     const healthService = await readSource("src/services/wiki/health.ts");
 
+    expect(existsSync(join(ROOT, "src/cli/commands/health/render.ts"))).toBe(
+      true,
+    );
     expect(healthCommand).toContain("services/wiki/health.js");
+    expect(healthCommand).toContain("./render.js");
     expect(healthCommand).not.toContain("wiki/indexer");
     expect(healthCommand).not.toContain("../../../wiki/health");
     expect(healthCommand).not.toContain("collectHealthReport");
     expect(healthCommand).not.toContain("resolveWikiRoot");
+    expect(healthCommand).not.toContain("JSON.stringify");
+    expect(healthCommand).not.toContain("BLUE");
+    expect(healthCommand).not.toContain("legacy source frontmatter");
+    expect(healthRender).toContain("renderHealthReport");
+    expect(healthRender).toContain("migrationWarning");
     expect(healthService).not.toContain("WikiHealthReport = HealthReport");
     expect(healthService).toContain("wikiHealthReportFromIndexerReport");
   });
