@@ -42,6 +42,7 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/platform/` | Local machine integration for install, self-update, and scheduler automation | `install/`, `update/`, `automation/` |
 | `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
 | `src/agent/` | Agent facade, provider registry, provider adapters, prompt loading | `sdk.ts`, `types.ts`, `providers/` |
+| `src/harness/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
 | `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/agents/` | Agent-facing provider view and provider/model config workflows over readiness and config services | `agents.ts`, `index.ts` |

@@ -304,6 +304,20 @@ describe("architecture boundaries", () => {
     expect(operationsCommand).not.toContain("initContext");
   });
 
+  it("keeps Claude provider protocol mechanics in provider-local modules", async () => {
+    const claudeProvider = await readSource("src/harness/providers/claude.ts");
+
+    expect(existsSync(join(ROOT, "src/harness/providers/claude/options.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/harness/providers/claude/events.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/harness/providers/claude/failures.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/harness/providers/claude/usage.ts"))).toBe(true);
+    expect(claudeProvider).not.toContain("spawnManagedChildProcess");
+    expect(claudeProvider).not.toContain("function buildClaudeOptions");
+    expect(claudeProvider).not.toContain("function toClaudeHarnessEvents");
+    expect(claudeProvider).not.toContain("function classifyClaudeFailure");
+    expect(claudeProvider).not.toContain("function mapClaudeUsage");
+  });
+
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
     const migrateCommand = await readSource("src/cli/commands/migrate.ts");
 

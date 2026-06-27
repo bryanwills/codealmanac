@@ -180,3 +180,10 @@ Twentieth production slice:
 - Kept `src/edges/cli/register-edit-commands.ts` as a small facade over review, page-topic, migrate, and topic registration.
 - Moved review command wiring to `register-review-commands.ts`, tag/untag wiring to `register-page-topic-commands.ts`, migration wiring to `register-migrate-commands.ts`, and topic DAG wiring to `register-topics-commands.ts`.
 - Preserved existing root and subcommand order with focused CLI, topics, review, and tag tests.
+
+Twenty-first production slice:
+
+- Split Claude harness-provider mechanics into provider-local modules under `src/harness/providers/claude/`.
+- Kept `src/harness/providers/claude.ts` as the stable provider construction and run-loop entrypoint.
+- Moved SDK option construction, managed Claude process spawning, tool/subagent mapping, event normalization, failure classification, usage parsing, and shared Claude trace types into named files.
+- Added an architecture guard so the Claude provider shell does not re-absorb option construction, event translation, failure parsing, usage parsing, or process spawning.
