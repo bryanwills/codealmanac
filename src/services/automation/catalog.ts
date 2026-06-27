@@ -6,10 +6,20 @@ import {
 } from "../../platform/automation/tasks.js";
 import type { AutomationTaskId } from "./types.js";
 
+const TASK_LABELS: Record<AutomationTaskId, string> = {
+  sync: "sync automation",
+  garden: "garden automation",
+  update: "auto-update automation",
+};
+
 export function defaultSyncAutomationPlistPath(
   home: string = homedir(),
 ): string {
   return defaultSyncPlistPath(home);
+}
+
+export function automationTaskLabel(taskId: AutomationTaskId): string {
+  return TASK_LABELS[taskId];
 }
 
 export function parseAutomationTaskIds(

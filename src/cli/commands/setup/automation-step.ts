@@ -1,5 +1,8 @@
-import { cleanupLegacyAutomationHooks } from "../../../services/automation/index.js";
-import { runAutomationInstall } from "../automation.js";
+import {
+  cleanupLegacyAutomationHooks,
+  installAutomation,
+} from "../../../services/automation/index.js";
+import { automationInstallFailure } from "./automation-result.js";
 import {
   type SetupTheme,
   dim,
@@ -15,6 +18,7 @@ export interface AutomationSetupStepOptions {
   automationQuiet?: string;
   gardenEvery?: string;
   gardenOff?: boolean;
+  cwd?: string;
   automationPlistPath?: string;
   gardenPlistPath?: string;
   automationExec?: AutomationExecFn;
@@ -43,12 +47,12 @@ export async function runAutomationSetupStep(args: {
     );
   } else {
     await cleanupLegacyAutomationHooks();
-    const res = await runAutomationInstall({
+    const res = await installAutomation({
       every: args.options.automationEvery,
       quiet: args.options.automationQuiet,
       gardenEvery: args.options.gardenEvery,
       gardenOff: args.options.gardenOff,
-      cwd: process.cwd(),
+      cwd: args.options.cwd,
       programArguments: args.ephemeral
         ? globalAlmanacProgramArguments(args.options.automationQuiet)
         : undefined,
@@ -59,13 +63,14 @@ export async function runAutomationSetupStep(args: {
       gardenPlistPath: args.options.gardenPlistPath,
       exec: args.options.automationExec,
     });
-    if (res.exitCode !== 0) {
-      stepActive(args.out, args.theme, `Sync automation: ${res.stderr.trim()}`);
-      return {
-        ok: false,
-        stderr: res.stderr,
-        exitCode: res.exitCode,
-      };
+    const failure = automationInstallFailure(res);
+    if (failure !== null) {
+      stepActive(
+        args.out,
+        args.theme,
+        `Sync automation: ${failure.stderr.trim()}`,
+      );
+      return { ok: false, ...failure };
     }
     stepDone(args.out, args.theme, "Sync automation installed");
   }

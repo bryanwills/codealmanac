@@ -65,6 +65,7 @@ export type {
 export async function runSetup(
   options: SetupOptions = {},
 ): Promise<SetupResult> {
+  const cwd = options.cwd ?? process.cwd();
   const out = options.stdout ?? process.stdout;
   const theme = makeSetupTheme(options.color !== false);
   const isTTY =
@@ -163,7 +164,7 @@ export async function runSetup(
         out,
         theme,
         interactive,
-        options,
+        options: { ...options, cwd },
         ephemeral: globalInstall.ephemeral,
         durableGlobalInstall: globalInstall.durableGlobalInstall,
       });
@@ -206,7 +207,7 @@ export async function runSetup(
   // codealmanac-known-bugs.md: Engineer B clones a repo that already has
   // `.almanac/pages/` (committed by Engineer A) and gets told to run
   // `almanac init`, which is wrong — the wiki already exists.
-  const wikiState = readSetupWikiState(process.cwd());
+  const wikiState = readSetupWikiState(cwd);
   printNextSteps(out, theme, wikiState.existingPageCount, nextStepsMode);
 
   return { stdout: "", stderr: "", exitCode: 0 };

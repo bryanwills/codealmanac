@@ -1,8 +1,8 @@
+import { automationTaskLabel } from "../../services/automation/index.js";
 import type {
   AutomationInstallResult,
   AutomationStatusResult,
   AutomationStatusSection,
-  AutomationTaskId,
   AutomationUninstallResult,
   InstalledAutomationTask,
 } from "../../services/automation/index.js";
@@ -13,12 +13,6 @@ export interface AutomationCommandResult {
   exitCode: number;
 }
 
-const TASK_LABELS: Record<AutomationTaskId, string> = {
-  sync: "sync automation",
-  garden: "garden automation",
-  update: "auto-update automation",
-};
-
 export function renderAutomationInstallResult(
   result: AutomationInstallResult,
 ): AutomationCommandResult {
@@ -27,7 +21,7 @@ export function renderAutomationInstallResult(
   }
   if (result.status === "activation-failed") {
     return error(
-      `almanac: ${TASK_LABELS[result.taskId]} plist written to ${
+      `almanac: ${automationTaskLabel(result.taskId)} plist written to ${
         result.plistPath
       }, but launchctl bootstrap failed: ${result.message}\n`,
     );
@@ -95,11 +89,11 @@ function formatAutomationStatusSection(section: AutomationStatusSection): string
     return formatLegacyCaptureSweepStatus(section.plistPath);
   }
   if (!section.installed) {
-    return `${TASK_LABELS[section.taskId]}: not installed\n`;
+    return `${automationTaskLabel(section.taskId)}: not installed\n`;
   }
   const quiet = section.quiet !== null ? `  quiet: ${section.quiet}\n` : "";
   return (
-    `${TASK_LABELS[section.taskId]}: installed\n` +
+    `${automationTaskLabel(section.taskId)}: installed\n` +
     `  plist: ${section.plistPath}\n` +
     `  launchd loaded: ${section.loaded ? "yes" : "no"}\n` +
     (section.intervalSeconds !== null

@@ -1,4 +1,5 @@
-import { runAutomationInstall } from "../automation.js";
+import { installAutomation } from "../../../services/automation/index.js";
+import { automationInstallFailure } from "./automation-result.js";
 import {
   type SetupTheme,
   dim,
@@ -25,24 +26,21 @@ export async function runAutoUpdateSetupStep(args: {
   theme: SetupTheme;
   options: AutoUpdateSetupStepOptions;
 }): Promise<AutoUpdateSetupStepResult> {
-  const update = await runAutomationInstall({
+  const update = await installAutomation({
     tasks: ["update"],
     every: args.options.autoUpdateEvery,
     updateProgramArguments: args.options.updateProgramArguments,
     updatePlistPath: args.options.updatePlistPath,
     exec: args.options.automationExec,
   });
-  if (update.exitCode !== 0) {
+  const failure = automationInstallFailure(update);
+  if (failure !== null) {
     stepActive(
       args.out,
       args.theme,
-      `Auto-update automation: ${update.stderr.trim()}`,
+      `Auto-update automation: ${failure.stderr.trim()}`,
     );
-    return {
-      ok: false,
-      stderr: update.stderr,
-      exitCode: update.exitCode,
-    };
+    return { ok: false, ...failure };
   }
   stepDone(args.out, args.theme, "Auto-update automation installed");
   writeSetupDivider(args.out, args.theme);

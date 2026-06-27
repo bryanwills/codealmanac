@@ -928,6 +928,12 @@ describe("architecture boundaries", () => {
     const setupNextSteps = await readSource(
       "src/cli/commands/setup/next-steps.ts",
     );
+    const setupAutomationStep = await readSource(
+      "src/cli/commands/setup/automation-step.ts",
+    );
+    const setupAutoUpdateStep = await readSource(
+      "src/cli/commands/setup/auto-update-step.ts",
+    );
     const setupWikiState = await readSource(
       "src/services/setup/wiki-state.ts",
     );
@@ -967,6 +973,9 @@ describe("architecture boundaries", () => {
     expect(setupNextSteps).not.toContain("node:fs");
     expect(setupNextSteps).not.toContain("existsSync");
     expect(setupNextSteps).not.toContain("readdirSync");
+    expect(setupAutomationStep).not.toContain("../automation.js");
+    expect(setupAutomationStep).not.toContain("process.cwd()");
+    expect(setupAutoUpdateStep).not.toContain("../automation.js");
     expect(setupWikiState).toContain("existingPageCount");
     expect(setupWikiState).toContain("readdirSync");
     expect(setupTypes).toContain("interface SetupOptions");

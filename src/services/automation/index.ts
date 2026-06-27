@@ -4,6 +4,7 @@ export {
   uninstallAutomation,
 } from "./automation.js";
 export {
+  automationTaskLabel,
   defaultSyncAutomationPlistPath,
   parseAutomationTaskIds,
 } from "./catalog.js";

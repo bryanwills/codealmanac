@@ -599,9 +599,14 @@ describe("codealmanac setup", () => {
   it("explicit sync setup flags still install sync and garden automation", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
+      const repo = join(home, "repo");
+      const nested = join(repo, "src", "nested");
+      await mkdir(join(repo, ".almanac"), { recursive: true });
+      await mkdir(nested, { recursive: true });
       const res = await runSetup({
         yes: true,
         automationEvery: "2h",
+        cwd: nested,
         isTTY: false,
         spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
         automationPlistPath: env.plistPath,
@@ -615,7 +620,9 @@ describe("codealmanac setup", () => {
 
       expect(res.exitCode).toBe(0);
       expect(await readFile(env.plistPath, "utf8")).toContain("<string>sync</string>");
-      expect(await readFile(env.gardenPlistPath, "utf8")).toContain("<string>garden</string>");
+      const gardenPlist = await readFile(env.gardenPlistPath, "utf8");
+      expect(gardenPlist).toContain("<string>garden</string>");
+      expect(gardenPlist).toContain(`<string>${repo}</string>`);
     });
   });
 
