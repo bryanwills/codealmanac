@@ -49,7 +49,7 @@ sources:
     note: Implements add, list, show, decide, apply, and reopen behavior for review escalations.
   - id: review-store
     type: file
-    path: src/review/store.ts
+    path: src/stores/wiki-review/store.ts
     note: Loads, validates, normalizes, IDs, and atomically writes .almanac/review.yaml.
   - id: review-cli
     type: file

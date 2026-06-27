@@ -62,7 +62,7 @@ sources:
     note: Migrated from legacy files.
   - id: store
     type: file
-    path: src/review/store.ts
+    path: src/stores/wiki-review/store.ts
     note: Migrated from legacy files.
   - id: tasks
     type: file

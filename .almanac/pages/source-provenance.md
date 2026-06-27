@@ -73,7 +73,7 @@ sources:
     note: Implements the deterministic almanac review command functions.
   - id: review-store
     type: file
-    path: src/review/store.ts
+    path: src/stores/wiki-review/store.ts
     note: Implements .almanac/review.yaml loading, validation, ID generation, and atomic writes.
   - id: manual-seed
     type: file

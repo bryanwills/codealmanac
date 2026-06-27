@@ -8,9 +8,9 @@ import {
   type ReviewFile,
   type ReviewItem,
   type ReviewStatus,
-} from "../../review/store.js";
+} from "../../stores/wiki-review/store.js";
 
-export type { ReviewItem, ReviewStatus } from "../../review/store.js";
+export type { ReviewItem, ReviewStatus } from "../../stores/wiki-review/store.js";
 
 export interface WikiReviewRequest {
   cwd: string;

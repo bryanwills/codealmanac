@@ -10,7 +10,7 @@ import {
   runReviewReopen,
   runReviewShow,
 } from "../src/cli/commands/review.js";
-import { loadReviewFile } from "../src/review/store.js";
+import { loadReviewFile } from "../src/stores/wiki-review/store.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 describe("review command", () => {

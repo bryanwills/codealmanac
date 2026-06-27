@@ -3,7 +3,7 @@ import {
   reviewYamlPath,
   type ReviewItem,
   type ReviewStatus,
-} from "../review/store.js";
+} from "../stores/wiki-review/store.js";
 
 export interface ViewerReview {
   items: ReviewItem[];

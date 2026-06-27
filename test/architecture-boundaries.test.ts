@@ -145,6 +145,7 @@ describe("architecture boundaries", () => {
 
     expect(reviewCommand).toContain("services/wiki/reviews.js");
     expect(reviewCommand).not.toContain("review/store");
+    expect(reviewCommand).not.toContain("stores/wiki-review");
     expect(reviewCommand).not.toContain("resolveWikiRoot");
     expect(reviewCommand).not.toContain("reviewYamlPath");
     expect(reviewCommand).not.toContain("loadReviewFile");

@@ -4,8 +4,8 @@ import { dirname, join } from "node:path";
 
 import yaml from "js-yaml";
 
-import { UserFacingError } from "../errors.js";
-import { toKebabCase } from "../slug.js";
+import { UserFacingError } from "../../errors.js";
+import { toKebabCase } from "../../slug.js";
 
 export type ReviewStatus = "open" | "decided" | "applied";
 
