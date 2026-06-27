@@ -1,4 +1,3 @@
-import { formatReport } from "./format.js";
 import { gatherDoctorReport } from "../../../services/diagnostics/index.js";
 import type {
   Check,
@@ -8,6 +7,7 @@ import type {
   DoctorResult,
   SqliteProbeResult,
 } from "../../../services/diagnostics/index.js";
+import { renderDoctorReport } from "./render.js";
 
 export type {
   Check,
@@ -26,24 +26,11 @@ export type {
  * correctly?" question that users hit when first trying the tool or when
  * sessions silently stop getting absorbed.
  *
- * This file renders the diagnostics service report for the CLI.
+ * This file adapts the diagnostics service report to the CLI command.
  */
 export async function runDoctor(
   options: DoctorOptions,
 ): Promise<DoctorResult> {
   const report = await gatherDoctorReport(options);
-
-  if (options.json === true) {
-    return {
-      stdout: `${JSON.stringify(report, null, 2)}\n`,
-      stderr: "",
-      exitCode: 0,
-    };
-  }
-
-  return {
-    stdout: formatReport(report, options),
-    stderr: "",
-    exitCode: 0,
-  };
+  return renderDoctorReport(report, options);
 }

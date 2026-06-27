@@ -1261,6 +1261,7 @@ describe("architecture boundaries", () => {
 
   it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
+    const doctorRender = await readSource("src/cli/commands/doctor/render.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
     const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
     const diagnosticsIndex = await readSource("src/services/diagnostics/index.ts");
@@ -1268,15 +1269,23 @@ describe("architecture boundaries", () => {
     const doctorTypes = await readSource("src/services/wiki/doctor-types.ts");
     const doctorHealth = await readSource("src/services/wiki/doctor-health.ts");
 
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/render.ts"))).toBe(
+      true,
+    );
     expect(doctorIndex).toContain("services/diagnostics/index.js");
+    expect(doctorIndex).toContain("./render.js");
     expect(doctorIndex).not.toContain("./install.js");
     expect(doctorIndex).not.toContain("./agents.js");
     expect(doctorIndex).not.toContain("./updates.js");
     expect(doctorIndex).not.toContain("./probes.js");
+    expect(doctorIndex).not.toContain("formatReport");
+    expect(doctorIndex).not.toContain("JSON.stringify");
     expect(doctorIndex).not.toContain("agent/");
     expect(doctorIndex).not.toContain("platform/");
     expect(doctorIndex).not.toContain("readConfig");
     expect(doctorIndex).not.toContain("readStateForDoctor");
+    expect(doctorRender).toContain("renderDoctorReport");
+    expect(doctorRender).toContain("formatReport");
     expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
     expect(diagnosticsTypes).not.toContain("from \"../../agent/types.js\"");
     expect(diagnosticsTypes).not.toContain("from \"../../config/index.js\"");

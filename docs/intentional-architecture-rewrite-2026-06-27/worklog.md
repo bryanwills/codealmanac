@@ -797,3 +797,9 @@ One-hundred-twentieth production slice:
 - Split show command result rendering into `src/cli/commands/show/render.ts`.
 - Moved missing-input output, missing-page stderr, exit-code selection, and delegation to show record formatting out of `src/cli/commands/show/index.ts`.
 - Kept `src/cli/commands/show/index.ts` focused on slug collection, wiki page service reads, and service-record normalization into the command record contract.
+
+One-hundred-twenty-first production slice:
+
+- Split doctor command rendering into `src/cli/commands/doctor/render.ts`.
+- Moved doctor JSON output, text report selection, and command-result shaping out of `src/cli/commands/doctor/index.ts`.
+- Kept `src/cli/commands/doctor/index.ts` focused on invoking the diagnostics service and preserving the public diagnostic type exports.
