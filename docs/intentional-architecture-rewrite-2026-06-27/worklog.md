@@ -568,3 +568,9 @@ Eighty-second production slice:
 - Split indexer page planning into `src/wiki/indexer/page-plan.ts`.
 - Moved globbing, file stat/read handling, content hashing, frontmatter parsing, source normalization, and wikilink extraction out of `index.ts`.
 - Kept `index.ts` focused on freshness orchestration, topic reconciliation, and SQLite write application.
+
+Eighty-third production slice:
+
+- Split indexer SQLite page writes into `src/wiki/indexer/page-writer.ts`.
+- Moved prepared statements, transaction application, topic/file/source/link projection, and FTS row replacement out of `index.ts`.
+- Kept `index.ts` as the orchestration layer for freshness, planning, page-write application, topic YAML reconciliation, and mtime bumping.

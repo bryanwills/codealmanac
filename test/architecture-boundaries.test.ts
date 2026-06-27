@@ -780,9 +780,12 @@ describe("architecture boundaries", () => {
   it("keeps indexer page planning out of SQLite write orchestration", async () => {
     const indexer = await readSource("src/wiki/indexer/index.ts");
     const pagePlan = await readSource("src/wiki/indexer/page-plan.ts");
+    const pageWriter = await readSource("src/wiki/indexer/page-writer.ts");
 
     expect(existsSync(join(ROOT, "src/wiki/indexer/page-plan.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/wiki/indexer/page-writer.ts"))).toBe(true);
     expect(indexer).toContain("buildIndexedPagesPlan");
+    expect(indexer).toContain("applyIndexedPagesPlan");
     expect(indexer).not.toContain("fast-glob");
     expect(indexer).not.toContain("readFile");
     expect(indexer).not.toContain("statSync");
@@ -790,9 +793,15 @@ describe("architecture boundaries", () => {
     expect(indexer).not.toContain("parseFrontmatter");
     expect(indexer).not.toContain("normalizePageSources");
     expect(indexer).not.toContain("extractWikilinks");
+    expect(indexer).not.toContain("INSERT INTO pages");
+    expect(indexer).not.toContain("DELETE FROM file_refs");
+    expect(indexer).not.toContain("normalizePath");
     expect(pagePlan).toContain("fast-glob");
     expect(pagePlan).toContain("parseFrontmatter");
     expect(pagePlan).toContain("normalizePageSources");
+    expect(pageWriter).toContain("INSERT INTO pages");
+    expect(pageWriter).toContain("DELETE FROM file_refs");
+    expect(pageWriter).toContain("normalizePath");
   });
 
   it("keeps doctor diagnostics out of the CLI command package", async () => {

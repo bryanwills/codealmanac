@@ -4,21 +4,15 @@ import { join } from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../slug.js";
-import { topicTitleFromSlug } from "../topics/title.js";
 import {
   pagesNewerThan,
   topicsYamlNewerThan,
 } from "./freshness.js";
 import {
-  normalizePath,
-  normalizePathPreservingCase,
-  looksLikeDir,
-} from "./paths.js";
-import {
   buildIndexedPagesPlan,
   type ExistingIndexedPage,
 } from "./page-plan.js";
+import { applyIndexedPagesPlan } from "./page-writer.js";
 import { isIndexSchemaStale, openIndex } from "./schema.js";
 import { applyTopicsYaml, TOPICS_YAML_FILENAME } from "./topics-yaml.js";
 
@@ -169,178 +163,7 @@ async function indexPagesInto(
     )
     .all();
   const plan = await buildIndexedPagesPlan({ pagesDir, existingRows });
-
-  const deleteByPage = db.prepare<[string]>("DELETE FROM pages WHERE slug = ?");
-  const deleteFtsByPage = db.prepare<[string]>(
-    "DELETE FROM fts_pages WHERE slug = ?",
-  );
-
-  const replacePage = db.prepare<
-    [string, string, string | null, string, string, number, number | null, string | null]
-  >(
-    `INSERT INTO pages (slug, title, summary, file_path, content_hash, updated_at, archived_at, superseded_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(slug) DO UPDATE SET
-       title         = excluded.title,
-       summary       = excluded.summary,
-       file_path     = excluded.file_path,
-       content_hash  = excluded.content_hash,
-       updated_at    = excluded.updated_at,
-       archived_at   = excluded.archived_at,
-       superseded_by = excluded.superseded_by`,
-  );
-
-  const deletePageTopics = db.prepare<[string]>(
-    "DELETE FROM page_topics WHERE page_slug = ?",
-  );
-  const insertPageTopic = db.prepare<[string, string]>(
-    "INSERT OR IGNORE INTO page_topics (page_slug, topic_slug) VALUES (?, ?)",
-  );
-  // Seed ad-hoc topics with a title-cased default. If the topic is
-  // later declared in `.almanac/topics.yaml`, `applyTopicsYaml` will
-  // promote the title/description to whatever the file says. We set the
-  // title here (rather than leaving NULL) so `topics list` and
-  // `health --topic` have a display name even before a user writes to
-  // topics.yaml.
-  const insertTopic = db.prepare<[string, string]>(
-    "INSERT OR IGNORE INTO topics (slug, title) VALUES (?, ?)",
-  );
-
-  const deleteFileRefs = db.prepare<[string]>(
-    "DELETE FROM file_refs WHERE page_slug = ?",
-  );
-  const insertFileRef = db.prepare<[string, string, string, number]>(
-    "INSERT OR IGNORE INTO file_refs (page_slug, path, original_path, is_dir) VALUES (?, ?, ?, ?)",
-  );
-
-  const deletePageSources = db.prepare<[string]>(
-    "DELETE FROM page_sources WHERE page_slug = ?",
-  );
-  const insertPageSource = db.prepare<
-    [string, string, string, string, string | null, string | null, string | null, number]
-  >(
-    `INSERT OR IGNORE INTO page_sources
-       (page_slug, source_id, source_type, target, title, retrieved_at, note, legacy)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
-
-  const deleteWikilinks = db.prepare<[string]>(
-    "DELETE FROM wikilinks WHERE source_slug = ?",
-  );
-  const insertWikilink = db.prepare<[string, string]>(
-    "INSERT OR IGNORE INTO wikilinks (source_slug, target_slug) VALUES (?, ?)",
-  );
-
-  const deleteXwiki = db.prepare<[string]>(
-    "DELETE FROM cross_wiki_links WHERE source_slug = ?",
-  );
-  const insertXwiki = db.prepare<[string, string, string]>(
-    "INSERT OR IGNORE INTO cross_wiki_links (source_slug, target_wiki, target_slug) VALUES (?, ?, ?)",
-  );
-
-  const insertFts = db.prepare<[string, string, string]>(
-    "INSERT INTO fts_pages (slug, title, content) VALUES (?, ?, ?)",
-  );
-
-  const apply = db.transaction(() => {
-    for (const slug of plan.toDelete) {
-      // `fts_pages` is an FTS5 virtual table — FK cascades do NOT propagate
-      // into it, so we must delete FTS rows explicitly before relying on
-      // `DELETE FROM pages` to cascade-clean the four real tables
-      // (page_topics, file_refs, wikilinks, cross_wiki_links). If this
-      // explicit delete ever gets removed, orphaned FTS rows will show up
-      // as phantom search hits pointing at non-existent slugs.
-      deleteFtsByPage.run(slug);
-      deleteByPage.run(slug); // CASCADE cleans page_topics, file_refs, wikilinks, cross_wiki_links
-    }
-
-    for (const p of plan.planned) {
-      // page_topics/file_refs/wikilinks/cross_wiki_links all cascade on
-      // delete, so the cleanest "replace" story is: delete-then-insert
-      // the per-page rows under the same transaction. Doing it this way
-      // (rather than `ON CONFLICT DO UPDATE` per row) keeps the logic
-      // uniform and makes "remove a topic from frontmatter" work.
-      deletePageTopics.run(p.slug);
-      deleteFileRefs.run(p.slug);
-      deletePageSources.run(p.slug);
-      deleteWikilinks.run(p.slug);
-      deleteXwiki.run(p.slug);
-      // Same virtual-table reason as the deletion branch above — FTS5
-      // rows do not cascade, so clean them by hand before reinserting.
-      deleteFtsByPage.run(p.slug);
-
-      replacePage.run(
-        p.slug,
-        p.title,
-        p.summary ?? null,
-        p.fullPath,
-        p.contentHash,
-        p.updatedAt,
-        p.archivedAt,
-        p.supersededBy,
-      );
-
-      for (const topic of p.topics) {
-        const topicSlug = toKebabCase(topic);
-        if (topicSlug.length === 0) continue;
-        insertTopic.run(topicSlug, topicTitleFromSlug(topicSlug));
-        insertPageTopic.run(p.slug, topicSlug);
-      }
-
-      for (const source of p.pageSources) {
-        const sourceTarget = source.type === "file"
-          ? normalizePath(source.target, looksLikeDir(source.target))
-          : source.target;
-        insertPageSource.run(
-          p.slug,
-          source.id,
-          source.type,
-          sourceTarget,
-          source.title ?? null,
-          source.retrieved_at ?? null,
-          source.note ?? null,
-          source.legacy ? 1 : 0,
-        );
-      }
-
-      // Source-derived file references. `src/wiki/indexer/page-sources.ts`
-      // is the only place that knows legacy `files:` can still become
-      // file refs; the indexer consumes the normalized model.
-      for (const ref of p.sourceFileRefs) {
-        const raw = ref.rawPath;
-        const isDir = looksLikeDir(raw);
-        const path = normalizePath(raw, isDir);
-        const originalPath = normalizePathPreservingCase(raw, isDir);
-        if (path.length === 0) continue;
-        insertFileRef.run(p.slug, path, originalPath, isDir ? 1 : 0);
-      }
-
-      // Inline `[[...]]` extracted from body.
-      for (const ref of p.wikilinks) {
-        switch (ref.kind) {
-          case "page":
-            insertWikilink.run(p.slug, ref.target);
-            break;
-          case "file":
-            insertFileRef.run(p.slug, ref.path, ref.originalPath, 0);
-            break;
-          case "folder":
-            insertFileRef.run(p.slug, ref.path, ref.originalPath, 1);
-            break;
-          case "xwiki":
-            insertXwiki.run(p.slug, ref.wiki, ref.target);
-            break;
-        }
-      }
-
-      insertFts.run(
-        p.slug,
-        p.title,
-        [p.summary, p.content].filter((part) => part !== undefined).join("\n\n"),
-      );
-    }
-  });
-  apply();
+  applyIndexedPagesPlan(db, plan);
 
   return {
     changed: plan.planned.length,
