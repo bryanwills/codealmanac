@@ -273,3 +273,9 @@ Thirty-fifth production slice:
 - Introduced `JobServiceView` as the jobs service-facing read model.
 - Removed the raw `JobView` re-export from `src/services/jobs/index.ts`.
 - Updated the jobs command adapter to format the service-owned read model type.
+
+Thirty-sixth production slice:
+
+- Introduced service-owned `AutomationTaskId` and `AutomationExecFn` aliases.
+- Moved the public automation task ID export from the platform-backed catalog to automation service types.
+- Updated automation planning and legacy migration types to consume service-owned names instead of launchd/task scheduler types.

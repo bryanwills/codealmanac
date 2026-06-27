@@ -14,11 +14,11 @@ import {
   scheduledTaskDefinition,
   scheduledTaskLogPaths,
   type ScheduledTaskDefinition,
-  type ScheduledTaskId,
 } from "../../platform/automation/tasks.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { parseDuration } from "../../shared/duration.js";
 import type {
+  AutomationTaskId,
   AutomationInstallOptions,
 } from "./types.js";
 
@@ -98,9 +98,9 @@ export function buildAutomationInstallPlan(
 }
 
 export function selectedTaskIds(
-  tasks: ScheduledTaskId[] | undefined,
+  tasks: AutomationTaskId[] | undefined,
   forInstall: boolean,
-): ScheduledTaskId[] {
+): AutomationTaskId[] {
   if (tasks !== undefined && tasks.length > 0) return dedupeTaskIds(tasks);
   return forInstall
     ? [...DEFAULT_AUTOMATION_TASK_IDS]
@@ -120,8 +120,8 @@ export function plistPathForTask(
   return options.updatePlistPath ?? defaultUpdatePlistPath(home);
 }
 
-function dedupeTaskIds(tasks: ScheduledTaskId[]): ScheduledTaskId[] {
-  const result: ScheduledTaskId[] = [];
+function dedupeTaskIds(tasks: AutomationTaskId[]): AutomationTaskId[] {
+  const result: AutomationTaskId[] = [];
   for (const task of tasks) {
     if (!result.includes(task)) result.push(task);
   }
@@ -129,7 +129,7 @@ function dedupeTaskIds(tasks: ScheduledTaskId[]): ScheduledTaskId[] {
 }
 
 function intervalInputForTask(
-  task: ScheduledTaskId,
+  task: AutomationTaskId,
   options: AutomationInstallOptions,
   explicitTasks: boolean,
 ): string {

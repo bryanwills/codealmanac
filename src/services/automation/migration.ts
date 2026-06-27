@@ -4,7 +4,6 @@ import {
   readProgramArgumentAfter,
   removeLaunchdJob,
 } from "../../platform/automation/launchd.js";
-import type { ExecFn } from "../../platform/automation/launchd.js";
 import { detectLegacyCaptureSweepAutomation } from "../../platform/automation/legacy-capture.js";
 import {
   DEFAULT_SYNC_QUIET,
@@ -12,13 +11,13 @@ import {
   defaultSyncPlistPath,
 } from "../../platform/automation/tasks.js";
 import { installAutomation } from "./automation.js";
-import type { AutomationInstallResult } from "./types.js";
+import type { AutomationExecFn, AutomationInstallResult } from "./types.js";
 
 export interface MigrateLegacyAutomationOptions {
   homeDir?: string;
   legacyPlistPath?: string;
   syncPlistPath?: string;
-  exec?: ExecFn;
+  exec?: AutomationExecFn;
 }
 
 export type MigrateLegacyAutomationResult =

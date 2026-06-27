@@ -234,8 +234,10 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
+    const automationServiceIndex = await readSource("src/services/automation/index.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 
+    expect(automationServiceIndex).not.toContain("platform/automation");
     expect(automationCommand).toContain("services/automation/index.js");
     expect(automationCommand).not.toContain("platform/automation");
     expect(automationCommand).not.toContain("platform/automation/launchd");

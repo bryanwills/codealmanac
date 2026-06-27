@@ -1,10 +1,13 @@
-import type { ExecFn } from "../../platform/automation/launchd.js";
+import type { ExecFn as PlatformExecFn } from "../../platform/automation/launchd.js";
 import type {
-  ScheduledTaskId,
+  ScheduledTaskId as PlatformScheduledTaskId,
 } from "../../platform/automation/tasks.js";
 
+export type AutomationExecFn = PlatformExecFn;
+export type AutomationTaskId = PlatformScheduledTaskId;
+
 export interface AutomationInstallOptions {
-  tasks?: ScheduledTaskId[];
+  tasks?: AutomationTaskId[];
   every?: string;
   quiet?: string;
   gardenEvery?: string;
@@ -18,32 +21,32 @@ export interface AutomationInstallOptions {
   gardenProgramArguments?: string[];
   updateProgramArguments?: string[];
   env?: NodeJS.ProcessEnv;
-  exec?: ExecFn;
+  exec?: AutomationExecFn;
   now?: Date;
   configPath?: string;
 }
 
 export interface AutomationUninstallOptions {
-  tasks?: ScheduledTaskId[];
+  tasks?: AutomationTaskId[];
   homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
-  exec?: ExecFn;
+  exec?: AutomationExecFn;
 }
 
 export interface AutomationStatusOptions {
-  tasks?: ScheduledTaskId[];
+  tasks?: AutomationTaskId[];
   homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
   updatePlistPath?: string;
   legacyCapturePlistPath?: string;
-  exec?: ExecFn;
+  exec?: AutomationExecFn;
 }
 
 export interface InstalledAutomationTask {
-  taskId: ScheduledTaskId;
+  taskId: AutomationTaskId;
   intervalInput: string;
   command: string[];
   plistPath: string;
@@ -60,7 +63,7 @@ export type AutomationInstallResult =
   | { status: "invalid"; error: string }
   | {
     status: "activation-failed";
-    taskId: ScheduledTaskId;
+    taskId: AutomationTaskId;
     plistPath: string;
     message: string;
   };
@@ -72,7 +75,7 @@ export type AutomationUninstallResult =
 export type AutomationStatusSection =
   | {
     status: "task";
-    taskId: ScheduledTaskId;
+    taskId: AutomationTaskId;
     installed: boolean;
     plistPath: string;
     loaded: boolean;

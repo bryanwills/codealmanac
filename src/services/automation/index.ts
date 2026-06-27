@@ -16,6 +16,7 @@ export {
 export type {
   AutomationInstallOptions,
   AutomationInstallResult,
+  AutomationTaskId,
   AutomationStatusOptions,
   AutomationStatusResult,
   AutomationStatusSection,
@@ -23,9 +24,6 @@ export type {
   AutomationUninstallResult,
   InstalledAutomationTask,
 } from "./types.js";
-export type {
-  AutomationTaskId,
-} from "./catalog.js";
 export type {
   CleanupLegacyAutomationHooksOptions,
 } from "./legacy-hooks.js";

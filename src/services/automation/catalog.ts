@@ -3,10 +3,8 @@ import { homedir } from "node:os";
 import {
   defaultSyncPlistPath,
   isScheduledTaskId,
-  type ScheduledTaskId,
 } from "../../platform/automation/tasks.js";
-
-export type AutomationTaskId = ScheduledTaskId;
+import type { AutomationTaskId } from "./types.js";
 
 export function defaultSyncAutomationPlistPath(
   home: string = homedir(),
