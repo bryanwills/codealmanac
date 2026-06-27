@@ -21,7 +21,7 @@ export interface StartJobOptions {
   spec: OperationSpec;
   jobId?: string;
   now?: () => Date;
-  pid?: number;
+  pid: number;
   workerEnvironment: NodeJS.ProcessEnv;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
   harnessRun?: (
@@ -114,7 +114,7 @@ export async function startQueuedJob(
   const running: JobRecord = {
     ...existing,
     status: "running",
-    pid: options.pid ?? process.pid,
+    pid: options.pid,
     startedAt: now().toISOString(),
     finishedAt: undefined,
     durationMs: undefined,

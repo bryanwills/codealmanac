@@ -41,6 +41,7 @@ export function registerLifecycleRunCommands(program: Command): void {
           yes: opts.yes,
           workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
+          pid: process.pid,
           onEvent: opts.background === true
             ? undefined
             : lifecycleForegroundEventHandler(opts),
@@ -84,6 +85,7 @@ function registerAbsorbCommand(program: Command): void {
           yes: opts.yes,
           workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
+          pid: process.pid,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
             : undefined,
@@ -124,6 +126,7 @@ function registerIngestCommand(program: Command): void {
           yes: opts.yes,
           workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
+          pid: process.pid,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
             : undefined,
@@ -160,6 +163,7 @@ export function registerGardenCommand(program: Command): void {
           yes: opts.yes,
           workerProgram: currentCliNodeProgram(),
           workerEnvironment: process.env,
+          pid: process.pid,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
             : undefined,

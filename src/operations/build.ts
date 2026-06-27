@@ -26,6 +26,7 @@ export interface BuildOperationOptions {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export async function createBuildRunSpec(args: {
@@ -76,6 +77,7 @@ export async function runBuildOperation(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   });
 }
 

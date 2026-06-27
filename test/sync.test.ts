@@ -17,15 +17,17 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function runSyncCommand(
-  options: Omit<SyncCommandOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<SyncCommandOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: SyncCommandOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runSyncCommandHandler({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 

@@ -259,6 +259,7 @@ describe("job worker background execution", () => {
       await runJobWorker({
         repoRoot: repo,
         workerEnvironment: {},
+        pid: 123,
         harnessRun: async () => {
           throw new Error("should not run");
         },
@@ -328,6 +329,7 @@ describe("job worker background execution", () => {
       await runJobWorker({
         repoRoot: repo,
         workerEnvironment: {},
+        pid: 123,
         harnessRun: async () => {
           throw new Error("should not run");
         },

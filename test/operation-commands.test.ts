@@ -20,41 +20,47 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function runInitCommand(
-  options: Omit<InitCommandOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<InitCommandOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: InitCommandOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runInitCommandHandler({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 
 function runAbsorbCommand(
-  options: Omit<AbsorbCommandOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<AbsorbCommandOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: AbsorbCommandOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runAbsorbCommandHandler({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 
 function runGardenCommand(
-  options: Omit<GardenCommandOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<GardenCommandOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: GardenCommandOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runGardenCommandHandler({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 

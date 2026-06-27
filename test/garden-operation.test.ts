@@ -14,15 +14,17 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function runGardenOperation(
-  options: Omit<GardenOperationOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<GardenOperationOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: GardenOperationOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runGardenOperationCommand({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 

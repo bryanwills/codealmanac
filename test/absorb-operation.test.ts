@@ -14,15 +14,17 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function runAbsorbOperation(
-  options: Omit<AbsorbOperationOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<AbsorbOperationOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: AbsorbOperationOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runAbsorbOperationCommand({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 

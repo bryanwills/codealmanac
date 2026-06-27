@@ -91,6 +91,7 @@ export async function runOperationProcess(args: {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }): Promise<OperationRunResult> {
   if (args.background) {
     const background = await (args.startBackground ?? startBackgroundJob)({
@@ -107,6 +108,7 @@ export async function runOperationProcess(args: {
     repoRoot: args.repoRoot,
     spec: args.spec,
     jobId: args.jobId,
+    pid: args.pid,
     workerEnvironment: args.workerEnvironment,
     onEvent: args.onEvent,
   });

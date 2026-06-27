@@ -26,6 +26,7 @@ export function registerSyncCommands(program: Command): void {
         json: opts.json,
         workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
+        pid: process.pid,
       });
       emit(result);
     });
@@ -55,6 +56,7 @@ export function registerSyncCommands(program: Command): void {
         json: opts.json ?? parentOpts.json,
         workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
+        pid: process.pid,
       });
       emit(result);
     });

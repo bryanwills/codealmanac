@@ -134,6 +134,7 @@ describe("jobs command", () => {
           jobId: "job_20260509202200_deadbeef",
           repoRoot: repo,
           startedAt: new Date("2026-05-09T20:22:00.000Z"),
+          pid: 123,
           spec: {
             provider: { id: "claude" },
             cwd: repo,
@@ -254,6 +255,7 @@ describe("jobs command", () => {
         jobId: "run_20260509202400_attach",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T20:24:00.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,
@@ -293,6 +295,7 @@ describe("jobs command", () => {
           jobId: "run_20260509202430_attach_failure",
           repoRoot: repo,
           startedAt: new Date("2026-05-09T20:24:30.000Z"),
+          pid: 123,
           spec: {
             provider: { id: "codex", model: "gpt-5.5" },
             cwd: repo,

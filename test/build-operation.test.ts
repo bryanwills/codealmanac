@@ -16,15 +16,17 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function runBuildOperation(
-  options: Omit<BuildOperationOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<BuildOperationOptions, "workerEnvironment" | "workerProgram" | "pid"> & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: BuildOperationOptions["workerProgram"];
+    pid?: number;
   },
 ) {
   return runBuildOperationCommand({
     ...options,
     workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
     workerEnvironment: options.workerEnvironment ?? process.env,
+    pid: options.pid ?? 123,
   });
 }
 

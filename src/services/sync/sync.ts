@@ -59,6 +59,7 @@ export async function runSyncWorkflow(
               startBackground: options.startBackground,
               workerProgram: options.workerProgram,
               workerEnvironment: options.workerEnvironment,
+              pid: options.pid,
             });
             return { ok: true, jobId: result.jobId };
           } catch (err: unknown) {

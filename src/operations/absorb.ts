@@ -26,6 +26,7 @@ export interface AbsorbOperationOptions {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export async function createAbsorbRunSpec(args: {
@@ -75,5 +76,6 @@ export async function runAbsorbOperation(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   });
 }

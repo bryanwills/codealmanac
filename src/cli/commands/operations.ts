@@ -30,6 +30,7 @@ export interface InitCommandOptions {
   startBackground?: LifecycleOperationBackgroundStarter;
   workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export interface AbsorbCommandOptions {
@@ -44,6 +45,7 @@ export interface AbsorbCommandOptions {
   startBackground?: LifecycleOperationBackgroundStarter;
   workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
@@ -58,6 +60,7 @@ export interface GardenCommandOptions {
   startBackground?: LifecycleOperationBackgroundStarter;
   workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export async function runInitCommand(
@@ -104,6 +107,7 @@ function toInitOperationWorkflowOptions(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   };
 }
 
@@ -122,6 +126,7 @@ function toAbsorbOperationWorkflowOptions(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
     resolveSource: options.resolveSource,
   };
 }
@@ -140,5 +145,6 @@ function toGardenOperationWorkflowOptions(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   };
 }

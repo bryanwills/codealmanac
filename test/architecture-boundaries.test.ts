@@ -666,6 +666,8 @@ describe("architecture boundaries", () => {
 
   it("keeps job worker process spawning out of job record startup", async () => {
     const jobStart = await readSource("src/jobs/start.ts");
+    const jobRecordFactory = await readSource("src/jobs/record-factory.ts");
+    const jobWorker = await readSource("src/jobs/worker.ts");
     const backgroundStart = await readSource("src/jobs/background-start.ts");
     const backgroundProcess = await readSource("src/jobs/background-process.ts");
 
@@ -682,6 +684,12 @@ describe("architecture boundaries", () => {
     expect(backgroundProcess).toContain("export function startJobWorkerProcess");
     expect(backgroundProcess).not.toContain("process.env");
     expect(backgroundProcess).not.toContain("process.execPath");
+    expect(jobStart).not.toContain("process.pid");
+    expect(jobRecordFactory).not.toContain("process.pid");
+    expect(jobWorker).not.toContain("process.pid");
+    expect(jobRecordFactory).toContain("pid: number");
+    expect(jobStart).toContain("pid: number");
+    expect(jobWorker).toContain("pid: number");
     expect(backgroundStart).not.toContain("process.argv");
     expect(backgroundStart).toContain("workerEnvironment");
     expect(backgroundStart).toContain("workerProgram");

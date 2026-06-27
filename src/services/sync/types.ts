@@ -14,6 +14,7 @@ export interface SyncWorkflowOptions {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export type SyncWorkflowMode = "sync" | "status";

@@ -17,6 +17,7 @@ export interface SyncCommandOptions {
   startBackground?: SyncWorkflowOptions["startBackground"];
   workerProgram: SyncWorkflowOptions["workerProgram"];
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export interface SyncCommandResult {
@@ -48,5 +49,6 @@ function toSyncWorkflowOptions(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   };
 }

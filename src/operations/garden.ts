@@ -21,6 +21,7 @@ export interface GardenOperationOptions {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export async function createGardenRunSpec(args: {
@@ -60,5 +61,6 @@ export async function runGardenOperation(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   });
 }

@@ -74,6 +74,7 @@ describe("job records", () => {
         jobId: "run_20260509195001_11111111",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "codex" },
           cwd: repo,
@@ -85,6 +86,7 @@ describe("job records", () => {
         jobId: "run_20260509195101_22222222",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:51:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,
@@ -114,6 +116,7 @@ describe("job records", () => {
         jobId: "run_20260509195001_deadbee0",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,
@@ -139,6 +142,7 @@ describe("job records", () => {
         jobId: "run_20260509195001_deadbeef",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,
@@ -201,6 +205,7 @@ describe("job records", () => {
         jobId: "run_20260509195001_deadbeef",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,
@@ -242,6 +247,7 @@ describe("job records", () => {
         jobId: "run_20260509195001_deadbeef",
         repoRoot: repo,
         startedAt: new Date("2026-05-09T19:50:01.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "claude" },
           cwd: repo,

@@ -37,6 +37,7 @@ export interface StartAbsorbRunOptions {
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
 }
 
 export interface AbsorbRunStart {
@@ -73,6 +74,7 @@ export async function startAbsorbRun(
     startBackground: options.startBackground,
     workerProgram: options.workerProgram,
     workerEnvironment: options.workerEnvironment,
+    pid: options.pid,
   });
   return {
     jobId: result.jobId,

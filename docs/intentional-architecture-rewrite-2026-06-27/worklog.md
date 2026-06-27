@@ -883,3 +883,10 @@ One-hundred-thirty-third production slice:
 - Removed the remaining `process.env` defaults from the Claude and Codex harness provider factories.
 - Threaded `workerEnvironment` through foreground jobs, queued workers, and the job executor so default harness runs receive edge-owned runtime facts.
 - Updated harness/job tests and added an architecture guard so harness providers and the registry cannot reintroduce ambient environment ownership.
+
+One-hundred-thirty-fourth production slice:
+
+- Made job-record PIDs explicit across foreground job start, queued worker claiming, lifecycle operation workflows, operation command adapters, and sync-triggered Absorb starts.
+- Removed `process.pid` defaults from `src/jobs/record-factory.ts` and `src/jobs/start.ts`; CLI edges now pass the current process id when invoking foreground operations or the internal worker.
+- Kept lock-owner and temp-file PIDs inside stores/platform code because those are persistence and platform mechanics rather than product job-record ownership.
+- Added an architecture guard so job record startup, record construction, and worker claiming cannot reintroduce ambient process id reads.

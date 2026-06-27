@@ -14,7 +14,7 @@ export function buildStartedJobRecord(args: {
   repoRoot: string;
   spec: OperationSpec;
   startedAt: Date;
-  pid?: number;
+  pid: number;
 }): JobRecord {
   return {
     version: 1,
@@ -22,7 +22,7 @@ export function buildStartedJobRecord(args: {
     operation: args.spec.metadata?.operation ?? "absorb",
     status: "running",
     repoRoot: args.repoRoot,
-    pid: args.pid ?? process.pid,
+    pid: args.pid,
     provider: args.spec.provider.id,
     model: args.spec.provider.model,
     startedAt: args.startedAt.toISOString(),

@@ -151,6 +151,7 @@ describe("process operation queue", () => {
         jobId: "run_20260529100030_running",
         repoRoot: repo,
         startedAt: new Date("2026-05-29T10:00:30.000Z"),
+        pid: 123,
         spec: {
           provider: { id: "codex" },
           cwd: repo,

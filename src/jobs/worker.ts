@@ -18,7 +18,7 @@ import type { JobRecord } from "./types.js";
 export interface RunJobWorkerOptions {
   repoRoot: string;
   now?: () => Date;
-  pid?: number;
+  pid: number;
   workerEnvironment: NodeJS.ProcessEnv;
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
   harnessRun?: (
