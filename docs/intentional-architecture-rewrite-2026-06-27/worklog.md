@@ -119,3 +119,9 @@ Eleventh production slice:
 - Moved provider resolution, JSON foreground-mode rejection, init command context construction, and foreground/background operation start calls out of `src/cli/commands/operations.ts`.
 - Kept `src/operations/` focused on provider-neutral operation spec construction and kept `src/cli/commands/operations.ts` focused on rendering operation results and failures.
 - Added an architecture guard so lifecycle command adapters cannot re-import `src/operations/` or `src/absorb/` run-start mechanics directly.
+
+Twelfth production slice:
+
+- Changed `src/services/update/update.ts` to return typed workflow states instead of final CLI stdout/stderr/exit objects.
+- Moved update command text rendering into `src/cli/commands/update.ts`, while keeping platform npm install output as the update integration boundary.
+- Added an architecture guard so update workflow code does not reintroduce `stdout:`, `stderr:`, or `exitCode:` command rendering.

@@ -188,6 +188,7 @@ describe("architecture boundaries", () => {
 
   it("keeps update command adapters out of update workflow mechanics", async () => {
     const updateCommand = await readSource("src/cli/commands/update.ts");
+    const updateService = await readSource("src/services/update/update.ts");
 
     expect(updateCommand).toContain("services/update/index.js");
     expect(updateCommand).not.toContain("platform/update");
@@ -198,6 +199,10 @@ describe("architecture boundaries", () => {
     expect(updateCommand).not.toContain("acquireUpdateLock");
     expect(updateCommand).not.toContain("installLatestPackage");
     expect(updateCommand).not.toContain("spawn");
+
+    expect(updateService).not.toContain("stdout:");
+    expect(updateService).not.toContain("stderr:");
+    expect(updateService).not.toContain("exitCode:");
   });
 
   it("keeps config command adapters out of config persistence mechanics", async () => {
