@@ -1,16 +1,12 @@
-import { createHash } from "node:crypto";
-import { existsSync, statSync } from "node:fs";
-import { readFile, utimes } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { existsSync } from "node:fs";
+import { utimes } from "node:fs/promises";
+import { join } from "node:path";
 
-import fg from "fast-glob";
 import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../slug.js";
 import { topicTitleFromSlug } from "../topics/title.js";
-import { firstH1, parseFrontmatter } from "./frontmatter.js";
 import {
-  PAGES_GLOB,
   pagesNewerThan,
   topicsYamlNewerThan,
 } from "./freshness.js";
@@ -20,13 +16,11 @@ import {
   looksLikeDir,
 } from "./paths.js";
 import {
-  normalizePageSources,
-  type DerivedFileRef,
-  type IndexedPageSource,
-} from "./page-sources.js";
+  buildIndexedPagesPlan,
+  type ExistingIndexedPage,
+} from "./page-plan.js";
 import { isIndexSchemaStale, openIndex } from "./schema.js";
 import { applyTopicsYaml, TOPICS_YAML_FILENAME } from "./topics-yaml.js";
-import { extractWikilinks } from "./wikilinks.js";
 
 export interface IndexContext {
   /** Absolute path to the repo root (the dir containing `.almanac/`). */
@@ -162,160 +156,19 @@ export async function runIndexer(ctx: IndexContext): Promise<IndexResult> {
   return result;
 }
 
-interface ExistingRow {
-  slug: string;
-  content_hash: string;
-  file_path: string;
-}
-
 async function indexPagesInto(
   db: Database.Database,
   pagesDir: string,
 ): Promise<IndexResult> {
-  const files = await fg(PAGES_GLOB, {
-    cwd: pagesDir,
-    absolute: false,
-    onlyFiles: true,
-    caseSensitiveMatch: true,
-  });
-
   // Load the current state of the index into memory so we can diff against
   // what's on disk. This is cheap even at 10k pages (one INTEGER + two
   // short strings per row).
   const existingRows = db
-    .prepare<[], ExistingRow>("SELECT slug, content_hash, file_path FROM pages")
+    .prepare<[], ExistingIndexedPage>(
+      "SELECT slug, content_hash, file_path FROM pages",
+    )
     .all();
-  const existingBySlug = new Map<string, ExistingRow>();
-  for (const row of existingRows) existingBySlug.set(row.slug, row);
-
-  // First pass: decide what to do with each file on disk. We record the
-  // intent here so the transaction below can run synchronously — mixing
-  // async file reads into a better-sqlite3 transaction doesn't work
-  // (transactions are sync).
-  const planned: Array<{
-    slug: string;
-    title: string;
-    summary: string | undefined;
-    filePath: string;
-    fullPath: string;
-    contentHash: string;
-    updatedAt: number;
-    archivedAt: number | null;
-    supersededBy: string | null;
-    topics: string[];
-    sourceFileRefs: DerivedFileRef[];
-    pageSources: IndexedPageSource[];
-    wikilinks: ReturnType<typeof extractWikilinks>;
-    content: string;
-  }> = [];
-  const seenSlugs = new Set<string>();
-  let filesSkipped = 0;
-
-  for (const rel of files) {
-    const fullPath = join(pagesDir, rel);
-    const base = basename(rel, ".md");
-    const slug = toKebabCase(base);
-    if (slug.length === 0) {
-      process.stderr.write(
-        `almanac: skipping "${rel}" — filename has no slug-able characters\n`,
-      );
-      filesSkipped++;
-      continue;
-    }
-    if (slug !== base) {
-      // Filename isn't already canonical kebab-case. Warn, but still
-      // index under the canonical slug. `almanac health` (slice 3) will
-      // surface these as a proper report.
-      process.stderr.write(
-        `almanac: warning — "${rel}" is not canonical; indexed as slug "${slug}"\n`,
-      );
-    }
-    if (seenSlugs.has(slug)) {
-      // Two files slugify to the same slug. Keep the first, skip the
-      // rest — health will flag this properly in slice 3.
-      process.stderr.write(
-        `almanac: warning — slug "${slug}" collides with an earlier file; skipping "${rel}"\n`,
-      );
-      filesSkipped++;
-      continue;
-    }
-
-    // `fast-glob` gave us the list in one shot, but by the time we stat
-    // and read each file it can have been deleted, renamed, or swapped
-    // (editors that save via rename-swap expose this briefly). A single
-    // such race shouldn't tank the whole reindex — matches the malformed-
-    // YAML behavior ("one bad file doesn't stop the others"). We narrow
-    // to ENOENT/EACCES so genuine I/O failures (EIO, EMFILE, etc.) still
-    // surface.
-    let st: ReturnType<typeof statSync>;
-    let raw: string;
-    try {
-      st = statSync(fullPath);
-      raw = await readFile(fullPath, "utf8");
-    } catch (err: unknown) {
-      if (
-        err instanceof Error &&
-        "code" in err &&
-        (err.code === "ENOENT" || err.code === "EACCES")
-      ) {
-        process.stderr.write(
-          `almanac: skipping "${rel}" — ${err.message}\n`,
-        );
-        filesSkipped++;
-        continue;
-      }
-      throw err;
-    }
-
-    seenSlugs.add(slug);
-    const updatedAt = Math.floor(st.mtimeMs / 1000);
-
-    // Content-hash skip: if the hash matches what's in the DB and the
-    // file path hasn't moved, we can leave this page's rows alone. This
-    // is the fast-path for "user ran a query; one page was touched".
-    const contentHash = hashContent(raw);
-    const existing = existingBySlug.get(slug);
-    if (
-      existing !== undefined &&
-      existing.content_hash === contentHash &&
-      existing.file_path === fullPath
-    ) {
-      continue;
-    }
-
-    const fm = parseFrontmatter(raw);
-    const title = fm.title ?? firstH1(fm.body) ?? base;
-    const links = extractWikilinks(fm.body);
-    const normalizedSources = normalizePageSources({
-      sources: fm.sources,
-      legacyFiles: fm.files,
-      legacySourceStrings: fm.legacySourceStrings,
-    });
-
-    planned.push({
-      slug,
-      title,
-      summary: fm.summary,
-      filePath: rel,
-      fullPath,
-      contentHash,
-      updatedAt,
-      archivedAt: fm.archived_at,
-      supersededBy: fm.superseded_by,
-      topics: fm.topics,
-      sourceFileRefs: normalizedSources.fileRefs,
-      pageSources: normalizedSources.sources,
-      wikilinks: links,
-      content: fm.body,
-    });
-  }
-
-  // Compute deletions: anything in the DB whose slug isn't on disk
-  // anymore (or whose file slugifies to a different slug now).
-  const toDelete: string[] = [];
-  for (const slug of existingBySlug.keys()) {
-    if (!seenSlugs.has(slug)) toDelete.push(slug);
-  }
+  const plan = await buildIndexedPagesPlan({ pagesDir, existingRows });
 
   const deleteByPage = db.prepare<[string]>("DELETE FROM pages WHERE slug = ?");
   const deleteFtsByPage = db.prepare<[string]>(
@@ -390,7 +243,7 @@ async function indexPagesInto(
   );
 
   const apply = db.transaction(() => {
-    for (const slug of toDelete) {
+    for (const slug of plan.toDelete) {
       // `fts_pages` is an FTS5 virtual table — FK cascades do NOT propagate
       // into it, so we must delete FTS rows explicitly before relying on
       // `DELETE FROM pages` to cascade-clean the four real tables
@@ -401,7 +254,7 @@ async function indexPagesInto(
       deleteByPage.run(slug); // CASCADE cleans page_topics, file_refs, wikilinks, cross_wiki_links
     }
 
-    for (const p of planned) {
+    for (const p of plan.planned) {
       // page_topics/file_refs/wikilinks/cross_wiki_links all cascade on
       // delete, so the cleanest "replace" story is: delete-then-insert
       // the per-page rows under the same transaction. Doing it this way
@@ -489,17 +342,12 @@ async function indexPagesInto(
   });
   apply();
 
-  const pagesIndexed = seenSlugs.size;
   return {
-    changed: planned.length,
-    removed: toDelete.length,
-    total: pagesIndexed,
-    pagesIndexed,
-    filesSeen: files.length,
-    filesSkipped,
+    changed: plan.planned.length,
+    removed: plan.toDelete.length,
+    total: plan.pagesIndexed,
+    pagesIndexed: plan.pagesIndexed,
+    filesSeen: plan.filesSeen,
+    filesSkipped: plan.filesSkipped,
   };
-}
-
-function hashContent(raw: string): string {
-  return createHash("sha256").update(raw).digest("hex");
 }

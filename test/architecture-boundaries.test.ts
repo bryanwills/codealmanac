@@ -777,6 +777,24 @@ describe("architecture boundaries", () => {
     expect(automationCommand).not.toContain("export type { AutomationStatusOptions }");
   });
 
+  it("keeps indexer page planning out of SQLite write orchestration", async () => {
+    const indexer = await readSource("src/wiki/indexer/index.ts");
+    const pagePlan = await readSource("src/wiki/indexer/page-plan.ts");
+
+    expect(existsSync(join(ROOT, "src/wiki/indexer/page-plan.ts"))).toBe(true);
+    expect(indexer).toContain("buildIndexedPagesPlan");
+    expect(indexer).not.toContain("fast-glob");
+    expect(indexer).not.toContain("readFile");
+    expect(indexer).not.toContain("statSync");
+    expect(indexer).not.toContain("createHash");
+    expect(indexer).not.toContain("parseFrontmatter");
+    expect(indexer).not.toContain("normalizePageSources");
+    expect(indexer).not.toContain("extractWikilinks");
+    expect(pagePlan).toContain("fast-glob");
+    expect(pagePlan).toContain("parseFrontmatter");
+    expect(pagePlan).toContain("normalizePageSources");
+  });
+
   it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");

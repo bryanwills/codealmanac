@@ -562,3 +562,9 @@ Eighty-first production slice:
 - Split setup provider model selection into `src/cli/commands/setup/agent-model-choice.ts`.
 - Moved model-choice formatting, friendly labels, and custom model prompting out of `agent-choice.ts`.
 - Kept `agent-choice.ts` focused on provider readiness, login prompting, and saving the selected provider/model pair.
+
+Eighty-second production slice:
+
+- Split indexer page planning into `src/wiki/indexer/page-plan.ts`.
+- Moved globbing, file stat/read handling, content hashing, frontmatter parsing, source normalization, and wikilink extraction out of `index.ts`.
+- Kept `index.ts` focused on freshness orchestration, topic reconciliation, and SQLite write application.
