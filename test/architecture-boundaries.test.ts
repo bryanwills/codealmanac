@@ -304,6 +304,18 @@ describe("architecture boundaries", () => {
     expect(autoCommitStep).not.toContain("writeConfig");
   });
 
+  it("keeps uninstall UI out of setup cleanup mechanics", async () => {
+    const uninstallCommand = await readSource("src/cli/commands/uninstall.ts");
+
+    expect(existsSync(join(ROOT, "src/services/setup/uninstall.ts"))).toBe(true);
+    expect(uninstallCommand).toContain("services/setup/index.js");
+    expect(uninstallCommand).not.toContain("agent/install-targets");
+    expect(uninstallCommand).not.toContain("platform/automation/legacy-hooks");
+    expect(uninstallCommand).not.toContain("runAutomationUninstall");
+    expect(uninstallCommand).not.toContain("removeAgentInstructions");
+    expect(uninstallCommand).not.toContain("cleanupLegacyHooks");
+  });
+
   it("keeps sync command adapters out of transcript and absorb workflow mechanics", async () => {
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 

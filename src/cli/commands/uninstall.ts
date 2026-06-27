@@ -2,11 +2,11 @@ import { homedir } from "node:os";
 import path from "node:path";
 
 import {
-  removeAgentInstructions,
-  removeClaudeImportLine,
-  removeManagedBlock as removeManagedInstructionBlock,
-} from "../../agent/install-targets.js";
-import { cleanupLegacyHooks, runAutomationUninstall } from "./automation.js";
+  removeSetupImportLine,
+  removeSetupManagedBlock,
+  uninstallSetup,
+  type SetupUninstallResult,
+} from "../../services/setup/index.js";
 
 type AutomationExecFn = (
   file: string,
@@ -94,18 +94,7 @@ export async function runUninstall(
       true,
     );
   }
-  if (removeAutomation) {
-    await cleanupLegacyHooks();
-    const res = await runAutomationUninstall({
-      plistPath: options.automationPlistPath,
-      gardenPlistPath: options.gardenPlistPath,
-      exec: options.automationExec,
-    });
-    if (res.exitCode !== 0) {
-      return { stdout: "", stderr: res.stderr, exitCode: res.exitCode };
-    }
-    out.write(`  ${BLUE}\u25c7${RST}  ${res.stdout.trim()}\n`);
-  } else {
+  if (!removeAutomation) {
     out.write(`  ${DIM}\u25cb  Scheduled automation kept${RST}\n`);
   }
 
@@ -120,28 +109,61 @@ export async function runUninstall(
       true,
     );
   }
-  if (removeGuides) {
-    const summary = await removeAgentInstructions({
-      claudeDir,
-      codexDir,
-      cursorDir,
-      windsurfDir,
-      opencodeDir,
-    });
-    if (summary.anyChanges) {
-      out.write(
-        `  ${BLUE}\u25c7${RST}  Guides removed (${summary.filesTouched.join(", ")})\n`,
-      );
-    } else {
-      out.write(`  ${DIM}\u25cb  Guides not installed${RST}\n`);
-    }
-  } else {
+  if (!removeGuides) {
     out.write(`  ${DIM}\u25cb  Guides kept${RST}\n`);
   }
+
+  const result = await uninstallSetup({
+    removeAutomation,
+    removeGuides,
+    automationPlistPath: options.automationPlistPath,
+    gardenPlistPath: options.gardenPlistPath,
+    automationExec: options.automationExec,
+    claudeDir,
+    codexDir,
+    cursorDir,
+    windsurfDir,
+    opencodeDir,
+  });
+
+  renderUninstallResult(out, result);
 
   out.write(`\n  ${BLUE}\u25c7${RST}  ${BLUE}Uninstall complete${RST}\n\n`);
 
   return { stdout: "", stderr: "", exitCode: 0 };
+}
+
+function renderUninstallResult(
+  out: NodeJS.WritableStream,
+  result: SetupUninstallResult,
+): void {
+  if (result.automation.action === "checked") {
+    out.write(
+      `  ${BLUE}\u25c7${RST}  ${formatAutomationResult(result.automation)}\n`,
+    );
+  }
+
+  if (result.guides.action === "checked") {
+    if (result.guides.anyChanges) {
+      out.write(
+        `  ${BLUE}\u25c7${RST}  Guides removed (${result.guides.filesTouched.join(", ")})\n`,
+      );
+    } else {
+      out.write(`  ${DIM}\u25cb  Guides not installed${RST}\n`);
+    }
+  }
+}
+
+function formatAutomationResult(
+  result: Extract<SetupUninstallResult["automation"], { action: "checked" }>,
+): string {
+  if (result.status === "not-installed") {
+    return "almanac: automation not installed";
+  }
+  return (
+    "almanac: automation removed\n" +
+    result.plistPaths.map((pathValue) => `  plist: ${pathValue}\n`).join("")
+  ).trim();
 }
 
 /**
@@ -155,7 +177,7 @@ export function removeImportLine(contents: string): {
   changed: boolean;
   body: string;
 } {
-  return removeClaudeImportLine(contents);
+  return removeSetupImportLine(contents);
 }
 
 export function removeManagedBlock(
@@ -163,7 +185,7 @@ export function removeManagedBlock(
   start: string,
   end: string,
 ): { changed: boolean; body: string } {
-  return removeManagedInstructionBlock(contents, start, end);
+  return removeSetupManagedBlock(contents, start, end);
 }
 
 function confirm(

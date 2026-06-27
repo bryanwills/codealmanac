@@ -5,6 +5,15 @@ export type {
   SetupAutoCommitResult,
 } from "./auto-commit.js";
 export {
+  removeSetupImportLine,
+  removeSetupManagedBlock,
+  uninstallSetup,
+} from "./uninstall.js";
+export type {
+  SetupUninstallOptions,
+  SetupUninstallResult,
+} from "./uninstall.js";
+export {
   readSetupAgentChoiceState,
   readSetupProviderModelChoices,
   refreshSetupAgentChoiceView,

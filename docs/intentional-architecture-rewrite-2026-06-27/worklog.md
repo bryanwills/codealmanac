@@ -200,5 +200,6 @@ Twenty-third production slice:
 - Introduced `src/services/setup/` for setup product workflows that need agent readiness and persisted config state.
 - Moved setup agent-choice state loading, provider selection validation, model-choice lookup, readiness refresh, and final config persistence behind `src/services/setup/agent-choice.ts`.
 - Moved setup auto-commit config reads/writes behind `src/services/setup/auto-commit.ts`.
+- Moved uninstall automation cleanup and agent-instruction removal behind `src/services/setup/uninstall.ts`.
 - Kept `src/cli/commands/setup/agent-choice.ts` responsible for terminal prompting, choice formatting, login command prompting, and step output.
-- Added architecture guards so setup UI steps do not re-import config or readiness mechanics directly.
+- Added architecture guards so setup UI steps do not re-import config, readiness, install-target, or automation cleanup mechanics directly.
