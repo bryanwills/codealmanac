@@ -556,3 +556,9 @@ Eightieth production slice:
 - Added `src/platform/shell.ts` for inherited shell command execution.
 - Moved provider login command spawning out of `src/cli/commands/setup/agent-choice.ts`.
 - Kept setup agent choice focused on prompting, provider selection, readiness refresh, and model selection.
+
+Eighty-first production slice:
+
+- Split setup provider model selection into `src/cli/commands/setup/agent-model-choice.ts`.
+- Moved model-choice formatting, friendly labels, and custom model prompting out of `agent-choice.ts`.
+- Kept `agent-choice.ts` focused on provider readiness, login prompting, and saving the selected provider/model pair.

@@ -1,20 +1,18 @@
 import type {
   SetupAgentProviderId,
-  SetupProviderModelChoice,
   SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
 import { runInheritedShellCommand } from "../../../platform/shell.js";
 import {
   readSetupAgentChoiceState,
-  readSetupProviderModelChoices,
   refreshSetupAgentChoiceView,
   resolveSetupAgentSelection,
   saveSetupAgentChoice,
 } from "../../../services/setup/index.js";
+import { chooseProviderModel } from "./agent-model-choice.js";
 import {
   confirm,
-  promptText,
   selectChoice,
   waitForEnter,
 } from "./input.js";
@@ -149,54 +147,6 @@ export async function chooseDefaultAgent(args: {
   return { ok: true, provider, model };
 }
 
-async function chooseProviderModel(args: {
-  out: NodeJS.WritableStream;
-  interactive: boolean;
-  provider: SetupAgentProviderId;
-  choice?: SetupProviderView["choices"][number];
-  configuredModel: string | null;
-}): Promise<string | null> {
-  const choices = await readSetupProviderModelChoices({
-    provider: args.provider,
-    configuredModel: args.configuredModel,
-    choice: args.choice,
-  });
-  const recommended =
-    choices.find((choice) => choice.recommended) ??
-    choices.find((choice) => choice.source === "provider-default");
-  if (!args.interactive) {
-    return args.configuredModel ?? recommended?.value ?? null;
-  }
-
-  const currentIndex = choices.findIndex((choice) =>
-    choice.value === args.configuredModel
-  );
-  const recommendedIndex = choices.findIndex((choice) => choice.recommended);
-  const defaultIndex = Math.max(0,
-    currentIndex >= 0
-      ? currentIndex
-      : recommendedIndex >= 0
-        ? recommendedIndex
-        : 0);
-  const modelChoice = await selectChoice({
-    out: args.out,
-    title: `Choose ${providerDisplayName(args.provider)} model`,
-    choices: choices.map((choice) => ({
-      value: choice,
-      line: formatModelChoice(choice, args.configuredModel),
-      aliases: choice.value === null
-        ? ["default", "provider default"]
-        : [String(choice.value)],
-    })),
-    defaultIndex,
-  });
-  if (modelChoice?.source === "custom") {
-    const custom = await promptText(args.out, "Model name", "");
-    return custom.length > 0 ? custom : recommended?.value ?? null;
-  }
-  return modelChoice?.value ?? recommended?.value ?? null;
-}
-
 function formatProviderChoice(
   choice: SetupProviderView["choices"][number],
 ): string {
@@ -240,32 +190,4 @@ function showUnavailableProvider(
     `\n  ${WHITE_BOLD}${choice.label} is not signed in.${RST}\n` +
       `  Run: ${providerDetailLabel(choice)}\n\n`,
   );
-}
-
-function formatModelChoice(
-  choice: SetupProviderModelChoice,
-  configuredModel: string | null,
-): string {
-  const marker = choice.recommended
-    ? `  ${DIM}recommended${RST}`
-    : choice.value === configuredModel
-      ? `  ${DIM}current${RST}`
-      : "";
-  const label = choice.source === "provider-default" && choice.value !== null
-    ? friendlyModelLabel(choice.value)
-    : choice.label;
-  return `${label}${marker}`;
-}
-
-function friendlyModelLabel(value: string): string {
-  if (value === "claude-sonnet-4-6") return "Sonnet 4.6";
-  if (value === "claude-opus-4-7") return "Opus 4.7";
-  if (value === "claude-haiku-4-5") return "Haiku 4.5";
-  return value;
-}
-
-function providerDisplayName(provider: SetupAgentProviderId): string {
-  if (provider === "claude") return "Claude";
-  if (provider === "codex") return "Codex";
-  return "Cursor";
 }

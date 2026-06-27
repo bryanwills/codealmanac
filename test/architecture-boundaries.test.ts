@@ -553,6 +553,24 @@ describe("architecture boundaries", () => {
     expect(platformShell).toContain("runInheritedShellCommand");
   });
 
+  it("keeps setup provider and model choice UI separate", async () => {
+    const setupAgentChoice = await readSource(
+      "src/cli/commands/setup/agent-choice.ts",
+    );
+    const setupModelChoice = await readSource(
+      "src/cli/commands/setup/agent-model-choice.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/cli/commands/setup/agent-model-choice.ts"))).toBe(true);
+    expect(setupAgentChoice).toContain("agent-model-choice.js");
+    expect(setupAgentChoice).not.toContain("readSetupProviderModelChoices");
+    expect(setupAgentChoice).not.toContain("formatModelChoice");
+    expect(setupAgentChoice).not.toContain("friendlyModelLabel");
+    expect(setupAgentChoice).not.toContain("providerDisplayName");
+    expect(setupModelChoice).toContain("readSetupProviderModelChoices");
+    expect(setupModelChoice).toContain("formatModelChoice");
+  });
+
   it("keeps setup auto-commit UI out of config persistence mechanics", async () => {
     const autoCommitStep = await readSource(
       "src/cli/commands/setup/auto-commit-step.ts",
