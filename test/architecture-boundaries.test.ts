@@ -591,6 +591,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/sync-render.ts"))).toBe(true);
     expect(syncCommand).not.toContain("import type { CommandResult }");
     expect(syncCommand).not.toContain("extends SyncWorkflowOptions");
+    expect(syncCommand).toContain("homeDir: string");
     expect(syncCommand).toContain("toSyncWorkflowOptions");
     expect(syncCommand).not.toContain("renderOutcome");
     expect(syncCommand).not.toContain("renderError");
@@ -1254,7 +1255,10 @@ describe("architecture boundaries", () => {
     expect(syncServiceIndex).not.toContain("../../sync");
     expect(syncService).not.toContain("interface SyncWorkflowOptions");
     expect(syncService).not.toContain("interface SyncWorkflowSummary");
+    expect(syncService).not.toContain("homedir");
     expect(syncServiceTypes).toContain("interface SyncWorkflowOptions");
+    expect(syncServiceTypes).toContain("homeDir: string");
+    expect(syncServiceTypes).not.toContain("homeDir?: string");
     expect(syncServiceTypes).toContain("interface SyncWorkflowSummary");
     expect(syncService).not.toContain("export type SyncWorkflowSummary = sync.SyncSummary");
     expect(syncService).not.toContain(

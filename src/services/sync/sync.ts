@@ -1,5 +1,3 @@
-import { homedir } from "node:os";
-
 import * as operations from "../../operations/index.js";
 import * as sync from "../../sync/index.js";
 import { readConfig } from "../../config/index.js";
@@ -31,7 +29,7 @@ export async function runSyncWorkflow(
       await sync.sweep({
         candidates: await sync.discoverCandidates({
           apps: sources.value,
-          home: options.homeDir ?? homedir(),
+          home: options.homeDir,
         }),
         syncSince: await readSyncSince(options.configPath),
         quietMs: quiet.ms,

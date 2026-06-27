@@ -9,7 +9,7 @@ export interface SyncWorkflowOptions {
   quiet?: string;
   using?: string;
   now?: Date;
-  homeDir?: string;
+  homeDir: string;
   configPath?: string;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

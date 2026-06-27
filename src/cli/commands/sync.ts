@@ -12,7 +12,7 @@ export interface SyncCommandOptions {
   using?: string;
   json?: boolean;
   now?: Date;
-  homeDir?: string;
+  homeDir: string;
   configPath?: string;
   startBackground?: SyncWorkflowOptions["startBackground"];
   workerProgram: SyncWorkflowOptions["workerProgram"];

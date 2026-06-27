@@ -995,3 +995,9 @@ One-hundred-forty-ninth production slice:
 - Made setup instruction installation require an explicit `homeDir` instead of defaulting to `homedir()` inside `src/services/setup/instructions.ts`.
 - Threaded the existing setup command `homeDir` through the guide-install step into the setup service.
 - Added boundary guards so setup instruction services cannot reintroduce ambient home-directory ownership.
+
+One-hundred-fiftieth production slice:
+
+- Made sync workflow options require an explicit `homeDir` instead of defaulting to `homedir()` inside `src/services/sync/sync.ts`.
+- Threaded `homeDir` from `src/edges/cli/register-sync-commands.ts` through `src/cli/commands/sync.ts` into the sync service.
+- Added boundary guards so sync services cannot reintroduce ambient home-directory ownership.

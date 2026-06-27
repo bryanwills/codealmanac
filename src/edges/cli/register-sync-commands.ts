@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { homedir } from "node:os";
 
 import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
@@ -24,6 +25,7 @@ export function registerSyncCommands(program: Command): void {
         quiet: opts.quiet,
         using: opts.using,
         json: opts.json,
+        homeDir: homedir(),
         workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
         pid: process.pid,
@@ -54,6 +56,7 @@ export function registerSyncCommands(program: Command): void {
         from: opts.from ?? parentOpts.from,
         quiet: opts.quiet ?? parentOpts.quiet,
         json: opts.json ?? parentOpts.json,
+        homeDir: homedir(),
         workerProgram: currentCliNodeProgram(),
         workerEnvironment: process.env,
         pid: process.pid,
