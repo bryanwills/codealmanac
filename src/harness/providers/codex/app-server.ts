@@ -10,6 +10,7 @@ import {
   codexAppServerTurnTimeoutMs,
   type CodexAppServerSandboxMode,
 } from "./app-server-config.js";
+import { createCodexAppServerRpcTransport } from "./app-server-rpc.js";
 import { startCodexAppServerTurn } from "./app-server-session.js";
 import { classifyCodexFailure } from "./failures.js";
 import {
@@ -18,27 +19,7 @@ import {
 } from "./fields.js";
 import { toHarnessResult } from "./result.js";
 import { respondToCodexServerRequest } from "./server-requests.js";
-import type { CodexRunState } from "./types.js";
-
-interface JsonRpcResponse {
-  id: number | string;
-  result?: unknown;
-  error?: {
-    message?: string;
-    code?: number;
-    data?: unknown;
-  };
-}
-
-export interface JsonRpcNotification {
-  method: string;
-  params?: unknown;
-}
-
-interface PendingRequest {
-  resolve: (value: unknown) => void;
-  reject: (err: Error) => void;
-}
+import type { CodexRunState, JsonRpcNotification } from "./types.js";
 
 export async function runCodexAppServer(
   spec: OperationSpec,
@@ -64,22 +45,18 @@ export async function runCodexAppServer(
       stdio: ["pipe", "pipe", "pipe"],
     });
     const child = managed.child;
-    const pending = new Map<string, PendingRequest>();
     const state: CodexRunState = {
       success: false,
       result: "",
       outputSpec: spec.output,
     };
     const eventWrites: Promise<void>[] = [];
-    let nextRequestId = 1;
     let stdoutBuf = "";
     let stderr = "";
     let settled = false;
     let activeTurnId: string | undefined;
     let turnTimeout: NodeJS.Timeout | undefined;
-    const removeSignalHandlers = installSignalHandlers((signal) => {
-      fail(`Codex app-server interrupted by ${signal}`);
-    });
+    let removeSignalHandlers = (): void => {};
 
     const finish = async (result: HarnessResult): Promise<void> => {
       if (settled) return;
@@ -89,10 +66,7 @@ export async function runCodexAppServer(
         clearTimeout(turnTimeout);
         turnTimeout = undefined;
       }
-      for (const entry of pending.values()) {
-        entry.reject(new Error("Codex app-server run finished"));
-      }
-      pending.clear();
+      rpc.rejectPending(new Error("Codex app-server run finished"));
       await Promise.allSettled(eventWrites);
       const cleanupError = await terminateManagedChildSafely(managed);
       if (cleanupError !== undefined) {
@@ -127,71 +101,6 @@ export async function runCodexAppServer(
 
     const write = (message: Record<string, unknown>): void => {
       child.stdin?.write(`${JSON.stringify(message)}\n`);
-    };
-
-    const requestRpc = (method: string, params?: unknown): Promise<unknown> => {
-      const id = nextRequestId++;
-      return new Promise((requestResolve, requestReject) => {
-        const timeout = setTimeout(() => {
-          pending.delete(String(id));
-          requestReject(
-            new Error(
-              `Codex app-server ${method} timed out after ${rpcTimeoutMs}ms`,
-            ),
-          );
-        }, rpcTimeoutMs);
-        pending.set(String(id), {
-          resolve: (value) => {
-            clearTimeout(timeout);
-            requestResolve(value);
-          },
-          reject: (err) => {
-            clearTimeout(timeout);
-            requestReject(err);
-          },
-        });
-        write({
-          id,
-          method,
-          ...(params !== undefined ? { params } : {}),
-        });
-      });
-    };
-
-    const respond = (id: string | number, result: unknown): void => {
-      write({
-        id,
-        result,
-      });
-    };
-
-    const respondError = (id: string | number, code: number, message: string): void => {
-      write({
-        id,
-        error: {
-          code,
-          message,
-        },
-      });
-    };
-
-    const respondUnsupported = (id: string | number, method: string): void => {
-      respondError(
-        id,
-        -32601,
-        `Almanac does not handle Codex app-server request ${method}`,
-      );
-    };
-
-    const handleResponse = (message: JsonRpcResponse): void => {
-      const item = pending.get(String(message.id));
-      if (item === undefined) return;
-      pending.delete(String(message.id));
-      if (message.error !== undefined) {
-        item.reject(new Error(message.error.message ?? "Codex app-server request failed"));
-        return;
-      }
-      item.resolve(message.result);
     };
 
     const handleNotification = (message: JsonRpcNotification): void => {
@@ -238,25 +147,15 @@ export async function runCodexAppServer(
       }
     };
 
-    const handleMessage = (message: unknown): void => {
-      if (message === null || typeof message !== "object") return;
-      const record = message as Record<string, unknown>;
-      if ("id" in record && "method" in record) {
-        respondToCodexServerRequest(
-          record.id as string | number,
-          String(record.method),
-          { respond, respondError, respondUnsupported },
-        );
-        return;
-      }
-      if ("id" in record) {
-        handleResponse(record as unknown as JsonRpcResponse);
-        return;
-      }
-      if ("method" in record) {
-        handleNotification(record as unknown as JsonRpcNotification);
-      }
-    };
+    const rpc = createCodexAppServerRpcTransport({
+      rpcTimeoutMs,
+      write,
+      onNotification: handleNotification,
+      onServerRequest: respondToCodexServerRequest,
+    });
+    removeSignalHandlers = installSignalHandlers((signal) => {
+      fail(`Codex app-server interrupted by ${signal}`);
+    });
 
     const flushLines = (): void => {
       let idx = stdoutBuf.indexOf("\n");
@@ -266,7 +165,7 @@ export async function runCodexAppServer(
         const line = rawLine.trim();
         if (line.length > 0) {
           try {
-            handleMessage(JSON.parse(line) as unknown);
+            rpc.receive(JSON.parse(line) as unknown);
           } catch {
             // Ignore non-JSON chatter; stderr is captured for failures.
           }
@@ -301,7 +200,7 @@ export async function runCodexAppServer(
         const started = await startCodexAppServerTurn({
           spec,
           sandboxMode,
-          requestRpc,
+          requestRpc: rpc.request,
           state,
           emitEvent: (event) => {
             eventWrites.push(hooks?.onEvent?.(event) ?? Promise.resolve());

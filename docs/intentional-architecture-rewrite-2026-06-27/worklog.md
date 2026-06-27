@@ -605,3 +605,9 @@ Eighty-eighth production slice:
 - Moved page/topic checks, empty-page reads, and slug-collision scanning out of `src/wiki/health/index.ts`.
 - Moved file-reference, wikilink, and cross-wiki reachability checks out of `src/wiki/health/index.ts`.
 - Kept `src/wiki/health/index.ts` focused on index freshness, health-scope resolution, source-health composition, report assembly, and database lifetime.
+
+Eighty-ninth production slice:
+
+- Split Codex app-server JSON-RPC request tracking into `src/harness/providers/codex/app-server-rpc.ts`.
+- Moved request ids, pending request timeout handling, response dispatch, server-request response helpers, and raw JSON-RPC message classification out of `app-server.ts`.
+- Kept `src/harness/providers/codex/app-server.ts` focused on child process lifetime, stdout/stderr line collection, notification-to-harness mapping, root turn completion, failure handling, and cleanup.
