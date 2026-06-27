@@ -340,3 +340,10 @@ Forty-sixth production slice:
 - Mapped legacy-source migration output inside `src/services/wiki/source-migration.ts`.
 - Removed stale command-shaped `MigrateLegacySources*` exports from `src/wiki/sources/`.
 - Guarded the migrate legacy-sources service contract and source package against regressing to lower-layer command aliases.
+
+Forty-seventh production slice:
+
+- Made `src/cli/commands/search.ts` own its CLI option shape instead of extending `SearchWikiPagesRequest`.
+- Made `SearchResult` an explicit command JSON/display row instead of an alias over `WikiSearchResult`.
+- Added a command-local mapper from the wiki search service result into the CLI output contract.
+- Guarded the search adapter against regressing to service request/result aliases.

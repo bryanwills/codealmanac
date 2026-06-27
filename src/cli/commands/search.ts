@@ -1,18 +1,36 @@
 import { BLUE, RST } from "../../ansi.js";
 import {
   searchWikiPages,
-  type SearchWikiPagesRequest,
   type WikiSearchResult,
+  type SearchWikiPagesRequest,
 } from "../../services/wiki/search.js";
 
-export interface SearchOptions extends SearchWikiPagesRequest {
+export interface SearchOptions {
+  cwd: string;
+  query?: string;
+  topics: string[];
+  mentions?: string;
+  since?: string;
+  stale?: string;
+  orphan?: boolean;
+  includeArchive?: boolean;
+  archived?: boolean;
+  wiki?: string;
   output?: SearchOutputMode;
   limit?: number;
 }
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
 
-export type SearchResult = WikiSearchResult;
+export interface SearchResult {
+  slug: string;
+  title: string | null;
+  summary: string | null;
+  updated_at: number;
+  archived_at: number | null;
+  superseded_by: string | null;
+  topics: string[];
+}
 
 export interface SearchCommandOutput {
   stdout: string;
@@ -29,7 +47,9 @@ export interface SearchCommandOutput {
 export async function runSearch(
   options: SearchOptions,
 ): Promise<SearchCommandOutput> {
-  const rows = await searchWikiPages(toSearchWikiPagesRequest(options));
+  const rows = (
+    await searchWikiPages(toSearchWikiPagesRequest(options))
+  ).map(searchResultFromWikiService);
   const limited =
     options.limit !== undefined && options.limit >= 0
       ? rows.slice(0, options.limit)
@@ -54,6 +74,18 @@ function toSearchWikiPagesRequest(
     includeArchive: options.includeArchive,
     archived: options.archived,
     wiki: options.wiki,
+  };
+}
+
+function searchResultFromWikiService(result: WikiSearchResult): SearchResult {
+  return {
+    slug: result.slug,
+    title: result.title,
+    summary: result.summary,
+    updated_at: result.updated_at,
+    archived_at: result.archived_at,
+    superseded_by: result.superseded_by,
+    topics: result.topics,
   };
 }
 

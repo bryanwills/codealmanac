@@ -50,6 +50,10 @@ describe("architecture boundaries", () => {
     expect(searchCommand).not.toContain("wiki/indexer");
     expect(searchCommand).not.toContain("openIndex");
     expect(searchCommand).not.toContain("resolveWikiRoot");
+    expect(searchCommand).not.toContain(
+      "SearchOptions extends SearchWikiPagesRequest",
+    );
+    expect(searchCommand).not.toContain("SearchResult = WikiSearchResult");
     expect(searchService).not.toContain("export type WikiSearchResult = query");
   });
 
