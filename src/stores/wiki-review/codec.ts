@@ -1,0 +1,190 @@
+import yaml from "js-yaml";
+
+import { UserFacingError } from "../../errors.js";
+
+export type ReviewStatus = "open" | "decided" | "applied";
+
+export interface ReviewItem {
+  id: string;
+  status: ReviewStatus;
+  summary: string;
+  created_at: string;
+  body: string;
+  decided_at: string | null;
+  decision: string | null;
+  applied_at: string | null;
+  application: string | null;
+  reopened_at?: string | null;
+  reopen_note?: string | null;
+}
+
+export interface ReviewFile {
+  version: 1;
+  items: ReviewItem[];
+}
+
+export function emptyReviewFile(): ReviewFile {
+  return { version: 1, items: [] };
+}
+
+export function parseReviewFile(raw: string, path: string): ReviewFile {
+  if (raw.trim().length === 0) return emptyReviewFile();
+
+  let parsed: unknown;
+  try {
+    parsed = yaml.load(raw);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new UserFacingError(
+      `review.yaml at ${path} is not valid YAML: ${message}`,
+      { data: { path } },
+    );
+  }
+
+  if (parsed === null || parsed === undefined) return emptyReviewFile();
+  if (typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new UserFacingError(
+      `review.yaml at ${path} must be a mapping`,
+      { data: { path } },
+    );
+  }
+
+  const obj = parsed as Record<string, unknown>;
+  const version = obj.version === undefined ? 1 : obj.version;
+  if (version !== 1) {
+    throw new UserFacingError(
+      `review.yaml at ${path} has unsupported version ${String(version)}`,
+      { data: { path, version } },
+    );
+  }
+
+  const rawItems = obj.items;
+  if (rawItems === undefined || rawItems === null) return emptyReviewFile();
+  if (!Array.isArray(rawItems)) {
+    throw new UserFacingError(
+      `review.yaml at ${path} - "items" must be a list`,
+      { data: { path, field: "items" } },
+    );
+  }
+
+  const items = rawItems.map((item, index) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      throw new UserFacingError(
+        `review.yaml at ${path} - item ${index + 1} must be a mapping`,
+        { data: { path, index: index + 1 } },
+      );
+    }
+    return normalizeReviewItem(item as Record<string, unknown>, index + 1, path);
+  });
+  assertUniqueReviewIds(items, path);
+
+  return { version: 1, items };
+}
+
+export function serializeReviewFile(file: ReviewFile): string {
+  const doc = {
+    version: 1,
+    items: file.items.map((item) => ({
+      id: item.id,
+      status: item.status,
+      summary: item.summary,
+      created_at: item.created_at,
+      body: item.body,
+      decided_at: item.decided_at,
+      decision: item.decision,
+      applied_at: item.applied_at,
+      application: item.application,
+      ...(item.reopened_at !== undefined
+        ? { reopened_at: item.reopened_at }
+        : {}),
+      ...(item.reopen_note !== undefined
+        ? { reopen_note: item.reopen_note }
+        : {}),
+    })),
+  };
+  const header =
+    `# .almanac/review.yaml - unresolved wiki review escalations.\n` +
+    `# Managed by \`almanac review\`. Use this for conflicts that need\n` +
+    `# a human/editor decision before an agent changes wiki pages.\n`;
+  const body = yaml.dump(doc, {
+    lineWidth: 100,
+    noRefs: true,
+    sortKeys: false,
+  });
+  return `${header}${body}`;
+}
+
+function normalizeReviewItem(
+  item: Record<string, unknown>,
+  index: number,
+  path: string,
+): ReviewItem {
+  const id = requiredString(item.id, "id", index, path);
+  const status = requiredStatus(item.status, index, path);
+  const summary = requiredString(item.summary, "summary", index, path);
+  const createdAt = requiredString(item.created_at, "created_at", index, path);
+  const body = requiredString(item.body, "body", index, path);
+  return {
+    id,
+    status,
+    summary,
+    created_at: createdAt,
+    body,
+    decided_at: nullableString(item.decided_at),
+    decision: nullableString(item.decision),
+    applied_at: nullableString(item.applied_at),
+    application: nullableString(item.application),
+    ...(item.reopened_at !== undefined
+      ? { reopened_at: nullableString(item.reopened_at) }
+      : {}),
+    ...(item.reopen_note !== undefined
+      ? { reopen_note: nullableString(item.reopen_note) }
+      : {}),
+  };
+}
+
+function assertUniqueReviewIds(items: ReviewItem[], path: string): void {
+  const seenIds = new Set<string>();
+  for (const item of items) {
+    if (seenIds.has(item.id)) {
+      throw new UserFacingError(
+        `review.yaml at ${path} contains duplicate id "${item.id}"`,
+        { data: { path, id: item.id } },
+      );
+    }
+    seenIds.add(item.id);
+  }
+}
+
+function requiredString(
+  value: unknown,
+  key: string,
+  index: number,
+  path: string,
+): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new UserFacingError(
+      `review.yaml at ${path} - item ${index} requires non-empty "${key}"`,
+      { data: { path, index, field: key } },
+    );
+  }
+  return value;
+}
+
+function requiredStatus(
+  value: unknown,
+  index: number,
+  path: string,
+): ReviewStatus {
+  if (value === "open" || value === "decided" || value === "applied") {
+    return value;
+  }
+  throw new UserFacingError(
+    `review.yaml at ${path} - item ${index} has invalid "status" (expected open, decided, or applied)`,
+    { data: { path, index, field: "status" } },
+  );
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}

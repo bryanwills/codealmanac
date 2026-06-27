@@ -361,6 +361,22 @@ describe("architecture boundaries", () => {
     expect(reviewWorkspace).not.toContain("{ ...opened, item }");
   });
 
+  it("keeps wiki review store I/O separate from YAML codec concerns", async () => {
+    const reviewStore = await readSource("src/stores/wiki-review/store.ts");
+    const reviewCodec = await readSource("src/stores/wiki-review/codec.ts");
+
+    expect(existsSync(join(ROOT, "src/stores/wiki-review/codec.ts"))).toBe(true);
+    expect(reviewStore).toContain("parseReviewFile");
+    expect(reviewStore).toContain("serializeReviewFile");
+    expect(reviewStore).not.toContain("js-yaml");
+    expect(reviewStore).not.toContain("normalizeReviewItem");
+    expect(reviewStore).not.toContain("requiredStatus");
+    expect(reviewStore).not.toContain("review.yaml at");
+    expect(reviewCodec).toContain("js-yaml");
+    expect(reviewCodec).toContain("normalizeReviewItem");
+    expect(reviewCodec).toContain("serializeReviewFile");
+  });
+
   it("keeps the sync command owning its command contract", async () => {
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 

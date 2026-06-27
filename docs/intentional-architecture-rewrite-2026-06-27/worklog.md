@@ -707,3 +707,9 @@ One-hundred-fifth production slice:
 - Split wiki review command rendering into `src/cli/commands/review-render.ts`.
 - Moved review-item formatting, list formatting, success messages, JSON output, and review command error rendering out of `src/cli/commands/review.ts`.
 - Kept `src/cli/commands/review.ts` focused on reading CLI markdown input, calling wiki review services, and routing service result variants to the command-private renderer.
+
+One-hundred-sixth production slice:
+
+- Split wiki review YAML codec concerns into `src/stores/wiki-review/codec.ts`.
+- Moved review-file YAML parsing, serialization, record normalization, duplicate-ID validation, and YAML error shaping out of `src/stores/wiki-review/store.ts`.
+- Kept `src/stores/wiki-review/store.ts` focused on `.almanac/review.yaml` path resolution, file loading, atomic writes, summary extraction, and review ID generation while preserving its public type exports.
