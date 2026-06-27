@@ -281,8 +281,11 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps agents command adapters out of readiness and config mechanics", async () => {
+    const agentsServiceIndex = await readSource("src/services/agents/index.ts");
     const agentsCommand = await readSource("src/cli/commands/agents.ts");
 
+    expect(agentsServiceIndex).not.toContain("../../agent/");
+    expect(agentsServiceIndex).not.toContain("../../config/");
     expect(agentsCommand).toContain("services/agents/index.js");
     expect(agentsCommand).not.toContain("agent/readiness");
     expect(agentsCommand).not.toContain("../../config/index");

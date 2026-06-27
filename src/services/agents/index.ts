@@ -5,11 +5,10 @@ export {
 } from "./agents.js";
 export type {
   AgentModelResult,
+  AgentsAgentProviderId,
+  AgentsProviderReadiness,
+  AgentsProviderView,
   AgentServiceOptions,
   AgentUseResult,
   AgentViewOptions,
 } from "./agents.js";
-export type {
-  ProviderReadiness,
-  ProviderSetupView,
-} from "../../agent/readiness/view.js";

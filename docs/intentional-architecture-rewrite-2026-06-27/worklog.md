@@ -242,3 +242,9 @@ Thirtieth production slice:
 - Introduced setup-owned public type aliases for provider view, model choice, and provider id contracts.
 - Removed raw `agent/` and `config/` type re-exports from `src/services/setup/index.ts`.
 - Updated setup command UI types so the command surface depends only on setup service names.
+
+Thirty-first production slice:
+
+- Introduced agents-service-owned public type aliases for provider view and readiness contracts.
+- Removed raw `agent/readiness` type re-exports from `src/services/agents/index.ts`.
+- Updated the agents command adapter to depend on agents service names instead of readiness implementation names.

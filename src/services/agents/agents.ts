@@ -1,6 +1,7 @@
 import {
   buildProviderSetupView,
   parseAgentSelection,
+  type ProviderReadiness,
   type ProviderSetupView,
 } from "../../agent/readiness/view.js";
 import {
@@ -13,14 +14,18 @@ export interface AgentServiceOptions {
   cwd: string;
 }
 
+export type AgentsProviderReadiness = ProviderReadiness;
+export type AgentsProviderView = ProviderSetupView;
+export type AgentsAgentProviderId = AgentProviderId;
+
 export interface AgentViewOptions {
-  view?: ProviderSetupView;
+  view?: AgentsProviderView;
 }
 
 export type AgentUseResult =
   | {
       status: "default-set";
-      provider: AgentProviderId;
+      provider: AgentsAgentProviderId;
       model?: string;
     }
   | {
@@ -31,12 +36,12 @@ export type AgentUseResult =
 export type AgentModelResult =
   | {
       status: "model-set";
-      provider: AgentProviderId;
+      provider: AgentsAgentProviderId;
       model: string;
     }
   | {
       status: "model-reset";
-      provider: AgentProviderId;
+      provider: AgentsAgentProviderId;
     }
   | {
       status: "unknown-agent";
@@ -49,7 +54,7 @@ export type AgentModelResult =
 
 export async function readAgentsView(
   opts: AgentViewOptions = {},
-): Promise<ProviderSetupView> {
+): Promise<AgentsProviderView> {
   return opts.view ?? await buildProviderSetupView();
 }
 

@@ -1,6 +1,6 @@
 import {
-  type ProviderReadiness,
-  type ProviderSetupView,
+  type AgentsProviderReadiness,
+  type AgentsProviderView,
 } from "../../services/agents/index.js";
 import {
   readAgentsView,
@@ -16,7 +16,7 @@ export interface AgentsResult {
 }
 
 export async function runAgentsList(opts: {
-  view?: ProviderSetupView;
+  view?: AgentsProviderView;
 } = {}): Promise<AgentsResult> {
   const view = await readAgentsView(opts);
   const lines = ["Almanac agents\n"];
@@ -151,7 +151,7 @@ async function setProviderModel(opts: {
   };
 }
 
-function readinessLabel(readiness: ProviderReadiness): string {
+function readinessLabel(readiness: AgentsProviderReadiness): string {
   switch (readiness) {
     case "ready":
       return "ready";
