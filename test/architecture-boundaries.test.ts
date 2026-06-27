@@ -68,6 +68,16 @@ describe("architecture boundaries", () => {
     expect(healthCommand).not.toContain("collectHealthReport");
     expect(healthCommand).not.toContain("resolveWikiRoot");
   });
+
+  it("keeps list command adapters out of registry storage mechanics", async () => {
+    const listCommand = await readSource("src/cli/commands/list.ts");
+
+    expect(listCommand).toContain("services/wiki/registry.js");
+    expect(listCommand).not.toContain("../../wiki/registry");
+    expect(listCommand).not.toContain("readRegistry");
+    expect(listCommand).not.toContain("dropEntry");
+    expect(listCommand).not.toContain("existsSync");
+  });
 });
 
 async function readSource(path: string): Promise<string> {

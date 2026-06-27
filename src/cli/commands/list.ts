@@ -1,11 +1,9 @@
-import { existsSync } from "node:fs";
-
 import { BLUE, BOLD, DIM, RST } from "../../ansi.js";
 import {
-  dropEntry,
-  readRegistry,
-  type RegistryEntry,
-} from "../../wiki/registry/index.js";
+  dropRegisteredWiki,
+  listReachableWikis,
+  type RegisteredWiki,
+} from "../../services/wiki/registry.js";
 
 export interface ListOptions {
   json?: boolean;
@@ -38,8 +36,7 @@ export async function listWikis(
     return handleDrop(options.drop);
   }
 
-  const entries = await readRegistry();
-  const reachable = entries.filter((e) => isReachable(e));
+  const reachable = await listReachableWikis();
 
   if (options.json === true) {
     return { stdout: `${JSON.stringify(reachable, null, 2)}\n`, exitCode: 0 };
@@ -54,7 +51,7 @@ export async function listWikis(
 }
 
 async function handleDrop(name: string): Promise<ListCommandOutput> {
-  const removed = await dropEntry(name);
+  const removed = await dropRegisteredWiki(name);
   if (removed === null) {
     return {
       stdout: `no registry entry named "${name}"\n`,
@@ -68,23 +65,11 @@ async function handleDrop(name: string): Promise<ListCommandOutput> {
 }
 
 /**
- * A registry path is "reachable" if something still exists at that path.
- * We use `existsSync` rather than `stat` — we don't care whether the path
- * is a directory or has a `.almanac/` inside; we only hide it from default
- * output when the path itself is gone (e.g., repo deleted, drive
- * unmounted).
- */
-function isReachable(entry: RegistryEntry): boolean {
-  if (entry.path.length === 0) return false;
-  return existsSync(entry.path);
-}
-
-/**
  * Human-readable listing. Empty state prints a gentle hint rather than a
  * blank screen, and entries render in registration order (chronological,
  * since `addEntry` appends).
  */
-function formatPretty(entries: RegistryEntry[]): string {
+function formatPretty(entries: RegisteredWiki[]): string {
   if (entries.length === 0) {
     return `${DIM}no wikis registered. run \`almanac init\` in a repo to create one.${RST}\n`;
   }
@@ -106,7 +91,7 @@ function formatPretty(entries: RegistryEntry[]): string {
   return `${lines.join("\n")}\n`;
 }
 
-function formatNames(entries: RegistryEntry[]): string {
+function formatNames(entries: RegisteredWiki[]): string {
   if (entries.length === 0) return "";
   return `${entries.map((entry) => entry.name).join("\n")}\n`;
 }
