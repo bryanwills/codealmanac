@@ -23,9 +23,6 @@ export interface LegacySourceMigrationResult {
   unfixable_sources: { slug: string; source: string }[];
 }
 
-export type MigrateLegacySourcesOptions = LegacySourceMigrationOptions;
-export type MigrateLegacySourcesResult = LegacySourceMigrationResult;
-
 export interface SourceFrontmatterFixResult {
   output: string;
   changed: boolean;
@@ -135,8 +132,6 @@ export async function migrateLegacySourceFrontmatter(
     await ensureFreshIndex({ repoRoot: options.repoRoot });
   }
 }
-
-export const migrateLegacySources = migrateLegacySourceFrontmatter;
 
 export async function migrateLegacySourceFrontmatterInDb(
   db: Database.Database,

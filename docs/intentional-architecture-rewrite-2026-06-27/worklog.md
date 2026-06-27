@@ -333,3 +333,10 @@ Forty-fifth production slice:
 - Made `JobServiceView` an explicit service read model instead of an alias over the runtime `JobView`.
 - Mapped runtime job views inside `src/services/jobs/jobs.ts` before returning command-facing service results.
 - Guarded jobs service types against regressing to runtime job-view aliases.
+
+Forty-sixth production slice:
+
+- Made `MigrateLegacySourcesResult` a service-owned result instead of an alias over `wiki/sources`.
+- Mapped legacy-source migration output inside `src/services/wiki/source-migration.ts`.
+- Removed stale command-shaped `MigrateLegacySources*` exports from `src/wiki/sources/`.
+- Guarded the migrate legacy-sources service contract and source package against regressing to lower-layer command aliases.

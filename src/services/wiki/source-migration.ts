@@ -11,7 +11,10 @@ export interface MigrateLegacySourcesRequest {
   stdinSlugs?: string[];
 }
 
-export type MigrateLegacySourcesResult = LegacySourceMigrationResult;
+export interface MigrateLegacySourcesResult {
+  migrated_pages: number;
+  unfixable_sources: Array<{ slug: string; source: string }>;
+}
 
 export async function migrateLegacySources(
   request: MigrateLegacySourcesRequest,
@@ -20,9 +23,23 @@ export async function migrateLegacySources(
     cwd: request.cwd,
     wiki: request.wiki,
   });
-  return migrateLegacySourceFrontmatter({
-    repoRoot,
-    topic: request.topic,
-    stdinSlugs: request.stdinSlugs,
-  });
+  return migrationResultFromWikiSources(
+    await migrateLegacySourceFrontmatter({
+      repoRoot,
+      topic: request.topic,
+      stdinSlugs: request.stdinSlugs,
+    }),
+  );
+}
+
+function migrationResultFromWikiSources(
+  result: LegacySourceMigrationResult,
+): MigrateLegacySourcesResult {
+  return {
+    migrated_pages: result.migrated_pages,
+    unfixable_sources: result.unfixable_sources.map((source) => ({
+      slug: source.slug,
+      source: source.source,
+    })),
+  };
 }

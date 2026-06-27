@@ -450,6 +450,13 @@ describe("architecture boundaries", () => {
 
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
     const migrateCommand = await readSource("src/cli/commands/migrate.ts");
+    const sourceMigrationService = await readSource(
+      "src/services/wiki/source-migration.ts",
+    );
+    const wikiSources = await readSource("src/wiki/sources/index.ts");
+    const wikiSourcesMaintenance = await readSource(
+      "src/wiki/sources/maintenance.ts",
+    );
 
     expect(migrateCommand).toContain("services/wiki/source-migration.js");
     expect(migrateCommand).toContain("services/automation/index.js");
@@ -462,6 +469,11 @@ describe("architecture boundaries", () => {
     expect(migrateCommand).not.toContain("detectLegacyCaptureSweepAutomation");
     expect(migrateCommand).not.toContain("removeLaunchdJob");
     expect(migrateCommand).not.toContain("runAutomationInstall");
+    expect(sourceMigrationService).not.toContain(
+      "export type MigrateLegacySourcesResult = LegacySourceMigrationResult",
+    );
+    expect(wikiSources).not.toContain("MigrateLegacySources");
+    expect(wikiSourcesMaintenance).not.toContain("MigrateLegacySources");
   });
 
   it("keeps doctor diagnostics out of the CLI command package", async () => {
