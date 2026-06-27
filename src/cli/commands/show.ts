@@ -1,10 +1,8 @@
-import { join } from "node:path";
-
 import { BLUE, DIM, RST } from "../../ansi.js";
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
-import { openIndex } from "../../wiki/indexer/schema.js";
-import * as query from "../../wiki/query/index.js";
+import {
+  readWikiPages,
+  type WikiPageView,
+} from "../../services/wiki/page-view.js";
 
 /**
  * `almanac show <slug>` — structured view of a page.
@@ -71,58 +69,40 @@ export interface ShowCommandOutput {
  * means callers can JSON.parse downstream tooling without chasing nested
  * subschemas.
  */
-export type ShowRecord = query.PageView;
+export type ShowRecord = WikiPageView;
 
 export async function runShow(
   options: ShowOptions,
 ): Promise<ShowCommandOutput> {
-  const repoRoot = await resolveWikiRoot({
+  const slugs = collectSlugs(options);
+  if (slugs.length === 0) {
+    return {
+      stdout: "",
+      stderr: "almanac: show requires a slug (or --stdin)\n",
+      exitCode: 1,
+    };
+  }
+
+  const { records, missing } = await readWikiPages({
     cwd: options.cwd,
     wiki: options.wiki,
+    slugs,
   });
-  await ensureFreshIndex({ repoRoot });
 
-  const dbPath = join(repoRoot, ".almanac", "index.db");
-  const db = openIndex(dbPath);
+  const bulk = options.stdin === true;
+  const stdout = bulk
+    ? formatBulk(records)
+    : formatSingle(records, options);
 
-  try {
-    const slugs = collectSlugs(options);
-    if (slugs.length === 0) {
-      return {
-        stdout: "",
-        stderr: "almanac: show requires a slug (or --stdin)\n",
-        exitCode: 1,
-      };
-    }
+  const stderr = missing
+    .map((s) => `almanac: no such page "${s}"\n`)
+    .join("");
 
-    const records: ShowRecord[] = [];
-    const missing: string[] = [];
-    for (const slug of slugs) {
-      const rec = await query.getPageView(db, slug);
-      if (rec === null) {
-        missing.push(slug);
-        continue;
-      }
-      records.push(rec);
-    }
-
-    const bulk = options.stdin === true;
-    const stdout = bulk
-      ? formatBulk(records)
-      : formatSingle(records, options);
-
-    const stderr = missing
-      .map((s) => `almanac: no such page "${s}"\n`)
-      .join("");
-
-    return {
-      stdout,
-      stderr,
-      exitCode: missing.length > 0 ? 1 : 0,
-    };
-  } finally {
-    db.close();
-  }
+  return {
+    stdout,
+    stderr,
+    exitCode: missing.length > 0 ? 1 : 0,
+  };
 }
 
 // ─── Formatting ──────────────────────────────────────────────────────

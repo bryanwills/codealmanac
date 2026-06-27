@@ -1,10 +1,8 @@
-import { join } from "node:path";
-
 import { BLUE, RST } from "../../ansi.js";
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
-import { openIndex } from "../../wiki/indexer/schema.js";
-import * as query from "../../wiki/query/index.js";
+import {
+  searchWikiPages,
+  type WikiSearchResult,
+} from "../../services/wiki/search.js";
 
 export interface SearchOptions {
   cwd: string;
@@ -23,7 +21,7 @@ export interface SearchOptions {
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
 
-export type SearchResult = query.search.SearchPageResult;
+export type SearchResult = WikiSearchResult;
 
 export interface SearchCommandOutput {
   stdout: string;
@@ -41,28 +39,15 @@ export interface SearchCommandOutput {
 export async function runSearch(
   options: SearchOptions,
 ): Promise<SearchCommandOutput> {
-  const repoRoot = await resolveWikiRoot({
-    cwd: options.cwd,
-    wiki: options.wiki,
-  });
-  await ensureFreshIndex({ repoRoot });
+  const rows = await searchWikiPages(options);
+  const limited =
+    options.limit !== undefined && options.limit >= 0
+      ? rows.slice(0, options.limit)
+      : rows;
 
-  const dbPath = join(repoRoot, ".almanac", "index.db");
-  const db = openIndex(dbPath);
-
-  try {
-    const rows = query.search.searchPages(db, options);
-    const limited =
-      options.limit !== undefined && options.limit >= 0
-        ? rows.slice(0, options.limit)
-        : rows;
-
-    const stdout = formatResults(limited, options);
-    const stderr = buildStderr(limited, options);
-    return { stdout, stderr, exitCode: 0 };
-  } finally {
-    db.close();
-  }
+  const stdout = formatResults(limited, options);
+  const stderr = buildStderr(limited, options);
+  return { stdout, stderr, exitCode: 0 };
 }
 
 function formatResults(

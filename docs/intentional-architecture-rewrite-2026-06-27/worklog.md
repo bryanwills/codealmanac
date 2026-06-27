@@ -46,3 +46,11 @@ Second production slice:
 - Moved CLI command registration, grouped help, and sqlite-free setup shortcut parsing into `src/edges/cli/`.
 - Left command handlers in `src/cli/commands/` until their product-service ownership is explicit.
 - Added an architecture guard that fails if terminal CLI shell files reappear under `src/cli/`.
+
+Third production slice:
+
+- Introduced `src/services/wiki/search.ts` as the first explicit wiki service.
+- Moved search wiki resolution, index freshness, index opening, and query execution out of `src/cli/commands/search.ts`.
+- Kept `src/cli/commands/search.ts` responsible for CLI output modes, color, stderr breadcrumbs, and exit shape.
+- Introduced `src/services/wiki/page-view.ts` and moved page-view lookup for `show` out of the command adapter.
+- Added architecture guards so `search` and `show` commands cannot re-import index storage mechanics directly.

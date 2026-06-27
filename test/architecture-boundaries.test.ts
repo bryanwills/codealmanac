@@ -40,6 +40,24 @@ describe("architecture boundaries", () => {
       expect(existsSync(join(ROOT, path)), path).toBe(false);
     }
   });
+
+  it("keeps search command adapters out of index storage mechanics", async () => {
+    const searchCommand = await readSource("src/cli/commands/search.ts");
+
+    expect(searchCommand).toContain("services/wiki/search.js");
+    expect(searchCommand).not.toContain("wiki/indexer");
+    expect(searchCommand).not.toContain("openIndex");
+    expect(searchCommand).not.toContain("resolveWikiRoot");
+  });
+
+  it("keeps show command adapters out of index storage mechanics", async () => {
+    const showCommand = await readSource("src/cli/commands/show.ts");
+
+    expect(showCommand).toContain("services/wiki/page-view.js");
+    expect(showCommand).not.toContain("wiki/indexer");
+    expect(showCommand).not.toContain("openIndex");
+    expect(showCommand).not.toContain("resolveWikiRoot");
+  });
 });
 
 async function readSource(path: string): Promise<string> {
