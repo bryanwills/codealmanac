@@ -75,12 +75,6 @@ export interface DoctorOptions {
   spawnCli?: DiagnosticsSpawnCliFn;
   /** Override provider readiness probes. */
   providerStatuses?: DiagnosticsProviderStatus[];
-  /** Override `~/.claude/settings.json` path. */
-  settingsPath?: string;
-  /** Override `~/.almanac/` directory. */
-  almanacDir?: string;
-  /** Override the bundled hooks directory lookup. */
-  hookScriptPath?: string;
   /** Override the `codealmanac` install path detector. */
   installPath?: string;
   /** Override the reported codealmanac version. */

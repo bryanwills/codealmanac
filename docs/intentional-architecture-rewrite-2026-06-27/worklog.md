@@ -961,3 +961,9 @@ One-hundred-forty-fourth production slice:
 - Moved home-directory guide and agent-instruction probing into `src/platform/diagnostics/instructions.ts`.
 - Kept `src/services/diagnostics/install.ts` focused on describing install checks from typed facts instead of checking filesystem paths.
 - Added platform probe coverage and boundary guards against install diagnostics re-owning guide or instruction filesystem mechanics.
+
+One-hundred-forty-fifth production slice:
+
+- Removed unused `settingsPath`, `almanacDir`, and `hookScriptPath` fields from the doctor diagnostics options contract.
+- Kept doctor overrides limited to fields with current callers or tests.
+- Added an architecture guard so dead doctor injection knobs do not return as compatibility residue.

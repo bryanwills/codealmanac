@@ -1603,6 +1603,9 @@ describe("architecture boundaries", () => {
     expect(diagnosticsTypes).toContain(
       "instructionEntriesStatus: DiagnosticsInstructionEntriesStatus",
     );
+    expect(diagnosticsTypes).not.toContain("settingsPath?:");
+    expect(diagnosticsTypes).not.toContain("almanacDir?:");
+    expect(diagnosticsTypes).not.toContain("hookScriptPath?:");
     expect(installDiagnostics).not.toContain("process.env");
     expect(installDiagnostics).not.toContain("process.version");
     expect(installDiagnostics).not.toContain("platform/automation");
