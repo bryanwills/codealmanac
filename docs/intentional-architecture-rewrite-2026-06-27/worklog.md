@@ -448,3 +448,9 @@ Sixty-second production slice:
 - Made diagnostics provider ids, provider probe statuses, spawn functions, and spawned process contracts explicit in `src/services/diagnostics/types.ts`.
 - Removed diagnostics service public aliases to agent provider/process types and config provider ids.
 - Guarded diagnostics types against re-exposing agent/config contracts.
+
+Sixty-third production slice:
+
+- Made setup instruction target ids, target display rows, and instruction-change results explicit in `src/services/setup/instructions.ts`.
+- Added mapping from agent instruction targets/results into setup-owned setup contracts.
+- Guarded setup instructions against regressing to agent instruction type aliases.

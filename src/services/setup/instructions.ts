@@ -7,12 +7,9 @@ import { fileURLToPath } from "node:url";
 import {
   AGENT_INSTRUCTION_TARGETS,
   CLAUDE_IMPORT_LINE,
-  DEFAULT_INSTRUCTION_TARGETS,
   hasClaudeImportLine,
   installAgentInstructions,
-  type AgentInstructionsChange,
   type InstructionTarget,
-  type InstructionTargetId,
 } from "../../agent/install-targets.js";
 import {
   CODEX_INSTRUCTIONS_END,
@@ -20,8 +17,22 @@ import {
   hasCodexInstructions,
 } from "../../agent/instructions/codex.js";
 
-export type SetupInstructionTargetId = InstructionTargetId;
-export type SetupInstructionTarget = InstructionTarget;
+export type SetupInstructionTargetId =
+  | "claude"
+  | "codex"
+  | "cursor"
+  | "windsurf"
+  | "opencode";
+
+export interface SetupInstructionTarget {
+  id: SetupInstructionTargetId;
+  displayName: string;
+}
+
+export interface SetupInstructionsChange {
+  anyChanges: boolean;
+  filesTouched: string[];
+}
 
 export const SETUP_IMPORT_LINE = CLAUDE_IMPORT_LINE;
 
@@ -32,10 +43,12 @@ export {
 };
 
 export const SETUP_INSTRUCTION_TARGETS: readonly SetupInstructionTarget[] =
-  AGENT_INSTRUCTION_TARGETS;
+  AGENT_INSTRUCTION_TARGETS.map(setupInstructionTargetFromAgentTarget);
 
 export const DEFAULT_SETUP_INSTRUCTION_TARGETS:
-  readonly SetupInstructionTargetId[] = DEFAULT_INSTRUCTION_TARGETS;
+  readonly SetupInstructionTargetId[] = SETUP_INSTRUCTION_TARGETS.map(
+    (target) => target.id,
+  );
 
 export interface InstallSetupInstructionsOptions {
   targets: readonly SetupInstructionTargetId[];
@@ -50,9 +63,9 @@ export interface InstallSetupInstructionsOptions {
 
 export async function installSetupInstructions(
   options: InstallSetupInstructionsOptions,
-): Promise<AgentInstructionsChange> {
+): Promise<SetupInstructionsChange> {
   const home = options.homeDir ?? homedir();
-  return await installAgentInstructions({
+  const change = await installAgentInstructions({
     targets: options.targets,
     claudeDir: options.claudeDir ?? path.join(home, ".claude"),
     codexDir: options.codexDir ?? path.join(home, ".codex"),
@@ -61,6 +74,10 @@ export async function installSetupInstructions(
     opencodeDir: options.opencodeDir ?? path.join(home, ".config", "opencode"),
     guidesDir: options.guidesDir ?? resolveSetupGuidesDir(),
   });
+  return {
+    anyChanges: change.anyChanges,
+    filesTouched: change.filesTouched,
+  };
 }
 
 export function hasSetupImportLine(contents: string): boolean {
@@ -97,4 +114,13 @@ export function resolveSetupGuidesDir(): string {
 
 function looksLikeGuidesDir(dir: string): boolean {
   return existsSync(path.join(dir, "mini.md"));
+}
+
+function setupInstructionTargetFromAgentTarget(
+  target: InstructionTarget,
+): SetupInstructionTarget {
+  return {
+    id: target.id,
+    displayName: target.displayName,
+  };
 }

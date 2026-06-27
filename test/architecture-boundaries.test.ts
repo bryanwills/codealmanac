@@ -414,6 +414,7 @@ describe("architecture boundaries", () => {
 
   it("keeps setup guide UI out of agent instruction install mechanics", async () => {
     const setupIndex = await readSource("src/cli/commands/setup/index.ts");
+    const setupInstructions = await readSource("src/services/setup/instructions.ts");
     const guidesStep = await readSource("src/cli/commands/setup/guides-step.ts");
     const guides = await readSource("src/cli/commands/setup/guides.ts");
     const targetChoice = await readSource(
@@ -421,6 +422,18 @@ describe("architecture boundaries", () => {
     );
 
     expect(existsSync(join(ROOT, "src/services/setup/instructions.ts"))).toBe(true);
+    expect(setupInstructions).not.toContain(
+      "SetupInstructionTargetId = InstructionTargetId",
+    );
+    expect(setupInstructions).not.toContain(
+      "SetupInstructionTarget = InstructionTarget",
+    );
+    expect(setupInstructions).not.toContain(
+      "Promise<AgentInstructionsChange>",
+    );
+    expect(setupInstructions).toContain(
+      "setupInstructionTargetFromAgentTarget",
+    );
     expect(setupIndex).not.toContain("../../../agent");
     for (const source of [setupIndex, guidesStep, guides, targetChoice]) {
       expect(source).toContain("services/setup/index.js");
