@@ -12,6 +12,7 @@ import {
   enrichJobView,
 } from "../jobs/projections/view.js";
 import { readJobLogEvents } from "../jobs/projections/log-events.js";
+import { isLocalPidAlive } from "../platform/process.js";
 import type {
   ViewerJobDetail,
   ViewerJobRun,
@@ -35,7 +36,7 @@ export async function listViewerJobs(repoRoot: string): Promise<{ runs: ViewerJo
         const view = toJobView({
           record,
           now: new Date(),
-          isPidAlive,
+          isPidAlive: isLocalPidAlive,
         });
         const events = await readJobLogEvents(await resolveJobLogPath(repoRoot, record.id));
         const specPrompt = await readSpecPrompt(repoRoot, record.id);
@@ -58,7 +59,7 @@ export async function getViewerJob(
   const run = toJobView({
     record,
     now: new Date(),
-    isPidAlive,
+    isPidAlive: isLocalPidAlive,
   });
   return {
     run: enrichJobView(
@@ -70,16 +71,6 @@ export async function getViewerJob(
     agents,
     warnings: deriveJobWarnings(record.operation, run, events),
   };
-}
-
-function isPidAlive(pid: number): boolean {
-  if (pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function isSafeJobId(jobId: string): boolean {

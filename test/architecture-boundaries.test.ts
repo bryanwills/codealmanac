@@ -206,6 +206,18 @@ describe("architecture boundaries", () => {
     expect(syncSweep).not.toContain("sync.lock");
   });
 
+  it("keeps local process signaling in the platform layer", async () => {
+    const jobsService = await readSource("src/services/jobs/jobs.ts");
+    const viewerJobs = await readSource("src/viewer/jobs.ts");
+    const jobWorkerLockStore = await readSource("src/stores/jobs/worker-lock.ts");
+    const syncLockStore = await readSource("src/stores/sync/lock.ts");
+
+    expect(existsSync(join(ROOT, "src/platform/process.ts"))).toBe(true);
+    for (const source of [jobsService, viewerJobs, jobWorkerLockStore, syncLockStore]) {
+      expect(source).not.toContain("process.kill");
+    }
+  });
+
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 

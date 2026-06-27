@@ -154,3 +154,8 @@ Sixteenth production slice:
 - Moved repo-local sync ledger JSON path resolution, legacy ledger fallback reads, normalization, and atomic writes into `src/stores/sync/ledger.ts`.
 - Moved repo-level sync lock path resolution, legacy lock cleanup, lock owner files, stale-owner detection, and release mechanics into `src/stores/sync/lock.ts`.
 - Kept `src/sync/ledger.ts` for cursor math and pending-job reconciliation semantics, and kept `src/sync/sweep.ts` as the coordinator over eligibility, locking, ledger state, and Absorb enqueueing.
+
+Seventeenth production slice:
+
+- Added `src/platform/process.ts` for local PID liveness checks and process signaling.
+- Replaced duplicated `process.kill(pid, 0)` helpers in job services, viewer jobs, worker-lock storage, and sync-lock storage with the platform helper.

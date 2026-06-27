@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { isLocalPidAlive } from "../../platform/process.js";
 import { jobsDir, legacyRunsDir } from "./records.js";
 
 const OWNERLESS_LOCK_GRACE_MS = 30_000;
@@ -116,7 +117,7 @@ async function isStaleWorkerLockPath(
   if (pid === null) {
     return await isOwnerlessLockPastGrace(lockPath, now);
   }
-  return !isPidAlive(pid);
+  return !isLocalPidAlive(pid);
 }
 
 async function isOwnerlessLockPastGrace(
@@ -128,16 +129,6 @@ async function isOwnerlessLockPastGrace(
     return now.getTime() - lockStat.mtimeMs > OWNERLESS_LOCK_GRACE_MS;
   } catch {
     return true;
-  }
-}
-
-function isPidAlive(pid: number): boolean {
-  if (pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
   }
 }
 

@@ -12,6 +12,7 @@ import {
 } from "../../jobs/index.js";
 import type { JobView } from "../../jobs/index.js";
 import { findNearestAlmanacDir } from "../../paths.js";
+import { isLocalPidAlive, signalLocalPid } from "../../platform/process.js";
 import type {
   CancelJobRequest,
   CancelJobServiceResult,
@@ -37,7 +38,7 @@ export async function listJobs(
       toJobView({
         record,
         now: request.now?.() ?? new Date(),
-        isPidAlive: request.isPidAlive ?? isPidAlive,
+        isPidAlive: request.isPidAlive ?? isLocalPidAlive,
       }),
     ),
   };
@@ -106,7 +107,7 @@ export async function cancelJob(
   await markJobCancelled(repoRoot, record.id);
   if (record.pid > 0) {
     try {
-      (request.signalProcess ?? signalProcess)(record.pid, "SIGTERM");
+      (request.signalProcess ?? signalLocalPid)(record.pid, "SIGTERM");
     } catch {
       // Cancellation is still durable; stale detection covers exited processes.
     }
@@ -146,7 +147,7 @@ export async function streamJobLog(
     const view = toJobView({
       record,
       now: request.now?.() ?? new Date(),
-      isPidAlive: request.isPidAlive ?? isPidAlive,
+      isPidAlive: request.isPidAlive ?? isLocalPidAlive,
     });
     if (isTerminalDisplayStatus(view)) {
       return { status: "streamed", terminalJob: view };
@@ -164,7 +165,7 @@ async function readJobView(
   return toJobView({
     record,
     now: request.now?.() ?? new Date(),
-    isPidAlive: request.isPidAlive ?? isPidAlive,
+    isPidAlive: request.isPidAlive ?? isLocalPidAlive,
   });
 }
 
@@ -190,20 +191,6 @@ async function writeLogChunk(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isPidAlive(pid: number): boolean {
-  if (pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function signalProcess(pid: number, signal: NodeJS.Signals): void {
-  process.kill(pid, signal);
 }
 
 function isTerminalDisplayStatus(view: JobView): boolean {

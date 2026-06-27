@@ -3,6 +3,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { getRepoAlmanacDir } from "../../paths.js";
+import { isLocalPidAlive } from "../../platform/process.js";
 
 const SYNC_LOCK_STALE_MS = 60 * 60 * 1000;
 
@@ -64,17 +65,7 @@ async function isStaleRepoLock(repoRoot: string, now: Date): Promise<boolean> {
   if (!Number.isFinite(startedAt)) return true;
   if (now.getTime() - startedAt > SYNC_LOCK_STALE_MS) return true;
   const pid = typeof raw.pid === "number" ? raw.pid : null;
-  return pid !== null && !isPidAlive(pid);
-}
-
-function isPidAlive(pid: number): boolean {
-  if (pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
+  return pid !== null && !isLocalPidAlive(pid);
 }
 
 function parseJsonObject(text: string): Record<string, unknown> | null {
