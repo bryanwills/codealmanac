@@ -14,10 +14,20 @@ const TEST_CWD = "/tmp/codealmanac-setup-plan";
 const TEST_CLI_PROGRAM_ARGUMENTS = ["node", "dist/launcher.js"];
 
 function setupOptions(
-  options: Omit<SetupOptions, "cwd" | "pathEnvironment" | "environment" | "cliProgramArguments"> & {
+  options: Omit<
+    SetupOptions,
+    | "cwd"
+    | "pathEnvironment"
+    | "environment"
+    | "cliProgramArguments"
+    | "isTTY"
+    | "stdout"
+  > & {
     pathEnvironment?: string;
     environment?: NodeJS.ProcessEnv;
     cliProgramArguments?: string[];
+    isTTY?: boolean;
+    stdout?: NodeJS.WritableStream;
   } = {},
 ): SetupOptions {
   return {
@@ -28,6 +38,8 @@ function setupOptions(
       : process.env.PATH,
     environment: options.environment ?? process.env,
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
+    isTTY: options.isTTY ?? false,
+    stdout: options.stdout ?? new PassThrough(),
   };
 }
 

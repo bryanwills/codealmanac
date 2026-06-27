@@ -62,8 +62,8 @@ export interface UninstallOptions {
   cursorDir?: string;
   windsurfDir?: string;
   opencodeDir?: string;
-  isTTY?: boolean;
-  stdout?: NodeJS.WritableStream;
+  isTTY: boolean;
+  stdout: NodeJS.WritableStream;
   color?: boolean;
 }
 
@@ -74,12 +74,10 @@ export interface UninstallResult {
 }
 
 export async function runUninstall(
-  options: UninstallOptions = {},
+  options: UninstallOptions,
 ): Promise<UninstallResult> {
-  const out = options.stdout ?? process.stdout;
-  const isTTY =
-    options.isTTY ?? (process.stdin.isTTY === true);
-  const interactive = isTTY && options.yes !== true;
+  const out = options.stdout;
+  const interactive = options.isTTY && options.yes !== true;
   const claudeDir = options.claudeDir ?? path.join(homedir(), ".claude");
   const codexDir = options.codexDir ?? path.join(homedir(), ".codex");
   const cursorDir = options.cursorDir ?? path.join(homedir(), ".cursor");

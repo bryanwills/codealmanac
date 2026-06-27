@@ -66,10 +66,10 @@ export interface SetupOptions {
   instructionTargets?: SetupInstructionTargetId[];
   /** Override the directory containing `mini.md` / `reference.md`. */
   guidesDir?: string;
-  /** Override interactivity; defaults to `process.stdin.isTTY`. */
-  isTTY?: boolean;
-  /** Stdout sink; defaults to `process.stdout`. */
-  stdout?: NodeJS.WritableStream;
+  /** Whether the current stdin supports interactive prompts. */
+  isTTY: boolean;
+  /** Stdout sink used for setup terminal UI. */
+  stdout: NodeJS.WritableStream;
   /** Render setup terminal UI with ANSI color. */
   color?: boolean;
   /** Override the install-path probe result; `null` bypasses the probe. */

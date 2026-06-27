@@ -191,7 +191,7 @@ describe("almanac uninstall", () => {
 });
 
 async function captureUninstallOutput(
-  options: NonNullable<Parameters<typeof runUninstall>[0]>,
+  options: Omit<Parameters<typeof runUninstall>[0], "stdout">,
 ): Promise<string> {
   const out = new PassThrough();
   const chunks: string[] = [];

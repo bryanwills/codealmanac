@@ -62,6 +62,8 @@ export function registerSetupCommands(
           pathEnvironment: process.env.PATH,
           environment: process.env,
           cliProgramArguments: currentCliProgramArguments(),
+          isTTY: process.stdin.isTTY === true,
+          stdout: process.stdout,
           color: shouldUseStdoutColor(),
         });
         emit(result);
@@ -150,6 +152,8 @@ export function registerSetupCommands(
           yes: opts.yes,
           keepAutomation: opts.keepAutomation,
           keepGuides: opts.keepGuides,
+          isTTY: process.stdin.isTTY === true,
+          stdout: process.stdout,
           color: shouldUseStdoutColor(),
         });
         emit(result);

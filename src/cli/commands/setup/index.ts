@@ -66,11 +66,9 @@ export async function runSetup(
   options: SetupOptions,
 ): Promise<SetupResult> {
   const cwd = options.cwd;
-  const out = options.stdout ?? process.stdout;
+  const out = options.stdout;
   const theme = makeSetupTheme(options.color !== false);
-  const isTTY =
-    options.isTTY ?? (process.stdin.isTTY === true);
-  const interactive = isTTY && options.yes !== true;
+  const interactive = options.isTTY && options.yes !== true;
 
   // No-op fast path. When the caller explicitly skipped every install
   // step, rendering the full banner + step markers + "Setup complete"

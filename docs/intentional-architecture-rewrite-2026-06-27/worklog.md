@@ -897,3 +897,10 @@ One-hundred-thirty-fifth production slice:
 - Made `runServe` receive an explicit `waitForStop` boundary instead of owning process signal handlers.
 - Kept `src/viewer/server.ts` focused on HTTP/API/static serving and server cleanup through `close()`.
 - Added a focused serve command test and architecture guard so viewer/server cannot reintroduce process signal ownership.
+
+One-hundred-thirty-sixth production slice:
+
+- Made setup and uninstall command entrypoints receive their stdout sink and stdin TTY fact explicitly.
+- Moved the remaining setup/uninstall `process.stdout` and `process.stdin.isTTY` defaults into CLI edge callers, including the sqlite-free setup shortcut.
+- Kept setup prompt-input internals unchanged for this slice; deeper prompt input ownership remains separate work.
+- Added architecture guards so setup and uninstall command modules cannot reintroduce terminal sink or TTY ownership.

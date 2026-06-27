@@ -1008,6 +1008,8 @@ describe("architecture boundaries", () => {
     expect(setupIndex).not.toContain("interface SetupOptions");
     expect(setupIndex).not.toContain("interface SetupResult");
     expect(setupIndex).not.toContain("process.cwd()");
+    expect(setupIndex).not.toContain("process.stdout");
+    expect(setupIndex).not.toContain("process.stdin.isTTY");
     expect(setupIndex).toContain("makeSetupTheme(options.color !== false)");
     expect(setupIndex).toContain("readSetupWikiState");
     expect(setupNextSteps).not.toContain("node:fs");
@@ -1021,6 +1023,9 @@ describe("architecture boundaries", () => {
     expect(setupTypes).toContain("interface SetupOptions");
     expect(setupTypes).toContain("interface SetupResult");
     expect(setupTypes).toContain("color?: boolean");
+    expect(setupTypes).not.toContain("defaults to `process");
+    expect(setupRegistration).toContain("isTTY: process.stdin.isTTY === true");
+    expect(setupRegistration).toContain("stdout: process.stdout");
     expect(setupRegistration).toContain("color: shouldUseStdoutColor()");
     expect(sqliteFree).toContain("color: shouldUseStdoutColor()");
     expect(currentCli).toContain("process.argv");
@@ -1157,6 +1162,9 @@ describe("architecture boundaries", () => {
       "src/cli/commands/uninstall-render.ts",
     );
     const setupUninstall = await readSource("src/services/setup/uninstall.ts");
+    const setupRegistration = await readSource(
+      "src/edges/cli/register-setup-commands.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/services/setup/uninstall.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/uninstall-render.ts"))).toBe(
@@ -1176,12 +1184,16 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("Uninstall complete");
     expect(uninstallCommand).not.toContain("Guides removed");
     expect(uninstallCommand).not.toContain("almanac: automation removed");
+    expect(uninstallCommand).not.toContain("process.stdout");
+    expect(uninstallCommand).not.toContain("process.stdin.isTTY");
     expect(uninstallRender).toContain("renderUninstallResult");
     expect(uninstallRender).toContain("formatAutomationResult");
     expect(uninstallRender).toContain("../../ansi-theme.js");
     expect(uninstallRender).not.toContain("../../ansi.js");
     expect(uninstallRender).toContain("makeAnsiTheme(options.color === true)");
     expect(uninstallCommand).toContain("color?: boolean");
+    expect(setupRegistration).toContain("isTTY: process.stdin.isTTY === true");
+    expect(setupRegistration).toContain("stdout: process.stdout");
   });
 
   it("keeps setup cleanup services behind automation service cleanup verbs", async () => {

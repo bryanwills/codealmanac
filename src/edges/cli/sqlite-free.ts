@@ -38,6 +38,8 @@ export async function tryRunSetupShortcut(args: {
     pathEnvironment: process.env.PATH,
     environment: process.env,
     cliProgramArguments: currentCliProgramArguments(),
+    isTTY: process.stdin.isTTY === true,
+    stdout: process.stdout,
     color: shouldUseStdoutColor(),
   };
 
