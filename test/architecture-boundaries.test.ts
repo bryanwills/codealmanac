@@ -198,6 +198,21 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/services/wiki/topic-mutations.ts"))).toBe(false);
   });
 
+  it("keeps topic frontmatter block splitting separate from topic rewrites", async () => {
+    const frontmatterRewrite = await readSource(
+      "src/wiki/topics/frontmatter-rewrite.ts",
+    );
+    const frontmatterBlock = await readSource(
+      "src/wiki/topics/frontmatter-block.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/wiki/topics/frontmatter-block.ts"))).toBe(true);
+    expect(frontmatterRewrite).toContain("frontmatter-block.js");
+    expect(frontmatterRewrite).not.toContain("function splitFrontmatter");
+    expect(frontmatterRewrite).not.toContain("raw.match(/^---");
+    expect(frontmatterBlock).toContain("export function splitFrontmatter");
+  });
+
   it("keeps tag command adapters out of page topic write mechanics", async () => {
     const tagCommand = await readSource("src/cli/commands/tag.ts");
     const pageTopicService = await readSource(

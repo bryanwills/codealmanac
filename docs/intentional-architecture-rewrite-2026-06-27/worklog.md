@@ -574,3 +574,9 @@ Eighty-third production slice:
 - Split indexer SQLite page writes into `src/wiki/indexer/page-writer.ts`.
 - Moved prepared statements, transaction application, topic/file/source/link projection, and FTS row replacement out of `index.ts`.
 - Kept `index.ts` as the orchestration layer for freshness, planning, page-write application, topic YAML reconciliation, and mtime bumping.
+
+Eighty-fourth production slice:
+
+- Split generic frontmatter block slicing into `src/wiki/topics/frontmatter-block.ts`.
+- Kept `frontmatter-rewrite.ts` focused on topic-list transforms and topic-field replacement.
+- Preserved the byte-level body and line-ending behavior required by tag, untag, and topic rename/delete workflows.
