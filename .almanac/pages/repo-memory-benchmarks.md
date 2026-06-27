@@ -9,7 +9,7 @@ sources:
     note: Implements the retrieval command surface used by benchmark tasks.
   - id: show-command
     type: file
-    path: src/cli/commands/show.ts
+    path: src/cli/commands/show/index.ts
     note: Implements the structured page-read surface used during benchmark tasks.
   - id: sync-command
     type: file
@@ -34,7 +34,7 @@ verified: 2026-05-20
 
 Codealmanac should not pitch itself with a single "we scored X on LongMemEval" claim. The durable product claim is stronger and more specific: project memory should make coding agents make fewer context mistakes, rediscover less prior work, and finish real repo tasks faster. [@benchmark-session]
 
-LongMemEval-style retrieval is still relevant, but only as the narrow retrieval slice of a broader benchmark story. The current product surface already spans retrieval (`[[src/cli/commands/search.ts]]`, `[[src/cli/commands/show.ts]]`), memory capture (`[[prompts/operations/absorb.md]]`, `[[src/operations/absorb.ts]]`), and continuity across sessions (`[[src/cli/commands/sync.ts]]`). Evaluation should therefore measure the full loop rather than only "can the model recall an old conversation." [@search-command] [@show-command] [@absorb-prompt] [@absorb-operation] [@sync-command]
+LongMemEval-style retrieval is still relevant, but only as the narrow retrieval slice of a broader benchmark story. The current product surface already spans retrieval (`[[src/cli/commands/search.ts]]`, `[[src/cli/commands/show/index.ts]]`), memory capture (`[[prompts/operations/absorb.md]]`, `[[src/operations/absorb.ts]]`), and continuity across sessions (`[[src/cli/commands/sync.ts]]`). Evaluation should therefore measure the full loop rather than only "can the model recall an old conversation." [@search-command] [@show-command] [@absorb-prompt] [@absorb-operation] [@sync-command]
 
 ## What the benchmark has to prove
 

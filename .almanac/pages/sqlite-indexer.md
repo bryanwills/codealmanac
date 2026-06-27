@@ -31,7 +31,7 @@ sources:
     note: Shows that `runIndexer()` skips rows whose `content_hash` and `file_path` already match.
   - id: register-query-commands
     type: file
-    path: src/cli/register-query-commands.ts
+    path: src/edges/cli/register-query-commands.ts
     note: Migrated from legacy files.
   - id: search
     type: file
@@ -39,7 +39,7 @@ sources:
     note: Migrated from legacy files.
   - id: show
     type: file
-    path: src/cli/commands/show.ts
+    path: src/cli/commands/show/index.ts
     note: Migrated from legacy files.
   - id: index
     type: file
@@ -75,7 +75,7 @@ sources:
     note: Migrated from legacy files.
   - id: duration
     type: file
-    path: src/wiki/indexer/duration.ts
+    path: src/shared/duration.ts
     note: Migrated from legacy files.
   - id: query-search
     type: file

@@ -21,10 +21,18 @@ sources:
     type: file
     path: src/services/lifecycle/
     note: Resolves lifecycle operation providers and starts foreground or background runs.
-  - id: register-wiki-lifecycle-commands
+  - id: register-lifecycle-run-commands
     type: file
-    path: src/edges/cli/register-wiki-lifecycle-commands.ts
-    note: Registers the public lifecycle command surface for init, absorb, ingest, sync, garden, and jobs-related routing.
+    path: src/edges/cli/register-lifecycle-run-commands.ts
+    note: Registers the public lifecycle run command surface for init, absorb, ingest, and garden.
+  - id: register-sync-commands
+    type: file
+    path: src/edges/cli/register-sync-commands.ts
+    note: Registers the public sync command surface.
+  - id: register-jobs-commands
+    type: file
+    path: src/edges/cli/register-jobs-commands.ts
+    note: Registers the public jobs command surface.
   - id: jobs-layer
     type: file
     path: src/jobs/
@@ -74,7 +82,7 @@ Start with [[wiki-lifecycle-operations]] when the question is "what semantic ope
 
 [[operation-prompts]] explains the base doctrine and operation-specific algorithms that give Build, Absorb, and Garden their judgment rules. Prompt edits are the first place to improve wiki-writing behavior when the missing behavior is editorial judgment rather than deterministic plumbing. [@purpose-prompt] [@notability-prompt] [@build-prompt] [@absorb-prompt] [@garden-prompt]
 
-[[lifecycle-cli]] maps public commands to operations and job behavior. It is the command-surface reference for `init`, `absorb`, `ingest`, `sync`, `garden`, `jobs`, `serve`, `setup`, and `automation`. [@register-wiki-lifecycle-commands]
+[[lifecycle-cli]] maps public commands to operations and job behavior. It is the command-surface reference for `init`, `absorb`, `ingest`, `sync`, `garden`, `jobs`, `serve`, `setup`, and `automation`. [@register-lifecycle-run-commands] [@register-sync-commands] [@register-jobs-commands]
 
 [[process-manager-runs]] owns job records, background spawn, event logs, cancellation, snapshots, reindex-on-success, and jobs inspection. It is the storage and observability layer for operation execution.
 

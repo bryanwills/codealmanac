@@ -8,10 +8,22 @@ topics:
   - flows
   - agents
 sources:
-  - id: register-wiki-lifecycle-commands
+  - id: register-lifecycle-run-commands
     type: file
-    path: src/edges/cli/register-wiki-lifecycle-commands.ts
-    note: Commander wiring for lifecycle commands.
+    path: src/edges/cli/register-lifecycle-run-commands.ts
+    note: Commander wiring for init, absorb, ingest, and garden lifecycle run commands.
+  - id: register-sync-commands
+    type: file
+    path: src/edges/cli/register-sync-commands.ts
+    note: Commander wiring for sync and sync status.
+  - id: register-jobs-commands
+    type: file
+    path: src/edges/cli/register-jobs-commands.ts
+    note: Commander wiring for background job inspection commands.
+  - id: register-automation-commands
+    type: file
+    path: src/edges/cli/register-automation-commands.ts
+    note: Commander wiring for scheduled automation commands.
   - id: register-edit-commands
     type: file
     path: src/edges/cli/register-edit-commands.ts

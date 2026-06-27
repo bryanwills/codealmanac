@@ -34,6 +34,7 @@ describe("architecture boundaries", () => {
       "src/cli/register-edit-commands.ts",
       "src/cli/register-setup-commands.ts",
       "src/cli/register-wiki-lifecycle-commands.ts",
+      "src/edges/cli/register-wiki-lifecycle-commands.ts",
     ];
 
     for (const path of oldCliShellFiles) {

@@ -33,7 +33,7 @@ sources:
     note: Rewrites safe legacy frontmatter into structured sources for `almanac migrate legacy-sources`.
   - id: show-command
     type: file
-    path: src/cli/commands/show.ts
+    path: src/cli/commands/show/index.ts
     note: Displays indexed page sources in the show command metadata header.
   - id: page-view-query
     type: file
@@ -196,7 +196,7 @@ The `page_sources` table stores `page_slug`, `source_id`, `source_type`, `target
 
 A future `almanac sources` command should behave like source-aware `--mentions`, not like a raw inventory dump. The useful questions are "which pages cite this PR, issue, URL, commit, file, or conversation?", "which pages rely on sources from this type or domain?", and "which current wiki claims still depend only on unresolved or historical context?" Candidate query shapes are `almanac sources --mentions <target>`, `almanac sources --type pr`, `almanac sources --type issue`, and `almanac sources --domain github.com`. [@implementation-session]
 
-The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show.ts]]` renders a compact source summary in the metadata header, `[[src/wiki/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
+The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show/index.ts]]` renders a compact source summary in the metadata header, `[[src/wiki/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
 
 The health implementation in `[[src/wiki/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, and `unfixable_sources` records ambiguous legacy source strings. `almanac health` is report-only for source migration and warns users to run `almanac migrate legacy-sources` when legacy frontmatter is present. [@health-command]
 

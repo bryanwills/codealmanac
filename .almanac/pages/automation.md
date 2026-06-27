@@ -77,10 +77,10 @@ sources:
     type: file
     path: src/edges/cli/register-setup-commands.ts
     note: Migrated from legacy files.
-  - id: register-wiki-lifecycle-commands
+  - id: register-automation-commands
     type: file
-    path: src/edges/cli/register-wiki-lifecycle-commands.ts
-    note: Migrated from legacy files.
+    path: src/edges/cli/register-automation-commands.ts
+    note: Commander wiring for scheduled automation commands.
   - id: sync
     type: file
     path: src/cli/commands/sync.ts

@@ -29,7 +29,7 @@ sources:
     note: Records the review escalation CLI and the follow-up serve UI route.
   - id: serve-command-registration
     type: file
-    path: src/cli/register-query-commands.ts
+    path: src/edges/cli/register-query-commands.ts
     note: Defines the `almanac serve` host and port options and their defaults.
   - id: serve-runtime
     type: file

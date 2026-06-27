@@ -11,10 +11,10 @@ sources:
     type: file
     path: src/cli/commands/operations.ts
     note: Migrated from legacy files.
-  - id: register-wiki-lifecycle-commands
+  - id: register-sync-commands
     type: file
-    path: src/edges/cli/register-wiki-lifecycle-commands.ts
-    note: Registers lifecycle command adapters at the CLI edge.
+    path: src/edges/cli/register-sync-commands.ts
+    note: Registers sync command adapters at the CLI edge.
   - id: absorb
     type: file
     path: src/operations/absorb.ts

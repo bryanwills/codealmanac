@@ -1,0 +1,76 @@
+import { Command } from "commander";
+
+import { emit } from "../../cli/helpers.js";
+
+export function registerAutomationCommands(program: Command): void {
+  const automation = program
+    .command("automation")
+    .description("manage scheduled Almanac automation");
+
+  automation
+    .command("install [tasks...]")
+    .description("install the macOS launchd automation jobs")
+    .option("--every <duration>", "run interval for sync or a single selected task")
+    .option("--quiet <duration>", "minimum quiet time before sync (default: 45m)")
+    .option("--garden-every <duration>", "Garden run interval (default: 4h)")
+    .option("--garden-off", "disable scheduled Garden automation")
+    .action(async (tasks: string[], opts: {
+      every?: string;
+      quiet?: string;
+      gardenEvery?: string;
+      gardenOff?: boolean;
+    }) => {
+      const {
+        parseAutomationTaskIds,
+        runAutomationInstall,
+      } = await import("../../cli/commands/automation.js");
+      const parsed = parseAutomationTaskIds(tasks);
+      if (!parsed.ok) {
+        emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
+        return;
+      }
+      const result = await runAutomationInstall({
+        tasks: parsed.tasks,
+        every: opts.every,
+        quiet: opts.quiet,
+        gardenEvery: opts.gardenEvery,
+        gardenOff: opts.gardenOff,
+        cwd: process.cwd(),
+      });
+      emit(result);
+    });
+
+  automation
+    .command("uninstall [tasks...]")
+    .description("remove the macOS launchd automation jobs")
+    .action(async (tasks: string[]) => {
+      const {
+        parseAutomationTaskIds,
+        runAutomationUninstall,
+      } = await import("../../cli/commands/automation.js");
+      const parsed = parseAutomationTaskIds(tasks);
+      if (!parsed.ok) {
+        emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
+        return;
+      }
+      const result = await runAutomationUninstall({ tasks: parsed.tasks });
+      emit(result);
+    });
+
+  automation
+    .command("status [tasks...]")
+    .description("show automation status")
+    .action(async (tasks: string[]) => {
+      const {
+        parseAutomationTaskIds,
+        runAutomationStatus,
+      } = await import("../../cli/commands/automation.js");
+      const parsed = parseAutomationTaskIds(tasks);
+      if (!parsed.ok) {
+        emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
+        return;
+      }
+      const result = await runAutomationStatus({ tasks: parsed.tasks });
+      emit(result);
+    });
+}

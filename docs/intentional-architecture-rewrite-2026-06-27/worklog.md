@@ -166,3 +166,10 @@ Eighteenth production slice:
 - Kept `src/cli/commands/show/index.ts` as the thin command entrypoint: collect page slugs, call the wiki page-view service, render missing-page errors, and delegate output formatting.
 - Moved show output rendering into `src/cli/commands/show/format.ts`, slug collection into `src/cli/commands/show/slugs.ts`, and command contracts into `src/cli/commands/show/types.ts`.
 - Preserved the existing `show` behavior with focused `show` and architecture-boundary tests before broader verification.
+
+Nineteenth production slice:
+
+- Split the old catch-all CLI lifecycle registration file into command-family modules under `src/edges/cli/`.
+- Moved foreground lifecycle event formatting into `src/edges/cli/lifecycle-events.ts`.
+- Kept lifecycle operation registration, sync registration, jobs registration, automation registration, and reindex registration in separate files so each edge module has one reason to change.
+- Preserved the existing root command order and option surface with focused CLI registration tests.

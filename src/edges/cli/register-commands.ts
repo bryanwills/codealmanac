@@ -1,12 +1,19 @@
 import { Command } from "commander";
 
+import { registerAutomationCommands } from "./register-automation-commands.js";
 import { registerEditCommands } from "./register-edit-commands.js";
+import { registerJobsCommands } from "./register-jobs-commands.js";
+import {
+  registerGardenCommand,
+  registerLifecycleRunCommands,
+} from "./register-lifecycle-run-commands.js";
+import { registerMaintenanceCommands } from "./register-maintenance-commands.js";
 import { registerQueryCommands } from "./register-query-commands.js";
 import {
   registerSetupCommands,
   type SetupCommandDeps,
 } from "./register-setup-commands.js";
-import { registerWikiLifecycleCommands } from "./register-wiki-lifecycle-commands.js";
+import { registerSyncCommands } from "./register-sync-commands.js";
 
 export interface RegisterCommandDeps extends SetupCommandDeps {}
 
@@ -16,6 +23,11 @@ export function registerCommands(
 ): void {
   registerQueryCommands(program);
   registerEditCommands(program);
-  registerWikiLifecycleCommands(program);
+  registerLifecycleRunCommands(program);
+  registerSyncCommands(program);
+  registerGardenCommand(program);
+  registerJobsCommands(program);
+  registerAutomationCommands(program);
+  registerMaintenanceCommands(program);
   registerSetupCommands(program, deps);
 }
