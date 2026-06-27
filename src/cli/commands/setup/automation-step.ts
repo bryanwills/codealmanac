@@ -1,4 +1,5 @@
-import { cleanupLegacyHooks, runAutomationInstall } from "../automation.js";
+import { cleanupLegacyAutomationHooks } from "../../../services/automation/index.js";
+import { runAutomationInstall } from "../automation.js";
 import {
   BAR,
   DIM,
@@ -40,7 +41,7 @@ export async function runAutomationSetupStep(args: {
       `Sync automation ${DIM}skipped — requires a durable Almanac install${RST}`,
     );
   } else {
-    await cleanupLegacyHooks();
+    await cleanupLegacyAutomationHooks();
     const res = await runAutomationInstall({
       every: args.options.automationEvery,
       quiet: args.options.automationQuiet,

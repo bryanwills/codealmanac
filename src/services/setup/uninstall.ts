@@ -4,8 +4,8 @@ import {
   removeManagedBlock,
   type AgentInstructionDirs,
 } from "../../agent/install-targets.js";
-import { cleanupLegacyHooks } from "../../platform/automation/legacy-hooks.js";
 import {
+  cleanupLegacyAutomationHooks,
   uninstallAutomation,
   type AutomationUninstallOptions,
   type AutomationUninstallResult,
@@ -63,7 +63,7 @@ export function removeSetupManagedBlock(
 async function removeSetupAutomation(
   options: SetupUninstallOptions,
 ): Promise<SetupUninstallResult["automation"]> {
-  await cleanupLegacyHooks();
+  await cleanupLegacyAutomationHooks();
   const result = await uninstallAutomation({
     plistPath: options.automationPlistPath,
     gardenPlistPath: options.gardenPlistPath,

@@ -232,7 +232,10 @@ describe("architecture boundaries", () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 
     expect(automationCommand).toContain("services/automation/index.js");
+    expect(automationCommand).not.toContain("platform/automation");
     expect(automationCommand).not.toContain("platform/automation/launchd");
+    expect(automationCommand).not.toContain("platform/automation/tasks");
+    expect(automationCommand).not.toContain("platform/automation/legacy-hooks");
     expect(automationCommand).not.toContain("ensureAutomationSyncSince");
     expect(automationCommand).not.toContain("findNearestAlmanacDir");
     expect(automationCommand).not.toContain("writeLaunchdPlist");
@@ -342,6 +345,13 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("runAutomationUninstall");
     expect(uninstallCommand).not.toContain("removeAgentInstructions");
     expect(uninstallCommand).not.toContain("cleanupLegacyHooks");
+  });
+
+  it("keeps setup cleanup services behind automation service cleanup verbs", async () => {
+    const setupUninstall = await readSource("src/services/setup/uninstall.ts");
+
+    expect(setupUninstall).toContain("cleanupLegacyAutomationHooks");
+    expect(setupUninstall).not.toContain("platform/automation");
   });
 
   it("keeps sync command adapters out of transcript and absorb workflow mechanics", async () => {

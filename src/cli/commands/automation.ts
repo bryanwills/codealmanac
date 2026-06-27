@@ -1,28 +1,21 @@
-import { homedir } from "node:os";
-
 import type { CommandResult } from "../helpers.js";
 import {
+  defaultSyncAutomationPlistPath,
   installAutomation,
   readAutomationStatus,
   uninstallAutomation,
+  type AutomationTaskId,
   type AutomationInstallOptions,
   type InstalledAutomationTask,
   type AutomationStatusOptions,
   type AutomationStatusSection,
   type AutomationUninstallOptions,
 } from "../../services/automation/index.js";
-import {
-  defaultSyncPlistPath,
-  isScheduledTaskId,
-  type ScheduledTaskId,
-} from "../../platform/automation/tasks.js";
-
-export { cleanupLegacyHooks } from "../../platform/automation/legacy-hooks.js";
 
 export type AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions;
 export type { AutomationStatusOptions };
 
-const TASK_LABELS: Record<ScheduledTaskId, string> = {
+const TASK_LABELS: Record<AutomationTaskId, string> = {
   sync: "sync automation",
   garden: "garden automation",
   update: "auto-update automation",
@@ -85,24 +78,8 @@ export async function runAutomationStatus(
   };
 }
 
-export function defaultPlistPath(home: string = homedir()): string {
-  return defaultSyncPlistPath(home);
-}
-
-export function parseAutomationTaskIds(
-  values: string[],
-): { ok: true; tasks: ScheduledTaskId[] } | { ok: false; error: string } {
-  const tasks: ScheduledTaskId[] = [];
-  for (const value of values) {
-    if (!isScheduledTaskId(value)) {
-      return {
-        ok: false,
-        error: `unknown automation task '${value}' (expected sync, garden, or update)`,
-      };
-    }
-    if (!tasks.includes(value)) tasks.push(value);
-  }
-  return { ok: true, tasks };
+export function defaultPlistPath(home?: string): string {
+  return defaultSyncAutomationPlistPath(home);
 }
 
 function formatAutomationInstall(result: {

@@ -20,8 +20,10 @@ export function registerAutomationCommands(program: Command): void {
       gardenEvery?: string;
       gardenOff?: boolean;
     }) => {
+      const { parseAutomationTaskIds } = await import(
+        "../../services/automation/index.js"
+      );
       const {
-        parseAutomationTaskIds,
         runAutomationInstall,
       } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);
@@ -44,8 +46,10 @@ export function registerAutomationCommands(program: Command): void {
     .command("uninstall [tasks...]")
     .description("remove the macOS launchd automation jobs")
     .action(async (tasks: string[]) => {
+      const { parseAutomationTaskIds } = await import(
+        "../../services/automation/index.js"
+      );
       const {
-        parseAutomationTaskIds,
         runAutomationUninstall,
       } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);
@@ -61,8 +65,10 @@ export function registerAutomationCommands(program: Command): void {
     .command("status [tasks...]")
     .description("show automation status")
     .action(async (tasks: string[]) => {
+      const { parseAutomationTaskIds } = await import(
+        "../../services/automation/index.js"
+      );
       const {
-        parseAutomationTaskIds,
         runAutomationStatus,
       } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);

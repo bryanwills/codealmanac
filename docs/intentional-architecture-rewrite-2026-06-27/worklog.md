@@ -220,3 +220,8 @@ Twenty-sixth production slice:
 
 - Introduced `src/services/wiki/reindex.ts` for the explicit wiki reindex workflow.
 - Kept `src/cli/commands/reindex.ts` responsible for the one-line CLI summary while the wiki service owns wiki-root resolution and forced index rebuild execution.
+
+Twenty-seventh production slice:
+
+- Introduced `src/services/automation/catalog.ts` so automation task parsing and default sync plist path lookup are exposed through the automation service boundary instead of `src/cli/commands/automation.ts` importing platform task definitions.
+- Introduced `src/services/automation/legacy-hooks.ts` so setup workflows clean legacy hook files through the automation service boundary instead of importing platform cleanup directly.
