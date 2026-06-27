@@ -279,3 +279,9 @@ Thirty-sixth production slice:
 - Introduced service-owned `AutomationTaskId` and `AutomationExecFn` aliases.
 - Moved the public automation task ID export from the platform-backed catalog to automation service types.
 - Updated automation planning and legacy migration types to consume service-owned names instead of launchd/task scheduler types.
+
+Thirty-seventh production slice:
+
+- Introduced service-owned names for update registry checks, install spawning, and install results.
+- Updated `UpdateOptions` and `UpdateWorkflowResult` to use update service contract names instead of raw platform update types.
+- Guarded the update service facade against direct platform update exports.

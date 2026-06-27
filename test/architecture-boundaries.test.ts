@@ -253,8 +253,10 @@ describe("architecture boundaries", () => {
 
   it("keeps update command adapters out of update workflow mechanics", async () => {
     const updateCommand = await readSource("src/cli/commands/update.ts");
+    const updateServiceIndex = await readSource("src/services/update/index.ts");
     const updateService = await readSource("src/services/update/update.ts");
 
+    expect(updateServiceIndex).not.toContain("platform/update");
     expect(updateCommand).toContain("services/update/index.js");
     expect(updateCommand).not.toContain("platform/update");
     expect(updateCommand).not.toContain("readConfig");

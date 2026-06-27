@@ -1,2 +1,8 @@
 export { runUpdateWorkflow } from "./update.js";
-export type { UpdateOptions, UpdateWorkflowResult } from "./types.js";
+export type {
+  UpdateCheckFn,
+  UpdateInstallResult,
+  UpdateInstallSpawnFn,
+  UpdateOptions,
+  UpdateWorkflowResult,
+} from "./types.js";

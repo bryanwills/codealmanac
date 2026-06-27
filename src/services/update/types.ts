@@ -1,7 +1,11 @@
-import type { spawn } from "node:child_process";
+import type { spawn as nodeSpawn } from "node:child_process";
 
-import type { checkForUpdate } from "../../platform/update/check.js";
-import type { InstallLatestPackageResult } from "../../platform/update/install.js";
+import type { checkForUpdate as platformCheckForUpdate } from "../../platform/update/check.js";
+import type { InstallLatestPackageResult as PlatformInstallLatestPackageResult } from "../../platform/update/install.js";
+
+export type UpdateCheckFn = typeof platformCheckForUpdate;
+export type UpdateInstallSpawnFn = typeof nodeSpawn;
+export type UpdateInstallResult = PlatformInstallLatestPackageResult;
 
 export interface UpdateOptions {
   dismiss?: boolean;
@@ -12,8 +16,8 @@ export interface UpdateOptions {
   statePath?: string;
   configPath?: string;
   installedVersion?: string;
-  checkFn?: typeof checkForUpdate;
-  spawnFn?: typeof spawn;
+  checkFn?: UpdateCheckFn;
+  spawnFn?: UpdateInstallSpawnFn;
   now?: () => number;
   lockPath?: string;
   lockStaleSeconds?: number;
@@ -31,4 +35,4 @@ export type UpdateWorkflowResult =
   | { status: "up-to-date"; installed: string }
   | { status: "dismissed-install-skipped"; latest: string }
   | { status: "install-in-progress" }
-  | { status: "install-result"; result: InstallLatestPackageResult };
+  | { status: "install-result"; result: UpdateInstallResult };
