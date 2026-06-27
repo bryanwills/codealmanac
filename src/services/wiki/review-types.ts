@@ -19,20 +19,29 @@ export interface WikiReviewRequest {
   wiki?: string;
 }
 
-export interface AddWikiReviewItemRequest extends WikiReviewRequest {
+export interface AddWikiReviewItemRequest {
+  cwd: string;
+  wiki?: string;
   markdown?: string;
   now?: Date;
 }
 
-export interface ListWikiReviewItemsRequest extends WikiReviewRequest {
+export interface ListWikiReviewItemsRequest {
+  cwd: string;
+  wiki?: string;
   status?: WikiReviewStatus | "all" | string;
 }
 
-export interface WikiReviewItemRequest extends WikiReviewRequest {
+export interface WikiReviewItemRequest {
+  cwd: string;
+  wiki?: string;
   id: string;
 }
 
-export interface ChangeWikiReviewItemRequest extends WikiReviewItemRequest {
+export interface ChangeWikiReviewItemRequest {
+  cwd: string;
+  wiki?: string;
+  id: string;
   markdown?: string;
   now?: Date;
 }

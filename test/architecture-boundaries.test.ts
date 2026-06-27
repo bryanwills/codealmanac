@@ -222,6 +222,18 @@ describe("architecture boundaries", () => {
     expect(reviewTypes).not.toContain("stores/wiki-review");
     expect(reviewTypes).not.toContain("StoredReview");
     expect(reviewTypes).not.toContain("export type {");
+    expect(reviewTypes).not.toContain(
+      "AddWikiReviewItemRequest extends WikiReviewRequest",
+    );
+    expect(reviewTypes).not.toContain(
+      "ListWikiReviewItemsRequest extends WikiReviewRequest",
+    );
+    expect(reviewTypes).not.toContain(
+      "WikiReviewItemRequest extends WikiReviewRequest",
+    );
+    expect(reviewTypes).not.toContain(
+      "ChangeWikiReviewItemRequest extends WikiReviewItemRequest",
+    );
   });
 
   it("keeps the sync command owning its command contract", async () => {

@@ -484,3 +484,9 @@ Sixty-eighth production slice:
 - Flattened wiki topic read and mutation request contracts in `src/services/wiki/topic-types.ts`.
 - Made each topic service verb list its own `cwd`, optional `wiki`, and topic-specific fields directly.
 - Guarded topic service request types against reintroducing broad `WikiTopicsRequest` inheritance.
+
+Sixty-ninth production slice:
+
+- Flattened wiki review add, list, item, and change request contracts in `src/services/wiki/review-types.ts`.
+- Made each review service verb list its own `cwd`, optional `wiki`, and review-specific fields directly.
+- Guarded review service request types against reintroducing `WikiReviewRequest` inheritance.
