@@ -17,6 +17,13 @@ afterEach(() => {
 });
 
 describe("ansi", () => {
+  it("can build explicit color and plain themes without reading terminal state", async () => {
+    const { makeAnsiTheme } = await import("../src/ansi-theme.js");
+
+    expect(makeAnsiTheme(false).BOLD).toBe("");
+    expect(makeAnsiTheme(true).BOLD).not.toBe("");
+  });
+
   it("treats NO_COLOR as presence-based, even when set to an empty string", async () => {
     process.env.NO_COLOR = "";
     Object.defineProperty(process.stdout, "isTTY", {

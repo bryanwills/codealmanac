@@ -90,7 +90,8 @@ describe("architecture boundaries", () => {
     expect(registerMaintenance).not.toContain("process.exitCode");
 
     expect(registerQuery).toContain("from \"./helpers.js\"");
-    expect(registerQuery).toContain("const result = await listWikis(opts)");
+    expect(registerQuery).toContain("const result = await listWikis({");
+    expect(registerQuery).toContain("color: shouldUseStdoutColor()");
     expect(registerQuery).toContain("emit(result)");
     expect(registerQuery).not.toContain("process.stdout.write(result.stdout)");
     expect(registerQuery).not.toContain("process.exitCode = result.exitCode");
@@ -250,6 +251,9 @@ describe("architecture boundaries", () => {
   it("keeps list command adapters out of registry storage mechanics", async () => {
     const listCommand = await readSource("src/cli/commands/list.ts");
     const listRender = await readSource("src/cli/commands/list-render.ts");
+    const registerQuery = await readSource(
+      "src/edges/cli/register-query-commands.ts",
+    );
     const registryService = await readSource("src/services/wiki/registry.ts");
 
     expect(existsSync(join(ROOT, "src/cli/commands/list-render.ts"))).toBe(true);
@@ -262,11 +266,17 @@ describe("architecture boundaries", () => {
     expect(listCommand).not.toContain("JSON.stringify");
     expect(listCommand).not.toContain("BLUE");
     expect(listCommand).not.toContain("BOLD");
+    expect(listCommand).not.toContain("process.stdout");
     expect(listCommand).not.toContain("no wikis registered");
     expect(listCommand).not.toContain("removed \\\"");
+    expect(listCommand).toContain("color?: boolean");
     expect(listRender).toContain("renderListWikis");
+    expect(listRender).toContain("../../ansi-theme.js");
+    expect(listRender).not.toContain("../../ansi.js");
+    expect(listRender).toContain("makeAnsiTheme(options.color === true)");
     expect(listRender).toContain("renderListDropResult");
     expect(listRender).toContain("formatPretty");
+    expect(registerQuery).toContain("shouldUseStdoutColor()");
     expect(registryService).not.toContain("export type RegisteredWiki = RegistryEntry");
   });
 

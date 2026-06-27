@@ -41,6 +41,19 @@ describe("almanac list", () => {
     });
   });
 
+  it("--verbose stays plain by default and colors only when requested", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "alpha");
+      await initWiki({ cwd: repo, name: "alpha", description: "first wiki" });
+
+      const plain = await listWikis({ verbose: true });
+      const colored = await listWikis({ verbose: true, color: true });
+
+      expect(plain.stdout).not.toContain("\x1b[");
+      expect(colored.stdout).toContain("\x1b[");
+    });
+  });
+
   it("emits JSON when --json is passed", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "alpha");

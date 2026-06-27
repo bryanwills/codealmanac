@@ -1,4 +1,4 @@
-import { BLUE, BOLD, DIM, RST } from "../../ansi.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../ansi-theme.js";
 import type { RegisteredWiki } from "../../services/wiki/registry.js";
 
 export interface ListCommandOutput {
@@ -8,7 +8,7 @@ export interface ListCommandOutput {
 
 export function renderListWikis(
   entries: RegisteredWiki[],
-  options: { json?: boolean; verbose?: boolean } = {},
+  options: { json?: boolean; verbose?: boolean; color?: boolean } = {},
 ): ListCommandOutput {
   if (options.json === true) {
     return { stdout: `${JSON.stringify(entries, null, 2)}\n`, exitCode: 0 };
@@ -16,7 +16,7 @@ export function renderListWikis(
 
   return {
     stdout: options.verbose === true
-      ? formatPretty(entries)
+      ? formatPretty(entries, makeAnsiTheme(options.color === true))
       : formatNames(entries),
     exitCode: 0,
   };
@@ -43,7 +43,9 @@ export function renderListDropResult(
  * Human-readable listing. Empty state gets a hint, while default list output
  * stays blank so scripts can treat stdout as rows only.
  */
-function formatPretty(entries: RegisteredWiki[]): string {
+function formatPretty(entries: RegisteredWiki[], theme: AnsiTheme): string {
+  const { BLUE, BOLD, DIM, RST } = theme;
+
   if (entries.length === 0) {
     return `${DIM}no wikis registered. run \`almanac init\` in a repo to create one.${RST}\n`;
   }

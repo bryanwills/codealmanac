@@ -12,6 +12,7 @@ export interface ListOptions {
   json?: boolean;
   drop?: string;
   verbose?: boolean;
+  color?: boolean;
 }
 
 export type { ListCommandOutput } from "./list-render.js";
@@ -41,6 +42,7 @@ export async function listWikis(
   return renderListWikis(reachable, {
     json: options.json,
     verbose: options.verbose,
+    color: options.color,
   });
 }
 

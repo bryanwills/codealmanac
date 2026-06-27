@@ -24,6 +24,10 @@ export function parsePositiveInt(value: string): number {
   return n;
 }
 
+export function shouldUseStdoutColor(): boolean {
+  return process.stdout.isTTY === true && !("NO_COLOR" in process.env);
+}
+
 export async function readStdin(): Promise<string> {
   if (process.stdin.isTTY === true) return "";
   const chunks: Buffer[] = [];

@@ -6,6 +6,7 @@ import {
   emit,
   parsePositiveInt,
   readStdin,
+  shouldUseStdoutColor,
 } from "./helpers.js";
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
@@ -206,7 +207,10 @@ export function registerQueryCommands(program: Command): void {
           await autoRegisterIfNeeded(process.cwd());
         }
         const { listWikis } = await import("../../cli/commands/list.js");
-        const result = await listWikis(opts);
+        const result = await listWikis({
+          ...opts,
+          color: shouldUseStdoutColor(),
+        });
         emit(result);
       },
     );
