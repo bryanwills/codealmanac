@@ -32,6 +32,15 @@ export interface UnlinkWikiTopicsRequest extends WikiTopicsRequest {
   parent: string;
 }
 
+export interface RenameWikiTopicRequest extends WikiTopicsRequest {
+  oldSlug: string;
+  newSlug: string;
+}
+
+export interface DeleteWikiTopicRequest extends WikiTopicsRequest {
+  slug: string;
+}
+
 export interface WikiTopicRecord {
   slug: string;
   title: string | null;
@@ -72,3 +81,20 @@ export type UnlinkWikiTopicsResult =
   | { status: "unlinked"; child: string; parent: string }
   | { status: "no-edge"; child: string; parent: string }
   | { status: "empty-slug" };
+
+export type RenameWikiTopicResult =
+  | {
+      status: "renamed";
+      oldSlug: string;
+      newSlug: string;
+      pagesUpdated: number;
+    }
+  | { status: "unchanged"; slug: string }
+  | { status: "empty-slug" }
+  | { status: "missing"; slug: string }
+  | { status: "already-exists"; slug: string };
+
+export type DeleteWikiTopicResult =
+  | { status: "deleted"; slug: string; pagesUpdated: number }
+  | { status: "empty-slug" }
+  | { status: "missing"; slug: string };

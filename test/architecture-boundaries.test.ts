@@ -93,17 +93,29 @@ describe("architecture boundaries", () => {
 
   it("keeps service-backed topic mutation adapters out of write mechanics", async () => {
     const createCommand = await readSource("src/cli/commands/topics/create.ts");
+    const deleteCommand = await readSource("src/cli/commands/topics/delete.ts");
     const describeCommand = await readSource("src/cli/commands/topics/describe.ts");
     const linkCommand = await readSource("src/cli/commands/topics/link.ts");
+    const renameCommand = await readSource("src/cli/commands/topics/rename.ts");
     const unlinkCommand = await readSource("src/cli/commands/topics/unlink.ts");
 
-    for (const source of [createCommand, describeCommand, linkCommand, unlinkCommand]) {
+    for (const source of [
+      createCommand,
+      deleteCommand,
+      describeCommand,
+      linkCommand,
+      renameCommand,
+      unlinkCommand,
+    ]) {
       expect(source).toContain("services/wiki/topics.js");
       expect(source).not.toContain("wiki/indexer");
       expect(source).not.toContain("wiki/topics/yaml");
       expect(source).not.toContain("runIndexer");
       expect(source).not.toContain("openFreshTopicsWorkspace");
     }
+
+    expect(existsSync(join(ROOT, "src/cli/commands/topics/workspace.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/topics/page-rewrite.ts"))).toBe(false);
   });
 
   it("keeps registry persistence in an explicit store", () => {

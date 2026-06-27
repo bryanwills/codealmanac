@@ -42,11 +42,15 @@ sources:
   - id: topic-mutation-service
     type: file
     path: src/services/wiki/topic-mutations.ts
-    note: Mutation workflows for create/link/describe/unlink.
+    note: Mutation workflows for create/link/describe/unlink/rename/delete.
   - id: topic-workspace-service
     type: file
     path: src/services/wiki/topic-workspace.ts
     note: Internal service helper for fresh topic index and YAML workspace.
+  - id: topic-page-rewrite-service
+    type: file
+    path: src/services/wiki/topic-page-rewrite.ts
+    note: Service helper for rewriting page frontmatter during topic mutations.
   - id: tag
     type: file
     path: src/cli/commands/tag.ts
