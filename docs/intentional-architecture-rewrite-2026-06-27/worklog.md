@@ -755,3 +755,9 @@ One-hundred-thirteenth production slice:
 - Split config command rendering into `src/cli/commands/config-render.ts`.
 - Moved config table/JSON output, unknown-key text, missing-value text, rejected mutation output, and set/unset success text out of `src/cli/commands/config.ts`.
 - Kept `src/cli/commands/config.ts` focused on parsing config keys and invoking config service workflows.
+
+One-hundred-fourteenth production slice:
+
+- Split update command rendering into `src/cli/commands/update-render.ts`.
+- Moved update workflow result text, registry failure output, deprecated notifier warnings, and install result output mapping out of `src/cli/commands/update.ts`.
+- Kept `src/cli/commands/update.ts` focused on invoking the update service workflow.

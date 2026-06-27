@@ -620,12 +620,17 @@ describe("architecture boundaries", () => {
 
   it("keeps update command adapters out of update workflow mechanics", async () => {
     const updateCommand = await readSource("src/cli/commands/update.ts");
+    const updateRender = await readSource("src/cli/commands/update-render.ts");
     const updateServiceIndex = await readSource("src/services/update/index.ts");
     const updateService = await readSource("src/services/update/update.ts");
     const updateTypes = await readSource("src/services/update/types.ts");
 
+    expect(existsSync(join(ROOT, "src/cli/commands/update-render.ts"))).toBe(
+      true,
+    );
     expect(updateServiceIndex).not.toContain("platform/update");
     expect(updateCommand).toContain("services/update/index.js");
+    expect(updateCommand).toContain("./update-render.js");
     expect(updateCommand).not.toContain("platform/update");
     expect(updateCommand).not.toContain("readConfig");
     expect(updateCommand).not.toContain("writeConfig");
@@ -634,6 +639,17 @@ describe("architecture boundaries", () => {
     expect(updateCommand).not.toContain("acquireUpdateLock");
     expect(updateCommand).not.toContain("installLatestPackage");
     expect(updateCommand).not.toContain("spawn");
+    expect(updateCommand).not.toContain("stdout:");
+    expect(updateCommand).not.toContain("stderr:");
+    expect(updateCommand).not.toContain("exitCode:");
+    expect(updateCommand).not.toContain("registry.npmjs.org");
+    expect(updateCommand).not.toContain("already dismissed");
+    expect(updateCommand).not.toContain("update notifier enabled");
+    expect(updateCommand).not.toContain("install-result");
+
+    expect(updateRender).toContain("renderUpdateResult");
+    expect(updateRender).toContain("renderNotifierUpdated");
+    expect(updateRender).toContain("registryFailureSuffix");
 
     expect(updateService).not.toContain("stdout:");
     expect(updateService).not.toContain("stderr:");
