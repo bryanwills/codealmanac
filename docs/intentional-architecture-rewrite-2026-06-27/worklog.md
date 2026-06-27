@@ -635,3 +635,9 @@ Ninety-third production slice:
 - Split persisted config patch construction into `src/config/stored-patch.ts`.
 - Moved raw-object cloning, minimal stored-value updates, default pruning, legacy `capture_since` removal, and empty-object pruning out of `src/config/store.ts`.
 - Kept `src/config/store.ts` focused on config file paths, legacy config migration, raw config reads, user/project merge reads, atomic writes, and automation sync timestamp ensuring.
+
+Ninety-fourth production slice:
+
+- Split job run projection concerns out of `src/jobs/projections/view.ts` into named projection modules.
+- Moved agent trace derivation into `src/jobs/projections/agent-traces.ts`, warning derivation into `src/jobs/projections/warnings.ts`, and shared text helpers into `src/jobs/projections/text.ts`.
+- Kept `src/jobs/projections/view.ts` focused on display title, subtitle, transcript source, and enriched job run view assembly.

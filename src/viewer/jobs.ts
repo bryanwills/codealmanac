@@ -7,10 +7,10 @@ import {
   toJobView,
 } from "../jobs/index.js";
 import {
-  deriveJobAgentTraces,
-  deriveJobWarnings,
   enrichJobView,
 } from "../jobs/projections/view.js";
+import { deriveJobAgentTraces } from "../jobs/projections/agent-traces.js";
+import { deriveJobWarnings } from "../jobs/projections/warnings.js";
 import { readJobLogEvents } from "../jobs/projections/log-events.js";
 import { isLocalPidAlive } from "../platform/process.js";
 import type {

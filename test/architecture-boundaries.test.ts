@@ -350,6 +350,23 @@ describe("architecture boundaries", () => {
     expect(jobsCommand).not.toContain("function missingWiki");
   });
 
+  it("keeps job run projection concerns in named modules", async () => {
+    const projectionView = await readSource("src/jobs/projections/view.ts");
+    const agentTraces = await readSource("src/jobs/projections/agent-traces.ts");
+    const warnings = await readSource("src/jobs/projections/warnings.ts");
+    const viewerJobs = await readSource("src/viewer/jobs.ts");
+
+    expect(existsSync(join(ROOT, "src/jobs/projections/agent-traces.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/jobs/projections/warnings.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/jobs/projections/text.ts"))).toBe(true);
+    expect(projectionView).not.toContain("export function deriveJobAgentTraces");
+    expect(projectionView).not.toContain("export function deriveJobWarnings");
+    expect(agentTraces).toContain("export function deriveJobAgentTraces");
+    expect(warnings).toContain("export function deriveJobWarnings");
+    expect(viewerJobs).toContain("projections/agent-traces.js");
+    expect(viewerJobs).toContain("projections/warnings.js");
+  });
+
   it("keeps job record persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/jobs/records.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/jobs/records.ts"))).toBe(false);
