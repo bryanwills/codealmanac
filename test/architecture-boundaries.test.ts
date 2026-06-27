@@ -202,6 +202,14 @@ describe("architecture boundaries", () => {
     expect(reviewTypes).not.toContain("export type {");
   });
 
+  it("keeps the sync command owning its command contract", async () => {
+    const syncCommand = await readSource("src/cli/commands/sync.ts");
+
+    expect(syncCommand).not.toContain("import type { CommandResult }");
+    expect(syncCommand).not.toContain("extends SyncWorkflowOptions");
+    expect(syncCommand).toContain("toSyncWorkflowOptions");
+  });
+
   it("keeps jobs command adapters out of job storage and process mechanics", async () => {
     const jobsServiceIndex = await readSource("src/services/jobs/index.ts");
     const jobsServiceTypes = await readSource("src/services/jobs/types.ts");

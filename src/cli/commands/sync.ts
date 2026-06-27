@@ -1,20 +1,33 @@
-import type { CommandResult } from "../helpers.js";
 import { renderError, renderOutcome } from "../outcome.js";
 import {
   runSyncWorkflow,
-  type SyncWorkflowSummary,
   type SyncWorkflowOptions,
+  type SyncWorkflowSummary,
 } from "../../services/sync/index.js";
 
-export interface SyncCommandOptions extends SyncWorkflowOptions {
+export interface SyncCommandOptions {
   cwd: string;
+  mode?: "sync" | "status";
+  from?: string;
+  quiet?: string;
+  using?: string;
   json?: boolean;
+  now?: Date;
+  homeDir?: string;
+  configPath?: string;
+  startBackground?: SyncWorkflowOptions["startBackground"];
+}
+
+export interface SyncCommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
 }
 
 export async function runSyncCommand(
   options: SyncCommandOptions,
-): Promise<CommandResult> {
-  const result = await runSyncWorkflow(options);
+): Promise<SyncCommandResult> {
+  const result = await runSyncWorkflow(toSyncWorkflowOptions(options));
   if (result.status === "invalid") {
     return renderError(result.error, { json: options.json });
   }
@@ -24,7 +37,7 @@ export async function runSyncCommand(
 function renderSyncSummary(
   summary: SyncWorkflowSummary,
   json: boolean | undefined,
-): CommandResult {
+): SyncCommandResult {
   const statusMode = summary.mode === "status";
   const action = statusMode ? "ready" : "started";
   const actionCount = statusMode ? summary.ready.length : summary.started.length;
@@ -63,4 +76,19 @@ function renderSyncSummary(
     },
     { json, stdout: `${lines.join("\n")}\n` },
   );
+}
+
+function toSyncWorkflowOptions(
+  options: SyncCommandOptions,
+): SyncWorkflowOptions {
+  return {
+    mode: options.mode,
+    from: options.from,
+    quiet: options.quiet,
+    using: options.using,
+    now: options.now,
+    homeDir: options.homeDir,
+    configPath: options.configPath,
+    startBackground: options.startBackground,
+  };
 }

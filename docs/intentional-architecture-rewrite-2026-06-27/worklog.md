@@ -389,3 +389,10 @@ Fifty-third production slice:
 - Mapped `installLatestPackage()` output through `updateInstallResultFromPlatform` before returning an update workflow install result.
 - Used neutral service fields (`output`, `errorOutput`, `code`) and mapped them back to CLI `stdout`, `stderr`, and `exitCode` in `src/cli/commands/update.ts`.
 - Guarded update service types against regressing to a platform install-result alias.
+
+Fifty-fourth production slice:
+
+- Made `SyncCommandOptions` an explicit command input contract instead of extending `SyncWorkflowOptions`.
+- Made `SyncCommandResult` an explicit sync command output contract instead of importing the generic `CommandResult`.
+- Added `toSyncWorkflowOptions` at the sync command/service boundary.
+- Guarded the sync command against regressing to service option inheritance or generic command output aliases.
