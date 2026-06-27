@@ -90,6 +90,7 @@ export function registerSetupCommands(
           claudeApiKeySet: process.env.ANTHROPIC_API_KEY !== undefined &&
             process.env.ANTHROPIC_API_KEY.length > 0,
           environment: process.env,
+          nodeVersion: process.version,
           json: opts.json,
           installOnly: opts.installOnly,
           wikiOnly: opts.wikiOnly,

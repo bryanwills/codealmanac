@@ -25,13 +25,12 @@ export async function gatherInstallChecks(
   const { installPath, isEphemeral } = classifyInstallPath(rawPath);
   checks.push(describeInstallPath(installPath, isEphemeral));
 
-  const nodeVersion = options.nodeVersion ?? process.version;
   const sqlite = options.sqliteProbe ?? probeBetterSqlite3();
   checks.push({
     status: sqlite.ok ? "ok" : "problem",
     key: "install.sqlite",
     message: sqlite.ok
-      ? `better-sqlite3 native binding OK (Node ${nodeVersion})`
+      ? `better-sqlite3 native binding OK (Node ${options.nodeVersion})`
       : `better-sqlite3 native binding failed: ${sqlite.summary}`,
     fix: sqlite.ok
       ? undefined

@@ -41,6 +41,8 @@ export interface DoctorOptions {
   claudeApiKeySet: boolean;
   /** Environment inherited by agent-readiness probes. */
   environment: NodeJS.ProcessEnv;
+  /** Node.js version running the current CLI process. */
+  nodeVersion: string;
 
   /** Emit structured JSON instead of the colored report. */
   json?: boolean;
@@ -78,8 +80,6 @@ export interface DoctorOptions {
   installPath?: string;
   /** Override the reported codealmanac version. */
   versionOverride?: string;
-  /** Override the reported Node version (for binding-mismatch tests). */
-  nodeVersion?: string;
   /** Override the update-state.json path (tests sandbox to tmpdir). */
   updateStatePath?: string;
   /** Override the config.json path (tests sandbox to tmpdir). */

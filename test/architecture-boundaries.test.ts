@@ -1587,8 +1587,11 @@ describe("architecture boundaries", () => {
     expect(doctorFormat).not.toContain("DoctorOptions");
     expect(diagnosticsTypes).not.toContain("stdout?:");
     expect(diagnosticsTypes).toContain("claudeApiKeySet: boolean");
+    expect(diagnosticsTypes).toContain("nodeVersion: string");
     expect(installDiagnostics).not.toContain("process.env");
+    expect(installDiagnostics).not.toContain("process.version");
     expect(setupRegistration).toContain("shouldUseStdoutColor()");
+    expect(setupRegistration).toContain("nodeVersion: process.version");
     expect(setupRegistration).not.toContain("color: process.stdout.isTTY === true");
     expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
     expect(diagnosticsTypes).not.toContain("from \"../../agent/types.js\"");

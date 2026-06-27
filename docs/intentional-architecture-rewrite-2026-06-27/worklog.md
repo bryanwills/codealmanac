@@ -926,3 +926,10 @@ One-hundred-thirty-ninth production slice:
 - Moved setup prompt helpers, target selection, provider/model selection, setup planning, and global install prompts off direct `process.stdin` reads.
 - Kept the CLI edge and sqlite-free setup shortcut as the owners of the real process stdin stream.
 - Updated interactive setup tests to write to injected streams instead of global stdin and added an architecture guard against setup command modules reintroducing direct stdin ownership.
+
+One-hundred-fortieth production slice:
+
+- Made `DoctorOptions.nodeVersion` required instead of letting install diagnostics default to `process.version`.
+- Moved the real Node version read into `src/edges/cli/register-setup-commands.ts` for `almanac doctor`.
+- Kept `src/services/diagnostics/install.ts` focused on composing install checks from explicit diagnostic facts.
+- Added an architecture guard so diagnostics services cannot reintroduce `process.version` ownership.

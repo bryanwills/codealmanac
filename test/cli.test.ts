@@ -635,6 +635,7 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       environment: process.env,
       installOnly: true,
       json: undefined,
+      nodeVersion: process.version,
       wikiOnly: undefined,
     });
   });
