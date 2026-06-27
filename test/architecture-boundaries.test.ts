@@ -44,20 +44,24 @@ describe("architecture boundaries", () => {
 
   it("keeps search command adapters out of index storage mechanics", async () => {
     const searchCommand = await readSource("src/cli/commands/search.ts");
+    const searchService = await readSource("src/services/wiki/search.ts");
 
     expect(searchCommand).toContain("services/wiki/search.js");
     expect(searchCommand).not.toContain("wiki/indexer");
     expect(searchCommand).not.toContain("openIndex");
     expect(searchCommand).not.toContain("resolveWikiRoot");
+    expect(searchService).not.toContain("export type WikiSearchResult = query");
   });
 
   it("keeps show command adapters out of index storage mechanics", async () => {
     const showCommand = await readSource("src/cli/commands/show/index.ts");
+    const pageViewService = await readSource("src/services/wiki/page-view.ts");
 
     expect(showCommand).toContain("services/wiki/page-view.js");
     expect(showCommand).not.toContain("wiki/indexer");
     expect(showCommand).not.toContain("openIndex");
     expect(showCommand).not.toContain("resolveWikiRoot");
+    expect(pageViewService).not.toContain("export type WikiPageView = query");
   });
 
   it("keeps health command adapters out of index storage mechanics", async () => {

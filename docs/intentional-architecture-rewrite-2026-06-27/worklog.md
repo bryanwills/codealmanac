@@ -303,3 +303,9 @@ Fortieth production slice:
 - Made `WikiTopicSummary` an explicit service read model instead of a query-layer alias.
 - Mapped query topic summaries into the service-owned shape inside `src/services/wiki/topic-read.ts`.
 - Guarded topic service types against importing query-layer contracts.
+
+Forty-first production slice:
+
+- Made search and page-view service result types explicit instead of aliases over `src/wiki/query/`.
+- Added service-local mappers so query rows are normalized once before CLI formatters see them.
+- Guarded the search and show service contracts against regressing to query-layer aliases.

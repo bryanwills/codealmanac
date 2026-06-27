@@ -18,7 +18,15 @@ export interface SearchWikiPagesRequest {
   wiki?: string;
 }
 
-export type WikiSearchResult = query.search.SearchPageResult;
+export interface WikiSearchResult {
+  slug: string;
+  title: string | null;
+  summary: string | null;
+  updated_at: number;
+  archived_at: number | null;
+  superseded_by: string | null;
+  topics: string[];
+}
 
 export async function searchWikiPages(
   request: SearchWikiPagesRequest,
@@ -31,8 +39,22 @@ export async function searchWikiPages(
 
   const db = openIndex(join(repoRoot, ".almanac", "index.db"));
   try {
-    return query.search.searchPages(db, request);
+    return query.search.searchPages(db, request).map(searchResultFromQuery);
   } finally {
     db.close();
   }
+}
+
+function searchResultFromQuery(
+  result: query.search.SearchPageResult,
+): WikiSearchResult {
+  return {
+    slug: result.slug,
+    title: result.title,
+    summary: result.summary,
+    updated_at: result.updated_at,
+    archived_at: result.archived_at,
+    superseded_by: result.superseded_by,
+    topics: result.topics,
+  };
 }
