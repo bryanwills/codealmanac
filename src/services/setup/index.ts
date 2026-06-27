@@ -39,6 +39,7 @@ export {
 export type {
   SetupAgentChoiceState,
   SetupAgentSelection,
+  SetupSpawnCliFn,
 } from "./agent-choice.js";
 export type {
   ProviderSetupView,

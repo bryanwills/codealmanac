@@ -1,5 +1,7 @@
-import type { SpawnCliFn } from "../../../agent/types.js";
-import type { SetupInstructionTargetId } from "../../../services/setup/index.js";
+import type {
+  SetupInstructionTargetId,
+  SetupSpawnCliFn,
+} from "../../../services/setup/index.js";
 export {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
@@ -88,7 +90,7 @@ export interface SetupOptions {
 
   // ─── Injection points (tests only) ────────────────────────────────
   /** Override the subprocess spawner for `claude auth status`. */
-  spawnCli?: SpawnCliFn;
+  spawnCli?: SetupSpawnCliFn;
   /** Override the launchd plist path. */
   automationPlistPath?: string;
   /** Override the Garden launchd plist path. */

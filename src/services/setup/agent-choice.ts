@@ -16,6 +16,8 @@ import {
   type GlobalConfig,
 } from "../../config/index.js";
 
+export type SetupSpawnCliFn = SpawnCliFn;
+
 export interface SetupAgentChoiceState {
   config: GlobalConfig;
   selected: string;
@@ -29,7 +31,7 @@ export type SetupAgentSelection =
 export async function readSetupAgentChoiceState(input: {
   requested?: string;
   includeView: boolean;
-  spawnCli?: SpawnCliFn;
+  spawnCli?: SetupSpawnCliFn;
 }): Promise<SetupAgentChoiceState> {
   const config = await readConfig();
   return {
@@ -43,7 +45,7 @@ export async function readSetupAgentChoiceState(input: {
 
 export async function refreshSetupAgentChoiceView(input: {
   config: GlobalConfig;
-  spawnCli?: SpawnCliFn;
+  spawnCli?: SetupSpawnCliFn;
 }): Promise<ProviderSetupView> {
   return await buildProviderSetupView({
     config: input.config,

@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 
-import type { SpawnCliFn } from "../../../agent/types.js";
 import type {
   ProviderSetupView,
   ProviderModelChoice,
   AgentProviderId,
+  SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
 import {
   readSetupAgentChoiceState,
@@ -34,7 +34,7 @@ export async function chooseDefaultAgent(args: {
   interactive: boolean;
   requested?: string;
   requestedModel?: string;
-  spawnCli?: SpawnCliFn;
+  spawnCli?: SetupSpawnCliFn;
 }): Promise<AgentChoice> {
   const state = await readSetupAgentChoiceState({
     requested: args.requested,

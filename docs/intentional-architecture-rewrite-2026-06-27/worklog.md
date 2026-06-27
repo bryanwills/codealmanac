@@ -230,3 +230,9 @@ Twenty-eighth production slice:
 
 - Moved the `topics show` fallback title decision into the wiki topic read service so `src/cli/commands/topics/read.ts` renders the service record without importing `src/wiki/topics/yaml.ts`.
 - Split `topicTitleFromSlug` into `src/wiki/topics/title.ts` so fallback title generation is a named topic helper instead of a YAML parser export.
+
+Twenty-ninth production slice:
+
+- Introduced `SetupSpawnCliFn` as the setup service-facing subprocess callback type.
+- Updated setup command UI files to type `spawnCli` through `src/services/setup/index.ts` instead of importing `src/agent/types.ts` directly.
+- Tightened architecture guards so setup command files cannot reintroduce direct `agent/` imports.

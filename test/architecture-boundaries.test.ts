@@ -299,6 +299,7 @@ describe("architecture boundaries", () => {
 
     expect(existsSync(join(ROOT, "src/services/setup/agent-choice.ts"))).toBe(true);
     expect(setupAgentChoice).toContain("services/setup/index.js");
+    expect(setupAgentChoice).not.toContain("../../../agent");
     expect(setupAgentChoice).not.toContain("agent/readiness/view");
     expect(setupAgentChoice).not.toContain("../../../config/index");
     expect(setupAgentChoice).not.toContain("readConfig");
@@ -328,6 +329,7 @@ describe("architecture boundaries", () => {
     );
 
     expect(existsSync(join(ROOT, "src/services/setup/instructions.ts"))).toBe(true);
+    expect(setupIndex).not.toContain("../../../agent");
     for (const source of [setupIndex, guidesStep, guides, targetChoice]) {
       expect(source).toContain("services/setup/index.js");
       expect(source).not.toContain("agent/install-targets");
