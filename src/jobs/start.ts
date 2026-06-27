@@ -1,18 +1,10 @@
 import type { HarnessEvent, HarnessResult } from "../harness/events.js";
 import type { HarnessRunHooks } from "../harness/types.js";
 import type { OperationSpec } from "../operations/spec.js";
-import {
-  startJobWorkerProcess,
-  type SpawnBackgroundFn,
-} from "./background-process.js";
 import { createJobId } from "./ids.js";
 import { initializeJobLog } from "../stores/jobs/logs.js";
 import { executeStartedJob, type StartJobResult } from "./executor.js";
-import {
-  buildQueuedJobRecord,
-  buildStartedJobRecord,
-  finishJobRecord,
-} from "./record-factory.js";
+import { buildStartedJobRecord } from "./record-factory.js";
 import {
   jobRecordPath,
   readJobRecord,
@@ -21,7 +13,6 @@ import {
   writeJobRecord,
 } from "../stores/jobs/records.js";
 import { acquireJobWorkerLock } from "../stores/jobs/worker-lock.js";
-import { writeJobSpec } from "../stores/jobs/specs.js";
 import { cancelledRecordIfRequested } from "./finalization.js";
 import type { JobRecord } from "./types.js";
 
@@ -36,21 +27,6 @@ export interface StartJobOptions {
     spec: OperationSpec,
     hooks?: HarnessRunHooks,
   ) => Promise<HarnessResult>;
-}
-
-export interface StartBackgroundJobOptions {
-  repoRoot: string;
-  spec: OperationSpec;
-  jobId?: string;
-  now?: () => Date;
-  spawnBackground?: SpawnBackgroundFn;
-  entrypoint?: string;
-}
-
-export interface StartBackgroundJobResult {
-  jobId: string;
-  record: JobRecord;
-  childPid: number;
 }
 
 export async function startForegroundJob(
@@ -166,61 +142,6 @@ export async function startQueuedJob(
     onEvent: options.onEvent,
     harnessRun: options.harnessRun,
   });
-}
-
-export async function startBackgroundJob(
-  options: StartBackgroundJobOptions,
-): Promise<StartBackgroundJobResult> {
-  const now = options.now ?? (() => new Date());
-  const jobId = options.jobId ?? createJobId(now());
-  await writeJobSpec(options.repoRoot, jobId, options.spec);
-  const recordPath = jobRecordPath(options.repoRoot, jobId);
-  const queued = buildQueuedJobRecord({
-    jobId,
-    repoRoot: options.repoRoot,
-    spec: options.spec,
-    queuedAt: now(),
-  });
-  await writeJobRecord(recordPath, queued);
-  await initializeJobLog(queued.logPath);
-
-  const entrypoint = options.entrypoint ?? process.argv[1];
-  if (entrypoint === undefined || entrypoint.length === 0) {
-    const error = "cannot start background process without an entrypoint";
-    await writeJobRecord(
-      recordPath,
-      finishJobRecord({
-        record: queued,
-        status: "failed",
-        finishedAt: now(),
-        error,
-      }),
-    );
-    throw new Error(error);
-  }
-
-  let child;
-  try {
-    child = startJobWorkerProcess({
-      repoRoot: options.repoRoot,
-      entrypoint,
-      spawnBackground: options.spawnBackground,
-    });
-  } catch (err: unknown) {
-    await writeJobRecord(
-      recordPath,
-      finishJobRecord({
-        record: queued,
-        status: "failed",
-        finishedAt: now(),
-        error: err instanceof Error ? err.message : String(err),
-      }),
-    );
-    throw err;
-  }
-  child.unref?.();
-  const childPid = child.pid ?? 0;
-  return { jobId, record: queued, childPid };
 }
 
 function cancelledBeforeStartResult(

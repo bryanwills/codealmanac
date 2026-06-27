@@ -683,3 +683,9 @@ One-hundred-first production slice:
 - Split jobs service view normalization into `src/services/jobs/view.ts`.
 - Moved runtime `JobView` to service `JobServiceView` mapping and terminal display-status detection out of `src/services/jobs/jobs.ts`.
 - Kept `src/services/jobs/jobs.ts` focused on list/read/log/cancel/stream service verbs over job records and logs.
+
+One-hundred-second production slice:
+
+- Split background job start lifecycle into `src/jobs/background-start.ts`.
+- Moved background spec persistence, queued record creation, log initialization, worker process launch, and launch-failure marking out of `src/jobs/start.ts`.
+- Kept `src/jobs/start.ts` focused on foreground execution and claimed queued-job execution.

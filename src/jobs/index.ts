@@ -1,6 +1,8 @@
 export { createJobId } from "./ids.js";
 export {
   startBackgroundJob,
+} from "./background-start.js";
+export {
   startForegroundJob,
   startQueuedJob,
 } from "./start.js";
@@ -53,6 +55,8 @@ export type { AppendJobEventOptions, JobLogEntry } from "./log-entry.js";
 export type {
   StartBackgroundJobOptions,
   StartBackgroundJobResult,
+} from "./background-start.js";
+export type {
   StartJobOptions,
 } from "./start.js";
 export type {
