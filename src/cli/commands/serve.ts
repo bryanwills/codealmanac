@@ -1,15 +1,17 @@
-import { startViewerServer, waitForInterrupt } from "../../viewer/server.js";
+import { startViewerServer } from "../../viewer/server.js";
 import { renderServeStartup, type ServeStartup } from "./serve-render.js";
 
 export type { ServeStartup } from "./serve-render.js";
 
 export type ServeWriter = (chunk: string) => void | Promise<void>;
+export type ServeWaitForStop = () => Promise<void>;
 
 export interface ServeOptions {
   cwd: string;
   host?: string;
   port?: number;
   write?: ServeWriter;
+  waitForStop: ServeWaitForStop;
 }
 
 export async function runServe(options: ServeOptions): Promise<void> {
@@ -20,7 +22,7 @@ export async function runServe(options: ServeOptions): Promise<void> {
 
   try {
     await writeServeStartup(options.write, { url: server.url });
-    await waitForInterrupt();
+    await options.waitForStop();
   } finally {
     await server.close();
   }

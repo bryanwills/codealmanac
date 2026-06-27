@@ -171,15 +171,3 @@ function sendJson(res: ServerResponse, status: number, value: unknown): void {
 function isUnknownWikiError(error: unknown): error is Error {
   return error instanceof UnknownWikiError || error instanceof UnreachableWikiError;
 }
-
-export async function waitForInterrupt(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    const done = () => {
-      process.off("SIGINT", done);
-      process.off("SIGTERM", done);
-      resolve();
-    };
-    process.once("SIGINT", done);
-    process.once("SIGTERM", done);
-  });
-}

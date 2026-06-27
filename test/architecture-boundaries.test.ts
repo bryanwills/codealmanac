@@ -256,6 +256,8 @@ describe("architecture boundaries", () => {
   it("keeps serve startup rendering out of server lifetime control", async () => {
     const serveCommand = await readSource("src/cli/commands/serve.ts");
     const serveRender = await readSource("src/cli/commands/serve-render.ts");
+    const viewerServer = await readSource("src/viewer/server.ts");
+    const cliInterrupt = await readSource("src/edges/cli/interrupt.ts");
     const registerQueryCommands = await readSource(
       "src/edges/cli/register-query-commands.ts",
     );
@@ -263,13 +265,24 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/serve-render.ts"))).toBe(
       true,
     );
+    expect(existsSync(join(ROOT, "src/edges/cli/interrupt.ts"))).toBe(true);
     expect(serveCommand).toContain("viewer/server.js");
     expect(serveCommand).toContain("./serve-render.js");
+    expect(serveCommand).toContain("waitForStop");
     expect(serveCommand).not.toContain("process.stdout");
+    expect(serveCommand).not.toContain("process.once");
+    expect(serveCommand).not.toContain("SIGINT");
     expect(serveCommand).not.toContain("almanac console:");
     expect(serveCommand).not.toContain("Press Ctrl+C");
     expect(serveRender).toContain("almanac console:");
     expect(serveRender).toContain("Press Ctrl+C");
+    expect(viewerServer).not.toContain("process.once");
+    expect(viewerServer).not.toContain("process.off");
+    expect(viewerServer).not.toContain("SIGINT");
+    expect(viewerServer).not.toContain("SIGTERM");
+    expect(cliInterrupt).toContain("process.once");
+    expect(cliInterrupt).toContain("SIGINT");
+    expect(registerQueryCommands).toContain("waitForCliInterrupt");
     expect(registerQueryCommands).toContain("write: (chunk)");
   });
 

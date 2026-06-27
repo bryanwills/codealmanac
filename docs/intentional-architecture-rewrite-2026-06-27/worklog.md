@@ -890,3 +890,10 @@ One-hundred-thirty-fourth production slice:
 - Removed `process.pid` defaults from `src/jobs/record-factory.ts` and `src/jobs/start.ts`; CLI edges now pass the current process id when invoking foreground operations or the internal worker.
 - Kept lock-owner and temp-file PIDs inside stores/platform code because those are persistence and platform mechanics rather than product job-record ownership.
 - Added an architecture guard so job record startup, record construction, and worker claiming cannot reintroduce ambient process id reads.
+
+One-hundred-thirty-fifth production slice:
+
+- Moved `almanac serve` interrupt waiting out of `src/viewer/server.ts` and into the CLI edge at `src/edges/cli/interrupt.ts`.
+- Made `runServe` receive an explicit `waitForStop` boundary instead of owning process signal handlers.
+- Kept `src/viewer/server.ts` focused on HTTP/API/static serving and server cleanup through `close()`.
+- Added a focused serve command test and architecture guard so viewer/server cannot reintroduce process signal ownership.

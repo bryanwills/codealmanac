@@ -5,6 +5,7 @@ import {
   jobRecordPath,
   writeJobRecord,
 } from "../src/jobs/index.js";
+import { runServe } from "../src/cli/commands/serve.js";
 import { renderServeStartup } from "../src/cli/commands/serve-render.js";
 import { addEntry } from "../src/stores/wiki-registry/index.js";
 import { startViewerServer } from "../src/viewer/server.js";
@@ -15,6 +16,25 @@ describe("serve command rendering", () => {
     expect(renderServeStartup({ url: "http://127.0.0.1:3927" })).toEqual({
       stdout: "almanac console: http://127.0.0.1:3927\nPress Ctrl+C to stop.\n",
     });
+  });
+
+  it("waits through an injected stop boundary and closes the viewer server", async () => {
+    const chunks: string[] = [];
+    let stopped = false;
+
+    await runServe({
+      cwd: "/repo",
+      port: 0,
+      write: (chunk) => {
+        chunks.push(chunk);
+      },
+      waitForStop: async () => {
+        stopped = true;
+      },
+    });
+
+    expect(stopped).toBe(true);
+    expect(chunks.join("")).toContain("almanac console: http://");
   });
 });
 

@@ -8,6 +8,7 @@ import {
   readStdin,
   shouldUseStdoutColor,
 } from "./helpers.js";
+import { waitForCliInterrupt } from "./interrupt.js";
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
 
@@ -24,6 +25,7 @@ export function registerQueryCommands(program: Command): void {
         cwd: process.cwd(),
         host: opts.host,
         port: opts.port,
+        waitForStop: waitForCliInterrupt,
         write: (chunk) => {
           process.stdout.write(chunk);
         },
