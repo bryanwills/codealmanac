@@ -8,18 +8,18 @@ topics:
   - storage
 verified: 2026-05-31T00:00:00.000Z
 sources:
-  - id: index
+  - id: store-index
     type: file
-    path: src/wiki/registry/index.ts
-    note: Migrated from legacy files.
+    path: src/stores/wiki-registry/index.ts
+    note: Public export surface for registry persistence.
   - id: store
     type: file
-    path: src/wiki/registry/store.ts
-    note: Migrated from legacy files.
+    path: src/stores/wiki-registry/store.ts
+    note: Atomic read/write implementation for the machine-local registry.
   - id: autoregister
     type: file
     path: src/wiki/registry/autoregister.ts
-    note: Migrated from legacy files.
+    note: Silent current-repo registration policy.
   - id: paths
     type: file
     path: src/paths.ts
@@ -34,8 +34,8 @@ sources:
     note: Migrated from legacy files.
   - id: register-query-commands
     type: file
-    path: src/cli/register-query-commands.ts
-    note: Migrated from legacy files.
+    path: src/edges/cli/register-query-commands.ts
+    note: Query command registration calls auto-registration before reads.
 
 ---
 
@@ -45,7 +45,7 @@ sources:
 
 ## Read/write
 
-`src/wiki/registry/store.ts` provides `readRegistry()` and `writeRegistry()`. `src/wiki/registry/index.ts` is the stable public facade for existing callers. Writes are atomic: content is written to a `.tmp` file, then renamed over the target. A missing registry file is treated as an empty array (first-run state); a malformed file is a hard error.
+`src/stores/wiki-registry/store.ts` provides `readRegistry()` and `writeRegistry()`. `src/stores/wiki-registry/index.ts` is the public export surface for callers that need registry persistence. Writes are atomic: content is written to a `.tmp` file, then renamed over the target. A missing registry file is treated as an empty array (first-run state); a malformed file is a hard error.
 
 ## Auto-registration
 
