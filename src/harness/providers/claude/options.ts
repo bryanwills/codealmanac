@@ -12,6 +12,7 @@ import { HARNESS_PROVIDER_METADATA } from "../metadata.js";
 export function buildClaudeOptions(
   spec: OperationSpec,
   resolveExecutable: () => string | undefined,
+  environment: NodeJS.ProcessEnv,
 ): ClaudeOptions {
   const tools = toClaudeTools(spec.tools ?? []);
   const agents = toClaudeAgents(spec.agents ?? {});
@@ -44,7 +45,7 @@ export function buildClaudeOptions(
     persistSession:
       spec.providerSession?.persistence === "ephemeral" ? false : undefined,
     spawnClaudeCodeProcess: spawnClaudeCodeProcessGroup,
-    env: process.env,
+    env: environment,
     ...(claudeExecutable !== undefined
       ? { pathToClaudeCodeExecutable: claudeExecutable }
       : {}),

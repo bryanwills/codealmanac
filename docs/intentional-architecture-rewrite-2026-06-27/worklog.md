@@ -841,3 +841,10 @@ One-hundred-twenty-seventh production slice:
 - Reused the CLI-edge `currentCliNodeProgram()` helper for lifecycle commands and sync commands that can enqueue background jobs.
 - Threaded the worker program through lifecycle, operation, Absorb, and sync service contracts so background worker launch facts stay edge-owned.
 - Added architecture guards so `src/jobs/background-process.ts` cannot reintroduce `process.execPath` and `src/jobs/background-start.ts` cannot reintroduce `process.argv`.
+
+One-hundred-twenty-eighth production slice:
+
+- Made Claude and Codex harness providers receive the environment through provider dependencies instead of letting lower request/option builders read `process.env`.
+- Threaded the explicit environment into Claude SDK option construction and Codex app-server request construction.
+- Added architecture guards so `src/harness/providers/claude/options.ts` and `src/harness/providers/codex/request.ts` cannot reintroduce direct `process.env` reads.
+- Added `decision-log.md` because the rewrite is now long enough that durable architectural decisions need a direct home.

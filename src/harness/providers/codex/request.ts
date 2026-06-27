@@ -9,7 +9,10 @@ export interface CodexAppServerRequest {
   env: NodeJS.ProcessEnv;
 }
 
-export function buildCodexAppServerRequest(spec: OperationSpec): CodexAppServerRequest {
+export function buildCodexAppServerRequest(
+  spec: OperationSpec,
+  environment: NodeJS.ProcessEnv,
+): CodexAppServerRequest {
   const unsupported = unsupportedCodexSpecFields(spec);
   if (unsupported.length > 0) {
     throw new Error(
@@ -20,7 +23,7 @@ export function buildCodexAppServerRequest(spec: OperationSpec): CodexAppServerR
     command: "codex",
     args: ["app-server", "--config", "mcp_servers={}", "--listen", "stdio://"],
     cwd: spec.cwd,
-    env: codexEnv(),
+    env: environment,
   };
 }
 
@@ -52,8 +55,4 @@ export function codexClientVersion(): string {
     // Fall through to a stable unknown string rather than failing runs.
   }
   return "unknown";
-}
-
-function codexEnv(): NodeJS.ProcessEnv {
-  return process.env;
 }

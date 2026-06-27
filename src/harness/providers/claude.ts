@@ -32,6 +32,7 @@ export interface ClaudeHarnessProviderDeps {
   query?: ClaudeQueryFn;
   checkAuth?: () => Promise<ClaudeAuthStatus>;
   resolveExecutable?: () => string | undefined;
+  environment?: NodeJS.ProcessEnv;
 }
 
 export function createClaudeHarnessProvider(
@@ -40,6 +41,7 @@ export function createClaudeHarnessProvider(
   const queryFn = deps.query ?? query;
   const checkAuthFn = deps.checkAuth ?? (() => checkClaudeAuth());
   const resolveExecutable = deps.resolveExecutable ?? resolveClaudeExecutable;
+  const environment = deps.environment ?? process.env;
   const metadata = HARNESS_PROVIDER_METADATA.claude;
 
   return {
@@ -52,8 +54,8 @@ export function createClaudeHarnessProvider(
         auth = { loggedIn: false };
       }
       const hasApiKey =
-        process.env.ANTHROPIC_API_KEY !== undefined &&
-        process.env.ANTHROPIC_API_KEY.length > 0;
+        environment.ANTHROPIC_API_KEY !== undefined &&
+        environment.ANTHROPIC_API_KEY.length > 0;
       const installed = resolveExecutable() !== undefined;
       const authenticated = auth.loggedIn || hasApiKey;
       const detail = authenticated
@@ -64,7 +66,7 @@ export function createClaudeHarnessProvider(
       return { id: metadata.id, installed, authenticated, detail };
     },
     run: async (spec, hooks): Promise<HarnessResult> =>
-      runClaudeHarness(spec, hooks, queryFn, resolveExecutable),
+      runClaudeHarness(spec, hooks, queryFn, resolveExecutable, environment),
   };
 }
 
@@ -75,11 +77,12 @@ async function runClaudeHarness(
   hooks: HarnessRunHooks | undefined,
   queryFn: ClaudeQueryFn,
   resolveExecutable: () => string | undefined,
+  environment: NodeJS.ProcessEnv,
 ): Promise<HarnessResult> {
   const abortController = new AbortController();
   const removeSignalHandlers = installAbortSignalHandlers(abortController);
   const options = {
-    ...buildClaudeOptions(spec, resolveExecutable),
+    ...buildClaudeOptions(spec, resolveExecutable, environment),
     abortController,
   };
   const stream = queryFn({

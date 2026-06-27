@@ -14,8 +14,10 @@ import {
 describe("Claude harness provider", () => {
   it("maps OperationSpec to Claude SDK query options", async () => {
     const calls: unknown[] = [];
+    const environment = { ANTHROPIC_API_KEY: "sk-ant-test" };
     const provider = createClaudeHarnessProvider({
       resolveExecutable: () => "/usr/local/bin/claude",
+      environment,
       query: (params) => {
         calls.push(params);
         return messages([
@@ -154,7 +156,7 @@ describe("Claude harness provider", () => {
         includePartialMessages: true,
         persistSession: false,
         pathToClaudeCodeExecutable: "/usr/local/bin/claude",
-        env: process.env,
+        env: environment,
       },
     });
   });

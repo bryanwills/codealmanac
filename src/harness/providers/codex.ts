@@ -25,6 +25,7 @@ export {
 
 export type CodexAppServerRunFn = (
   spec: OperationSpec,
+  environment: NodeJS.ProcessEnv,
   hooks?: HarnessRunHooks,
 ) => Promise<HarnessResult>;
 
@@ -35,6 +36,7 @@ export interface CodexHarnessProviderDeps {
     detail: string;
   }>;
   runAppServer?: CodexAppServerRunFn;
+  environment?: NodeJS.ProcessEnv;
 }
 
 export function createCodexHarnessProvider(
@@ -44,6 +46,7 @@ export function createCodexHarnessProvider(
   const commandExists = deps.commandExists ?? defaultCommandExists;
   const runStatus = deps.runStatus ?? defaultJobStatus;
   const runAppServer = deps.runAppServer ?? runCodexAppServer;
+  const environment = deps.environment ?? process.env;
 
   return {
     metadata,
@@ -87,7 +90,7 @@ export function createCodexHarnessProvider(
           `Codex app-server adapter does not support: ${unsupported.join(", ")}`,
         );
       }
-      return runAppServer(spec, hooks);
+      return runAppServer(spec, environment, hooks);
     },
   };
 }

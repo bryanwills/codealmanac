@@ -1266,6 +1266,9 @@ describe("architecture boundaries", () => {
 
   it("keeps Claude provider protocol mechanics in provider-local modules", async () => {
     const claudeProvider = await readSource("src/harness/providers/claude.ts");
+    const claudeOptions = await readSource(
+      "src/harness/providers/claude/options.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/harness/providers/claude/options.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/harness/providers/claude/events.ts"))).toBe(true);
@@ -1276,10 +1279,13 @@ describe("architecture boundaries", () => {
     expect(claudeProvider).not.toContain("function toClaudeHarnessEvents");
     expect(claudeProvider).not.toContain("function classifyClaudeFailure");
     expect(claudeProvider).not.toContain("function mapClaudeUsage");
+    expect(claudeOptions).not.toContain("process.env");
+    expect(claudeOptions).toContain("environment: NodeJS.ProcessEnv");
   });
 
   it("keeps Codex app-server policy out of the JSON-RPC run loop", async () => {
     const appServer = await readSource("src/harness/providers/codex/app-server.ts");
+    const request = await readSource("src/harness/providers/codex/request.ts");
     const appServerRpc = await readSource(
       "src/harness/providers/codex/app-server-rpc.ts",
     );
@@ -1320,6 +1326,8 @@ describe("architecture boundaries", () => {
     expect(appServerRpc).toContain("function handleResponse");
     expect(appServerRootTurn).toContain("isCodexRootTurnCompletion");
     expect(appServerRootTurn).toContain("isCodexRootThreadNotification");
+    expect(request).not.toContain("process.env");
+    expect(request).toContain("environment: NodeJS.ProcessEnv");
   });
 
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {

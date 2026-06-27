@@ -16,6 +16,15 @@ import {
   waitForDead,
   waitForPids,
 } from "./helpers.js";
+import type { HarnessRunHooks } from "../src/harness/types.js";
+import type { OperationSpec } from "../src/operations/spec.js";
+
+function runTestCodexAppServer(
+  spec: OperationSpec,
+  hooks?: HarnessRunHooks,
+) {
+  return runCodexAppServer(spec, process.env, hooks);
+}
 
 describe("Codex harness provider", () => {
   it("passes app-server output schema and parses root structured output", async () => {
@@ -73,7 +82,7 @@ rl.on("line", (line) => {
     try {
       const events: unknown[] = [];
       await expect(
-        runCodexAppServer(
+        runTestCodexAppServer(
           {
             provider: { id: "codex" },
             cwd: binDir,
@@ -126,9 +135,13 @@ rl.on("line", (line) => {
 
   it("uses injected CLI runner and reports unsupported per-run agents", async () => {
     const specs: unknown[] = [];
+    const environments: unknown[] = [];
+    const environment = { PATH: "/custom/bin" };
     const provider = createCodexHarnessProvider({
-      runAppServer: async (spec) => {
+      environment,
+      runAppServer: async (spec, env) => {
         specs.push(spec);
+        environments.push(env);
         return { success: true, result: "done", turns: 1 };
       },
     });
@@ -142,6 +155,7 @@ rl.on("line", (line) => {
       }),
     ).resolves.toMatchObject({ success: true, result: "done" });
     expect(specs).toHaveLength(1);
+    expect(environments).toEqual([environment]);
 
     await expect(
       provider.run({
@@ -170,7 +184,7 @@ rl.on("line", (line) => {
         cwd: "/repo",
         prompt: "run",
         metadata: { operation: "garden" },
-      }),
+      }, process.env),
     ).toMatchObject({
       command: "codex",
       cwd: "/repo",
@@ -195,7 +209,7 @@ rl.on("line", (line) => {
 
   it("enables app-server network access when the run requests it (no connector)", async () => {
     await withNetworkRequiringCodex(async () => {
-      const result = await runCodexAppServer({
+      const result = await runTestCodexAppServer({
         provider: { id: "codex" },
         cwd: process.cwd(),
         prompt: "run",
@@ -492,7 +506,7 @@ rl.on("line", (line) => {
     try {
       const events: unknown[] = [];
       await expect(
-        runCodexAppServer(
+        runTestCodexAppServer(
           {
             provider: { id: "codex" },
             cwd: binDir,
@@ -612,7 +626,7 @@ rl.on("line", (line) => {
     try {
       const events: unknown[] = [];
       await expect(
-        runCodexAppServer(
+        runTestCodexAppServer(
           {
             provider: { id: "codex" },
             cwd: binDir,
@@ -672,7 +686,7 @@ setInterval(() => {}, 1000);
     process.env.CODEALMANAC_CODEX_APP_SERVER_RPC_TIMEOUT_MS = "25";
     try {
       await expect(
-        runCodexAppServer({
+        runTestCodexAppServer({
           provider: { id: "codex" },
           cwd: binDir,
           prompt: "run",
@@ -725,7 +739,7 @@ setInterval(() => {}, 1000);
     process.env.CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS = "25";
     try {
       await expect(
-        runCodexAppServer({
+        runTestCodexAppServer({
           provider: { id: "codex" },
           cwd: binDir,
           prompt: "run",
@@ -791,7 +805,7 @@ setInterval(() => {}, 1000);
     process.env.PATH = `${binDir}:${oldPath ?? ""}`;
     process.env.CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS = "250";
     try {
-      const run = runCodexAppServer({
+      const run = runTestCodexAppServer({
         provider: { id: "codex" },
         cwd: binDir,
         prompt: "run",
@@ -851,7 +865,7 @@ rl.on("line", (line) => {
     process.env.CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS = "25";
     try {
       await expect(
-        runCodexAppServer({
+        runTestCodexAppServer({
           provider: { id: "codex" },
           cwd: binDir,
           prompt: "run",
@@ -929,7 +943,7 @@ rl.on("line", (line) => {
       "danger-full-access";
     try {
       await expect(
-        runCodexAppServer({
+        runTestCodexAppServer({
           provider: { id: "codex" },
           cwd: binDir,
           prompt: "run",

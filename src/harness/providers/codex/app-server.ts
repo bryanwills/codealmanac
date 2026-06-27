@@ -24,9 +24,10 @@ import type { CodexRunState, JsonRpcNotification } from "./types.js";
 
 export async function runCodexAppServer(
   spec: OperationSpec,
+  environment: NodeJS.ProcessEnv,
   hooks?: HarnessRunHooks,
 ): Promise<HarnessResult> {
-  const request = buildCodexAppServerRequest(spec);
+  const request = buildCodexAppServerRequest(spec, environment);
   const rpcTimeoutMs = codexAppServerRpcTimeoutMs(request.env);
   const turnTimeoutMs = codexAppServerTurnTimeoutMs(request.env);
   let sandboxMode: CodexAppServerSandboxMode;

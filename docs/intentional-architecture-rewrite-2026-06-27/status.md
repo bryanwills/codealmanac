@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch is clean and pushed.
+The branch has 174 committed rewrite commits past `dev`. The worklog records 128 production slices so far.
 
-The rewrite has landed 173 commits past `dev`. The worklog records 127 production slices so far. The diff is broad: more than 300 files changed, with about 18k insertions and 9.8k deletions.
+The diff is broad: more than 300 files changed, with about 18k insertions and 9.8k deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -36,14 +36,14 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Immediate Next Work
 
-The current next slice should inspect the remaining non-edge `process.*` reads and decide which are legitimate platform mechanics versus runtime facts that should be passed from an edge.
+Continue inspecting remaining non-edge `process.*` reads and decide which are legitimate platform mechanics versus runtime facts that should be passed from an edge.
 
 ## Decision Log
 
-There is not yet a separate formal decision log for this branch. The current decision record is split between:
+There is now a standalone decision log:
 
+- `decision-log.md` for durable rewrite decisions
 - `rewrite-contract.md` for the target architecture and rules
 - `worklog.md` for what changed slice by slice
-- commit history for individual landed boundaries
 
-If this branch continues much longer, add `decision-log.md` for durable choices that are bigger than one slice.
+Commit history remains the detailed record for individual landed boundaries.
