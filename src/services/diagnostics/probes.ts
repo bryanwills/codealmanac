@@ -7,9 +7,12 @@ import { fileURLToPath } from "node:url";
 import {
   checkClaudeAuth,
   type ClaudeAuthStatus,
-  type SpawnCliFn,
 } from "../../agent/readiness/providers/claude/index.js";
-import type { SqliteProbeResult } from "./types.js";
+import type {
+  DiagnosticsAuthStatus,
+  DiagnosticsSpawnCliFn,
+  SqliteProbeResult,
+} from "./types.js";
 
 // Single `createRequire` instance — used by package/binding probes.
 const req = createRequire(import.meta.url);
@@ -82,13 +85,22 @@ export function probeBetterSqlite3(): SqliteProbeResult {
 }
 
 export async function safeCheckAuth(
-  spawnCli?: SpawnCliFn,
-): Promise<ClaudeAuthStatus> {
+  spawnCli?: DiagnosticsSpawnCliFn,
+): Promise<DiagnosticsAuthStatus> {
   try {
-    return await checkClaudeAuth(spawnCli);
+    return toDiagnosticsAuthStatus(await checkClaudeAuth(spawnCli));
   } catch {
     return { loggedIn: false };
   }
+}
+
+function toDiagnosticsAuthStatus(auth: ClaudeAuthStatus): DiagnosticsAuthStatus {
+  return {
+    loggedIn: auth.loggedIn,
+    email: auth.email,
+    subscriptionType: auth.subscriptionType,
+    authMethod: auth.authMethod,
+  };
 }
 
 export function readPackageVersion(): string | null {

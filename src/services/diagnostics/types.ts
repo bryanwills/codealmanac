@@ -1,7 +1,22 @@
-import type { SpawnCliFn } from "../../agent/readiness/providers/claude/index.js";
-import type { ProviderStatus } from "../../agent/types.js";
+import type {
+  ProviderStatus,
+  SpawnCliFn,
+  SpawnedProcess,
+} from "../../agent/types.js";
 import type { AgentProviderId } from "../../config/index.js";
 import type { CollectWikiHealthReport } from "../wiki/doctor.js";
+
+export type DiagnosticsSpawnCliFn = SpawnCliFn;
+export type DiagnosticsSpawnedProcess = SpawnedProcess;
+export type DiagnosticsProviderStatus = ProviderStatus;
+export type DiagnosticsAgentProviderId = AgentProviderId;
+
+export interface DiagnosticsAuthStatus {
+  loggedIn: boolean;
+  email?: string;
+  subscriptionType?: string;
+  authMethod?: string;
+}
 
 export interface DoctorOptions {
   cwd: string;
@@ -15,9 +30,9 @@ export interface DoctorOptions {
 
   // ─── Injection points (tests) ──────────────────────────────────────
   /** Override Claude auth probe. */
-  spawnCli?: SpawnCliFn;
+  spawnCli?: DiagnosticsSpawnCliFn;
   /** Override provider readiness probes. */
-  providerStatuses?: ProviderStatus[];
+  providerStatuses?: DiagnosticsProviderStatus[];
   /** Override sync launchd plist path. */
   automationPlistPath?: string;
   /** Override legacy capture-sweep launchd plist path. */
@@ -88,7 +103,7 @@ export interface DoctorReport {
 }
 
 export interface AgentDoctorCheck {
-  id: AgentProviderId;
+  id: DiagnosticsAgentProviderId;
   label: string;
   status: CheckStatus;
   readiness: "ready" | "not-authenticated" | "missing";

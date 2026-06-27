@@ -3,7 +3,6 @@ import { homedir } from "node:os";
 import path from "node:path";
 
 import { checkAgentInstructions } from "../../agent/install-targets.js";
-import type { ClaudeAuthStatus } from "../../agent/readiness/providers/claude/index.js";
 import { detectLegacyCaptureSweepAutomation } from "../../platform/automation/legacy-capture.js";
 import {
   defaultCapturePlistPath,
@@ -15,7 +14,7 @@ import {
   probeBetterSqlite3,
   safeCheckAuth,
 } from "./probes.js";
-import type { Check, DoctorOptions } from "./types.js";
+import type { Check, DiagnosticsAuthStatus, DoctorOptions } from "./types.js";
 
 export async function gatherInstallChecks(
   options: DoctorOptions,
@@ -89,7 +88,7 @@ function describeInstallPath(
   };
 }
 
-function describeAuth(auth: ClaudeAuthStatus): Check {
+function describeAuth(auth: DiagnosticsAuthStatus): Check {
   if (auth.loggedIn) {
     if (auth.authMethod === "apiKey") {
       return {

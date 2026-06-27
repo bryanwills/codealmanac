@@ -248,3 +248,10 @@ Thirty-first production slice:
 - Introduced agents-service-owned public type aliases for provider view and readiness contracts.
 - Removed raw `agent/readiness` type re-exports from `src/services/agents/index.ts`.
 - Updated the agents command adapter to depend on agents service names instead of readiness implementation names.
+
+Thirty-second production slice:
+
+- Introduced diagnostics-owned public aliases for spawn callbacks, spawned processes, provider status, and provider id.
+- Introduced a diagnostics-owned auth status contract and normalized Claude auth probe output into it inside the diagnostics probe wrapper.
+- Removed the Claude provider path from `src/services/diagnostics/types.ts` so `DoctorOptions` no longer exposes a provider-local type import.
+- Updated doctor tests to inject spawn callbacks through the diagnostics service contract instead of importing Claude readiness provider types.

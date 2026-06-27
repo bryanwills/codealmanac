@@ -3,9 +3,9 @@ import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type {
-  SpawnCliFn,
-  SpawnedProcess,
-} from "../src/agent/readiness/providers/claude/index.js";
+  DiagnosticsSpawnCliFn,
+  DiagnosticsSpawnedProcess,
+} from "../src/services/diagnostics/index.js";
 import { runDoctor } from "../src/cli/commands/doctor/index.js";
 import {
   CODEX_INSTRUCTIONS_END,
@@ -19,8 +19,8 @@ import {
   writePage,
 } from "./helpers.js";
 
-function fakeSpawnCli(stdout: string): SpawnCliFn {
-  return (): SpawnedProcess => {
+function fakeSpawnCli(stdout: string): DiagnosticsSpawnCliFn {
+  return (): DiagnosticsSpawnedProcess => {
     const stdoutCbs: ((d: string) => void)[] = [];
     const closeCbs: ((c: number | null) => void)[] = [];
     queueMicrotask(() => {

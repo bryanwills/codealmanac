@@ -436,6 +436,8 @@ describe("architecture boundaries", () => {
   it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
+    const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
+    const diagnosticsIndex = await readSource("src/services/diagnostics/index.ts");
     const doctorService = await readSource("src/services/wiki/doctor.ts");
 
     expect(doctorIndex).toContain("services/diagnostics/index.js");
@@ -447,6 +449,9 @@ describe("architecture boundaries", () => {
     expect(doctorIndex).not.toContain("platform/");
     expect(doctorIndex).not.toContain("readConfig");
     expect(doctorIndex).not.toContain("readStateForDoctor");
+    expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
+    expect(diagnosticsIndex).not.toContain("../../agent/");
+    expect(diagnosticsIndex).not.toContain("../../config/");
     expect(doctorDiagnostics).toContain("../wiki/doctor.js");
     expect(existsSync(join(ROOT, "src/services/diagnostics/doctor.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/install.ts"))).toBe(false);
