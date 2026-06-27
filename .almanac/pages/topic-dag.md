@@ -39,10 +39,18 @@ sources:
     type: file
     path: src/services/wiki/topic-read.ts
     note: Read-side topic workflows for list/show.
-  - id: topic-mutation-service
+  - id: topic-description-service
     type: file
-    path: src/services/wiki/topic-mutations.ts
-    note: Mutation workflows for create/link/describe/unlink/rename/delete.
+    path: src/services/wiki/topic-description.ts
+    note: Description mutation workflow for topics describe.
+  - id: topic-graph-mutations-service
+    type: file
+    path: src/services/wiki/topic-graph-mutations.ts
+    note: Graph metadata workflows for topics create/link/unlink.
+  - id: topic-page-mutations-service
+    type: file
+    path: src/services/wiki/topic-page-mutations.ts
+    note: Page-rewriting workflows for topics rename/delete.
   - id: topic-workspace-service
     type: file
     path: src/services/wiki/topic-workspace.ts
@@ -81,7 +89,7 @@ Three layers:
 
 ## Frontmatter rewrite
 
-`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/wiki/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose.
+`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/wiki/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose. `src/services/wiki/topic-page-mutations.ts` owns the topic rename/delete workflows that coordinate topic metadata with page-frontmatter rewrites.
 
 ## CLI surface
 

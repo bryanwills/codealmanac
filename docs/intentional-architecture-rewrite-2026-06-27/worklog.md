@@ -93,3 +93,4 @@ Eighth production slice:
 - Moved review queue IDs, status transitions, timestamps, and `.almanac/review.yaml` store writes into `src/services/wiki/reviews.ts`; `src/cli/commands/review.ts` now maps service outcomes to stdout/stderr/JSON.
 - Moved `migrate legacy-sources` wiki-root resolution and source-frontmatter migration call into `src/services/wiki/source-migration.ts`; `src/cli/commands/migrate.ts` now parses stdin and renders migration results.
 - Moved doctor wiki checks into `src/services/wiki/doctor.ts`, deleted the old CLI-local `doctor/wiki.ts`, and moved the doctor duration formatter into `src/shared/duration.ts`.
+- Split the catch-all `src/services/wiki/topic-mutations.ts` into `topic-description.ts`, `topic-graph-mutations.ts`, and `topic-page-mutations.ts`; the stable `topics.ts` facade still exports the same service verbs.

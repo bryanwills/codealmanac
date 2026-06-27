@@ -116,6 +116,7 @@ describe("architecture boundaries", () => {
 
     expect(existsSync(join(ROOT, "src/cli/commands/topics/workspace.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/topics/page-rewrite.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/wiki/topic-mutations.ts"))).toBe(false);
   });
 
   it("keeps tag command adapters out of page topic write mechanics", async () => {

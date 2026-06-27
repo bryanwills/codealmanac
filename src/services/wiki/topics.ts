@@ -3,13 +3,17 @@ export {
   readWikiTopic,
 } from "./topic-read.js";
 export {
-  createWikiTopic,
-  deleteWikiTopic,
   describeWikiTopic,
+} from "./topic-description.js";
+export {
+  createWikiTopic,
   linkWikiTopics,
-  renameWikiTopic,
   unlinkWikiTopics,
-} from "./topic-mutations.js";
+} from "./topic-graph-mutations.js";
+export {
+  deleteWikiTopic,
+  renameWikiTopic,
+} from "./topic-page-mutations.js";
 export type {
   CreateWikiTopicRequest,
   CreateWikiTopicResult,
