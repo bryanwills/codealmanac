@@ -11,14 +11,16 @@ async function scaffold(home: string): Promise<{
   plistPath: string;
   gardenPlistPath: string;
   claudeDir: string;
+  input: PassThrough;
   out: PassThrough;
 }> {
   const plistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.sync.plist");
   const gardenPlistPath = join(home, "Library", "LaunchAgents", "com.codealmanac.garden.plist");
   const claudeDir = join(home, ".claude");
+  const input = new PassThrough();
   const out = new PassThrough();
   out.on("data", () => {});
-  return { plistPath, gardenPlistPath, claudeDir, out };
+  return { plistPath, gardenPlistPath, claudeDir, input, out };
 }
 
 async function primeInstalled(env: {
@@ -55,6 +57,7 @@ describe("almanac uninstall", () => {
         gardenPlistPath: env.gardenPlistPath,
         automationExec: async () => ({}),
         claudeDir: env.claudeDir,
+        stdin: env.input,
       });
       const colored = await captureUninstallOutput({
         yes: true,
@@ -63,6 +66,7 @@ describe("almanac uninstall", () => {
         gardenPlistPath: env.gardenPlistPath,
         automationExec: async () => ({}),
         claudeDir: env.claudeDir,
+        stdin: env.input,
         color: true,
       });
 
@@ -87,6 +91,7 @@ describe("almanac uninstall", () => {
           return {};
         },
         claudeDir: env.claudeDir,
+        stdin: env.input,
         stdout: env.out,
       });
 
@@ -115,6 +120,7 @@ describe("almanac uninstall", () => {
         gardenPlistPath: env.gardenPlistPath,
         automationExec: async () => ({}),
         claudeDir: env.claudeDir,
+        stdin: env.input,
         stdout: env.out,
       });
 
@@ -132,6 +138,7 @@ describe("almanac uninstall", () => {
         gardenPlistPath: env.gardenPlistPath,
         automationExec: async () => ({}),
         claudeDir: env.claudeDir,
+        stdin: env.input,
         stdout: env.out,
       });
 
@@ -156,6 +163,7 @@ describe("almanac uninstall", () => {
           throw new Error("should not run");
         },
         claudeDir: env.claudeDir,
+        stdin: env.input,
         stdout: env.out,
       });
 
@@ -178,6 +186,7 @@ describe("almanac uninstall", () => {
         gardenPlistPath: env.gardenPlistPath,
         automationExec: async () => ({}),
         claudeDir: env.claudeDir,
+        stdin: env.input,
         stdout: env.out,
       });
 
@@ -188,18 +197,62 @@ describe("almanac uninstall", () => {
       expect(body).toMatch(/@~\/\.claude\/almanac\.md/);
     });
   });
+
+  it("reads interactive confirmations from the injected input stream", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffold(home);
+      await primeInstalled(env);
+
+      answerPrompts(env.out, env.input, ["n\n", "\n"]);
+
+      await runUninstall({
+        isTTY: true,
+        stdin: env.input,
+        automationPlistPath: env.plistPath,
+        gardenPlistPath: env.gardenPlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+        stdout: env.out,
+      });
+
+      expect(existsSync(env.plistPath)).toBe(true);
+      expect(existsSync(env.gardenPlistPath)).toBe(true);
+      expect(existsSync(join(env.claudeDir, "almanac.md"))).toBe(false);
+    });
+  });
 });
 
 async function captureUninstallOutput(
-  options: Omit<Parameters<typeof runUninstall>[0], "stdout">,
+  options: Omit<Parameters<typeof runUninstall>[0], "stdout" | "stdin"> & {
+    stdin?: PassThrough;
+  },
 ): Promise<string> {
   const out = new PassThrough();
   const chunks: string[] = [];
   out.on("data", (chunk) => {
     chunks.push(chunk.toString("utf8"));
   });
-  await runUninstall({ ...options, stdout: out });
+  await runUninstall({
+    ...options,
+    stdin: options.stdin ?? new PassThrough(),
+    stdout: out,
+  });
   return chunks.join("");
+}
+
+function answerPrompts(
+  out: PassThrough,
+  input: PassThrough,
+  answers: string[],
+): void {
+  let nextAnswer = 0;
+  out.on("data", (chunk) => {
+    if (!chunk.toString("utf8").includes("[Y/n]")) return;
+    const answer = answers[nextAnswer];
+    if (answer === undefined) return;
+    nextAnswer += 1;
+    queueMicrotask(() => input.write(Buffer.from(answer)));
+  });
 }
 
 describe("removeImportLine", () => {

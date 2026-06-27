@@ -933,3 +933,10 @@ One-hundred-fortieth production slice:
 - Moved the real Node version read into `src/edges/cli/register-setup-commands.ts` for `almanac doctor`.
 - Kept `src/services/diagnostics/install.ts` focused on composing install checks from explicit diagnostic facts.
 - Added an architecture guard so diagnostics services cannot reintroduce `process.version` ownership.
+
+One-hundred-forty-first production slice:
+
+- Added an explicit stdin stream to the uninstall command contract.
+- Moved uninstall confirmation prompts off direct `process.stdin` reads.
+- Kept `src/edges/cli/register-setup-commands.ts` as the owner of the real process stdin stream for `almanac uninstall`.
+- Added an interactive uninstall test that answers prompts through the injected stream and an architecture guard against direct uninstall stdin ownership.

@@ -1205,6 +1205,7 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("almanac: automation removed");
     expect(uninstallCommand).not.toContain("process.stdout");
     expect(uninstallCommand).not.toContain("process.stdin.isTTY");
+    expect(uninstallCommand).not.toContain("process.stdin");
     expect(uninstallRender).toContain("renderUninstallResult");
     expect(uninstallRender).toContain("formatAutomationResult");
     expect(uninstallRender).toContain("../../ansi-theme.js");
@@ -1212,6 +1213,7 @@ describe("architecture boundaries", () => {
     expect(uninstallRender).toContain("makeAnsiTheme(options.color === true)");
     expect(uninstallCommand).toContain("color?: boolean");
     expect(setupRegistration).toContain("isTTY: process.stdin.isTTY === true");
+    expect(setupRegistration).toContain("stdin: process.stdin");
     expect(setupRegistration).toContain("stdout: process.stdout");
   });
 

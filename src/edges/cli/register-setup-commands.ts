@@ -155,6 +155,7 @@ export function registerSetupCommands(
           keepAutomation: opts.keepAutomation,
           keepGuides: opts.keepGuides,
           isTTY: process.stdin.isTTY === true,
+          stdin: process.stdin,
           stdout: process.stdout,
           color: shouldUseStdoutColor(),
         });

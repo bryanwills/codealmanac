@@ -63,6 +63,7 @@ export interface UninstallOptions {
   windsurfDir?: string;
   opencodeDir?: string;
   isTTY: boolean;
+  stdin: NodeJS.ReadableStream;
   stdout: NodeJS.WritableStream;
   color?: boolean;
 }
@@ -93,6 +94,7 @@ export async function runUninstall(
     removeAutomation = false;
   } else if (interactive) {
     removeAutomation = await confirm(
+      options.stdin,
       out,
       "Remove scheduled sync and Garden automation?",
       true,
@@ -109,6 +111,7 @@ export async function runUninstall(
     removeGuides = false;
   } else if (interactive) {
     removeGuides = await confirm(
+      options.stdin,
       out,
       "Remove agent instructions?",
       true,
@@ -161,6 +164,7 @@ export function removeManagedBlock(
 }
 
 function confirm(
+  input: NodeJS.ReadableStream,
   out: NodeJS.WritableStream,
   question: string,
   defaultYes: boolean,
@@ -174,8 +178,8 @@ function confirm(
       buf += chunk.toString("utf8");
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
-      process.stdin.removeListener("data", onData);
-      process.stdin.pause();
+      input.removeListener("data", onData);
+      input.pause();
 
       const answer = buf.slice(0, nl).trim().toLowerCase();
       const accepted =
@@ -185,7 +189,7 @@ function confirm(
       resolve(accepted);
     };
 
-    process.stdin.resume();
-    process.stdin.on("data", onData);
+    input.resume();
+    input.on("data", onData);
   });
 }
