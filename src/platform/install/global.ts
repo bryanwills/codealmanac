@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { isNewer } from "../update/semver.js";
+import { isNewerVersion } from "../../shared/version.js";
 import {
   defaultBootstrapSpawn,
   spawnCapturedProcess,
@@ -116,7 +116,7 @@ async function shouldInstallGlobal(
   const currentVersion = await readPackageVersion(currentRoot);
   if (currentVersion === null) return false;
 
-  return isNewer(currentVersion, globalVersion);
+  return isNewerVersion(currentVersion, globalVersion);
 }
 
 function samePath(a: string, b: string): boolean {

@@ -1568,6 +1568,10 @@ describe("architecture boundaries", () => {
     const platformInstructionDiagnostics = await readSource(
       "src/platform/diagnostics/instructions.ts",
     );
+    const platformUpdateDiagnostics = await readSource(
+      "src/platform/diagnostics/updates.ts",
+    );
+    const updateDiagnostics = await readSource("src/services/diagnostics/updates.ts");
     const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
     const diagnosticsIndex = await readSource("src/services/diagnostics/index.ts");
     const setupRegistration = await readSource(
@@ -1608,9 +1612,12 @@ describe("architecture boundaries", () => {
     expect(diagnosticsTypes).toContain(
       "instructionEntriesStatus: DiagnosticsInstructionEntriesStatus",
     );
+    expect(diagnosticsTypes).toContain("updateStatus: DiagnosticsUpdateStatus");
     expect(diagnosticsTypes).not.toContain("settingsPath?:");
     expect(diagnosticsTypes).not.toContain("almanacDir?:");
     expect(diagnosticsTypes).not.toContain("hookScriptPath?:");
+    expect(diagnosticsTypes).not.toContain("updateStatePath?:");
+    expect(diagnosticsTypes).not.toContain("updateConfigPath?:");
     expect(installDiagnostics).not.toContain("process.env");
     expect(installDiagnostics).not.toContain("process.version");
     expect(installDiagnostics).not.toContain("platform/automation");
@@ -1620,12 +1627,18 @@ describe("architecture boundaries", () => {
     expect(installDiagnostics).not.toContain("safeCheckAuth");
     expect(installDiagnostics).not.toContain("checkClaudeAuth");
     expect(diagnosticsProbes).not.toContain("checkClaudeAuth");
+    expect(updateDiagnostics).not.toContain("../../config/");
+    expect(updateDiagnostics).not.toContain("../../platform/");
+    expect(updateDiagnostics).not.toContain("readState");
+    expect(updateDiagnostics).not.toContain("readConfig");
+    expect(updateDiagnostics).not.toContain("readStateForDoctor");
     expect(setupRegistration).toContain("shouldUseStdoutColor()");
     expect(setupRegistration).toContain("nodeVersion: process.version");
     expect(setupRegistration).toContain("probeDiagnosticClaudeAuth()");
     expect(setupRegistration).toContain("probeDiagnosticAutomation()");
     expect(setupRegistration).toContain("probeDiagnosticGuides()");
     expect(setupRegistration).toContain("probeDiagnosticInstructionEntries()");
+    expect(setupRegistration).toContain("probeDiagnosticUpdates()");
     expect(setupRegistration).not.toContain("color: process.stdout.isTTY === true");
     expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
     expect(platformAutomationDiagnostics).toContain(
@@ -1634,6 +1647,9 @@ describe("architecture boundaries", () => {
     expect(platformAutomationDiagnostics).toContain("../automation/tasks.js");
     expect(platformInstructionDiagnostics).toContain("checkAgentInstructions");
     expect(platformInstructionDiagnostics).toContain("homedir()");
+    expect(platformUpdateDiagnostics).toContain("readState");
+    expect(platformUpdateDiagnostics).toContain("readConfig");
+    expect(existsSync(join(ROOT, "src/platform/update/semver.ts"))).toBe(false);
     expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
     expect(diagnosticsTypes).not.toContain("from \"../../agent/types.js\"");
     expect(diagnosticsTypes).not.toContain("from \"../../config/index.js\"");

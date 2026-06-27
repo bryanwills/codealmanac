@@ -7,7 +7,6 @@ import {
   getLegacyConfigPath,
   parseConfigText,
 } from "../../config/index.js";
-import { getStatePath, type UpdateState } from "./state.js";
 
 /**
  * Post-command worker for the update-notifier cache.
@@ -71,34 +70,5 @@ export async function runInternalUpdateCheck(): Promise<void> {
     await checkForUpdate({});
   } catch {
     // Nothing from the worker should escape into the foreground command.
-  }
-}
-
-export function readStateForDoctor(path?: string): UpdateState | null {
-  const file = path ?? getStatePath();
-  try {
-    const raw = readFileSync(file, "utf8");
-    const trimmed = raw.trim();
-    if (trimmed.length === 0) return null;
-    const parsed = JSON.parse(trimmed) as Partial<UpdateState>;
-    return {
-      last_check_at:
-        typeof parsed.last_check_at === "number" ? parsed.last_check_at : 0,
-      installed_version:
-        typeof parsed.installed_version === "string"
-          ? parsed.installed_version
-          : "",
-      latest_version:
-        typeof parsed.latest_version === "string" ? parsed.latest_version : "",
-      dismissed_versions: Array.isArray(parsed.dismissed_versions)
-        ? parsed.dismissed_versions.filter((v): v is string => typeof v === "string")
-        : [],
-      last_fetch_failed_at:
-        typeof parsed.last_fetch_failed_at === "number"
-          ? parsed.last_fetch_failed_at
-          : undefined,
-    };
-  } catch {
-    return null;
   }
 }

@@ -10,9 +10,9 @@ import {
 } from "../../platform/update/install.js";
 import type { spawn as nodeSpawn } from "node:child_process";
 import { acquireUpdateLock } from "../../platform/update/lock.js";
-import { isNewer } from "../../platform/update/semver.js";
 import { readState, writeState } from "../../platform/update/state.js";
 import { readInstalledVersion } from "../../platform/update/version.js";
+import { isNewerVersion } from "../../shared/version.js";
 import type {
   UpdateInstallResult,
   UpdateInstallSpawnFn,
@@ -47,7 +47,7 @@ async function dismissLatest(
   }
 
   const installed = opts.installedVersion ?? readInstalledVersion();
-  if (!isNewer(state.latest_version, installed)) {
+  if (!isNewerVersion(state.latest_version, installed)) {
     return { status: "dismiss-already-current", installed };
   }
 
@@ -82,7 +82,7 @@ async function forceCheck(opts: UpdateOptions): Promise<UpdateWorkflowResult> {
     return { status: "registry-missing-latest", installed };
   }
 
-  if (isNewer(latest, installed)) {
+  if (isNewerVersion(latest, installed)) {
     return {
       status: "update-available",
       installed,
@@ -124,7 +124,7 @@ async function installIfNeeded(
   if (latest.length === 0) {
     return { status: "registry-missing-latest", installed };
   }
-  if (!isNewer(latest, installed)) {
+  if (!isNewerVersion(latest, installed)) {
     return { status: "up-to-date", installed };
   }
   if (result.state.dismissed_versions.includes(latest)) {

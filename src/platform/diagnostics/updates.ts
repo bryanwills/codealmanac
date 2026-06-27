@@ -1,0 +1,24 @@
+import { readConfig } from "../../config/index.js";
+import type { DiagnosticsUpdateStatus } from "../../services/diagnostics/types.js";
+import { readState } from "../update/state.js";
+
+export interface UpdateDiagnosticsProbeOptions {
+  statePath?: string;
+  configPath?: string;
+}
+
+export async function probeDiagnosticUpdates(
+  options: UpdateDiagnosticsProbeOptions = {},
+): Promise<DiagnosticsUpdateStatus> {
+  const [state, config] = await Promise.all([
+    readState(options.statePath),
+    readConfig(options.configPath),
+  ]);
+  return {
+    latestVersion: state.latest_version,
+    dismissedVersions: state.dismissed_versions,
+    lastCheckAt: state.last_check_at,
+    lastFetchFailedAt: state.last_fetch_failed_at,
+    notifierEnabled: config.update_notifier,
+  };
+}

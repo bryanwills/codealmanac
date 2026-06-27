@@ -48,6 +48,14 @@ export type DiagnosticsInstructionEntriesStatus =
   | { status: "present" }
   | { status: "missing"; missing: string[] };
 
+export interface DiagnosticsUpdateStatus {
+  latestVersion: string;
+  dismissedVersions: string[];
+  lastCheckAt: number;
+  lastFetchFailedAt?: number;
+  notifierEnabled: boolean;
+}
+
 export interface DoctorOptions {
   cwd: string;
   /** Whether ANTHROPIC_API_KEY is present for the current process. */
@@ -64,6 +72,8 @@ export interface DoctorOptions {
   guideStatus: DiagnosticsGuideStatus;
   /** Platform-owned agent-instruction probe result for the current machine. */
   instructionEntriesStatus: DiagnosticsInstructionEntriesStatus;
+  /** Platform-owned update-state/config probe result for the current machine. */
+  updateStatus: DiagnosticsUpdateStatus;
 
   /** Emit structured JSON instead of the colored report. */
   json?: boolean;
@@ -81,10 +91,6 @@ export interface DoctorOptions {
   installPath?: string;
   /** Override the reported codealmanac version. */
   versionOverride?: string;
-  /** Override the update-state.json path (tests sandbox to tmpdir). */
-  updateStatePath?: string;
-  /** Override the config.json path (tests sandbox to tmpdir). */
-  updateConfigPath?: string;
   /**
    * Override the better-sqlite3 probe result. When provided, doctor
    * skips the real native-binding load and returns this instead.

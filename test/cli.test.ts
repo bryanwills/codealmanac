@@ -648,6 +648,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       }),
       json: undefined,
       nodeVersion: process.version,
+      updateStatus: expect.objectContaining({
+        notifierEnabled: expect.any(Boolean),
+      }),
       wikiOnly: undefined,
     }));
   });

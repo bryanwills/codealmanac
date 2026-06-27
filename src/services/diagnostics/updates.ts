@@ -1,7 +1,5 @@
-import { readConfig } from "../../config/index.js";
-import { readStateForDoctor } from "../../platform/update/notifier-worker.js";
-import { isNewer } from "../../platform/update/semver.js";
 import { formatDuration } from "../../shared/duration.js";
+import { isNewerVersion } from "../../shared/version.js";
 import type { Check, DoctorOptions } from "./types.js";
 
 export async function gatherUpdateChecks(
@@ -9,25 +7,24 @@ export async function gatherUpdateChecks(
   installedVersion: string,
 ): Promise<Check[]> {
   const checks: Check[] = [];
-  const state = readStateForDoctor(options.updateStatePath);
-  const config = await readConfig(options.updateConfigPath);
+  const status = options.updateStatus;
 
-  if (state === null || state.latest_version.length === 0) {
+  if (status.latestVersion.length === 0) {
     checks.push({
       status: "info",
       key: "update.status",
       message: `on ${installedVersion}; no update check has run yet`,
       fix: "run: almanac update --check",
     });
-  } else if (isNewer(state.latest_version, installedVersion)) {
-    const dismissed = state.dismissed_versions.includes(state.latest_version)
+  } else if (isNewerVersion(status.latestVersion, installedVersion)) {
+    const dismissed = status.dismissedVersions.includes(status.latestVersion)
       ? " (dismissed — run `almanac update` to install anyway)"
       : "";
     checks.push({
       status: "problem",
       key: "update.status",
       message:
-        `${state.latest_version} available (you're on ${installedVersion})${dismissed}`,
+        `${status.latestVersion} available (you're on ${installedVersion})${dismissed}`,
       fix: "run: almanac update",
     });
   } else {
@@ -38,12 +35,12 @@ export async function gatherUpdateChecks(
     });
   }
 
-  if (state !== null && state.last_check_at > 0) {
+  if (status.lastCheckAt > 0) {
     const now = (options.now?.() ?? new Date()).getTime();
-    const ageMs = now - state.last_check_at * 1000;
+    const ageMs = now - status.lastCheckAt * 1000;
     const failedSuffix =
-      state.last_fetch_failed_at !== undefined &&
-      state.last_fetch_failed_at === state.last_check_at
+      status.lastFetchFailedAt !== undefined &&
+      status.lastFetchFailedAt === status.lastCheckAt
         ? " (last attempt failed — will retry next invocation)"
         : "";
     checks.push({
@@ -62,17 +59,17 @@ export async function gatherUpdateChecks(
   checks.push({
     status: "info",
     key: "update.notifier",
-    message: `update notifier: ${config.update_notifier ? "enabled" : "disabled"}`,
-    fix: config.update_notifier
+    message: `update notifier: ${status.notifierEnabled ? "enabled" : "disabled"}`,
+    fix: status.notifierEnabled
       ? undefined
       : "run: almanac config set update_notifier true",
   });
 
-  if (state !== null && state.dismissed_versions.length > 0) {
+  if (status.dismissedVersions.length > 0) {
     checks.push({
       status: "info",
       key: "update.dismissed",
-      message: `dismissed versions: ${state.dismissed_versions.join(", ")}`,
+      message: `dismissed versions: ${status.dismissedVersions.join(", ")}`,
     });
   }
 

@@ -13,6 +13,7 @@ export type {
   DiagnosticsProviderStatus,
   DiagnosticsSpawnCliFn,
   DiagnosticsSpawnedProcess,
+  DiagnosticsUpdateStatus,
   DoctorOptions,
   DoctorReport,
   DoctorResult,

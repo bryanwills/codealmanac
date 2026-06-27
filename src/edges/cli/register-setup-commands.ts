@@ -8,6 +8,7 @@ import {
   probeDiagnosticGuides,
   probeDiagnosticInstructionEntries,
 } from "../../platform/diagnostics/instructions.js";
+import { probeDiagnosticUpdates } from "../../platform/diagnostics/updates.js";
 
 export interface SetupCommandDeps {
   runSetup?: typeof import("../../cli/commands/setup/index.js").runSetup;
@@ -101,6 +102,7 @@ export function registerSetupCommands(
           automationStatus: await probeDiagnosticAutomation(),
           guideStatus: probeDiagnosticGuides(),
           instructionEntriesStatus: await probeDiagnosticInstructionEntries(),
+          updateStatus: await probeDiagnosticUpdates(),
           json: opts.json,
           installOnly: opts.installOnly,
           wikiOnly: opts.wikiOnly,

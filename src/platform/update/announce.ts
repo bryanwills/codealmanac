@@ -6,7 +6,7 @@ import {
   parseConfigText,
 } from "../../config/index.js";
 import { makeAnsiTheme } from "../../ansi-theme.js";
-import { isNewer } from "./semver.js";
+import { isNewerVersion } from "../../shared/version.js";
 import { getStatePath, type UpdateState } from "./state.js";
 import { readInstalledVersion } from "./version.js";
 
@@ -56,7 +56,7 @@ export function announceUpdateIfAvailable(
   const state = readStateSync(statePath);
   if (state === null) return;
   if (state.latest_version.length === 0) return;
-  if (!isNewer(state.latest_version, installed)) return;
+  if (!isNewerVersion(state.latest_version, installed)) return;
   if (state.dismissed_versions.includes(state.latest_version)) return;
 
   const useColor = opts.color ?? shouldUseStreamColor(stderr);

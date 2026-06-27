@@ -974,3 +974,11 @@ One-hundred-forty-sixth production slice:
 - Moved Claude auth probing for `almanac doctor` into `src/platform/diagnostics/auth.ts`.
 - Kept `src/services/diagnostics/install.ts` focused on describing install checks from typed facts rather than invoking provider auth mechanics.
 - Added platform probe coverage and boundary guards against diagnostics services re-owning Claude auth probing.
+
+One-hundred-forty-seventh production slice:
+
+- Added an explicit `updateStatus` fact to the doctor diagnostics contract.
+- Moved doctor update-state/config probing into `src/platform/diagnostics/updates.ts`.
+- Kept `src/services/diagnostics/updates.ts` focused on rendering update checks from typed facts.
+- Moved the pure version comparator from `src/platform/update/semver.ts` to `src/shared/version.ts` so service code no longer imports platform update mechanics for semver comparison.
+- Removed the doctor-only state reader from the update notifier worker and added boundary guards against diagnostics services re-owning update state/config reads.

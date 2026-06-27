@@ -18,6 +18,9 @@ import {
   probeDiagnosticGuides,
   probeDiagnosticInstructionEntries,
 } from "../src/platform/diagnostics/instructions.js";
+import { probeDiagnosticUpdates } from "../src/platform/diagnostics/updates.js";
+import { writeConfig } from "../src/config/index.js";
+import { writeState } from "../src/platform/update/state.js";
 import {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
@@ -64,6 +67,12 @@ const LOGGED_IN_AUTH = {
   email: "user@example.com",
   subscriptionType: "Pro",
 };
+const NO_UPDATE_CHECK = {
+  latestVersion: "",
+  dismissedVersions: [],
+  lastCheckAt: 0,
+  notifierEnabled: true,
+};
 const SQLITE_OK = { ok: true, summary: "native binding loads cleanly" };
 
 function runDoctor(
@@ -76,6 +85,7 @@ function runDoctor(
     | "guideStatus"
     | "instructionEntriesStatus"
     | "nodeVersion"
+    | "updateStatus"
   > & {
     automationStatus?: DoctorOptions["automationStatus"];
     authStatus?: DoctorOptions["authStatus"];
@@ -84,6 +94,7 @@ function runDoctor(
     guideStatus?: DoctorOptions["guideStatus"];
     instructionEntriesStatus?: DoctorOptions["instructionEntriesStatus"];
     nodeVersion?: string;
+    updateStatus?: DoctorOptions["updateStatus"];
   },
 ) {
   return runDoctorCommand({
@@ -99,6 +110,7 @@ function runDoctor(
     instructionEntriesStatus: options.instructionEntriesStatus ?? {
       status: "present",
     },
+    updateStatus: options.updateStatus ?? NO_UPDATE_CHECK,
     ...options,
   });
 }
@@ -317,6 +329,75 @@ describe("almanac doctor", () => {
         .resolves.toEqual(LOGGED_IN_AUTH);
       await expect(probeDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_OUT_STDOUT)))
         .resolves.toEqual({ loggedIn: false });
+
+      const updateStatePath = join(home, ".almanac", "update-state.json");
+      const updateConfigPath = join(home, ".almanac", "config.toml");
+      await writeState(
+        {
+          last_check_at: 1_700_000_000,
+          installed_version: "0.1.3",
+          latest_version: "0.1.4",
+          dismissed_versions: ["0.1.4"],
+          last_fetch_failed_at: 1_700_000_000,
+        },
+        updateStatePath,
+      );
+      await writeConfig({ update_notifier: false }, updateConfigPath);
+      await expect(
+        probeDiagnosticUpdates({
+          statePath: updateStatePath,
+          configPath: updateConfigPath,
+        }),
+      ).resolves.toEqual({
+        latestVersion: "0.1.4",
+        dismissedVersions: ["0.1.4"],
+        lastCheckAt: 1_700_000_000,
+        lastFetchFailedAt: 1_700_000_000,
+        notifierEnabled: false,
+      });
+    });
+  });
+
+  it("renders update diagnostics from injected facts", async () => {
+    await withTempHome(async (home) => {
+      const r = await runDoctor({
+        cwd: home,
+        json: true,
+        sqliteProbe: SQLITE_OK,
+        installPath: "/fake",
+        versionOverride: "0.1.3",
+        now: () => new Date((1_700_000_000 + 3_600) * 1000),
+        updateStatus: {
+          latestVersion: "0.1.4",
+          dismissedVersions: ["0.1.4"],
+          lastCheckAt: 1_700_000_000,
+          lastFetchFailedAt: 1_700_000_000,
+          notifierEnabled: false,
+        },
+      });
+
+      const parsed = JSON.parse(r.stdout);
+      const updateByKey = new Map(
+        parsed.updates.map((check: { key: string }) => [check.key, check]),
+      );
+      expect(updateByKey.get("update.status")).toMatchObject({
+        status: "problem",
+        message:
+          "0.1.4 available (you're on 0.1.3) (dismissed — run `almanac update` to install anyway)",
+      });
+      expect(updateByKey.get("update.last_check")).toMatchObject({
+        status: "info",
+        message: "last checked: 1h ago (last attempt failed — will retry next invocation)",
+      });
+      expect(updateByKey.get("update.notifier")).toMatchObject({
+        status: "info",
+        message: "update notifier: disabled",
+        fix: "run: almanac config set update_notifier true",
+      });
+      expect(updateByKey.get("update.dismissed")).toMatchObject({
+        status: "info",
+        message: "dismissed versions: 0.1.4",
+      });
     });
   });
 
