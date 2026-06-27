@@ -598,3 +598,10 @@ Eighty-seventh production slice:
 - Split sync transcript snapshot and cursor decision logic into `src/sync/transcript-cursor.ts`.
 - Moved transcript file reading, line counting, unchanged/pending/prefix-mismatch decisions, pending ledger entry construction, and failed-entry construction out of `src/sync/sweep.ts`.
 - Kept `src/sync/sweep.ts` focused on candidate iteration, eligibility gates, repo locks, ledger loading/reconciliation, Absorb enqueue orchestration, summary recording, and lock cleanup.
+
+Eighty-eighth production slice:
+
+- Split wiki health checks by ownership into `src/wiki/health/page-checks.ts` and `src/wiki/health/link-checks.ts`.
+- Moved page/topic checks, empty-page reads, and slug-collision scanning out of `src/wiki/health/index.ts`.
+- Moved file-reference, wikilink, and cross-wiki reachability checks out of `src/wiki/health/index.ts`.
+- Kept `src/wiki/health/index.ts` focused on index freshness, health-scope resolution, source-health composition, report assembly, and database lifetime.

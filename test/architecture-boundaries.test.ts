@@ -84,6 +84,19 @@ describe("architecture boundaries", () => {
     expect(healthService).toContain("wikiHealthReportFromIndexerReport");
   });
 
+  it("keeps wiki health report composition separate from individual checks", async () => {
+    const healthIndex = await readSource("src/wiki/health/index.ts");
+
+    expect(existsSync(join(ROOT, "src/wiki/health/page-checks.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/wiki/health/link-checks.ts"))).toBe(true);
+    expect(healthIndex).toContain("page-checks.js");
+    expect(healthIndex).toContain("link-checks.js");
+    expect(healthIndex).not.toContain("SELECT p.slug FROM pages p");
+    expect(healthIndex).not.toContain("SELECT w.source_slug");
+    expect(healthIndex).not.toContain("fast-glob");
+    expect(healthIndex).not.toContain("findEntry");
+  });
+
   it("keeps reindex command adapters out of index storage mechanics", async () => {
     const reindexCommand = await readSource("src/cli/commands/reindex.ts");
     const reindexService = await readSource("src/services/wiki/reindex.ts");
