@@ -1,4 +1,10 @@
 export {
+  applySetupAutoCommit,
+} from "./auto-commit.js";
+export type {
+  SetupAutoCommitResult,
+} from "./auto-commit.js";
+export {
   readSetupAgentChoiceState,
   readSetupProviderModelChoices,
   refreshSetupAgentChoiceView,

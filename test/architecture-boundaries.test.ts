@@ -292,6 +292,18 @@ describe("architecture boundaries", () => {
     expect(setupAgentChoice).not.toContain("isAgentProviderId");
   });
 
+  it("keeps setup auto-commit UI out of config persistence mechanics", async () => {
+    const autoCommitStep = await readSource(
+      "src/cli/commands/setup/auto-commit-step.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/services/setup/auto-commit.ts"))).toBe(true);
+    expect(autoCommitStep).toContain("services/setup/index.js");
+    expect(autoCommitStep).not.toContain("../../../config/index");
+    expect(autoCommitStep).not.toContain("readConfig");
+    expect(autoCommitStep).not.toContain("writeConfig");
+  });
+
   it("keeps sync command adapters out of transcript and absorb workflow mechanics", async () => {
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 
