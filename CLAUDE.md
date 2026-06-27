@@ -48,6 +48,7 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/services/agents/` | Agent-facing provider view and provider/model config workflows over readiness and config services | `agents.ts`, `index.ts` |
 | `src/services/automation/` | Automation product workflows and scheduled-task planning over platform scheduler mechanics | `automation.ts`, `planning.ts`, `types.ts`, `index.ts` |
 | `src/services/config/` | User-facing config verbs and config-key catalog over persisted config mechanics | `config.ts`, `keys.ts`, `index.ts` |
+| `src/services/diagnostics/` | Install, agent, update, and wiki diagnostic read models for `almanac doctor` | `doctor.ts`, `install.ts`, `agents.ts`, `updates.ts`, `probes.ts`, `types.ts`, `index.ts` |
 | `src/services/jobs/` | Job product workflows for CLI/viewer-facing list, read, log, stream, and cancel operations | `jobs.ts`, `types.ts`, `index.ts` |
 | `src/services/setup/` | Setup and uninstall product workflows over agent readiness/config state, instruction targets, automation cleanup, and guide cleanup while CLI setup files own terminal UI | `agent-choice.ts`, `auto-commit.ts`, `instructions.ts`, `uninstall.ts`, `index.ts` |
 | `src/services/update/` | Self-update product workflow over registry, config, lock, state, and npm-install mechanics | `update.ts`, `types.ts`, `index.ts` |

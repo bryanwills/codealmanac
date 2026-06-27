@@ -5,7 +5,7 @@ import type {
   CheckStatus,
   DoctorOptions,
   DoctorReport,
-} from "./types.js";
+} from "../../../services/diagnostics/index.js";
 
 export function formatReport(
   report: DoctorReport,

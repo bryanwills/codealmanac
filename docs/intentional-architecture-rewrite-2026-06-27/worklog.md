@@ -204,3 +204,9 @@ Twenty-third production slice:
 - Moved uninstall automation cleanup and agent-instruction removal behind `src/services/setup/uninstall.ts`.
 - Kept `src/cli/commands/setup/agent-choice.ts` responsible for terminal prompting, choice formatting, login command prompting, and step output.
 - Added architecture guards so setup UI steps do not re-import config, readiness, install-target, guide install, or automation cleanup mechanics directly.
+
+Twenty-fourth production slice:
+
+- Introduced `src/services/diagnostics/` for the `almanac doctor` diagnostic read model.
+- Moved install probes, agent readiness checks, update checks, package/version probes, and doctor report contracts out of `src/cli/commands/doctor/`.
+- Kept `src/cli/commands/doctor/index.ts` responsible for JSON/text response selection and `src/cli/commands/doctor/format.ts` responsible for terminal rendering.

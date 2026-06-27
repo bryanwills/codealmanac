@@ -1,7 +1,7 @@
-import { readConfig } from "../../../config/index.js";
-import { readStateForDoctor } from "../../../platform/update/notifier-worker.js";
-import { isNewer } from "../../../platform/update/semver.js";
-import { formatDuration } from "../../../shared/duration.js";
+import { readConfig } from "../../config/index.js";
+import { readStateForDoctor } from "../../platform/update/notifier-worker.js";
+import { isNewer } from "../../platform/update/semver.js";
+import { formatDuration } from "../../shared/duration.js";
 import type { Check, DoctorOptions } from "./types.js";
 
 export async function gatherUpdateChecks(

@@ -1,7 +1,7 @@
-import type { SpawnCliFn } from "../../../agent/readiness/providers/claude/index.js";
-import type { ProviderStatus } from "../../../agent/types.js";
-import type { AgentProviderId } from "../../../config/index.js";
-import type { CollectWikiHealthReport } from "../../../services/wiki/doctor.js";
+import type { SpawnCliFn } from "../../agent/readiness/providers/claude/index.js";
+import type { ProviderStatus } from "../../agent/types.js";
+import type { AgentProviderId } from "../../config/index.js";
+import type { CollectWikiHealthReport } from "../wiki/doctor.js";
 
 export interface DoctorOptions {
   cwd: string;

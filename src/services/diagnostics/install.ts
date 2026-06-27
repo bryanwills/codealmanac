@@ -2,11 +2,13 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
-import { checkAgentInstructions } from "../../../agent/install-targets.js";
-import type { ClaudeAuthStatus } from "../../../agent/readiness/providers/claude/index.js";
-import { defaultPlistPath } from "../automation.js";
-import { detectLegacyCaptureSweepAutomation } from "../../../platform/automation/legacy-capture.js";
-import { defaultCapturePlistPath } from "../../../platform/automation/tasks.js";
+import { checkAgentInstructions } from "../../agent/install-targets.js";
+import type { ClaudeAuthStatus } from "../../agent/readiness/providers/claude/index.js";
+import { detectLegacyCaptureSweepAutomation } from "../../platform/automation/legacy-capture.js";
+import {
+  defaultCapturePlistPath,
+  defaultSyncPlistPath,
+} from "../../platform/automation/tasks.js";
 import {
   classifyInstallPath,
   detectInstallPath,
@@ -41,7 +43,7 @@ export async function gatherInstallChecks(
   checks.push(describeAuth(auth));
 
   const home = homedir();
-  const plistPath = options.automationPlistPath ?? defaultPlistPath(home);
+  const plistPath = options.automationPlistPath ?? defaultSyncPlistPath(home);
   const legacyPlistPath =
     options.legacyAutomationPlistPath ?? defaultCapturePlistPath(home);
   checks.push(await describeAutomation(plistPath, legacyPlistPath, home));

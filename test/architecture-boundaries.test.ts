@@ -397,15 +397,27 @@ describe("architecture boundaries", () => {
     expect(migrateCommand).not.toContain("migrateLegacySourceFrontmatter");
   });
 
-  it("keeps doctor wiki checks out of the CLI command package", async () => {
+  it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
-    const doctorTypes = await readSource("src/cli/commands/doctor/types.ts");
+    const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
     const doctorService = await readSource("src/services/wiki/doctor.ts");
 
-    expect(doctorIndex).toContain("services/wiki/doctor.js");
-    expect(doctorTypes).toContain("services/wiki/doctor.js");
-    expect(doctorIndex).not.toContain("./wiki.js");
-    expect(doctorTypes).not.toContain("wiki/health");
+    expect(doctorIndex).toContain("services/diagnostics/index.js");
+    expect(doctorIndex).not.toContain("./install.js");
+    expect(doctorIndex).not.toContain("./agents.js");
+    expect(doctorIndex).not.toContain("./updates.js");
+    expect(doctorIndex).not.toContain("./probes.js");
+    expect(doctorIndex).not.toContain("agent/");
+    expect(doctorIndex).not.toContain("platform/");
+    expect(doctorIndex).not.toContain("readConfig");
+    expect(doctorIndex).not.toContain("readStateForDoctor");
+    expect(doctorDiagnostics).toContain("../wiki/doctor.js");
+    expect(existsSync(join(ROOT, "src/services/diagnostics/doctor.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/install.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/agents.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/updates.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/probes.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/doctor/types.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/wiki.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/duration.ts"))).toBe(false);
 

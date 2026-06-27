@@ -1,17 +1,13 @@
 import { formatReport } from "./format.js";
-import { gatherInstallChecks } from "./install.js";
-import { readPackageVersion } from "./probes.js";
+import { gatherDoctorReport } from "../../../services/diagnostics/index.js";
 import type {
   Check,
   CheckStatus,
-  AgentDoctorCheck,
   DoctorOptions,
   DoctorReport,
   DoctorResult,
   SqliteProbeResult,
-} from "./types.js";
-import { gatherAgentChecks } from "./agents.js";
-import { gatherUpdateChecks } from "./updates.js";
+} from "../../../services/diagnostics/index.js";
 
 export type {
   Check,
@@ -30,32 +26,12 @@ export type {
  * correctly?" question that users hit when first trying the tool or when
  * sessions silently stop getting absorbed.
  *
- * This file is the command composition root. The section-specific probes
- * and formatting live next to it so each durable fact has one obvious owner.
+ * This file renders the diagnostics service report for the CLI.
  */
 export async function runDoctor(
   options: DoctorOptions,
 ): Promise<DoctorResult> {
-  const version =
-    options.versionOverride ?? readPackageVersion() ?? "unknown";
-
-  const install: Check[] = options.wikiOnly === true
-    ? []
-    : await gatherInstallChecks(options);
-
-  const agents: AgentDoctorCheck[] = options.wikiOnly === true
-    ? []
-    : await gatherAgentChecks(options);
-
-  const updates: Check[] = options.wikiOnly === true
-    ? []
-    : await gatherUpdateChecks(options, version);
-
-  const wiki: Check[] = options.installOnly === true
-    ? []
-    : await safeGatherWikiChecks(options);
-
-  const report: DoctorReport = { version, install, agents, updates, wiki };
+  const report = await gatherDoctorReport(options);
 
   if (options.json === true) {
     return {
@@ -70,23 +46,4 @@ export async function runDoctor(
     stderr: "",
     exitCode: 0,
   };
-}
-
-async function safeGatherWikiChecks(
-  options: DoctorOptions,
-): Promise<Check[]> {
-  try {
-    const { gatherWikiDoctorChecks } = await import("../../../services/wiki/doctor.js");
-    return await gatherWikiDoctorChecks(options);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return [
-      {
-        status: "problem",
-        key: "wiki.checks",
-        message: `could not run wiki checks: ${msg.split("\n")[0] ?? msg}`,
-        fix: "run: npm rebuild better-sqlite3 (in the install directory)",
-      },
-    ];
-  }
 }
