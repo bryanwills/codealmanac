@@ -279,6 +279,8 @@ describe("architecture boundaries", () => {
 
     expect(automationServiceIndex).not.toContain("platform/automation");
     expect(automationCommand).toContain("services/automation/index.js");
+    expect(automationCommand).not.toContain("import type { CommandResult }");
+    expect(automationCommand).toContain("AutomationCommandResult");
     expect(automationCommand).not.toContain("platform/automation");
     expect(automationCommand).not.toContain("platform/automation/launchd");
     expect(automationCommand).not.toContain("platform/automation/tasks");

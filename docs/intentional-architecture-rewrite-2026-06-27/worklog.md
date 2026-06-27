@@ -403,3 +403,9 @@ Fifty-fifth production slice:
 - Made lifecycle operation commands return an explicit `OperationCommandResult` instead of the generic `CommandResult` alias.
 - Added command-local mappers from init, absorb, and garden options into their lifecycle workflow service options.
 - Guarded lifecycle command adapters against regressing to service option inheritance or generic command output aliases.
+
+Fifty-sixth production slice:
+
+- Made automation install, uninstall, and status commands return an explicit `AutomationCommandResult`.
+- Removed the generic `CommandResult` import from the automation command adapter.
+- Guarded the automation command against regressing to the generic command output alias.

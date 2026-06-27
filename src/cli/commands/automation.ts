@@ -1,4 +1,3 @@
-import type { CommandResult } from "../helpers.js";
 import {
   defaultSyncAutomationPlistPath,
   installAutomation,
@@ -16,6 +15,12 @@ export type AutomationCommandExecFn = (
   file: string,
   args: string[],
 ) => Promise<{ stdout?: string; stderr?: string }>;
+
+export interface AutomationCommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
 
 export interface AutomationInstallCommandOptions {
   tasks?: AutomationTaskId[];
@@ -64,7 +69,7 @@ const TASK_LABELS: Record<AutomationTaskId, string> = {
 
 export async function runAutomationInstall(
   options: AutomationInstallCommandOptions = {},
-): Promise<CommandResult> {
+): Promise<AutomationCommandResult> {
   const result = await installAutomation(toAutomationInstallOptions(options));
   if (result.status === "invalid") {
     return { stdout: "", stderr: `almanac: ${result.error}\n`, exitCode: 1 };
@@ -90,7 +95,7 @@ export async function runAutomationInstall(
 
 export async function runAutomationUninstall(
   options: AutomationUninstallCommandOptions = {},
-): Promise<CommandResult> {
+): Promise<AutomationCommandResult> {
   const result = await uninstallAutomation(toAutomationUninstallOptions(options));
   if (result.status === "not-installed") {
     return {
@@ -110,7 +115,7 @@ export async function runAutomationUninstall(
 
 export async function runAutomationStatus(
   options: AutomationStatusCommandOptions = {},
-): Promise<CommandResult> {
+): Promise<AutomationCommandResult> {
   const result = await readAutomationStatus(toAutomationStatusOptions(options));
   return {
     stdout: result.sections.map(formatAutomationStatusSection).join(""),
