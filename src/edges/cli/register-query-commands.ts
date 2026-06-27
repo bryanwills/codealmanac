@@ -88,6 +88,7 @@ export function registerQueryCommands(program: Command): void {
           wiki: opts.wiki,
           output: resolveSearchOutputMode(opts),
           limit: opts.limit,
+          color: shouldUseStdoutColor(),
         });
         emit(result);
       },

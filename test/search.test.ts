@@ -73,6 +73,23 @@ describe("almanac search", () => {
     });
   });
 
+  it("keeps slugs plain by default and colors only when requested", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await seedFixture(repo);
+
+      const plain = await runSearch({ cwd: repo, topics: ["checkout"] });
+      const colored = await runSearch({
+        cwd: repo,
+        topics: ["checkout"],
+        color: true,
+      });
+
+      expect(plain.stdout).toBe("checkout-flow\n");
+      expect(colored.stdout).toContain("\x1b[");
+    });
+  });
+
   it("--include-archive brings archived pages back into results", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

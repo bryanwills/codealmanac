@@ -135,9 +135,13 @@ describe("architecture boundaries", () => {
     expect(searchCommand).not.toContain("JSON.stringify");
     expect(searchCommand).not.toContain("BLUE");
     expect(searchCommand).not.toContain("RST");
+    expect(searchCommand).toContain("color?: boolean");
     expect(searchCommand).not.toContain("# 0 results");
     expect(searchCommand).not.toContain("consider --limit");
     expect(searchRender).toContain("renderSearchResults");
+    expect(searchRender).toContain("../../ansi-theme.js");
+    expect(searchRender).not.toContain("../../ansi.js");
+    expect(searchRender).toContain("makeAnsiTheme(options.color === true)");
     expect(searchRender).toContain("formatSearchResult");
     expect(searchRender).toContain("buildStderr");
     expect(searchService).not.toContain("export type WikiSearchResult = query");

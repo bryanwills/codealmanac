@@ -1,4 +1,4 @@
-import { BLUE, RST } from "../../ansi.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../ansi-theme.js";
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
 
@@ -15,6 +15,7 @@ export interface SearchResult {
 export interface SearchRenderOptions {
   output?: SearchOutputMode;
   limit?: number;
+  color?: boolean;
 }
 
 export interface SearchCommandOutput {
@@ -46,20 +47,23 @@ function formatResults(
   // Empty result = empty output so pipelines receive zero rows.
   if (rows.length === 0) return "";
 
+  const theme = makeAnsiTheme(options.color === true);
+
   if (output === "slugs") {
-    return `${rows.map(formatSlug).join("\n")}\n`;
+    return `${rows.map((row) => formatSlug(row, theme)).join("\n")}\n`;
   }
 
-  return `${rows.map(formatSearchResult).join("\n")}\n`;
+  return `${rows.map((row) => formatSearchResult(row, theme)).join("\n")}\n`;
 }
 
-function formatSearchResult(row: SearchResult): string {
-  const head = formatSlug(row);
+function formatSearchResult(row: SearchResult, theme: AnsiTheme): string {
+  const head = formatSlug(row, theme);
   if (row.summary === null || row.summary.trim().length === 0) return head;
   return `${head}\n  ${row.summary.trim()}`;
 }
 
-function formatSlug(row: SearchResult): string {
+function formatSlug(row: SearchResult, theme: AnsiTheme): string {
+  const { BLUE, RST } = theme;
   return `${BLUE}${row.slug}${RST}`;
 }
 

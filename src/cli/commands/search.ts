@@ -23,6 +23,7 @@ export interface SearchOptions {
   wiki?: string;
   output?: SearchOutputMode;
   limit?: number;
+  color?: boolean;
 }
 
 export type {
