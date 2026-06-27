@@ -508,3 +508,9 @@ Seventy-second production slice:
 - Flattened `SyncWorkflowStartedItem` so started sync jobs own their full result payload instead of extending ready sync items.
 - Made `syncWorkflowStartedItemFromSweep` map every field explicitly rather than spreading the ready-item mapper.
 - Guarded the sync service against reintroducing started-item inheritance or mapper reuse.
+
+Seventy-third production slice:
+
+- Flattened lifecycle operation workflow option contracts in `src/services/lifecycle/operations.ts`.
+- Replaced the broad `LifecycleOperationDeps` base with explicit init, absorb, and garden workflow fields.
+- Added named lifecycle hook contracts so command options no longer index into workflow option interfaces for injected run hooks.

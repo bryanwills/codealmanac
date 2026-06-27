@@ -6,6 +6,10 @@ import {
   type AbsorbOperationWorkflowOptions,
   type GardenOperationWorkflowOptions,
   type InitOperationWorkflowOptions,
+  type LifecycleAbsorbSourceResolver,
+  type LifecycleOperationBackgroundStarter,
+  type LifecycleOperationEventHandler,
+  type LifecycleOperationForegroundStarter,
   type LifecycleOperationWorkflowResult,
   type LifecycleOperationRunResult,
 } from "../../services/lifecycle/index.js";
@@ -17,9 +21,9 @@ export interface InitCommandOptions {
   background?: boolean;
   force?: boolean;
   yes?: boolean;
-  onEvent?: InitOperationWorkflowOptions["onEvent"];
-  startForeground?: InitOperationWorkflowOptions["startForeground"];
-  startBackground?: InitOperationWorkflowOptions["startBackground"];
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
 }
 
 export interface AbsorbCommandOptions {
@@ -29,10 +33,10 @@ export interface AbsorbCommandOptions {
   using?: string;
   foreground?: boolean;
   yes?: boolean;
-  onEvent?: AbsorbOperationWorkflowOptions["onEvent"];
-  startForeground?: AbsorbOperationWorkflowOptions["startForeground"];
-  startBackground?: AbsorbOperationWorkflowOptions["startBackground"];
-  resolveSource?: AbsorbOperationWorkflowOptions["resolveSource"];
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
+  resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
 export interface GardenCommandOptions {
@@ -41,9 +45,9 @@ export interface GardenCommandOptions {
   using?: string;
   foreground?: boolean;
   yes?: boolean;
-  onEvent?: GardenOperationWorkflowOptions["onEvent"];
-  startForeground?: GardenOperationWorkflowOptions["startForeground"];
-  startBackground?: GardenOperationWorkflowOptions["startBackground"];
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
 }
 
 export interface OperationCommandResult {

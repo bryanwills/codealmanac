@@ -11,37 +11,47 @@ export type LifecycleOperationJobStatus =
   | "failed"
   | "cancelled";
 
-export interface LifecycleOperationDeps {
-  startForeground?: operations.StartForegroundJob;
-  startBackground?: operations.StartBackgroundJob;
-  onEvent?: (event: HarnessEvent) => void | Promise<void>;
-}
+export type LifecycleOperationEventHandler = (
+  event: HarnessEvent,
+) => void | Promise<void>;
+export type LifecycleOperationForegroundStarter = operations.StartForegroundJob;
+export type LifecycleOperationBackgroundStarter = operations.StartBackgroundJob;
+export type LifecycleAbsorbSourceResolver = absorb.ResolveSourceFn;
 
-export interface InitOperationWorkflowOptions extends LifecycleOperationDeps {
+export interface InitOperationWorkflowOptions {
   cwd: string;
   using?: string;
   background?: boolean;
   json?: boolean;
   force?: boolean;
   yes?: boolean;
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
 }
 
-export interface AbsorbOperationWorkflowOptions extends LifecycleOperationDeps {
+export interface AbsorbOperationWorkflowOptions {
   cwd: string;
   inputs: string[];
   using?: string;
   foreground?: boolean;
   json?: boolean;
   yes?: boolean;
-  resolveSource?: absorb.ResolveSourceFn;
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
+  resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
-export interface GardenOperationWorkflowOptions extends LifecycleOperationDeps {
+export interface GardenOperationWorkflowOptions {
   cwd: string;
   using?: string;
   foreground?: boolean;
   json?: boolean;
   yes?: boolean;
+  onEvent?: LifecycleOperationEventHandler;
+  startForeground?: LifecycleOperationForegroundStarter;
+  startBackground?: LifecycleOperationBackgroundStarter;
 }
 
 export interface LifecycleOperationJobResult {
