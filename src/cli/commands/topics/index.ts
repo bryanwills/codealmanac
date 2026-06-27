@@ -16,7 +16,6 @@ export { runTopicsShow } from "./show.js";
 export { runTopicsUnlink } from "./unlink.js";
 
 export type {
-  TopicsBaseOptions,
   TopicsCommandOutput,
   TopicsCreateOptions,
   TopicsDeleteOptions,

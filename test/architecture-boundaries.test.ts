@@ -148,6 +148,22 @@ describe("architecture boundaries", () => {
     );
   });
 
+  it("keeps topic command option contracts explicit per verb", async () => {
+    const topicCommandTypes = await readSource(
+      "src/cli/commands/topics/types.ts",
+    );
+    const topicCommandIndex = await readSource(
+      "src/cli/commands/topics/index.ts",
+    );
+
+    expect(topicCommandTypes).not.toContain("TopicsBaseOptions");
+    expect(topicCommandIndex).not.toContain("TopicsBaseOptions");
+    expect(topicCommandTypes).not.toContain("extends TopicsBaseOptions");
+    expect(topicCommandTypes).not.toContain(
+      "TopicsUnlinkOptions extends TopicsLinkOptions",
+    );
+  });
+
   it("keeps service-backed topic mutation adapters out of write mechanics", async () => {
     const createCommand = await readSource("src/cli/commands/topics/create.ts");
     const deleteCommand = await readSource("src/cli/commands/topics/delete.ts");

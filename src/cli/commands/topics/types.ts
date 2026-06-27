@@ -4,41 +4,63 @@ export interface TopicsCommandOutput {
   exitCode: number;
 }
 
-export interface TopicsBaseOptions {
+export interface TopicsListOptions {
   cwd: string;
   wiki?: string;
   json?: boolean;
 }
 
-export interface TopicsListOptions extends TopicsBaseOptions {}
-
-export interface TopicsShowOptions extends TopicsBaseOptions {
+export interface TopicsShowOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   slug: string;
   descendants?: boolean;
 }
 
-export interface TopicsCreateOptions extends TopicsBaseOptions {
+export interface TopicsCreateOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   name: string;
   parents?: string[];
 }
 
-export interface TopicsLinkOptions extends TopicsBaseOptions {
+export interface TopicsLinkOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   child: string;
   parent: string;
 }
 
-export interface TopicsUnlinkOptions extends TopicsLinkOptions {}
+export interface TopicsUnlinkOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
+  child: string;
+  parent: string;
+}
 
-export interface TopicsRenameOptions extends TopicsBaseOptions {
+export interface TopicsRenameOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   oldSlug: string;
   newSlug: string;
 }
 
-export interface TopicsDeleteOptions extends TopicsBaseOptions {
+export interface TopicsDeleteOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   slug: string;
 }
 
-export interface TopicsDescribeOptions extends TopicsBaseOptions {
+export interface TopicsDescribeOptions {
+  cwd: string;
+  wiki?: string;
+  json?: boolean;
   slug: string;
   description: string;
 }
