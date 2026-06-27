@@ -11,7 +11,7 @@ export interface AutomationInstallOptions {
   quiet?: string;
   gardenEvery?: string;
   gardenOff?: boolean;
-  cwd?: string;
+  cwd: string;
   homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;

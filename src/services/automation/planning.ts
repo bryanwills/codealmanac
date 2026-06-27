@@ -56,7 +56,6 @@ export function buildAutomationInstallPlan(
   const environmentVariables = {
     PATH: buildLaunchPath(home, options.env?.PATH ?? process.env.PATH),
   };
-  const cwd = options.cwd ?? process.cwd();
   const jobs: PlannedAutomationJob[] = [];
 
   for (const taskId of taskIds) {
@@ -78,7 +77,7 @@ export function buildAutomationInstallPlan(
         programArguments: programArgumentsForTask(task, options),
         intervalSeconds: interval.seconds,
         environmentVariables,
-        workingDirectory: resolveTaskWorkingDirectory(task, cwd),
+        workingDirectory: resolveTaskWorkingDirectory(task, options.cwd),
         stdoutPath: logs.stdoutPath,
         stderrPath: logs.stderrPath,
       },

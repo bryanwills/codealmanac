@@ -14,6 +14,7 @@ import { installAutomation } from "./automation.js";
 import type { AutomationExecFn, AutomationInstallResult } from "./types.js";
 
 export interface MigrateLegacyAutomationOptions {
+  cwd: string;
   homeDir?: string;
   legacyPlistPath?: string;
   syncPlistPath?: string;
@@ -39,7 +40,7 @@ export type MigrateLegacyAutomationResult =
   };
 
 export async function migrateLegacyAutomation(
-  options: MigrateLegacyAutomationOptions = {},
+  options: MigrateLegacyAutomationOptions,
 ): Promise<MigrateLegacyAutomationResult> {
   const home = options.homeDir ?? homedir();
   const legacyPlistPath = options.legacyPlistPath ?? defaultCapturePlistPath(home);
@@ -62,6 +63,7 @@ export async function migrateLegacyAutomation(
     tasks: ["sync"],
     every,
     quiet,
+    cwd: options.cwd,
     plistPath: syncPlistPath,
     exec: options.exec,
   });

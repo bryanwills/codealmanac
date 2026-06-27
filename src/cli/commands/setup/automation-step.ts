@@ -18,7 +18,7 @@ export interface AutomationSetupStepOptions {
   automationQuiet?: string;
   gardenEvery?: string;
   gardenOff?: boolean;
-  cwd?: string;
+  cwd: string;
   automationPlistPath?: string;
   gardenPlistPath?: string;
   automationExec?: AutomationExecFn;

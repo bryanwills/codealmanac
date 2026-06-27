@@ -28,7 +28,7 @@ export interface AutomationInstallCommandOptions {
   quiet?: string;
   gardenEvery?: string;
   gardenOff?: boolean;
-  cwd?: string;
+  cwd: string;
   homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
@@ -62,7 +62,7 @@ export interface AutomationStatusCommandOptions {
 }
 
 export async function runAutomationInstall(
-  options: AutomationInstallCommandOptions = {},
+  options: AutomationInstallCommandOptions,
 ): Promise<AutomationCommandResult> {
   return renderAutomationInstallResult(
     await installAutomation(toAutomationInstallOptions(options)),

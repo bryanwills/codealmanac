@@ -31,7 +31,7 @@ import type {
 } from "./types.js";
 
 export async function installAutomation(
-  options: AutomationInstallOptions = {},
+  options: AutomationInstallOptions,
 ): Promise<AutomationInstallResult> {
   const plan = buildAutomationInstallPlan(options);
   if (!plan.ok) return { status: "invalid", error: plan.error };

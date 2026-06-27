@@ -740,6 +740,7 @@ describe("architecture boundaries", () => {
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
     const automationServiceIndex = await readSource("src/services/automation/index.ts");
     const automationServiceTypes = await readSource("src/services/automation/types.ts");
+    const automationPlanning = await readSource("src/services/automation/planning.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
     const automationRender = await readSource("src/cli/commands/automation-render.ts");
 
@@ -750,6 +751,7 @@ describe("architecture boundaries", () => {
     expect(automationServiceTypes).not.toContain("platform/automation");
     expect(automationServiceTypes).not.toContain("PlatformExecFn");
     expect(automationServiceTypes).not.toContain("PlatformScheduledTaskId");
+    expect(automationPlanning).not.toContain("process.cwd()");
     expect(automationCommand).toContain("services/automation/index.js");
     expect(automationCommand).not.toContain("import type { CommandResult }");
     expect(automationCommand).toContain("AutomationCommandResult");
@@ -1359,6 +1361,7 @@ describe("architecture boundaries", () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 
     expect(automationCommand).toContain("AutomationInstallCommandOptions");
+    expect(automationCommand).toContain("cwd: string");
     expect(automationCommand).toContain("toAutomationInstallOptions");
     expect(automationCommand).not.toContain(
       "AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions",

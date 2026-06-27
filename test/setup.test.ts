@@ -318,6 +318,7 @@ describe("codealmanac setup", () => {
         theme: TEST_SETUP_THEME,
         interactive: true,
         options: {
+          cwd: home,
           automationPlistPath: env.plistPath,
           gardenPlistPath: env.gardenPlistPath,
           automationExec: async () => ({}),

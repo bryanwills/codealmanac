@@ -3,11 +3,15 @@ import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  runAutomationInstall,
+  runAutomationInstall as runAutomationInstallCommand,
   runAutomationStatus,
   runAutomationUninstall,
+  type AutomationInstallCommandOptions,
 } from "../src/cli/commands/automation.js";
-import { runMigrateAutomation } from "../src/cli/commands/migrate.js";
+import {
+  runMigrateAutomation as runMigrateAutomationCommand,
+  type MigrateAutomationOptions,
+} from "../src/cli/commands/migrate.js";
 import { ensureAutomationSyncSince, readConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 
@@ -484,6 +488,26 @@ capture_since = "2026-05-12T05:10:00.000Z"
     });
   });
 });
+
+type TestAutomationInstallOptions =
+  Omit<AutomationInstallCommandOptions, "cwd"> & { cwd?: string };
+
+function runAutomationInstall(options: TestAutomationInstallOptions) {
+  return runAutomationInstallCommand({
+    cwd: process.cwd(),
+    ...options,
+  });
+}
+
+type TestMigrateAutomationOptions =
+  Omit<MigrateAutomationOptions, "cwd"> & { cwd?: string };
+
+function runMigrateAutomation(options: TestMigrateAutomationOptions) {
+  return runMigrateAutomationCommand({
+    cwd: process.cwd(),
+    ...options,
+  });
+}
 
 async function writeLegacyCaptureSweepPlist(
   plistPath: string,

@@ -21,6 +21,7 @@ export interface MigrateLegacySourcesOptions {
 export type { MigrateCommandOutput } from "./migrate-render.js";
 
 export interface MigrateAutomationOptions {
+  cwd: string;
   json?: boolean;
   homeDir?: string;
   legacyPlistPath?: string;
@@ -42,7 +43,7 @@ export async function runMigrateLegacySources(
 }
 
 export async function runMigrateAutomation(
-  options: MigrateAutomationOptions = {},
+  options: MigrateAutomationOptions,
 ): Promise<MigrateCommandOutput> {
   return renderMigrateAutomation(await migrateLegacyAutomation(options), {
     json: options.json,
