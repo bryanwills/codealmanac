@@ -366,6 +366,9 @@ describe("architecture boundaries", () => {
 
   it("keeps setup agent choice UI out of readiness and config mechanics", async () => {
     const setupServiceIndex = await readSource("src/services/setup/index.ts");
+    const setupServiceAgentChoice = await readSource(
+      "src/services/setup/agent-choice.ts",
+    );
     const setupAgentChoice = await readSource(
       "src/cli/commands/setup/agent-choice.ts",
     );
@@ -373,6 +376,19 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/services/setup/agent-choice.ts"))).toBe(true);
     expect(setupServiceIndex).not.toContain("../../agent/");
     expect(setupServiceIndex).not.toContain("../../config/");
+    expect(setupServiceAgentChoice).not.toContain("SetupSpawnCliFn = SpawnCliFn");
+    expect(setupServiceAgentChoice).not.toContain(
+      "SetupProviderView = ProviderSetupView",
+    );
+    expect(setupServiceAgentChoice).not.toContain(
+      "SetupProviderModelChoice = ProviderModelChoice",
+    );
+    expect(setupServiceAgentChoice).not.toContain(
+      "SetupAgentProviderId = AgentProviderId",
+    );
+    expect(setupServiceAgentChoice).toContain(
+      "setupProviderViewFromReadinessView",
+    );
     expect(setupAgentChoice).toContain("services/setup/index.js");
     expect(setupAgentChoice).not.toContain("../../../agent");
     expect(setupAgentChoice).not.toContain("agent/readiness/view");

@@ -436,3 +436,9 @@ Sixtieth production slice:
 - Made automation service task ids and exec function contracts explicit in `src/services/automation/types.ts`.
 - Removed aliases to platform launchd and scheduled-task types from the automation service public surface.
 - Guarded automation service types against re-exposing platform automation contracts.
+
+Sixty-first production slice:
+
+- Made setup agent-choice provider ids, readiness, model choices, provider choices, provider view, and spawn contracts explicit in `src/services/setup/agent-choice.ts`.
+- Added a mapper from the provider readiness view into the setup service read model.
+- Guarded setup agent-choice service types against regressing to lower-level provider/config aliases.

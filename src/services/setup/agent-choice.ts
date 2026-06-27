@@ -1,24 +1,61 @@
-import type { SpawnCliFn } from "../../agent/types.js";
 import {
   buildProviderModelChoices,
   buildProviderSetupView,
   parseAgentSelection,
+  type ProviderSetupChoice,
   type ProviderSetupView,
 } from "../../agent/readiness/view.js";
-import type { ProviderModelChoice } from "../../agent/types.js";
 import {
   disabledAgentProviderMessage,
   formatEnabledAgentProviderList,
   isEnabledAgentProviderId,
   readConfig,
   writeConfig,
-  type AgentProviderId,
 } from "../../config/index.js";
 
-export type SetupSpawnCliFn = SpawnCliFn;
-export type SetupProviderView = ProviderSetupView;
-export type SetupProviderModelChoice = ProviderModelChoice;
-export type SetupAgentProviderId = AgentProviderId;
+export interface SetupSpawnedProcess {
+  stdout: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
+  stderr: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
+  on: (event: "close" | "error", cb: (arg: number | null | Error) => void) => void;
+  kill: (signal?: string) => void;
+}
+
+export type SetupSpawnCliFn = (args: string[]) => SetupSpawnedProcess;
+
+export type SetupAgentProviderId = "claude" | "codex" | "cursor";
+export type SetupProviderReadiness = "ready" | "not-authenticated" | "missing";
+
+export interface SetupProviderModelChoice {
+  value: string | null;
+  label: string;
+  recommended: boolean;
+  source: "configured" | "provider-default" | "catalog" | "custom";
+}
+
+export interface SetupProviderChoice {
+  id: SetupAgentProviderId;
+  label: string;
+  selected: boolean;
+  recommended: boolean;
+  readiness: SetupProviderReadiness;
+  ready: boolean;
+  installed: boolean;
+  authenticated: boolean;
+  effectiveModel: string | null;
+  providerDefaultModel: string | null;
+  configuredModel: string | null;
+  account: string | null;
+  detail: string;
+  fixCommand: string | null;
+  modelChoices: SetupProviderModelChoice[];
+}
+
+export interface SetupProviderView {
+  defaultProvider: SetupAgentProviderId;
+  recommendedProvider: SetupAgentProviderId;
+  choices: SetupProviderChoice[];
+}
+
 export type SetupConfiguredModels = Partial<
   Record<SetupAgentProviderId, string | null>
 >;
@@ -43,7 +80,9 @@ export async function readSetupAgentChoiceState(input: {
     selected: input.requested ?? config.agent.default,
     configuredModels: config.agent.models,
     view: input.includeView
-      ? await buildProviderSetupView({ config, spawnCli: input.spawnCli })
+      ? setupProviderViewFromReadinessView(
+          await buildProviderSetupView({ config, spawnCli: input.spawnCli }),
+        )
       : null,
   };
 }
@@ -52,10 +91,12 @@ export async function refreshSetupAgentChoiceView(input: {
   spawnCli?: SetupSpawnCliFn;
 }): Promise<SetupProviderView> {
   const config = await readConfig();
-  return await buildProviderSetupView({
-    config,
-    spawnCli: input.spawnCli,
-  });
+  return setupProviderViewFromReadinessView(
+    await buildProviderSetupView({
+      config,
+      spawnCli: input.spawnCli,
+    }),
+  );
 }
 
 export function resolveSetupAgentSelection(
@@ -88,7 +129,11 @@ export async function readSetupProviderModelChoices(input: {
   choice?: SetupProviderView["choices"][number];
 }): Promise<SetupProviderModelChoice[]> {
   if (input.choice !== undefined) return input.choice.modelChoices;
-  return await buildProviderModelChoices(input.provider, input.configuredModel);
+  const choices = await buildProviderModelChoices(
+    input.provider,
+    input.configuredModel,
+  );
+  return choices.map((choice) => ({ ...choice }));
 }
 
 export async function saveSetupAgentChoice(input: {
@@ -107,4 +152,36 @@ export async function saveSetupAgentChoice(input: {
       },
     },
   });
+}
+
+function setupProviderViewFromReadinessView(
+  view: ProviderSetupView,
+): SetupProviderView {
+  return {
+    defaultProvider: view.defaultProvider,
+    recommendedProvider: view.recommendedProvider,
+    choices: view.choices.map(setupProviderChoiceFromReadinessChoice),
+  };
+}
+
+function setupProviderChoiceFromReadinessChoice(
+  choice: ProviderSetupChoice,
+): SetupProviderChoice {
+  return {
+    id: choice.id,
+    label: choice.label,
+    selected: choice.selected,
+    recommended: choice.recommended,
+    readiness: choice.readiness,
+    ready: choice.ready,
+    installed: choice.installed,
+    authenticated: choice.authenticated,
+    effectiveModel: choice.effectiveModel,
+    providerDefaultModel: choice.providerDefaultModel,
+    configuredModel: choice.configuredModel,
+    account: choice.account,
+    detail: choice.detail,
+    fixCommand: choice.fixCommand,
+    modelChoices: choice.modelChoices.map((modelChoice) => ({ ...modelChoice })),
+  };
 }
