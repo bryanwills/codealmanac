@@ -713,3 +713,9 @@ One-hundred-sixth production slice:
 - Split wiki review YAML codec concerns into `src/stores/wiki-review/codec.ts`.
 - Moved review-file YAML parsing, serialization, record normalization, duplicate-ID validation, and YAML error shaping out of `src/stores/wiki-review/store.ts`.
 - Kept `src/stores/wiki-review/store.ts` focused on `.almanac/review.yaml` path resolution, file loading, atomic writes, summary extraction, and review ID generation while preserving its public type exports.
+
+One-hundred-seventh production slice:
+
+- Split automation command rendering into `src/cli/commands/automation-render.ts`.
+- Moved automation install/status/uninstall output strings, task labels, legacy capture status rendering, and activation failure formatting out of `src/cli/commands/automation.ts`.
+- Kept `src/cli/commands/automation.ts` focused on command option contracts, service option conversion, and invoking automation service workflows.

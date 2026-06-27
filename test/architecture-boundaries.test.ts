@@ -528,7 +528,11 @@ describe("architecture boundaries", () => {
     const automationServiceIndex = await readSource("src/services/automation/index.ts");
     const automationServiceTypes = await readSource("src/services/automation/types.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
+    const automationRender = await readSource("src/cli/commands/automation-render.ts");
 
+    expect(existsSync(join(ROOT, "src/cli/commands/automation-render.ts"))).toBe(
+      true,
+    );
     expect(automationServiceIndex).not.toContain("platform/automation");
     expect(automationServiceTypes).not.toContain("platform/automation");
     expect(automationServiceTypes).not.toContain("PlatformExecFn");
@@ -546,6 +550,12 @@ describe("architecture boundaries", () => {
     expect(automationCommand).not.toContain("bootstrapLaunchdJob");
     expect(automationCommand).not.toContain("removeLaunchdJob");
     expect(automationCommand).not.toContain("readLaunchdJobStatus");
+    expect(automationCommand).not.toContain("TASK_LABELS");
+    expect(automationCommand).not.toContain("formatAutomationStatusSection");
+    expect(automationCommand).not.toContain("automation installed");
+    expect(automationCommand).not.toContain("legacy automation");
+    expect(automationRender).toContain("renderAutomationInstallResult");
+    expect(automationRender).toContain("formatAutomationStatusSection");
   });
 
   it("keeps update command adapters out of update workflow mechanics", async () => {
