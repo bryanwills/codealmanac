@@ -4,10 +4,22 @@ import { describe, expect, it } from "vitest";
 
 import {
   createBuildRunSpec,
-  runBuildOperation,
+  runBuildOperation as runBuildOperationCommand,
+  type BuildOperationOptions,
 } from "../src/operations/build.js";
 import { runConfigSet } from "../src/cli/commands/config.js";
 import { makeRepo, withTempHome } from "./helpers.js";
+
+function runBuildOperation(
+  options: Omit<BuildOperationOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runBuildOperationCommand({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("build operation", () => {
   it("creates a build OperationSpec from the operation prompt and runtime context", async () => {

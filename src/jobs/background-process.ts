@@ -16,6 +16,7 @@ export type SpawnBackgroundFn = (args: {
 export function startJobWorkerProcess(args: {
   repoRoot: string;
   entrypoint: string;
+  environment: NodeJS.ProcessEnv;
   spawnBackground?: SpawnBackgroundFn;
 }): BackgroundChild {
   const spawnFn = args.spawnBackground ?? defaultSpawnBackground;
@@ -23,7 +24,7 @@ export function startJobWorkerProcess(args: {
     command: process.execPath,
     args: [args.entrypoint, "__job-worker"],
     cwd: args.repoRoot,
-    env: { ...process.env },
+    env: { ...args.environment },
   });
 }
 

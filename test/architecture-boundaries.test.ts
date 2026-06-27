@@ -679,6 +679,8 @@ describe("architecture boundaries", () => {
     expect(jobStart).not.toContain("function defaultSpawnBackground");
     expect(backgroundProcess).toContain("node:child_process");
     expect(backgroundProcess).toContain("export function startJobWorkerProcess");
+    expect(backgroundProcess).not.toContain("process.env");
+    expect(backgroundStart).toContain("workerEnvironment");
   });
 
   it("keeps job spec and log persistence in explicit stores", () => {

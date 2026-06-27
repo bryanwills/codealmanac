@@ -3,9 +3,21 @@ import { describe, expect, it } from "vitest";
 
 import {
   createGardenRunSpec,
-  runGardenOperation,
+  runGardenOperation as runGardenOperationCommand,
+  type GardenOperationOptions,
 } from "../src/operations/garden.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
+
+function runGardenOperation(
+  options: Omit<GardenOperationOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runGardenOperationCommand({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("garden operation", () => {
   it("creates a garden OperationSpec for wiki maintenance", async () => {

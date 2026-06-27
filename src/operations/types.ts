@@ -32,4 +32,5 @@ export type StartBackgroundJob = (options: {
   repoRoot: string;
   spec: OperationSpec;
   jobId?: string;
+  workerEnvironment: NodeJS.ProcessEnv;
 }) => Promise<StartBackgroundJobResult>;

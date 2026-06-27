@@ -9,6 +9,7 @@ export interface SyncWorkflowOptions {
   homeDir?: string;
   configPath?: string;
   startBackground?: StartBackgroundJob;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export type SyncWorkflowMode = "sync" | "status";

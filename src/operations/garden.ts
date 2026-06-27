@@ -18,6 +18,7 @@ export interface GardenOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export async function createGardenRunSpec(args: {
@@ -55,5 +56,6 @@ export async function runGardenOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
   });
 }

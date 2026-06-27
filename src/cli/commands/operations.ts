@@ -27,6 +27,7 @@ export interface InitCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export interface AbsorbCommandOptions {
@@ -39,6 +40,7 @@ export interface AbsorbCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
@@ -51,6 +53,7 @@ export interface GardenCommandOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export async function runInitCommand(
@@ -95,6 +98,7 @@ function toInitOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
   };
 }
 
@@ -111,6 +115,7 @@ function toAbsorbOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
     resolveSource: options.resolveSource,
   };
 }
@@ -127,5 +132,6 @@ function toGardenOperationWorkflowOptions(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
   };
 }

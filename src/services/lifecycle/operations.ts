@@ -30,6 +30,7 @@ export interface LifecycleBackgroundStartRequest {
   repoRoot: string;
   spec: OperationSpec;
   jobId?: string;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export interface LifecycleForegroundStartResult {
@@ -65,6 +66,7 @@ export interface InitOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export interface AbsorbOperationWorkflowOptions {
@@ -77,6 +79,7 @@ export interface AbsorbOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
@@ -89,6 +92,7 @@ export interface GardenOperationWorkflowOptions {
   onEvent?: LifecycleOperationEventHandler;
   startForeground?: LifecycleOperationForegroundStarter;
   startBackground?: LifecycleOperationBackgroundStarter;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export type LifecycleOperationWorkflowResult =
@@ -129,6 +133,7 @@ export async function runInitOperationWorkflow(
           onEvent: options.onEvent,
           startForeground: options.startForeground,
           startBackground: options.startBackground,
+          workerEnvironment: options.workerEnvironment,
         }),
       ),
     };
@@ -182,6 +187,7 @@ export async function runGardenOperationWorkflow(
           onEvent: options.onEvent,
           startForeground: options.startForeground,
           startBackground: options.startBackground,
+          workerEnvironment: options.workerEnvironment,
         }),
       ),
     };

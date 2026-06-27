@@ -23,6 +23,7 @@ export interface AbsorbOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export async function createAbsorbRunSpec(args: {
@@ -70,5 +71,6 @@ export async function runAbsorbOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
   });
 }

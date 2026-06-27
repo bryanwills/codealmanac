@@ -23,6 +23,7 @@ export function registerSyncCommands(program: Command): void {
         quiet: opts.quiet,
         using: opts.using,
         json: opts.json,
+        workerEnvironment: process.env,
       });
       emit(result);
     });
@@ -50,6 +51,7 @@ export function registerSyncCommands(program: Command): void {
         from: opts.from ?? parentOpts.from,
         quiet: opts.quiet ?? parentOpts.quiet,
         json: opts.json ?? parentOpts.json,
+        workerEnvironment: process.env,
       });
       emit(result);
     });

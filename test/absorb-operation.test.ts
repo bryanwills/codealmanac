@@ -3,9 +3,21 @@ import { describe, expect, it } from "vitest";
 
 import {
   createAbsorbRunSpec,
-  runAbsorbOperation,
+  runAbsorbOperation as runAbsorbOperationCommand,
+  type AbsorbOperationOptions,
 } from "../src/operations/absorb.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
+
+function runAbsorbOperation(
+  options: Omit<AbsorbOperationOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runAbsorbOperationCommand({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("absorb operation", () => {
   it("creates an absorb OperationSpec from prompt plus caller context", async () => {

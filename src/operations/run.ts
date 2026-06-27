@@ -88,12 +88,14 @@ export async function runOperationProcess(args: {
   onEvent?: (event: HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerEnvironment: NodeJS.ProcessEnv;
 }): Promise<OperationRunResult> {
   if (args.background) {
     const background = await (args.startBackground ?? startBackgroundJob)({
       repoRoot: args.repoRoot,
       spec: args.spec,
       jobId: args.jobId,
+      workerEnvironment: args.workerEnvironment,
     });
     return { mode: "background", jobId: background.jobId, background };
   }

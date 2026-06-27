@@ -23,6 +23,7 @@ export interface BuildOperationOptions {
   onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export async function createBuildRunSpec(args: {
@@ -71,6 +72,7 @@ export async function runBuildOperation(
     onEvent: options.onEvent,
     startForeground: options.startForeground,
     startBackground: options.startBackground,
+    workerEnvironment: options.workerEnvironment,
   });
 }
 

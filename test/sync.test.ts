@@ -3,10 +3,24 @@ import { mkdir, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runSyncCommand } from "../src/cli/commands/sync.js";
+import {
+  runSyncCommand as runSyncCommandHandler,
+  type SyncCommandOptions,
+} from "../src/cli/commands/sync.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/config/index.js";
 import { jobRecordPath, writeJobRecord } from "../src/jobs/index.js";
+
+function runSyncCommand(
+  options: Omit<SyncCommandOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runSyncCommandHandler({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("almanac sync", () => {
   it("reports invalid source filters before running discovery", async () => {

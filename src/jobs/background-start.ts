@@ -23,6 +23,7 @@ export interface StartBackgroundJobOptions {
   now?: () => Date;
   spawnBackground?: SpawnBackgroundFn;
   entrypoint?: string;
+  workerEnvironment: NodeJS.ProcessEnv;
 }
 
 export interface StartBackgroundJobResult {
@@ -59,6 +60,7 @@ export async function startBackgroundJob(
     child = startJobWorkerProcess({
       repoRoot: options.repoRoot,
       entrypoint,
+      environment: options.workerEnvironment,
       spawnBackground: options.spawnBackground,
     });
   } catch (err: unknown) {

@@ -3,13 +3,49 @@ import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/init/scaffold.js";
 import {
-  runAbsorbCommand,
-  runGardenCommand,
-  runInitCommand,
+  runAbsorbCommand as runAbsorbCommandHandler,
+  runGardenCommand as runGardenCommandHandler,
+  runInitCommand as runInitCommandHandler,
+  type AbsorbCommandOptions,
+  type GardenCommandOptions,
+  type InitCommandOptions,
 } from "../src/cli/commands/operations.js";
 import { parseLifecycleProviderSelection } from "../src/services/lifecycle/index.js";
 import { writeConfig } from "../src/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
+
+function runInitCommand(
+  options: Omit<InitCommandOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runInitCommandHandler({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
+
+function runAbsorbCommand(
+  options: Omit<AbsorbCommandOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runAbsorbCommandHandler({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
+
+function runGardenCommand(
+  options: Omit<GardenCommandOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return runGardenCommandHandler({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("operation command wrappers", () => {
   it("parses --using provider/model values", () => {

@@ -10,10 +10,22 @@ import {
   runJobWorker,
   jobRecordPath,
   jobWorkerLockPath,
-  startBackgroundJob,
+  startBackgroundJob as startBackgroundJobCommand,
+  type StartBackgroundJobOptions,
   writeJobRecord,
 } from "../src/jobs/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
+
+function startBackgroundJob(
+  options: Omit<StartBackgroundJobOptions, "workerEnvironment"> & {
+    workerEnvironment?: NodeJS.ProcessEnv;
+  },
+) {
+  return startBackgroundJobCommand({
+    ...options,
+    workerEnvironment: options.workerEnvironment ?? process.env,
+  });
+}
 
 describe("job worker background execution", () => {
   it("writes a queued record and wakes the per-wiki worker", async () => {
@@ -27,11 +39,13 @@ describe("job worker background execution", () => {
         env: NodeJS.ProcessEnv;
       }> = [];
       let unrefCalled = false;
+      const workerEnvironment = { CODEALMANAC_TEST_WORKER: "yes" };
 
       const result = await startBackgroundJob({
         repoRoot: repo,
         jobId: "run_20260509195600_background",
         entrypoint: "/tmp/codealmanac.js",
+        workerEnvironment,
         now: fixedClock(["2026-05-09T19:56:00.000Z"]),
         spec: {
           provider: { id: "claude", model: "claude-sonnet-4-6" },
@@ -68,7 +82,7 @@ describe("job worker background execution", () => {
             "__job-worker",
           ],
           cwd: repo,
-          env: expect.any(Object) as NodeJS.ProcessEnv,
+          env: workerEnvironment,
         },
       ]);
       expect(unrefCalled).toBe(true);
