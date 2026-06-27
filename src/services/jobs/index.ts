@@ -6,14 +6,12 @@ export {
   streamJobLog,
 } from "./jobs.js";
 export type {
-  JobView,
-} from "../../jobs/index.js";
-export type {
   AlreadyTerminalJobResult,
   CancelJobRequest,
   CancelJobServiceResult,
   CancelledJobResult,
   JobRequest,
+  JobServiceView,
   JobsRequest,
   ListJobsResult,
   ListJobsServiceResult,

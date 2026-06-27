@@ -267,3 +267,9 @@ Thirty-fourth production slice:
 - Introduced lifecycle-owned names for operation run results and provider selection parsing.
 - Removed raw `operations` re-exports from `src/services/lifecycle/index.ts`.
 - Updated the operation command adapter and tests to consume the lifecycle service contract instead of operation-layer symbols.
+
+Thirty-fifth production slice:
+
+- Introduced `JobServiceView` as the jobs service-facing read model.
+- Removed the raw `JobView` re-export from `src/services/jobs/index.ts`.
+- Updated the jobs command adapter to format the service-owned read model type.

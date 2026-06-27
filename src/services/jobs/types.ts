@@ -1,4 +1,6 @@
-import type { JobStatus, JobView } from "../../jobs/index.js";
+import type { JobStatus, JobView as RuntimeJobView } from "../../jobs/index.js";
+
+export type JobServiceView = RuntimeJobView;
 
 export interface JobsRequest {
   cwd: string;
@@ -30,12 +32,12 @@ export interface MissingJobResult {
 
 export interface ListJobsResult {
   status: "listed";
-  jobs: JobView[];
+  jobs: JobServiceView[];
 }
 
 export interface ReadJobResult {
   status: "found";
-  job: JobView;
+  job: JobServiceView;
 }
 
 export interface ReadJobLogResult {
@@ -66,7 +68,7 @@ export interface AlreadyTerminalJobResult {
 
 export interface StreamedJobLogResult {
   status: "streamed";
-  terminalJob: JobView;
+  terminalJob: JobServiceView;
 }
 
 export type ListJobsServiceResult = MissingWikiResult | ListJobsResult;

@@ -11,7 +11,7 @@ import {
 } from "../../services/jobs/index.js";
 import type {
   CancelJobServiceResult,
-  JobView,
+  JobServiceView,
   MissingJobResult,
   MissingWikiResult,
   ReadJobLogServiceResult,
@@ -96,7 +96,7 @@ export async function runJobsShow(
   };
 }
 
-function formatPageChanges(view: JobView): string[] {
+function formatPageChanges(view: JobServiceView): string[] {
   const changes = view.pageChanges;
   if (changes === undefined) return [];
   const total =
@@ -239,7 +239,7 @@ function formatMs(ms: number): string {
   return `${Math.round(minutes / 60)}h`;
 }
 
-function formatJobRows(views: JobView[]): string[] {
+function formatJobRows(views: JobServiceView[]): string[] {
   return formatTextTable({
     headers: ["ID", "OPERATION", "STATUS", "ELAPSED"],
     rows: views.map((view) => [
@@ -251,7 +251,7 @@ function formatJobRows(views: JobView[]): string[] {
   });
 }
 
-function terminalAttachSummary(view: JobView): string {
+function terminalAttachSummary(view: JobServiceView): string {
   if (view.displayStatus !== "failed" && view.displayStatus !== "stale") {
     return "";
   }

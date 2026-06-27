@@ -10,12 +10,12 @@ import {
   toJobView,
   writeJobRecord,
 } from "../../jobs/index.js";
-import type { JobView } from "../../jobs/index.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { isLocalPidAlive, signalLocalPid } from "../../platform/process.js";
 import type {
   CancelJobRequest,
   CancelJobServiceResult,
+  JobServiceView,
   JobRequest,
   JobsRequest,
   ListJobsServiceResult,
@@ -159,7 +159,7 @@ export async function streamJobLog(
 async function readJobView(
   repoRoot: string,
   request: JobRequest,
-): Promise<JobView | null> {
+): Promise<JobServiceView | null> {
   const record = await readJobRecord(await resolveJobRecordPath(repoRoot, request.jobId));
   if (record === null) return null;
   return toJobView({
@@ -193,7 +193,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function isTerminalDisplayStatus(view: JobView): boolean {
+function isTerminalDisplayStatus(view: JobServiceView): boolean {
   return (
     view.displayStatus === "done" ||
     view.displayStatus === "failed" ||
