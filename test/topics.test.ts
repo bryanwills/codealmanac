@@ -242,6 +242,24 @@ describe("almanac topics", () => {
     });
   });
 
+  it("show renders a fallback title for ad-hoc topics", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await scaffoldWiki(repo);
+      await writePage(
+        repo,
+        "notes",
+        "---\ntopics: [fresh-parent]\n---\n\nbody.\n",
+      );
+      await runIndexer({ repoRoot: repo });
+
+      const result = await runTopicsShow({ cwd: repo, slug: "fresh-parent" });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toMatch(/title:\s+Fresh Parent/);
+    });
+  });
+
   it("rename rewrites page frontmatter and topics.yaml parent refs", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

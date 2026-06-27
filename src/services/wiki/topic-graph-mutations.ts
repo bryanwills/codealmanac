@@ -5,11 +5,11 @@ import { runIndexer } from "../../wiki/indexer/index.js";
 import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 import { ancestorsInFile } from "../../wiki/topics/dag.js";
 import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import { topicTitleFromSlug } from "../../wiki/topics/title.js";
 import {
   ensureTopic,
   findTopic,
   loadTopicsFile,
-  titleCase,
   type TopicEntry,
   type TopicsFile,
   writeTopicsFile,
@@ -52,7 +52,7 @@ export async function createWikiTopic(
 
     const title = request.name.trim().length > 0
       ? request.name.trim()
-      : titleCase(slug);
+      : topicTitleFromSlug(slug);
     const existing = findTopic(file, slug);
 
     if (existing === null) {
@@ -194,7 +194,7 @@ function addParentsToTopic(
 }
 
 function maybePromoteTopicTitle(topic: TopicEntry, candidateTitle: string): void {
-  const defaultTitle = titleCase(topic.slug);
+  const defaultTitle = topicTitleFromSlug(topic.slug);
   if (
     topic.title === defaultTitle &&
     candidateTitle !== defaultTitle &&

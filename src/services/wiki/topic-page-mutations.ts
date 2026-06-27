@@ -2,9 +2,9 @@ import { toKebabCase } from "../../slug.js";
 import { runIndexer } from "../../wiki/indexer/index.js";
 import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import { topicTitleFromSlug } from "../../wiki/topics/title.js";
 import {
   findTopic,
-  titleCase,
   writeTopicsFile,
 } from "../../wiki/topics/yaml.js";
 import type {
@@ -47,8 +47,8 @@ export async function renameWikiTopic(
 
     if (oldInYaml !== null) {
       oldInYaml.slug = newSlug;
-      if (oldInYaml.title === titleCase(oldSlug)) {
-        oldInYaml.title = titleCase(newSlug);
+      if (oldInYaml.title === topicTitleFromSlug(oldSlug)) {
+        oldInYaml.title = topicTitleFromSlug(newSlug);
       }
     }
     for (const topic of file.topics) {

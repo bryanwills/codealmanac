@@ -1,11 +1,10 @@
 import { BLUE, DIM, RST } from "../../../ansi.js";
 import type { WikiTopicRecord } from "../../../services/wiki/topics.js";
-import { titleCase } from "../../../wiki/topics/yaml.js";
 
 export function formatShow(r: WikiTopicRecord): string {
   const lines: string[] = [];
   lines.push(`${DIM}slug:${RST}         ${BLUE}${r.slug}${RST}`);
-  lines.push(`${DIM}title:${RST}        ${r.title ?? titleCase(r.slug)}`);
+  lines.push(`${DIM}title:${RST}        ${r.title}`);
   lines.push(`${DIM}description:${RST}  ${r.description ?? "—"}`);
   lines.push(
     `${DIM}parents:${RST}      ${r.parents.length > 0 ? r.parents.join(", ") : "—"}`,

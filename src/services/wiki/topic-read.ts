@@ -3,6 +3,7 @@ import type Database from "better-sqlite3";
 import { toKebabCase } from "../../slug.js";
 import * as query from "../../wiki/query/index.js";
 import { descendantsInDb } from "../../wiki/topics/dag.js";
+import { topicTitleFromSlug } from "../../wiki/topics/title.js";
 import type {
   WikiTopicRecord,
   WikiTopicRequest,
@@ -58,7 +59,7 @@ function topicRecordFromDetail(params: {
 }): WikiTopicRecord {
   return {
     slug: params.detail.slug,
-    title: params.detail.title,
+    title: params.detail.title ?? topicTitleFromSlug(params.detail.slug),
     description: params.detail.description,
     parents: params.detail.parents.map((parent) => parent.slug),
     children: params.detail.children.map((child) => child.slug),

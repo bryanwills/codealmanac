@@ -43,7 +43,7 @@ export interface DeleteWikiTopicRequest extends WikiTopicsRequest {
 
 export interface WikiTopicRecord {
   slug: string;
-  title: string | null;
+  title: string;
   description: string | null;
   parents: string[];
   children: string[];

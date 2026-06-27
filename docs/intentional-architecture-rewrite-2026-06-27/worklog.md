@@ -225,3 +225,8 @@ Twenty-seventh production slice:
 
 - Introduced `src/services/automation/catalog.ts` so automation task parsing and default sync plist path lookup are exposed through the automation service boundary instead of `src/cli/commands/automation.ts` importing platform task definitions.
 - Introduced `src/services/automation/legacy-hooks.ts` so setup workflows clean legacy hook files through the automation service boundary instead of importing platform cleanup directly.
+
+Twenty-eighth production slice:
+
+- Moved the `topics show` fallback title decision into the wiki topic read service so `src/cli/commands/topics/read.ts` renders the service record without importing `src/wiki/topics/yaml.ts`.
+- Split `topicTitleFromSlug` into `src/wiki/topics/title.ts` so fallback title generation is a named topic helper instead of a YAML parser export.

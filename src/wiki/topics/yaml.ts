@@ -6,6 +6,7 @@ import yaml from "js-yaml";
 
 import { UserFacingError } from "../../errors.js";
 import { toKebabCase } from "../../slug.js";
+import { topicTitleFromSlug } from "./title.js";
 
 /**
  * One entry in `.almanac/topics.yaml` — the source of truth for topic
@@ -108,7 +109,7 @@ export async function loadTopicsFile(path: string): Promise<TopicsFile> {
     const title =
       typeof entry.title === "string" && entry.title.trim().length > 0
         ? entry.title.trim()
-        : titleCase(slug);
+        : topicTitleFromSlug(slug);
     const description =
       typeof entry.description === "string" &&
       entry.description.trim().length > 0
@@ -211,26 +212,12 @@ export function ensureTopic(file: TopicsFile, slug: string): TopicEntry {
   if (existing !== null) return existing;
   const entry: TopicEntry = {
     slug,
-    title: titleCase(slug),
+    title: topicTitleFromSlug(slug),
     description: null,
     parents: [],
   };
   file.topics.push(entry);
   return entry;
-}
-
-/**
- * Convert a slug back to a human-ish title: `auth-flow` → `Auth Flow`.
- * Used as the fallback title when the caller didn't provide one
- * (auto-creation paths, ad-hoc slugs coming from page frontmatter).
- */
-export function titleCase(slug: string): string {
-  if (slug.length === 0) return slug;
-  return slug
-    .split("-")
-    .filter((s) => s.length > 0)
-    .map((s) => `${s[0]?.toUpperCase() ?? ""}${s.slice(1)}`)
-    .join(" ");
 }
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {

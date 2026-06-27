@@ -92,13 +92,16 @@ describe("architecture boundaries", () => {
   it("keeps topic read command adapters out of index storage mechanics", async () => {
     const topicsListCommand = await readSource("src/cli/commands/topics/list.ts");
     const topicsShowCommand = await readSource("src/cli/commands/topics/show.ts");
+    const topicsReadCommand = await readSource("src/cli/commands/topics/read.ts");
 
-    for (const source of [topicsListCommand, topicsShowCommand]) {
+    for (const source of [topicsListCommand, topicsShowCommand, topicsReadCommand]) {
       expect(source).toContain("services/wiki/topics.js");
       expect(source).not.toContain("wiki/indexer");
       expect(source).not.toContain("openIndex");
       expect(source).not.toContain("resolveWikiRoot");
     }
+    expect(topicsReadCommand).not.toContain("wiki/topics/yaml");
+    expect(topicsReadCommand).not.toContain("titleCase");
   });
 
   it("keeps service-backed topic mutation adapters out of write mechanics", async () => {

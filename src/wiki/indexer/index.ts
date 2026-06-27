@@ -7,7 +7,7 @@ import fg from "fast-glob";
 import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../slug.js";
-import { titleCase } from "../topics/yaml.js";
+import { topicTitleFromSlug } from "../topics/title.js";
 import { firstH1, parseFrontmatter } from "./frontmatter.js";
 import {
   PAGES_GLOB,
@@ -430,7 +430,7 @@ async function indexPagesInto(
       for (const topic of p.topics) {
         const topicSlug = toKebabCase(topic);
         if (topicSlug.length === 0) continue;
-        insertTopic.run(topicSlug, titleCase(topicSlug));
+        insertTopic.run(topicSlug, topicTitleFromSlug(topicSlug));
         insertPageTopic.run(p.slug, topicSlug);
       }
 
