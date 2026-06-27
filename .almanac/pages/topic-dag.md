@@ -31,6 +31,10 @@ sources:
     type: file
     path: src/cli/commands/topics/index.ts
     note: Migrated from legacy files.
+  - id: topics-service
+    type: file
+    path: src/services/wiki/topics.ts
+    note: Read-side topic workflows for command adapters.
   - id: tag
     type: file
     path: src/cli/commands/tag.ts

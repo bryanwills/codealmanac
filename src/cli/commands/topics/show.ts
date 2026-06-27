@@ -1,15 +1,5 @@
-import { ensureFreshIndex } from "../../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
-import { openIndex } from "../../../wiki/indexer/schema.js";
-import { toKebabCase } from "../../../slug.js";
-import { indexDbPath } from "../../../wiki/topics/paths.js";
-import * as query from "../../../wiki/query/index.js";
-import {
-  formatShow,
-  pagesDirectlyTagged,
-  pagesForSubtree,
-  type TopicsShowRecord,
-} from "./read.js";
+import { readWikiTopic } from "../../../services/wiki/topics.js";
+import { formatShow } from "./read.js";
 import type { TopicsCommandOutput, TopicsShowOptions } from "./types.js";
 
 /**
@@ -20,11 +10,14 @@ import type { TopicsCommandOutput, TopicsShowOptions } from "./types.js";
 export async function runTopicsShow(
   options: TopicsShowOptions,
 ): Promise<TopicsCommandOutput> {
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
-  await ensureFreshIndex({ repoRoot });
+  const result = await readWikiTopic({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    slug: options.slug,
+    descendants: options.descendants,
+  });
 
-  const slug = toKebabCase(options.slug);
-  if (slug.length === 0) {
+  if (result.status === "empty-slug") {
     return {
       stdout: "",
       stderr: `almanac: empty topic slug\n`,
@@ -32,40 +25,20 @@ export async function runTopicsShow(
     };
   }
 
-  const db = openIndex(indexDbPath(repoRoot));
-  try {
-    const detail = query.topics.topicDetail(db, slug);
-    if (detail === null) {
-      return {
-        stdout: "",
-        stderr: `almanac: no such topic "${slug}"\n`,
-        exitCode: 1,
-      };
-    }
-
-    const pageSlugs = options.descendants === true
-      ? pagesForSubtree(db, slug)
-      : pagesDirectlyTagged(db, slug);
-
-    const record: TopicsShowRecord = {
-      slug: detail.slug,
-      title: detail.title,
-      description: detail.description,
-      parents: detail.parents.map((parent) => parent.slug),
-      children: detail.children.map((child) => child.slug),
-      pages: pageSlugs,
-      descendants_used: options.descendants === true,
+  if (result.status === "missing") {
+    return {
+      stdout: "",
+      stderr: `almanac: no such topic "${result.slug}"\n`,
+      exitCode: 1,
     };
-
-    if (options.json === true) {
-      return {
-        stdout: `${JSON.stringify(record, null, 2)}\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    }
-    return { stdout: formatShow(record), stderr: "", exitCode: 0 };
-  } finally {
-    db.close();
   }
+
+  if (options.json === true) {
+    return {
+      stdout: `${JSON.stringify(result.topic, null, 2)}\n`,
+      stderr: "",
+      exitCode: 0,
+    };
+  }
+  return { stdout: formatShow(result.topic), stderr: "", exitCode: 0 };
 }

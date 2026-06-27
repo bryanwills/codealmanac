@@ -1,56 +1,8 @@
-import type Database from "better-sqlite3";
-
 import { BLUE, DIM, RST } from "../../../ansi.js";
-import { descendantsInDb } from "../../../wiki/topics/dag.js";
+import type { WikiTopicRecord } from "../../../services/wiki/topics.js";
 import { titleCase } from "../../../wiki/topics/yaml.js";
 
-export interface TopicsShowRecord {
-  slug: string;
-  title: string | null;
-  description: string | null;
-  parents: string[];
-  children: string[];
-  pages: string[];
-  descendants_used?: boolean;
-}
-
-export function pagesDirectlyTagged(
-  db: Database.Database,
-  slug: string,
-): string[] {
-  return db
-    .prepare<[string], { page_slug: string }>(
-      `SELECT pt.page_slug
-       FROM page_topics pt
-       JOIN pages p ON p.slug = pt.page_slug
-       WHERE pt.topic_slug = ? AND p.archived_at IS NULL
-       ORDER BY pt.page_slug`,
-    )
-    .all(slug)
-    .map((r) => r.page_slug);
-}
-
-export function pagesForSubtree(
-  db: Database.Database,
-  slug: string,
-): string[] {
-  const slugs = [slug, ...descendantsInDb(db, slug)];
-  // Deduplicate + preserve order via a Set — a page can belong to
-  // multiple topics in the subtree and we only want one row per page.
-  const placeholders = slugs.map(() => "?").join(", ");
-  const rows = db
-    .prepare<unknown[], { page_slug: string }>(
-      `SELECT DISTINCT pt.page_slug
-       FROM page_topics pt
-       JOIN pages p ON p.slug = pt.page_slug
-       WHERE pt.topic_slug IN (${placeholders}) AND p.archived_at IS NULL
-       ORDER BY pt.page_slug`,
-    )
-    .all(...slugs);
-  return rows.map((r) => r.page_slug);
-}
-
-export function formatShow(r: TopicsShowRecord): string {
+export function formatShow(r: WikiTopicRecord): string {
   const lines: string[] = [];
   lines.push(`${DIM}slug:${RST}         ${BLUE}${r.slug}${RST}`);
   lines.push(`${DIM}title:${RST}        ${r.title ?? titleCase(r.slug)}`);

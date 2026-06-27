@@ -74,3 +74,9 @@ Sixth production slice:
 - Moved current-repo auto-registration from `src/wiki/registry/autoregister.ts` to `src/services/wiki/autoregistration.ts`.
 - Removed the remaining `src/wiki/registry/` product/persistence hybrid directory.
 - Kept CLI edges responsible for choosing when a command should auto-register, while the service owns how the repo is detected and registered.
+
+Seventh production slice:
+
+- Introduced `src/services/wiki/topics.ts` for read-side topic workflows.
+- Moved `topics list` and `topics show` index freshness, wiki-root resolution, index opening, and topic page lookup out of CLI command adapters.
+- Left mutating topic commands for a later slice because they coordinate YAML edits, page frontmatter rewrites, cycle checks, and reindexing.

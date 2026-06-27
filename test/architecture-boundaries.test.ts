@@ -79,6 +79,18 @@ describe("architecture boundaries", () => {
     expect(listCommand).not.toContain("existsSync");
   });
 
+  it("keeps topic read command adapters out of index storage mechanics", async () => {
+    const topicsListCommand = await readSource("src/cli/commands/topics/list.ts");
+    const topicsShowCommand = await readSource("src/cli/commands/topics/show.ts");
+
+    for (const source of [topicsListCommand, topicsShowCommand]) {
+      expect(source).toContain("services/wiki/topics.js");
+      expect(source).not.toContain("wiki/indexer");
+      expect(source).not.toContain("openIndex");
+      expect(source).not.toContain("resolveWikiRoot");
+    }
+  });
+
   it("keeps registry persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);
