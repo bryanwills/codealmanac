@@ -93,6 +93,7 @@ describe("architecture boundaries", () => {
     const topicsListCommand = await readSource("src/cli/commands/topics/list.ts");
     const topicsShowCommand = await readSource("src/cli/commands/topics/show.ts");
     const topicsReadCommand = await readSource("src/cli/commands/topics/read.ts");
+    const topicTypes = await readSource("src/services/wiki/topic-types.ts");
 
     for (const source of [topicsListCommand, topicsShowCommand, topicsReadCommand]) {
       expect(source).toContain("services/wiki/topics.js");
@@ -102,6 +103,8 @@ describe("architecture boundaries", () => {
     }
     expect(topicsReadCommand).not.toContain("wiki/topics/yaml");
     expect(topicsReadCommand).not.toContain("titleCase");
+    expect(topicTypes).not.toContain("wiki/query");
+    expect(topicTypes).not.toContain("query.");
   });
 
   it("keeps service-backed topic mutation adapters out of write mechanics", async () => {

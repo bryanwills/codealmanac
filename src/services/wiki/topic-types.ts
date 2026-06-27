@@ -1,6 +1,10 @@
-import type * as query from "../../wiki/query/index.js";
-
-export type WikiTopicSummary = query.topics.TopicSummary;
+export interface WikiTopicSummary {
+  slug: string;
+  title: string | null;
+  description: string | null;
+  page_count: number;
+  parents: string[];
+}
 
 export interface WikiTopicsRequest {
   cwd: string;

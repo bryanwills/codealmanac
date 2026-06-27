@@ -297,3 +297,9 @@ Thirty-ninth production slice:
 - Introduced `WikiReviewItem` and `WikiReviewStatus` as service-owned review contract names.
 - Removed direct store type re-exports from `src/services/wiki/review-types.ts`.
 - Updated the review command adapter to render service-owned review item/status names.
+
+Fortieth production slice:
+
+- Made `WikiTopicSummary` an explicit service read model instead of a query-layer alias.
+- Mapped query topic summaries into the service-owned shape inside `src/services/wiki/topic-read.ts`.
+- Guarded topic service types against importing query-layer contracts.

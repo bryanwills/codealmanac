@@ -18,7 +18,9 @@ export async function listWikiTopics(
 ): Promise<WikiTopicSummary[]> {
   const { db } = await openFreshTopicIndex(request);
   try {
-    return query.topics.topicSummaries(db, { order: "slug" });
+    return query.topics
+      .topicSummaries(db, { order: "slug" })
+      .map(topicSummaryFromQuery);
   } finally {
     db.close();
   }
@@ -65,6 +67,18 @@ function topicRecordFromDetail(params: {
     children: params.detail.children.map((child) => child.slug),
     pages: params.pages,
     descendants_used: params.descendantsUsed,
+  };
+}
+
+function topicSummaryFromQuery(
+  summary: query.topics.TopicSummary,
+): WikiTopicSummary {
+  return {
+    slug: summary.slug,
+    title: summary.title,
+    description: summary.description,
+    page_count: summary.page_count,
+    parents: summary.parents,
   };
 }
 
