@@ -114,6 +114,7 @@ export function syncCursorContext(args: {
     `- Previously absorbed through byte: ${args.lastAbsorbedSize}`,
     `- Focus on line ${args.fromLine} onward.`,
     "- You may inspect earlier lines only for context.",
-    "- Do not re-document decisions already absorbed unless newer lines amend, invalidate, or add important nuance to them.",
+    "- Do not re-document decisions already absorbed unless newer lines amend, " +
+      "invalidate, or add important nuance to them.",
   ].join("\n");
 }
