@@ -114,6 +114,28 @@ describe("almanac show — default view", () => {
     });
   });
 
+  it("--verbose stays plain by default and colors only when requested", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await seed(repo);
+
+      const plain = await runShow({
+        cwd: repo,
+        slug: "checkout-flow",
+        verbose: true,
+      });
+      const colored = await runShow({
+        cwd: repo,
+        slug: "checkout-flow",
+        verbose: true,
+        color: true,
+      });
+
+      expect(plain.stdout).not.toContain("\x1b[");
+      expect(colored.stdout).toContain("\x1b[");
+    });
+  });
+
   it("reports missing slugs via stderr and exits 1", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

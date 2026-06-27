@@ -157,6 +157,7 @@ export function registerQueryCommands(program: Command): void {
           lineage: opts.lineage,
           updated: opts.updated,
           path: opts.path,
+          color: shouldUseStdoutColor(),
         });
         emit(result);
       },

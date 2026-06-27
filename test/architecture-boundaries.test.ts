@@ -164,8 +164,14 @@ describe("architecture boundaries", () => {
     expect(showCommand).not.toContain("show requires a slug");
     expect(showCommand).not.toContain("no such page");
     expect(showCommand).not.toContain("formatShowRecords");
-    expect(showRender).toContain("renderShowResult");
+    expect(showTypes).toContain("color?: boolean");
     expect(showRender).toContain("formatShowRecords");
+    expect(showRender).not.toContain("ansi");
+    const showFormat = await readSource("src/cli/commands/show/format.ts");
+    expect(showFormat).toContain("../../../ansi-theme.js");
+    expect(showFormat).not.toContain("../../../ansi.js");
+    expect(showFormat).toContain("makeAnsiTheme(options.color === true)");
+    expect(showRender).toContain("renderShowResult");
     expect(showTypes).not.toContain("WikiPageView");
     expect(showTypes).not.toContain("ShowRecord =");
     expect(pageViewService).not.toContain("export type WikiPageView = query");

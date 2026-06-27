@@ -20,6 +20,7 @@ export interface ShowOptions {
   lineage?: boolean;
   updated?: boolean;
   path?: boolean;
+  color?: boolean;
 }
 
 export interface ShowCommandOutput {

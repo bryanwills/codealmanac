@@ -1,4 +1,4 @@
-import { BLUE, DIM, RST } from "../../../ansi.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../../ansi-theme.js";
 
 import type { FieldName, ShowOptions, ShowRecord } from "./types.js";
 
@@ -20,7 +20,8 @@ export function formatShowRecords(
 ): string {
   if (options.stdin === true) return formatBulk(records);
   if (options.json === true) return `${JSON.stringify(records[0] ?? null, null, 2)}\n`;
-  return records.map((record) => formatRecord(record, options)).join("");
+  const theme = makeAnsiTheme(options.color === true);
+  return records.map((record) => formatRecord(record, options, theme)).join("");
 }
 
 function formatBulk(records: ShowRecord[]): string {
@@ -28,19 +29,24 @@ function formatBulk(records: ShowRecord[]): string {
   return records.map((record) => JSON.stringify(record)).join("\n") + "\n";
 }
 
-function formatRecord(record: ShowRecord, options: ShowOptions): string {
+function formatRecord(
+  record: ShowRecord,
+  options: ShowOptions,
+  theme: AnsiTheme,
+): string {
   if (options.raw === true) return bodyOnly(record);
 
   const fields = selectedFields(options);
   if (fields.length === 1) return bareField(record, fields[0]!);
-  if (fields.length > 1) return labeledFields(record, fields);
+  if (fields.length > 1) return labeledFields(record, fields, theme);
 
-  if (options.meta === true) return metadataHeader(record) + "\n";
+  if (options.meta === true) return metadataHeader(record, theme) + "\n";
   if (options.lead === true) return firstParagraph(record.body) + "\n";
   if (options.verbose !== true) return bodyOnly(record);
 
+  const { DIM, RST } = theme;
   const separator = record.body.length > 0 ? `\n\n${DIM}---${RST}\n\n` : "\n";
-  return metadataHeader(record) + separator + record.body;
+  return metadataHeader(record, theme) + separator + record.body;
 }
 
 function selectedFields(options: ShowOptions): FieldName[] {
@@ -91,29 +97,44 @@ function formatBareLineage(record: ShowRecord): string {
   return lines.length > 0 ? `${lines.join("\n")}\n` : "";
 }
 
-function labeledFields(record: ShowRecord, fields: FieldName[]): string {
-  return fields.map((field) => labeledSection(record, field)).join("\n");
+function labeledFields(
+  record: ShowRecord,
+  fields: FieldName[],
+  theme: AnsiTheme,
+): string {
+  return fields.map((field) => labeledSection(record, field, theme)).join("\n");
 }
 
-function labeledSection(record: ShowRecord, field: FieldName): string {
+function labeledSection(
+  record: ShowRecord,
+  field: FieldName,
+  theme: AnsiTheme,
+): string {
+  const { DIM, RST } = theme;
+
   switch (field) {
     case "title":
       return `${DIM}title:${RST} ${record.title ?? "—"}\n`;
     case "topics":
-      return inlineOrEmpty("topics", record.topics);
+      return inlineOrEmpty("topics", record.topics, theme);
     case "files":
-      return formatListSection("files", record.file_refs.map((ref) => ref.path));
+      return formatListSection(
+        "files",
+        record.file_refs.map((ref) => ref.path),
+        theme,
+      );
     case "links":
-      return formatListSection("links", record.wikilinks_out);
+      return formatListSection("links", record.wikilinks_out, theme);
     case "backlinks":
-      return formatListSection("backlinks", record.wikilinks_in);
+      return formatListSection("backlinks", record.wikilinks_in, theme);
     case "xwiki":
       return formatListSection(
         "xwiki",
         record.cross_wiki_links.map((link) => `${link.wiki}:${link.target}`),
+        theme,
       );
     case "lineage":
-      return formatLabeledLineage(record);
+      return formatLabeledLineage(record, theme);
     case "updated":
       return `${DIM}updated:${RST} ${formatTimestamp(record.updated_at)}\n`;
     case "path":
@@ -121,19 +142,33 @@ function labeledSection(record: ShowRecord, field: FieldName): string {
   }
 }
 
-function inlineOrEmpty(label: string, items: string[]): string {
+function inlineOrEmpty(
+  label: string,
+  items: string[],
+  theme: AnsiTheme,
+): string {
+  const { DIM, RST } = theme;
   return items.length > 0
     ? `${DIM}${label}:${RST} ${items.join(", ")}\n`
     : `${DIM}${label}:${RST} —\n`;
 }
 
-function formatListSection(label: string, items: string[]): string {
+function formatListSection(
+  label: string,
+  items: string[],
+  theme: AnsiTheme,
+): string {
+  const { DIM, RST } = theme;
   if (items.length === 0) return `${DIM}${label}:${RST} —\n`;
   if (items.length <= 3) return `${DIM}${label}:${RST} ${items.join(", ")}\n`;
   return `${DIM}${label}:${RST}\n${items.map((item) => `  ${item}`).join("\n")}\n`;
 }
 
-function formatLabeledLineage(record: ShowRecord): string {
+function formatLabeledLineage(
+  record: ShowRecord,
+  theme: AnsiTheme,
+): string {
+  const { DIM, RST } = theme;
   const lines: string[] = [`${DIM}lineage:${RST}`];
   if (record.archived_at !== null) {
     lines.push(`  ${DIM}archived_at:${RST} ${formatTimestamp(record.archived_at)}`);
@@ -148,7 +183,8 @@ function formatLabeledLineage(record: ShowRecord): string {
   return lines.join("\n") + "\n";
 }
 
-function metadataHeader(record: ShowRecord): string {
+function metadataHeader(record: ShowRecord, theme: AnsiTheme): string {
+  const { BLUE, DIM, RST } = theme;
   const lines = [
     `${DIM}slug:${RST}       ${BLUE}${record.slug}${RST}`,
     `${DIM}title:${RST}      ${record.title ?? "—"}`,
@@ -158,20 +194,33 @@ function metadataHeader(record: ShowRecord): string {
     lines.push(`${DIM}summary:${RST}    ${record.summary.trim()}`);
   }
 
-  lines.push(inlineMetadata("topics", record.topics));
+  lines.push(inlineMetadata("topics", record.topics, theme));
   if (record.file_refs.length > 0) {
-    lines.push(inlineMetadata("files", record.file_refs.map((ref) => ref.path)));
+    lines.push(inlineMetadata(
+      "files",
+      record.file_refs.map((ref) => ref.path),
+      theme,
+    ));
   }
   if (record.sources.length > 0) {
-    lines.push(inlineMetadata("sources", record.sources.map(formatSource)));
+    lines.push(inlineMetadata(
+      "sources",
+      record.sources.map(formatSource),
+      theme,
+    ));
   }
 
   lines.push(`${DIM}updated:${RST}    ${formatTimestamp(record.updated_at)}`);
-  appendOptionalMetadata(lines, record);
+  appendOptionalMetadata(lines, record, theme);
   return lines.join("\n");
 }
 
-function inlineMetadata(label: string, items: string[]): string {
+function inlineMetadata(
+  label: string,
+  items: string[],
+  theme: AnsiTheme,
+): string {
+  const { DIM, RST } = theme;
   return `${DIM}${label}:${RST}     ${items.length > 0 ? items.join(", ") : "—"}`;
 }
 
@@ -180,7 +229,13 @@ function formatSource(source: ShowRecord["sources"][number]): string {
   return `${source.id} (${source.type})`;
 }
 
-function appendOptionalMetadata(lines: string[], record: ShowRecord): void {
+function appendOptionalMetadata(
+  lines: string[],
+  record: ShowRecord,
+  theme: AnsiTheme,
+): void {
+  const { DIM, RST } = theme;
+
   if (record.wikilinks_out.length > 0) {
     lines.push(`${DIM}links:${RST}      ${record.wikilinks_out.join(", ")}`);
   }
