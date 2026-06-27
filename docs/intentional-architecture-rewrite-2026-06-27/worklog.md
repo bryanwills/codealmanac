@@ -315,3 +315,9 @@ Forty-second production slice:
 - Made `ReindexWikiResult` a service-owned result instead of an alias over the indexer `IndexResult`.
 - Mapped forced-indexer output at the reindex service boundary before the CLI formats it.
 - Guarded the reindex service contract against regressing to an indexer type alias.
+
+Forty-third production slice:
+
+- Made `RegisteredWiki` a service-owned registry read model instead of an alias over the registry store entry.
+- Mapped registry store rows at `src/services/wiki/registry.ts` before list command formatting.
+- Guarded the list service contract against regressing to a store type alias.
