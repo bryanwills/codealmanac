@@ -1,4 +1,5 @@
 import { deleteWikiTopic } from "../../../services/wiki/topics.js";
+import { renderTopicsDelete } from "./mutation-render.js";
 import type { TopicsCommandOutput, TopicsDeleteOptions } from "./types.js";
 
 /**
@@ -10,26 +11,11 @@ import type { TopicsCommandOutput, TopicsDeleteOptions } from "./types.js";
 export async function runTopicsDelete(
   options: TopicsDeleteOptions,
 ): Promise<TopicsCommandOutput> {
-  const result = await deleteWikiTopic({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    slug: options.slug,
-  });
-
-  switch (result.status) {
-    case "deleted":
-      return {
-        stdout: `deleted topic "${result.slug}" (${result.pagesUpdated} page${result.pagesUpdated === 1 ? "" : "s"} untagged)\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    case "empty-slug":
-      return { stdout: "", stderr: `almanac: empty topic slug\n`, exitCode: 1 };
-    case "missing":
-      return {
-        stdout: "",
-        stderr: `almanac: no such topic "${result.slug}"\n`,
-        exitCode: 1,
-      };
-  }
+  return renderTopicsDelete(
+    await deleteWikiTopic({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      slug: options.slug,
+    }),
+  );
 }

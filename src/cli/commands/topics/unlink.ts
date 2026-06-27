@@ -1,4 +1,5 @@
 import { unlinkWikiTopics } from "../../../services/wiki/topics.js";
+import { renderTopicsUnlink } from "./mutation-render.js";
 import type { TopicsCommandOutput, TopicsUnlinkOptions } from "./types.js";
 
 /**
@@ -8,28 +9,12 @@ import type { TopicsCommandOutput, TopicsUnlinkOptions } from "./types.js";
 export async function runTopicsUnlink(
   options: TopicsUnlinkOptions,
 ): Promise<TopicsCommandOutput> {
-  const result = await unlinkWikiTopics({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    child: options.child,
-    parent: options.parent,
-  });
-
-  if (result.status === "empty-slug") {
-    return { stdout: "", stderr: `almanac: empty topic slug\n`, exitCode: 1 };
-  }
-
-  if (result.status === "no-edge") {
-    return {
-      stdout: `no edge ${result.child} → ${result.parent}\n`,
-      stderr: "",
-      exitCode: 0,
-    };
-  }
-
-  return {
-    stdout: `unlinked ${result.child} → ${result.parent}\n`,
-    stderr: "",
-    exitCode: 0,
-  };
+  return renderTopicsUnlink(
+    await unlinkWikiTopics({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      child: options.child,
+      parent: options.parent,
+    }),
+  );
 }

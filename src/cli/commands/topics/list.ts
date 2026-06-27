@@ -1,6 +1,5 @@
-import { BLUE, DIM, RST } from "../../../ansi.js";
 import { listWikiTopics } from "../../../services/wiki/topics.js";
-import { formatTextTable } from "../table.js";
+import { renderTopicsList } from "./read-render.js";
 import type { TopicsCommandOutput, TopicsListOptions } from "./types.js";
 
 /**
@@ -12,34 +11,11 @@ import type { TopicsCommandOutput, TopicsListOptions } from "./types.js";
 export async function runTopicsList(
   options: TopicsListOptions,
 ): Promise<TopicsCommandOutput> {
-  const rows = await listWikiTopics({
-    cwd: options.cwd,
-    wiki: options.wiki,
-  });
-
-  if (options.json === true) {
-    return {
-      stdout: `${JSON.stringify(rows, null, 2)}\n`,
-      stderr: "",
-      exitCode: 0,
-    };
-  }
-
-  if (rows.length === 0) {
-    return {
-      stdout:
-        "no topics. create one with `almanac topics create <name>` or tag a page.\n",
-      stderr: "",
-      exitCode: 0,
-    };
-  }
-
-  const lines = formatTextTable({
-    headers: ["TOPIC", "PAGES"],
-    rows: rows.map((r) => {
-      const count = `(${r.page_count} page${r.page_count === 1 ? "" : "s"})`;
-      return [`${BLUE}${r.slug}${RST}`, `${DIM}${count}${RST}`];
+  return renderTopicsList(
+    await listWikiTopics({
+      cwd: options.cwd,
+      wiki: options.wiki,
     }),
-  });
-  return { stdout: `${lines.join("\n")}\n`, stderr: "", exitCode: 0 };
+    options.json,
+  );
 }

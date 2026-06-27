@@ -743,3 +743,9 @@ One-hundred-eleventh production slice:
 - Split agents command rendering into `src/cli/commands/agents-render.ts`.
 - Moved provider list/doctor formatting, readiness labels, unknown-agent errors, missing-model errors, and model/default-agent success text out of `src/cli/commands/agents.ts`.
 - Kept `src/cli/commands/agents.ts` focused on reading the agents service view and invoking agents configuration service workflows.
+
+One-hundred-twelfth production slice:
+
+- Split topic command rendering into `src/cli/commands/topics/read-render.ts` and `src/cli/commands/topics/mutation-render.ts`.
+- Moved topic list/show formatting, JSON output, success messages, shared topic errors, DAG edge messages, and page-count text out of individual topic verb adapters.
+- Deleted the old `src/cli/commands/topics/read.ts` helper so topic read presentation has an honest home next to mutation presentation.

@@ -1,4 +1,5 @@
 import { createWikiTopic } from "../../../services/wiki/topics.js";
+import { renderTopicsCreate } from "./mutation-render.js";
 import type { TopicsCommandOutput, TopicsCreateOptions } from "./types.js";
 
 /**
@@ -17,49 +18,12 @@ import type { TopicsCommandOutput, TopicsCreateOptions } from "./types.js";
 export async function runTopicsCreate(
   options: TopicsCreateOptions,
 ): Promise<TopicsCommandOutput> {
-  const result = await createWikiTopic({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    name: options.name,
-    parents: options.parents,
-  });
-
-  switch (result.status) {
-    case "created":
-      return {
-        stdout: `created topic "${result.slug}"\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    case "updated":
-      return {
-        stdout: `updated topic "${result.slug}"\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    case "invalid-name":
-      return {
-        stdout: "",
-        stderr: `almanac: topic name "${result.name}" has no slug-able characters\n`,
-        exitCode: 1,
-      };
-    case "self-parent":
-      return {
-        stdout: "",
-        stderr: `almanac: topic cannot be its own parent\n`,
-        exitCode: 1,
-      };
-    case "missing-parent":
-      return {
-        stdout: "",
-        stderr: `almanac: parent topic "${result.parent}" does not exist; create it first with \`almanac topics create ${result.parent}\`\n`,
-        exitCode: 1,
-      };
-    case "cycle":
-      return {
-        stdout: "",
-        stderr: `almanac: adding "${result.parent}" as a parent of "${result.slug}" would create a cycle\n`,
-        exitCode: 1,
-      };
-  }
+  return renderTopicsCreate(
+    await createWikiTopic({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      name: options.name,
+      parents: options.parents,
+    }),
+  );
 }

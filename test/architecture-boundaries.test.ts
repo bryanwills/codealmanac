@@ -171,20 +171,26 @@ describe("architecture boundaries", () => {
   it("keeps topic read command adapters out of index storage mechanics", async () => {
     const topicsListCommand = await readSource("src/cli/commands/topics/list.ts");
     const topicsShowCommand = await readSource("src/cli/commands/topics/show.ts");
-    const topicsReadCommand = await readSource("src/cli/commands/topics/read.ts");
+    const topicsReadRender = await readSource(
+      "src/cli/commands/topics/read-render.ts",
+    );
     const topicTypes = await readSource("src/services/wiki/topic-types.ts");
     const topicWorkspace = await readSource(
       "src/services/wiki/topic-workspace.ts",
     );
 
-    for (const source of [topicsListCommand, topicsShowCommand, topicsReadCommand]) {
+    for (const source of [
+      topicsListCommand,
+      topicsShowCommand,
+      topicsReadRender,
+    ]) {
       expect(source).toContain("services/wiki/topics.js");
       expect(source).not.toContain("wiki/indexer");
       expect(source).not.toContain("openIndex");
       expect(source).not.toContain("resolveWikiRoot");
     }
-    expect(topicsReadCommand).not.toContain("wiki/topics/yaml");
-    expect(topicsReadCommand).not.toContain("titleCase");
+    expect(topicsReadRender).not.toContain("wiki/topics/yaml");
+    expect(topicsReadRender).not.toContain("titleCase");
     expect(topicTypes).not.toContain("wiki/query");
     expect(topicTypes).not.toContain("query.");
     expect(topicTypes).not.toContain("WikiTopicRequest extends WikiTopicsRequest");
@@ -234,6 +240,9 @@ describe("architecture boundaries", () => {
     const linkCommand = await readSource("src/cli/commands/topics/link.ts");
     const renameCommand = await readSource("src/cli/commands/topics/rename.ts");
     const unlinkCommand = await readSource("src/cli/commands/topics/unlink.ts");
+    const mutationRender = await readSource(
+      "src/cli/commands/topics/mutation-render.ts",
+    );
 
     for (const source of [
       createCommand,
@@ -250,9 +259,31 @@ describe("architecture boundaries", () => {
       expect(source).not.toContain("openFreshTopicsWorkspace");
     }
 
+    for (const source of [
+      createCommand,
+      deleteCommand,
+      describeCommand,
+      linkCommand,
+      renameCommand,
+      unlinkCommand,
+    ]) {
+      expect(source).not.toContain("stdout:");
+      expect(source).not.toContain("stderr:");
+      expect(source).not.toContain("exitCode:");
+      expect(source).not.toContain("almanac:");
+    }
+
+    expect(mutationRender).toContain("renderTopicsCreate");
+    expect(mutationRender).toContain("renderTopicsDelete");
+    expect(mutationRender).toContain("renderTopicsDescribe");
+    expect(mutationRender).toContain("renderTopicsLink");
+    expect(mutationRender).toContain("renderTopicsRename");
+    expect(mutationRender).toContain("renderTopicsUnlink");
     expect(existsSync(join(ROOT, "src/cli/commands/topics/workspace.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/topics/page-rewrite.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/wiki/topic-mutations.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/topics/read.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/cli/commands/topics/render.ts"))).toBe(false);
   });
 
   it("keeps topic frontmatter block splitting separate from topic rewrites", async () => {

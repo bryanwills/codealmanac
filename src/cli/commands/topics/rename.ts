@@ -1,4 +1,5 @@
 import { renameWikiTopic } from "../../../services/wiki/topics.js";
+import { renderTopicsRename } from "./mutation-render.js";
 import type { TopicsCommandOutput, TopicsRenameOptions } from "./types.js";
 
 /**
@@ -12,39 +13,12 @@ import type { TopicsCommandOutput, TopicsRenameOptions } from "./types.js";
 export async function runTopicsRename(
   options: TopicsRenameOptions,
 ): Promise<TopicsCommandOutput> {
-  const result = await renameWikiTopic({
-    cwd: options.cwd,
-    wiki: options.wiki,
-    oldSlug: options.oldSlug,
-    newSlug: options.newSlug,
-  });
-
-  switch (result.status) {
-    case "renamed":
-      return {
-        stdout: `renamed ${result.oldSlug} → ${result.newSlug} (${result.pagesUpdated} page${result.pagesUpdated === 1 ? "" : "s"} updated)\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    case "unchanged":
-      return {
-        stdout: `topic "${result.slug}" unchanged\n`,
-        stderr: "",
-        exitCode: 0,
-      };
-    case "empty-slug":
-      return { stdout: "", stderr: `almanac: empty topic slug\n`, exitCode: 1 };
-    case "missing":
-      return {
-        stdout: "",
-        stderr: `almanac: no such topic "${result.slug}"\n`,
-        exitCode: 1,
-      };
-    case "already-exists":
-      return {
-        stdout: "",
-        stderr: `almanac: topic "${result.slug}" already exists; delete it first if you intend to merge\n`,
-        exitCode: 1,
-      };
-  }
+  return renderTopicsRename(
+    await renameWikiTopic({
+      cwd: options.cwd,
+      wiki: options.wiki,
+      oldSlug: options.oldSlug,
+      newSlug: options.newSlug,
+    }),
+  );
 }
