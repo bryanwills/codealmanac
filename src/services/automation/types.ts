@@ -1,10 +1,9 @@
-import type { ExecFn as PlatformExecFn } from "../../platform/automation/launchd.js";
-import type {
-  ScheduledTaskId as PlatformScheduledTaskId,
-} from "../../platform/automation/tasks.js";
+export type AutomationExecFn = (
+  file: string,
+  args: string[],
+) => Promise<{ stdout?: string; stderr?: string }>;
 
-export type AutomationExecFn = PlatformExecFn;
-export type AutomationTaskId = PlatformScheduledTaskId;
+export type AutomationTaskId = "sync" | "garden" | "update";
 
 export interface AutomationInstallOptions {
   tasks?: AutomationTaskId[];

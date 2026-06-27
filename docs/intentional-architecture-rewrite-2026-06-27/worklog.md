@@ -430,3 +430,9 @@ Fifty-ninth production slice:
 - Added a mapper from the lower-level provider readiness view into the agents service read model.
 - Kept the agents command rendering against the service-owned shape instead of the raw readiness view.
 - Guarded the agents service against regressing to provider-readiness type aliases.
+
+Sixtieth production slice:
+
+- Made automation service task ids and exec function contracts explicit in `src/services/automation/types.ts`.
+- Removed aliases to platform launchd and scheduled-task types from the automation service public surface.
+- Guarded automation service types against re-exposing platform automation contracts.
