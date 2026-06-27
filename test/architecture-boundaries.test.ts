@@ -199,6 +199,26 @@ describe("architecture boundaries", () => {
     expect(reindexService).not.toContain("export type ReindexWikiResult = IndexResult");
   });
 
+  it("keeps serve startup rendering out of server lifetime control", async () => {
+    const serveCommand = await readSource("src/cli/commands/serve.ts");
+    const serveRender = await readSource("src/cli/commands/serve-render.ts");
+    const registerQueryCommands = await readSource(
+      "src/edges/cli/register-query-commands.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/cli/commands/serve-render.ts"))).toBe(
+      true,
+    );
+    expect(serveCommand).toContain("viewer/server.js");
+    expect(serveCommand).toContain("./serve-render.js");
+    expect(serveCommand).not.toContain("process.stdout");
+    expect(serveCommand).not.toContain("almanac console:");
+    expect(serveCommand).not.toContain("Press Ctrl+C");
+    expect(serveRender).toContain("almanac console:");
+    expect(serveRender).toContain("Press Ctrl+C");
+    expect(registerQueryCommands).toContain("write: (chunk)");
+  });
+
   it("keeps list command adapters out of registry storage mechanics", async () => {
     const listCommand = await readSource("src/cli/commands/list.ts");
     const listRender = await readSource("src/cli/commands/list-render.ts");

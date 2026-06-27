@@ -809,3 +809,9 @@ One-hundred-twenty-second production slice:
 - Split reindex command rendering into `src/cli/commands/reindex-render.ts`.
 - Moved explicit reindex summary wording, page-count pluralization, and skipped-file suffix formatting out of `src/cli/commands/reindex.ts`.
 - Kept `src/cli/commands/reindex.ts` focused on invoking the wiki reindex service and mapping service results into the command contract.
+
+One-hundred-twenty-third production slice:
+
+- Split serve startup rendering into `src/cli/commands/serve-render.ts`.
+- Moved the `almanac serve` startup URL and Ctrl+C instruction text out of `src/cli/commands/serve.ts`.
+- Kept `src/cli/commands/serve.ts` focused on viewer server lifetime, interrupt waiting, and guaranteed server cleanup.

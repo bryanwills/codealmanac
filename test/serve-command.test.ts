@@ -5,9 +5,18 @@ import {
   jobRecordPath,
   writeJobRecord,
 } from "../src/jobs/index.js";
+import { renderServeStartup } from "../src/cli/commands/serve-render.js";
 import { addEntry } from "../src/stores/wiki-registry/index.js";
 import { startViewerServer } from "../src/viewer/server.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
+
+describe("serve command rendering", () => {
+  it("renders startup instructions as the CLI prints them", () => {
+    expect(renderServeStartup({ url: "http://127.0.0.1:3927" })).toEqual({
+      stdout: "almanac console: http://127.0.0.1:3927\nPress Ctrl+C to stop.\n",
+    });
+  });
+});
 
 describe("viewer server", () => {
   it("serves static UI and JSON API routes", async () => {

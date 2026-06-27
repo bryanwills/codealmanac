@@ -23,6 +23,9 @@ export function registerQueryCommands(program: Command): void {
         cwd: process.cwd(),
         host: opts.host,
         port: opts.port,
+        write: (chunk) => {
+          process.stdout.write(chunk);
+        },
       });
     });
 
