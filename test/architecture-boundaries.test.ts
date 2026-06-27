@@ -88,9 +88,14 @@ describe("architecture boundaries", () => {
 
   it("keeps search command adapters out of index storage mechanics", async () => {
     const searchCommand = await readSource("src/cli/commands/search.ts");
+    const searchRender = await readSource("src/cli/commands/search-render.ts");
     const searchService = await readSource("src/services/wiki/search.ts");
 
+    expect(existsSync(join(ROOT, "src/cli/commands/search-render.ts"))).toBe(
+      true,
+    );
     expect(searchCommand).toContain("services/wiki/search.js");
+    expect(searchCommand).toContain("./search-render.js");
     expect(searchCommand).not.toContain("wiki/indexer");
     expect(searchCommand).not.toContain("openIndex");
     expect(searchCommand).not.toContain("resolveWikiRoot");
@@ -98,6 +103,14 @@ describe("architecture boundaries", () => {
       "SearchOptions extends SearchWikiPagesRequest",
     );
     expect(searchCommand).not.toContain("SearchResult = WikiSearchResult");
+    expect(searchCommand).not.toContain("JSON.stringify");
+    expect(searchCommand).not.toContain("BLUE");
+    expect(searchCommand).not.toContain("RST");
+    expect(searchCommand).not.toContain("# 0 results");
+    expect(searchCommand).not.toContain("consider --limit");
+    expect(searchRender).toContain("renderSearchResults");
+    expect(searchRender).toContain("formatSearchResult");
+    expect(searchRender).toContain("buildStderr");
     expect(searchService).not.toContain("export type WikiSearchResult = query");
   });
 

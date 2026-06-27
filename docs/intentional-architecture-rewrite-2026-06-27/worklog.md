@@ -767,3 +767,9 @@ One-hundred-fifteenth production slice:
 - Split migrate command rendering into `src/cli/commands/migrate-render.ts`.
 - Moved legacy source migration JSON/text output, ambiguous-source warnings, automation migration outcome text, and automation install failure rendering out of `src/cli/commands/migrate.ts`.
 - Kept `src/cli/commands/migrate.ts` focused on shaping migrate command inputs and invoking source/automation migration services.
+
+One-hundred-sixteenth production slice:
+
+- Split search command rendering into `src/cli/commands/search-render.ts`.
+- Moved search JSON output, colored slug output, summary output, empty-result stderr breadcrumbs, and large-result warnings out of `src/cli/commands/search.ts`.
+- Kept `src/cli/commands/search.ts` focused on building wiki search service requests, applying command-level limits, and normalizing service rows into command result rows.
