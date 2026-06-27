@@ -86,14 +86,14 @@ function renderOperationResult(
   result: LifecycleOperationRunResult,
   json: boolean | undefined,
 ): OperationCommandResult {
-  const record = result.background?.record ?? result.foreground?.record;
-  const status = record?.status;
-  const foregroundResult = result.foreground?.result;
+  const job = result.job;
+  const status = job.status;
+  const foregroundResult = result.foreground;
   if (
     result.mode === "foreground" &&
     (foregroundResult?.success === false || status === "failed")
   ) {
-    const failure = foregroundResult?.failure ?? record?.failure;
+    const failure = foregroundResult?.failure ?? job.failure;
     return renderOutcome(
       {
         type: "error",
@@ -108,8 +108,8 @@ function renderOperationResult(
           jobId: result.jobId,
           mode: result.mode,
           status,
-          pid: record?.pid,
-          logPath: record?.logPath,
+          pid: job.pid,
+          logPath: job.logPath,
           error: foregroundResult?.error,
           failure,
         },
@@ -133,8 +133,8 @@ function renderOperationResult(
         jobId: result.jobId,
         mode: result.mode,
         status,
-        pid: record?.pid,
-        logPath: record?.logPath,
+        pid: job.pid,
+        logPath: job.logPath,
       },
     },
     { json, stdout },

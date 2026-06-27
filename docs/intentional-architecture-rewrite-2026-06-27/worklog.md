@@ -416,3 +416,10 @@ Fifty-seventh production slice:
 - Made jobs commands return an explicit `JobsCommandResult` instead of the generic `CommandResult` alias.
 - Added command-local mappers into jobs service request contracts for list, by-id reads, streaming logs, and cancellation.
 - Guarded the jobs command against regressing to generic output aliases or broad option inheritance.
+
+Fifty-eighth production slice:
+
+- Made `LifecycleOperationRunResult` an explicit lifecycle-service result instead of aliasing `operations.OperationRunResult`.
+- Normalized operation-layer foreground/background run results once inside `src/services/lifecycle/operations.ts`.
+- Updated lifecycle command rendering to consume the service-owned job/result shape.
+- Guarded the lifecycle service against regressing to an operation-layer result alias.
