@@ -255,3 +255,9 @@ Thirty-second production slice:
 - Introduced a diagnostics-owned auth status contract and normalized Claude auth probe output into it inside the diagnostics probe wrapper.
 - Removed the Claude provider path from `src/services/diagnostics/types.ts` so `DoctorOptions` no longer exposes a provider-local type import.
 - Updated doctor tests to inject spawn callbacks through the diagnostics service contract instead of importing Claude readiness provider types.
+
+Thirty-third production slice:
+
+- Introduced `SyncWorkflowSummary` as the sync service-facing summary contract.
+- Removed the raw `SyncSummary` re-export from `src/services/sync/index.ts`.
+- Updated the sync command adapter to render the service-owned summary type instead of the lower-level sync subsystem type.

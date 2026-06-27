@@ -366,8 +366,10 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps sync command adapters out of transcript and absorb workflow mechanics", async () => {
+    const syncServiceIndex = await readSource("src/services/sync/index.ts");
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 
+    expect(syncServiceIndex).not.toContain("../../sync");
     expect(syncCommand).toContain("services/sync/index.js");
     expect(syncCommand).not.toContain("../../sync");
     expect(syncCommand).not.toContain("../../operations");

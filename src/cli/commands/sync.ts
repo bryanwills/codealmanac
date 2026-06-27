@@ -2,7 +2,7 @@ import type { CommandResult } from "../helpers.js";
 import { renderError, renderOutcome } from "../outcome.js";
 import {
   runSyncWorkflow,
-  type SyncSummary,
+  type SyncWorkflowSummary,
   type SyncWorkflowOptions,
 } from "../../services/sync/index.js";
 
@@ -22,7 +22,7 @@ export async function runSyncCommand(
 }
 
 function renderSyncSummary(
-  summary: SyncSummary,
+  summary: SyncWorkflowSummary,
   json: boolean | undefined,
 ): CommandResult {
   const statusMode = summary.mode === "status";

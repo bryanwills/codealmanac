@@ -16,8 +16,10 @@ export interface SyncWorkflowOptions {
   startBackground?: operations.StartBackgroundJob;
 }
 
+export type SyncWorkflowSummary = sync.SyncSummary;
+
 export type SyncWorkflowResult =
-  | { status: "completed"; summary: sync.SyncSummary }
+  | { status: "completed"; summary: SyncWorkflowSummary }
   | { status: "invalid"; error: Error };
 
 const DEFAULT_QUIET = "45m";
