@@ -1,9 +1,10 @@
-import { spawn } from "node:child_process";
-import type { ChildProcess } from "node:child_process";
-
 import type { HarnessEvent, HarnessResult } from "../harness/events.js";
 import type { HarnessRunHooks } from "../harness/types.js";
 import type { OperationSpec } from "../operations/spec.js";
+import {
+  startJobWorkerProcess,
+  type SpawnBackgroundFn,
+} from "./background-process.js";
 import { createJobId } from "./ids.js";
 import { initializeJobLog } from "../stores/jobs/logs.js";
 import { executeStartedJob, type StartJobResult } from "./executor.js";
@@ -37,18 +38,6 @@ export interface StartJobOptions {
   ) => Promise<HarnessResult>;
 }
 
-export interface BackgroundChild {
-  pid?: number;
-  unref?: () => void;
-}
-
-export type SpawnBackgroundFn = (args: {
-  command: string;
-  args: string[];
-  cwd: string;
-  env: NodeJS.ProcessEnv;
-}) => BackgroundChild;
-
 export interface StartBackgroundJobOptions {
   repoRoot: string;
   spec: OperationSpec;
@@ -73,7 +62,8 @@ export async function startForegroundJob(
   const lock = await acquireJobWorkerLock(options.repoRoot, startedAt);
   if (lock === null) {
     throw new Error(
-      "another Almanac operation is already running for this wiki; run without --foreground to queue this operation",
+      "another Almanac operation is already running for this wiki; " +
+        "run without --foreground to queue this operation",
     );
   }
   try {
@@ -209,17 +199,12 @@ export async function startBackgroundJob(
     throw new Error(error);
   }
 
-  const spawnFn = options.spawnBackground ?? defaultSpawnBackground;
-  const childEnv: NodeJS.ProcessEnv = {
-    ...process.env,
-  };
-  let child: BackgroundChild;
+  let child;
   try {
-    child = spawnFn({
-      command: process.execPath,
-      args: [entrypoint, "__job-worker"],
-      cwd: options.repoRoot,
-      env: childEnv,
+    child = startJobWorkerProcess({
+      repoRoot: options.repoRoot,
+      entrypoint,
+      spawnBackground: options.spawnBackground,
     });
   } catch (err: unknown) {
     await writeJobRecord(
@@ -251,18 +236,4 @@ function cancelledBeforeStartResult(
       error: "job cancelled before start",
     },
   };
-}
-
-function defaultSpawnBackground(args: {
-  command: string;
-  args: string[];
-  cwd: string;
-  env: NodeJS.ProcessEnv;
-}): ChildProcess {
-  return spawn(args.command, args.args, {
-    cwd: args.cwd,
-    env: args.env,
-    detached: true,
-    stdio: "ignore",
-  });
 }

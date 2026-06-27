@@ -51,12 +51,14 @@ export {
 } from "./snapshots.js";
 export type { AppendJobEventOptions, JobLogEntry } from "./log-entry.js";
 export type {
-  BackgroundChild,
-  SpawnBackgroundFn,
   StartBackgroundJobOptions,
   StartBackgroundJobResult,
   StartJobOptions,
 } from "./start.js";
+export type {
+  BackgroundChild,
+  SpawnBackgroundFn,
+} from "./background-process.js";
 export type {
   StartJobResult,
 } from "./executor.js";

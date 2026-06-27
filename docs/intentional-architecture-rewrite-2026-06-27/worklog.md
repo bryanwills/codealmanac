@@ -641,3 +641,9 @@ Ninety-fourth production slice:
 - Split job run projection concerns out of `src/jobs/projections/view.ts` into named projection modules.
 - Moved agent trace derivation into `src/jobs/projections/agent-traces.ts`, warning derivation into `src/jobs/projections/warnings.ts`, and shared text helpers into `src/jobs/projections/text.ts`.
 - Kept `src/jobs/projections/view.ts` focused on display title, subtitle, transcript source, and enriched job run view assembly.
+
+Ninety-fifth production slice:
+
+- Split background worker process spawning into `src/jobs/background-process.ts`.
+- Moved child-process imports, default detached spawn mechanics, worker argv construction, and spawn hook typing out of `src/jobs/start.ts`.
+- Kept `src/jobs/start.ts` focused on durable foreground/queued/background job records, specs, logs, cancellation checks, failure marking, and execution handoff.

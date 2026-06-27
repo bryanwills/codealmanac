@@ -372,6 +372,18 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/jobs/records.ts"))).toBe(false);
   });
 
+  it("keeps job worker process spawning out of job record startup", async () => {
+    const jobStart = await readSource("src/jobs/start.ts");
+    const backgroundProcess = await readSource("src/jobs/background-process.ts");
+
+    expect(existsSync(join(ROOT, "src/jobs/background-process.ts"))).toBe(true);
+    expect(jobStart).not.toContain("node:child_process");
+    expect(jobStart).not.toContain("function defaultSpawnBackground");
+    expect(jobStart).toContain("startJobWorkerProcess");
+    expect(backgroundProcess).toContain("node:child_process");
+    expect(backgroundProcess).toContain("export function startJobWorkerProcess");
+  });
+
   it("keeps job spec and log persistence in explicit stores", () => {
     expect(existsSync(join(ROOT, "src/stores/jobs/specs.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/jobs/logs.ts"))).toBe(true);
