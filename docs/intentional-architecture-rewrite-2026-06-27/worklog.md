@@ -623,3 +623,9 @@ Ninety-first production slice:
 - Split lifecycle operation run-result read models and operation-result mapping into `src/services/lifecycle/operation-results.ts`.
 - Moved job/foreground/background result contracts and `lifecycleOperationRunResultFromOperation()` out of `src/services/lifecycle/operations.ts`.
 - Kept `src/services/lifecycle/operations.ts` focused on init/absorb/garden workflow orchestration, provider resolution, JSON foreground rejection, and init command context construction.
+
+Ninety-second production slice:
+
+- Split sync sweep read-model contracts, summary builders, skip builders, and cursor context text into `src/sync/sweep-results.ts`.
+- Moved `SyncSummary`/`SyncStarted`/`SyncReady`/`SyncSkipped` and the scheduled-sync cursor prompt text out of `src/sync/sweep.ts`.
+- Kept `src/sync/sweep.ts` focused on candidate iteration, quiet-window and activation gates, internal-run filtering, repo locks, ledger reconciliation, Absorb enqueueing, and ledger writes.

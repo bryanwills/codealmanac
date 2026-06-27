@@ -8,7 +8,9 @@ export {
   type StartSyncAbsorbArgs,
   type StartSyncAbsorbFn,
   type StartSyncAbsorbResult,
+} from "./sweep.js";
+export {
   type SyncSkipped,
   type SyncStarted,
   type SyncSummary,
-} from "./sweep.js";
+} from "./sweep-results.js";

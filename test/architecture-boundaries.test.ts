@@ -695,8 +695,11 @@ describe("architecture boundaries", () => {
   it("keeps sync command adapters out of transcript and absorb workflow mechanics", async () => {
     const syncServiceIndex = await readSource("src/services/sync/index.ts");
     const syncService = await readSource("src/services/sync/sync.ts");
+    const syncSweep = await readSource("src/sync/sweep.ts");
+    const syncSweepResults = await readSource("src/sync/sweep-results.ts");
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 
+    expect(existsSync(join(ROOT, "src/sync/sweep-results.ts"))).toBe(true);
     expect(syncServiceIndex).not.toContain("../../sync");
     expect(syncService).not.toContain("export type SyncWorkflowSummary = sync.SyncSummary");
     expect(syncService).not.toContain(
@@ -713,6 +716,11 @@ describe("architecture boundaries", () => {
     expect(syncCommand).not.toContain("discoverCandidates");
     expect(syncCommand).not.toContain("providerForRepo");
     expect(syncCommand).not.toContain("syncAbsorbContext");
+    expect(syncSweep).not.toContain("interface SyncSummary");
+    expect(syncSweep).not.toContain("function cursorContext");
+    expect(syncSweep).toContain("syncCursorContext");
+    expect(syncSweepResults).toContain("interface SyncSummary");
+    expect(syncSweepResults).toContain("syncSkippedSummary");
   });
 
   it("keeps lifecycle operation command adapters out of run-start mechanics", async () => {
