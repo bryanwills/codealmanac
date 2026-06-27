@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
 
 import type {
-  ProviderSetupView,
-  ProviderModelChoice,
-  AgentProviderId,
+  SetupAgentProviderId,
+  SetupProviderModelChoice,
+  SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
 import {
@@ -26,7 +26,7 @@ import {
 } from "./output.js";
 
 export type AgentChoice =
-  | { ok: true; provider: AgentProviderId; model: string | null }
+  | { ok: true; provider: SetupAgentProviderId; model: string | null }
   | { ok: false; error: string };
 
 export async function chooseDefaultAgent(args: {
@@ -154,8 +154,8 @@ export async function chooseDefaultAgent(args: {
 async function chooseProviderModel(args: {
   out: NodeJS.WritableStream;
   interactive: boolean;
-  provider: AgentProviderId;
-  choice?: ProviderSetupView["choices"][number];
+  provider: SetupAgentProviderId;
+  choice?: SetupProviderView["choices"][number];
   configuredModel: string | null;
 }): Promise<string | null> {
   const choices = await readSetupProviderModelChoices({
@@ -200,7 +200,7 @@ async function chooseProviderModel(args: {
 }
 
 function formatProviderChoice(
-  choice: ProviderSetupView["choices"][number],
+  choice: SetupProviderView["choices"][number],
 ): string {
   const status = providerStatusLabel(choice);
   const detail = providerDetailLabel(choice);
@@ -209,7 +209,7 @@ function formatProviderChoice(
 }
 
 function providerStatusLabel(
-  choice: ProviderSetupView["choices"][number],
+  choice: SetupProviderView["choices"][number],
 ): string {
   if (choice.ready) {
     return choice.detail === "ANTHROPIC_API_KEY set" ? "API key set" : "signed in";
@@ -218,7 +218,7 @@ function providerStatusLabel(
 }
 
 function providerDetailLabel(
-  choice: ProviderSetupView["choices"][number],
+  choice: SetupProviderView["choices"][number],
 ): string {
   if (choice.ready) return choice.account ?? choice.detail;
   if (choice.fixCommand === null) return choice.detail;
@@ -229,7 +229,7 @@ function providerDetailLabel(
 
 function showUnavailableProvider(
   out: NodeJS.WritableStream,
-  choice: ProviderSetupView["choices"][number],
+  choice: SetupProviderView["choices"][number],
 ): void {
   if (choice.readiness === "missing") {
     out.write(
@@ -245,7 +245,7 @@ function showUnavailableProvider(
 }
 
 function formatModelChoice(
-  choice: ProviderModelChoice,
+  choice: SetupProviderModelChoice,
   configuredModel: string | null,
 ): string {
   const marker = choice.recommended
@@ -266,7 +266,7 @@ function friendlyModelLabel(value: string): string {
   return value;
 }
 
-function providerDisplayName(provider: AgentProviderId): string {
+function providerDisplayName(provider: SetupAgentProviderId): string {
   if (provider === "claude") return "Claude";
   if (provider === "codex") return "Codex";
   return "Cursor";

@@ -17,15 +17,18 @@ import {
 } from "../../config/index.js";
 
 export type SetupSpawnCliFn = SpawnCliFn;
+export type SetupProviderView = ProviderSetupView;
+export type SetupProviderModelChoice = ProviderModelChoice;
+export type SetupAgentProviderId = AgentProviderId;
 
 export interface SetupAgentChoiceState {
   config: GlobalConfig;
   selected: string;
-  view: ProviderSetupView | null;
+  view: SetupProviderView | null;
 }
 
 export type SetupAgentSelection =
-  | { ok: true; provider: AgentProviderId; parsedModel?: string }
+  | { ok: true; provider: SetupAgentProviderId; parsedModel?: string }
   | { ok: false; error: string };
 
 export async function readSetupAgentChoiceState(input: {
@@ -46,7 +49,7 @@ export async function readSetupAgentChoiceState(input: {
 export async function refreshSetupAgentChoiceView(input: {
   config: GlobalConfig;
   spawnCli?: SetupSpawnCliFn;
-}): Promise<ProviderSetupView> {
+}): Promise<SetupProviderView> {
   return await buildProviderSetupView({
     config: input.config,
     spawnCli: input.spawnCli,
@@ -78,17 +81,17 @@ export function resolveSetupAgentSelection(
 }
 
 export async function readSetupProviderModelChoices(input: {
-  provider: AgentProviderId;
+  provider: SetupAgentProviderId;
   configuredModel: string | null;
-  choice?: ProviderSetupView["choices"][number];
-}): Promise<ProviderModelChoice[]> {
+  choice?: SetupProviderView["choices"][number];
+}): Promise<SetupProviderModelChoice[]> {
   if (input.choice !== undefined) return input.choice.modelChoices;
   return await buildProviderModelChoices(input.provider, input.configuredModel);
 }
 
 export async function saveSetupAgentChoice(input: {
   config: GlobalConfig;
-  provider: AgentProviderId;
+  provider: SetupAgentProviderId;
   model: string | null;
 }): Promise<void> {
   await writeConfig({

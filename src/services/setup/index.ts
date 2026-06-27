@@ -39,14 +39,8 @@ export {
 export type {
   SetupAgentChoiceState,
   SetupAgentSelection,
+  SetupAgentProviderId,
+  SetupProviderModelChoice,
+  SetupProviderView,
   SetupSpawnCliFn,
 } from "./agent-choice.js";
-export type {
-  ProviderSetupView,
-} from "../../agent/readiness/view.js";
-export type {
-  ProviderModelChoice,
-} from "../../agent/types.js";
-export type {
-  AgentProviderId,
-} from "../../config/index.js";

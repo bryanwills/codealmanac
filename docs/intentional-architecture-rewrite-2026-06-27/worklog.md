@@ -236,3 +236,9 @@ Twenty-ninth production slice:
 - Introduced `SetupSpawnCliFn` as the setup service-facing subprocess callback type.
 - Updated setup command UI files to type `spawnCli` through `src/services/setup/index.ts` instead of importing `src/agent/types.ts` directly.
 - Tightened architecture guards so setup command files cannot reintroduce direct `agent/` imports.
+
+Thirtieth production slice:
+
+- Introduced setup-owned public type aliases for provider view, model choice, and provider id contracts.
+- Removed raw `agent/` and `config/` type re-exports from `src/services/setup/index.ts`.
+- Updated setup command UI types so the command surface depends only on setup service names.
