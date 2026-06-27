@@ -1,13 +1,13 @@
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
 import {
-  loadReviewFile,
-  nextReviewId,
-  reviewYamlPath,
+  addWikiReviewItem,
+  applyWikiReviewItem,
+  decideWikiReviewItem,
+  getWikiReviewItem,
+  listWikiReviewItems,
+  reopenWikiReviewItem,
   type ReviewItem,
   type ReviewStatus,
-  summaryFromMarkdown,
-  writeReviewFile,
-} from "../../review/store.js";
+} from "../../services/wiki/reviews.js";
 import type { CommandResult } from "../helpers.js";
 import { renderOutcome } from "../outcome.js";
 
@@ -36,33 +36,21 @@ export interface ReviewListOptions {
 export async function runReviewAdd(
   options: ReviewOptions,
 ): Promise<ReviewCommandOutput> {
-  const markdown = readMarkdown(options);
-  if (markdown === null) return missingMarkdown("review add");
-
-  const summary = summaryFromMarkdown(markdown);
-  if (summary.length === 0) return missingMarkdown("review add");
-
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
-  const path = reviewYamlPath(repoRoot);
-  const file = await loadReviewFile(path);
-  const item: ReviewItem = {
-    id: nextReviewId(summary, file.items),
-    status: "open",
-    summary,
-    created_at: timestamp(options.now),
-    body: markdown,
-    decided_at: null,
-    decision: null,
-    applied_at: null,
-    application: null,
-  };
-  file.items.push(item);
-  await writeReviewFile(path, file);
-
-  if (options.json === true) {
-    return ok(`${JSON.stringify(item, null, 2)}\n`);
+  const result = await addWikiReviewItem({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    markdown: readMarkdown(options),
+    now: options.now,
+  });
+  switch (result.status) {
+    case "added":
+      if (options.json === true) {
+        return ok(`${JSON.stringify(result.item, null, 2)}\n`);
+      }
+      return ok(`added review item: ${result.item.id}\n`);
+    case "missing-markdown":
+      return missingMarkdown("review add");
   }
-  return ok(`added review item: ${item.id}\n`);
 }
 
 export async function runReviewList(
@@ -73,11 +61,15 @@ export async function runReviewList(
     return errorResult("review list --status must be open, decided, applied, or all", options.json);
   }
 
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
-  const file = await loadReviewFile(reviewYamlPath(repoRoot));
-  const items = status === "all"
-    ? file.items
-    : file.items.filter((item) => item.status === status);
+  const result = await listWikiReviewItems({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    status,
+  });
+  if (result.status === "invalid-status") {
+    return errorResult("review list --status must be open, decided, applied, or all", options.json);
+  }
+  const { items } = result;
 
   if (options.json === true) {
     return ok(`${JSON.stringify(items, null, 2)}\n`);
@@ -94,9 +86,11 @@ export async function runReviewList(
 export async function runReviewShow(
   options: { cwd: string; wiki?: string; id: string; json?: boolean },
 ): Promise<ReviewCommandOutput> {
-  const found = await findReviewItem(options);
-  if ("error" in found) return found.error;
-  const item = found.item;
+  const result = await getWikiReviewItem(options);
+  if (result.status === "missing") {
+    return errorResult(`no review item "${result.id}"`);
+  }
+  const item = result.item;
 
   if (options.json === true) {
     return ok(`${JSON.stringify(item, null, 2)}\n`);
@@ -107,86 +101,69 @@ export async function runReviewShow(
 export async function runReviewDecide(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const markdown = readMarkdown(options);
-  if (markdown === null) return missingMarkdown("review decide");
-
-  const found = await findReviewItem(options);
-  if ("error" in found) return found.error;
-  const item = found.item;
-  if (item.status === "applied") {
-    return errorResult(
-      `review decide cannot change an applied item; reopen ${item.id} first`,
-      options.json,
-    );
+  const result = await decideWikiReviewItem({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    id: options.id,
+    markdown: readMarkdown(options),
+    now: options.now,
+  });
+  switch (result.status) {
+    case "decided":
+      return ok(`decided review item: ${result.item.id}\n`);
+    case "missing-markdown":
+      return missingMarkdown("review decide");
+    case "missing":
+      return errorResult(`no review item "${result.id}"`);
+    case "already-applied":
+      return errorResult(
+        `review decide cannot change an applied item; reopen ${result.id} first`,
+        options.json,
+      );
   }
-  item.status = "decided";
-  item.decision = markdown;
-  item.decided_at = timestamp(options.now);
-  item.applied_at = null;
-  item.application = null;
-  await writeReviewFile(found.path, found.file);
-  return ok(`decided review item: ${item.id}\n`);
 }
 
 export async function runReviewApply(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const markdown = readMarkdown(options);
-  if (markdown === null) return missingMarkdown("review apply");
-
-  const found = await findReviewItem(options);
-  if ("error" in found) return found.error;
-  const item = found.item;
-  if (item.status !== "decided") {
-    return errorResult(
-      `review apply requires a decided item (${item.id} is ${item.status})`,
-      options.json,
-    );
+  const result = await applyWikiReviewItem({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    id: options.id,
+    markdown: readMarkdown(options),
+    now: options.now,
+  });
+  switch (result.status) {
+    case "applied":
+      return ok(`applied review item: ${result.item.id}\n`);
+    case "missing-markdown":
+      return missingMarkdown("review apply");
+    case "missing":
+      return errorResult(`no review item "${result.id}"`);
+    case "not-decided":
+      return errorResult(
+        `review apply requires a decided item (${result.id} is ${result.currentStatus})`,
+        options.json,
+      );
   }
-  item.status = "applied";
-  item.application = markdown;
-  item.applied_at = timestamp(options.now);
-  await writeReviewFile(found.path, found.file);
-  return ok(`applied review item: ${item.id}\n`);
 }
 
 export async function runReviewReopen(
   options: ReviewItemOptions,
 ): Promise<ReviewCommandOutput> {
-  const found = await findReviewItem(options);
-  if ("error" in found) return found.error;
-  const item = found.item;
-  const markdown = readMarkdown(options);
-  item.status = "open";
-  item.reopened_at = timestamp(options.now);
-  item.reopen_note = markdown;
-  item.decided_at = null;
-  item.decision = null;
-  item.applied_at = null;
-  item.application = null;
-  await writeReviewFile(found.path, found.file);
-  return ok(`reopened review item: ${item.id}\n`);
-}
-
-type FindReviewItemResult =
-  | { file: Awaited<ReturnType<typeof loadReviewFile>>; path: string; item: ReviewItem }
-  | { error: ReviewCommandOutput };
-
-async function findReviewItem(options: {
-  cwd: string;
-  wiki?: string;
-  id: string;
-}): Promise<FindReviewItemResult> {
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
-  const path = reviewYamlPath(repoRoot);
-  const file = await loadReviewFile(path);
-  const item = file.items.find((candidate) => candidate.id === options.id);
-  if (item === undefined) {
-    return {
-      error: errorResult(`no review item "${options.id}"`),
-    };
+  const result = await reopenWikiReviewItem({
+    cwd: options.cwd,
+    wiki: options.wiki,
+    id: options.id,
+    markdown: readMarkdown(options),
+    now: options.now,
+  });
+  switch (result.status) {
+    case "reopened":
+      return ok(`reopened review item: ${result.item.id}\n`);
+    case "missing":
+      return errorResult(`no review item "${result.id}"`);
   }
-  return { file, path, item };
 }
 
 function renderReviewItem(item: ReviewItem): string {
@@ -214,19 +191,15 @@ function renderReviewItem(item: ReviewItem): string {
   return lines.join("\n");
 }
 
-function readMarkdown(options: ReviewOptions): string | null {
+function readMarkdown(options: ReviewOptions): string | undefined {
   const input = options.markdown ?? options.stdinInput ?? "";
   const trimmed = input.trim();
-  if (trimmed.length === 0) return null;
+  if (trimmed.length === 0) return undefined;
   return input.replace(/\s+$/g, "");
 }
 
 function missingMarkdown(commandName: string): ReviewCommandOutput {
   return errorResult(`${commandName} requires markdown text or piped stdin`);
-}
-
-function timestamp(now?: Date): string {
-  return (now ?? new Date()).toISOString();
 }
 
 function ok(stdout: string): ReviewCommandOutput {

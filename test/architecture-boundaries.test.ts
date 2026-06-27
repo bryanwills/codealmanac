@@ -132,6 +132,18 @@ describe("architecture boundaries", () => {
     expect(tagCommand).not.toContain("writeTopicsFile");
   });
 
+  it("keeps review command adapters out of review store mechanics", async () => {
+    const reviewCommand = await readSource("src/cli/commands/review.ts");
+
+    expect(reviewCommand).toContain("services/wiki/reviews.js");
+    expect(reviewCommand).not.toContain("review/store");
+    expect(reviewCommand).not.toContain("resolveWikiRoot");
+    expect(reviewCommand).not.toContain("reviewYamlPath");
+    expect(reviewCommand).not.toContain("loadReviewFile");
+    expect(reviewCommand).not.toContain("writeReviewFile");
+    expect(reviewCommand).not.toContain("nextReviewId");
+  });
+
   it("keeps registry persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);

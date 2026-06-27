@@ -31,7 +31,11 @@ sources:
   - id: review
     type: file
     path: src/cli/commands/review.ts
-    note: Migrated from legacy files.
+    note: CLI adapter for review command rendering.
+  - id: review-service
+    type: file
+    path: src/services/wiki/reviews.ts
+    note: Review queue product workflow and status transitions.
   - id: jobs
     type: file
     path: src/cli/commands/jobs.ts
@@ -103,7 +107,7 @@ The remaining quality gap is help shape. Commander help is grouped and clean, bu
 
 `almanac garden` maps to Garden and defaults background because it can make broad graph edits.
 
-`almanac review` is a deterministic edit command over `.almanac/review.yaml`, not an AI lifecycle command. `review add` records an open Markdown review item, `review decide` records the human decision, `review apply` records that an agent applied the decision to the wiki, and `review reopen` returns a decided or applied item to open. `review list` defaults to open items and supports `--status open|decided|applied|all`; `review show` and `review list` support JSON for agents and future viewer APIs. The command belongs beside edit commands because it writes wiki source state, but it does not itself edit pages or run an agent.
+`almanac review` is a deterministic edit command over `.almanac/review.yaml`, not an AI lifecycle command. `review add` records an open Markdown review item, `review decide` records the human decision, `review apply` records that an agent applied the decision to the wiki, and `review reopen` returns a decided or applied item to open. `review list` defaults to open items and supports `--status open|decided|applied|all`; `review show` and `review list` support JSON for agents and future viewer APIs. `src/services/wiki/reviews.ts` owns IDs, status transitions, timestamps, and store writes; `src/cli/commands/review.ts` only chooses CLI input text and renders service results.
 
 ## Command source layout
 
