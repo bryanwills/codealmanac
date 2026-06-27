@@ -4,15 +4,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  checkClaudeAuth,
-  type ClaudeAuthStatus,
-} from "../../agent/readiness/providers/claude/index.js";
-import type {
-  DiagnosticsAuthStatus,
-  DiagnosticsSpawnCliFn,
-  SqliteProbeResult,
-} from "./types.js";
+import type { SqliteProbeResult } from "./types.js";
 
 // Single `createRequire` instance — used by package/binding probes.
 const req = createRequire(import.meta.url);
@@ -82,25 +74,6 @@ export function probeBetterSqlite3(): SqliteProbeResult {
     const firstLine = msg.split("\n")[0] ?? msg;
     return { ok: false, summary: firstLine };
   }
-}
-
-export async function safeCheckAuth(
-  spawnCli?: DiagnosticsSpawnCliFn,
-): Promise<DiagnosticsAuthStatus> {
-  try {
-    return toDiagnosticsAuthStatus(await checkClaudeAuth(spawnCli));
-  } catch {
-    return { loggedIn: false };
-  }
-}
-
-function toDiagnosticsAuthStatus(auth: ClaudeAuthStatus): DiagnosticsAuthStatus {
-  return {
-    loggedIn: auth.loggedIn,
-    email: auth.email,
-    subscriptionType: auth.subscriptionType,
-    authMethod: auth.authMethod,
-  };
 }
 
 export function readPackageVersion(): string | null {

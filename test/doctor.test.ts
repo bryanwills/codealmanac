@@ -12,6 +12,7 @@ import {
   runDoctor as runDoctorCommand,
   type DoctorOptions,
 } from "../src/cli/commands/doctor/index.js";
+import { probeDiagnosticClaudeAuth } from "../src/platform/diagnostics/auth.js";
 import { probeDiagnosticAutomation } from "../src/platform/diagnostics/automation.js";
 import {
   probeDiagnosticGuides,
@@ -58,12 +59,18 @@ const LOGGED_IN_STDOUT = JSON.stringify({
   subscriptionType: "Pro",
 });
 const LOGGED_OUT_STDOUT = JSON.stringify({ loggedIn: false });
+const LOGGED_IN_AUTH = {
+  loggedIn: true,
+  email: "user@example.com",
+  subscriptionType: "Pro",
+};
 const SQLITE_OK = { ok: true, summary: "native binding loads cleanly" };
 
 function runDoctor(
   options: Omit<
     DoctorOptions,
     | "automationStatus"
+    | "authStatus"
     | "claudeApiKeySet"
     | "environment"
     | "guideStatus"
@@ -71,6 +78,7 @@ function runDoctor(
     | "nodeVersion"
   > & {
     automationStatus?: DoctorOptions["automationStatus"];
+    authStatus?: DoctorOptions["authStatus"];
     claudeApiKeySet?: boolean;
     environment?: NodeJS.ProcessEnv;
     guideStatus?: DoctorOptions["guideStatus"];
@@ -82,6 +90,7 @@ function runDoctor(
     claudeApiKeySet: false,
     environment: process.env,
     nodeVersion: options.nodeVersion ?? "v20.0.0-test",
+    authStatus: options.authStatus ?? LOGGED_IN_AUTH,
     automationStatus: options.automationStatus ?? { status: "missing" },
     guideStatus: options.guideStatus ?? {
       status: "installed",
@@ -172,7 +181,6 @@ describe("almanac doctor", () => {
         cwd: repo,
         json: true,
         automationStatus: { status: "installed", plistPath: env.plistPath },
-        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
         sqliteProbe: SQLITE_OK,
         installPath: "/fake/path/codealmanac",
         versionOverride: "0.1.3",
@@ -201,7 +209,6 @@ describe("almanac doctor", () => {
         cwd: home,
         json: true,
         automationStatus: { status: "missing" },
-        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
         sqliteProbe: SQLITE_OK,
         installPath: "/fake",
         versionOverride: "0.1.3",
@@ -246,7 +253,6 @@ describe("almanac doctor", () => {
         cwd: home,
         json: true,
         automationStatus: { status: "legacy", plistPath: legacyPlistPath },
-        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
         sqliteProbe: SQLITE_OK,
         installPath: "/fake",
         versionOverride: "0.1.3",
@@ -307,6 +313,10 @@ describe("almanac doctor", () => {
       await expect(
         probeDiagnosticInstructionEntries({ homeDir: home }),
       ).resolves.toEqual({ status: "present" });
+      await expect(probeDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_IN_STDOUT)))
+        .resolves.toEqual(LOGGED_IN_AUTH);
+      await expect(probeDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_OUT_STDOUT)))
+        .resolves.toEqual({ loggedIn: false });
     });
   });
 
@@ -317,7 +327,7 @@ describe("almanac doctor", () => {
         cwd: home,
         json: true,
         automationStatus: { status: "installed", plistPath: env.plistPath },
-        spawnCli: fakeSpawnCli(LOGGED_OUT_STDOUT),
+        authStatus: { loggedIn: false },
         sqliteProbe: SQLITE_OK,
         installPath: "/fake",
         versionOverride: "0.1.3",
@@ -344,7 +354,7 @@ describe("almanac doctor", () => {
         claudeApiKeySet: true,
         json: true,
         automationStatus: { status: "installed", plistPath: env.plistPath },
-        spawnCli: fakeSpawnCli(LOGGED_OUT_STDOUT),
+        authStatus: { loggedIn: false },
         sqliteProbe: SQLITE_OK,
         installPath: "/fake",
         versionOverride: "0.1.3",

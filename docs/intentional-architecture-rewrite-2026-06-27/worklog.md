@@ -967,3 +967,10 @@ One-hundred-forty-fifth production slice:
 - Removed unused `settingsPath`, `almanacDir`, and `hookScriptPath` fields from the doctor diagnostics options contract.
 - Kept doctor overrides limited to fields with current callers or tests.
 - Added an architecture guard so dead doctor injection knobs do not return as compatibility residue.
+
+One-hundred-forty-sixth production slice:
+
+- Added an explicit `authStatus` fact to the doctor diagnostics contract.
+- Moved Claude auth probing for `almanac doctor` into `src/platform/diagnostics/auth.ts`.
+- Kept `src/services/diagnostics/install.ts` focused on describing install checks from typed facts rather than invoking provider auth mechanics.
+- Added platform probe coverage and boundary guards against diagnostics services re-owning Claude auth probing.

@@ -2,6 +2,7 @@ import { Command } from "commander";
 
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
+import { probeDiagnosticClaudeAuth } from "../../platform/diagnostics/auth.js";
 import { probeDiagnosticAutomation } from "../../platform/diagnostics/automation.js";
 import {
   probeDiagnosticGuides,
@@ -96,6 +97,7 @@ export function registerSetupCommands(
             process.env.ANTHROPIC_API_KEY.length > 0,
           environment: process.env,
           nodeVersion: process.version,
+          authStatus: await probeDiagnosticClaudeAuth(),
           automationStatus: await probeDiagnosticAutomation(),
           guideStatus: probeDiagnosticGuides(),
           instructionEntriesStatus: await probeDiagnosticInstructionEntries(),

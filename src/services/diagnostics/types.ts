@@ -56,6 +56,8 @@ export interface DoctorOptions {
   environment: NodeJS.ProcessEnv;
   /** Node.js version running the current CLI process. */
   nodeVersion: string;
+  /** Provider-owned Claude auth probe result for the current process. */
+  authStatus: DiagnosticsAuthStatus;
   /** Platform-owned automation probe result for the current machine. */
   automationStatus: DiagnosticsAutomationStatus;
   /** Platform-owned guide-file probe result for the current machine. */
@@ -71,7 +73,7 @@ export interface DoctorOptions {
   wikiOnly?: boolean;
 
   // ─── Injection points (tests) ──────────────────────────────────────
-  /** Override Claude auth probe. */
+  /** Override provider readiness subprocess probes. */
   spawnCli?: DiagnosticsSpawnCliFn;
   /** Override provider readiness probes. */
   providerStatuses?: DiagnosticsProviderStatus[];

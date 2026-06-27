@@ -631,6 +631,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       automationStatus: expect.objectContaining({
         status: expect.any(String),
       }),
+      authStatus: expect.objectContaining({
+        loggedIn: expect.any(Boolean),
+      }),
       cwd: process.cwd(),
       claudeApiKeySet: process.env.ANTHROPIC_API_KEY !== undefined &&
         process.env.ANTHROPIC_API_KEY.length > 0,

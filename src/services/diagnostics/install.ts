@@ -2,7 +2,6 @@ import {
   classifyInstallPath,
   detectInstallPath,
   probeBetterSqlite3,
-  safeCheckAuth,
 } from "./probes.js";
 import type {
   Check,
@@ -34,8 +33,7 @@ export async function gatherInstallChecks(
       : "run: npm rebuild better-sqlite3 (in the install directory)",
   });
 
-  const auth = await safeCheckAuth(options.spawnCli);
-  checks.push(describeAuth(auth, options));
+  checks.push(describeAuth(options.authStatus, options));
 
   checks.push(describeAutomation(options.automationStatus));
   checks.push(describeGuides(options.guideStatus));

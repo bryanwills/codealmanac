@@ -1558,6 +1558,10 @@ describe("architecture boundaries", () => {
     const doctorFormat = await readSource("src/cli/commands/doctor/format.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
     const installDiagnostics = await readSource("src/services/diagnostics/install.ts");
+    const diagnosticsProbes = await readSource("src/services/diagnostics/probes.ts");
+    const platformAuthDiagnostics = await readSource(
+      "src/platform/diagnostics/auth.ts",
+    );
     const platformAutomationDiagnostics = await readSource(
       "src/platform/diagnostics/automation.ts",
     );
@@ -1598,6 +1602,7 @@ describe("architecture boundaries", () => {
     expect(diagnosticsTypes).not.toContain("stdout?:");
     expect(diagnosticsTypes).toContain("claudeApiKeySet: boolean");
     expect(diagnosticsTypes).toContain("nodeVersion: string");
+    expect(diagnosticsTypes).toContain("authStatus: DiagnosticsAuthStatus");
     expect(diagnosticsTypes).toContain("automationStatus: DiagnosticsAutomationStatus");
     expect(diagnosticsTypes).toContain("guideStatus: DiagnosticsGuideStatus");
     expect(diagnosticsTypes).toContain(
@@ -1612,12 +1617,17 @@ describe("architecture boundaries", () => {
     expect(installDiagnostics).not.toContain("homedir");
     expect(installDiagnostics).not.toContain("existsSync");
     expect(installDiagnostics).not.toContain("checkAgentInstructions");
+    expect(installDiagnostics).not.toContain("safeCheckAuth");
+    expect(installDiagnostics).not.toContain("checkClaudeAuth");
+    expect(diagnosticsProbes).not.toContain("checkClaudeAuth");
     expect(setupRegistration).toContain("shouldUseStdoutColor()");
     expect(setupRegistration).toContain("nodeVersion: process.version");
+    expect(setupRegistration).toContain("probeDiagnosticClaudeAuth()");
     expect(setupRegistration).toContain("probeDiagnosticAutomation()");
     expect(setupRegistration).toContain("probeDiagnosticGuides()");
     expect(setupRegistration).toContain("probeDiagnosticInstructionEntries()");
     expect(setupRegistration).not.toContain("color: process.stdout.isTTY === true");
+    expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
     expect(platformAutomationDiagnostics).toContain(
       "../automation/legacy-capture.js",
     );
