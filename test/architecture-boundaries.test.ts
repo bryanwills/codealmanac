@@ -142,6 +142,7 @@ describe("architecture boundaries", () => {
 
   it("keeps review command adapters out of review store mechanics", async () => {
     const reviewCommand = await readSource("src/cli/commands/review.ts");
+    const reviewService = await readSource("src/services/wiki/reviews.ts");
 
     expect(reviewCommand).toContain("services/wiki/reviews.js");
     expect(reviewCommand).not.toContain("review/store");
@@ -151,6 +152,12 @@ describe("architecture boundaries", () => {
     expect(reviewCommand).not.toContain("loadReviewFile");
     expect(reviewCommand).not.toContain("writeReviewFile");
     expect(reviewCommand).not.toContain("nextReviewId");
+
+    expect(reviewService).not.toContain("resolveWikiRoot");
+    expect(reviewService).not.toContain("reviewYamlPath");
+    expect(reviewService).not.toContain("loadReviewFile");
+    expect(reviewService).not.toContain("function clean");
+    expect(reviewService).not.toContain("function isReviewStatusFilter");
   });
 
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {

@@ -96,3 +96,4 @@ Eighth production slice:
 - Split the catch-all `src/services/wiki/topic-mutations.ts` into `topic-description.ts`, `topic-graph-mutations.ts`, and `topic-page-mutations.ts`; the stable `topics.ts` facade still exports the same service verbs.
 - Split page-topic request/result contracts and page input resolution out of `src/services/wiki/page-topic-mutations.ts`, and moved raw page-file lookup SQL into `query.pages.pageFilePathBySlug`.
 - Moved `.almanac/review.yaml` persistence from the ambiguous `src/review/store.ts` path to the explicit `src/stores/wiki-review/store.ts` boundary.
+- Split review service contracts, markdown/timestamp helpers, and wiki-root review-file opening out of `src/services/wiki/reviews.ts`; the workflow file now owns only add/list/show/decide/apply/reopen transitions.
