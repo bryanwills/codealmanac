@@ -58,6 +58,7 @@ function runSetup(
     | "environment"
     | "cliProgramArguments"
     | "isTTY"
+    | "stdin"
     | "stdout"
   > & {
     cwd?: string;
@@ -65,6 +66,7 @@ function runSetup(
     environment?: NodeJS.ProcessEnv;
     cliProgramArguments?: string[];
     isTTY?: boolean;
+    stdin?: PassThrough;
     stdout?: NodeJS.WritableStream;
   },
 ) {
@@ -77,6 +79,7 @@ function runSetup(
     environment: options.environment ?? process.env,
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     isTTY: options.isTTY ?? false,
+    stdin: options.stdin ?? new PassThrough(),
     stdout: options.stdout ?? new PassThrough(),
   });
 }
@@ -93,6 +96,7 @@ async function scaffold(home: string): Promise<{
   plistPath: string;
   gardenPlistPath: string;
   updatePlistPath: string;
+  stdin: PassThrough;
   out: PassThrough;
   stdout: () => string;
 }> {
@@ -112,6 +116,7 @@ async function scaffold(home: string): Promise<{
     "com.codealmanac.update.plist",
   );
   await scaffoldGuides(guidesDir);
+  const stdin = new PassThrough();
   const out = new PassThrough();
   const chunks: Buffer[] = [];
   out.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -121,6 +126,7 @@ async function scaffold(home: string): Promise<{
     plistPath,
     gardenPlistPath,
     updatePlistPath,
+    stdin,
     out,
     stdout: () => Buffer.concat(chunks).toString("utf8"),
   };
@@ -699,11 +705,12 @@ describe("codealmanac setup", () => {
         const text = env.stdout();
         if (!answeredAutoCommit && text.includes("Commit Almanac wiki updates automatically?")) {
           answeredAutoCommit = true;
-          queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+          queueMicrotask(() => env.stdin.write(Buffer.from("\n")));
         }
       });
       const res = await runSetup({
         isTTY: true,
+        stdin: env.stdin,
         agent: "claude",
         model: "claude-sonnet-4-6",
         automationEvery: "2h",

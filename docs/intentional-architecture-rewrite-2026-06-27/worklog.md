@@ -919,3 +919,10 @@ One-hundred-thirty-eighth production slice:
 - Kept `src/cli/commands/review.ts` focused on request shaping, markdown/stdin input shaping, and review service verb calls.
 - Preserved status-specific JSON and text behavior while making the render module own service-result-to-output branching.
 - Added an architecture guard so the review command cannot reintroduce result-status switches or direct JSON/text rendering.
+
+One-hundred-thirty-ninth production slice:
+
+- Added an explicit `SetupInputStream` to the setup command contract.
+- Moved setup prompt helpers, target selection, provider/model selection, setup planning, and global install prompts off direct `process.stdin` reads.
+- Kept the CLI edge and sqlite-free setup shortcut as the owners of the real process stdin stream.
+- Updated interactive setup tests to write to injected streams instead of global stdin and added an architecture guard against setup command modules reintroducing direct stdin ownership.

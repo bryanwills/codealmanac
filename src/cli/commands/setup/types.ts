@@ -8,6 +8,11 @@ export type AutomationExecFn = (
   args: string[],
 ) => Promise<{ stdout?: string; stderr?: string }>;
 
+export interface SetupInputStream extends NodeJS.ReadableStream {
+  isTTY?: boolean;
+  setRawMode?: (mode: boolean) => void;
+}
+
 export interface SetupOptions {
   /** Install everything without prompting. */
   yes?: boolean;
@@ -68,6 +73,8 @@ export interface SetupOptions {
   guidesDir?: string;
   /** Whether the current stdin supports interactive prompts. */
   isTTY: boolean;
+  /** Stdin stream used for setup prompts. */
+  stdin: SetupInputStream;
   /** Stdout sink used for setup terminal UI. */
   stdout: NodeJS.WritableStream;
   /** Render setup terminal UI with ANSI color. */

@@ -16,8 +16,10 @@ import {
   whiteBold,
   writeSetupDivider,
 } from "./output.js";
+import type { SetupInputStream } from "./types.js";
 
 export async function chooseInstructionTargets(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   interactive: boolean;
@@ -25,13 +27,14 @@ export async function chooseInstructionTargets(args: {
 }): Promise<SetupInstructionTargetId[]> {
   if (args.requested !== undefined) return [...dedupeTargets(args.requested)];
   if (!args.interactive) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
-  if (canUseRawSelect()) {
-    return await chooseInstructionTargetsRaw(args.out, args.theme);
+  if (canUseRawSelect(args.input)) {
+    return await chooseInstructionTargetsRaw(args.input, args.out, args.theme);
   }
-  return await chooseInstructionTargetsLine(args.out, args.theme);
+  return await chooseInstructionTargetsLine(args.input, args.out, args.theme);
 }
 
 async function chooseInstructionTargetsLine(
+  input: SetupInputStream,
   out: NodeJS.WritableStream,
   theme: SetupTheme,
 ): Promise<SetupInstructionTargetId[]> {
@@ -42,12 +45,13 @@ async function chooseInstructionTargetsLine(
     0,
     false,
   );
-  const answer = await promptText(out, theme, "Select targets", "all");
+  const answer = await promptText(input, out, theme, "Select targets", "all");
   if (answer.trim().length === 0) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
   return parseTargets(answer);
 }
 
 function chooseInstructionTargetsRaw(
+  input: SetupInputStream,
   out: NodeJS.WritableStream,
   theme: SetupTheme,
 ): Promise<SetupInstructionTargetId[]> {
@@ -55,9 +59,6 @@ function chooseInstructionTargetsRaw(
     const selected = new Set<SetupInstructionTargetId>(DEFAULT_SETUP_INSTRUCTION_TARGETS);
     let cursor = 0;
     let renderedLines = 0;
-    const input = process.stdin as NodeJS.ReadStream & {
-      setRawMode?: (mode: boolean) => void;
-    };
     const render = (): void => {
       if (renderedLines > 0) {
         out.write(`\x1b[${renderedLines}A\x1b[0J`);
@@ -210,9 +211,6 @@ function dedupeTargets(
   return orderedTargets(seen);
 }
 
-function canUseRawSelect(): boolean {
-  const input = process.stdin as NodeJS.ReadStream & {
-    setRawMode?: (mode: boolean) => void;
-  };
-  return process.stdin.isTTY === true && typeof input.setRawMode === "function";
+function canUseRawSelect(input: SetupInputStream): boolean {
+  return input.isTTY === true && typeof input.setRawMode === "function";
 }

@@ -23,12 +23,14 @@ import {
   stepDone,
   whiteBold,
 } from "./output.js";
+import type { SetupInputStream } from "./types.js";
 
 export type AgentChoice =
   | { ok: true; provider: SetupAgentProviderId; model: string | null }
   | { ok: false; error: string };
 
 export async function chooseDefaultAgent(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   interactive: boolean;
@@ -48,6 +50,7 @@ export async function chooseDefaultAgent(args: {
   if (args.interactive && args.requested === undefined && view !== null) {
     while (true) {
       const choice = await selectChoice({
+        input: args.input,
         out: args.out,
         theme: args.theme,
         title: "Choose your agent",
@@ -73,6 +76,7 @@ export async function chooseDefaultAgent(args: {
           ? choice.fixCommand.slice("run: ".length)
           : choice.fixCommand;
         const runLogin = await confirm(
+          args.input,
           args.out,
           args.theme,
           `${choice.label} sign-in is needed. Run '${command}' now?`,
@@ -101,6 +105,7 @@ export async function chooseDefaultAgent(args: {
       }
       showUnavailableProvider(args.out, args.theme, choice);
       await waitForEnter(
+        args.input,
         args.out,
         args.theme,
         "Press Enter to choose a different agent.",
@@ -122,6 +127,7 @@ export async function chooseDefaultAgent(args: {
   ) {
     const command = selectedChoice.fixCommand.slice("run: ".length);
     const runLogin = await confirm(
+      args.input,
       args.out,
       args.theme,
       `${selectedChoice.label} is not ready. Run '${command}' now?`,
@@ -154,6 +160,7 @@ export async function chooseDefaultAgent(args: {
   }
   const requestedModel = args.requestedModel ?? selection.parsedModel;
   const model = requestedModel ?? await chooseProviderModel({
+    input: args.input,
     out: args.out,
     theme: args.theme,
     interactive: args.interactive,

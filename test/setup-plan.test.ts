@@ -21,12 +21,14 @@ function setupOptions(
     | "environment"
     | "cliProgramArguments"
     | "isTTY"
+    | "stdin"
     | "stdout"
   > & {
     pathEnvironment?: string;
     environment?: NodeJS.ProcessEnv;
     cliProgramArguments?: string[];
     isTTY?: boolean;
+    stdin?: PassThrough;
     stdout?: NodeJS.WritableStream;
   } = {},
 ): SetupOptions {
@@ -39,19 +41,23 @@ function setupOptions(
     environment: options.environment ?? process.env,
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     isTTY: options.isTTY ?? false,
+    stdin: options.stdin ?? new PassThrough(),
     stdout: options.stdout ?? new PassThrough(),
   };
 }
 
 function setupOutput(): {
+  input: PassThrough;
   out: PassThrough;
   theme: ReturnType<typeof makeSetupTheme>;
   stdout: () => string;
 } {
+  const input = new PassThrough();
   const out = new PassThrough();
   const chunks: Buffer[] = [];
   out.on("data", (chunk: Buffer) => chunks.push(chunk));
   return {
+    input,
     out,
     theme: makeSetupTheme(false),
     stdout: () => Buffer.concat(chunks).toString("utf8"),
@@ -130,7 +136,7 @@ describe("setup plan", () => {
   });
 
   it("interactive answers override shown gate defaults", async () => {
-    const { out, theme, stdout } = setupOutput();
+    const { input, out, theme, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
     let answeredAutomation = false;
@@ -138,15 +144,15 @@ describe("setup plan", () => {
       const text = stdout();
       if (!answeredTargets && text.includes("Select targets")) {
         answeredTargets = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+        queueMicrotask(() => input.write(Buffer.from("\n")));
       }
       if (!answeredUpdate && text.includes("Keep the Almanac CLI updated automatically?")) {
         answeredUpdate = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("n\n")));
+        queueMicrotask(() => input.write(Buffer.from("n\n")));
       }
       if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
         answeredAutomation = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+        queueMicrotask(() => input.write(Buffer.from("\n")));
       }
     });
 
@@ -154,7 +160,7 @@ describe("setup plan", () => {
       out,
       theme,
       interactive: true,
-      options: setupOptions(),
+      options: setupOptions({ stdin: input }),
     })).resolves.toMatchObject({
       instructionTargets: [...DEFAULT_SETUP_INSTRUCTION_TARGETS],
       cliAutoUpdate: false,
@@ -167,7 +173,7 @@ describe("setup plan", () => {
   });
 
   it("interactive target selection can intentionally choose no targets", async () => {
-    const { out, theme, stdout } = setupOutput();
+    const { input, out, theme, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
     let answeredAutomation = false;
@@ -175,15 +181,15 @@ describe("setup plan", () => {
       const text = stdout();
       if (!answeredTargets && text.includes("Select targets")) {
         answeredTargets = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("none\n")));
+        queueMicrotask(() => input.write(Buffer.from("none\n")));
       }
       if (!answeredUpdate && text.includes("Keep the Almanac CLI updated automatically?")) {
         answeredUpdate = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+        queueMicrotask(() => input.write(Buffer.from("\n")));
       }
       if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
         answeredAutomation = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+        queueMicrotask(() => input.write(Buffer.from("\n")));
       }
     });
 
@@ -191,7 +197,7 @@ describe("setup plan", () => {
       out,
       theme,
       interactive: true,
-      options: setupOptions(),
+      options: setupOptions({ stdin: input }),
     })).resolves.toMatchObject({
       instructionTargets: [],
       cliAutoUpdate: true,

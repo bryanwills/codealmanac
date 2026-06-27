@@ -12,8 +12,10 @@ import {
   dim,
   type SetupTheme,
 } from "./output.js";
+import type { SetupInputStream } from "./types.js";
 
 export async function chooseProviderModel(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   interactive: boolean;
@@ -46,6 +48,7 @@ export async function chooseProviderModel(args: {
         : 0,
   );
   const modelChoice = await selectChoice({
+    input: args.input,
     out: args.out,
     theme: args.theme,
     title: `Choose ${providerDisplayName(args.provider)} model`,
@@ -59,7 +62,13 @@ export async function chooseProviderModel(args: {
     defaultIndex,
   });
   if (modelChoice?.source === "custom") {
-    const custom = await promptText(args.out, args.theme, "Model name", "");
+    const custom = await promptText(
+      args.input,
+      args.out,
+      args.theme,
+      "Model name",
+      "",
+    );
     return custom.length > 0 ? custom : recommended?.value ?? null;
   }
   return modelChoice?.value ?? recommended?.value ?? null;

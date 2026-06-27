@@ -47,6 +47,7 @@ async function resolveInstructionTargets(
 ): Promise<SetupInstructionTargetId[]> {
   if (args.options.skipGuides === true) return [];
   return await chooseInstructionTargets({
+    input: args.options.stdin,
     out: args.out,
     theme: args.theme,
     interactive: args.interactive,
@@ -62,6 +63,7 @@ async function resolveSelfManagedAutomation(
   if (args.options.agent !== undefined || args.options.model !== undefined) return true;
   if (!args.interactive) return SETUP_DEFAULTS.selfManagedAutomation;
   return await confirmBoolean(
+    args.options.stdin,
     args.out,
     args.theme,
     "Do you want to handle automations yourself?",
@@ -84,6 +86,7 @@ async function resolveAutoCommit(
   if (args.options.autoCommit === false) return false;
   if (!args.interactive) return SETUP_DEFAULTS.autoCommit;
   return await confirmBoolean(
+    args.options.stdin,
     args.out,
     args.theme,
     "Commit Almanac wiki updates automatically?",
@@ -103,6 +106,7 @@ async function resolveCliAutoUpdate(
   if (args.options.autoUpdate === true) return true;
   if (!args.interactive) return SETUP_DEFAULTS.cliAutoUpdate;
   return await confirmBoolean(
+    args.options.stdin,
     args.out,
     args.theme,
     "Keep the Almanac CLI updated automatically?",
@@ -111,10 +115,11 @@ async function resolveCliAutoUpdate(
 }
 
 async function confirmBoolean(
+  input: SetupOptions["stdin"],
   out: NodeJS.WritableStream,
   theme: SetupTheme,
   question: string,
   defaultYes: boolean,
 ): Promise<boolean> {
-  return await confirm(out, theme, question, defaultYes) === "install";
+  return await confirm(input, out, theme, question, defaultYes) === "install";
 }

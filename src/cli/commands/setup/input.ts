@@ -4,10 +4,12 @@ import {
   type SetupTheme,
   whiteBold,
 } from "./output.js";
+import type { SetupInputStream } from "./types.js";
 
 export type InstallDecision = "install" | "skip";
 
 export function confirm(
+  input: SetupInputStream,
   out: NodeJS.WritableStream,
   theme: SetupTheme,
   question: string,
@@ -24,8 +26,8 @@ export function confirm(
       buf += chunk.toString("utf8");
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
-      process.stdin.removeListener("data", onData);
-      process.stdin.pause();
+      input.removeListener("data", onData);
+      input.pause();
 
       const answer = buf.slice(0, nl).trim().toLowerCase();
       const accepted =
@@ -35,12 +37,13 @@ export function confirm(
       resolve(accepted ? "install" : "skip");
     };
 
-    process.stdin.resume();
-    process.stdin.on("data", onData);
+    input.resume();
+    input.on("data", onData);
   });
 }
 
 export function promptText(
+  input: SetupInputStream,
   out: NodeJS.WritableStream,
   theme: SetupTheme,
   question: string,
@@ -56,24 +59,25 @@ export function promptText(
       buf += chunk.toString("utf8");
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
-      process.stdin.removeListener("data", onData);
-      process.stdin.pause();
+      input.removeListener("data", onData);
+      input.pause();
 
       const answer = buf.slice(0, nl).trim();
       resolve(answer.length === 0 ? defaultValue : answer);
     };
 
-    process.stdin.resume();
-    process.stdin.on("data", onData);
+    input.resume();
+    input.on("data", onData);
   });
 }
 
 export async function waitForEnter(
+  input: SetupInputStream,
   out: NodeJS.WritableStream,
   theme: SetupTheme,
   message: string,
 ): Promise<void> {
-  await promptText(out, theme, message, "");
+  await promptText(input, out, theme, message, "");
 }
 
 export interface SelectChoice<T> {
@@ -83,6 +87,7 @@ export interface SelectChoice<T> {
 }
 
 export async function selectChoice<T>(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   title: string;
@@ -91,7 +96,7 @@ export async function selectChoice<T>(args: {
   defaultIndex: number;
 }): Promise<T> {
   const selected = clampIndex(args.defaultIndex, args.choices.length);
-  if (canUseRawSelect()) {
+  if (canUseRawSelect(args.input)) {
     return await selectChoiceRaw({ ...args, defaultIndex: selected });
   }
   renderSelect(args.out, args.theme, {
@@ -102,6 +107,7 @@ export async function selectChoice<T>(args: {
     raw: false,
   });
   const answer = await promptText(
+    args.input,
     args.out,
     args.theme,
     "Select",
@@ -123,6 +129,7 @@ export async function selectChoice<T>(args: {
 }
 
 async function selectChoiceRaw<T>(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   title: string;
@@ -133,9 +140,7 @@ async function selectChoiceRaw<T>(args: {
   return new Promise((resolve, reject) => {
     let selected = args.defaultIndex;
     let renderedLines = 0;
-    const input = process.stdin as NodeJS.ReadStream & {
-      setRawMode?: (mode: boolean) => void;
-    };
+    const input = args.input;
     const render = (): void => {
       if (renderedLines > 0) {
         args.out.write(`\x1b[${renderedLines}A\x1b[0J`);
@@ -225,11 +230,8 @@ export function isSetupInterrupted(err: unknown): boolean {
   return err instanceof SetupInterruptedError;
 }
 
-function canUseRawSelect(): boolean {
-  const input = process.stdin as NodeJS.ReadStream & {
-    setRawMode?: (mode: boolean) => void;
-  };
-  return process.stdin.isTTY === true && typeof input.setRawMode === "function";
+function canUseRawSelect(input: SetupInputStream): boolean {
+  return input.isTTY === true && typeof input.setRawMode === "function";
 }
 
 function clampIndex(index: number, length: number): number {

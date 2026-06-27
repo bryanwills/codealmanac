@@ -106,6 +106,7 @@ export async function runSetup(
     }
 
     const globalInstall = await runGlobalInstallStep({
+      input: options.stdin,
       out,
       theme,
       interactive,
@@ -139,6 +140,7 @@ export async function runSetup(
 
     if (plan.selfManagedAutomation) {
       const agentChoice = await chooseDefaultAgent({
+        input: options.stdin,
         out,
         theme,
         interactive,

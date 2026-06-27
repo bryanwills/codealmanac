@@ -995,6 +995,7 @@ describe("architecture boundaries", () => {
     const sqliteFree = await readSource("src/edges/cli/sqlite-free.ts");
     const currentCli = await readSource("src/edges/cli/current-cli.ts");
     const setupCallers = await Promise.all([
+      readSource("src/cli/commands/setup/agent-model-choice.ts"),
       readSource("src/cli/commands/setup/agent-choice.ts"),
       readSource("src/cli/commands/setup/global-install-step.ts"),
       readSource("src/cli/commands/setup/index.ts"),
@@ -1003,7 +1004,8 @@ describe("architecture boundaries", () => {
     ]);
 
     expect(existsSync(join(ROOT, "src/cli/commands/setup/input.ts"))).toBe(true);
-    expect(setupInput).toContain("process.stdin");
+    expect(setupInput).not.toContain("process.stdin");
+    expect(setupInput).toContain("SetupInputStream");
     expect(setupInput).toContain("from \"./output.js\"");
     expect(setupInput).toContain("theme: SetupTheme");
     expect(setupOutput).toContain("makeSetupTheme");
@@ -1035,11 +1037,14 @@ describe("architecture boundaries", () => {
     expect(setupWikiState).toContain("readdirSync");
     expect(setupTypes).toContain("interface SetupOptions");
     expect(setupTypes).toContain("interface SetupResult");
+    expect(setupTypes).toContain("stdin: SetupInputStream");
     expect(setupTypes).toContain("color?: boolean");
     expect(setupTypes).not.toContain("defaults to `process");
     expect(setupRegistration).toContain("isTTY: process.stdin.isTTY === true");
+    expect(setupRegistration).toContain("stdin: process.stdin");
     expect(setupRegistration).toContain("stdout: process.stdout");
     expect(setupRegistration).toContain("color: shouldUseStdoutColor()");
+    expect(sqliteFree).toContain("stdin: process.stdin");
     expect(sqliteFree).toContain("color: shouldUseStdoutColor()");
     expect(currentCli).toContain("process.argv");
     expect(currentCli).toContain("process.execPath");
@@ -1049,6 +1054,7 @@ describe("architecture boundaries", () => {
       expect(caller).not.toContain("selectChoice,\n} from \"./output.js\"");
       expect(caller).not.toContain("isSetupInterrupted,\n} from \"./output.js\"");
       expect(caller).not.toContain("SetupInterruptedError,\n} from \"./output.js\"");
+      expect(caller).not.toContain("process.stdin");
     }
   });
 

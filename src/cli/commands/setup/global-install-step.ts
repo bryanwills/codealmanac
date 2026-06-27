@@ -15,6 +15,7 @@ import {
   stepSkipped,
   writeSetupDivider,
 } from "./output.js";
+import type { SetupInputStream } from "./types.js";
 
 export interface GlobalInstallStepOptions {
   installPath?: string | null;
@@ -27,6 +28,7 @@ export interface GlobalInstallStepResult {
 }
 
 export async function runGlobalInstallStep(args: {
+  input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
   interactive: boolean;
@@ -45,6 +47,7 @@ export async function runGlobalInstallStep(args: {
   let globalAction: InstallDecision = "install";
   if (args.interactive) {
     globalAction = await confirm(
+      args.input,
       args.out,
       args.theme,
       `Running from an ephemeral npx location. Install globally so 'almanac' stays on PATH?`,
