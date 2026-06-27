@@ -580,3 +580,9 @@ Eighty-fourth production slice:
 - Split generic frontmatter block slicing into `src/wiki/topics/frontmatter-block.ts`.
 - Kept `frontmatter-rewrite.ts` focused on topic-list transforms and topic-field replacement.
 - Preserved the byte-level body and line-ending behavior required by tag, untag, and topic rename/delete workflows.
+
+Eighty-fifth production slice:
+
+- Split topic-list frontmatter scanning and formatting into `src/wiki/topics/frontmatter-topic-list.ts`.
+- Moved flow/scalar/block topic parsing, comment stripping, scalar formatting, dedupe, and array comparison out of `frontmatter-rewrite.ts`.
+- Kept `frontmatter-rewrite.ts` focused on applying caller transforms and replacing the exact `topics:` field span.

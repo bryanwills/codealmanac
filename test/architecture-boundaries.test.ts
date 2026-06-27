@@ -205,12 +205,20 @@ describe("architecture boundaries", () => {
     const frontmatterBlock = await readSource(
       "src/wiki/topics/frontmatter-block.ts",
     );
+    const frontmatterTopicList = await readSource(
+      "src/wiki/topics/frontmatter-topic-list.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/wiki/topics/frontmatter-block.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/wiki/topics/frontmatter-topic-list.ts"))).toBe(true);
     expect(frontmatterRewrite).toContain("frontmatter-block.js");
+    expect(frontmatterRewrite).toContain("frontmatter-topic-list.js");
     expect(frontmatterRewrite).not.toContain("function splitFrontmatter");
+    expect(frontmatterRewrite).not.toContain("function readTopicsFromLines");
+    expect(frontmatterRewrite).not.toContain("function stripTrailingComment");
     expect(frontmatterRewrite).not.toContain("raw.match(/^---");
     expect(frontmatterBlock).toContain("export function splitFrontmatter");
+    expect(frontmatterTopicList).toContain("export function readTopicsFromLines");
   });
 
   it("keeps tag command adapters out of page topic write mechanics", async () => {
