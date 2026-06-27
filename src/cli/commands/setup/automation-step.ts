@@ -8,11 +8,7 @@ import {
   stepDone,
   stepSkipped,
 } from "./output.js";
-
-type AutomationExecFn = (
-  file: string,
-  args: string[],
-) => Promise<{ stdout?: string; stderr?: string }>;
+import type { AutomationExecFn } from "./types.js";
 
 export interface AutomationSetupStepOptions {
   automationEvery?: string;

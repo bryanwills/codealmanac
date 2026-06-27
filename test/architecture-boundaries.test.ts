@@ -580,6 +580,8 @@ describe("architecture boundaries", () => {
   it("keeps setup input controls out of display rendering", async () => {
     const setupOutput = await readSource("src/cli/commands/setup/output.ts");
     const setupInput = await readSource("src/cli/commands/setup/input.ts");
+    const setupIndex = await readSource("src/cli/commands/setup/index.ts");
+    const setupTypes = await readSource("src/cli/commands/setup/types.ts");
     const setupCallers = await Promise.all([
       readSource("src/cli/commands/setup/agent-choice.ts"),
       readSource("src/cli/commands/setup/global-install-step.ts"),
@@ -597,6 +599,11 @@ describe("architecture boundaries", () => {
     expect(setupOutput).not.toContain("export function promptText");
     expect(setupOutput).not.toContain("export async function selectChoice");
     expect(setupOutput).not.toContain("SetupInterruptedError");
+    expect(existsSync(join(ROOT, "src/cli/commands/setup/types.ts"))).toBe(true);
+    expect(setupIndex).not.toContain("interface SetupOptions");
+    expect(setupIndex).not.toContain("interface SetupResult");
+    expect(setupTypes).toContain("interface SetupOptions");
+    expect(setupTypes).toContain("interface SetupResult");
     for (const caller of setupCallers) {
       expect(caller).not.toContain("confirm,\n} from \"./output.js\"");
       expect(caller).not.toContain("promptText,\n} from \"./output.js\"");

@@ -1,7 +1,3 @@
-import type {
-  SetupInstructionTargetId,
-  SetupSpawnCliFn,
-} from "../../../services/setup/index.js";
 export {
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
@@ -32,11 +28,10 @@ import {
   stepDone,
 } from "./output.js";
 import { buildSetupPlan } from "./setup-plan.js";
-
-export type AutomationExecFn = (
-  file: string,
-  args: string[],
-) => Promise<{ stdout?: string; stderr?: string }>;
+import type {
+  SetupOptions,
+  SetupResult,
+} from "./types.js";
 
 /**
  * `almanac setup` — the MCP-style branded TUI that runs when a user
@@ -61,82 +56,13 @@ export type AutomationExecFn = (
  * Everything is idempotent — running setup again is safe. `--yes` or a
  * non-TTY stdin skips prompts and uses setup-plan defaults.
  */
+export type {
+  AutomationExecFn,
+  SetupOptions,
+  SetupResult,
+} from "./types.js";
 
-export interface SetupOptions {
-  /** Install everything without prompting. */
-  yes?: boolean;
-  /** Don't install the scheduled sync job. */
-  skipAutomation?: boolean;
-  /** Configure the scheduled sync interval. Defaults to 5h. */
-  automationEvery?: string;
-  /** Configure the scheduled sync quiet window. Defaults to 45m. */
-  automationQuiet?: string;
-  /** Configure the scheduled Garden interval. Defaults to 4h. */
-  gardenEvery?: string;
-  /** Don't install the scheduled Garden job. */
-  gardenOff?: boolean;
-  /** Install scheduled Almanac self-update. */
-  autoUpdate?: boolean;
-  /** Configure the scheduled self-update interval. Defaults to 1d. */
-  autoUpdateEvery?: string;
-  /** Don't install the CLAUDE.md guides. */
-  skipGuides?: boolean;
-  /** Allow lifecycle runs to commit wiki source changes automatically. */
-  autoCommit?: boolean;
-  /** Set the default agent provider during setup. */
-  agent?: string;
-  /** Set the default model for the selected provider during setup. */
-  model?: string;
-
-  // ─── Injection points (tests only) ────────────────────────────────
-  /** Override the subprocess spawner for `claude auth status`. */
-  spawnCli?: SetupSpawnCliFn;
-  /** Override the launchd plist path. */
-  automationPlistPath?: string;
-  /** Override the Garden launchd plist path. */
-  gardenPlistPath?: string;
-  /** Override the update launchd plist path. */
-  updatePlistPath?: string;
-  /** Override launchctl execution. */
-  automationExec?: AutomationExecFn;
-  /** Override `~/.claude/` dir for guide install. */
-  claudeDir?: string;
-  /** Override `~/.codex/` dir for Codex instruction install. */
-  codexDir?: string;
-  /** Override `~/.cursor/` dir for Cursor instruction install. */
-  cursorDir?: string;
-  /** Override `~/.codeium/windsurf/` dir for Windsurf instruction install. */
-  windsurfDir?: string;
-  /** Override `~/.config/opencode/` dir for OpenCode instruction install. */
-  opencodeDir?: string;
-  /** Override selected global instruction targets (tests/internal callers). */
-  instructionTargets?: SetupInstructionTargetId[];
-  /** Override the directory containing `mini.md` / `reference.md`. */
-  guidesDir?: string;
-  /** Override interactivity; defaults to `process.stdin.isTTY`. */
-  isTTY?: boolean;
-  /** Stdout sink; defaults to `process.stdout`. */
-  stdout?: NodeJS.WritableStream;
-  /**
-   * Override the install-path probe result. When `null` the probe is
-   * bypassed (tests that don't care about the ephemeral-path step).
-   * When a string it's treated as the detected install path.
-   */
-  installPath?: string | null;
-  /**
-   * Override the npm global install spawner (tests inject a no-op to
-   * avoid actually spawning npm during CI).
-   */
-  spawnGlobalInstall?: () => Promise<void>;
-}
-
-export interface SetupResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-}
-
-// ─── Entry point ─────────────────────────────────────────────────────
+// Entry point.
 
 export async function runSetup(
   options: SetupOptions = {},

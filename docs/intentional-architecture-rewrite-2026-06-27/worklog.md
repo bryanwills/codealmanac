@@ -647,3 +647,9 @@ Ninety-fifth production slice:
 - Split background worker process spawning into `src/jobs/background-process.ts`.
 - Moved child-process imports, default detached spawn mechanics, worker argv construction, and spawn hook typing out of `src/jobs/start.ts`.
 - Kept `src/jobs/start.ts` focused on durable foreground/queued/background job records, specs, logs, cancellation checks, failure marking, and execution handoff.
+
+Ninety-sixth production slice:
+
+- Split setup command contracts into `src/cli/commands/setup/types.ts`.
+- Moved `SetupOptions`, `SetupResult`, and the setup `AutomationExecFn` hook type out of `src/cli/commands/setup/index.ts`.
+- Kept `src/cli/commands/setup/index.ts` focused on the setup TUI workflow while preserving its public type re-exports for existing callers.

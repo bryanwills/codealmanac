@@ -1,5 +1,5 @@
 import type { SetupInstructionTargetId } from "../../../services/setup/index.js";
-import type { SetupOptions } from "./index.js";
+import type { SetupOptions } from "./types.js";
 import { chooseInstructionTargets } from "./instruction-target-choice.js";
 import { confirm } from "./input.js";
 
