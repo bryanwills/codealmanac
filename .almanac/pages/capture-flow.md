@@ -13,8 +13,8 @@ sources:
     note: Migrated from legacy files.
   - id: register-wiki-lifecycle-commands
     type: file
-    path: src/cli/register-wiki-lifecycle-commands.ts
-    note: Migrated from legacy files.
+    path: src/edges/cli/register-wiki-lifecycle-commands.ts
+    note: Registers lifecycle command adapters at the CLI edge.
   - id: absorb
     type: file
     path: src/operations/absorb.ts
@@ -38,11 +38,15 @@ sources:
   - id: ledger
     type: file
     path: src/sync/ledger.ts
-    note: Migrated from legacy files.
+    note: Owns cursor math and pending-run reconciliation semantics.
   - id: lock
     type: file
-    path: src/sync/lock.ts
-    note: Migrated from legacy files.
+    path: src/stores/sync/lock.ts
+    note: Owns repo-level sync lock files and stale-lock recovery.
+  - id: ledger-store
+    type: file
+    path: src/stores/sync/ledger.ts
+    note: Owns repo-local sync ledger JSON files and legacy reads.
   - id: sweep
     type: file
     path: src/sync/sweep.ts
@@ -183,7 +187,7 @@ The 2026-05-13 review discussion clarified the ownership boundary for this disco
 
 Continuation sync keeps passing the original transcript path into Absorb, and adds cursor context telling Absorb what transcript prefix was already absorbed. That preserves the "agent inspects files lazily" contract while avoiding temp delta transcript files or byte-range semantics.
 
-The sweep's state helpers now live beside sync. `[[src/sync/ledger.ts]]` owns repo-local ledger loading, atomic writes, pending-run reconciliation, prefix hashes, legacy `capture-ledger.json` reading, and initial cursor calculation. `[[src/sync/lock.ts]]` owns repo-level sync locking and stale-lock recovery. `[[src/sync/sweep.ts]]` owns the coordinator: eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, Absorb enqueueing, cursor context, start-result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/sync.ts]]` parses CLI options, loads config and discovery inputs, adapts `operations.absorb(...)` to a typed sync-start result, and renders command output.
+The sweep's state helpers are split by ownership. `[[src/stores/sync/ledger.ts]]` owns repo-local ledger loading, atomic writes, and legacy `capture-ledger.json` reads. `[[src/stores/sync/lock.ts]]` owns repo-level sync locking and stale-lock recovery. `[[src/sync/ledger.ts]]` owns pending-run reconciliation, prefix hashes, and initial cursor calculation. `[[src/sync/sweep.ts]]` owns the coordinator: eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, Absorb enqueueing, cursor context, start-result handling, and summary construction. Its top-level loop should stay a coordinator over named helpers such as candidate eligibility, transcript snapshot reading, cursor decision, enqueue, and summary recording. `[[src/cli/commands/sync.ts]]` parses CLI options, loads config and discovery inputs, adapts `operations.absorb(...)` to a typed sync-start result, and renders command output.
 
 The current sync implementation makes that continuation context explicit in the saved run spec. `cursorContext()` in [[src/sync/sweep.ts]] appends a cursor note with the transcript identity and cursor boundary:
 

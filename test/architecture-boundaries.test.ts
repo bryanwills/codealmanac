@@ -193,6 +193,19 @@ describe("architecture boundaries", () => {
     expect(queue).not.toContain("process.kill");
   });
 
+  it("keeps sync runtime persistence in explicit stores", async () => {
+    const syncLedger = await readSource("src/sync/ledger.ts");
+    const syncSweep = await readSource("src/sync/sweep.ts");
+
+    expect(existsSync(join(ROOT, "src/stores/sync/ledger.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/sync/lock.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/sync/lock.ts"))).toBe(false);
+    expect(syncLedger).not.toContain("sync-ledger.json");
+    expect(syncLedger).not.toContain("capture-ledger.json");
+    expect(syncLedger).not.toContain("mkdir");
+    expect(syncSweep).not.toContain("sync.lock");
+  });
+
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 

@@ -32,8 +32,12 @@ sources:
     note: Migrated from legacy files.
   - id: ledger
     type: file
+    path: src/stores/sync/ledger.ts
+    note: Owns repo-local sync ledger JSON files and legacy reads.
+  - id: ledger-domain
+    type: file
     path: src/sync/ledger.ts
-    note: Migrated from legacy files.
+    note: Owns cursor math and pending-run reconciliation semantics.
   - id: sweep
     type: file
     path: src/sync/sweep.ts
@@ -69,7 +73,7 @@ verified: 2026-06-08T00:00:00.000Z
 
 The sync ledger is the repo-local state file that remembers what transcript material CodeAlmanac has already absorbed. In the quiet-session design described by [[capture-automation]], it is the main dedupe and recovery contract for `almanac sync`, not a side detail of the scheduler.
 
-The 2026-05-11 capture discussion made one ownership boundary explicit: platform schedulers such as `launchd` should only wake the CLI. The sweep itself should read, write, and reconcile the ledger. The current implementation keeps that state ownership in [[src/sync/ledger.ts]] and [[src/sync/sweep.ts]], leaving [[src/cli/commands/sync.ts]] as the CLI adapter.
+The 2026-05-11 capture discussion made one ownership boundary explicit: platform schedulers such as `launchd` should only wake the CLI. The sweep itself should read, write, and reconcile the ledger. The current implementation keeps ledger storage in [[src/stores/sync/ledger.ts]], cursor and reconciliation semantics in [[src/sync/ledger.ts]], and sweep coordination in [[src/sync/sweep.ts]], leaving [[src/cli/commands/sync.ts]] as the CLI adapter.
 
 ## What it tracks
 
@@ -146,7 +150,7 @@ The ledger lives at:
 
 - `.almanac/jobs/sync-ledger.json`
 
-Earlier discussion also floated `.almanac/capture-ledger.json`, but the implementation colocates the ledger with the ignored runtime state already described in [[process-manager-runs]]. `[[src/sync/ledger.ts]]` still reads legacy `.almanac/runs/sync-ledger.json` and `.almanac/runs/capture-ledger.json` when the current `sync-ledger.json` is absent, so old repos keep their cursor history after the command and storage rename.
+Earlier discussion also floated `.almanac/capture-ledger.json`, but the implementation colocates the ledger with the ignored runtime state already described in [[process-manager-runs]]. `[[src/stores/sync/ledger.ts]]` still reads legacy `.almanac/runs/sync-ledger.json` and `.almanac/runs/capture-ledger.json` when the current `sync-ledger.json` is absent, so old repos keep their cursor history after the command and storage rename.
 
 Repo-local storage matters because capture state belongs to one wiki. Different repos may observe the same user's Claude or Codex transcripts but still need independent dedupe and retry state.
 

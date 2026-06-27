@@ -2,8 +2,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
-import { parseJsonObject } from "./discovery/jsonl.js";
-import { getRepoAlmanacDir } from "../paths.js";
+import { getRepoAlmanacDir } from "../../paths.js";
 
 const SYNC_LOCK_STALE_MS = 60 * 60 * 1000;
 
@@ -75,5 +74,16 @@ function isPidAlive(pid: number): boolean {
     return true;
   } catch {
     return false;
+  }
+}
+
+function parseJsonObject(text: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
   }
 }

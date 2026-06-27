@@ -7,12 +7,14 @@ import {
   syncCursor,
   freshLedgerEntry,
   ledgerKey,
-  loadLedgerForRepo,
   reconcileLedger,
   sha256,
-  writeLedger,
 } from "./ledger.js";
-import { acquireRepoSyncLock, releaseRepoSyncLock } from "./lock.js";
+import {
+  loadLedgerForRepo,
+  writeLedger,
+} from "../stores/sync/ledger.js";
+import { acquireRepoSyncLock, releaseRepoSyncLock } from "../stores/sync/lock.js";
 import { listJobRecords } from "../jobs/index.js";
 
 export interface SyncStarted {

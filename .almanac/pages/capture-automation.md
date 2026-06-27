@@ -66,12 +66,12 @@ sources:
     note: Migrated from legacy files.
   - id: ledger
     type: file
-    path: src/sync/ledger.ts
-    note: Migrated from legacy files.
+    path: src/stores/sync/ledger.ts
+    note: Owns repo-local sync ledger JSON files and legacy reads.
   - id: lock
     type: file
-    path: src/sync/lock.ts
-    note: Migrated from legacy files.
+    path: src/stores/sync/lock.ts
+    note: Owns repo-level sync lock files and stale-lock recovery.
   - id: sweep
     type: file
     path: src/sync/sweep.ts
@@ -578,7 +578,7 @@ The per-wiki single-writer operation queue described in [[process-manager-runs]]
 
 That recommendation preserves dedupe without pretending a queued background job already succeeded.
 
-The session started with a loose repo-local ledger idea and later narrowed it to a stronger v1 recommendation: store sweep-owned cursor state under a repo-local ignored runtime path. The current file is `.almanac/jobs/sync-ledger.json`; `src/sync/ledger.ts` still reads legacy `.almanac/runs/sync-ledger.json` and `.almanac/runs/capture-ledger.json` when the current sync ledger is absent, so the command and storage rename do not discard old cursor history. [@sync-refactor-commit]
+The session started with a loose repo-local ledger idea and later narrowed it to a stronger v1 recommendation: store sweep-owned cursor state under a repo-local ignored runtime path. The current file is `.almanac/jobs/sync-ledger.json`; `src/stores/sync/ledger.ts` still reads legacy `.almanac/runs/sync-ledger.json` and `.almanac/runs/capture-ledger.json` when the current sync ledger is absent, so the command and storage rename do not discard old cursor history. [@sync-refactor-commit]
 
 That recommendation matters because it keeps scheduler state repo-local instead of global user state, and it colocates reconciliation with the existing [[process-manager-runs]] records the sweep already needs to inspect. The stronger invariant is still more important than the exact filename: quiet-session automation needs durable dedupe state, overlap protection, and reconciliation against background Absorb job results. See [[capture-ledger]] for the state model.
 

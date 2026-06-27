@@ -148,3 +148,9 @@ Review pass after job-store slices:
 - Read `.claude/agents/review.md`, `CLAUDE.md`, and the changed job/store files.
 - Found no correctness regressions in the record/spec/log/worker-lock split.
 - Residual risk to watch: job stores intentionally import job domain schemas and types for validation; that is acceptable while stores only own persistence mechanics, but it should not turn into product workflow ownership.
+
+Sixteenth production slice:
+
+- Moved repo-local sync ledger JSON path resolution, legacy ledger fallback reads, normalization, and atomic writes into `src/stores/sync/ledger.ts`.
+- Moved repo-level sync lock path resolution, legacy lock cleanup, lock owner files, stale-owner detection, and release mechanics into `src/stores/sync/lock.ts`.
+- Kept `src/sync/ledger.ts` for cursor math and pending-job reconciliation semantics, and kept `src/sync/sweep.ts` as the coordinator over eligibility, locking, ledger state, and Absorb enqueueing.
