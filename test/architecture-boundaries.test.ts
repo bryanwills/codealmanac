@@ -156,6 +156,7 @@ describe("architecture boundaries", () => {
   it("keeps review command adapters out of review store mechanics", async () => {
     const reviewCommand = await readSource("src/cli/commands/review.ts");
     const reviewService = await readSource("src/services/wiki/reviews.ts");
+    const reviewTypes = await readSource("src/services/wiki/review-types.ts");
 
     expect(reviewCommand).toContain("services/wiki/reviews.js");
     expect(reviewCommand).not.toContain("review/store");
@@ -165,12 +166,15 @@ describe("architecture boundaries", () => {
     expect(reviewCommand).not.toContain("loadReviewFile");
     expect(reviewCommand).not.toContain("writeReviewFile");
     expect(reviewCommand).not.toContain("nextReviewId");
+    expect(reviewCommand).not.toContain("type ReviewItem");
+    expect(reviewCommand).not.toContain("type ReviewStatus");
 
     expect(reviewService).not.toContain("resolveWikiRoot");
     expect(reviewService).not.toContain("reviewYamlPath");
     expect(reviewService).not.toContain("loadReviewFile");
     expect(reviewService).not.toContain("function clean");
     expect(reviewService).not.toContain("function isReviewStatusFilter");
+    expect(reviewTypes).not.toContain("export type {");
   });
 
   it("keeps jobs command adapters out of job storage and process mechanics", async () => {

@@ -5,8 +5,8 @@ import {
   getWikiReviewItem,
   listWikiReviewItems,
   reopenWikiReviewItem,
-  type ReviewItem,
-  type ReviewStatus,
+  type WikiReviewItem,
+  type WikiReviewStatus,
 } from "../../services/wiki/reviews.js";
 import type { CommandResult } from "../helpers.js";
 import { renderOutcome } from "../outcome.js";
@@ -29,7 +29,7 @@ export interface ReviewItemOptions extends ReviewOptions {
 export interface ReviewListOptions {
   cwd: string;
   wiki?: string;
-  status?: ReviewStatus | "all";
+  status?: WikiReviewStatus | "all";
   json?: boolean;
 }
 
@@ -166,7 +166,7 @@ export async function runReviewReopen(
   }
 }
 
-function renderReviewItem(item: ReviewItem): string {
+function renderReviewItem(item: WikiReviewItem): string {
   const lines = [
     `id: ${item.id}`,
     `status: ${item.status}`,
@@ -210,6 +210,6 @@ function errorResult(message: string, json?: boolean): ReviewCommandOutput {
   return renderOutcome({ type: "error", message }, { json });
 }
 
-function isStatusFilter(value: string): value is ReviewStatus | "all" {
+function isStatusFilter(value: string): value is WikiReviewStatus | "all" {
   return value === "open" || value === "decided" || value === "applied" || value === "all";
 }

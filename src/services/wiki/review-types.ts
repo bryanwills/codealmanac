@@ -1,9 +1,10 @@
 import type {
-  ReviewItem,
-  ReviewStatus,
+  ReviewItem as StoredReviewItem,
+  ReviewStatus as StoredReviewStatus,
 } from "../../stores/wiki-review/store.js";
 
-export type { ReviewItem, ReviewStatus } from "../../stores/wiki-review/store.js";
+export type WikiReviewItem = StoredReviewItem;
+export type WikiReviewStatus = StoredReviewStatus;
 
 export interface WikiReviewRequest {
   cwd: string;
@@ -16,7 +17,7 @@ export interface AddWikiReviewItemRequest extends WikiReviewRequest {
 }
 
 export interface ListWikiReviewItemsRequest extends WikiReviewRequest {
-  status?: ReviewStatus | "all" | string;
+  status?: WikiReviewStatus | "all" | string;
 }
 
 export interface WikiReviewItemRequest extends WikiReviewRequest {
@@ -29,29 +30,29 @@ export interface ChangeWikiReviewItemRequest extends WikiReviewItemRequest {
 }
 
 export type AddWikiReviewItemResult =
-  | { status: "added"; item: ReviewItem }
+  | { status: "added"; item: WikiReviewItem }
   | { status: "missing-markdown" };
 
 export type ListWikiReviewItemsResult =
-  | { status: "listed"; items: ReviewItem[] }
+  | { status: "listed"; items: WikiReviewItem[] }
   | { status: "invalid-status" };
 
 export type GetWikiReviewItemResult =
-  | { status: "found"; item: ReviewItem }
+  | { status: "found"; item: WikiReviewItem }
   | { status: "missing"; id: string };
 
 export type DecideWikiReviewItemResult =
-  | { status: "decided"; item: ReviewItem }
+  | { status: "decided"; item: WikiReviewItem }
   | { status: "missing-markdown" }
   | { status: "missing"; id: string }
   | { status: "already-applied"; id: string };
 
 export type ApplyWikiReviewItemResult =
-  | { status: "applied"; item: ReviewItem }
+  | { status: "applied"; item: WikiReviewItem }
   | { status: "missing-markdown" }
   | { status: "missing"; id: string }
-  | { status: "not-decided"; id: string; currentStatus: ReviewStatus };
+  | { status: "not-decided"; id: string; currentStatus: WikiReviewStatus };
 
 export type ReopenWikiReviewItemResult =
-  | { status: "reopened"; item: ReviewItem }
+  | { status: "reopened"; item: WikiReviewItem }
   | { status: "missing"; id: string };

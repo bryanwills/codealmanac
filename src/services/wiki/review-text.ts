@@ -1,4 +1,4 @@
-import type { ReviewStatus } from "./review-types.js";
+import type { WikiReviewStatus } from "./review-types.js";
 
 export function cleanReviewMarkdown(markdown: string | undefined): string | null {
   const input = markdown ?? "";
@@ -12,7 +12,7 @@ export function reviewTimestamp(now?: Date): string {
 
 export function isReviewStatusFilter(
   value: string,
-): value is ReviewStatus | "all" {
+): value is WikiReviewStatus | "all" {
   return (
     value === "open" ||
     value === "decided" ||

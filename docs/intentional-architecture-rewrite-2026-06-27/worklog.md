@@ -291,3 +291,9 @@ Thirty-eighth production slice:
 - Moved setup agent-choice config refresh/save ownership into `src/services/setup/agent-choice.ts`.
 - Replaced the CLI's raw global config access with a setup-owned configured-model snapshot.
 - Guarded setup agent-choice UI against reaching into `config.agent`.
+
+Thirty-ninth production slice:
+
+- Introduced `WikiReviewItem` and `WikiReviewStatus` as service-owned review contract names.
+- Removed direct store type re-exports from `src/services/wiki/review-types.ts`.
+- Updated the review command adapter to render service-owned review item/status names.

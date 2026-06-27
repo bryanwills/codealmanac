@@ -18,7 +18,7 @@ import type {
   ListWikiReviewItemsRequest,
   ListWikiReviewItemsResult,
   ReopenWikiReviewItemResult,
-  ReviewItem,
+  WikiReviewItem,
   WikiReviewItemRequest,
 } from "./review-types.js";
 import {
@@ -27,8 +27,8 @@ import {
 } from "./review-workspace.js";
 
 export type {
-  ReviewItem,
-  ReviewStatus,
+  WikiReviewItem,
+  WikiReviewStatus,
 } from "./review-types.js";
 
 export async function addWikiReviewItem(
@@ -41,7 +41,7 @@ export async function addWikiReviewItem(
   const summary = summaryFromMarkdown(markdown);
   if (summary.length === 0) return { status: "missing-markdown" };
 
-  const item: ReviewItem = {
+  const item: WikiReviewItem = {
     id: nextReviewId(summary, file.items),
     status: "open",
     summary,
