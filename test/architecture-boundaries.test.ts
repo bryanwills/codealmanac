@@ -447,8 +447,13 @@ describe("architecture boundaries", () => {
 
   it("keeps uninstall UI out of setup cleanup mechanics", async () => {
     const uninstallCommand = await readSource("src/cli/commands/uninstall.ts");
+    const setupUninstall = await readSource("src/services/setup/uninstall.ts");
 
     expect(existsSync(join(ROOT, "src/services/setup/uninstall.ts"))).toBe(true);
+    expect(setupUninstall).not.toContain("type AgentInstructionDirs");
+    expect(setupUninstall).not.toContain(
+      "SetupUninstallOptions extends AgentInstructionDirs",
+    );
     expect(uninstallCommand).toContain("services/setup/index.js");
     expect(uninstallCommand).not.toContain("agent/install-targets");
     expect(uninstallCommand).not.toContain("platform/automation/legacy-hooks");

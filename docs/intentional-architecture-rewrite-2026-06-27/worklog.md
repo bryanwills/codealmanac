@@ -454,3 +454,9 @@ Sixty-third production slice:
 - Made setup instruction target ids, target display rows, and instruction-change results explicit in `src/services/setup/instructions.ts`.
 - Added mapping from agent instruction targets/results into setup-owned setup contracts.
 - Guarded setup instructions against regressing to agent instruction type aliases.
+
+Sixty-fourth production slice:
+
+- Made setup uninstall options list setup guide directories directly instead of extending `AgentInstructionDirs`.
+- Normalized agent instruction removal summaries into the setup uninstall result shape.
+- Guarded setup uninstall against regressing to inherited agent instruction directory contracts.

@@ -2,7 +2,6 @@ import {
   removeAgentInstructions,
   removeClaudeImportLine,
   removeManagedBlock,
-  type AgentInstructionDirs,
 } from "../../agent/install-targets.js";
 import {
   cleanupLegacyAutomationHooks,
@@ -11,9 +10,14 @@ import {
   type AutomationUninstallResult,
 } from "../automation/index.js";
 
-export interface SetupUninstallOptions extends AgentInstructionDirs {
+export interface SetupUninstallOptions {
   removeAutomation: boolean;
   removeGuides: boolean;
+  claudeDir: string;
+  codexDir: string;
+  cursorDir: string;
+  windsurfDir: string;
+  opencodeDir: string;
   automationPlistPath?: string;
   gardenPlistPath?: string;
   automationExec?: AutomationUninstallOptions["exec"];
@@ -83,5 +87,9 @@ async function removeSetupGuides(
     opencodeDir: options.opencodeDir,
   });
 
-  return { action: "checked", ...summary };
+  return {
+    action: "checked",
+    anyChanges: summary.anyChanges,
+    filesTouched: summary.filesTouched,
+  };
 }
