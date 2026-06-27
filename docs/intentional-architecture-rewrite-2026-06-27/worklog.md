@@ -327,3 +327,9 @@ Forty-fourth production slice:
 - Made review command-facing item and status types explicit service contracts instead of aliases over the review store.
 - Mapped review store items inside `src/services/wiki/reviews.ts` before returning service results.
 - Guarded review service types against importing the store's persisted item/status contracts.
+
+Forty-fifth production slice:
+
+- Made `JobServiceView` an explicit service read model instead of an alias over the runtime `JobView`.
+- Mapped runtime job views inside `src/services/jobs/jobs.ts` before returning command-facing service results.
+- Guarded jobs service types against regressing to runtime job-view aliases.

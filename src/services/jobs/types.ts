@@ -1,6 +1,89 @@
-import type { JobStatus, JobView as RuntimeJobView } from "../../jobs/index.js";
+export type JobServiceStatus =
+  | "queued"
+  | "running"
+  | "done"
+  | "failed"
+  | "cancelled";
+export type JobServiceDisplayStatus = JobServiceStatus | "stale";
+export type JobServiceOperation = "build" | "absorb" | "garden";
 
-export type JobServiceView = RuntimeJobView;
+export type JobServiceJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JobServiceJsonValue[]
+  | { [key: string]: JobServiceJsonValue };
+
+export interface JobServiceUsage {
+  inputTokens?: number;
+  cachedInputTokens?: number;
+  outputTokens?: number;
+  reasoningOutputTokens?: number;
+  totalTokens?: number;
+  totalProcessedTokens?: number;
+  maxTokens?: number | null;
+}
+
+export interface JobServiceSummary {
+  created: number;
+  updated: number;
+  archived: number;
+  deleted: number;
+  costUsd?: number;
+  turns?: number;
+  usage?: JobServiceUsage;
+}
+
+export interface JobServicePageChanges {
+  version: 1;
+  jobId: string;
+  created: string[];
+  updated: string[];
+  archived: string[];
+  deleted: string[];
+  summary?: string;
+}
+
+export interface JobServiceOperationOutput {
+  version: 1;
+  contract: string;
+  value: JobServiceJsonValue;
+}
+
+export interface JobServiceFailure {
+  provider: string;
+  message: string;
+  fix?: string;
+  code?: string;
+  raw?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface JobServiceView {
+  version: 1;
+  id: string;
+  operation: JobServiceOperation;
+  status: JobServiceStatus;
+  repoRoot: string;
+  pid: number;
+  provider: string;
+  model?: string;
+  providerSessionId?: string;
+  startedAt: string;
+  finishedAt?: string;
+  durationMs?: number;
+  logPath: string;
+  targetKind?: string;
+  targetPaths?: string[];
+  summary?: JobServiceSummary;
+  pageChanges?: JobServicePageChanges;
+  operationOutput?: JobServiceOperationOutput;
+  error?: string;
+  failure?: JobServiceFailure;
+  displayStatus: JobServiceDisplayStatus;
+  elapsedMs: number;
+}
 
 export interface JobsRequest {
   cwd: string;
@@ -51,7 +134,7 @@ export interface ReadJobLogErrorResult {
 }
 
 export type TerminalJobStatus = Extract<
-  JobStatus,
+  JobServiceStatus,
   "done" | "failed" | "cancelled"
 >;
 

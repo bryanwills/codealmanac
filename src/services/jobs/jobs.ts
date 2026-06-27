@@ -9,6 +9,8 @@ import {
   resolveJobRecordPath,
   toJobView,
   writeJobRecord,
+  type JobRecord,
+  type JobView as RuntimeJobView,
 } from "../../jobs/index.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { isLocalPidAlive, signalLocalPid } from "../../platform/process.js";
@@ -35,10 +37,9 @@ export async function listJobs(
   return {
     status: "listed",
     jobs: records.map((record) =>
-      toJobView({
+      buildJobServiceView({
         record,
-        now: request.now?.() ?? new Date(),
-        isPidAlive: request.isPidAlive ?? isLocalPidAlive,
+        request,
       }),
     ),
   };
@@ -144,11 +145,7 @@ export async function streamJobLog(
       offset,
       request.write,
     );
-    const view = toJobView({
-      record,
-      now: request.now?.() ?? new Date(),
-      isPidAlive: request.isPidAlive ?? isLocalPidAlive,
-    });
+    const view = buildJobServiceView({ record, request });
     if (isTerminalDisplayStatus(view)) {
       return { status: "streamed", terminalJob: view };
     }
@@ -162,11 +159,7 @@ async function readJobView(
 ): Promise<JobServiceView | null> {
   const record = await readJobRecord(await resolveJobRecordPath(repoRoot, request.jobId));
   if (record === null) return null;
-  return toJobView({
-    record,
-    now: request.now?.() ?? new Date(),
-    isPidAlive: request.isPidAlive ?? isLocalPidAlive,
-  });
+  return buildJobServiceView({ record, request });
 }
 
 function resolveRepoRoot(cwd: string): string | null {
@@ -200,4 +193,48 @@ function isTerminalDisplayStatus(view: JobServiceView): boolean {
     view.displayStatus === "cancelled" ||
     view.displayStatus === "stale"
   );
+}
+
+function buildJobServiceView(args: {
+  record: JobRecord;
+  request: JobsRequest;
+}): JobServiceView {
+  return jobServiceViewFromRuntime(
+    toJobView({
+      record: args.record,
+      now: args.request.now?.() ?? new Date(),
+      isPidAlive: args.request.isPidAlive ?? isLocalPidAlive,
+    }),
+  );
+}
+
+function jobServiceViewFromRuntime(view: RuntimeJobView): JobServiceView {
+  return {
+    version: view.version,
+    id: view.id,
+    operation: view.operation,
+    status: view.status,
+    repoRoot: view.repoRoot,
+    pid: view.pid,
+    provider: view.provider,
+    ...(view.model !== undefined ? { model: view.model } : {}),
+    ...(view.providerSessionId !== undefined
+      ? { providerSessionId: view.providerSessionId }
+      : {}),
+    startedAt: view.startedAt,
+    ...(view.finishedAt !== undefined ? { finishedAt: view.finishedAt } : {}),
+    ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
+    logPath: view.logPath,
+    ...(view.targetKind !== undefined ? { targetKind: view.targetKind } : {}),
+    ...(view.targetPaths !== undefined ? { targetPaths: view.targetPaths } : {}),
+    ...(view.summary !== undefined ? { summary: view.summary } : {}),
+    ...(view.pageChanges !== undefined ? { pageChanges: view.pageChanges } : {}),
+    ...(view.operationOutput !== undefined
+      ? { operationOutput: view.operationOutput }
+      : {}),
+    ...(view.error !== undefined ? { error: view.error } : {}),
+    ...(view.failure !== undefined ? { failure: view.failure } : {}),
+    displayStatus: view.displayStatus,
+    elapsedMs: view.elapsedMs,
+  };
 }

@@ -192,9 +192,12 @@ describe("architecture boundaries", () => {
 
   it("keeps jobs command adapters out of job storage and process mechanics", async () => {
     const jobsServiceIndex = await readSource("src/services/jobs/index.ts");
+    const jobsServiceTypes = await readSource("src/services/jobs/types.ts");
     const jobsCommand = await readSource("src/cli/commands/jobs.ts");
 
     expect(jobsServiceIndex).not.toContain("../../jobs");
+    expect(jobsServiceTypes).not.toContain("RuntimeJobView");
+    expect(jobsServiceTypes).not.toContain("JobView as");
     expect(jobsCommand).toContain("services/jobs/index.js");
     expect(jobsCommand).not.toContain("../../jobs/index");
     expect(jobsCommand).not.toContain("readJobRecord");
