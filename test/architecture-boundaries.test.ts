@@ -866,6 +866,7 @@ describe("architecture boundaries", () => {
     expect(agentsCommand).toContain("services/agents/index.js");
     expect(agentsCommand).not.toContain("agent/readiness");
     expect(agentsCommand).not.toContain("../../config/index");
+    expect(agentsCommand).not.toContain("process.cwd()");
     expect(agentsCommand).not.toContain("readConfig");
     expect(agentsCommand).not.toContain("writeConfig");
     expect(agentsCommand).not.toContain("parseAgentSelection");

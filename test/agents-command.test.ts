@@ -62,8 +62,8 @@ describe("agents command", () => {
   });
 
   it("requires an explicit model or --default", async () => {
-    await withTempHome(async () => {
-      const result = await runAgentsModel({ provider: "claude" });
+    await withTempHome(async (home) => {
+      const result = await runAgentsModel({ provider: "claude", cwd: home });
 
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toContain("missing model");
@@ -72,9 +72,10 @@ describe("agents command", () => {
 
   it("does not materialize untouched model origins when changing providers", async () => {
     await withTempHome(async (home) => {
-      await expect(runAgentsUse({ provider: "claude" })).resolves.toMatchObject({
-        exitCode: 0,
-      });
+      await expect(runAgentsUse({
+        provider: "claude",
+        cwd: home,
+      })).resolves.toMatchObject({ exitCode: 0 });
 
       const rows = JSON.parse((await runConfigList({
         cwd: home,
@@ -93,8 +94,11 @@ describe("agents command", () => {
   });
 
   it("sets provider and model from provider/model shorthand", async () => {
-    await withTempHome(async () => {
-      const result = await runAgentsUse({ provider: "claude/claude-opus-4-6" });
+    await withTempHome(async (home) => {
+      const result = await runAgentsUse({
+        provider: "claude/claude-opus-4-6",
+        cwd: home,
+      });
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("default agent set to claude");
@@ -111,13 +115,15 @@ describe("agents command", () => {
   });
 
   it("resets a provider model to default", async () => {
-    await withTempHome(async () => {
+    await withTempHome(async (home) => {
       await expect(runAgentsModel({
+        cwd: home,
         provider: "codex",
         model: "gpt-5.4",
       })).resolves.toMatchObject({ exitCode: 0 });
 
       const result = await runAgentsModel({
+        cwd: home,
         provider: "codex",
         defaultModel: true,
       });

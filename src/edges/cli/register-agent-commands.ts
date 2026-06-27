@@ -29,7 +29,7 @@ export function registerAgentCommands(program: Command): void {
     .argument("<provider>", "claude, codex, cursor, or claude/<model>")
     .action(async (provider: string) => {
       const { runAgentsUse } = await import("../../cli/commands/agents.js");
-      emit(await runAgentsUse({ provider }));
+      emit(await runAgentsUse({ provider, cwd: process.cwd() }));
     });
 
   agents
@@ -48,6 +48,7 @@ export function registerAgentCommands(program: Command): void {
         provider,
         model,
         defaultModel: opts.default,
+        cwd: process.cwd(),
       }));
     });
 }

@@ -25,7 +25,15 @@ export async function runAgentsDoctor(): Promise<AgentsResult> {
 }
 
 export interface SetDefaultAgentOptions {
+  cwd: string;
   provider: string;
+}
+
+export interface SetAgentModelOptions {
+  cwd: string;
+  provider: string;
+  model?: string;
+  defaultModel?: boolean;
 }
 
 export async function runSetDefaultAgent(
@@ -43,36 +51,30 @@ async function setDefaultAgent(
 ): Promise<AgentsResult> {
   return renderSetDefaultAgentResult(
     await setDefaultAgentService({
-      cwd: process.cwd(),
+      cwd: opts.cwd,
       provider: opts.provider,
     }),
   );
 }
 
-export async function runSetAgentModel(opts: {
-  provider: string;
-  model?: string;
-  defaultModel?: boolean;
-}): Promise<AgentsResult> {
+export async function runSetAgentModel(
+  opts: SetAgentModelOptions,
+): Promise<AgentsResult> {
   return setProviderModel(opts);
 }
 
-export async function runAgentsModel(opts: {
-  provider: string;
-  model?: string;
-  defaultModel?: boolean;
-}): Promise<AgentsResult> {
+export async function runAgentsModel(
+  opts: SetAgentModelOptions,
+): Promise<AgentsResult> {
   return setProviderModel(opts);
 }
 
-async function setProviderModel(opts: {
-  provider: string;
-  model?: string;
-  defaultModel?: boolean;
-}): Promise<AgentsResult> {
+async function setProviderModel(
+  opts: SetAgentModelOptions,
+): Promise<AgentsResult> {
   return renderSetAgentModelResult(
     await setAgentModel({
-      cwd: process.cwd(),
+      cwd: opts.cwd,
       provider: opts.provider,
       model: opts.model,
       defaultModel: opts.defaultModel,
