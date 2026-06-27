@@ -1,12 +1,12 @@
 import { Command } from "commander";
 
-import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
+import { autoRegisterIfNeeded } from "../../wiki/registry/autoregister.js";
 import {
   collectOption,
   emit,
   parsePositiveInt,
   readStdin,
-} from "./helpers.js";
+} from "../../cli/helpers.js";
 
 export type SearchOutputMode = "slugs" | "summaries" | "json";
 
@@ -18,7 +18,7 @@ export function registerQueryCommands(program: Command): void {
     .option("--port <n>", "port to bind", parsePositiveInt, 3927)
     .action(async (opts: { host?: string; port?: number }) => {
       await autoRegisterIfNeeded(process.cwd());
-      const { runServe } = await import("./commands/serve.js");
+      const { runServe } = await import("../../cli/commands/serve.js");
       await runServe({
         cwd: process.cwd(),
         host: opts.host,
@@ -70,7 +70,7 @@ export function registerQueryCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runSearch } = await import("./commands/search.js");
+        const { runSearch } = await import("../../cli/commands/search.js");
         const result = await runSearch({
           cwd: process.cwd(),
           query,
@@ -131,7 +131,7 @@ export function registerQueryCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runShow } = await import("./commands/show.js");
+        const { runShow } = await import("../../cli/commands/show.js");
         const result = await runShow({
           cwd: process.cwd(),
           slug,
@@ -174,7 +174,7 @@ export function registerQueryCommands(program: Command): void {
         wiki?: string;
       }) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runHealth } = await import("./commands/health/index.js");
+        const { runHealth } = await import("../../cli/commands/health/index.js");
         const result = await runHealth({
           cwd: process.cwd(),
           topic: opts.topic,
@@ -202,7 +202,7 @@ export function registerQueryCommands(program: Command): void {
         if (opts.drop === undefined) {
           await autoRegisterIfNeeded(process.cwd());
         }
-        const { listWikis } = await import("./commands/list.js");
+        const { listWikis } = await import("../../cli/commands/list.js");
         const result = await listWikis(opts);
         process.stdout.write(result.stdout);
         if (result.exitCode !== 0) {

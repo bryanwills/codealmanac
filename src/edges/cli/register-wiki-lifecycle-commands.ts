@@ -1,8 +1,8 @@
 import { Command } from "commander";
 
-import type { HarnessEvent } from "../harness/events.js";
-import { autoRegisterIfNeeded } from "../wiki/registry/autoregister.js";
-import { emit } from "./helpers.js";
+import type { HarnessEvent } from "../../harness/events.js";
+import { autoRegisterIfNeeded } from "../../wiki/registry/autoregister.js";
+import { emit } from "../../cli/helpers.js";
 
 export function registerWikiLifecycleCommands(program: Command): void {
   program
@@ -25,7 +25,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       }) => {
         const start = initStartMessage(opts);
         if (start !== null) process.stdout.write(start);
-        const { runInitCommand } = await import("./commands/operations.js");
+        const { runInitCommand } = await import("../../cli/commands/operations.js");
         const result = await runInitCommand({
           cwd: process.cwd(),
           using: opts.using,
@@ -61,7 +61,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runAbsorbCommand } = await import("./commands/operations.js");
+        const { runAbsorbCommand } = await import("../../cli/commands/operations.js");
         const result = await runAbsorbCommand({
           cwd: process.cwd(),
           inputs,
@@ -97,7 +97,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
         },
       ) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runAbsorbCommand } = await import("./commands/operations.js");
+        const { runAbsorbCommand } = await import("../../cli/commands/operations.js");
         const result = await runAbsorbCommand({
           cwd: process.cwd(),
           inputs,
@@ -126,7 +126,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       using?: string;
       json?: boolean;
     }) => {
-      const { runSyncCommand } = await import("./commands/sync.js");
+      const { runSyncCommand } = await import("../../cli/commands/sync.js");
       const result = await runSyncCommand({
         cwd: process.cwd(),
         from: opts.from,
@@ -148,7 +148,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       quiet?: string;
       json?: boolean;
     }) => {
-      const { runSyncCommand } = await import("./commands/sync.js");
+      const { runSyncCommand } = await import("../../cli/commands/sync.js");
       const result = await runSyncCommand({
         cwd: process.cwd(),
         mode: "status",
@@ -176,7 +176,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
         verbose?: boolean;
       }) => {
         await autoRegisterIfNeeded(process.cwd());
-        const { runGardenCommand } = await import("./commands/operations.js");
+        const { runGardenCommand } = await import("../../cli/commands/operations.js");
         const result = await runGardenCommand({
           cwd: process.cwd(),
           using: opts.using,
@@ -200,7 +200,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .description("list jobs for this wiki")
     .option("--json", "emit structured JSON")
     .action(async (opts: { json?: boolean }) => {
-      const { runJobsList } = await import("./commands/jobs.js");
+      const { runJobsList } = await import("../../cli/commands/jobs.js");
       const result = await runJobsList({
         cwd: process.cwd(),
         json: opts.json,
@@ -213,7 +213,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .description("show one job record")
     .option("--json", "emit structured JSON")
     .action(async (jobId: string, opts: { json?: boolean }) => {
-      const { runJobsShow } = await import("./commands/jobs.js");
+      const { runJobsShow } = await import("../../cli/commands/jobs.js");
       const result = await runJobsShow({
         cwd: process.cwd(),
         jobId,
@@ -227,7 +227,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .description("print a run's JSONL event log")
     .option("--json", "emit structured errors as JSON")
     .action(async (jobId: string, opts: { json?: boolean }) => {
-      const { runJobsLogs } = await import("./commands/jobs.js");
+      const { runJobsLogs } = await import("../../cli/commands/jobs.js");
       const result = await runJobsLogs({
         cwd: process.cwd(),
         jobId,
@@ -241,7 +241,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .description("stream a job log until the job exits")
     .option("--json", "emit structured errors as JSON")
     .action(async (jobId: string, opts: { json?: boolean }) => {
-      const { streamJobsAttach } = await import("./commands/jobs.js");
+      const { streamJobsAttach } = await import("../../cli/commands/jobs.js");
       const result = await streamJobsAttach({
         cwd: process.cwd(),
         jobId,
@@ -255,7 +255,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .description("cancel a running or queued job")
     .option("--json", "emit structured JSON")
     .action(async (jobId: string, opts: { json?: boolean }) => {
-      const { runJobsCancel } = await import("./commands/jobs.js");
+      const { runJobsCancel } = await import("../../cli/commands/jobs.js");
       const result = await runJobsCancel({
         cwd: process.cwd(),
         jobId,
@@ -284,7 +284,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       const {
         parseAutomationTaskIds,
         runAutomationInstall,
-      } = await import("./commands/automation.js");
+      } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);
       if (!parsed.ok) {
         emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
@@ -308,7 +308,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       const {
         parseAutomationTaskIds,
         runAutomationUninstall,
-      } = await import("./commands/automation.js");
+      } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);
       if (!parsed.ok) {
         emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
@@ -325,7 +325,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
       const {
         parseAutomationTaskIds,
         runAutomationStatus,
-      } = await import("./commands/automation.js");
+      } = await import("../../cli/commands/automation.js");
       const parsed = parseAutomationTaskIds(tasks);
       if (!parsed.ok) {
         emit({ stdout: "", stderr: `almanac: ${parsed.error}\n`, exitCode: 1 });
@@ -341,7 +341,7 @@ export function registerWikiLifecycleCommands(program: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .action(async (opts: { wiki?: string }) => {
       await autoRegisterIfNeeded(process.cwd());
-      const { runReindex } = await import("./commands/reindex.js");
+      const { runReindex } = await import("../../cli/commands/reindex.js");
       const result = await runReindex({
         cwd: process.cwd(),
         wiki: opts.wiki,
@@ -392,7 +392,7 @@ export function formatForegroundEvent(event: HarnessEvent): string | null {
 
 function formatToolDisplay(
   fallbackTool: string,
-  display: import("../harness/events.js").HarnessToolDisplay | undefined,
+  display: import("../../harness/events.js").HarnessToolDisplay | undefined,
 ): string {
   if (display === undefined) return fallbackTool;
   const title = display.title ?? fallbackTool;

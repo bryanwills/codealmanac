@@ -1,5 +1,5 @@
-import { runCodealmanacBootstrap } from "../platform/install/global.js";
-import { emit } from "./helpers.js";
+import { runCodealmanacBootstrap } from "../../platform/install/global.js";
+import { emit } from "../../cli/helpers.js";
 
 export interface SetupShortcutOptions {
   yes?: boolean;
@@ -17,7 +17,7 @@ export interface SetupShortcutOptions {
 }
 
 export interface SqliteFreeDeps {
-  runSetup?: typeof import("./commands/setup/index.js").runSetup;
+  runSetup?: typeof import("../../cli/commands/setup/index.js").runSetup;
   runCodealmanacBootstrap?: typeof runCodealmanacBootstrap;
 }
 
@@ -33,7 +33,7 @@ export async function tryRunSetupShortcut(args: {
   if (setupInvocation === null) return false;
 
   const runSetupFn = args.deps.runSetup ??
-    (await import("./commands/setup/index.js")).runSetup;
+    (await import("../../cli/commands/setup/index.js")).runSetup;
   const runCodealmanacBootstrapFn =
     args.deps.runCodealmanacBootstrap ?? runCodealmanacBootstrap;
 

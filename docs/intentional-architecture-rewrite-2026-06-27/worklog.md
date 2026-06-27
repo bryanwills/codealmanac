@@ -40,3 +40,9 @@ First production slice:
 - Moved the process-level CLI runner from `src/cli.ts` to `src/edges/cli/run.ts`.
 - Kept `src/cli.ts` as a stable facade so bin shims and tests can keep importing the public runner.
 - Added `test/architecture-boundaries.test.ts` to prevent the facade from regaining Commander, command wiring, platform update checks, or job-worker behavior.
+
+Second production slice:
+
+- Moved CLI command registration, grouped help, and sqlite-free setup shortcut parsing into `src/edges/cli/`.
+- Left command handlers in `src/cli/commands/` until their product-service ownership is explicit.
+- Added an architecture guard that fails if terminal CLI shell files reappear under `src/cli/`.

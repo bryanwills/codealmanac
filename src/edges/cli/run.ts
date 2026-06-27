@@ -5,13 +5,13 @@ import { Command } from "commander";
 
 import { runSetup } from "../../cli/commands/setup/index.js";
 import { emit } from "../../cli/helpers.js";
-import { configureGroupedHelp } from "../../cli/help.js";
 import { renderError } from "../../cli/outcome.js";
+import { configureGroupedHelp } from "./help.js";
 import {
   parseAutomationInstallFlags,
   tryParseSetupShortcut,
   tryRunSetupShortcut,
-} from "../../cli/sqlite-free.js";
+} from "./sqlite-free.js";
 import { runCodealmanacBootstrap } from "../../platform/install/global.js";
 import type { runDoctor } from "../../cli/commands/doctor/index.js";
 import { announceUpdateIfAvailable } from "../../platform/update/announce.js";
@@ -46,7 +46,7 @@ export { parseAutomationInstallFlags, tryParseSetupShortcut };
  * Process-level CLI entrypoint. This owns invocation-level behavior:
  * update checks, bare `almanac` setup routing, Commander creation,
  * grouped help, and parsing. Individual command wiring lives in
- * `src/cli/register-commands.ts`.
+ * `src/edges/cli/register-commands.ts`.
  */
 export async function run(argv: string[], deps: RunDeps = {}): Promise<void> {
   const announceUpdateFn = deps.announceUpdate ?? announceUpdateIfAvailable;
@@ -90,7 +90,7 @@ export async function run(argv: string[], deps: RunDeps = {}): Promise<void> {
     return;
   }
 
-  const { registerCommands } = await import("../../cli/register-commands.js");
+  const { registerCommands } = await import("./register-commands.js");
   registerCommands(program, {
     runSetup: deps.runSetup,
     runDoctor: deps.runDoctor,

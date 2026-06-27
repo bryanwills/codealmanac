@@ -2,14 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Command } from "commander";
 
 import { parseAutomationInstallFlags, run, tryParseSetupShortcut } from "../src/cli.js";
-import { configureGroupedHelp } from "../src/cli/help.js";
-import { resolveSearchOutputMode } from "../src/cli/register-query-commands.js";
-import { registerCommands } from "../src/cli/register-commands.js";
+import { configureGroupedHelp } from "../src/edges/cli/help.js";
+import { resolveSearchOutputMode } from "../src/edges/cli/register-query-commands.js";
+import { registerCommands } from "../src/edges/cli/register-commands.js";
 import {
   formatForegroundEvent,
   initStartMessage,
   lifecycleForegroundEventHandler,
-} from "../src/cli/register-wiki-lifecycle-commands.js";
+} from "../src/edges/cli/register-wiki-lifecycle-commands.js";
 import type { SetupResult } from "../src/cli/commands/setup/index.js";
 import { withTempHome } from "./helpers.js";
 

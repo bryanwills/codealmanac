@@ -1,10 +1,10 @@
 import { Command } from "commander";
 
-import { emit } from "./helpers.js";
+import { emit } from "../../cli/helpers.js";
 
 export interface SetupCommandDeps {
-  runSetup?: typeof import("./commands/setup/index.js").runSetup;
-  runDoctor?: typeof import("./commands/doctor/index.js").runDoctor;
+  runSetup?: typeof import("../../cli/commands/setup/index.js").runSetup;
+  runDoctor?: typeof import("../../cli/commands/doctor/index.js").runDoctor;
 }
 
 export function registerSetupCommands(
@@ -19,7 +19,7 @@ export function registerSetupCommands(
     .command("list")
     .description("show Claude, Codex, and Cursor provider status")
     .action(async () => {
-      const { runAgentsList } = await import("./commands/agents.js");
+      const { runAgentsList } = await import("../../cli/commands/agents.js");
       emit(await runAgentsList());
     });
 
@@ -27,7 +27,7 @@ export function registerSetupCommands(
     .command("doctor")
     .description("diagnose supported AI agent providers")
     .action(async () => {
-      const { runAgentsDoctor } = await import("./commands/agents.js");
+      const { runAgentsDoctor } = await import("../../cli/commands/agents.js");
       emit(await runAgentsDoctor());
     });
 
@@ -36,7 +36,7 @@ export function registerSetupCommands(
     .description("set the default AI agent provider")
     .argument("<provider>", "claude, codex, cursor, or claude/<model>")
     .action(async (provider: string) => {
-      const { runAgentsUse } = await import("./commands/agents.js");
+      const { runAgentsUse } = await import("../../cli/commands/agents.js");
       emit(await runAgentsUse({ provider }));
     });
 
@@ -51,7 +51,7 @@ export function registerSetupCommands(
       model: string | undefined,
       opts: { default?: boolean },
     ) => {
-      const { runAgentsModel } = await import("./commands/agents.js");
+      const { runAgentsModel } = await import("../../cli/commands/agents.js");
       emit(await runAgentsModel({
         provider,
         model,
@@ -69,7 +69,7 @@ export function registerSetupCommands(
     .option("--json", "emit structured JSON")
     .option("--show-origin", "show whether each value came from file or default")
     .action(async (opts: { json?: boolean; showOrigin?: boolean }) => {
-      const { runConfigList } = await import("./commands/config.js");
+      const { runConfigList } = await import("../../cli/commands/config.js");
       emit(await runConfigList(opts));
     });
 
@@ -83,7 +83,7 @@ export function registerSetupCommands(
       key: string,
       opts: { json?: boolean; showOrigin?: boolean },
     ) => {
-      const { runConfigGet } = await import("./commands/config.js");
+      const { runConfigGet } = await import("../../cli/commands/config.js");
       emit(await runConfigGet({ key, ...opts }));
     });
 
@@ -98,7 +98,7 @@ export function registerSetupCommands(
       value: string,
       opts: { project?: boolean },
     ) => {
-      const { runConfigSet } = await import("./commands/config.js");
+      const { runConfigSet } = await import("../../cli/commands/config.js");
       emit(await runConfigSet({ key, value, project: opts.project }));
     });
 
@@ -108,7 +108,7 @@ export function registerSetupCommands(
     .argument("<key>", "config key")
     .option("--project", "remove from .almanac/config.toml for this repo")
     .action(async (key: string, opts: { project?: boolean }) => {
-      const { runConfigUnset } = await import("./commands/config.js");
+      const { runConfigUnset } = await import("../../cli/commands/config.js");
       emit(await runConfigUnset({ key, project: opts.project }));
     });
 
@@ -144,7 +144,7 @@ export function registerSetupCommands(
         autoCommit?: boolean;
       }) => {
         const runSetup = deps.runSetup ??
-          (await import("./commands/setup/index.js")).runSetup;
+          (await import("../../cli/commands/setup/index.js")).runSetup;
         const result = await runSetup({
           yes: opts.yes,
           agent: opts.agent,
@@ -176,7 +176,7 @@ export function registerSetupCommands(
         wikiOnly?: boolean;
       }) => {
         const runDoctor = deps.runDoctor ??
-          (await import("./commands/doctor/index.js")).runDoctor;
+          (await import("../../cli/commands/doctor/index.js")).runDoctor;
         const result = await runDoctor({
           cwd: process.cwd(),
           json: opts.json,
@@ -210,7 +210,7 @@ export function registerSetupCommands(
         enableNotifier?: boolean;
         disableNotifier?: boolean;
       }) => {
-        const { runUpdate } = await import("./commands/update.js");
+        const { runUpdate } = await import("../../cli/commands/update.js");
         const result = await runUpdate({
           dismiss: opts.dismiss,
           check: opts.check,
@@ -236,7 +236,7 @@ export function registerSetupCommands(
         keepAutomation?: boolean;
         keepGuides?: boolean;
       }) => {
-        const { runUninstall } = await import("./commands/uninstall.js");
+        const { runUninstall } = await import("../../cli/commands/uninstall.js");
         const result = await runUninstall({
           yes: opts.yes,
           keepAutomation: opts.keepAutomation,

@@ -1,6 +1,6 @@
 import { Command, type Help } from "commander";
 
-import { BLUE, BOLD, DIM, RST } from "../ansi.js";
+import { BLUE, BOLD, DIM, RST } from "../../ansi.js";
 
 const HELP_GROUPS: Array<{ title: string; commands: string[] }> = [
   {

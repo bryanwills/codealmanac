@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -22,6 +23,22 @@ describe("architecture boundaries", () => {
     expect(runner).toContain("from \"commander\"");
     expect(runner).toContain("tryRunInternalJob");
     expect(runner).toContain("readPackageVersion");
+  });
+
+  it("keeps CLI registration and shortcut parsing in the CLI edge", () => {
+    const oldCliShellFiles = [
+      "src/cli/help.ts",
+      "src/cli/sqlite-free.ts",
+      "src/cli/register-commands.ts",
+      "src/cli/register-query-commands.ts",
+      "src/cli/register-edit-commands.ts",
+      "src/cli/register-setup-commands.ts",
+      "src/cli/register-wiki-lifecycle-commands.ts",
+    ];
+
+    for (const path of oldCliShellFiles) {
+      expect(existsSync(join(ROOT, path)), path).toBe(false);
+    }
   });
 });
 
