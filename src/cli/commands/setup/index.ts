@@ -19,13 +19,13 @@ import {
 } from "./next-steps.js";
 import { isSetupInterrupted } from "./input.js";
 import {
-  BAR,
-  BLUE,
-  RST,
-  WHITE_BOLD,
+  blue,
+  makeSetupTheme,
   printBadge,
   printBanner,
   stepDone,
+  whiteBold,
+  writeSetupDivider,
 } from "./output.js";
 import { buildSetupPlan } from "./setup-plan.js";
 import type {
@@ -68,6 +68,7 @@ export async function runSetup(
   options: SetupOptions = {},
 ): Promise<SetupResult> {
   const out = options.stdout ?? process.stdout;
+  const theme = makeSetupTheme(options.color !== false);
   const isTTY =
     options.isTTY ?? (process.stdin.isTTY === true);
   const interactive = isTTY && options.yes !== true;
@@ -89,16 +90,17 @@ export async function runSetup(
     return { stdout: "", stderr: "", exitCode: 0 };
   }
 
-  printBanner(out);
-  printBadge(out);
+  printBanner(out, theme);
+  printBadge(out, theme);
 
   let nextStepsMode: "hosted" | "self-managed" = "hosted";
   try {
-    const plan = await buildSetupPlan({ out, interactive, options });
+    const plan = await buildSetupPlan({ out, theme, interactive, options });
     nextStepsMode = plan.selfManagedAutomation ? "self-managed" : "hosted";
 
     const guides = await runGuidesSetupStep({
       out,
+      theme,
       options,
       targets: plan.instructionTargets,
     });
@@ -106,14 +108,20 @@ export async function runSetup(
       return { stdout: "", stderr: guides.stderr, exitCode: guides.exitCode };
     }
 
-    const globalInstall = await runGlobalInstallStep({ out, interactive, options });
+    const globalInstall = await runGlobalInstallStep({
+      out,
+      theme,
+      interactive,
+      options,
+    });
 
     if (plan.cliAutoUpdate) {
       if (globalInstall.ephemeral && !globalInstall.durableGlobalInstall) {
-        skipAutoUpdateSetupStep(out);
+        skipAutoUpdateSetupStep(out, theme);
       } else {
         const update = await runAutoUpdateSetupStep({
           out,
+          theme,
           options: {
             autoUpdateEvery: options.autoUpdateEvery,
             updatePlistPath: options.updatePlistPath,
@@ -132,6 +140,7 @@ export async function runSetup(
     if (plan.selfManagedAutomation) {
       const agentChoice = await chooseDefaultAgent({
         out,
+        theme,
         interactive,
         requested: options.agent,
         requestedModel: options.model,
@@ -146,13 +155,15 @@ export async function runSetup(
       }
       stepDone(
         out,
-        `Agent: ${WHITE_BOLD}${agentChoice.provider}${RST}` +
+        theme,
+        `Agent: ${whiteBold(theme, agentChoice.provider)}` +
           ` (${agentChoice.model ?? "provider default"})`,
       );
-      out.write(BAR + "\n");
+      writeSetupDivider(out, theme);
 
       const automation = await runAutomationSetupStep({
         out,
+        theme,
         interactive,
         options,
         ephemeral: globalInstall.ephemeral,
@@ -166,12 +177,14 @@ export async function runSetup(
     if (plan.selfManagedAutomation || plan.autoCommit || options.autoCommit === false) {
       await runAutoCommitSetupStep({
         out,
+        theme,
         interactive,
         options: { autoCommit: plan.autoCommit },
       });
     } else if (plan.autoCommit === false) {
       await runAutoCommitSetupStep({
         out,
+        theme,
         interactive: false,
         options: { autoCommit: false },
       });
@@ -187,7 +200,7 @@ export async function runSetup(
     throw err;
   }
 
-  stepDone(out, `${BLUE}Setup complete${RST}`);
+  stepDone(out, theme, blue(theme, "Setup complete"));
   out.write("\n");
 
   // Detect whether the current working directory is inside a repo that
@@ -196,7 +209,7 @@ export async function runSetup(
   // `.almanac/pages/` (committed by Engineer A) and gets told to run
   // `almanac init`, which is wrong — the wiki already exists.
   const existingPageCount = countExistingPages(process.cwd());
-  printNextSteps(out, existingPageCount, nextStepsMode);
+  printNextSteps(out, theme, existingPageCount, nextStepsMode);
 
   return { stdout: "", stderr: "", exitCode: 0 };
 }

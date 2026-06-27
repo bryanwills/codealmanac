@@ -1,7 +1,13 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { BLUE, BOLD, DIM, RST, renderNextStepsBox } from "./output.js";
+import {
+  blue,
+  bold,
+  dim,
+  renderNextStepsBox,
+  type SetupTheme,
+} from "./output.js";
 
 /**
  * Print the "Next steps" box. When `existingPageCount` is greater than 0,
@@ -11,38 +17,55 @@ import { BLUE, BOLD, DIM, RST, renderNextStepsBox } from "./output.js";
  */
 export function printNextSteps(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   existingPageCount: number,
   mode: "hosted" | "self-managed" = "hosted",
 ): void {
   if (mode === "self-managed") {
-    renderNextStepsBox(out, [
-      `  ${BLUE}1.${RST}  Local automations are running:`,
-      `       ${BOLD}almanac sync --quiet 45m${RST}`,
-      `       ${BOLD}almanac garden${RST}`,
-      `  ${BLUE}2.${RST}  Query locally:`,
-      `       ${BOLD}almanac search "auth"${RST}`,
-      `       ${BOLD}almanac search --mentions <file>${RST}`,
+    renderNextStepsBox(out, theme, [
+      numbered(theme, 1, "Local automations are running:"),
+      command(theme, "almanac sync --quiet 45m"),
+      command(theme, "almanac garden"),
+      numbered(theme, 2, "Query locally:"),
+      command(theme, 'almanac search "auth"'),
+      command(theme, "almanac search --mentions <file>"),
     ]);
     return;
   } else if (existingPageCount > 0) {
-    renderNextStepsBox(out, [
-      `  ${BLUE}\u25c7${RST}  This repo already has a wiki ${DIM}(${existingPageCount} page${existingPageCount === 1 ? "" : "s"})${RST}`,
+    renderNextStepsBox(out, theme, [
+      existingWikiLine(theme, existingPageCount),
       "",
-      `  ${BLUE}1.${RST}  Start querying it locally:`,
-      `       ${BOLD}almanac search --mentions <file>${RST}`,
-      `       ${BOLD}almanac search "auth"${RST}`,
-      `  ${BLUE}2.${RST}  Read one of the result pages:`,
-      `       ${BOLD}almanac show <result-slug>${RST}`,
+      numbered(theme, 1, "Start querying it locally:"),
+      command(theme, "almanac search --mentions <file>"),
+      command(theme, 'almanac search "auth"'),
+      numbered(theme, 2, "Read one of the result pages:"),
+      command(theme, "almanac show <result-slug>"),
     ]);
     return;
   }
 
-  renderNextStepsBox(out, [
-    `  ${BLUE}1.${RST}  Create this repo's wiki from the dashboard:`,
-    `       ${BOLD}https://codealmanac.com/dashboard${RST}`,
-    `  ${BLUE}2.${RST}  After .almanac/ lands, query locally:`,
-    `       ${BOLD}almanac search "auth"${RST}`,
+  renderNextStepsBox(out, theme, [
+    numbered(theme, 1, "Create this repo's wiki from the dashboard:"),
+    command(theme, "https://codealmanac.com/dashboard"),
+    numbered(theme, 2, "After .almanac/ lands, query locally:"),
+    command(theme, 'almanac search "auth"'),
   ]);
+}
+
+function numbered(theme: SetupTheme, n: number, text: string): string {
+  return `  ${blue(theme, `${n}.`)}  ${text}`;
+}
+
+function command(theme: SetupTheme, text: string): string {
+  return `       ${bold(theme, text)}`;
+}
+
+function existingWikiLine(theme: SetupTheme, existingPageCount: number): string {
+  const plural = existingPageCount === 1 ? "" : "s";
+  return `  ${blue(theme, "\u25c7")}  This repo already has a wiki ${dim(
+    theme,
+    `(${existingPageCount} page${plural})`,
+  )}`;
 }
 
 /**

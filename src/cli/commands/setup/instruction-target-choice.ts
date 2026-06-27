@@ -8,36 +8,48 @@ import {
   promptText,
 } from "./input.js";
 import {
-  BAR,
-  BLUE,
-  BOLD,
-  DIM,
-  RST,
-  WHITE_BOLD,
+  blue,
+  bold,
+  controlLabel,
+  dim,
+  type SetupTheme,
+  whiteBold,
+  writeSetupDivider,
 } from "./output.js";
 
 export async function chooseInstructionTargets(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   requested?: readonly SetupInstructionTargetId[];
 }): Promise<SetupInstructionTargetId[]> {
   if (args.requested !== undefined) return [...dedupeTargets(args.requested)];
   if (!args.interactive) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
-  if (canUseRawSelect()) return await chooseInstructionTargetsRaw(args.out);
-  return await chooseInstructionTargetsLine(args.out);
+  if (canUseRawSelect()) {
+    return await chooseInstructionTargetsRaw(args.out, args.theme);
+  }
+  return await chooseInstructionTargetsLine(args.out, args.theme);
 }
 
 async function chooseInstructionTargetsLine(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
 ): Promise<SetupInstructionTargetId[]> {
-  renderInstructionTargets(out, new Set(DEFAULT_SETUP_INSTRUCTION_TARGETS), 0, false);
-  const answer = await promptText(out, "Select targets", "all");
+  renderInstructionTargets(
+    out,
+    theme,
+    new Set(DEFAULT_SETUP_INSTRUCTION_TARGETS),
+    0,
+    false,
+  );
+  const answer = await promptText(out, theme, "Select targets", "all");
   if (answer.trim().length === 0) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
   return parseTargets(answer);
 }
 
 function chooseInstructionTargetsRaw(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
 ): Promise<SetupInstructionTargetId[]> {
   return new Promise((resolve, reject) => {
     const selected = new Set<SetupInstructionTargetId>(DEFAULT_SETUP_INSTRUCTION_TARGETS);
@@ -50,7 +62,7 @@ function chooseInstructionTargetsRaw(
       if (renderedLines > 0) {
         out.write(`\x1b[${renderedLines}A\x1b[0J`);
       }
-      renderedLines = renderInstructionTargets(out, selected, cursor, true);
+      renderedLines = renderInstructionTargets(out, theme, selected, cursor, true);
     };
     const cleanup = (): void => {
       input.removeListener("data", onData);
@@ -106,32 +118,54 @@ function chooseInstructionTargetsRaw(
 
 function renderInstructionTargets(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   selected: Set<SetupInstructionTargetId>,
   cursor: number,
   raw: boolean,
 ): number {
   let lines = 0;
-  out.write(`  ${BLUE}\u25c6${RST}  ${WHITE_BOLD}Where do you want to install Almanac?${RST}\n`);
+  out.write(
+    `  ${blue(theme, "\u25c6")}  ${whiteBold(
+      theme,
+      "Where do you want to install Almanac?",
+    )}\n`,
+  );
   lines++;
-  out.write(BAR + "\n");
+  writeSetupDivider(out, theme);
   lines++;
 
   SETUP_INSTRUCTION_TARGETS.forEach((target, index) => {
-    const arrow = index === cursor ? `${BLUE}\u276f${RST}` : " ";
-    const check = selected.has(target.id) ? `${BLUE}\u2713${RST}` : " ";
-    const label = index === cursor ? `${BOLD}${target.displayName}${RST}` : target.displayName;
-    out.write(`  ${DIM}\u2502${RST}   ${arrow} [${check}] ${label}\n`);
+    const arrow = index === cursor ? blue(theme, "\u276f") : " ";
+    const check = selected.has(target.id)
+      ? blue(theme, "\u2713")
+      : " ";
+    const label = index === cursor
+      ? bold(theme, target.displayName)
+      : target.displayName;
+    out.write(`  ${dim(theme, "\u2502")}   ${arrow} [${check}] ${label}\n`);
     lines++;
   });
 
-  out.write(BAR + "\n");
+  writeSetupDivider(out, theme);
   lines++;
-  const hint = raw
-    ? `${BLUE}${BOLD}[space]${RST} toggle  ${BLUE}${BOLD}[↑↓]${RST} move  ${BLUE}${BOLD}[a]${RST} all  ${BLUE}${BOLD}[enter]${RST} confirm  ${DIM}[q] quit${RST}`
-    : `${BLUE}${BOLD}all${RST}, numbers, or names separated by commas`;
-  out.write(`  ${DIM}\u2502${RST}   ${hint}\n`);
+  const hint = raw ? rawModeHint(theme) : lineModeHint(theme);
+  out.write(`  ${dim(theme, "\u2502")}   ${hint}\n`);
   lines++;
   return lines;
+}
+
+function rawModeHint(theme: SetupTheme): string {
+  return [
+    `${controlLabel(theme, "[space]")} toggle`,
+    `${controlLabel(theme, "[↑↓]")} move`,
+    `${controlLabel(theme, "[a]")} all`,
+    `${controlLabel(theme, "[enter]")} confirm`,
+    `${dim(theme, "[q] quit")}`,
+  ].join("  ");
+}
+
+function lineModeHint(theme: SetupTheme): string {
+  return `${controlLabel(theme, "all")}, numbers, or names separated by commas`;
 }
 
 function parseTargets(value: string): SetupInstructionTargetId[] {

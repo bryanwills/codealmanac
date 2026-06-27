@@ -1,11 +1,11 @@
 import { runAutomationInstall } from "../automation.js";
 import {
-  BAR,
-  DIM,
-  RST,
+  type SetupTheme,
+  dim,
   stepActive,
   stepDone,
   stepSkipped,
+  writeSetupDivider,
 } from "./output.js";
 import type { AutomationExecFn } from "./types.js";
 
@@ -22,6 +22,7 @@ export type AutoUpdateSetupStepResult =
 
 export async function runAutoUpdateSetupStep(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   options: AutoUpdateSetupStepOptions;
 }): Promise<AutoUpdateSetupStepResult> {
   const update = await runAutomationInstall({
@@ -32,19 +33,30 @@ export async function runAutoUpdateSetupStep(args: {
     exec: args.options.automationExec,
   });
   if (update.exitCode !== 0) {
-    stepActive(args.out, `Auto-update automation: ${update.stderr.trim()}`);
+    stepActive(
+      args.out,
+      args.theme,
+      `Auto-update automation: ${update.stderr.trim()}`,
+    );
     return {
       ok: false,
       stderr: update.stderr,
       exitCode: update.exitCode,
     };
   }
-  stepDone(args.out, "Auto-update automation installed");
-  args.out.write(BAR + "\n");
+  stepDone(args.out, args.theme, "Auto-update automation installed");
+  writeSetupDivider(args.out, args.theme);
   return { ok: true };
 }
 
-export function skipAutoUpdateSetupStep(out: NodeJS.WritableStream): void {
-  stepSkipped(out, `Auto-update automation ${DIM}skipped${RST}`);
-  out.write(BAR + "\n");
+export function skipAutoUpdateSetupStep(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+): void {
+  stepSkipped(
+    out,
+    theme,
+    `Auto-update automation ${dim(theme, "skipped")}`,
+  );
+  writeSetupDivider(out, theme);
 }

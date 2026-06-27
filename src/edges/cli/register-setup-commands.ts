@@ -57,6 +57,7 @@ export function registerSetupCommands(
           autoUpdateEvery: opts.autoUpdateEvery,
           skipGuides: opts.skipGuides,
           autoCommit: opts.autoCommit,
+          color: shouldUseStdoutColor(),
         });
         emit(result);
       },

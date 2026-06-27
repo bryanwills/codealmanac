@@ -10,6 +10,7 @@ import type {
 } from "../src/agent/readiness/providers/claude/index.js";
 import { hasImportLine, runSetup } from "../src/cli/commands/setup/index.js";
 import { runAutomationSetupStep } from "../src/cli/commands/setup/automation-step.js";
+import { makeSetupTheme } from "../src/cli/commands/setup/output.js";
 import { readConfig, writeConfig } from "../src/config/index.js";
 import { withTempHome } from "./helpers.js";
 
@@ -42,6 +43,7 @@ const LOGGED_IN_STDOUT = JSON.stringify({
   subscriptionType: "Pro",
 });
 const LOGGED_OUT_STDOUT = JSON.stringify({ loggedIn: false });
+const TEST_SETUP_THEME = makeSetupTheme(false);
 
 async function scaffoldGuides(dir: string): Promise<void> {
   await mkdir(dir, { recursive: true });
@@ -171,6 +173,31 @@ describe("codealmanac setup", () => {
     });
   });
 
+  it("renders setup without ANSI when color is disabled", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffold(home);
+      const res = await runSetup({
+        yes: true,
+        skipGuides: true,
+        color: false,
+        isTTY: false,
+        spawnCli: fakeSpawnCli(LOGGED_IN_STDOUT),
+        automationPlistPath: env.plistPath,
+        gardenPlistPath: env.gardenPlistPath,
+        updatePlistPath: env.updatePlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+        guidesDir: env.guidesDir,
+        stdout: env.out,
+      });
+
+      expect(res.exitCode).toBe(0);
+      expect(env.stdout()).not.toContain("\x1b[");
+      expect(env.stdout()).toContain("a living wiki for codebases");
+      expect(env.stdout()).toContain("Auto-update automation installed");
+    });
+  });
+
   it("is idempotent for guides and rewrites the same update plist", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
@@ -277,6 +304,7 @@ describe("codealmanac setup", () => {
 
       const result = await runAutomationSetupStep({
         out: env.out,
+        theme: TEST_SETUP_THEME,
         interactive: true,
         options: {
           automationPlistPath: env.plistPath,

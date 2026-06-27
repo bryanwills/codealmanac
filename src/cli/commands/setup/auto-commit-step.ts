@@ -1,10 +1,10 @@
 import { applySetupAutoCommit } from "../../../services/setup/index.js";
 import {
-  BAR,
-  DIM,
-  RST,
+  type SetupTheme,
+  dim,
   stepDone,
   stepSkipped,
+  writeSetupDivider,
 } from "./output.js";
 
 export interface AutoCommitSetupStepOptions {
@@ -13,6 +13,7 @@ export interface AutoCommitSetupStepOptions {
 
 export async function runAutoCommitSetupStep(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   options: AutoCommitSetupStepOptions;
 }): Promise<void> {
@@ -20,9 +21,13 @@ export async function runAutoCommitSetupStep(args: {
     autoCommit: args.options.autoCommit,
   });
   if (result.enabled) {
-    stepDone(args.out, "Auto-commit enabled");
+    stepDone(args.out, args.theme, "Auto-commit enabled");
   } else {
-    stepSkipped(args.out, `Auto-commit ${DIM}disabled${RST}`);
+    stepSkipped(
+      args.out,
+      args.theme,
+      `Auto-commit ${dim(args.theme, "disabled")}`,
+    );
   }
-  args.out.write(BAR + "\n");
+  writeSetupDivider(args.out, args.theme);
 }

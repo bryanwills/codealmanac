@@ -1,5 +1,5 @@
 import { runCodealmanacBootstrap } from "../../platform/install/global.js";
-import { emit } from "./helpers.js";
+import { emit, shouldUseStdoutColor } from "./helpers.js";
 
 export interface SetupShortcutOptions {
   yes?: boolean;
@@ -31,6 +31,10 @@ export async function tryRunSetupShortcut(args: {
   }
   const setupInvocation = tryParseSetupShortcut(args.argvArgs);
   if (setupInvocation === null) return false;
+  const setupOptions = {
+    ...setupInvocation,
+    color: shouldUseStdoutColor(),
+  };
 
   const runSetupFn = args.deps.runSetup ??
     (await import("../../cli/commands/setup/index.js")).runSetup;
@@ -44,16 +48,16 @@ export async function tryRunSetupShortcut(args: {
     emit(
       await runCodealmanacBootstrapFn({
         setupArgs: args.argvArgs,
-        runLocalSetup: () => runSetupFn(setupInvocation),
+        runLocalSetup: () => runSetupFn(setupOptions),
       }),
     );
   } else if (args.programName === "almanac" || args.deps.runSetup !== undefined) {
-    emit(await runSetupFn(setupInvocation));
+    emit(await runSetupFn(setupOptions));
   } else {
     emit(
       await runCodealmanacBootstrapFn({
         setupArgs: args.argvArgs,
-        runLocalSetup: () => runSetupFn(setupInvocation),
+        runLocalSetup: () => runSetupFn(setupOptions),
       }),
     );
   }

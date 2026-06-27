@@ -1,12 +1,17 @@
-export const RST = "\x1b[0m";
-export const BOLD = "\x1b[1m";
-export const DIM = "\x1b[2m";
-export const WHITE_BOLD = "\x1b[1;37m";
-export const BLUE = "\x1b[38;5;75m";
-export const BLUE_DIM = "\x1b[38;5;69m";
-const ACCENT_BG = "\x1b[48;5;252m\x1b[38;5;16m";
+import { makeAnsiTheme } from "../../../ansi-theme.js";
 
-const GRADIENT = [
+export interface SetupTheme {
+  RST: string;
+  BOLD: string;
+  DIM: string;
+  WHITE_BOLD: string;
+  BLUE: string;
+  BLUE_DIM: string;
+  ACCENT_BG: string;
+  LOGO_GRADIENT: readonly string[];
+}
+
+const SETUP_LOGO_GRADIENT = [
   "\x1b[38;5;255m",
   "\x1b[38;5;253m",
   "\x1b[38;5;251m",
@@ -14,6 +19,8 @@ const GRADIENT = [
   "\x1b[38;5;246m",
   "\x1b[38;5;243m",
 ];
+
+const PLAIN_LOGO_GRADIENT = SETUP_LOGO_GRADIENT.map(() => "");
 
 const LOGO_LINES = [
   " \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2557     \u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2557   \u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557",
@@ -24,54 +31,120 @@ const LOGO_LINES = [
   "\u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d     \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d",
 ];
 
-export const BAR = `  ${DIM}\u2502${RST}`;
+export function makeSetupTheme(useColor: boolean): SetupTheme {
+  const theme = makeAnsiTheme(useColor);
+  return {
+    RST: theme.RST,
+    BOLD: theme.BOLD,
+    DIM: theme.DIM,
+    WHITE_BOLD: theme.WHITE_BOLD,
+    BLUE: theme.BLUE,
+    BLUE_DIM: theme.BLUE_DIM,
+    ACCENT_BG: theme.ACCENT_BG,
+    LOGO_GRADIENT: useColor ? SETUP_LOGO_GRADIENT : PLAIN_LOGO_GRADIENT,
+  };
+}
+
+export function blue(theme: SetupTheme, text: string): string {
+  return `${theme.BLUE}${text}${theme.RST}`;
+}
+
+export function bold(theme: SetupTheme, text: string): string {
+  return `${theme.BOLD}${text}${theme.RST}`;
+}
+
+export function dim(theme: SetupTheme, text: string): string {
+  return `${theme.DIM}${text}${theme.RST}`;
+}
+
+export function whiteBold(theme: SetupTheme, text: string): string {
+  return `${theme.WHITE_BOLD}${text}${theme.RST}`;
+}
+
+export function controlLabel(theme: SetupTheme, text: string): string {
+  return `${theme.BLUE}${theme.BOLD}${text}${theme.RST}`;
+}
 
 export function printBanner(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   subtitle = "a living wiki for codebases, for your agent",
 ): void {
   out.write("\n");
   for (let i = 0; i < LOGO_LINES.length; i++) {
-    const color = GRADIENT[i] ?? GRADIENT[GRADIENT.length - 1] ?? "";
-    out.write(`${color}${LOGO_LINES[i]}${RST}\n`);
+    const color = theme.LOGO_GRADIENT[i] ?? "";
+    out.write(`${color}${LOGO_LINES[i]}${theme.RST}\n`);
   }
-  out.write(`\n${WHITE_BOLD}  ${subtitle}${RST}\n`);
+  out.write(`\n${theme.WHITE_BOLD}  ${subtitle}${theme.RST}\n`);
 }
 
-export function printBadge(out: NodeJS.WritableStream): void {
-  out.write(`\n   ${ACCENT_BG} almanac ${RST}\n\n`);
+export function printBadge(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+): void {
+  out.write(`\n   ${theme.ACCENT_BG} almanac ${theme.RST}\n\n`);
 }
 
-export function stepDone(out: NodeJS.WritableStream, msg: string): void {
-  out.write(`  ${BLUE}\u25c7${RST}  ${msg}\n`);
+export function stepDone(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+  msg: string,
+): void {
+  out.write(`  ${theme.BLUE}\u25c7${theme.RST}  ${msg}\n`);
 }
 
-export function stepActive(out: NodeJS.WritableStream, msg: string): void {
-  out.write(`  ${BLUE}\u25c6${RST}  ${msg}\n`);
+export function stepActive(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+  msg: string,
+): void {
+  out.write(`  ${theme.BLUE}\u25c6${theme.RST}  ${msg}\n`);
 }
 
-export function stepSkipped(out: NodeJS.WritableStream, msg: string): void {
-  out.write(`  ${DIM}\u25cb  ${msg}${RST}\n`);
+export function stepSkipped(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+  msg: string,
+): void {
+  out.write(`  ${theme.DIM}\u25cb  ${msg}${theme.RST}\n`);
+}
+
+export function writeSetupDivider(
+  out: NodeJS.WritableStream,
+  theme: SetupTheme,
+): void {
+  out.write(`${setupDivider(theme)}\n`);
 }
 
 export function renderNextStepsBox(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   lines: string[],
 ): void {
-  const header = `  ${WHITE_BOLD}Next steps${RST}`;
+  const header = `  ${theme.WHITE_BOLD}Next steps${theme.RST}`;
   const innerW = getBoxInnerWidth(out, [header, ...lines]);
-  const empty = boxRow("", innerW);
+  const empty = boxRow(theme, "", innerW);
 
-  writeLine(out, `  ${BLUE_DIM}\u256d${"─".repeat(innerW)}\u256e${RST}`);
+  writeLine(
+    out,
+    `  ${theme.BLUE_DIM}\u256d${"─".repeat(innerW)}\u256e${theme.RST}`,
+  );
   writeLine(out, empty);
-  writeLine(out, boxRow(header, innerW));
+  writeLine(out, boxRow(theme, header, innerW));
   writeLine(out, empty);
   for (const line of lines) {
-    writeLine(out, boxRow(line, innerW));
+    writeLine(out, boxRow(theme, line, innerW));
   }
   writeLine(out, empty);
-  writeLine(out, `  ${BLUE_DIM}\u2570${"─".repeat(innerW)}\u256f${RST}`);
+  writeLine(
+    out,
+    `  ${theme.BLUE_DIM}\u2570${"─".repeat(innerW)}\u256f${theme.RST}`,
+  );
   writeLine(out, "");
+}
+
+function setupDivider(theme: SetupTheme): string {
+  return `  ${theme.DIM}\u2502${theme.RST}`;
 }
 
 function getBoxInnerWidth(
@@ -88,9 +161,13 @@ function getBoxInnerWidth(
   return Math.min(Math.max(minWidth, widest), available);
 }
 
-function boxRow(content: string, innerW: number): string {
+function boxRow(theme: SetupTheme, content: string, innerW: number): string {
   const padding = Math.max(0, innerW - visibleLength(content));
-  return `  ${BLUE_DIM}\u2502${RST}${content}${" ".repeat(padding)}${BLUE_DIM}\u2502${RST}`;
+  return (
+    `  ${theme.BLUE_DIM}\u2502${theme.RST}` +
+    `${content}${" ".repeat(padding)}` +
+    `${theme.BLUE_DIM}\u2502${theme.RST}`
+  );
 }
 
 function visibleLength(s: string): number {
@@ -103,5 +180,5 @@ function writeLine(out: NodeJS.WritableStream, line: string): void {
 
 function getTerminalColumns(out: NodeJS.WritableStream): number {
   const stream = out as NodeJS.WriteStream;
-  return stream.columns ?? process.stdout.columns ?? 80;
+  return stream.columns ?? 80;
 }

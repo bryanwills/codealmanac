@@ -3,11 +3,11 @@ import {
   type SetupInstructionTargetId,
 } from "../../../services/setup/index.js";
 import {
-  BAR,
-  DIM,
-  RST,
+  type SetupTheme,
+  dim,
   stepDone,
   stepSkipped,
+  writeSetupDivider,
 } from "./output.js";
 
 export interface GuidesSetupStepOptions {
@@ -26,12 +26,17 @@ export type GuidesSetupStepResult =
 
 export async function runGuidesSetupStep(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   options: GuidesSetupStepOptions;
   targets: readonly SetupInstructionTargetId[];
 }): Promise<GuidesSetupStepResult> {
   if (args.options.skipGuides === true || args.targets.length === 0) {
-    stepSkipped(args.out, `Agent instructions ${DIM}skipped${RST}`);
-    args.out.write(BAR + "\n");
+    stepSkipped(
+      args.out,
+      args.theme,
+      `Agent instructions ${dim(args.theme, "skipped")}`,
+    );
+    writeSetupDivider(args.out, args.theme);
     return { ok: true };
   }
 
@@ -47,8 +52,8 @@ export async function runGuidesSetupStep(args: {
     });
     const guidesSummary = summary.anyChanges
       ? "Agent instructions added"
-      : `Agent instructions ${DIM}already added${RST}`;
-    stepDone(args.out, guidesSummary);
+      : `Agent instructions ${dim(args.theme, "already added")}`;
+    stepDone(args.out, args.theme, guidesSummary);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return {
@@ -57,6 +62,6 @@ export async function runGuidesSetupStep(args: {
       exitCode: 1,
     };
   }
-  args.out.write(BAR + "\n");
+  writeSetupDivider(args.out, args.theme);
   return { ok: true };
 }

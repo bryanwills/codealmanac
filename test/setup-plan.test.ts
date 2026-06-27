@@ -6,10 +6,12 @@ import {
   buildSetupPlan,
   SETUP_DEFAULTS,
 } from "../src/cli/commands/setup/setup-plan.js";
+import { makeSetupTheme } from "../src/cli/commands/setup/output.js";
 import { DEFAULT_SETUP_INSTRUCTION_TARGETS } from "../src/services/setup/index.js";
 
 function setupOutput(): {
   out: PassThrough;
+  theme: ReturnType<typeof makeSetupTheme>;
   stdout: () => string;
 } {
   const out = new PassThrough();
@@ -17,16 +19,18 @@ function setupOutput(): {
   out.on("data", (chunk: Buffer) => chunks.push(chunk));
   return {
     out,
+    theme: makeSetupTheme(false),
     stdout: () => Buffer.concat(chunks).toString("utf8"),
   };
 }
 
 describe("setup plan", () => {
   it("uses launch defaults in non-interactive setup", async () => {
-    const { out } = setupOutput();
+    const { out, theme } = setupOutput();
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: false,
       options: {},
     })).resolves.toEqual({
@@ -38,10 +42,11 @@ describe("setup plan", () => {
   });
 
   it("skip flags disable automation and instructions gates", async () => {
-    const { out } = setupOutput();
+    const { out, theme } = setupOutput();
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: false,
       options: {
         skipAutomation: true,
@@ -56,10 +61,11 @@ describe("setup plan", () => {
   });
 
   it("explicit setup flags enable their gates", async () => {
-    const { out } = setupOutput();
+    const { out, theme } = setupOutput();
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: false,
       options: {
         automationEvery: "2h",
@@ -75,10 +81,11 @@ describe("setup plan", () => {
   });
 
   it("explicit auto-commit opt-out keeps the gate false", async () => {
-    const { out } = setupOutput();
+    const { out, theme } = setupOutput();
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: false,
       options: {
         autoCommit: false,
@@ -89,7 +96,7 @@ describe("setup plan", () => {
   });
 
   it("interactive answers override shown gate defaults", async () => {
-    const { out, stdout } = setupOutput();
+    const { out, theme, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
     let answeredAutomation = false;
@@ -111,6 +118,7 @@ describe("setup plan", () => {
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: true,
       options: {},
     })).resolves.toMatchObject({
@@ -125,7 +133,7 @@ describe("setup plan", () => {
   });
 
   it("interactive target selection can intentionally choose no targets", async () => {
-    const { out, stdout } = setupOutput();
+    const { out, theme, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
     let answeredAutomation = false;
@@ -147,6 +155,7 @@ describe("setup plan", () => {
 
     await expect(buildSetupPlan({
       out,
+      theme,
       interactive: true,
       options: {},
     })).resolves.toMatchObject({

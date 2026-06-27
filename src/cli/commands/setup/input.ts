@@ -1,20 +1,23 @@
 import {
-  BLUE,
-  DIM,
-  RST,
-  WHITE_BOLD,
+  blue,
+  dim,
+  type SetupTheme,
+  whiteBold,
 } from "./output.js";
 
 export type InstallDecision = "install" | "skip";
 
 export function confirm(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   question: string,
   defaultYes: boolean,
 ): Promise<InstallDecision> {
   return new Promise((resolve) => {
     const hint = defaultYes ? "[Y/n]" : "[y/N]";
-    out.write(`  ${BLUE}◆${RST}  ${question} ${DIM}${hint}${RST} `);
+    out.write(
+      `  ${blue(theme, "◆")}  ${question} ${dim(theme, hint)} `,
+    );
 
     let buf = "";
     const onData = (chunk: Buffer): void => {
@@ -39,12 +42,13 @@ export function confirm(
 
 export function promptText(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   question: string,
   defaultValue: string,
 ): Promise<string> {
   return new Promise((resolve) => {
     out.write(
-      `  ${BLUE}◆${RST}  ${question} ${DIM}[${defaultValue}]${RST} `,
+      `  ${blue(theme, "◆")}  ${question} ${dim(theme, `[${defaultValue}]`)} `,
     );
 
     let buf = "";
@@ -66,9 +70,10 @@ export function promptText(
 
 export async function waitForEnter(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   message: string,
 ): Promise<void> {
-  await promptText(out, message, "");
+  await promptText(out, theme, message, "");
 }
 
 export interface SelectChoice<T> {
@@ -79,6 +84,7 @@ export interface SelectChoice<T> {
 
 export async function selectChoice<T>(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   title: string;
   help?: string;
   choices: SelectChoice<T>[];
@@ -88,14 +94,19 @@ export async function selectChoice<T>(args: {
   if (canUseRawSelect()) {
     return await selectChoiceRaw({ ...args, defaultIndex: selected });
   }
-  renderSelect(args.out, {
+  renderSelect(args.out, args.theme, {
     title: args.title,
     help: args.help,
     choices: args.choices,
     selected,
     raw: false,
   });
-  const answer = await promptText(args.out, "Select", String(selected + 1));
+  const answer = await promptText(
+    args.out,
+    args.theme,
+    "Select",
+    String(selected + 1),
+  );
   const index = Number.parseInt(answer, 10);
   if (
     Number.isInteger(index) &&
@@ -113,6 +124,7 @@ export async function selectChoice<T>(args: {
 
 async function selectChoiceRaw<T>(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   title: string;
   help?: string;
   choices: SelectChoice<T>[];
@@ -128,7 +140,7 @@ async function selectChoiceRaw<T>(args: {
       if (renderedLines > 0) {
         args.out.write(`\x1b[${renderedLines}A\x1b[0J`);
       }
-      renderedLines = renderSelect(args.out, {
+      renderedLines = renderSelect(args.out, args.theme, {
         title: args.title,
         help: args.help,
         choices: args.choices,
@@ -172,6 +184,7 @@ async function selectChoiceRaw<T>(args: {
 
 function renderSelect<T>(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   args: {
     title: string;
     help?: string;
@@ -181,23 +194,23 @@ function renderSelect<T>(
   },
 ): number {
   let lines = 0;
-  out.write(`  ${WHITE_BOLD}${args.title}${RST}\n`);
+  out.write(`  ${whiteBold(theme, args.title)}\n`);
   lines++;
   if (args.help !== undefined) {
-    out.write(`  ${DIM}${args.help}${RST}\n`);
+    out.write(`  ${dim(theme, args.help)}\n`);
     lines++;
   }
   out.write("\n");
   lines++;
   args.choices.forEach((choice, index) => {
-    const pointer = index === args.selected ? `${BLUE}›${RST}` : " ";
+    const pointer = index === args.selected ? blue(theme, "›") : " ";
     out.write(`  ${pointer} ${choice.line}\n`);
     lines++;
   });
   const hint = args.raw
     ? `Use ↑/↓ to move, Enter to select`
     : `Type a number or name, then press Enter`;
-  out.write(`\n  ${DIM}${hint}${RST}\n`);
+  out.write(`\n  ${dim(theme, hint)}\n`);
   lines += 2;
   return lines;
 }

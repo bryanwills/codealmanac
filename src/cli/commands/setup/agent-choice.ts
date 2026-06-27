@@ -17,11 +17,11 @@ import {
   waitForEnter,
 } from "./input.js";
 import {
-  DIM,
-  RST,
-  WHITE_BOLD,
+  type SetupTheme,
+  dim,
   stepActive,
   stepDone,
+  whiteBold,
 } from "./output.js";
 
 export type AgentChoice =
@@ -30,6 +30,7 @@ export type AgentChoice =
 
 export async function chooseDefaultAgent(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   requested?: string;
   requestedModel?: string;
@@ -46,11 +47,12 @@ export async function chooseDefaultAgent(args: {
     while (true) {
       const choice = await selectChoice({
         out: args.out,
+        theme: args.theme,
         title: "Choose your agent",
         help: "Choose the AI agent Almanac should use.",
         choices: view.choices.map((choice) => ({
           value: choice,
-          line: formatProviderChoice(choice),
+          line: formatProviderChoice(args.theme, choice),
           aliases: [choice.id, choice.label.toLowerCase()],
         })),
         defaultIndex: Math.max(
@@ -70,13 +72,18 @@ export async function chooseDefaultAgent(args: {
           : choice.fixCommand;
         const runLogin = await confirm(
           args.out,
+          args.theme,
           `${choice.label} sign-in is needed. Run '${command}' now?`,
           true,
         );
         if (runLogin === "install") {
           const login = await runInheritedShellCommand(command);
           if (!login.ok) {
-            stepActive(args.out, `${choice.label} login failed: ${login.error}`);
+            stepActive(
+              args.out,
+              args.theme,
+              `${choice.label} login failed: ${login.error}`,
+            );
           }
           view = await refreshSetupAgentChoiceView({
             spawnCli: args.spawnCli,
@@ -89,8 +96,12 @@ export async function chooseDefaultAgent(args: {
         }
         continue;
       }
-      showUnavailableProvider(args.out, choice);
-      await waitForEnter(args.out, "Press Enter to choose a different agent.");
+      showUnavailableProvider(args.out, args.theme, choice);
+      await waitForEnter(
+        args.out,
+        args.theme,
+        "Press Enter to choose a different agent.",
+      );
     }
   }
   const selection = resolveSetupAgentSelection(selected);
@@ -106,6 +117,7 @@ export async function chooseDefaultAgent(args: {
     const command = selectedChoice.fixCommand.slice("run: ".length);
     const runLogin = await confirm(
       args.out,
+      args.theme,
       `${selectedChoice.label} is not ready. Run '${command}' now?`,
       true,
     );
@@ -117,7 +129,11 @@ export async function chooseDefaultAgent(args: {
         });
         selectedChoice = view.choices.find((choice) => choice.id === provider);
       } else {
-        stepActive(args.out, `${selectedChoice.label} login failed: ${login.error}`);
+        stepActive(
+          args.out,
+          args.theme,
+          `${selectedChoice.label} login failed: ${login.error}`,
+        );
       }
     }
   }
@@ -132,6 +148,7 @@ export async function chooseDefaultAgent(args: {
   const requestedModel = args.requestedModel ?? selection.parsedModel;
   const model = requestedModel ?? await chooseProviderModel({
     out: args.out,
+    theme: args.theme,
     interactive: args.interactive,
     provider,
     choice: selectedChoice,
@@ -142,17 +159,20 @@ export async function chooseDefaultAgent(args: {
     const detail = selectedChoice?.ready === true
       ? "ready"
       : selectedChoice?.fixCommand ?? selectedChoice?.detail ?? "status unknown";
-    stepDone(args.out, `Agent readiness: ${detail}`);
+    stepDone(args.out, args.theme, `Agent readiness: ${detail}`);
   }
   return { ok: true, provider, model };
 }
 
 function formatProviderChoice(
+  theme: SetupTheme,
   choice: SetupProviderView["choices"][number],
 ): string {
   const status = providerStatusLabel(choice);
   const detail = providerDetailLabel(choice);
-  const tag = choice.recommended ? `  ${DIM}recommended${RST}` : "";
+  const tag = choice.recommended
+    ? `  ${dim(theme, "recommended")}`
+    : "";
   return `${choice.label.padEnd(8)} ${status.padEnd(15)} ${detail}${tag}`;
 }
 
@@ -177,17 +197,18 @@ function providerDetailLabel(
 
 function showUnavailableProvider(
   out: NodeJS.WritableStream,
+  theme: SetupTheme,
   choice: SetupProviderView["choices"][number],
 ): void {
   if (choice.readiness === "missing") {
     out.write(
-      `\n  ${WHITE_BOLD}${choice.label} is not installed.${RST}\n` +
+      `\n  ${whiteBold(theme, `${choice.label} is not installed.`)}\n` +
         `  ${providerDetailLabel(choice)}\n\n`,
     );
     return;
   }
   out.write(
-    `\n  ${WHITE_BOLD}${choice.label} is not signed in.${RST}\n` +
+    `\n  ${whiteBold(theme, `${choice.label} is not signed in.`)}\n` +
       `  Run: ${providerDetailLabel(choice)}\n\n`,
   );
 }

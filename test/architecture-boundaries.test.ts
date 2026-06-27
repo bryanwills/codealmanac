@@ -926,6 +926,10 @@ describe("architecture boundaries", () => {
     const setupInput = await readSource("src/cli/commands/setup/input.ts");
     const setupIndex = await readSource("src/cli/commands/setup/index.ts");
     const setupTypes = await readSource("src/cli/commands/setup/types.ts");
+    const setupRegistration = await readSource(
+      "src/edges/cli/register-setup-commands.ts",
+    );
+    const sqliteFree = await readSource("src/edges/cli/sqlite-free.ts");
     const setupCallers = await Promise.all([
       readSource("src/cli/commands/setup/agent-choice.ts"),
       readSource("src/cli/commands/setup/global-install-step.ts"),
@@ -937,6 +941,12 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/setup/input.ts"))).toBe(true);
     expect(setupInput).toContain("process.stdin");
     expect(setupInput).toContain("from \"./output.js\"");
+    expect(setupInput).toContain("theme: SetupTheme");
+    expect(setupOutput).toContain("makeSetupTheme");
+    expect(setupOutput).toContain("../../../ansi-theme.js");
+    expect(setupOutput).not.toContain("export const RST");
+    expect(setupOutput).not.toContain("export const BAR");
+    expect(setupOutput).not.toContain("process.stdout.columns");
     expect(setupOutput).not.toContain("process.stdin");
     expect(setupOutput).not.toContain("setRawMode");
     expect(setupOutput).not.toContain("export function confirm");
@@ -946,8 +956,12 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/setup/types.ts"))).toBe(true);
     expect(setupIndex).not.toContain("interface SetupOptions");
     expect(setupIndex).not.toContain("interface SetupResult");
+    expect(setupIndex).toContain("makeSetupTheme(options.color !== false)");
     expect(setupTypes).toContain("interface SetupOptions");
     expect(setupTypes).toContain("interface SetupResult");
+    expect(setupTypes).toContain("color?: boolean");
+    expect(setupRegistration).toContain("color: shouldUseStdoutColor()");
+    expect(sqliteFree).toContain("color: shouldUseStdoutColor()");
     for (const caller of setupCallers) {
       expect(caller).not.toContain("confirm,\n} from \"./output.js\"");
       expect(caller).not.toContain("promptText,\n} from \"./output.js\"");

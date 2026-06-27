@@ -462,7 +462,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
     );
 
     expect(setupMock).toHaveBeenCalledTimes(1);
-    expect(setupMock).toHaveBeenCalledWith({ yes: true });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ yes: true, color: expect.any(Boolean) }),
+    );
   });
 
   it("forwards --skip-automation alongside --yes", async () => {
@@ -480,10 +482,13 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       },
     );
 
-    expect(setupMock).toHaveBeenCalledWith({
-      yes: true,
-      skipAutomation: true,
-    });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        yes: true,
+        skipAutomation: true,
+        color: expect.any(Boolean),
+      }),
+    );
   });
 
   it("routes bare `codealmanac` through the global bootstrapper when provided", async () => {
@@ -514,7 +519,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       runLocalSetup: () => Promise<SetupResult>;
     };
     await bootstrapOptions.runLocalSetup();
-    expect(setupMock).toHaveBeenCalledWith({ yes: true });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ yes: true, color: expect.any(Boolean) }),
+    );
   });
 
   it("honors the launcher-preserved codealmanac invocation name", async () => {
@@ -546,7 +553,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       runLocalSetup: () => Promise<SetupResult>;
     };
     await bootstrapOptions.runLocalSetup();
-    expect(setupMock).toHaveBeenCalledWith({ yes: true });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ yes: true, color: expect.any(Boolean) }),
+    );
   });
 
   it("routes explicit `codealmanac setup --yes` before heavy command registration", async () => {
@@ -565,9 +574,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
     );
 
     expect(setupMock).toHaveBeenCalledTimes(1);
-    expect(setupMock).toHaveBeenCalledWith({
-      yes: true,
-    });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ yes: true, color: expect.any(Boolean) }),
+    );
   });
 
   it("routes bare `almanac --yes` to setup", async () => {
@@ -585,7 +594,9 @@ describe("run() — codealmanac-setup shortcut routing", () => {
       },
     );
 
-    expect(setupMock).toHaveBeenCalledWith({ yes: true });
+    expect(setupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ yes: true, color: expect.any(Boolean) }),
+    );
   });
 
   it("does NOT shortcut for `codealmanac doctor`", async () => {

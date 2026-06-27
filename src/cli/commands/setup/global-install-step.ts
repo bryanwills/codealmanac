@@ -8,12 +8,12 @@ import {
   type InstallDecision,
 } from "./input.js";
 import {
-  BAR,
-  DIM,
-  RST,
+  type SetupTheme,
+  dim,
   stepActive,
   stepDone,
   stepSkipped,
+  writeSetupDivider,
 } from "./output.js";
 
 export interface GlobalInstallStepOptions {
@@ -28,6 +28,7 @@ export interface GlobalInstallStepResult {
 
 export async function runGlobalInstallStep(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   options: GlobalInstallStepOptions;
 }): Promise<GlobalInstallStepResult> {
@@ -45,29 +46,38 @@ export async function runGlobalInstallStep(args: {
   if (args.interactive) {
     globalAction = await confirm(
       args.out,
+      args.theme,
       `Running from an ephemeral npx location. Install globally so 'almanac' stays on PATH?`,
       true,
     );
   }
   if (globalAction === "install") {
-    stepActive(args.out, "Installing Almanac package globally...");
+    stepActive(args.out, args.theme, "Installing Almanac package globally...");
     try {
       await (args.options.spawnGlobalInstall ?? spawnGlobalInstall)();
       durableGlobalInstall = true;
-      stepDone(args.out, "Almanac installed globally (almanac now on PATH)");
+      stepDone(
+        args.out,
+        args.theme,
+        "Almanac installed globally (almanac now on PATH)",
+      );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      stepActive(args.out, `Global install failed: ${msg}`);
+      stepActive(args.out, args.theme, `Global install failed: ${msg}`);
       args.out.write(
-        `  ${DIM}You can retry manually: npm install -g codealmanac${RST}\n`,
+        `  ${dim(args.theme, "You can retry manually: npm install -g codealmanac")}\n`,
       );
     }
   } else {
     stepSkipped(
       args.out,
-      `Global install ${DIM}skipped — almanac will not be on PATH after this session${RST}`,
+      args.theme,
+      `Global install ${dim(
+        args.theme,
+        "skipped — almanac will not be on PATH after this session",
+      )}`,
     );
   }
-  args.out.write(BAR + "\n");
+  writeSetupDivider(args.out, args.theme);
   return { ephemeral, durableGlobalInstall };
 }

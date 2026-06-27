@@ -62,6 +62,8 @@ export interface SetupOptions {
   isTTY?: boolean;
   /** Stdout sink; defaults to `process.stdout`. */
   stdout?: NodeJS.WritableStream;
+  /** Render setup terminal UI with ANSI color. */
+  color?: boolean;
   /** Override the install-path probe result; `null` bypasses the probe. */
   installPath?: string | null;
   /** Override the npm global install spawner. */

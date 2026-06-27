@@ -9,12 +9,13 @@ import {
   selectChoice,
 } from "./input.js";
 import {
-  DIM,
-  RST,
+  dim,
+  type SetupTheme,
 } from "./output.js";
 
 export async function chooseProviderModel(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   provider: SetupAgentProviderId;
   choice?: SetupProviderView["choices"][number];
@@ -46,10 +47,11 @@ export async function chooseProviderModel(args: {
   );
   const modelChoice = await selectChoice({
     out: args.out,
+    theme: args.theme,
     title: `Choose ${providerDisplayName(args.provider)} model`,
     choices: choices.map((choice) => ({
       value: choice,
-      line: formatModelChoice(choice, args.configuredModel),
+      line: formatModelChoice(args.theme, choice, args.configuredModel),
       aliases: choice.value === null
         ? ["default", "provider default"]
         : [String(choice.value)],
@@ -57,20 +59,21 @@ export async function chooseProviderModel(args: {
     defaultIndex,
   });
   if (modelChoice?.source === "custom") {
-    const custom = await promptText(args.out, "Model name", "");
+    const custom = await promptText(args.out, args.theme, "Model name", "");
     return custom.length > 0 ? custom : recommended?.value ?? null;
   }
   return modelChoice?.value ?? recommended?.value ?? null;
 }
 
 function formatModelChoice(
+  theme: SetupTheme,
   choice: SetupProviderModelChoice,
   configuredModel: string | null,
 ): string {
   const marker = choice.recommended
-    ? `  ${DIM}recommended${RST}`
+    ? `  ${dim(theme, "recommended")}`
     : choice.value === configuredModel
-      ? `  ${DIM}current${RST}`
+      ? `  ${dim(theme, "current")}`
       : "";
   const label = choice.source === "provider-default" && choice.value !== null
     ? friendlyModelLabel(choice.value)

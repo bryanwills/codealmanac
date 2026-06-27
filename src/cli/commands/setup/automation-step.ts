@@ -1,12 +1,12 @@
 import { cleanupLegacyAutomationHooks } from "../../../services/automation/index.js";
 import { runAutomationInstall } from "../automation.js";
 import {
-  BAR,
-  DIM,
-  RST,
+  type SetupTheme,
+  dim,
   stepActive,
   stepDone,
   stepSkipped,
+  writeSetupDivider,
 } from "./output.js";
 import type { AutomationExecFn } from "./types.js";
 
@@ -26,6 +26,7 @@ export type SetupStepResult =
 
 export async function runAutomationSetupStep(args: {
   out: NodeJS.WritableStream;
+  theme: SetupTheme;
   interactive: boolean;
   options: AutomationSetupStepOptions;
   ephemeral: boolean;
@@ -34,7 +35,11 @@ export async function runAutomationSetupStep(args: {
   if (args.ephemeral && !args.durableGlobalInstall) {
     stepSkipped(
       args.out,
-      `Sync automation ${DIM}skipped — requires a durable Almanac install${RST}`,
+      args.theme,
+      `Sync automation ${dim(
+        args.theme,
+        "skipped — requires a durable Almanac install",
+      )}`,
     );
   } else {
     await cleanupLegacyAutomationHooks();
@@ -55,16 +60,16 @@ export async function runAutomationSetupStep(args: {
       exec: args.options.automationExec,
     });
     if (res.exitCode !== 0) {
-      stepActive(args.out, `Sync automation: ${res.stderr.trim()}`);
+      stepActive(args.out, args.theme, `Sync automation: ${res.stderr.trim()}`);
       return {
         ok: false,
         stderr: res.stderr,
         exitCode: res.exitCode,
       };
     }
-    stepDone(args.out, "Sync automation installed");
+    stepDone(args.out, args.theme, "Sync automation installed");
   }
-  args.out.write(BAR + "\n");
+  writeSetupDivider(args.out, args.theme);
   return { ok: true };
 }
 
