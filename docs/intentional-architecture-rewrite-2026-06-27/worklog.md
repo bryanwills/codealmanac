@@ -131,3 +131,9 @@ Thirteenth production slice:
 - Moved durable job record path resolution, legacy `.almanac/runs/` fallback reads, cancel markers, atomic JSON writes, and record listing into `src/stores/jobs/records.ts`.
 - Split the old catch-all `src/jobs/records.ts` into `record-factory.ts`, `record-schema.ts`, `record-view.ts`, and the explicit store file.
 - Kept `src/jobs/index.ts` as the public jobs facade while removing the ambiguous `src/jobs/records.ts` module.
+
+Fourteenth production slice:
+
+- Moved durable job spec JSON path resolution, legacy fallback reads, validation, and atomic writes into `src/stores/jobs/specs.ts`.
+- Moved durable job log initialization and JSONL appends into `src/stores/jobs/logs.ts`.
+- Split job log entry construction into `src/jobs/log-entry.ts`, leaving `src/jobs/logs.ts` as a small event-to-store adapter and deleting the old `src/jobs/spec.ts` storage file.

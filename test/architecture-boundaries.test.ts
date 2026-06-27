@@ -178,6 +178,12 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/jobs/records.ts"))).toBe(false);
   });
 
+  it("keeps job spec and log persistence in explicit stores", () => {
+    expect(existsSync(join(ROOT, "src/stores/jobs/specs.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/jobs/logs.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/jobs/spec.ts"))).toBe(false);
+  });
+
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 

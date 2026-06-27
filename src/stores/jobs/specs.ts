@@ -1,14 +1,14 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { isAgentProviderId, type AgentProviderId } from "../../agent/provider-id.js";
 import type {
-  OperationSpec,
   OperationKind,
+  OperationSpec,
   ProviderSessionPersistence,
-} from "../operations/spec.js";
-import { isAgentProviderId, type AgentProviderId } from "../agent/provider-id.js";
-import { jobsDir, legacyRunsDir } from "../stores/jobs/records.js";
-import { existsSync } from "node:fs";
+} from "../../operations/spec.js";
+import { jobsDir, legacyRunsDir } from "./records.js";
 
 export function jobSpecPath(repoRoot: string, jobId: string): string {
   return join(jobsDir(repoRoot), `${jobId}.spec.json`);
@@ -63,7 +63,7 @@ function isOperationSpec(value: unknown): value is OperationSpec {
     (spec.providerSession === undefined ||
       (typeof spec.providerSession === "object" &&
         spec.providerSession !== null &&
-        (((spec.providerSession as { persistence?: unknown }).persistence === undefined) ||
+        ((spec.providerSession as { persistence?: unknown }).persistence === undefined ||
           isProviderSessionPersistence(
             (spec.providerSession as { persistence?: unknown }).persistence,
           )))) &&

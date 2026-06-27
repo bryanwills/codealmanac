@@ -5,7 +5,7 @@ import type { HarnessEvent, HarnessResult } from "../harness/events.js";
 import type { HarnessRunHooks } from "../harness/types.js";
 import type { OperationSpec } from "../operations/spec.js";
 import { createJobId } from "./ids.js";
-import { initializeJobLog } from "./logs.js";
+import { initializeJobLog } from "../stores/jobs/logs.js";
 import { executeStartedJob, type StartJobResult } from "./executor.js";
 import {
   buildQueuedJobRecord,
@@ -20,7 +20,7 @@ import {
   writeJobRecord,
 } from "../stores/jobs/records.js";
 import { acquireJobWorkerLock } from "./queue.js";
-import { writeJobSpec } from "./spec.js";
+import { writeJobSpec } from "../stores/jobs/specs.js";
 import { cancelledRecordIfRequested } from "./finalization.js";
 import type { JobRecord } from "./types.js";
 

@@ -60,16 +60,16 @@ sources:
     note: Migrated from legacy files.
   - id: logs
     type: file
-    path: src/jobs/logs.ts
-    note: Migrated from legacy files.
+    path: src/stores/jobs/logs.ts
+    note: Owns durable job log file writes.
   - id: snapshots
     type: file
     path: src/jobs/snapshots.ts
     note: Migrated from legacy files.
   - id: spec
     type: file
-    path: src/jobs/spec.ts
-    note: Migrated from legacy files.
+    path: src/stores/jobs/specs.ts
+    note: Owns durable job spec JSON files.
   - id: types
     type: file
     path: src/jobs/types.ts

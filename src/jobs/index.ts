@@ -5,7 +5,8 @@ export {
   startQueuedJob,
 } from "./start.js";
 export { runJobWorker } from "./worker.js";
-export { appendJobEvent, initializeJobLog } from "./logs.js";
+export { appendJobEvent } from "./logs.js";
+export { buildJobLogEntry, inferActor } from "./log-entry.js";
 export {
   buildQueuedJobRecord,
   buildStartedJobRecord,
@@ -29,17 +30,26 @@ export {
   writeJobRecord,
 } from "../stores/jobs/records.js";
 export {
+  appendJobLogEntry,
+  initializeJobLog,
+} from "../stores/jobs/logs.js";
+export {
+  readJobSpec,
+  jobSpecPath,
+  resolveJobSpecPath,
+  writeJobSpec,
+} from "../stores/jobs/specs.js";
+export {
   acquireJobWorkerLock,
   oldestQueuedJob,
   jobWorkerLockPath,
 } from "./queue.js";
-export { readJobSpec, jobSpecPath, resolveJobSpecPath, writeJobSpec } from "./spec.js";
 export {
   diffPageSnapshots,
   isNoopPageDelta,
   snapshotPages,
 } from "./snapshots.js";
-export type { JobLogEntry } from "./logs.js";
+export type { AppendJobEventOptions, JobLogEntry } from "./log-entry.js";
 export type {
   BackgroundChild,
   SpawnBackgroundFn,
