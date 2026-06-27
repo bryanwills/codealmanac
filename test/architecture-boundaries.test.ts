@@ -184,6 +184,15 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/jobs/spec.ts"))).toBe(false);
   });
 
+  it("keeps worker lock persistence out of job queue selection", async () => {
+    const queue = await readSource("src/jobs/queue.ts");
+
+    expect(existsSync(join(ROOT, "src/stores/jobs/worker-lock.ts"))).toBe(true);
+    expect(queue).not.toContain("worker.lock");
+    expect(queue).not.toContain("mkdir");
+    expect(queue).not.toContain("process.kill");
+  });
+
   it("keeps automation command adapters out of launchd workflow mechanics", async () => {
     const automationCommand = await readSource("src/cli/commands/automation.ts");
 

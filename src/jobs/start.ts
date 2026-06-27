@@ -19,7 +19,7 @@ import {
   resolveJobRecordPath,
   writeJobRecord,
 } from "../stores/jobs/records.js";
-import { acquireJobWorkerLock } from "./queue.js";
+import { acquireJobWorkerLock } from "../stores/jobs/worker-lock.js";
 import { writeJobSpec } from "../stores/jobs/specs.js";
 import { cancelledRecordIfRequested } from "./finalization.js";
 import type { JobRecord } from "./types.js";

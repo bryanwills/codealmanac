@@ -9,7 +9,8 @@ import {
   resolveJobRecordPath,
   writeJobRecord,
 } from "../stores/jobs/records.js";
-import { acquireJobWorkerLock, oldestQueuedJob } from "./queue.js";
+import { acquireJobWorkerLock } from "../stores/jobs/worker-lock.js";
+import { oldestQueuedJob } from "./queue.js";
 import { readJobSpec } from "../stores/jobs/specs.js";
 import { startQueuedJob } from "./start.js";
 import type { JobRecord } from "./types.js";

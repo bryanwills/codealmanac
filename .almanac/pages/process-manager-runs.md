@@ -45,6 +45,10 @@ sources:
   - id: queue
     type: file
     path: src/jobs/queue.ts
+    note: Selects the oldest queued job.
+  - id: worker-lock
+    type: file
+    path: src/stores/jobs/worker-lock.ts
     note: Acquires the current worker lock and treats live legacy worker locks as blocking.
   - id: managed-child
     type: file
@@ -133,7 +137,7 @@ The jobs rename deliberately did not add a read-time storage migration. `[[src/s
 
 Background starts write a `queued` record, initialize the JSONL log, persist the `OperationSpec`, and wake the repo-local worker with `__run-worker`. The worker owns the transition from `queued` to `running`: it acquires `.almanac/jobs/worker.lock`, chooses the oldest queued job, rehydrates the saved spec, writes a running record with its PID, executes the provider, finalizes the record, and then drains the next queued job before releasing the lock. Duplicate worker wakeups are harmless because only the lock holder can claim queued jobs.
 
-`[[src/jobs/queue.ts]]` also checks `.almanac/runs/worker.lock` before taking the current lock. A live legacy lock blocks new work, while a stale legacy lock is removed and the current `.almanac/jobs/worker.lock` is acquired. This protects users who upgraded while an old worker was still running, and it avoids a migration subsystem for a transient lock file. [@queue] [@jobs-refactor-session]
+`[[src/stores/jobs/worker-lock.ts]]` also checks `.almanac/runs/worker.lock` before taking the current lock. A live legacy lock blocks new work, while a stale legacy lock is removed and the current `.almanac/jobs/worker.lock` is acquired. This protects users who upgraded while an old worker was still running, and it avoids a migration subsystem for a transient lock file. [@worker-lock] [@jobs-refactor-session]
 
 Foreground jobs do not bypass the single-writer invariant. They acquire the same worker lock before writing a started record and fail clearly if another operation is already running for the wiki. That keeps attached debugging jobs from racing queued Build, Absorb, or Garden work.
 

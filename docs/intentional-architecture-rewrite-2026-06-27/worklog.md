@@ -137,3 +137,8 @@ Fourteenth production slice:
 - Moved durable job spec JSON path resolution, legacy fallback reads, validation, and atomic writes into `src/stores/jobs/specs.ts`.
 - Moved durable job log initialization and JSONL appends into `src/stores/jobs/logs.ts`.
 - Split job log entry construction into `src/jobs/log-entry.ts`, leaving `src/jobs/logs.ts` as a small event-to-store adapter and deleting the old `src/jobs/spec.ts` storage file.
+
+Fifteenth production slice:
+
+- Moved job worker lock path resolution, legacy lock checks, lock owner files, stale-owner detection, and release mechanics into `src/stores/jobs/worker-lock.ts`.
+- Left `src/jobs/queue.ts` responsible only for selecting the oldest queued job from stored records.

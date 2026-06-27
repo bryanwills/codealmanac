@@ -39,11 +39,11 @@ export {
   resolveJobSpecPath,
   writeJobSpec,
 } from "../stores/jobs/specs.js";
+export { oldestQueuedJob } from "./queue.js";
 export {
   acquireJobWorkerLock,
-  oldestQueuedJob,
   jobWorkerLockPath,
-} from "./queue.js";
+} from "../stores/jobs/worker-lock.js";
 export {
   diffPageSnapshots,
   isNoopPageDelta,
