@@ -38,6 +38,7 @@ export function registerAutomationCommands(program: Command): void {
         gardenEvery: opts.gardenEvery,
         gardenOff: opts.gardenOff,
         cwd: process.cwd(),
+        pathEnvironment: process.env.PATH,
       });
       emit(result);
     });

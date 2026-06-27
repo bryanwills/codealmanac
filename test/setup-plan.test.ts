@@ -12,8 +12,18 @@ import { DEFAULT_SETUP_INSTRUCTION_TARGETS } from "../src/services/setup/index.j
 
 const TEST_CWD = "/tmp/codealmanac-setup-plan";
 
-function setupOptions(options: Omit<SetupOptions, "cwd"> = {}): SetupOptions {
-  return { ...options, cwd: TEST_CWD };
+function setupOptions(
+  options: Omit<SetupOptions, "cwd" | "pathEnvironment"> & {
+    pathEnvironment?: string;
+  } = {},
+): SetupOptions {
+  return {
+    ...options,
+    cwd: TEST_CWD,
+    pathEnvironment: "pathEnvironment" in options
+      ? options.pathEnvironment
+      : process.env.PATH,
+  };
 }
 
 function setupOutput(): {

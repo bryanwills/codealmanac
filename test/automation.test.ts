@@ -43,7 +43,7 @@ describe("almanac automation", () => {
         plistPath,
         gardenPlistPath,
         exec,
-        env: { PATH: "/Users/example/.nvm/versions/node/v24.15.0/bin:/custom/bin" },
+        pathEnvironment: "/Users/example/.nvm/versions/node/v24.15.0/bin:/custom/bin",
         now: new Date("2026-05-12T05:10:00.000Z"),
       });
       expect(first.exitCode).toBe(0);
@@ -59,7 +59,7 @@ describe("almanac automation", () => {
         plistPath,
         gardenPlistPath,
         exec,
-        env: { PATH: "/Users/example/.nvm/versions/node/v24.15.0/bin:/custom/bin" },
+        pathEnvironment: "/Users/example/.nvm/versions/node/v24.15.0/bin:/custom/bin",
         now: new Date("2026-05-12T06:00:00.000Z"),
       });
       expect(second.exitCode).toBe(0);
@@ -148,7 +148,7 @@ describe("almanac automation", () => {
         gardenEvery: "1w",
         plistPath,
         gardenPlistPath,
-        env: { PATH: "/opt/homebrew/bin:/opt/homebrew/bin:/bin" },
+        pathEnvironment: "/opt/homebrew/bin:/opt/homebrew/bin:/bin",
         exec: async () => ({}),
         now: new Date("2026-05-12T05:10:00.000Z"),
       });
@@ -490,23 +490,37 @@ capture_since = "2026-05-12T05:10:00.000Z"
 });
 
 type TestAutomationInstallOptions =
-  Omit<AutomationInstallCommandOptions, "cwd"> & { cwd?: string };
+  Omit<AutomationInstallCommandOptions, "cwd" | "pathEnvironment"> & {
+    cwd?: string;
+    pathEnvironment?: string;
+  };
 
 function runAutomationInstall(options: TestAutomationInstallOptions) {
   return runAutomationInstallCommand({
     cwd: process.cwd(),
+    pathEnvironment: testPathEnvironment(options),
     ...options,
   });
 }
 
 type TestMigrateAutomationOptions =
-  Omit<MigrateAutomationOptions, "cwd"> & { cwd?: string };
+  Omit<MigrateAutomationOptions, "cwd" | "pathEnvironment"> & {
+    cwd?: string;
+    pathEnvironment?: string;
+  };
 
 function runMigrateAutomation(options: TestMigrateAutomationOptions) {
   return runMigrateAutomationCommand({
     cwd: process.cwd(),
+    pathEnvironment: testPathEnvironment(options),
     ...options,
   });
+}
+
+function testPathEnvironment(options: { pathEnvironment?: string }) {
+  return "pathEnvironment" in options
+    ? options.pathEnvironment
+    : process.env.PATH;
 }
 
 async function writeLegacyCaptureSweepPlist(

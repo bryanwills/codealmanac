@@ -54,7 +54,7 @@ export function buildAutomationInstallPlan(
     .filter((id) => !(id === "garden" && options.gardenOff === true));
   const home = options.homeDir ?? homedir();
   const environmentVariables = {
-    PATH: buildLaunchPath(home, options.env?.PATH ?? process.env.PATH),
+    PATH: buildLaunchPath(home, options.pathEnvironment),
   };
   const jobs: PlannedAutomationJob[] = [];
 

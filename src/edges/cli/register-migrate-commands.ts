@@ -42,6 +42,7 @@ export function registerMigrateCommands(program: Command): void {
       const { runMigrateAutomation } = await import("../../cli/commands/migrate.js");
       const result = await runMigrateAutomation({
         cwd: process.cwd(),
+        pathEnvironment: process.env.PATH,
         json: opts.json,
       });
       emit(result);

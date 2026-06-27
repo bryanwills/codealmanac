@@ -49,10 +49,18 @@ const LOGGED_IN_STDOUT = JSON.stringify({
 const LOGGED_OUT_STDOUT = JSON.stringify({ loggedIn: false });
 const TEST_SETUP_THEME = makeSetupTheme(false);
 
-function runSetup(options: Omit<SetupOptions, "cwd"> & { cwd?: string }) {
+function runSetup(
+  options: Omit<SetupOptions, "cwd" | "pathEnvironment"> & {
+    cwd?: string;
+    pathEnvironment?: string;
+  },
+) {
   return runSetupCommand({
     ...options,
     cwd: options.cwd ?? process.cwd(),
+    pathEnvironment: "pathEnvironment" in options
+      ? options.pathEnvironment
+      : process.env.PATH,
   });
 }
 
@@ -319,6 +327,7 @@ describe("codealmanac setup", () => {
         interactive: true,
         options: {
           cwd: home,
+          pathEnvironment: process.env.PATH,
           automationPlistPath: env.plistPath,
           gardenPlistPath: env.gardenPlistPath,
           automationExec: async () => ({}),

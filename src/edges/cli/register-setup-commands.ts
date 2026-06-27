@@ -58,6 +58,7 @@ export function registerSetupCommands(
           skipGuides: opts.skipGuides,
           autoCommit: opts.autoCommit,
           cwd: process.cwd(),
+          pathEnvironment: process.env.PATH,
           color: shouldUseStdoutColor(),
         });
         emit(result);

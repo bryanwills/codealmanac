@@ -36,6 +36,8 @@ export interface SetupOptions {
 
   /** Current working directory used for repo-local setup state. */
   cwd: string;
+  /** PATH value inherited by launchd jobs during setup. */
+  pathEnvironment: string | undefined;
   /** Override the subprocess spawner for provider login checks. */
   spawnCli?: SetupSpawnCliFn;
   /** Override the launchd plist path. */

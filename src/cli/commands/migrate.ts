@@ -22,6 +22,7 @@ export type { MigrateCommandOutput } from "./migrate-render.js";
 
 export interface MigrateAutomationOptions {
   cwd: string;
+  pathEnvironment: string | undefined;
   json?: boolean;
   homeDir?: string;
   legacyPlistPath?: string;

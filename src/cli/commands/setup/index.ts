@@ -123,6 +123,7 @@ export async function runSetup(
           theme,
           options: {
             cwd,
+            pathEnvironment: options.pathEnvironment,
             autoUpdateEvery: options.autoUpdateEvery,
             updatePlistPath: options.updatePlistPath,
             updateProgramArguments: globalInstall.ephemeral

@@ -12,6 +12,7 @@ export interface AutomationInstallOptions {
   gardenEvery?: string;
   gardenOff?: boolean;
   cwd: string;
+  pathEnvironment: string | undefined;
   homeDir?: string;
   plistPath?: string;
   gardenPlistPath?: string;
@@ -19,7 +20,6 @@ export interface AutomationInstallOptions {
   programArguments?: string[];
   gardenProgramArguments?: string[];
   updateProgramArguments?: string[];
-  env?: NodeJS.ProcessEnv;
   exec?: AutomationExecFn;
   now?: Date;
   configPath?: string;

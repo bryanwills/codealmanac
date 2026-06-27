@@ -12,6 +12,7 @@ import type { AutomationExecFn } from "./types.js";
 
 export interface AutoUpdateSetupStepOptions {
   cwd: string;
+  pathEnvironment: string | undefined;
   autoUpdateEvery?: string;
   updatePlistPath?: string;
   updateProgramArguments?: string[];
@@ -31,6 +32,7 @@ export async function runAutoUpdateSetupStep(args: {
     tasks: ["update"],
     every: args.options.autoUpdateEvery,
     cwd: args.options.cwd,
+    pathEnvironment: args.options.pathEnvironment,
     updateProgramArguments: args.options.updateProgramArguments,
     updatePlistPath: args.options.updatePlistPath,
     exec: args.options.automationExec,

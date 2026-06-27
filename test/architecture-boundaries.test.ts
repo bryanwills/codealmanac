@@ -751,7 +751,9 @@ describe("architecture boundaries", () => {
     expect(automationServiceTypes).not.toContain("platform/automation");
     expect(automationServiceTypes).not.toContain("PlatformExecFn");
     expect(automationServiceTypes).not.toContain("PlatformScheduledTaskId");
+    expect(automationServiceTypes).not.toContain("NodeJS.ProcessEnv");
     expect(automationPlanning).not.toContain("process.cwd()");
+    expect(automationPlanning).not.toContain("process.env");
     expect(automationCommand).toContain("services/automation/index.js");
     expect(automationCommand).not.toContain("import type { CommandResult }");
     expect(automationCommand).toContain("AutomationCommandResult");
@@ -1362,6 +1364,7 @@ describe("architecture boundaries", () => {
 
     expect(automationCommand).toContain("AutomationInstallCommandOptions");
     expect(automationCommand).toContain("cwd: string");
+    expect(automationCommand).toContain("pathEnvironment: string | undefined");
     expect(automationCommand).toContain("toAutomationInstallOptions");
     expect(automationCommand).not.toContain(
       "AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions",

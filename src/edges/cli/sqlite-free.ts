@@ -34,6 +34,7 @@ export async function tryRunSetupShortcut(args: {
   const setupOptions = {
     ...setupInvocation,
     cwd: process.cwd(),
+    pathEnvironment: process.env.PATH,
     color: shouldUseStdoutColor(),
   };
 

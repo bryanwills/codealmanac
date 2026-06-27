@@ -19,6 +19,7 @@ export interface AutomationSetupStepOptions {
   gardenEvery?: string;
   gardenOff?: boolean;
   cwd: string;
+  pathEnvironment: string | undefined;
   automationPlistPath?: string;
   gardenPlistPath?: string;
   automationExec?: AutomationExecFn;
@@ -53,6 +54,7 @@ export async function runAutomationSetupStep(args: {
       gardenEvery: args.options.gardenEvery,
       gardenOff: args.options.gardenOff,
       cwd: args.options.cwd,
+      pathEnvironment: args.options.pathEnvironment,
       programArguments: args.ephemeral
         ? globalAlmanacProgramArguments(args.options.automationQuiet)
         : undefined,
