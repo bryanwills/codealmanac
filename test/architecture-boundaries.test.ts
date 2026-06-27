@@ -21,6 +21,8 @@ describe("architecture boundaries", () => {
     const runner = await readSource("src/edges/cli/run.ts");
     const help = await readSource("src/edges/cli/help.ts");
 
+    expect(existsSync(join(ROOT, "src/ansi.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/ansi-theme.ts"))).toBe(true);
     expect(runner).toContain("from \"commander\"");
     expect(runner).toContain("tryRunInternalJob");
     expect(runner).toContain("readPackageVersion");

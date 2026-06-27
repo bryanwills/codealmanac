@@ -31,26 +31,27 @@ describe("ansi", () => {
       configurable: true,
     });
 
-    vi.resetModules();
-    const ansi = await import("../src/ansi.js");
+    const { shouldUseStdoutColor } = await import("../src/edges/cli/helpers.js");
 
-    expect(ansi.BOLD).toBe("");
-    expect(ansi.BLUE).toBe("");
-    expect(ansi.RST).toBe("");
+    expect(shouldUseStdoutColor()).toBe(false);
   });
 
-  it("still enables colors when stdout is a TTY and NO_COLOR is absent", async () => {
+  it("enables colors only when stdout is a TTY and NO_COLOR is absent", async () => {
     delete process.env.NO_COLOR;
     Object.defineProperty(process.stdout, "isTTY", {
       value: true,
       configurable: true,
     });
 
-    vi.resetModules();
-    const ansi = await import("../src/ansi.js");
+    const { shouldUseStdoutColor } = await import("../src/edges/cli/helpers.js");
 
-    expect(ansi.BOLD).not.toBe("");
-    expect(ansi.BLUE).not.toBe("");
-    expect(ansi.RST).not.toBe("");
+    expect(shouldUseStdoutColor()).toBe(true);
+
+    Object.defineProperty(process.stdout, "isTTY", {
+      value: false,
+      configurable: true,
+    });
+
+    expect(shouldUseStdoutColor()).toBe(false);
   });
 });
