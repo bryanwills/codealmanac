@@ -779,3 +779,9 @@ One-hundred-seventeenth production slice:
 - Split list command rendering into `src/cli/commands/list-render.ts`.
 - Moved registry list JSON output, human-readable wiki list formatting, empty verbose hints, and drop result text out of `src/cli/commands/list.ts`.
 - Kept `src/cli/commands/list.ts` focused on selecting the registry service workflow for normal list versus explicit drop.
+
+One-hundred-eighteenth production slice:
+
+- Split uninstall command rendering into `src/cli/commands/uninstall-render.ts`.
+- Moved uninstall prompt text, kept-step lines, setup cleanup summaries, automation removal formatting, and completion text out of `src/cli/commands/uninstall.ts`.
+- Kept `src/cli/commands/uninstall.ts` focused on CLI option defaults, interactive yes/no decisions, and invoking the setup uninstall service.

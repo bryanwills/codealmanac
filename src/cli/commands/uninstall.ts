@@ -5,8 +5,15 @@ import {
   removeSetupImportLine,
   removeSetupManagedBlock,
   uninstallSetup,
-  type SetupUninstallResult,
 } from "../../services/setup/index.js";
+import {
+  renderAutomationKept,
+  renderConfirmationPrompt,
+  renderGuidesKept,
+  renderUninstallComplete,
+  renderUninstallResult,
+  renderUninstallStart,
+} from "./uninstall-render.js";
 
 type AutomationExecFn = (
   file: string,
@@ -64,10 +71,6 @@ export interface UninstallResult {
   exitCode: number;
 }
 
-const BLUE = "\x1b[38;5;75m";
-const DIM = "\x1b[2m";
-const RST = "\x1b[0m";
-
 export async function runUninstall(
   options: UninstallOptions = {},
 ): Promise<UninstallResult> {
@@ -81,7 +84,7 @@ export async function runUninstall(
   const windsurfDir = options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf");
   const opencodeDir = options.opencodeDir ?? path.join(homedir(), ".config", "opencode");
 
-  out.write("\n");
+  out.write(renderUninstallStart());
 
   // Scheduler removal.
   let removeAutomation = true;
@@ -95,7 +98,7 @@ export async function runUninstall(
     );
   }
   if (!removeAutomation) {
-    out.write(`  ${DIM}\u25cb  Scheduled automation kept${RST}\n`);
+    out.write(renderAutomationKept());
   }
 
   // Guide + import removal.
@@ -110,7 +113,7 @@ export async function runUninstall(
     );
   }
   if (!removeGuides) {
-    out.write(`  ${DIM}\u25cb  Guides kept${RST}\n`);
+    out.write(renderGuidesKept());
   }
 
   const result = await uninstallSetup({
@@ -126,44 +129,10 @@ export async function runUninstall(
     opencodeDir,
   });
 
-  renderUninstallResult(out, result);
-
-  out.write(`\n  ${BLUE}\u25c7${RST}  ${BLUE}Uninstall complete${RST}\n\n`);
+  out.write(renderUninstallResult(result));
+  out.write(renderUninstallComplete());
 
   return { stdout: "", stderr: "", exitCode: 0 };
-}
-
-function renderUninstallResult(
-  out: NodeJS.WritableStream,
-  result: SetupUninstallResult,
-): void {
-  if (result.automation.action === "checked") {
-    out.write(
-      `  ${BLUE}\u25c7${RST}  ${formatAutomationResult(result.automation)}\n`,
-    );
-  }
-
-  if (result.guides.action === "checked") {
-    if (result.guides.anyChanges) {
-      out.write(
-        `  ${BLUE}\u25c7${RST}  Guides removed (${result.guides.filesTouched.join(", ")})\n`,
-      );
-    } else {
-      out.write(`  ${DIM}\u25cb  Guides not installed${RST}\n`);
-    }
-  }
-}
-
-function formatAutomationResult(
-  result: Extract<SetupUninstallResult["automation"], { action: "checked" }>,
-): string {
-  if (result.status === "not-installed") {
-    return "almanac: automation not installed";
-  }
-  return (
-    "almanac: automation removed\n" +
-    result.plistPaths.map((pathValue) => `  plist: ${pathValue}\n`).join("")
-  ).trim();
 }
 
 /**
@@ -194,8 +163,7 @@ function confirm(
   defaultYes: boolean,
 ): Promise<boolean> {
   return new Promise((resolve) => {
-    const hint = defaultYes ? "[Y/n]" : "[y/N]";
-    out.write(`  ${BLUE}\u25c6${RST}  ${question} ${DIM}${hint}${RST} `);
+    out.write(renderConfirmationPrompt(question, defaultYes));
 
     let buf = "";
     const onData = (chunk: Buffer): void => {

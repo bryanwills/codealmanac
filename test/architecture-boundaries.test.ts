@@ -947,19 +947,31 @@ describe("architecture boundaries", () => {
 
   it("keeps uninstall UI out of setup cleanup mechanics", async () => {
     const uninstallCommand = await readSource("src/cli/commands/uninstall.ts");
+    const uninstallRender = await readSource(
+      "src/cli/commands/uninstall-render.ts",
+    );
     const setupUninstall = await readSource("src/services/setup/uninstall.ts");
 
     expect(existsSync(join(ROOT, "src/services/setup/uninstall.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/cli/commands/uninstall-render.ts"))).toBe(
+      true,
+    );
     expect(setupUninstall).not.toContain("type AgentInstructionDirs");
     expect(setupUninstall).not.toContain(
       "SetupUninstallOptions extends AgentInstructionDirs",
     );
     expect(uninstallCommand).toContain("services/setup/index.js");
+    expect(uninstallCommand).toContain("./uninstall-render.js");
     expect(uninstallCommand).not.toContain("agent/install-targets");
     expect(uninstallCommand).not.toContain("platform/automation/legacy-hooks");
     expect(uninstallCommand).not.toContain("runAutomationUninstall");
     expect(uninstallCommand).not.toContain("removeAgentInstructions");
     expect(uninstallCommand).not.toContain("cleanupLegacyHooks");
+    expect(uninstallCommand).not.toContain("Uninstall complete");
+    expect(uninstallCommand).not.toContain("Guides removed");
+    expect(uninstallCommand).not.toContain("almanac: automation removed");
+    expect(uninstallRender).toContain("renderUninstallResult");
+    expect(uninstallRender).toContain("formatAutomationResult");
   });
 
   it("keeps setup cleanup services behind automation service cleanup verbs", async () => {
