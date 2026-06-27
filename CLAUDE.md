@@ -44,6 +44,7 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/automation/` | Automation product workflows and scheduled-task planning over platform scheduler mechanics | `automation.ts`, `planning.ts`, `types.ts`, `index.ts` |
 | `src/services/jobs/` | Job product workflows for CLI/viewer-facing list, read, log, stream, and cancel operations | `jobs.ts`, `types.ts`, `index.ts` |
+| `src/services/update/` | Self-update product workflow over registry, config, lock, state, and npm-install mechanics | `update.ts`, `types.ts`, `index.ts` |
 | `src/services/wiki/` | Wiki product workflows that coordinate stores/indexes/filesystem mechanics | `search.ts`, `page-view.ts`, `health.ts`, `registry.ts`, `autoregistration.ts`, `topic-read.ts`, `topic-description.ts`, `topic-graph-mutations.ts`, `topic-page-mutations.ts`, `topic-page-rewrite.ts`, `page-topic-mutations.ts`, `page-topic-pages.ts`, `page-topic-types.ts`, `reviews.ts`, `review-types.ts`, `review-text.ts`, `review-workspace.ts`, `source-migration.ts`, `doctor.ts`, `doctor-index.ts`, `doctor-health.ts`, `doctor-absorb.ts`, `doctor-registry.ts`, `doctor-types.ts` |
 | `src/stores/wiki-registry/` | Global registry persistence at `~/.almanac/registry.json` — atomic read/write | `store.ts`, `index.ts` |
 | `src/stores/wiki-review/` | Review queue persistence at `.almanac/review.yaml` — validation, ID generation, atomic writes | `store.ts` |

@@ -13,6 +13,10 @@ sources:
     type: file
     path: src/cli/commands/update.ts
     note: Migrated from legacy files.
+  - id: update-service
+    type: file
+    path: src/services/update/update.ts
+    note: Self-update command workflow.
   - id: check
     type: file
     path: src/platform/update/check.ts
@@ -86,7 +90,7 @@ Almanac self-update means updating the globally installed `codealmanac` package 
 
 `[[src/platform/update/announce.ts]]` synchronously reads `~/.almanac/update-state.json` and `~/.almanac/config.toml` before Commander handles a command. It prints the update banner to stderr only when `latest_version` is newer than the installed package version, the version has not been dismissed, and `update_notifier` is not `false`.
 
-`[[src/cli/commands/update.ts]]` owns the update surface. `almanac update --check` forces a registry query, `--dismiss` suppresses the current latest version, the deprecated notifier flags write `update_notifier`, and bare `almanac update` checks npm before running `npm i -g codealmanac@latest` with inherited stdio. The install path does not run `sudo`; permission failures are left visible in npm output and summarized afterward.
+`[[src/cli/commands/update.ts]]` is the command adapter for the update surface. `[[src/services/update/update.ts]]` owns the workflow: `almanac update --check` forces a registry query, `--dismiss` suppresses the current latest version, the deprecated notifier flags write `update_notifier`, and bare `almanac update` checks npm before running `npm i -g codealmanac@latest` with inherited stdio. The install path does not run `sudo`; permission failures are left visible in npm output and summarized afterward.
 
 `[[src/platform/update/install.ts]]` owns the npm install subprocess and its user-facing failure messages. `[[src/platform/update/lock.ts]]` owns the global `.update-install.lock` file so manual and scheduled update attempts cannot overlap. `[[src/platform/update/version.ts]]` owns installed package-version lookup for the check, announce, and update paths.
 

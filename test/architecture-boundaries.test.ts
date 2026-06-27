@@ -186,6 +186,20 @@ describe("architecture boundaries", () => {
     expect(automationCommand).not.toContain("readLaunchdJobStatus");
   });
 
+  it("keeps update command adapters out of update workflow mechanics", async () => {
+    const updateCommand = await readSource("src/cli/commands/update.ts");
+
+    expect(updateCommand).toContain("services/update/index.js");
+    expect(updateCommand).not.toContain("platform/update");
+    expect(updateCommand).not.toContain("readConfig");
+    expect(updateCommand).not.toContain("writeConfig");
+    expect(updateCommand).not.toContain("readState");
+    expect(updateCommand).not.toContain("writeState");
+    expect(updateCommand).not.toContain("acquireUpdateLock");
+    expect(updateCommand).not.toContain("installLatestPackage");
+    expect(updateCommand).not.toContain("spawn");
+  });
+
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
     const migrateCommand = await readSource("src/cli/commands/migrate.ts");
 
