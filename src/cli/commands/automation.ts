@@ -12,8 +12,49 @@ import {
   type AutomationUninstallOptions,
 } from "../../services/automation/index.js";
 
-export type AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions;
-export type { AutomationStatusOptions };
+export type AutomationCommandExecFn = (
+  file: string,
+  args: string[],
+) => Promise<{ stdout?: string; stderr?: string }>;
+
+export interface AutomationInstallCommandOptions {
+  tasks?: AutomationTaskId[];
+  every?: string;
+  quiet?: string;
+  gardenEvery?: string;
+  gardenOff?: boolean;
+  cwd?: string;
+  homeDir?: string;
+  plistPath?: string;
+  gardenPlistPath?: string;
+  updatePlistPath?: string;
+  programArguments?: string[];
+  gardenProgramArguments?: string[];
+  updateProgramArguments?: string[];
+  env?: NodeJS.ProcessEnv;
+  exec?: AutomationCommandExecFn;
+  now?: Date;
+  configPath?: string;
+}
+
+export interface AutomationUninstallCommandOptions {
+  tasks?: AutomationTaskId[];
+  homeDir?: string;
+  plistPath?: string;
+  gardenPlistPath?: string;
+  updatePlistPath?: string;
+  exec?: AutomationCommandExecFn;
+}
+
+export interface AutomationStatusCommandOptions {
+  tasks?: AutomationTaskId[];
+  homeDir?: string;
+  plistPath?: string;
+  gardenPlistPath?: string;
+  updatePlistPath?: string;
+  legacyCapturePlistPath?: string;
+  exec?: AutomationCommandExecFn;
+}
 
 const TASK_LABELS: Record<AutomationTaskId, string> = {
   sync: "sync automation",
@@ -22,9 +63,9 @@ const TASK_LABELS: Record<AutomationTaskId, string> = {
 };
 
 export async function runAutomationInstall(
-  options: AutomationInstallOptions = {},
+  options: AutomationInstallCommandOptions = {},
 ): Promise<CommandResult> {
-  const result = await installAutomation(options);
+  const result = await installAutomation(toAutomationInstallOptions(options));
   if (result.status === "invalid") {
     return { stdout: "", stderr: `almanac: ${result.error}\n`, exitCode: 1 };
   }
@@ -48,9 +89,9 @@ export async function runAutomationInstall(
 }
 
 export async function runAutomationUninstall(
-  options: AutomationUninstallOptions = {},
+  options: AutomationUninstallCommandOptions = {},
 ): Promise<CommandResult> {
-  const result = await uninstallAutomation(options);
+  const result = await uninstallAutomation(toAutomationUninstallOptions(options));
   if (result.status === "not-installed") {
     return {
       stdout: "almanac: automation not installed\n",
@@ -68,9 +109,9 @@ export async function runAutomationUninstall(
 }
 
 export async function runAutomationStatus(
-  options: AutomationStatusOptions = {},
+  options: AutomationStatusCommandOptions = {},
 ): Promise<CommandResult> {
-  const result = await readAutomationStatus(options);
+  const result = await readAutomationStatus(toAutomationStatusOptions(options));
   return {
     stdout: result.sections.map(formatAutomationStatusSection).join(""),
     stderr: "",
@@ -80,6 +121,57 @@ export async function runAutomationStatus(
 
 export function defaultPlistPath(home?: string): string {
   return defaultSyncAutomationPlistPath(home);
+}
+
+function toAutomationInstallOptions(
+  options: AutomationInstallCommandOptions,
+): AutomationInstallOptions {
+  return {
+    tasks: options.tasks,
+    every: options.every,
+    quiet: options.quiet,
+    gardenEvery: options.gardenEvery,
+    gardenOff: options.gardenOff,
+    cwd: options.cwd,
+    homeDir: options.homeDir,
+    plistPath: options.plistPath,
+    gardenPlistPath: options.gardenPlistPath,
+    updatePlistPath: options.updatePlistPath,
+    programArguments: options.programArguments,
+    gardenProgramArguments: options.gardenProgramArguments,
+    updateProgramArguments: options.updateProgramArguments,
+    env: options.env,
+    exec: options.exec,
+    now: options.now,
+    configPath: options.configPath,
+  };
+}
+
+function toAutomationUninstallOptions(
+  options: AutomationUninstallCommandOptions,
+): AutomationUninstallOptions {
+  return {
+    tasks: options.tasks,
+    homeDir: options.homeDir,
+    plistPath: options.plistPath,
+    gardenPlistPath: options.gardenPlistPath,
+    updatePlistPath: options.updatePlistPath,
+    exec: options.exec,
+  };
+}
+
+function toAutomationStatusOptions(
+  options: AutomationStatusCommandOptions,
+): AutomationStatusOptions {
+  return {
+    tasks: options.tasks,
+    homeDir: options.homeDir,
+    plistPath: options.plistPath,
+    gardenPlistPath: options.gardenPlistPath,
+    updatePlistPath: options.updatePlistPath,
+    legacyCapturePlistPath: options.legacyCapturePlistPath,
+    exec: options.exec,
+  };
 }
 
 function formatAutomationInstall(result: {

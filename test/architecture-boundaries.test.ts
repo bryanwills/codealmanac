@@ -488,6 +488,17 @@ describe("architecture boundaries", () => {
     expect(wikiSourcesMaintenance).not.toContain("MigrateLegacySources");
   });
 
+  it("keeps automation command options owned by the command adapter", async () => {
+    const automationCommand = await readSource("src/cli/commands/automation.ts");
+
+    expect(automationCommand).toContain("AutomationInstallCommandOptions");
+    expect(automationCommand).toContain("toAutomationInstallOptions");
+    expect(automationCommand).not.toContain(
+      "AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions",
+    );
+    expect(automationCommand).not.toContain("export type { AutomationStatusOptions }");
+  });
+
   it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");

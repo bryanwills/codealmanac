@@ -368,3 +368,10 @@ Fiftieth production slice:
 - Made `ReviewCommandOutput` an explicit review command output contract instead of an alias over `CommandResult`.
 - Removed now-unneeded `CommandResult` imports from config and review command adapters.
 - Guarded the review adapter against regressing to the generic command-result alias.
+
+Fifty-first production slice:
+
+- Made automation install, uninstall, and status command option shapes explicit in `src/cli/commands/automation.ts`.
+- Removed the exported `AutomationOptions` service-type intersection and `AutomationStatusOptions` re-export from the command adapter.
+- Added command-local mappers into service automation option contracts before calling install, uninstall, or status services.
+- Guarded the automation command against regressing to service-owned option aliases.
