@@ -1000,9 +1000,8 @@ describe("architecture boundaries", () => {
     const setupAutoUpdateStep = await readSource(
       "src/cli/commands/setup/auto-update-step.ts",
     );
-    const setupWikiState = await readSource(
-      "src/services/setup/wiki-state.ts",
-    );
+    const setupServiceIndex = await readSource("src/services/setup/index.ts");
+    const setupWikiState = await readSource("src/services/wiki/setup-state.ts");
     const setupTypes = await readSource("src/cli/commands/setup/types.ts");
     const setupRegistration = await readSource(
       "src/edges/cli/register-setup-commands.ts",
@@ -1041,13 +1040,17 @@ describe("architecture boundaries", () => {
     expect(setupIndex).not.toContain("process.stdout");
     expect(setupIndex).not.toContain("process.stdin.isTTY");
     expect(setupIndex).toContain("makeSetupTheme(options.color !== false)");
-    expect(setupIndex).toContain("readSetupWikiState");
+    expect(setupIndex).toContain("services/wiki/setup-state.js");
     expect(setupNextSteps).not.toContain("node:fs");
     expect(setupNextSteps).not.toContain("existsSync");
     expect(setupNextSteps).not.toContain("readdirSync");
     expect(setupAutomationStep).not.toContain("../automation.js");
     expect(setupAutomationStep).not.toContain("process.cwd()");
     expect(setupAutoUpdateStep).not.toContain("../automation.js");
+    expect(existsSync(join(ROOT, "src/services/setup/wiki-state.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/wiki/setup-state.ts"))).toBe(true);
+    expect(setupServiceIndex).not.toContain("readSetupWikiState");
+    expect(setupServiceIndex).not.toContain("wiki-state");
     expect(setupWikiState).toContain("existingPageCount");
     expect(setupWikiState).toContain("readdirSync");
     expect(setupTypes).toContain("interface SetupOptions");

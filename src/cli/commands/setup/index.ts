@@ -3,7 +3,7 @@ export {
   CODEX_INSTRUCTIONS_START,
   hasCodexInstructions,
 } from "../../../services/setup/index.js";
-import { readSetupWikiState } from "../../../services/setup/index.js";
+import { readSetupWikiState } from "../../../services/wiki/setup-state.js";
 import { chooseDefaultAgent } from "./agent-choice.js";
 import { runAutoCommitSetupStep } from "./auto-commit-step.js";
 import {

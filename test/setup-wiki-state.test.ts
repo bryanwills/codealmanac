@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { readSetupWikiState } from "../src/services/setup/index.js";
+import { readSetupWikiState } from "../src/services/wiki/setup-state.js";
 import {
   makeRepo,
   scaffoldWiki,

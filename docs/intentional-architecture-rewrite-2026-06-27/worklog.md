@@ -1022,3 +1022,10 @@ One-hundred-fifty-third production slice:
 - Let `src/platform/automation/launchd.ts` remain the owner of deciding whether a launchd plist exists before removal.
 - Kept the automation service focused on the install plan decision: if the plan disables Garden, ask platform automation to remove that plist.
 - Added a boundary guard so automation services cannot reintroduce `existsSync`.
+
+One-hundred-fifty-fourth production slice:
+
+- Moved setup next-step wiki page counting from `src/services/setup/wiki-state.ts` to `src/services/wiki/setup-state.ts`.
+- Removed the setup service export for `readSetupWikiState` so setup no longer owns wiki filesystem state.
+- Kept `src/cli/commands/setup/index.ts` as the consumer that renders next steps from the wiki-state read model.
+- Added boundary guards so setup services cannot re-own wiki-state filesystem scanning.

@@ -43,9 +43,3 @@ export type {
   SetupProviderView,
   SetupSpawnCliFn,
 } from "./agent-choice.js";
-export {
-  readSetupWikiState,
-} from "./wiki-state.js";
-export type {
-  SetupWikiState,
-} from "./wiki-state.js";
