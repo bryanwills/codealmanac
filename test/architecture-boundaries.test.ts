@@ -240,6 +240,19 @@ describe("architecture boundaries", () => {
     expect(syncCommand).not.toContain("syncAbsorbContext");
   });
 
+  it("keeps lifecycle operation command adapters out of run-start mechanics", async () => {
+    const operationsCommand = await readSource("src/cli/commands/operations.ts");
+
+    expect(operationsCommand).toContain("services/lifecycle/index.js");
+    expect(operationsCommand).not.toContain("../../operations/index");
+    expect(operationsCommand).not.toContain("../../absorb");
+    expect(operationsCommand).not.toContain("resolveProvider");
+    expect(operationsCommand).not.toContain("operations.build");
+    expect(operationsCommand).not.toContain("operations.garden");
+    expect(operationsCommand).not.toContain("absorb.startRun");
+    expect(operationsCommand).not.toContain("initContext");
+  });
+
   it("keeps migrate legacy-sources adapter out of source migration mechanics", async () => {
     const migrateCommand = await readSource("src/cli/commands/migrate.ts");
 

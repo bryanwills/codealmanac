@@ -27,7 +27,11 @@ sources:
   - id: operations
     type: file
     path: src/cli/commands/operations.ts
-    note: Starts lifecycle operation jobs from CLI command handling.
+    note: CLI adapter that renders lifecycle operation workflow results.
+  - id: lifecycle-service
+    type: file
+    path: src/services/lifecycle/
+    note: Resolves providers, applies foreground/background policy, and starts lifecycle operation runs.
   - id: provider-automation-boundary-plan
     type: file
     path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
@@ -48,7 +52,7 @@ verified: 2026-05-28T00:00:00.000Z
 
 # Wiki Lifecycle Operations
 
-V1 names the AI write surface as three product operations: Build, Absorb, and Garden. The [[lifecycle-cli]] expresses user intent, but the operation layer owns wiki semantics and constructs the provider-neutral `OperationSpec` that [[process-manager-runs]] executes through [[harness-providers]]. [[lifecycle-architecture]] is the reading map for the surrounding CLI, prompt, job-record, provider, and automation pages. [@build] [@absorb] [@garden] [@types] [@operations]
+V1 names the AI write surface as three product operations: Build, Absorb, and Garden. The [[lifecycle-cli]] expresses user intent, `src/services/lifecycle/` resolves provider and run-mode workflow policy, and the operation layer owns wiki semantics by constructing the provider-neutral `OperationSpec` that [[process-manager-runs]] executes through [[harness-providers]]. [[lifecycle-architecture]] is the reading map for the surrounding CLI, prompt, job-record, provider, and automation pages. [@build] [@absorb] [@garden] [@types] [@operations] [@lifecycle-service]
 
 ## Operation meanings
 
@@ -76,11 +80,12 @@ This framing matters because Absorb is not a neutral menu of possible update str
 
 ## Boundary
 
-Operations choose:
+The lifecycle service chooses provider/model selection, foreground/background mode, and whether a JSON response is valid for the requested run mode.
+
+Operation modules choose:
 
 - the operation prompt from [[operation-prompts]]
 - runtime context text
-- provider/model selection passed in by command handling
 - requested base tools
 - run metadata such as operation, target kind, and target paths
 

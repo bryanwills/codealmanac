@@ -16,10 +16,14 @@ sources:
   - id: operation-command
     type: file
     path: src/cli/commands/operations.ts
-    note: Implements command helpers that start foreground and background lifecycle operation runs.
+    note: Renders lifecycle operation workflow results for init, absorb, ingest, and garden.
+  - id: lifecycle-service
+    type: file
+    path: src/services/lifecycle/
+    note: Resolves lifecycle operation providers and starts foreground or background runs.
   - id: register-wiki-lifecycle-commands
     type: file
-    path: src/cli/register-wiki-lifecycle-commands.ts
+    path: src/edges/cli/register-wiki-lifecycle-commands.ts
     note: Registers the public lifecycle command surface for init, absorb, ingest, sync, garden, and jobs-related routing.
   - id: jobs-layer
     type: file
