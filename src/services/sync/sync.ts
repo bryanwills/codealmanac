@@ -28,7 +28,13 @@ export interface SyncWorkflowReadyItem {
   toLine: number;
 }
 
-export interface SyncWorkflowStartedItem extends SyncWorkflowReadyItem {
+export interface SyncWorkflowStartedItem {
+  app: SyncWorkflowApp;
+  sessionId: string;
+  transcriptPath: string;
+  repoRoot: string;
+  fromLine: number;
+  toLine: number;
   jobId: string;
 }
 
@@ -145,7 +151,12 @@ function syncWorkflowStartedItemFromSweep(
   item: sync.SyncSummary["started"][number],
 ): SyncWorkflowStartedItem {
   return {
-    ...syncWorkflowReadyItemFromSweep(item),
+    app: item.app,
+    sessionId: item.sessionId,
+    transcriptPath: item.transcriptPath,
+    repoRoot: item.repoRoot,
+    fromLine: item.fromLine,
+    toLine: item.toLine,
     jobId: item.jobId,
   };
 }

@@ -502,3 +502,9 @@ Seventy-first production slice:
 - Flattened review command option contracts in `src/cli/commands/review.ts`.
 - Replaced the broad `ReviewOptions` base with explicit add, show, list, and item option contracts.
 - Kept markdown extraction behind a tiny private helper input type rather than a public command inheritance chain.
+
+Seventy-second production slice:
+
+- Flattened `SyncWorkflowStartedItem` so started sync jobs own their full result payload instead of extending ready sync items.
+- Made `syncWorkflowStartedItemFromSweep` map every field explicitly rather than spreading the ready-item mapper.
+- Guarded the sync service against reintroducing started-item inheritance or mapper reuse.

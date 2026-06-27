@@ -540,6 +540,10 @@ describe("architecture boundaries", () => {
 
     expect(syncServiceIndex).not.toContain("../../sync");
     expect(syncService).not.toContain("export type SyncWorkflowSummary = sync.SyncSummary");
+    expect(syncService).not.toContain(
+      "SyncWorkflowStartedItem extends SyncWorkflowReadyItem",
+    );
+    expect(syncService).not.toContain("...syncWorkflowReadyItemFromSweep(item)");
     expect(syncService).toContain("syncWorkflowSummaryFromSweep");
     expect(syncCommand).toContain("services/sync/index.js");
     expect(syncCommand).not.toContain("../../sync");
