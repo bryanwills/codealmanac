@@ -989,3 +989,9 @@ One-hundred-forty-eighth production slice:
 - Removed `homedir()` defaults from automation planning, status, uninstall, migration, and legacy-hook cleanup service surfaces.
 - Removed the unused sync automation plist-path compatibility export from the automation service catalog.
 - Added boundary guards so automation services cannot reintroduce ambient home-directory ownership and command options keep carrying `homeDir` explicitly.
+
+One-hundred-forty-ninth production slice:
+
+- Made setup instruction installation require an explicit `homeDir` instead of defaulting to `homedir()` inside `src/services/setup/instructions.ts`.
+- Threaded the existing setup command `homeDir` through the guide-install step into the setup service.
+- Added boundary guards so setup instruction services cannot reintroduce ambient home-directory ownership.

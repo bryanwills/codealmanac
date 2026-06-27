@@ -12,6 +12,7 @@ import {
 
 export interface GuidesSetupStepOptions {
   skipGuides?: boolean;
+  homeDir: string;
   claudeDir?: string;
   codexDir?: string;
   cursorDir?: string;
@@ -43,6 +44,7 @@ export async function runGuidesSetupStep(args: {
   try {
     const summary = await installSetupInstructions({
       targets: args.targets,
+      homeDir: args.options.homeDir,
       claudeDir: args.options.claudeDir,
       codexDir: args.options.codexDir,
       cursorDir: args.options.cursorDir,

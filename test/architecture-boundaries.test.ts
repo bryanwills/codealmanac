@@ -1174,6 +1174,9 @@ describe("architecture boundaries", () => {
     expect(setupInstructions).not.toContain(
       "Promise<AgentInstructionsChange>",
     );
+    expect(setupInstructions).not.toContain("homedir");
+    expect(setupInstructions).not.toContain("homeDir?: string");
+    expect(setupInstructions).toContain("homeDir: string");
     expect(setupInstructions).toContain(
       "setupInstructionTargetFromAgentTarget",
     );

@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
-import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -58,20 +57,19 @@ export interface InstallSetupInstructionsOptions {
   windsurfDir?: string;
   opencodeDir?: string;
   guidesDir?: string;
-  homeDir?: string;
+  homeDir: string;
 }
 
 export async function installSetupInstructions(
   options: InstallSetupInstructionsOptions,
 ): Promise<SetupInstructionsChange> {
-  const home = options.homeDir ?? homedir();
   const change = await installAgentInstructions({
     targets: options.targets,
-    claudeDir: options.claudeDir ?? path.join(home, ".claude"),
-    codexDir: options.codexDir ?? path.join(home, ".codex"),
-    cursorDir: options.cursorDir ?? path.join(home, ".cursor"),
-    windsurfDir: options.windsurfDir ?? path.join(home, ".codeium", "windsurf"),
-    opencodeDir: options.opencodeDir ?? path.join(home, ".config", "opencode"),
+    claudeDir: options.claudeDir ?? path.join(options.homeDir, ".claude"),
+    codexDir: options.codexDir ?? path.join(options.homeDir, ".codex"),
+    cursorDir: options.cursorDir ?? path.join(options.homeDir, ".cursor"),
+    windsurfDir: options.windsurfDir ?? path.join(options.homeDir, ".codeium", "windsurf"),
+    opencodeDir: options.opencodeDir ?? path.join(options.homeDir, ".config", "opencode"),
     guidesDir: options.guidesDir ?? resolveSetupGuidesDir(),
   });
   return {
