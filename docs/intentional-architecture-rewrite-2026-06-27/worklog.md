@@ -940,3 +940,10 @@ One-hundred-forty-first production slice:
 - Moved uninstall confirmation prompts off direct `process.stdin` reads.
 - Kept `src/edges/cli/register-setup-commands.ts` as the owner of the real process stdin stream for `almanac uninstall`.
 - Added an interactive uninstall test that answers prompts through the injected stream and an architecture guard against direct uninstall stdin ownership.
+
+One-hundred-forty-second production slice:
+
+- Added an explicit init request context field to the lifecycle workflow contract.
+- Moved init command-context prose from `src/services/lifecycle/operations.ts` into `src/cli/commands/operations.ts`.
+- Kept the lifecycle service focused on provider resolution and operation execution, not command request wording.
+- Added a behavior assertion for the generated init context and a boundary guard against lifecycle services owning command-context prose.

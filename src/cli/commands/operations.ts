@@ -97,6 +97,7 @@ function toInitOperationWorkflowOptions(
 ): InitOperationWorkflowOptions {
   return {
     cwd: options.cwd,
+    context: formatInitRequestContext(options),
     using: options.using,
     background: options.background,
     json: options.json,
@@ -109,6 +110,15 @@ function toInitOperationWorkflowOptions(
     workerEnvironment: options.workerEnvironment,
     pid: options.pid,
   };
+}
+
+function formatInitRequestContext(options: InitCommandOptions): string {
+  return [
+    "Command context:",
+    "- Command: init",
+    `- Force requested: ${options.force === true ? "yes" : "no"}`,
+    `- Non-interactive confirmation: ${options.yes === true ? "yes" : "no"}`,
+  ].join("\n");
 }
 
 function toAbsorbOperationWorkflowOptions(

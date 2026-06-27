@@ -63,6 +63,7 @@ export type LifecycleAbsorbSourceResolver = (
 
 export interface InitOperationWorkflowOptions {
   cwd: string;
+  context: string;
   using?: string;
   background?: boolean;
   json?: boolean;
@@ -139,7 +140,7 @@ export async function runInitOperationWorkflow(
           cwd: options.cwd,
           provider: provider.value,
           background,
-          context: initContext(options),
+          context: options.context,
           force: options.force,
           onEvent: options.onEvent,
           startForeground: options.startForeground,
@@ -232,13 +233,4 @@ async function resolveProvider(options: {
   } catch (error: unknown) {
     return { status: "failed", error };
   }
-}
-
-function initContext(options: InitOperationWorkflowOptions): string {
-  return [
-    "Command context:",
-    `- Command: init`,
-    `- Force requested: ${options.force === true ? "yes" : "no"}`,
-    `- Non-interactive confirmation: ${options.yes === true ? "yes" : "no"}`,
-  ].join("\n");
 }

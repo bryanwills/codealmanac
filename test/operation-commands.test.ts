@@ -121,26 +121,32 @@ describe("operation command wrappers", () => {
   it("runs init in foreground by default and rejects --json foreground", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "cmd-init");
+      const seen: unknown[] = [];
 
       const foreground = await runInitCommand({
         cwd: repo,
         using: "codex/gpt-5.4",
-        startForeground: async (options) => ({
-          jobId: "run_init",
-          record: {
-            version: 1,
-            id: "run_init",
-            operation: "build",
-            status: "done",
-            repoRoot: options.repoRoot,
-            pid: 1,
-            provider: options.spec.provider.id,
-            model: options.spec.provider.model,
-            startedAt: "2026-05-09T20:16:00.000Z",
-            logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
-          },
-          result: { success: true, result: "done" },
-        }),
+        force: true,
+        yes: true,
+        startForeground: async (options) => {
+          seen.push(options);
+          return {
+            jobId: "run_init",
+            record: {
+              version: 1,
+              id: "run_init",
+              operation: "build",
+              status: "done",
+              repoRoot: options.repoRoot,
+              pid: 1,
+              provider: options.spec.provider.id,
+              model: options.spec.provider.model,
+              startedAt: "2026-05-09T20:16:00.000Z",
+              logPath: join(options.repoRoot, ".almanac", "runs", "x.jsonl"),
+            },
+            result: { success: true, result: "done" },
+          };
+        },
       });
 
       expect(foreground).toMatchObject({
@@ -148,6 +154,16 @@ describe("operation command wrappers", () => {
         stdout:
           "init finished: run_init\n" +
           "Browse the wiki: almanac serve\n",
+      });
+      expect(seen[0]).toMatchObject({
+        spec: {
+          prompt: expect.stringContaining([
+            "Command context:",
+            "- Command: init",
+            "- Force requested: yes",
+            "- Non-interactive confirmation: yes",
+          ].join("\n")),
+        },
       });
 
       const jsonForeground = await runInitCommand({
