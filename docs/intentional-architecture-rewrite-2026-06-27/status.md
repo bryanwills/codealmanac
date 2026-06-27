@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 177 committed rewrite commits past `dev`. The worklog records 131 production slices so far.
+The branch has 178 committed rewrite commits past `dev`. The worklog records 132 production slices so far.
 
 The diff is broad: more than 300 files changed, with about 18.9k insertions and 10k deletions.
 
@@ -36,7 +36,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Immediate Next Work
 
-Continue inspecting remaining non-edge `process.*` reads and decide which are legitimate platform mechanics versus runtime facts that should be passed from an edge. The indexer warning path and provider enablement path are now explicit; remaining candidates are mostly registry/store platform behavior and provider/platform mechanics.
+Continue inspecting remaining non-edge `process.*` reads and decide which are legitimate platform mechanics versus runtime facts that should be passed from an edge. The indexer warning, provider enablement, and autoregistration registry-matching paths are now explicit; remaining candidates are mostly provider/platform mechanics and viewer/server boundaries.
 
 ## Decision Log
 

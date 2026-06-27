@@ -1548,11 +1548,19 @@ describe("architecture boundaries", () => {
     expect(doctorService).not.toContain("collectHealthReport");
   });
 
-  it("keeps registry persistence in an explicit store", () => {
+  it("keeps registry persistence in an explicit store", async () => {
+    const autoRegistration = await readSource(
+      "src/services/wiki/autoregistration.ts",
+    );
+
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/wiki/registry/index.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/wiki/registry"))).toBe(false);
+    expect(autoRegistration).toContain("findRegistryEntry");
+    expect(autoRegistration).not.toContain("process.platform");
+    expect(autoRegistration).not.toContain("function samePath");
+    expect(autoRegistration).not.toContain("toLowerCase()");
   });
 });
 

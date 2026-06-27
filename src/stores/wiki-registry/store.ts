@@ -180,7 +180,16 @@ export async function findEntry(params: {
   name?: string;
   path?: string;
 }): Promise<RegistryEntry | null> {
-  const entries = await readRegistry();
+  return findRegistryEntry(await readRegistry(), params);
+}
+
+export function findRegistryEntry(
+  entries: RegistryEntry[],
+  params: {
+    name?: string;
+    path?: string;
+  },
+): RegistryEntry | null {
   for (const entry of entries) {
     if (params.name !== undefined && entry.name === params.name) return entry;
     if (params.path !== undefined && pathsEqual(entry.path, params.path)) {

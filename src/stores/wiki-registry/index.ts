@@ -3,6 +3,7 @@ export {
   dropEntry,
   ensureGlobalDir,
   findEntry,
+  findRegistryEntry,
   readRegistry,
   writeRegistry,
   type RegistryEntry,

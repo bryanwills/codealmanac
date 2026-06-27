@@ -5,6 +5,7 @@ import { findNearestAlmanacDir } from "../../paths.js";
 import { toKebabCase } from "../../slug.js";
 import {
   addEntry,
+  findRegistryEntry,
   readRegistry,
   type RegistryEntry,
 } from "../../stores/wiki-registry/index.js";
@@ -37,8 +38,8 @@ export async function autoRegisterIfNeeded(
     // count and needlessly hit the filesystem.
     const entries = await readRegistry();
 
-    const existing = entries.find((e) => samePath(e.path, repoRoot));
-    if (existing !== undefined) return existing;
+    const existing = findRegistryEntry(entries, { path: repoRoot });
+    if (existing !== null) return existing;
 
     // Derive a kebab-case name from the directory. If the dir name is
     // somehow empty (e.g. repo is at filesystem root), skip — we don't
@@ -49,7 +50,7 @@ export async function autoRegisterIfNeeded(
     // Resolve collisions on name by falling back to a disambiguated form.
     // Auto-registration should never overwrite an existing named entry
     // that points elsewhere.
-    const finalName = resolveNameCollision(entries, name, repoRoot);
+    const finalName = resolveNameCollision(entries, name);
     if (finalName === null) return null;
 
     const entry: RegistryEntry = {
@@ -90,12 +91,9 @@ export async function autoRegisterIfNeeded(
 function resolveNameCollision(
   entries: RegistryEntry[],
   baseName: string,
-  repoPath: string,
 ): string | null {
   const owner = entries.find((e) => e.name === baseName);
-  if (owner === undefined || samePath(owner.path, repoPath)) {
-    return baseName;
-  }
+  if (owner === undefined) return baseName;
   const taken = new Set(entries.map((e) => e.name));
   const MAX_ATTEMPTS = 1000;
   for (let suffix = 2; suffix < MAX_ATTEMPTS + 2; suffix += 1) {
@@ -103,16 +101,4 @@ function resolveNameCollision(
     if (!taken.has(candidate)) return candidate;
   }
   return null;
-}
-
-/**
- * Mirror `pathsEqual` in `stores/wiki-registry/store.ts` — case-insensitive on
- * macOS/Windows, case-sensitive on Linux. Duplicated here rather than
- * exported to keep the registry module's public surface small.
- */
-function samePath(a: string, b: string): boolean {
-  if (process.platform === "darwin" || process.platform === "win32") {
-    return a.toLowerCase() === b.toLowerCase();
-  }
-  return a === b;
 }

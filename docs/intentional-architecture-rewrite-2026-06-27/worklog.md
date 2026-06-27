@@ -869,3 +869,10 @@ One-hundred-thirty-first production slice:
 - Made provider recommendation and setup agent selection receive the already-threaded environment explicitly.
 - Removed the unused provider-list message helper from readiness view.
 - Added an architecture guard so provider enablement cannot reintroduce ambient environment reads.
+
+One-hundred-thirty-second production slice:
+
+- Moved snapshot registry path matching behind the wiki-registry store contract with `findRegistryEntry`.
+- Removed the duplicated `samePath` helper and `process.platform` read from autoregistration.
+- Kept autoregistration on a single registry snapshot while letting the store own case-insensitive path matching.
+- Added an architecture guard so autoregistration cannot reintroduce platform-specific path equality.
