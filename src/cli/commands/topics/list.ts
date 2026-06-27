@@ -16,6 +16,9 @@ export async function runTopicsList(
       cwd: options.cwd,
       wiki: options.wiki,
     }),
-    options.json,
+    {
+      json: options.json,
+      color: options.color,
+    },
   );
 }

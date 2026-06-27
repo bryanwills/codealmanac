@@ -300,6 +300,12 @@ describe("architecture boundaries", () => {
     const topicsReadRender = await readSource(
       "src/cli/commands/topics/read-render.ts",
     );
+    const topicsCommandTypes = await readSource(
+      "src/cli/commands/topics/types.ts",
+    );
+    const registerTopics = await readSource(
+      "src/edges/cli/register-topics-commands.ts",
+    );
     const topicTypes = await readSource("src/services/wiki/topic-types.ts");
     const topicWorkspace = await readSource(
       "src/services/wiki/topic-workspace.ts",
@@ -317,6 +323,12 @@ describe("architecture boundaries", () => {
     }
     expect(topicsReadRender).not.toContain("wiki/topics/yaml");
     expect(topicsReadRender).not.toContain("titleCase");
+    expect(topicsReadRender).toContain("../../../ansi-theme.js");
+    expect(topicsReadRender).not.toContain("../../../ansi.js");
+    expect(topicsReadRender).toContain("makeAnsiTheme(options.color === true)");
+    expect(registerTopics).toContain("shouldUseStdoutColor()");
+    expect(registerTopics).not.toContain("process.stdout.isTTY");
+    expect(topicsCommandTypes).toContain("color?: boolean");
     expect(topicTypes).not.toContain("wiki/query");
     expect(topicTypes).not.toContain("query.");
     expect(topicTypes).not.toContain("WikiTopicRequest extends WikiTopicsRequest");

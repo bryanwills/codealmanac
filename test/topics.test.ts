@@ -217,6 +217,30 @@ describe("almanac topics", () => {
     });
   });
 
+  it("read renderers stay plain by default and color only when requested", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "r");
+      await scaffoldWiki(repo);
+      await runTopicsCreate({ cwd: repo, name: "Auth" });
+      await writePage(repo, "a", "---\ntopics: [auth]\n---\n\nbody\n");
+      await runIndexer({ repoRoot: repo });
+
+      const plainList = await runTopicsList({ cwd: repo });
+      const coloredList = await runTopicsList({ cwd: repo, color: true });
+      const plainShow = await runTopicsShow({ cwd: repo, slug: "auth" });
+      const coloredShow = await runTopicsShow({
+        cwd: repo,
+        slug: "auth",
+        color: true,
+      });
+
+      expect(plainList.stdout).not.toContain("\x1b[");
+      expect(plainShow.stdout).not.toContain("\x1b[");
+      expect(coloredList.stdout).toContain("\x1b[");
+      expect(coloredShow.stdout).toContain("\x1b[");
+    });
+  });
+
   it("show --descendants traverses the DAG", async () => {
     await withTempHome(async (home) => {
       const repo = await makeRepo(home, "r");

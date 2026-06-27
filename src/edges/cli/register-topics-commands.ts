@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { collectOption, emit } from "./helpers.js";
+import { collectOption, emit, shouldUseStdoutColor } from "./helpers.js";
 import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
 
 export function registerTopicsCommands(program: Command): void {
@@ -20,6 +20,7 @@ export function registerTopicsCommands(program: Command): void {
         cwd: process.cwd(),
         wiki: opts.wiki,
         json: opts.json,
+        color: shouldUseStdoutColor(),
       });
       emit(result);
     });
@@ -43,6 +44,7 @@ export function registerTopicsCommands(program: Command): void {
           descendants: opts.descendants,
           wiki: opts.wiki,
           json: opts.json,
+          color: shouldUseStdoutColor(),
         });
         emit(result);
       },

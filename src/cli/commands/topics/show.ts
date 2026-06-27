@@ -17,6 +17,9 @@ export async function runTopicsShow(
       slug: options.slug,
       descendants: options.descendants,
     }),
-    options.json,
+    {
+      json: options.json,
+      color: options.color,
+    },
   );
 }

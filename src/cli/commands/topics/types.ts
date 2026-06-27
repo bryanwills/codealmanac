@@ -8,12 +8,14 @@ export interface TopicsListOptions {
   cwd: string;
   wiki?: string;
   json?: boolean;
+  color?: boolean;
 }
 
 export interface TopicsShowOptions {
   cwd: string;
   wiki?: string;
   json?: boolean;
+  color?: boolean;
   slug: string;
   descendants?: boolean;
 }

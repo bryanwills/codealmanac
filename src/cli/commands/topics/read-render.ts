@@ -1,4 +1,4 @@
-import { BLUE, DIM, RST } from "../../../ansi.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../../ansi-theme.js";
 import type {
   WikiTopicRecord,
   WikiTopicResult,
@@ -7,11 +7,16 @@ import type {
 import { formatTextTable } from "../table.js";
 import type { TopicsCommandOutput } from "./types.js";
 
+interface TopicsReadRenderOptions {
+  json?: boolean;
+  color?: boolean;
+}
+
 export function renderTopicsList(
   rows: WikiTopicSummary[],
-  json?: boolean,
+  options: TopicsReadRenderOptions = {},
 ): TopicsCommandOutput {
-  if (json === true) return ok(`${JSON.stringify(rows, null, 2)}\n`);
+  if (options.json === true) return ok(`${JSON.stringify(rows, null, 2)}\n`);
 
   if (rows.length === 0) {
     return ok(
@@ -19,11 +24,12 @@ export function renderTopicsList(
     );
   }
 
+  const theme = makeAnsiTheme(options.color === true);
   const lines = formatTextTable({
     headers: ["TOPIC", "PAGES"],
     rows: rows.map((row) => [
-      `${BLUE}${row.slug}${RST}`,
-      `${DIM}${formatPageCount(row.page_count)}${RST}`,
+      `${theme.BLUE}${row.slug}${theme.RST}`,
+      `${theme.DIM}${formatPageCount(row.page_count)}${theme.RST}`,
     ]),
   });
   return ok(`${lines.join("\n")}\n`);
@@ -31,14 +37,17 @@ export function renderTopicsList(
 
 export function renderTopicsShow(
   result: WikiTopicResult,
-  json?: boolean,
+  options: TopicsReadRenderOptions = {},
 ): TopicsCommandOutput {
   switch (result.status) {
     case "found":
       return ok(
-        json === true
+        options.json === true
           ? `${JSON.stringify(result.topic, null, 2)}\n`
-          : formatTopicRecord(result.topic),
+          : formatTopicRecord(
+              result.topic,
+              makeAnsiTheme(options.color === true),
+            ),
       );
     case "empty-slug":
       return error("almanac: empty topic slug\n");
@@ -47,21 +56,31 @@ export function renderTopicsShow(
   }
 }
 
-function formatTopicRecord(record: WikiTopicRecord): string {
+function formatTopicRecord(record: WikiTopicRecord, theme: AnsiTheme): string {
   const lines: string[] = [];
-  lines.push(`${DIM}slug:${RST}         ${BLUE}${record.slug}${RST}`);
-  lines.push(`${DIM}title:${RST}        ${record.title}`);
-  lines.push(`${DIM}description:${RST}  ${record.description ?? "—"}`);
-  lines.push(`${DIM}parents:${RST}      ${formatTopicList(record.parents)}`);
-  lines.push(`${DIM}children:${RST}     ${formatTopicList(record.children)}`);
+  lines.push(
+    `${theme.DIM}slug:${theme.RST}         ${theme.BLUE}${record.slug}${theme.RST}`,
+  );
+  lines.push(`${theme.DIM}title:${theme.RST}        ${record.title}`);
+  lines.push(
+    `${theme.DIM}description:${theme.RST}  ${record.description ?? "—"}`,
+  );
+  lines.push(
+    `${theme.DIM}parents:${theme.RST}      ${formatTopicList(record.parents)}`,
+  );
+  lines.push(
+    `${theme.DIM}children:${theme.RST}     ${formatTopicList(record.children)}`,
+  );
   const pagesLabel = record.descendants_used === true
     ? "pages (incl. descendants)"
     : "pages";
-  lines.push(`${DIM}${pagesLabel}:${RST}`);
+  lines.push(`${theme.DIM}${pagesLabel}:${theme.RST}`);
   if (record.pages.length === 0) {
     lines.push("  —");
   } else {
-    for (const page of record.pages) lines.push(`  ${BLUE}${page}${RST}`);
+    for (const page of record.pages) {
+      lines.push(`  ${theme.BLUE}${page}${theme.RST}`);
+    }
   }
   return `${lines.join("\n")}\n`;
 }
