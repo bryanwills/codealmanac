@@ -1297,9 +1297,13 @@ describe("architecture boundaries", () => {
   it("keeps doctor diagnostics out of the CLI command package", async () => {
     const doctorIndex = await readSource("src/cli/commands/doctor/index.ts");
     const doctorRender = await readSource("src/cli/commands/doctor/render.ts");
+    const doctorFormat = await readSource("src/cli/commands/doctor/format.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
     const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
     const diagnosticsIndex = await readSource("src/services/diagnostics/index.ts");
+    const setupRegistration = await readSource(
+      "src/edges/cli/register-setup-commands.ts",
+    );
     const doctorService = await readSource("src/services/wiki/doctor.ts");
     const doctorTypes = await readSource("src/services/wiki/doctor-types.ts");
     const doctorHealth = await readSource("src/services/wiki/doctor-health.ts");
@@ -1321,6 +1325,10 @@ describe("architecture boundaries", () => {
     expect(doctorIndex).not.toContain("readStateForDoctor");
     expect(doctorRender).toContain("renderDoctorReport");
     expect(doctorRender).toContain("formatReport");
+    expect(doctorFormat).not.toContain("process.stdout");
+    expect(doctorFormat).not.toContain("DoctorOptions");
+    expect(diagnosticsTypes).not.toContain("stdout?:");
+    expect(setupRegistration).toContain("color: process.stdout.isTTY === true");
     expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
     expect(diagnosticsTypes).not.toContain("from \"../../agent/types.js\"");
     expect(diagnosticsTypes).not.toContain("from \"../../config/index.js\"");

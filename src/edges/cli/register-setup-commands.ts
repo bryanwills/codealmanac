@@ -81,6 +81,7 @@ export function registerSetupCommands(
           json: opts.json,
           installOnly: opts.installOnly,
           wikiOnly: opts.wikiOnly,
+          color: process.stdout.isTTY === true,
         });
         emit(result);
       },

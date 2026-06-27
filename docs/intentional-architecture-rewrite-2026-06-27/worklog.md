@@ -821,3 +821,9 @@ One-hundred-twenty-fourth production slice:
 - Made `streamJobsAttach` require an explicit stream writer instead of defaulting to `process.stdout`.
 - Moved the `jobs attach` stdout writer into `src/edges/cli/register-jobs-commands.ts`.
 - Kept `src/cli/commands/jobs.ts` focused on jobs service request mapping and command result rendering delegation.
+
+One-hundred-twenty-fifth production slice:
+
+- Made the doctor command receive terminal color capability from the CLI edge instead of reading `process.stdout.isTTY` inside the formatter.
+- Removed the unused diagnostics `stdout` option that only existed to support render-time color inference.
+- Kept diagnostics options service-facing while `src/cli/commands/doctor/render.ts` owns JSON/text render options.

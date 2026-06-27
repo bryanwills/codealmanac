@@ -3,15 +3,18 @@ import type {
   AgentDoctorCheck,
   Check,
   CheckStatus,
-  DoctorOptions,
   DoctorReport,
 } from "../../../services/diagnostics/index.js";
 
+export interface DoctorFormatOptions {
+  color?: boolean;
+}
+
 export function formatReport(
   report: DoctorReport,
-  options: DoctorOptions,
+  options: DoctorFormatOptions = {},
 ): string {
-  const color = options.stdout === undefined && process.stdout.isTTY === true;
+  const color = options.color === true;
   const lines: string[] = [];
   lines.push(`Almanac v${report.version}`);
   lines.push("");

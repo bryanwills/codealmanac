@@ -1,13 +1,17 @@
 import { formatReport } from "./format.js";
 import type {
-  DoctorOptions,
   DoctorReport,
   DoctorResult,
 } from "../../../services/diagnostics/index.js";
 
+export interface DoctorRenderOptions {
+  json?: boolean;
+  color?: boolean;
+}
+
 export function renderDoctorReport(
   report: DoctorReport,
-  options: DoctorOptions,
+  options: DoctorRenderOptions,
 ): DoctorResult {
   return {
     stdout: options.json === true

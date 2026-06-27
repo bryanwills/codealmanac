@@ -618,6 +618,7 @@ describe("run() — codealmanac-setup shortcut routing", () => {
     expect(setupMock).not.toHaveBeenCalled();
     expect(doctorMock).toHaveBeenCalledWith({
       cwd: process.cwd(),
+      color: process.stdout.isTTY === true,
       installOnly: true,
       json: undefined,
       wikiOnly: undefined,

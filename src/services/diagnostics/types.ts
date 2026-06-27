@@ -87,8 +87,6 @@ export interface DoctorOptions {
   sqliteProbe?: SqliteProbeResult;
   /** Override the health report collector (tests inject a canned report). */
   collectHealthReportFn?: CollectWikiHealthReport;
-  /** Stdout sink. Tests collect here; production uses process.stdout. */
-  stdout?: NodeJS.WritableStream;
   /** Test-only clock for "last absorb: Xh ago" rendering. */
   now?: () => Date;
 }
