@@ -141,6 +141,7 @@ export function registerSetupCommands(
           yes: opts.yes,
           keepAutomation: opts.keepAutomation,
           keepGuides: opts.keepGuides,
+          color: shouldUseStdoutColor(),
         });
         emit(result);
       },

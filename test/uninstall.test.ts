@@ -44,6 +44,33 @@ async function primeInstalled(env: {
 }
 
 describe("almanac uninstall", () => {
+  it("stays plain by default and colors only when requested", async () => {
+    await withTempHome(async (home) => {
+      const env = await scaffold(home);
+
+      const plain = await captureUninstallOutput({
+        yes: true,
+        isTTY: false,
+        automationPlistPath: env.plistPath,
+        gardenPlistPath: env.gardenPlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+      });
+      const colored = await captureUninstallOutput({
+        yes: true,
+        isTTY: false,
+        automationPlistPath: env.plistPath,
+        gardenPlistPath: env.gardenPlistPath,
+        automationExec: async () => ({}),
+        claudeDir: env.claudeDir,
+        color: true,
+      });
+
+      expect(plain).not.toContain("\x1b[");
+      expect(colored).toContain("\x1b[");
+    });
+  });
+
   it("removes automation + guides + import line when everything is installed", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
@@ -162,6 +189,18 @@ describe("almanac uninstall", () => {
     });
   });
 });
+
+async function captureUninstallOutput(
+  options: NonNullable<Parameters<typeof runUninstall>[0]>,
+): Promise<string> {
+  const out = new PassThrough();
+  const chunks: string[] = [];
+  out.on("data", (chunk) => {
+    chunks.push(chunk.toString("utf8"));
+  });
+  await runUninstall({ ...options, stdout: out });
+  return chunks.join("");
+}
 
 describe("removeImportLine", () => {
   it("removes one or more exact import lines", () => {

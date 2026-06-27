@@ -1,4 +1,4 @@
-import { BLUE, DIM, RST } from "../../ansi.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../ansi-theme.js";
 import type { SetupUninstallResult } from "../../services/setup/index.js";
 
 type CheckedAutomation = Extract<
@@ -6,54 +6,85 @@ type CheckedAutomation = Extract<
   { action: "checked" }
 >;
 
+export interface UninstallRenderOptions {
+  color?: boolean;
+}
+
 export function renderUninstallStart(): string {
   return "\n";
 }
 
-export function renderAutomationKept(): string {
-  return `  ${DIM}\u25cb  Scheduled automation kept${RST}\n`;
+export function renderAutomationKept(
+  options: UninstallRenderOptions = {},
+): string {
+  const theme = themeFor(options);
+  return `  ${theme.DIM}\u25cb  Scheduled automation kept${theme.RST}\n`;
 }
 
-export function renderGuidesKept(): string {
-  return `  ${DIM}\u25cb  Guides kept${RST}\n`;
+export function renderGuidesKept(
+  options: UninstallRenderOptions = {},
+): string {
+  const theme = themeFor(options);
+  return `  ${theme.DIM}\u25cb  Guides kept${theme.RST}\n`;
 }
 
-export function renderUninstallResult(result: SetupUninstallResult): string {
-  return renderAutomationResult(result.automation) +
-    renderGuidesResult(result.guides);
+export function renderUninstallResult(
+  result: SetupUninstallResult,
+  options: UninstallRenderOptions = {},
+): string {
+  const theme = themeFor(options);
+  return renderAutomationResult(result.automation, theme) +
+    renderGuidesResult(result.guides, theme);
 }
 
-export function renderUninstallComplete(): string {
-  return `\n  ${BLUE}\u25c7${RST}  ${BLUE}Uninstall complete${RST}\n\n`;
+export function renderUninstallComplete(
+  options: UninstallRenderOptions = {},
+): string {
+  const theme = themeFor(options);
+  const icon = `${theme.BLUE}\u25c7${theme.RST}`;
+  const label = `${theme.BLUE}Uninstall complete${theme.RST}`;
+  return `\n  ${icon}  ${label}\n\n`;
 }
 
 export function renderConfirmationPrompt(
   question: string,
   defaultYes: boolean,
+  options: UninstallRenderOptions = {},
 ): string {
+  const theme = themeFor(options);
   const hint = defaultYes ? "[Y/n]" : "[y/N]";
-  return `  ${BLUE}\u25c6${RST}  ${question} ${DIM}${hint}${RST} `;
+  const icon = `${theme.BLUE}\u25c6${theme.RST}`;
+  const dimHint = `${theme.DIM}${hint}${theme.RST}`;
+  return `  ${icon}  ${question} ${dimHint} `;
 }
 
 function renderAutomationResult(
   result: SetupUninstallResult["automation"],
+  theme: AnsiTheme,
 ): string {
   if (result.action !== "checked") return "";
 
-  return `  ${BLUE}\u25c7${RST}  ${formatAutomationResult(result)}\n`;
+  return `  ${theme.BLUE}\u25c7${theme.RST}  ${formatAutomationResult(result)}\n`;
 }
 
-function renderGuidesResult(result: SetupUninstallResult["guides"]): string {
+function renderGuidesResult(
+  result: SetupUninstallResult["guides"],
+  theme: AnsiTheme,
+): string {
   if (result.action !== "checked") return "";
 
   if (!result.anyChanges) {
-    return `  ${DIM}\u25cb  Guides not installed${RST}\n`;
+    return `  ${theme.DIM}\u25cb  Guides not installed${theme.RST}\n`;
   }
 
   return (
-    `  ${BLUE}\u25c7${RST}  Guides removed (` +
+    `  ${theme.BLUE}\u25c7${theme.RST}  Guides removed (` +
     `${result.filesTouched.join(", ")})\n`
   );
+}
+
+function themeFor(options: UninstallRenderOptions): AnsiTheme {
+  return makeAnsiTheme(options.color === true);
 }
 
 function formatAutomationResult(result: CheckedAutomation): string {

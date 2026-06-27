@@ -19,10 +19,14 @@ describe("architecture boundaries", () => {
 
   it("keeps process-level CLI machinery inside the CLI edge", async () => {
     const runner = await readSource("src/edges/cli/run.ts");
+    const help = await readSource("src/edges/cli/help.ts");
 
     expect(runner).toContain("from \"commander\"");
     expect(runner).toContain("tryRunInternalJob");
     expect(runner).toContain("readPackageVersion");
+    expect(help).toContain("../../ansi-theme.js");
+    expect(help).not.toContain("../../ansi.js");
+    expect(help).toContain("shouldUseStdoutColor()");
   });
 
   it("keeps CLI registration and shortcut parsing in the CLI edge", () => {
@@ -1091,6 +1095,10 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("almanac: automation removed");
     expect(uninstallRender).toContain("renderUninstallResult");
     expect(uninstallRender).toContain("formatAutomationResult");
+    expect(uninstallRender).toContain("../../ansi-theme.js");
+    expect(uninstallRender).not.toContain("../../ansi.js");
+    expect(uninstallRender).toContain("makeAnsiTheme(options.color === true)");
+    expect(uninstallCommand).toContain("color?: boolean");
   });
 
   it("keeps setup cleanup services behind automation service cleanup verbs", async () => {

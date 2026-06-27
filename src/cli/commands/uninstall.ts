@@ -13,6 +13,7 @@ import {
   renderUninstallComplete,
   renderUninstallResult,
   renderUninstallStart,
+  type UninstallRenderOptions,
 } from "./uninstall-render.js";
 
 type AutomationExecFn = (
@@ -63,6 +64,7 @@ export interface UninstallOptions {
   opencodeDir?: string;
   isTTY?: boolean;
   stdout?: NodeJS.WritableStream;
+  color?: boolean;
 }
 
 export interface UninstallResult {
@@ -83,6 +85,7 @@ export async function runUninstall(
   const cursorDir = options.cursorDir ?? path.join(homedir(), ".cursor");
   const windsurfDir = options.windsurfDir ?? path.join(homedir(), ".codeium", "windsurf");
   const opencodeDir = options.opencodeDir ?? path.join(homedir(), ".config", "opencode");
+  const renderOptions = { color: options.color };
 
   out.write(renderUninstallStart());
 
@@ -95,10 +98,11 @@ export async function runUninstall(
       out,
       "Remove scheduled sync and Garden automation?",
       true,
+      renderOptions,
     );
   }
   if (!removeAutomation) {
-    out.write(renderAutomationKept());
+    out.write(renderAutomationKept(renderOptions));
   }
 
   // Guide + import removal.
@@ -110,10 +114,11 @@ export async function runUninstall(
       out,
       "Remove agent instructions?",
       true,
+      renderOptions,
     );
   }
   if (!removeGuides) {
-    out.write(renderGuidesKept());
+    out.write(renderGuidesKept(renderOptions));
   }
 
   const result = await uninstallSetup({
@@ -129,8 +134,8 @@ export async function runUninstall(
     opencodeDir,
   });
 
-  out.write(renderUninstallResult(result));
-  out.write(renderUninstallComplete());
+  out.write(renderUninstallResult(result, renderOptions));
+  out.write(renderUninstallComplete(renderOptions));
 
   return { stdout: "", stderr: "", exitCode: 0 };
 }
@@ -161,9 +166,10 @@ function confirm(
   out: NodeJS.WritableStream,
   question: string,
   defaultYes: boolean,
+  renderOptions: UninstallRenderOptions,
 ): Promise<boolean> {
   return new Promise((resolve) => {
-    out.write(renderConfirmationPrompt(question, defaultYes));
+    out.write(renderConfirmationPrompt(question, defaultYes, renderOptions));
 
     let buf = "";
     const onData = (chunk: Buffer): void => {
