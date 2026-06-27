@@ -862,3 +862,10 @@ One-hundred-thirtieth production slice:
 - Threaded the warning sink through the force-reindex service and CLI edge so explicit `almanac reindex` still surfaces non-fatal indexing warnings.
 - Replaced stderr monkey-patching tests with direct warning-sink assertions.
 - Added an architecture guard so indexer modules cannot reintroduce terminal output ownership.
+
+One-hundred-thirty-first production slice:
+
+- Removed `process.env` defaults from provider enablement helpers in `src/config/providers.ts`.
+- Made provider recommendation and setup agent selection receive the already-threaded environment explicitly.
+- Removed the unused provider-list message helper from readiness view.
+- Added an architecture guard so provider enablement cannot reintroduce ambient environment reads.

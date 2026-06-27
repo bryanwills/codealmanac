@@ -14,12 +14,12 @@ export {
   type AgentProviderId,
 };
 
-export function isCursorEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+export function isCursorEnabled(env: NodeJS.ProcessEnv): boolean {
   return env.CODEALMANAC_ENABLE_CURSOR === "1";
 }
 
 export function getEnabledAgentProviderIds(
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv,
 ): AgentProviderId[] {
   return isCursorEnabled(env)
     ? [...ALL_AGENT_PROVIDER_IDS]
@@ -28,13 +28,13 @@ export function getEnabledAgentProviderIds(
 
 export function isEnabledAgentProviderId(
   value: string,
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv,
 ): value is AgentProviderId {
   return getEnabledAgentProviderIds(env).includes(value as AgentProviderId);
 }
 
 export function formatEnabledAgentProviderList(
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv,
 ): string {
   return getEnabledAgentProviderIds(env).join(", ");
 }

@@ -107,7 +107,10 @@ export async function chooseDefaultAgent(args: {
       );
     }
   }
-  const selection = resolveSetupAgentSelection(selected);
+  const selection = resolveSetupAgentSelection({
+    selected,
+    environment: args.environment,
+  });
   if (!selection.ok) return selection;
   const provider = selection.provider;
   let selectedChoice = view?.choices.find((choice) => choice.id === provider);

@@ -109,17 +109,22 @@ export async function refreshSetupAgentChoiceView(input: {
 }
 
 export function resolveSetupAgentSelection(
-  selected: string,
+  input: {
+    selected: string;
+    environment: NodeJS.ProcessEnv;
+  },
 ): SetupAgentSelection {
-  const parsed = parseAgentSelection(selected);
+  const parsed = parseAgentSelection(input.selected);
   if (parsed.provider === null) {
     return {
       ok: false,
       error:
-        `unknown agent '${selected}'. Expected one of: ${formatEnabledAgentProviderList()}.`,
+        `unknown agent '${input.selected}'. Expected one of: ${
+          formatEnabledAgentProviderList(input.environment)
+        }.`,
     };
   }
-  if (!isEnabledAgentProviderId(parsed.provider)) {
+  if (!isEnabledAgentProviderId(parsed.provider, input.environment)) {
     return {
       ok: false,
       error: disabledAgentProviderMessage(parsed.provider),

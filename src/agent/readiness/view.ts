@@ -9,7 +9,6 @@ import type {
   SpawnCliFn,
 } from "../types.js";
 import {
-  formatEnabledAgentProviderList,
   getEnabledAgentProviderIds,
   isAgentProviderId,
   readConfig,
@@ -67,7 +66,10 @@ export async function buildProviderSetupView(
     environment: opts.environment,
   });
   const statusById = new Map(statuses.map((status) => [status.id, status]));
-  const recommendedProvider = chooseRecommendedProvider(statuses);
+  const recommendedProvider = chooseRecommendedProvider(
+    statuses,
+    opts.environment,
+  );
   const choices: ProviderSetupChoice[] = [];
   for (const id of getEnabledAgentProviderIds(opts.environment)) {
     const status = statusById.get(id) ?? missingStatus(id);
@@ -153,6 +155,7 @@ export function buildProviderModelChoices(
 
 export function chooseRecommendedProvider(
   statuses: ProviderStatus[],
+  environment: NodeJS.ProcessEnv,
 ): AgentProviderId {
   const codexStatus = statuses.find((status) => status.id === "codex");
   if (
@@ -168,7 +171,7 @@ export function chooseRecommendedProvider(
   const ready = statuses
     .filter((status) => getReadiness(status) === "ready")
     .map((status) => status.id);
-  for (const id of getEnabledAgentProviderIds()) {
+  for (const id of getEnabledAgentProviderIds(environment)) {
     if (ready.includes(id)) return id;
   }
   return "codex";
@@ -201,10 +204,6 @@ function fixFor(status: ProviderStatus): string | null {
     return status.installFix ?? null;
   }
   return status.loginFix ?? null;
-}
-
-export function enabledProviderListForMessage(): string {
-  return formatEnabledAgentProviderList();
 }
 
 function normalizeModel(value: string | null | undefined): string | null {

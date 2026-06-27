@@ -144,7 +144,7 @@ describe("provider setup view", () => {
       statuses[0]!,
       statuses[1]!,
       statuses[2]!,
-    ])).toBe("codex");
+    ], {})).toBe("codex");
   });
 
   it("still recommends Codex when Claude is ready but Codex needs sign-in", () => {
@@ -158,7 +158,7 @@ describe("provider setup view", () => {
         detail: "not logged in",
         loginFix: "run: codex login",
       },
-    ])).toBe("codex");
+    ], {})).toBe("codex");
   });
 
   it("falls back to a ready agent when Codex is missing", () => {
@@ -172,7 +172,7 @@ describe("provider setup view", () => {
         detail: "codex not found",
         installFix: "install codex",
       },
-    ])).toBe("claude");
+    ], {})).toBe("claude");
   });
 
   it("parses provider/model shorthand without making it primary UX", () => {

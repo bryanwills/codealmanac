@@ -1286,6 +1286,7 @@ describe("architecture boundaries", () => {
 
   it("passes agent readiness runtime facts through an explicit context", async () => {
     const agentTypes = await readSource("src/agent/types.ts");
+    const configProviders = await readSource("src/config/providers.ts");
     const readinessView = await readSource("src/agent/readiness/view.ts");
     const readinessStatus = await readSource(
       "src/agent/readiness/providers/status.ts",
@@ -1298,6 +1299,9 @@ describe("architecture boundaries", () => {
     expect(agentTypes).toContain("export interface AgentProviderRuntime");
     expect(agentTypes).toContain("environment: NodeJS.ProcessEnv");
     expect(agentTypes).toContain("checkStatus(runtime: AgentProviderRuntime)");
+    expect(configProviders).not.toContain("process.env");
+    expect(configProviders).toContain("isCursorEnabled(env: NodeJS.ProcessEnv)");
+    expect(configProviders).toContain("getEnabledAgentProviderIds(\n  env: NodeJS.ProcessEnv");
     expect(readinessStatus).toContain("providerRuntime(args)");
     expect(readinessView).not.toContain("process.env");
     expect(claudeReadiness).not.toContain("process.env");
