@@ -478,3 +478,9 @@ Sixty-seventh production slice:
 - Flattened jobs read, stream, and cancel request contracts so each service verb lists its own required fields.
 - Removed request-interface inheritance from `src/services/jobs/types.ts`.
 - Guarded jobs service request types against reintroducing inherited base request contracts.
+
+Sixty-eighth production slice:
+
+- Flattened wiki topic read and mutation request contracts in `src/services/wiki/topic-types.ts`.
+- Made each topic service verb list its own `cwd`, optional `wiki`, and topic-specific fields directly.
+- Guarded topic service request types against reintroducing broad `WikiTopicsRequest` inheritance.

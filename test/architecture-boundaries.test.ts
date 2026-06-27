@@ -127,6 +127,25 @@ describe("architecture boundaries", () => {
     expect(topicsReadCommand).not.toContain("titleCase");
     expect(topicTypes).not.toContain("wiki/query");
     expect(topicTypes).not.toContain("query.");
+    expect(topicTypes).not.toContain("WikiTopicRequest extends WikiTopicsRequest");
+    expect(topicTypes).not.toContain(
+      "DescribeWikiTopicRequest extends WikiTopicsRequest",
+    );
+    expect(topicTypes).not.toContain(
+      "CreateWikiTopicRequest extends WikiTopicsRequest",
+    );
+    expect(topicTypes).not.toContain(
+      "LinkWikiTopicsRequest extends WikiTopicsRequest",
+    );
+    expect(topicTypes).not.toContain(
+      "UnlinkWikiTopicsRequest extends WikiTopicsRequest",
+    );
+    expect(topicTypes).not.toContain(
+      "RenameWikiTopicRequest extends WikiTopicsRequest",
+    );
+    expect(topicTypes).not.toContain(
+      "DeleteWikiTopicRequest extends WikiTopicsRequest",
+    );
   });
 
   it("keeps service-backed topic mutation adapters out of write mechanics", async () => {

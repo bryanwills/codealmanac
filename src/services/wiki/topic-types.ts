@@ -11,37 +11,51 @@ export interface WikiTopicsRequest {
   wiki?: string;
 }
 
-export interface WikiTopicRequest extends WikiTopicsRequest {
+export interface WikiTopicRequest {
+  cwd: string;
+  wiki?: string;
   slug: string;
   descendants?: boolean;
 }
 
-export interface DescribeWikiTopicRequest extends WikiTopicsRequest {
+export interface DescribeWikiTopicRequest {
+  cwd: string;
+  wiki?: string;
   slug: string;
   description: string;
 }
 
-export interface CreateWikiTopicRequest extends WikiTopicsRequest {
+export interface CreateWikiTopicRequest {
+  cwd: string;
+  wiki?: string;
   name: string;
   parents?: string[];
 }
 
-export interface LinkWikiTopicsRequest extends WikiTopicsRequest {
+export interface LinkWikiTopicsRequest {
+  cwd: string;
+  wiki?: string;
   child: string;
   parent: string;
 }
 
-export interface UnlinkWikiTopicsRequest extends WikiTopicsRequest {
+export interface UnlinkWikiTopicsRequest {
+  cwd: string;
+  wiki?: string;
   child: string;
   parent: string;
 }
 
-export interface RenameWikiTopicRequest extends WikiTopicsRequest {
+export interface RenameWikiTopicRequest {
+  cwd: string;
+  wiki?: string;
   oldSlug: string;
   newSlug: string;
 }
 
-export interface DeleteWikiTopicRequest extends WikiTopicsRequest {
+export interface DeleteWikiTopicRequest {
+  cwd: string;
+  wiki?: string;
   slug: string;
 }
 
