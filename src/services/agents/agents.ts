@@ -1,7 +1,7 @@
 import {
   buildProviderSetupView,
   parseAgentSelection,
-  type ProviderReadiness,
+  type ProviderSetupChoice,
   type ProviderSetupView,
 } from "../../agent/readiness/view.js";
 import {
@@ -14,9 +14,39 @@ export interface AgentServiceOptions {
   cwd: string;
 }
 
-export type AgentsProviderReadiness = ProviderReadiness;
-export type AgentsProviderView = ProviderSetupView;
-export type AgentsAgentProviderId = AgentProviderId;
+export type AgentsAgentProviderId = "claude" | "codex" | "cursor";
+export type AgentsProviderReadiness = "ready" | "not-authenticated" | "missing";
+
+export interface AgentsProviderModelChoice {
+  value: string | null;
+  label: string;
+  recommended: boolean;
+  source: "configured" | "provider-default" | "catalog" | "custom";
+}
+
+export interface AgentsProviderChoice {
+  id: AgentsAgentProviderId;
+  label: string;
+  selected: boolean;
+  recommended: boolean;
+  readiness: AgentsProviderReadiness;
+  ready: boolean;
+  installed: boolean;
+  authenticated: boolean;
+  effectiveModel: string | null;
+  providerDefaultModel: string | null;
+  configuredModel: string | null;
+  account: string | null;
+  detail: string;
+  fixCommand: string | null;
+  modelChoices: AgentsProviderModelChoice[];
+}
+
+export interface AgentsProviderView {
+  defaultProvider: AgentsAgentProviderId;
+  recommendedProvider: AgentsAgentProviderId;
+  choices: AgentsProviderChoice[];
+}
 
 export interface AgentViewOptions {
   view?: AgentsProviderView;
@@ -55,7 +85,7 @@ export type AgentModelResult =
 export async function readAgentsView(
   opts: AgentViewOptions = {},
 ): Promise<AgentsProviderView> {
-  return opts.view ?? await buildProviderSetupView();
+  return opts.view ?? agentsProviderViewFromSetupView(await buildProviderSetupView());
 }
 
 export async function setDefaultAgent(
@@ -135,4 +165,36 @@ function normalizeRequestedModel(input: {
   if (input.model === undefined || input.model.length === 0) return null;
   if (input.model === "default" || input.model === "null") return null;
   return input.model;
+}
+
+function agentsProviderViewFromSetupView(
+  view: ProviderSetupView,
+): AgentsProviderView {
+  return {
+    defaultProvider: view.defaultProvider,
+    recommendedProvider: view.recommendedProvider,
+    choices: view.choices.map(agentsProviderChoiceFromSetupChoice),
+  };
+}
+
+function agentsProviderChoiceFromSetupChoice(
+  choice: ProviderSetupChoice,
+): AgentsProviderChoice {
+  return {
+    id: choice.id,
+    label: choice.label,
+    selected: choice.selected,
+    recommended: choice.recommended,
+    readiness: choice.readiness,
+    ready: choice.ready,
+    installed: choice.installed,
+    authenticated: choice.authenticated,
+    effectiveModel: choice.effectiveModel,
+    providerDefaultModel: choice.providerDefaultModel,
+    configuredModel: choice.configuredModel,
+    account: choice.account,
+    detail: choice.detail,
+    fixCommand: choice.fixCommand,
+    modelChoices: choice.modelChoices.map((modelChoice) => ({ ...modelChoice })),
+  };
 }

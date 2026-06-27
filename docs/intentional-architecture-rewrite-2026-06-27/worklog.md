@@ -423,3 +423,10 @@ Fifty-eighth production slice:
 - Normalized operation-layer foreground/background run results once inside `src/services/lifecycle/operations.ts`.
 - Updated lifecycle command rendering to consume the service-owned job/result shape.
 - Guarded the lifecycle service against regressing to an operation-layer result alias.
+
+Fifty-ninth production slice:
+
+- Made `src/services/agents/` own its provider view, provider choice, readiness, provider id, and model-choice contracts.
+- Added a mapper from the lower-level provider readiness view into the agents service read model.
+- Kept the agents command rendering against the service-owned shape instead of the raw readiness view.
+- Guarded the agents service against regressing to provider-readiness type aliases.
