@@ -671,3 +671,9 @@ Ninety-ninth production slice:
 - Split source frontmatter rewrite mechanics into `src/wiki/sources/frontmatter-fix.ts`.
 - Moved YAML parsing, legacy source classification, deterministic source ID generation, and frontmatter byte reconstruction out of `src/wiki/sources/maintenance.ts`.
 - Kept `src/wiki/sources/maintenance.ts` focused on indexed page selection, scoped migration traversal, atomic page writes, and reindexing.
+
+One-hundredth production slice:
+
+- Split agent and config CLI registration into `src/edges/cli/register-agent-commands.ts` and `src/edges/cli/register-config-commands.ts`.
+- Moved `agents` and `config` command-family wiring out of `src/edges/cli/register-setup-commands.ts`.
+- Kept setup registration focused on setup, doctor, update, and uninstall command wiring.

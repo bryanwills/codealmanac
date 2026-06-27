@@ -1,6 +1,8 @@
 import { Command } from "commander";
 
+import { registerAgentCommands } from "./register-agent-commands.js";
 import { registerAutomationCommands } from "./register-automation-commands.js";
+import { registerConfigCommands } from "./register-config-commands.js";
 import { registerEditCommands } from "./register-edit-commands.js";
 import { registerJobsCommands } from "./register-jobs-commands.js";
 import {
@@ -29,5 +31,7 @@ export function registerCommands(
   registerJobsCommands(program);
   registerAutomationCommands(program);
   registerMaintenanceCommands(program);
+  registerAgentCommands(program);
+  registerConfigCommands(program);
   registerSetupCommands(program, deps);
 }

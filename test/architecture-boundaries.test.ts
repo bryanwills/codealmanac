@@ -42,6 +42,32 @@ describe("architecture boundaries", () => {
     }
   });
 
+  it("keeps CLI command-family registration split by product surface", async () => {
+    const registerCommands = await readSource(
+      "src/edges/cli/register-commands.ts",
+    );
+    const registerSetup = await readSource(
+      "src/edges/cli/register-setup-commands.ts",
+    );
+    const registerAgents = await readSource(
+      "src/edges/cli/register-agent-commands.ts",
+    );
+    const registerConfig = await readSource(
+      "src/edges/cli/register-config-commands.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/edges/cli/register-agent-commands.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/register-config-commands.ts")))
+      .toBe(true);
+    expect(registerCommands).toContain("registerAgentCommands(program)");
+    expect(registerCommands).toContain("registerConfigCommands(program)");
+    expect(registerSetup).not.toContain(".command(\"agents\")");
+    expect(registerSetup).not.toContain(".command(\"config\")");
+    expect(registerAgents).toContain(".command(\"agents\")");
+    expect(registerConfig).toContain(".command(\"config\")");
+  });
+
   it("keeps search command adapters out of index storage mechanics", async () => {
     const searchCommand = await readSource("src/cli/commands/search.ts");
     const searchService = await readSource("src/services/wiki/search.ts");
