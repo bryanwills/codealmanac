@@ -4,7 +4,7 @@ import * as sync from "../../sync/index.js";
 import * as operations from "../../operations/index.js";
 import type { CommandResult } from "../helpers.js";
 import { renderError, renderOutcome } from "../outcome.js";
-import { parseDuration } from "../../wiki/indexer/duration.js";
+import { parseDuration } from "../../shared/duration.js";
 import { readConfig } from "../../config/index.js";
 
 export interface SyncCommandOptions {

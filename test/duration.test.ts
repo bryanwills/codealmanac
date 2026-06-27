@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseDuration } from "../src/wiki/indexer/duration.js";
+import { parseDuration } from "../src/shared/duration.js";
 
 describe("parseDuration", () => {
   it("parses seconds", () => {

@@ -1,11 +1,10 @@
 import { BLUE, BOLD, DIM, GREEN, RED, RST } from "../../../ansi.js";
-import { parseDuration } from "../../../wiki/indexer/duration.js";
-import { resolveWikiRoot } from "../../../wiki/indexer/resolve-wiki.js";
 import {
-  collectHealthReport,
+  checkWikiHealth,
   DEFAULT_STALE_SECONDS,
-  type HealthReport,
-} from "../../../wiki/health/index.js";
+  type WikiHealthReport,
+} from "../../../services/wiki/health.js";
+import { parseDuration } from "../../../shared/duration.js";
 
 export interface HealthOptions {
   cwd: string;
@@ -26,13 +25,13 @@ export interface HealthCommandOutput {
 export async function runHealth(
   options: HealthOptions,
 ): Promise<HealthCommandOutput> {
-  const repoRoot = await resolveWikiRoot({ cwd: options.cwd, wiki: options.wiki });
   const staleSeconds = options.stale !== undefined
     ? parseDuration(options.stale)
     : DEFAULT_STALE_SECONDS;
   const slugs = stdinSlugs(options);
-  const report = await collectHealthReport({
-    repoRoot,
+  const report = await checkWikiHealth({
+    cwd: options.cwd,
+    wiki: options.wiki,
     topic: options.topic,
     staleSeconds,
     stdinSlugs: slugs,
@@ -63,7 +62,7 @@ function stdinSlugs(options: HealthOptions): string[] | undefined {
   return slugs;
 }
 
-function formatReport(r: HealthReport): string {
+function formatReport(r: WikiHealthReport): string {
   const sections: string[] = [];
   sections.push(
     section(
@@ -169,7 +168,7 @@ function section(label: string, count: number, lines: string[]): string {
   return `${BOLD}${label}${RST} ${RED}(${count})${RST}:\n${lines.join("\n")}`;
 }
 
-function migrationWarning(report: HealthReport): string {
+function migrationWarning(report: WikiHealthReport): string {
   if (report.legacy_frontmatter.length === 0) return "";
   return "almanac: warning: legacy source frontmatter found; run `almanac migrate legacy-sources`.\n";
 }

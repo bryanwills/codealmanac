@@ -54,3 +54,9 @@ Third production slice:
 - Kept `src/cli/commands/search.ts` responsible for CLI output modes, color, stderr breadcrumbs, and exit shape.
 - Introduced `src/services/wiki/page-view.ts` and moved page-view lookup for `show` out of the command adapter.
 - Added architecture guards so `search` and `show` commands cannot re-import index storage mechanics directly.
+
+Fourth production slice:
+
+- Moved the generic compact duration parser from `src/wiki/indexer/duration.ts` to `src/shared/duration.ts`.
+- Introduced `src/services/wiki/health.ts` so `almanac health` resolves wiki roots and collects reports through a service boundary.
+- Kept `src/cli/commands/health/index.ts` responsible for CLI flag normalization, stdin slug parsing, report rendering, and warnings.

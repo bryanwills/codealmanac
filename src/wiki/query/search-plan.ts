@@ -1,4 +1,4 @@
-import { parseDuration } from "../indexer/duration.js";
+import { parseDuration } from "../../shared/duration.js";
 import { buildTokenPrefixFtsQuery } from "./fts.js";
 import { appendFileMentionClause } from "./file-mentions.js";
 

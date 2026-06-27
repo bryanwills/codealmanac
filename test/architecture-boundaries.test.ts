@@ -58,6 +58,16 @@ describe("architecture boundaries", () => {
     expect(showCommand).not.toContain("openIndex");
     expect(showCommand).not.toContain("resolveWikiRoot");
   });
+
+  it("keeps health command adapters out of index storage mechanics", async () => {
+    const healthCommand = await readSource("src/cli/commands/health/index.ts");
+
+    expect(healthCommand).toContain("services/wiki/health.js");
+    expect(healthCommand).not.toContain("wiki/indexer");
+    expect(healthCommand).not.toContain("../../../wiki/health");
+    expect(healthCommand).not.toContain("collectHealthReport");
+    expect(healthCommand).not.toContain("resolveWikiRoot");
+  });
 });
 
 async function readSource(path: string): Promise<string> {
