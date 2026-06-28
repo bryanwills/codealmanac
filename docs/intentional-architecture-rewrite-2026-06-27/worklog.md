@@ -1408,3 +1408,10 @@ Two-hundred-third production slice:
 - Removed those contract definitions from `src/services/lifecycle/workflows.ts`, leaving that file focused on provider resolution, run-mode policy, init prompt context, and operation dispatch.
 - Updated the lifecycle service index to re-export workflow functions from `workflows.ts` and workflow contracts from `workflow-types.ts`.
 - Strengthened architecture-boundary tests so lifecycle workflow implementation does not re-absorb request/start contract definitions while the worker-program contract remains outside platform job-process mechanics.
+
+Two-hundred-fourth production slice:
+
+- Added `src/services/jobs/provider-sessions.ts` as the jobs-service owner for listing provider session ids recorded by Almanac jobs.
+- Changed `src/services/sync/sweep.ts` to ask the jobs service for internal provider session ids instead of importing job stores and mapping over job record persistence shape.
+- Kept the sync service responsible for the product decision to skip internal Almanac sessions while leaving job-record storage shape inside the jobs boundary.
+- Strengthened architecture-boundary tests so sync sweep does not reintroduce direct `stores/jobs` imports.

@@ -5,6 +5,7 @@ export {
   readJobLog,
   streamJobLog,
 } from "./jobs.js";
+export { listJobProviderSessionIds } from "./provider-sessions.js";
 export type {
   AlreadyTerminalJobResult,
   CancelJobRequest,

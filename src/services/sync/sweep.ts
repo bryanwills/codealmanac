@@ -31,7 +31,7 @@ import {
   writeLedger,
 } from "../../stores/sync/ledger.js";
 import { acquireRepoSyncLock, releaseRepoSyncLock } from "../../stores/sync/lock.js";
-import { listJobRecords } from "../../stores/jobs/index.js";
+import { listJobProviderSessionIds } from "../jobs/index.js";
 
 export interface StartSyncAbsorbArgs {
   candidate: TranscriptCandidate;
@@ -169,11 +169,7 @@ async function isInternalAlmanacSession(
 ): Promise<boolean> {
   let ids = cache.get(candidate.repoRoot);
   if (ids === undefined) {
-    ids = new Set(
-      (await listJobRecords(candidate.repoRoot))
-        .map((record) => record.providerSessionId)
-        .filter((id): id is string => typeof id === "string" && id.length > 0),
-    );
+    ids = await listJobProviderSessionIds(candidate.repoRoot);
     cache.set(candidate.repoRoot, ids);
   }
   return ids.has(candidate.sessionId);

@@ -1618,6 +1618,9 @@ describe("architecture boundaries", () => {
     const syncServiceTypes = await readSource("src/services/sync/types.ts");
     const syncSweep = await readSource("src/services/sync/sweep.ts");
     const syncSweepResults = await readSource("src/services/sync/sweep-results.ts");
+    const jobsProviderSessions = await readSource(
+      "src/services/jobs/provider-sessions.ts",
+    );
     const transcriptDiscovery = await readSource("src/platform/transcripts/index.ts");
     const transcriptRuntime = await readSource("src/platform/transcripts/runtime.ts");
     const sharedTranscripts = await readSource("src/shared/transcripts.ts");
@@ -1649,7 +1652,10 @@ describe("architecture boundaries", () => {
     expect(syncService).not.toContain("platform/transcripts");
     expect(syncServiceTypes).toContain("interface SyncTranscriptRuntime");
     expect(syncSweep).not.toContain("platform/transcripts");
+    expect(syncSweep).not.toContain("stores/jobs");
+    expect(syncSweep).toContain("listJobProviderSessionIds");
     expect(syncSweepResults).not.toContain("platform/transcripts");
+    expect(jobsProviderSessions).toContain("listJobRecords");
     expect(syncCommand).not.toContain("platform/transcripts");
     expect(syncRegistration).toContain("platform/transcripts/runtime.js");
     expect(transcriptRuntime).toContain("discoverTranscriptCandidates");

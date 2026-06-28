@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 203 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 204 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -37,6 +37,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved local Claude/Codex transcript discovery, transcript snapshot reads, and timestamp boundary parsing into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
 - Moved sync-facing transcript contracts and cursor boundary calculation into `src/shared/transcripts.ts`, leaving platform transcript modules focused on discovery and file reads.
 - Moved concrete transcript discovery/snapshot composition behind a service-owned sync transcript runtime contract, with `src/platform/transcripts/runtime.ts` wired by the CLI sync edge.
+- Moved sync's internal-Almanac-session lookup behind a jobs-service provider-session helper, so sync no longer reads job record storage shape directly.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
 - Moved init prompt context construction out of the operation command adapter and into lifecycle workflows, so command code only shapes flags into service requests and renders service results.
@@ -78,23 +79,22 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split lifecycle workflow request/starter/result contracts out of `src/services/lifecycle/workflows.ts` into `src/services/lifecycle/workflow-types.ts`. Lifecycle workflow implementation now stays focused on provider resolution, foreground/background policy, init prompt context, and operation dispatch.
+The latest slice moved sync's internal-Almanac-session lookup behind `src/services/jobs/provider-sessions.ts`. Sync still owns the decision to skip Almanac's own provider sessions, but it no longer imports `stores/jobs` or maps over persisted job records directly.
 
 Verification passed:
 
-- `npx vitest run test/architecture-boundaries.test.ts test/operation-commands.test.ts test/sync.test.ts`
+- `npx vitest run test/sync.test.ts test/jobs-command.test.ts test/architecture-boundaries.test.ts`
 - `git diff --check`
 - `npm run lint`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js --help | head -40`
+- `node dist/launcher.js --help | head -30`
 - `node dist/launcher.js doctor --json --install-only`
-- `HOME=$(mktemp -d) node dist/launcher.js absorb --help | head -45`
-- `HOME=$(mktemp -d) node dist/launcher.js sync --help | head -45`
+- `HOME=$(mktemp -d) node dist/launcher.js sync --help | head -40`
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, sync transcript runtime composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, and lifecycle workflow type ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, sync transcript runtime composition, sync-to-job session lookup, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, and lifecycle workflow type ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
 
 ## Decision Log
 
