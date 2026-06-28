@@ -765,17 +765,36 @@ describe("architecture boundaries: lifecycle and providers", () => {
   });
 
   it("keeps automation command options owned by the command adapter", async () => {
-    const automationCommand = await readSource("src/edges/cli/commands/automation.ts");
-
-    expect(automationCommand).toContain("AutomationInstallCommandOptions");
-    expect(automationCommand).toContain("cwd: string");
-    expect(automationCommand).toContain("homeDir: string");
-    expect(automationCommand).toContain("pathEnvironment: string | undefined");
-    expect(automationCommand).toContain("toAutomationInstallOptions");
-    expect(automationCommand).not.toContain(
-      "AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions",
+    const automationInstallCommand = await readSource(
+      "src/edges/cli/commands/automation/install.ts",
     );
-    expect(automationCommand).not.toContain("export type { AutomationStatusOptions }");
+    const automationUninstallCommand = await readSource(
+      "src/edges/cli/commands/automation/uninstall.ts",
+    );
+    const automationStatusCommand = await readSource(
+      "src/edges/cli/commands/automation/status.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation.ts"))).toBe(false);
+    expect(automationInstallCommand).toContain("AutomationInstallCommandOptions");
+    expect(automationInstallCommand).toContain("cwd: string");
+    expect(automationInstallCommand).toContain("homeDir: string");
+    expect(automationInstallCommand).toContain("pathEnvironment: string | undefined");
+    expect(automationInstallCommand).toContain("toAutomationInstallOptions");
+    expect(automationUninstallCommand).toContain("AutomationUninstallCommandOptions");
+    expect(automationUninstallCommand).toContain("toAutomationUninstallOptions");
+    expect(automationStatusCommand).toContain("AutomationStatusCommandOptions");
+    expect(automationStatusCommand).toContain("toAutomationStatusOptions");
+    for (const automationCommand of [
+      automationInstallCommand,
+      automationUninstallCommand,
+      automationStatusCommand,
+    ]) {
+      expect(automationCommand).not.toContain(
+      "AutomationOptions = AutomationInstallOptions & AutomationUninstallOptions",
+      );
+      expect(automationCommand).not.toContain("export type { AutomationStatusOptions }");
+    }
   });
 });
 

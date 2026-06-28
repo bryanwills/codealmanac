@@ -4,12 +4,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   runAutomationInstall as runAutomationInstallCommand,
-  runAutomationStatus as runAutomationStatusCommand,
-  runAutomationUninstall as runAutomationUninstallCommand,
   type AutomationInstallCommandOptions,
+} from "../src/edges/cli/commands/automation/install.js";
+import {
+  runAutomationStatus as runAutomationStatusCommand,
   type AutomationStatusCommandOptions,
+} from "../src/edges/cli/commands/automation/status.js";
+import {
+  runAutomationUninstall as runAutomationUninstallCommand,
   type AutomationUninstallCommandOptions,
-} from "../src/edges/cli/commands/automation.js";
+} from "../src/edges/cli/commands/automation/uninstall.js";
 import {
   runMigrateAutomation as runMigrateAutomationCommand,
   type MigrateAutomationOptions,

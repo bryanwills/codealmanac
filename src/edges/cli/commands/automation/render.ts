@@ -1,11 +1,11 @@
-import { automationTaskLabel } from "../../../services/automation/index.js";
+import { automationTaskLabel } from "../../../../services/automation/index.js";
 import type {
   AutomationInstallResult,
   AutomationStatusResult,
   AutomationStatusSection,
   AutomationUninstallResult,
   InstalledAutomationTask,
-} from "../../../services/automation/index.js";
+} from "../../../../services/automation/index.js";
 
 export interface AutomationCommandResult {
   stdout: string;

@@ -15,7 +15,7 @@ export function registerAutomationUninstallCommand(automation: Command): void {
 
       const {
         runAutomationUninstall,
-      } = await import("./commands/automation.js");
+      } = await import("./commands/automation/uninstall.js");
       const result = await runAutomationUninstall({
         tasks: parsedTasks,
         homeDir: homedir(),

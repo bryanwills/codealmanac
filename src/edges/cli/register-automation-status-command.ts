@@ -15,7 +15,7 @@ export function registerAutomationStatusCommand(automation: Command): void {
 
       const {
         runAutomationStatus,
-      } = await import("./commands/automation.js");
+      } = await import("./commands/automation/status.js");
       const result = await runAutomationStatus({
         tasks: parsedTasks,
         homeDir: homedir(),

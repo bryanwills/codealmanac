@@ -1911,3 +1911,11 @@ Two-hundred-sixty-ninth production slice:
 - Made setup agent-choice UI consume an explicit `runProviderFixCommand` runner instead of importing the platform setup runtime fallback.
 - Updated setup tests to provide a fake provider-fix runner through setup options.
 - Strengthened setup boundary tests so setup TUI files do not import platform setup runtime mechanics for provider login execution.
+
+Two-hundred-seventieth production slice:
+
+- Deleted the catchall `src/edges/cli/commands/automation.ts` command adapter.
+- Deleted the catchall `src/edges/cli/commands/automation-render.ts` renderer.
+- Added owner-named automation command files for install, uninstall, status, and rendering under `src/edges/cli/commands/automation/`.
+- Updated automation command registration and tests to import the verb-owned adapters directly.
+- Strengthened automation boundary tests so the old automation command and render catchalls cannot return.

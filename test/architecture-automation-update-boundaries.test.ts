@@ -40,12 +40,30 @@ describe("architecture boundaries: automation, update, config, and agents", () =
     const uninstallEdge = await readSource("src/edges/cli/uninstall.ts");
     const launchdAutomationScheduler = await readSource("src/platform/automation/scheduler.ts");
     const automationPaths = await readSource("src/platform/automation/paths.ts");
-    const automationCommand = await readSource("src/edges/cli/commands/automation.ts");
-    const automationRender = await readSource("src/edges/cli/commands/automation-render.ts");
-
-    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation-render.ts"))).toBe(
-      true,
+    const automationInstallCommand = await readSource(
+      "src/edges/cli/commands/automation/install.ts",
     );
+    const automationUninstallCommand = await readSource(
+      "src/edges/cli/commands/automation/uninstall.ts",
+    );
+    const automationStatusCommand = await readSource(
+      "src/edges/cli/commands/automation/status.ts",
+    );
+    const automationRender = await readSource(
+      "src/edges/cli/commands/automation/render.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation-render.ts")))
+      .toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation/install.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation/uninstall.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation/status.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/automation/render.ts")))
+      .toBe(true);
     expect(automationServiceIndex).not.toContain("platform/automation");
     expect(automationServiceTypes).not.toContain("platform/automation");
     expect(automationServiceTypes).toContain("shared/automation-scheduler.js");
@@ -141,24 +159,30 @@ describe("architecture boundaries: automation, update, config, and agents", () =
       false,
     );
     expect(existsSync(join(ROOT, "src/platform/automation/tasks.ts"))).toBe(false);
-    expect(automationCommand).toContain("services/automation/index.js");
-    expect(automationCommand).not.toContain("import type { CommandResult }");
-    expect(automationCommand).toContain("AutomationCommandResult");
-    expect(automationCommand).not.toContain("platform/automation");
-    expect(automationCommand).not.toContain("platform/automation/launchd");
-    expect(automationCommand).not.toContain("platform/automation/tasks");
-    expect(automationCommand).not.toContain("platform/automation/legacy-hooks");
-    expect(automationCommand).not.toContain("ensureAutomationSyncSince");
-    expect(automationCommand).not.toContain("findNearestAlmanacDir");
-    expect(automationCommand).not.toContain("writeLaunchdPlist");
-    expect(automationCommand).not.toContain("bootstrapLaunchdJob");
-    expect(automationCommand).not.toContain("removeLaunchdJob");
-    expect(automationCommand).not.toContain("readLaunchdJobStatus");
-    expect(automationCommand).not.toContain("TASK_LABELS");
-    expect(automationCommand).not.toContain("formatAutomationStatusSection");
-    expect(automationCommand).not.toContain("defaultPlistPath");
-    expect(automationCommand).not.toContain("automation installed");
-    expect(automationCommand).not.toContain("legacy automation");
+    for (const automationCommand of [
+      automationInstallCommand,
+      automationUninstallCommand,
+      automationStatusCommand,
+    ]) {
+      expect(automationCommand).toContain("services/automation/index.js");
+      expect(automationCommand).not.toContain("import type { CommandResult }");
+      expect(automationCommand).toContain("AutomationCommandResult");
+      expect(automationCommand).not.toContain("platform/automation");
+      expect(automationCommand).not.toContain("platform/automation/launchd");
+      expect(automationCommand).not.toContain("platform/automation/tasks");
+      expect(automationCommand).not.toContain("platform/automation/legacy-hooks");
+      expect(automationCommand).not.toContain("ensureAutomationSyncSince");
+      expect(automationCommand).not.toContain("findNearestAlmanacDir");
+      expect(automationCommand).not.toContain("writeLaunchdPlist");
+      expect(automationCommand).not.toContain("bootstrapLaunchdJob");
+      expect(automationCommand).not.toContain("removeLaunchdJob");
+      expect(automationCommand).not.toContain("readLaunchdJobStatus");
+      expect(automationCommand).not.toContain("TASK_LABELS");
+      expect(automationCommand).not.toContain("formatAutomationStatusSection");
+      expect(automationCommand).not.toContain("defaultPlistPath");
+      expect(automationCommand).not.toContain("automation installed");
+      expect(automationCommand).not.toContain("legacy automation");
+    }
     expect(automationServiceIndex).not.toContain("defaultSyncAutomationPlistPath");
     expect(automationRender).toContain("renderAutomationInstallResult");
     expect(automationRender).toContain("formatAutomationStatusSection");

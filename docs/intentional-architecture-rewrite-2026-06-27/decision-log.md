@@ -67,6 +67,8 @@ Setup plan policy is service-owned. `src/services/setup/setup-plan.ts` owns laun
 
 Setup provider fix-command execution is explicitly wired at setup command registration. `src/edges/cli/register-setup-command.ts` supplies the platform runner from `src/platform/setup/runtime.ts`; setup TUI files receive that runner through `SetupOptions` and do not import platform runtime fallbacks.
 
+Automation command adapters are split by user-facing verb. `src/edges/cli/commands/automation/install.ts`, `uninstall.ts`, and `status.ts` each own only their command option shape and service request conversion. Automation rendering lives in `src/edges/cli/commands/automation/render.ts`. The deleted `automation.ts` and `automation-render.ts` catchalls should not return.
+
 ### Transcript file mechanics are platform, sync eligibility is service
 
 Claude and Codex transcript-store scanning, raw transcript snapshot reads, line counting, and JSONL timestamp extraction belong under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over typed transcript candidates and snapshots.
