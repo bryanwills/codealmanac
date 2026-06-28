@@ -932,6 +932,8 @@ describe("architecture boundaries", () => {
     expect(jobsRepoRoot).toContain("findNearestAlmanacDir");
     expect(jobsServiceView).not.toContain("platform/process");
     expect(jobsServiceView).not.toContain("./runtime/index.js");
+    expect(jobsServiceView).not.toContain("RuntimeJobView");
+    expect(jobsServiceView).not.toContain("jobServiceViewFromRuntime");
     expect(jobsServiceView).toContain("./record-view.js");
     expect(jobsServiceTypes).toContain("isPidAlive: (pid: number) => boolean");
     expect(jobsServiceTypes).toContain(
@@ -939,7 +941,7 @@ describe("architecture boundaries", () => {
     );
     expect(jobReadRegistration).toContain("isLocalPidAlive");
     expect(jobCancelRegistration).toContain("signalLocalPid");
-    expect(jobsServiceView).toContain("function jobServiceViewFromRuntime");
+    expect(jobsServiceView).toContain("function jobServiceViewFromStore");
     expect(jobsServiceView).toContain("toJobView");
   });
 

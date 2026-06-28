@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 248 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 249 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -34,6 +34,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed the old top-level `src/jobs/` source bucket; job runtime and projections now live under `src/services/jobs/`, durable job schemas live under `src/stores/jobs/`, and detached worker spawning lives under `src/platform/jobs/`.
 - Split the old public `src/services/jobs/jobs.ts` bucket into owned read, log, cancel, and repo-root service files.
 - Moved job record lifecycle and display-status read-model helpers out of the job runtime folder, and put public job record/log reads behind the `src/stores/jobs/` store API.
+- Renamed the job service view mapper away from runtime terminology so it explicitly maps store-owned job views into service views.
 - Removed raw log-file reads from job projections; stores own job log contents while projections parse contents into viewer/job read models.
 - Moved detached job-worker process startup behind an edge-composed background starter; job services now queue records/specs/logs and consume an injected worker starter.
 - Moved job page snapshot file reads and page hashing into `src/stores/wiki-files/`.
@@ -124,12 +125,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed direct platform version probing from the update banner renderer. `src/edges/cli/update-announcement.ts` now only renders over a supplied installed version and service-owned announcement facts, while `src/edges/cli/run.ts` composes `createUpdateRuntime()` as the production source of the installed package version.
+The latest slice removed stale runtime terminology from the public jobs service view mapper. `src/services/jobs/view.ts` now maps a store-owned `StoredJobView` through `jobServiceViewFromStore`, which matches the current boundary where durable job read mechanics live in `src/stores/jobs/`.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/update-announce.test.ts test/update.test.ts test/cli.test.ts test/architecture-boundaries.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/jobs-command.test.ts test/jobs-records.test.ts test/jobs-worker.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
@@ -140,7 +141,7 @@ Verification passed:
 Previous full-slice verification also passed:
 
 - `npm run lint`
-- `npx vitest run test/setup-plan.test.ts test/setup.test.ts test/architecture-boundaries.test.ts`
+- `npx vitest run test/update-announce.test.ts test/update.test.ts test/cli.test.ts test/architecture-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`

@@ -1759,3 +1759,9 @@ Two-hundred-forty-eighth production slice:
 - Made the update banner renderer require a supplied installed version, so it only renders over service-owned announcement facts.
 - Moved production installed-version wiring into `src/edges/cli/run.ts` through `createUpdateRuntime()`.
 - Strengthened update boundary tests so the update announcement edge cannot regain platform update mechanics.
+
+Two-hundred-forty-ninth production slice:
+
+- Renamed the jobs service view mapper from `jobServiceViewFromRuntime` to `jobServiceViewFromStore`.
+- Renamed the imported store job view type from `RuntimeJobView` to `StoredJobView`.
+- Strengthened architecture-boundary tests so public jobs service view mapping does not regain runtime terminology after the job store/runtime split.
