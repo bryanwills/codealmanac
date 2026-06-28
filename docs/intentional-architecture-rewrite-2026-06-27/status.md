@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 330 committed rewrite commits past `dev`. The worklog records 285 production slices so far.
+The branch has more than 330 committed rewrite commits past `dev`. The worklog records 286 production slices so far.
 
 The diff is broad: more than 680 files changed, with tens of thousands of lines reshaped.
 
@@ -144,6 +144,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split Claude auth provider internals into auth policy, CLI subprocess mechanics, and parsed status-contract files under `src/agent/providers/claude/`.
 - Split wiki-registry storage into read/write mutation verbs, JSON codec, lookup, filesystem reachability, and type contracts.
 - Split topic YAML storage into file IO, YAML codec, in-memory entry helpers, and type contracts.
+- Split indexer page-source normalization into coordination, structured projection, legacy projection, source-id generation, and type contracts.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
@@ -160,19 +161,19 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split topic YAML storage by reason to change. `src/stores/wiki/topics/yaml.ts` now owns file existence/read/write mechanics only; `codec.ts` owns YAML parsing/normalization/formatting, `entries.ts` owns in-memory topic entry helpers, and `types.ts` owns the shared topic-file contracts.
+The latest slice split indexer page-source normalization by reason to change. `page-sources.ts` now owns the normalization workflow only; `structured-page-sources.ts` owns structured `sources:` projection, `legacy-page-sources.ts` owns legacy source projection, `page-source-ids.ts` owns deterministic generated IDs, and `page-source-types.ts` owns the contracts.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/topics.test.ts test/tag.test.ts test/architecture-wiki-command-boundaries.test.ts test/architecture-jobs-sync-boundaries.test.ts`
+- `npx vitest run test/indexer.test.ts test/search.test.ts test/architecture-indexer-diagnostics-boundaries.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js --version`
-- `node dist/launcher.js topics --help`
-- `node dist/launcher.js topics show systems --json`
+- `node dist/launcher.js reindex`
+- `node dist/launcher.js search --mentions src/stores/wiki/indexer/page-sources.ts`
 - `node dist/launcher.js doctor --json --install-only`
 
 Previous full-slice verification also passed:

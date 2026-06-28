@@ -2040,3 +2040,13 @@ Two-hundred-eighty-fifth production slice:
 - Kept `yaml.ts` focused on `.almanac/topics.yaml` existence, missing-file handling, reads, and atomic writes.
 - Updated topic services and DAG helpers to import the specific topic-store owner they need instead of using `yaml.ts` as a mixed catchall.
 - Strengthened wiki command boundary tests so topic YAML file IO, codec, entry helpers, and type contracts cannot collapse back into one store file.
+
+Two-hundred-eighty-sixth production slice:
+
+- Split `src/stores/wiki/indexer/page-sources.ts` into page-source normalization coordination, structured-source projection, legacy-source projection, source-id generation, and type contracts.
+- Added `src/stores/wiki/indexer/structured-page-sources.ts` for projecting parsed structured `sources:` entries into indexed page-source rows and normalized file targets.
+- Added `src/stores/wiki/indexer/legacy-page-sources.ts` for projecting legacy `files:` and legacy URL string sources into legacy page-source rows.
+- Added `src/stores/wiki/indexer/page-source-ids.ts` for deterministic source ID generation from paths and URLs.
+- Added `src/stores/wiki/indexer/page-source-types.ts` for indexed page-source, derived file-ref, and normalized page-source contracts.
+- Kept `page-sources.ts` focused on the normalization workflow that combines structured sources, legacy files, legacy source strings, derived file refs, and ambiguous legacy-source reporting.
+- Strengthened indexer boundary tests so page-source projection, legacy conversion, source ID generation, and type contracts do not collapse back into the coordinator.

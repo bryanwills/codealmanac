@@ -47,8 +47,24 @@ describe("architecture boundaries: indexer, diagnostics, and registry", () => {
       "src/stores/wiki/indexer/frontmatter-sources.ts",
     );
     const pageSources = await readSource("src/stores/wiki/indexer/page-sources.ts");
+    const pageSourceTypes = await readSource(
+      "src/stores/wiki/indexer/page-source-types.ts",
+    );
+    const structuredPageSources = await readSource(
+      "src/stores/wiki/indexer/structured-page-sources.ts",
+    );
+    const legacyPageSources = await readSource(
+      "src/stores/wiki/indexer/legacy-page-sources.ts",
+    );
+    const pageSourceIds = await readSource(
+      "src/stores/wiki/indexer/page-source-ids.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/stores/wiki/indexer/frontmatter-sources.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/page-source-types.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/structured-page-sources.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/legacy-page-sources.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/page-source-ids.ts"))).toBe(true);
     expect(frontmatter).toContain("frontmatter-sources.js");
     expect(frontmatter).not.toContain("function coerceSource");
     expect(frontmatter).not.toContain("case \"conversation\"");
@@ -56,6 +72,32 @@ describe("architecture boundaries: indexer, diagnostics, and registry", () => {
     expect(frontmatterSources).toContain("export type FrontmatterSource");
     expect(frontmatterSources).toContain("export function coerceFrontmatterSources");
     expect(pageSources).toContain("frontmatter-sources.js");
+    expect(pageSources).toContain("legacy-page-sources.js");
+    expect(pageSources).toContain("structured-page-sources.js");
+    expect(pageSources).toContain("page-source-types.js");
+    expect(pageSources).not.toContain("export type {");
+    expect(pageSources).not.toContain("function sourceToIndexed");
+    expect(pageSources).not.toContain("function optional");
+    expect(pageSources).not.toContain("function unique");
+    expect(pageSources).not.toContain("function idFrom");
+    expect(pageSources).not.toContain("function kebab");
+    expect(pageSources).not.toContain("new URL");
+    expect(pageSources).not.toContain("normalizePath");
+    expect(pageSources).not.toContain("looksLikeDir");
+    expect(pageSourceTypes).toContain("export interface IndexedPageSource");
+    expect(pageSourceTypes).toContain("export interface DerivedFileRef");
+    expect(pageSourceTypes).toContain("export interface NormalizedPageSources");
+    expect(pageSourceTypes).not.toContain("normalizePath");
+    expect(pageSourceTypes).not.toContain("new URL");
+    expect(structuredPageSources).toContain("export function structuredSourceToIndexed");
+    expect(structuredPageSources).toContain("normalizeFileSourceTarget");
+    expect(structuredPageSources).toContain("normalizePath");
+    expect(legacyPageSources).toContain("export function legacyFileSource");
+    expect(legacyPageSources).toContain("export function legacySourceString");
+    expect(legacyPageSources).toContain("page-source-ids.js");
+    expect(pageSourceIds).toContain("export function uniqueSourceId");
+    expect(pageSourceIds).toContain("export function sourceIdFromPath");
+    expect(pageSourceIds).toContain("export function sourceIdFromUrl");
   });
 
   it("keeps doctor diagnostics out of the CLI command package", async () => {

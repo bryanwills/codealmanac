@@ -10,9 +10,11 @@ import { firstH1, parseFrontmatter } from "./frontmatter.js";
 import { PAGES_GLOB } from "./freshness.js";
 import {
   normalizePageSources,
-  type DerivedFileRef,
-  type IndexedPageSource,
 } from "./page-sources.js";
+import type {
+  DerivedFileRef,
+  IndexedPageSource,
+} from "./page-source-types.js";
 import {
   indexerWarningSink,
   type IndexerWarningSink,
