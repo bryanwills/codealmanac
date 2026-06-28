@@ -117,6 +117,8 @@ Topic rename/delete services decide which topic mutation to perform. The store o
 
 Viewer-only API payload assembly belongs under `src/edges/viewer/read-model/`, not `src/services/viewer/`, because those contracts exist to serve the local HTTP viewer. Product services should not become a bucket for browser DTOs. Shared persistence and query mechanics remain in stores and job projections; the viewer edge composes them into route-shaped responses.
 
+Viewer read models may assemble route payloads, but storage and query mechanics belong in stores. Overview page/topic counts live in `src/stores/wiki/query/overview.ts`; `.almanac/topics.yaml` existence checks live in `src/stores/wiki/topics/yaml.ts`. The viewer API consumes those store facts instead of importing `node:fs` or preparing SQL directly.
+
 ### Prefer explicit contracts over compatibility facades
 
 Compatibility facades can remain only when callers still need a stable import. New code should depend on typed service, store, integration, or edge contracts with honest names.

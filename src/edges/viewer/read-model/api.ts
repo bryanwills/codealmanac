@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import type Database from "better-sqlite3";
@@ -7,7 +6,7 @@ import { toKebabCase } from "../../../shared/slug.js";
 import { ensureFreshIndex } from "../../../stores/wiki/indexer/index.js";
 import { openIndex } from "../../../stores/wiki/indexer/schema.js";
 import * as wikiQuery from "../../../stores/wiki/query/index.js";
-import { topicsYamlPath } from "../../../stores/wiki/topics/paths.js";
+import { hasTopicsFile } from "../../../stores/wiki/topics/yaml.js";
 import {
   getViewerJobDetail,
   getViewerJobs,
@@ -62,23 +61,17 @@ export function createViewerApi(ctx: ViewerApiContext): ViewerApi {
   return {
     async overview() {
       return withFreshDb(ctx.repoRoot, (db) => {
+        const counts = wikiQuery.overview.wikiOverviewCounts(db);
         const topicNavigation = {
-          source: existsSync(topicsYamlPath(ctx.repoRoot)) ? "curated" as const : "tags" as const,
+          source: hasTopicsFile(ctx.repoRoot) ? "curated" as const : "tags" as const,
           sidebarLimit: SIDEBAR_TAG_LIMIT,
         };
-        const counts = db
-          .prepare<[], { page_count: number; topic_count: number }>(
-            `SELECT
-               (SELECT COUNT(*) FROM pages WHERE archived_at IS NULL) AS page_count,
-               (SELECT COUNT(*) FROM topics) AS topic_count`,
-          )
-          .get() ?? { page_count: 0, topic_count: 0 };
 
         return {
           repoRoot: ctx.repoRoot,
           wikiTitle: "Almanac",
-          pageCount: counts.page_count,
-          topicCount: counts.topic_count,
+          pageCount: counts.pageCount,
+          topicCount: counts.topicCount,
           recentPages: wikiQuery.pages.recentPages(db, 60),
           topics: wikiQuery.topics.topicSummaries(db, { rootsOnly: false, order: "page_count" }),
           rootTopics: wikiQuery.topics.topicSummaries(db, {

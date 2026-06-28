@@ -1789,3 +1789,10 @@ Two-hundred-fifty-second production slice:
 - Added `topicPageSlugs()` as the store-owned query helper for topic page slug reads.
 - Kept topic read services responsible for product mode selection and result shaping, not raw `page_topics` SQL.
 - Strengthened architecture-boundary tests so topic read services cannot regain `db.prepare`, topic page SQL, or DAG-recursive query mechanics.
+
+Two-hundred-fifty-third production slice:
+
+- Moved viewer overview page/topic count SQL into `src/stores/wiki/query/overview.ts`.
+- Added `hasTopicsFile()` to `src/stores/wiki/topics/yaml.ts` so topic YAML file existence remains store-owned.
+- Kept `src/edges/viewer/read-model/api.ts` responsible for assembling overview route payloads over store facts, not filesystem or SQL mechanics.
+- Strengthened architecture-boundary tests so the viewer read model cannot regain `node:fs`, `existsSync`, `db.prepare`, or overview count SQL.

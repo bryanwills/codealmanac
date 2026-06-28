@@ -6,6 +6,7 @@ import yaml from "js-yaml";
 import { UserFacingError } from "../../../shared/user-facing-error.js";
 import { writeTextFileAtomically } from "../../atomic-write.js";
 import { toKebabCase } from "../../../shared/slug.js";
+import { topicsYamlPath } from "./paths.js";
 import { topicTitleFromSlug } from "./title.js";
 
 /**
@@ -31,6 +32,10 @@ export interface TopicEntry {
 
 export interface TopicsFile {
   topics: TopicEntry[];
+}
+
+export function hasTopicsFile(repoRoot: string): boolean {
+  return existsSync(topicsYamlPath(repoRoot));
 }
 
 /**

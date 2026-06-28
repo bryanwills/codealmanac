@@ -350,6 +350,8 @@ describe("architecture boundaries", () => {
     const serveRender = await readSource("src/edges/cli/serve-render.ts");
     const viewerServer = await readSource("src/edges/viewer/server.ts");
     const viewerReadModel = await readSource("src/edges/viewer/read-model/api.ts");
+    const viewerOverviewQuery = await readSource("src/stores/wiki/query/overview.ts");
+    const topicsYamlStore = await readSource("src/stores/wiki/topics/yaml.ts");
     const viewerGlobalReadModel = await readSource(
       "src/edges/viewer/read-model/global-api.ts",
     );
@@ -392,6 +394,15 @@ describe("architecture boundaries", () => {
     expect(viewerServer).toContain("./read-model/global-api.js");
     expect(viewerServer).not.toContain("services/viewer");
     expect(viewerReadModel).not.toContain("node:http");
+    expect(viewerReadModel).not.toContain("node:fs");
+    expect(viewerReadModel).not.toContain("existsSync");
+    expect(viewerReadModel).not.toContain("SELECT COUNT(*) FROM pages");
+    expect(viewerReadModel).not.toContain("db.prepare");
+    expect(viewerReadModel).toContain("wikiOverviewCounts");
+    expect(viewerReadModel).toContain("hasTopicsFile");
+    expect(viewerOverviewQuery).toContain("SELECT COUNT(*) FROM pages");
+    expect(topicsYamlStore).toContain("hasTopicsFile");
+    expect(topicsYamlStore).toContain("existsSync");
     expect(viewerReadModel).not.toContain("readViewerAsset");
     expect(viewerGlobalReadModel).toContain("services/wiki/registry.js");
     expect(viewerGlobalReadModel).toContain("listBrowseableWikis");
