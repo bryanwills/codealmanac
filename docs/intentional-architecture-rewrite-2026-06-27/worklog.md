@@ -1726,3 +1726,12 @@ Two-hundred-forty-fourth production slice:
 - Added `src/services/agents/agent-model.ts` for provider-model set/reset validation and writes.
 - Added `src/services/agents/agent-config-write.ts` for the small shared config-write mechanic used by the agents write verbs.
 - Strengthened architecture-boundary tests so agents service view, default, model, and config-write responsibilities stay separated.
+
+Two-hundred-forty-fifth production slice:
+
+- Split `src/services/config/config.ts` into owned config service files and deleted the old mixed bucket.
+- Added `src/services/config/config-read.ts` for config list/get read workflows and origin lookup.
+- Added `src/services/config/config-write.ts` for config set/unset validation, target-file selection, and raw config mutation.
+- Added `src/services/config/config-types.ts` for command-facing config result and row contracts.
+- Kept `src/services/config/index.ts` as the stable facade for CLI commands and internal callers.
+- Strengthened architecture-boundary tests so config read, write, and type responsibilities stay separated.

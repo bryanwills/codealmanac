@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 244 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 245 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -65,6 +65,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved init prompt context construction out of the operation command adapter and into lifecycle workflows, so command code only shapes flags into service requests and renders service results.
 - Split lifecycle workflow contracts out of `src/services/lifecycle/workflows.ts` into `src/services/lifecycle/workflow-types.ts`, so the workflow implementation reads as product policy instead of a mixed API/type bucket.
 - Moved raw config-key validation for config get/set/unset into config services, so config command code only passes raw input and renders service result statuses.
+- Split the old `src/services/config/config.ts` bucket into config read, write, and type files so config service verbs have separate owners.
 - Moved review markdown cleanup and missing-markdown classification fully into wiki review services, so review commands only choose the raw input source.
 - Moved worker-program shape into `src/shared/worker-program.ts` so lifecycle services no longer import platform worker-process mechanics.
 - Reshaped update install injection so update services accept typed install results while platform update modules own npm child-process mechanics.
@@ -120,12 +121,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split the old `src/services/agents/agents.ts` mixed service bucket. Agents list/doctor read-model assembly now lives in `agents-view.ts`, default-provider writes live in `agent-default.ts`, provider-model writes live in `agent-model.ts`, and config write mechanics live in `agent-config-write.ts`.
+The latest slice split the old `src/services/config/config.ts` mixed service bucket. Config list/get reads now live in `config-read.ts`, config set/unset mutations live in `config-write.ts`, and result/request contracts live in `config-types.ts`.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/agents-command.test.ts test/provider-view.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/config-command.test.ts test/agents-command.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
@@ -136,7 +137,7 @@ Verification passed:
 Previous full-slice verification also passed:
 
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/agents-command.test.ts test/provider-view.test.ts test/setup.test.ts test/codex-agent-runtime-provider.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/agents-command.test.ts test/provider-view.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`

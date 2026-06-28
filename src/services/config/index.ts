@@ -2,11 +2,13 @@ export {
   listConfigEntries,
   readConfigEntryByKey,
   readConfigEntry,
+} from "./config-read.js";
+export {
   setConfigEntryByKey,
   setConfigEntry,
   unsetConfigEntryByKey,
   unsetConfigEntry,
-} from "./config.js";
+} from "./config-write.js";
 export {
   CONFIG_KEYS,
   formatConfigValue,
@@ -20,7 +22,7 @@ export type {
   ConfigServiceOptions,
   ConfigSetResult,
   ConfigUnsetResult,
-} from "./config.js";
+} from "./config-types.js";
 export type {
   ConfigEntry,
   ConfigKey,

@@ -95,6 +95,8 @@ Persisted config schema, codecs, path resolution, origin tracking, legacy migrat
 
 Config commands pass raw key/value input to config services. Services own config-key catalog validation and missing-value classification for command-facing reads and mutations, then return typed result statuses for command renderers. Typed service entrypoints can remain for internal callers that already hold a `ConfigKey`.
 
+Config service files are split by verb. `src/services/config/config-read.ts` owns list/get read workflows and origin lookup, `config-write.ts` owns set/unset validation plus raw config mutation through the config store, and `config-types.ts` owns command-facing result contracts. The deleted `src/services/config/config.ts` file should not return as a catchall.
+
 ### Wiki index/query mechanics are stores
 
 Local wiki indexing, query SQL, health checks over indexed data, topic YAML persistence, page frontmatter rewrites, and source-frontmatter maintenance belong under `src/stores/wiki/`. Wiki services own product verbs and result contracts over those mechanics. A top-level `src/wiki/` bucket blurs product semantics with persistence/query mechanics and should stay deleted.

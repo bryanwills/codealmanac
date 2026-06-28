@@ -1456,11 +1456,25 @@ describe("architecture boundaries", () => {
   it("keeps config command adapters out of config persistence mechanics", async () => {
     const configCommand = await readSource("src/edges/cli/commands/config.ts");
     const configRender = await readSource("src/edges/cli/commands/config-render.ts");
+    const configServiceIndex = await readSource("src/services/config/index.ts");
+    const configReadService = await readSource("src/services/config/config-read.ts");
+    const configWriteService = await readSource("src/services/config/config-write.ts");
+    const configTypes = await readSource("src/services/config/config-types.ts");
     const configStore = await readSource("src/stores/config/store.ts");
     const configPatch = await readSource("src/stores/config/stored-patch.ts");
     const configIndex = await readSource("src/stores/config/index.ts");
 
     expect(existsSync(join(ROOT, "src/config"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/config/config.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/config/config-read.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/services/config/config-write.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/services/config/config-types.ts"))).toBe(
+      true,
+    );
     expect(existsSync(join(ROOT, "src/edges/cli/commands/config-render.ts"))).toBe(
       true,
     );
@@ -1490,6 +1504,23 @@ describe("architecture boundaries", () => {
     expect(configCommand).toContain("readConfigEntryByKey");
     expect(configCommand).toContain("setConfigEntryByKey");
     expect(configCommand).toContain("unsetConfigEntryByKey");
+    expect(configServiceIndex).not.toContain("./config.js");
+    expect(configServiceIndex).toContain("config-read.js");
+    expect(configServiceIndex).toContain("config-write.js");
+    expect(configServiceIndex).toContain("config-types.js");
+    expect(configReadService).toContain("readConfigWithOrigins");
+    expect(configReadService).toContain("listConfigEntries");
+    expect(configReadService).toContain("readConfigEntryByKey");
+    expect(configReadService).not.toContain("writeConfigObject");
+    expect(configReadService).not.toContain("setNestedConfigValue");
+    expect(configWriteService).toContain("writeConfigObject");
+    expect(configWriteService).toContain("setNestedConfigValue");
+    expect(configWriteService).toContain("deleteNestedConfigValue");
+    expect(configWriteService).not.toContain("readConfigWithOrigins");
+    expect(configTypes).not.toContain("readConfigWithOrigins");
+    expect(configTypes).not.toContain("writeConfigObject");
+    expect(configTypes).toContain("ConfigSetResult");
+    expect(configTypes).toContain("ConfigUnsetResult");
     expect(configRender).toContain("unknown config key");
     expect(configRender).toContain("missing value");
     expect(configRender).toContain("formatTextTable");
