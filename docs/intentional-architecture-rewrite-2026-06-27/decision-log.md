@@ -125,6 +125,10 @@ The update service owns update workflow policy: check latest, honor dismissals, 
 
 Foreground and queued job execution services own job records, logs, locks, wiki snapshots, finalization, and event persistence. They do not create provider registries or read `process.env`. `src/agent/runtime/types.ts` defines the provider-neutral `AgentRuntimeRunner`; `src/services/jobs/runtime/agent-runner.ts` gives jobs the `JobAgentRunner` alias; `src/agent/runtime/job-runner.ts` creates the concrete provider-backed runner from an explicit environment; CLI and worker edges inject that runner into lifecycle and sync workflows. Background job spawning still carries `workerEnvironment` because detached process launch is worker-process mechanics, not provider execution.
 
+### Absorb source resolution is an injected platform resolver
+
+Lifecycle Absorb services own input parsing, target classification, prompt context facts, and the source-resolver contract. They do not import GitHub platform mechanics. `src/platform/sources/absorb.ts` implements the concrete resolver by using `src/platform/github/source.ts` for GitHub refs and normalizing web URLs into service-owned source facts. CLI lifecycle edges inject this resolver for `absorb` and `ingest`, while tests can inject fake resolvers directly.
+
 ### Guard boundaries with tests
 
 Architecture-boundary tests are part of the rewrite, not decoration. When a smell is removed, add or update a test that makes the old leak harder to reintroduce.

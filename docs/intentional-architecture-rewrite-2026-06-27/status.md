@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 190 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 191 production slices so far.
 
-The diff is broad: 486 files changed, with 24,603 insertions and 13,124 deletions.
+The diff is broad: 489 files changed, with 24,739 insertions and 13,154 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -42,6 +42,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved update state and install-lock persistence into `src/stores/update/`; platform update modules now own registry/npm/version behavior, not JSON state-file mechanics.
 - Moved update registry/version/install mechanics behind a service-owned `UpdateRuntime` contract, with the real runtime composed in the CLI edge.
 - Moved GitHub source resolution mechanics into `src/platform/github/`.
+- Moved Absorb source resolver composition into `src/platform/sources/absorb.ts` and the CLI edge, so lifecycle Absorb services no longer import platform GitHub mechanics.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
 - Moved diagnostic probe result contracts into `src/platform/diagnostics/types.ts`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
@@ -65,13 +66,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved foreground and queued job execution to an injected `JobAgentRunner` contract, backed by the provider-neutral `AgentRuntimeRunner` type. `src/services/jobs/runtime/` now owns job records, logs, locking, wiki snapshots, and finalization over that runner, while `src/agent/runtime/job-runner.ts` creates the concrete provider-backed runner and CLI/worker edges wire it from `process.env`.
+The latest slice moved GitHub Absorb source resolution out of lifecycle services. `src/services/lifecycle/absorb/input.ts` now parses source refs and uses an injected resolver for external sources; `src/platform/sources/absorb.ts` owns the concrete GitHub/web source resolver; `src/edges/cli/register-lifecycle-run-commands.ts` wires that resolver for `absorb` and `ingest`.
 
-Verification passed so far: `npx tsc --noEmit --pretty false` and focused job/lifecycle/sync/boundary tests.
+Verification passed so far: `npx tsc --noEmit --pretty false` and focused Absorb input, GitHub source resolver, operation command, and boundary tests.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, and job provider-runner composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, and Absorb source resolver composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 

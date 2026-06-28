@@ -1595,7 +1595,13 @@ describe("architecture boundaries", () => {
     const lifecycleResults = await readSource(
       "src/services/lifecycle/operation-results.ts",
     );
+    const lifecycleAbsorbIndex = await readSource("src/services/lifecycle/absorb/index.ts");
+    const lifecycleAbsorbInput = await readSource("src/services/lifecycle/absorb/input.ts");
     const platformGithubSource = await readSource("src/platform/github/source.ts");
+    const platformAbsorbSourceResolver = await readSource("src/platform/sources/absorb.ts");
+    const lifecycleCliEdge = await readSource(
+      "src/edges/cli/register-lifecycle-run-commands.ts",
+    );
     const syncService = await readSource("src/services/sync/sync.ts");
     const operationsCommand = await readSource("src/cli/commands/operations.ts");
     const operationsRender = await readSource("src/cli/commands/operations-render.ts");
@@ -1605,6 +1611,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/services/lifecycle/operations"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/absorb"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/github/source.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/sources/absorb.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/operations"))).toBe(false);
     expect(existsSync(join(ROOT, "src/absorb"))).toBe(false);
     expect(lifecycleServiceIndex).not.toContain("../../operations");
@@ -1638,6 +1645,13 @@ describe("architecture boundaries", () => {
     expect(lifecycleWorkflows).toContain("runPreparedAbsorbOperationWorkflow");
     expect(lifecycleResults).toContain("lifecycleOperationRunResultFromOperation");
     expect(lifecycleResults).toContain("interface LifecycleOperationFailure");
+    expect(lifecycleAbsorbIndex).not.toContain("platform/github");
+    expect(lifecycleAbsorbInput).not.toContain("platform/github");
+    expect(lifecycleAbsorbInput).not.toContain("resolveGitHubSource");
+    expect(platformAbsorbSourceResolver).toContain("resolveGitHubSource");
+    expect(platformAbsorbSourceResolver).toContain("ResolveSourceFn");
+    expect(lifecycleCliEdge).toContain("createPlatformAbsorbSourceResolver");
+    expect(lifecycleCliEdge).toContain("resolveSource: createPlatformAbsorbSourceResolver()");
     expect(platformGithubSource).not.toContain("services/lifecycle");
     expect(syncService).toContain("runPreparedAbsorbOperationWorkflow");
     expect(syncService).not.toContain("services/lifecycle/operations");

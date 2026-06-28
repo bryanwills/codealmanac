@@ -53,6 +53,16 @@ describe("resolveAbsorbInput", () => {
     });
   });
 
+  it("requires an injected source resolver for GitHub source refs", async () => {
+    await expect(resolveAbsorbInput({
+      cwd: "/repo",
+      inputs: ["github:pr:123"],
+    })).resolves.toEqual({
+      ok: false,
+      message: "GitHub source refs require a source resolver.",
+    });
+  });
+
   it("parses GitHub issue URLs as source refs", async () => {
     await expect(resolveAbsorbInput({
       cwd: "/repo",

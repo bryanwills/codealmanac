@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import { createAgentRuntimeJobRunner } from "../../agent/runtime/job-runner.js";
+import { createPlatformAbsorbSourceResolver } from "../../platform/sources/absorb.js";
 import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
 import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
@@ -89,6 +90,7 @@ function registerAbsorbCommand(program: Command): void {
           workerEnvironment: process.env,
           pid: process.pid,
           agentRunner: createAgentRuntimeJobRunner({ environment: process.env }),
+          resolveSource: createPlatformAbsorbSourceResolver(),
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
             : undefined,
@@ -131,6 +133,7 @@ function registerIngestCommand(program: Command): void {
           workerEnvironment: process.env,
           pid: process.pid,
           agentRunner: createAgentRuntimeJobRunner({ environment: process.env }),
+          resolveSource: createPlatformAbsorbSourceResolver(),
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)
             : undefined,

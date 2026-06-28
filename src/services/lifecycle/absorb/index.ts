@@ -1,11 +1,4 @@
 export {
-  GitHubSourceError,
-  parseGitHubRemote,
-  resolveGitHubSource,
-  type CommandRunner,
-  type GitHubRepo,
-} from "../../../platform/github/source.js";
-export {
   resolveAbsorbInput,
   type AbsorbInputKind,
   type ResolvedAbsorbInput,

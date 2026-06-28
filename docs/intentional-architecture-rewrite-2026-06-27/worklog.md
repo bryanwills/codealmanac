@@ -1310,3 +1310,11 @@ One-hundred-ninetieth production slice:
 - Removed provider-registry construction, `workerEnvironment`, and `harnessRun` fallback wiring from `src/services/jobs/runtime/executor.ts`, `start.ts`, and `queue-drain.ts`.
 - Updated lifecycle, sync, operation command wrappers, and worker edges to pass an explicit `JobAgentRunner` into foreground and queued job execution.
 - Updated job/lifecycle/sync tests to inject fake runners, and strengthened boundary coverage so job runtime services cannot reintroduce provider registry composition or worker environment ownership.
+
+One-hundred-ninety-first production slice:
+
+- Added `src/platform/sources/absorb.ts` as the concrete Absorb source resolver that maps source refs to resolved GitHub or web source facts.
+- Removed direct `src/platform/github/source.ts` imports and platform re-exports from `src/services/lifecycle/absorb/`.
+- Kept `src/services/lifecycle/absorb/input.ts` responsible for parsing source refs, local path targets, mixed target shape, and the service-owned resolver contract.
+- Updated the lifecycle CLI edge to pass `createPlatformAbsorbSourceResolver()` into `absorb` and `ingest`.
+- Strengthened Absorb input and architecture-boundary tests so lifecycle services cannot reintroduce GitHub platform mechanics.

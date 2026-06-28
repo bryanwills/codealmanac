@@ -1,10 +1,7 @@
 import { resolve } from "node:path";
 
-import {
-  resolveGitHubSource,
-} from "../../../platform/github/source.js";
 import type { AbsorbInputSource } from "./input-source.js";
-import { parseSourceRef, type SourceRef } from "./source-ref.js";
+import { parseSourceRef, type SourceRef, type WebSourceRef } from "./source-ref.js";
 
 export type AbsorbInputKind = "path" | "source" | "mixed";
 
@@ -56,18 +53,20 @@ export async function resolveAbsorbInput(
   const targets: string[] = [];
   const resolvedPaths: string[] = [];
   const sources: AbsorbInputSource[] = [];
-  const resolveSource = hasSourceRef
-    ? options.resolveSource ?? defaultResolveSource
-    : null;
   for (const input of parsedInputs) {
     if (input.kind === "path") {
       const path = resolve(options.cwd, input.path);
       resolvedPaths.push(path);
       targets.push(path);
-    } else if (resolveSource !== null) {
-      const source = await resolveSource(input.ref, options.cwd);
-      sources.push(source);
-      targets.push(source.raw);
+    } else if (hasSourceRef) {
+      const source = await resolveSourceRef({
+        ref: input.ref,
+        cwd: options.cwd,
+        resolveSource: options.resolveSource,
+      });
+      if (source.ok === false) return source;
+      sources.push(source.value);
+      targets.push(source.value.raw);
     }
   }
 
@@ -88,20 +87,36 @@ export async function resolveAbsorbInput(
   };
 }
 
-function defaultResolveSource(
-  ref: SourceRef,
-  cwd: string,
-): Promise<AbsorbInputSource> {
-  if (ref.provider === "github") {
-    return resolveGitHubSource({ ref, cwd });
+async function resolveSourceRef(args: {
+  ref: SourceRef;
+  cwd: string;
+  resolveSource?: ResolveSourceFn;
+}): Promise<
+  | { ok: false; message: string }
+  | { ok: true; value: AbsorbInputSource }
+> {
+  if (args.resolveSource !== undefined) {
+    return {
+      ok: true,
+      value: await args.resolveSource(args.ref, args.cwd),
+    };
   }
-  if (ref.provider === "web") {
-    return Promise.resolve({
-      kind: "web.url",
-      raw: ref.raw,
-      url: ref.url,
-    });
+  if (args.ref.provider === "web") {
+    return {
+      ok: true,
+      value: webInputSource(args.ref),
+    };
   }
-  const _exhaustive: never = ref;
-  throw new Error(`unsupported source provider ${String(_exhaustive)}`);
+  return {
+    ok: false,
+    message: "GitHub source refs require a source resolver.",
+  };
+}
+
+function webInputSource(ref: WebSourceRef): AbsorbInputSource {
+  return {
+    kind: "web.url",
+    raw: ref.raw,
+    url: ref.url,
+  };
 }
