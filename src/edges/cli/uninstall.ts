@@ -1,5 +1,3 @@
-import path from "node:path";
-
 import { createAutomationScheduler } from "../../app/automation-runtime.js";
 import { createSetupInstructionRuntime } from "../../app/setup-runtime.js";
 import {
@@ -9,13 +7,13 @@ import {
 } from "../../services/setup/index.js";
 import {
   renderAutomationKept,
-  renderConfirmationPrompt,
   renderGuidesKept,
   renderUninstallComplete,
   renderUninstallResult,
   renderUninstallStart,
-  type UninstallRenderOptions,
 } from "./uninstall-render.js";
+import { chooseUninstallRemoval } from "./uninstall/confirmation.js";
+import { resolveUninstallTargetDirs } from "./uninstall/targets.js";
 
 type AutomationExecFn = (
   file: string,
@@ -81,45 +79,33 @@ export async function runUninstall(
 ): Promise<UninstallResult> {
   const out = options.stdout;
   const interactive = options.isTTY && options.yes !== true;
-  const claudeDir = options.claudeDir ?? path.join(options.homeDir, ".claude");
-  const codexDir = options.codexDir ?? path.join(options.homeDir, ".codex");
-  const cursorDir = options.cursorDir ?? path.join(options.homeDir, ".cursor");
-  const windsurfDir = options.windsurfDir ?? path.join(options.homeDir, ".codeium", "windsurf");
-  const opencodeDir = options.opencodeDir ?? path.join(options.homeDir, ".config", "opencode");
+  const targetDirs = resolveUninstallTargetDirs(options);
   const renderOptions = { color: options.color };
 
   out.write(renderUninstallStart());
 
   // Scheduler removal.
-  let removeAutomation = true;
-  if (options.keepAutomation === true) {
-    removeAutomation = false;
-  } else if (interactive) {
-    removeAutomation = await confirm(
-      options.stdin,
-      out,
-      "Remove scheduled sync and Garden automation?",
-      true,
-      renderOptions,
-    );
-  }
+  const removeAutomation = await chooseUninstallRemoval({
+    keep: options.keepAutomation,
+    interactive,
+    input: options.stdin,
+    out,
+    question: "Remove scheduled sync and Garden automation?",
+    renderOptions,
+  });
   if (!removeAutomation) {
     out.write(renderAutomationKept(renderOptions));
   }
 
   // Guide + import removal.
-  let removeGuides = true;
-  if (options.keepGuides === true) {
-    removeGuides = false;
-  } else if (interactive) {
-    removeGuides = await confirm(
-      options.stdin,
-      out,
-      "Remove agent instructions?",
-      true,
-      renderOptions,
-    );
-  }
+  const removeGuides = await chooseUninstallRemoval({
+    keep: options.keepGuides,
+    interactive,
+    input: options.stdin,
+    out,
+    question: "Remove agent instructions?",
+    renderOptions,
+  });
   if (!removeGuides) {
     out.write(renderGuidesKept(renderOptions));
   }
@@ -134,11 +120,7 @@ export async function runUninstall(
       exec: options.automationExec,
     }),
     instructionsRuntime: createSetupInstructionRuntime(),
-    claudeDir,
-    codexDir,
-    cursorDir,
-    windsurfDir,
-    opencodeDir,
+    ...targetDirs,
   });
 
   out.write(renderUninstallResult(result, renderOptions));
@@ -167,35 +149,4 @@ export function removeManagedBlock(
   end: string,
 ): { changed: boolean; body: string } {
   return removeSetupManagedBlock(contents, start, end);
-}
-
-function confirm(
-  input: NodeJS.ReadableStream,
-  out: NodeJS.WritableStream,
-  question: string,
-  defaultYes: boolean,
-  renderOptions: UninstallRenderOptions,
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    out.write(renderConfirmationPrompt(question, defaultYes, renderOptions));
-
-    let buf = "";
-    const onData = (chunk: Buffer): void => {
-      buf += chunk.toString("utf8");
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      input.removeListener("data", onData);
-      input.pause();
-
-      const answer = buf.slice(0, nl).trim().toLowerCase();
-      const accepted =
-        answer.length === 0
-          ? defaultYes
-          : answer === "y" || answer === "yes";
-      resolve(accepted);
-    };
-
-    input.resume();
-    input.on("data", onData);
-  });
 }
