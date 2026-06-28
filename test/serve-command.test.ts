@@ -4,7 +4,7 @@ import {
   buildQueuedJobRecord,
   jobRecordPath,
   writeJobRecord,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { runServe } from "../src/cli/commands/serve.js";
 import { renderServeStartup } from "../src/cli/commands/serve-render.js";
 import { startViewerServer } from "../src/edges/viewer/server.js";

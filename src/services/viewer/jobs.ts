@@ -5,13 +5,13 @@ import {
   resolveJobLogPath,
   resolveJobRecordPath,
   toJobView,
-} from "../../jobs/index.js";
+} from "../jobs/runtime/index.js";
 import {
   enrichJobView,
-} from "../../jobs/projections/view.js";
-import { deriveJobAgentTraces } from "../../jobs/projections/agent-traces.js";
-import { deriveJobWarnings } from "../../jobs/projections/warnings.js";
-import { readJobLogEvents } from "../../jobs/projections/log-events.js";
+} from "../jobs/projections/view.js";
+import { deriveJobAgentTraces } from "../jobs/projections/agent-traces.js";
+import { deriveJobWarnings } from "../jobs/projections/warnings.js";
+import { readJobLogEvents } from "../jobs/projections/log-events.js";
 import type {
   ViewerJobDetail,
   ViewerJobRun,

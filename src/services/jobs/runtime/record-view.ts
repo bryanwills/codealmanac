@@ -1,4 +1,4 @@
-import type { JobView, JobRecord } from "./types.js";
+import type { JobView, JobRecord } from "../../../stores/jobs/types.js";
 
 export function toJobView(args: {
   record: JobRecord;

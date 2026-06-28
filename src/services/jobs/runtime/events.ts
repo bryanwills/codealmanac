@@ -1,7 +1,7 @@
-import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
+import type { AgentRuntimeEvent } from "../../../agent/runtime/events.js";
 import { appendJobEvent } from "./logs.js";
-import { readJobRecord, writeJobRecord } from "../stores/jobs/records.js";
-import type { JobRecord } from "./types.js";
+import { readJobRecord, writeJobRecord } from "../../../stores/jobs/records.js";
+import type { JobRecord } from "../../../stores/jobs/types.js";
 
 export interface JobEventLogger {
   onEvent(event: AgentRuntimeEvent): Promise<void>;

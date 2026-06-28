@@ -1,5 +1,5 @@
-import { listJobRecords } from "../stores/jobs/records.js";
-import type { JobRecord } from "./types.js";
+import { listJobRecords } from "../../../stores/jobs/records.js";
+import type { JobRecord } from "../../../stores/jobs/types.js";
 
 export async function oldestQueuedJob(repoRoot: string): Promise<JobRecord | null> {
   const records = await listJobRecords(repoRoot);

@@ -3,8 +3,8 @@ import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { getRepoAlmanacDir } from "../../paths.js";
-import { isJobRecord } from "../../jobs/record-schema.js";
-import type { JobRecord } from "../../jobs/types.js";
+import { isJobRecord } from "./record-schema.js";
+import type { JobRecord } from "./types.js";
 
 export function jobsDir(repoRoot: string): string {
   return join(getRepoAlmanacDir(repoRoot), "jobs");

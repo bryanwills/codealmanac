@@ -13,7 +13,7 @@ import {
   startBackgroundJob as startBackgroundJobCommand,
   type StartBackgroundJobOptions,
   writeJobRecord,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {

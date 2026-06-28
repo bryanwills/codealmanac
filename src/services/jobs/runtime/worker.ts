@@ -1,6 +1,6 @@
-import type { AgentRuntimeEvent, AgentRuntimeResult } from "../agent/runtime/events.js";
-import type { AgentRuntimeRunHooks } from "../agent/runtime/types.js";
-import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
+import type { AgentRuntimeEvent, AgentRuntimeResult } from "../../../agent/runtime/events.js";
+import type { AgentRuntimeRunHooks } from "../../../agent/runtime/types.js";
+import type { OperationSpec } from "../../lifecycle/operations/spec.js";
 import {
   finishJobRecord,
 } from "./record-factory.js";
@@ -8,12 +8,12 @@ import {
   readJobRecord,
   resolveJobRecordPath,
   writeJobRecord,
-} from "../stores/jobs/records.js";
-import { acquireJobWorkerLock } from "../stores/jobs/worker-lock.js";
+} from "../../../stores/jobs/records.js";
+import { acquireJobWorkerLock } from "../../../stores/jobs/worker-lock.js";
 import { oldestQueuedJob } from "./queue.js";
-import { readJobSpec } from "../stores/jobs/specs.js";
+import { readJobSpec } from "../../../stores/jobs/specs.js";
 import { startQueuedJob } from "./start.js";
-import type { JobRecord } from "./types.js";
+import type { JobRecord } from "../../../stores/jobs/types.js";
 
 export interface RunJobWorkerOptions {
   repoRoot: string;

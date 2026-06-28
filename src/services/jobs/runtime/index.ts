@@ -8,13 +8,13 @@ export {
 } from "./start.js";
 export { runJobWorker } from "./worker.js";
 export { appendJobEvent } from "./logs.js";
-export { buildJobLogEntry, inferActor } from "./log-entry.js";
+export { buildJobLogEntry, inferActor } from "../../../stores/jobs/log-entry.js";
 export {
   buildQueuedJobRecord,
   buildStartedJobRecord,
   finishJobRecord,
 } from "./record-factory.js";
-export { isJobRecord } from "./record-schema.js";
+export { isJobRecord } from "../../../stores/jobs/record-schema.js";
 export { toJobView } from "./record-view.js";
 export {
   isJobCancellationRequested,
@@ -30,28 +30,28 @@ export {
   resolveJobLogPath,
   resolveJobRecordPath,
   writeJobRecord,
-} from "../stores/jobs/records.js";
+} from "../../../stores/jobs/records.js";
 export {
   appendJobLogEntry,
   initializeJobLog,
-} from "../stores/jobs/logs.js";
+} from "../../../stores/jobs/logs.js";
 export {
   readJobSpec,
   jobSpecPath,
   resolveJobSpecPath,
   writeJobSpec,
-} from "../stores/jobs/specs.js";
+} from "../../../stores/jobs/specs.js";
 export { oldestQueuedJob } from "./queue.js";
 export {
   acquireJobWorkerLock,
   jobWorkerLockPath,
-} from "../stores/jobs/worker-lock.js";
+} from "../../../stores/jobs/worker-lock.js";
 export {
   diffPageSnapshots,
   isNoopPageDelta,
   snapshotPages,
 } from "./snapshots.js";
-export type { AppendJobEventOptions, JobLogEntry } from "./log-entry.js";
+export type { AppendJobEventOptions, JobLogEntry } from "../../../stores/jobs/log-entry.js";
 export type {
   StartBackgroundJobOptions,
   StartBackgroundJobResult,
@@ -63,7 +63,7 @@ export type {
   BackgroundChild,
   JobWorkerProgram,
   SpawnBackgroundFn,
-} from "./background-process.js";
+} from "../../../platform/jobs/worker-process.js";
 export type {
   StartJobResult,
 } from "./executor.js";
@@ -75,7 +75,7 @@ export type {
   JobStatus,
   JobSummary,
   JobView,
-} from "./types.js";
+} from "../../../stores/jobs/types.js";
 export type {
   PageSnapshot,
   PageSnapshotDelta,

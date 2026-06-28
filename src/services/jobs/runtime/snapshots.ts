@@ -3,7 +3,7 @@ import { existsSync, statSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { parseFrontmatter } from "../wiki/indexer/frontmatter.js";
+import { parseFrontmatter } from "../../../wiki/indexer/frontmatter.js";
 
 export interface PageSnapshotEntry {
   slug: string;

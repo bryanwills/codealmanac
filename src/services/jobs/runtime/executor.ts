@@ -1,7 +1,7 @@
-import type { AgentRuntimeEvent, AgentRuntimeResult } from "../agent/runtime/events.js";
-import type { AgentRuntimeRunHooks } from "../agent/runtime/types.js";
-import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
-import { createAgentRuntimeProviderRegistry } from "../agent/runtime/providers/index.js";
+import type { AgentRuntimeEvent, AgentRuntimeResult } from "../../../agent/runtime/events.js";
+import type { AgentRuntimeRunHooks } from "../../../agent/runtime/types.js";
+import type { OperationSpec } from "../../lifecycle/operations/spec.js";
+import { createAgentRuntimeProviderRegistry } from "../../../agent/runtime/providers/index.js";
 import { createJobEventLogger } from "./events.js";
 import { finishUnlessCancelled } from "./finalization.js";
 import {
@@ -12,13 +12,13 @@ import {
 import {
   resolveJobLogPath,
   resolveJobRecordPath,
-} from "../stores/jobs/records.js";
+} from "../../../stores/jobs/records.js";
 import type {
   JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobSummary,
-} from "./types.js";
+} from "../../../stores/jobs/types.js";
 
 export interface StartJobResult {
   jobId: string;

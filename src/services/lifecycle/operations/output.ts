@@ -1,4 +1,4 @@
-import type { JobOperationOutput } from "../../../jobs/types.js";
+import type { JobOperationOutput } from "../../../stores/jobs/types.js";
 import {
   ALMANAC_OPERATION_REPORT_NAME,
   parseAlmanacOperationReport,

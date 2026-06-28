@@ -1,21 +1,21 @@
-import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
-import { initializeJobLog } from "../stores/jobs/logs.js";
+import type { OperationSpec } from "../../lifecycle/operations/spec.js";
+import { initializeJobLog } from "../../../stores/jobs/logs.js";
 import {
   jobRecordPath,
   writeJobRecord,
-} from "../stores/jobs/records.js";
-import { writeJobSpec } from "../stores/jobs/specs.js";
+} from "../../../stores/jobs/records.js";
+import { writeJobSpec } from "../../../stores/jobs/specs.js";
 import {
   startJobWorkerProcess,
   type JobWorkerProgram,
   type SpawnBackgroundFn,
-} from "./background-process.js";
+} from "../../../platform/jobs/worker-process.js";
 import { createJobId } from "./ids.js";
 import {
   buildQueuedJobRecord,
   finishJobRecord,
 } from "./record-factory.js";
-import type { JobRecord } from "./types.js";
+import type { JobRecord } from "../../../stores/jobs/types.js";
 
 export interface StartBackgroundJobOptions {
   repoRoot: string;

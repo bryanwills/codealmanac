@@ -2,7 +2,7 @@ import {
   toJobView,
   type JobRecord,
   type JobView as RuntimeJobView,
-} from "../../jobs/index.js";
+} from "./runtime/index.js";
 import type {
   JobServiceView,
   JobsRequest,

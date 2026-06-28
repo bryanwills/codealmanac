@@ -16,7 +16,7 @@ import {
   jobLogPath,
   jobRecordPath,
   writeJobRecord,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 describe("jobs command", () => {

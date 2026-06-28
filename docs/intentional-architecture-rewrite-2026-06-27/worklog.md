@@ -1068,3 +1068,13 @@ One-hundred-fifty-ninth production slice:
 - Moved GitHub remote/source resolution mechanics into `src/platform/github/source.ts` so platform code returns plain typed source facts without importing lifecycle service types.
 - Added `runPreparedAbsorbOperationWorkflow()` so sync can start prepared transcript Absorb jobs through the public lifecycle service instead of importing operation internals.
 - Updated boundary coverage so the old operation/absorb buckets stay deleted, sync uses lifecycle workflow contracts, and GitHub platform mechanics do not import lifecycle services.
+
+One-hundred-sixtieth production slice:
+
+- Removed the old top-level `src/jobs/` source bucket.
+- Moved job execution lifecycle, foreground/background start, queue selection, event logging, finalization, page snapshotting, wiki-effect accounting, and worker draining into `src/services/jobs/runtime/`.
+- Moved job run projections, parsed log events, agent traces, warnings, and display-title enrichment into `src/services/jobs/projections/`.
+- Moved durable job record types, record validation, and log-entry envelopes into `src/stores/jobs/` alongside record/spec/log/lock persistence.
+- Moved detached worker process spawning into `src/platform/jobs/worker-process.ts`.
+- Updated lifecycle, sync, viewer, CLI worker-entry, and tests to use the service/store/platform job boundaries instead of importing `src/jobs/`.
+- Added boundary coverage that `src/jobs/` stays deleted and that job runtime, projections, persisted schemas, and process spawning stay in their owned homes.

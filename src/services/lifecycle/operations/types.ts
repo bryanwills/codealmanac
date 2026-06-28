@@ -5,7 +5,7 @@ import type {
   JobWorkerProgram,
   StartBackgroundJobResult,
   StartJobResult,
-} from "../../../jobs/index.js";
+} from "../../jobs/runtime/index.js";
 
 export type { JobWorkerProgram };
 

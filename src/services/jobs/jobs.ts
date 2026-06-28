@@ -8,7 +8,7 @@ import {
   resolveJobLogPath,
   resolveJobRecordPath,
   writeJobRecord,
-} from "../../jobs/index.js";
+} from "./runtime/index.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import type {
   CancelJobRequest,

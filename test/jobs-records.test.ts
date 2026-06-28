@@ -16,7 +16,7 @@ import {
   legacyRunsDir,
   toJobView,
   writeJobRecord,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 describe("job records", () => {

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { appendJobEvent, initializeJobLog } from "../src/jobs/index.js";
+import { appendJobEvent, initializeJobLog } from "../src/services/jobs/runtime/index.js";
 
 describe("process job logs", () => {
   it("uses event actor fields for v2 envelopes", async () => {

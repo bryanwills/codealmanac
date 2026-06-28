@@ -7,7 +7,7 @@ import {
   startBackgroundJob,
   startForegroundJob,
   type JobWorkerProgram,
-} from "../../../jobs/index.js";
+} from "../../jobs/runtime/index.js";
 import { readConfig } from "../../../config/index.js";
 import { PROVIDER_DEFINITIONS } from "../../../agent/provider-id.js";
 import type {

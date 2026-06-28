@@ -49,6 +49,10 @@ Build, Absorb, and Garden operation specs are lifecycle product mechanics, so th
 
 Absorb owns product input normalization under `src/services/lifecycle/absorb/`: source refs, source input contracts, context rendering, and Absorb run-start shaping. GitHub remote parsing and URL construction are external mechanics, so they live under `src/platform/github/` and return plain typed facts.
 
+### Jobs are service runtime plus store contracts, not a top-level bucket
+
+Job execution lifecycle, queue selection, event logging, wiki-effect accounting, and viewer projections belong under `src/services/jobs/` because they are product workflow and read-model behavior. Durable job records, specs, logs, locks, and persisted schema validation belong under `src/stores/jobs/`. Detached worker process spawning belongs under `src/platform/jobs/`.
+
 ### Prefer explicit contracts over compatibility facades
 
 Compatibility facades can remain only when callers still need a stable import. New code should depend on typed service, store, integration, or edge contracts with honest names.

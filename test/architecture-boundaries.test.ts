@@ -627,6 +627,9 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/jobs-render.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/view.ts"))).toBe(true);
     expect(jobsServiceIndex).not.toContain("../../jobs");
+    expect(jobsServiceIndex).not.toContain("./runtime/index.js");
+    expect(jobsServiceIndex).not.toContain("writeJobRecord");
+    expect(jobsServiceIndex).not.toContain("startForegroundJob");
     expect(jobsServiceTypes).not.toContain("RuntimeJobView");
     expect(jobsServiceTypes).not.toContain("JobView as");
     expect(jobsServiceTypes).not.toContain("JobRequest extends JobsRequest");
@@ -681,14 +684,15 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps job run projection concerns in named modules", async () => {
-    const projectionView = await readSource("src/jobs/projections/view.ts");
-    const agentTraces = await readSource("src/jobs/projections/agent-traces.ts");
-    const warnings = await readSource("src/jobs/projections/warnings.ts");
+    const projectionView = await readSource("src/services/jobs/projections/view.ts");
+    const agentTraces = await readSource("src/services/jobs/projections/agent-traces.ts");
+    const warnings = await readSource("src/services/jobs/projections/warnings.ts");
     const viewerJobs = await readSource("src/services/viewer/jobs.ts");
 
-    expect(existsSync(join(ROOT, "src/jobs/projections/agent-traces.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/jobs/projections/warnings.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/jobs/projections/text.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/jobs"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/jobs/projections/agent-traces.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/jobs/projections/warnings.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/jobs/projections/text.ts"))).toBe(true);
     expect(projectionView).not.toContain("export function deriveJobAgentTraces");
     expect(projectionView).not.toContain("export function deriveJobWarnings");
     expect(agentTraces).toContain("export function deriveJobAgentTraces");
@@ -699,18 +703,25 @@ describe("architecture boundaries", () => {
 
   it("keeps job record persistence in an explicit store", () => {
     expect(existsSync(join(ROOT, "src/stores/jobs/records.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/jobs/types.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/jobs/record-schema.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/jobs/records.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/jobs"))).toBe(false);
   });
 
   it("keeps job worker process spawning out of job record startup", async () => {
-    const jobStart = await readSource("src/jobs/start.ts");
-    const jobRecordFactory = await readSource("src/jobs/record-factory.ts");
-    const jobWorker = await readSource("src/jobs/worker.ts");
-    const backgroundStart = await readSource("src/jobs/background-start.ts");
-    const backgroundProcess = await readSource("src/jobs/background-process.ts");
+    const jobStart = await readSource("src/services/jobs/runtime/start.ts");
+    const jobRecordFactory = await readSource(
+      "src/services/jobs/runtime/record-factory.ts",
+    );
+    const jobWorker = await readSource("src/services/jobs/runtime/worker.ts");
+    const backgroundStart = await readSource(
+      "src/services/jobs/runtime/background-start.ts",
+    );
+    const backgroundProcess = await readSource("src/platform/jobs/worker-process.ts");
 
-    expect(existsSync(join(ROOT, "src/jobs/background-start.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/jobs/background-process.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/jobs/runtime/background-start.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/jobs/worker-process.ts"))).toBe(true);
     expect(jobStart).not.toContain("node:child_process");
     expect(jobStart).not.toContain("startJobWorkerProcess");
     expect(jobStart).not.toContain("writeJobSpec");
@@ -736,11 +747,13 @@ describe("architecture boundaries", () => {
   it("keeps job spec and log persistence in explicit stores", () => {
     expect(existsSync(join(ROOT, "src/stores/jobs/specs.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/jobs/logs.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/jobs/log-entry.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/jobs/spec.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/jobs"))).toBe(false);
   });
 
   it("keeps worker lock persistence out of job queue selection", async () => {
-    const queue = await readSource("src/jobs/queue.ts");
+    const queue = await readSource("src/services/jobs/runtime/queue.ts");
 
     expect(existsSync(join(ROOT, "src/stores/jobs/worker-lock.ts"))).toBe(true);
     expect(queue).not.toContain("worker.lock");
@@ -1417,9 +1430,9 @@ describe("architecture boundaries", () => {
     const runtimeIndex = await readSource("src/agent/runtime/index.ts");
     const claudeProvider = await readSource("src/agent/runtime/providers/claude.ts");
     const codexProvider = await readSource("src/agent/runtime/providers/codex.ts");
-    const jobExecutor = await readSource("src/jobs/executor.ts");
-    const jobStart = await readSource("src/jobs/start.ts");
-    const jobWorker = await readSource("src/jobs/worker.ts");
+    const jobExecutor = await readSource("src/services/jobs/runtime/executor.ts");
+    const jobStart = await readSource("src/services/jobs/runtime/start.ts");
+    const jobWorker = await readSource("src/services/jobs/runtime/worker.ts");
 
     expect(registry).toContain("createAgentRuntimeProviderRegistry");
     expect(registry).toContain("environment: NodeJS.ProcessEnv");

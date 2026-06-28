@@ -8,7 +8,7 @@ import {
   finishJobRecord,
   startForegroundJob,
   writeJobRecord,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 
 describe("job foreground execution", () => {

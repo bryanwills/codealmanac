@@ -1,16 +1,16 @@
-import type { AgentRuntimeFailure } from "../agent/runtime/events.js";
+import type { AgentRuntimeFailure } from "../../../agent/runtime/events.js";
 import { finishJobRecord } from "./record-factory.js";
 import {
   isJobCancellationRequested,
   readJobRecord,
   writeJobRecord,
-} from "../stores/jobs/records.js";
+} from "../../../stores/jobs/records.js";
 import type {
   JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobSummary,
-} from "./types.js";
+} from "../../../stores/jobs/types.js";
 
 export async function finishUnlessCancelled(args: {
   recordPath: string;

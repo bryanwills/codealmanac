@@ -1,15 +1,15 @@
 import { join } from "node:path";
 
-import type { AgentRuntimeResult } from "../agent/runtime/events.js";
-import type { FinalOutputResult } from "../agent/runtime/final-output.js";
-import { summarizeOperationOutput } from "../services/lifecycle/operations/output.js";
-import { runIndexer } from "../wiki/indexer/index.js";
+import type { AgentRuntimeResult } from "../../../agent/runtime/events.js";
+import type { FinalOutputResult } from "../../../agent/runtime/final-output.js";
+import { summarizeOperationOutput } from "../../lifecycle/operations/output.js";
+import { runIndexer } from "../../../wiki/indexer/index.js";
 import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
 import type {
   JobOperationOutput,
   JobPageChanges,
   JobSummary,
-} from "./types.js";
+} from "../../../stores/jobs/types.js";
 import type { PageSnapshot } from "./snapshots.js";
 
 export interface JobWikiSnapshot {

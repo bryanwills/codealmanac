@@ -10,7 +10,7 @@ import {
   jobRecordPath,
   writeJobRecord,
   writeJobSpec,
-} from "../src/jobs/index.js";
+} from "../src/services/jobs/runtime/index.js";
 import { createViewerApi } from "../src/services/viewer/api.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 

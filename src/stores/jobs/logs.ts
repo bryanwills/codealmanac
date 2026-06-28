@@ -1,7 +1,7 @@
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-import type { JobLogEntry } from "../../jobs/log-entry.js";
+import type { JobLogEntry } from "./log-entry.js";
 
 export async function initializeJobLog(path: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
