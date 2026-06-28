@@ -743,12 +743,16 @@ describe("architecture boundaries", () => {
     const jobRecordFactory = await readSource(
       "src/services/jobs/runtime/record-factory.ts",
     );
-    const jobWorker = await readSource("src/services/jobs/runtime/worker.ts");
+    const jobWorker = await readSource("src/edges/worker/job-worker.ts");
+    const queueDrain = await readSource("src/services/jobs/runtime/queue-drain.ts");
     const backgroundStart = await readSource(
       "src/services/jobs/runtime/background-start.ts",
     );
     const backgroundProcess = await readSource("src/platform/jobs/worker-process.ts");
 
+    expect(existsSync(join(ROOT, "src/edges/worker/job-worker.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/jobs/runtime/queue-drain.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/jobs/runtime/worker.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/background-start.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/jobs/worker-process.ts"))).toBe(true);
     expect(jobStart).not.toContain("node:child_process");
@@ -764,10 +768,14 @@ describe("architecture boundaries", () => {
     expect(backgroundProcess).not.toContain("process.execPath");
     expect(jobStart).not.toContain("process.pid");
     expect(jobRecordFactory).not.toContain("process.pid");
-    expect(jobWorker).not.toContain("process.pid");
+    expect(queueDrain).not.toContain("process.pid");
     expect(jobRecordFactory).toContain("pid: number");
     expect(jobStart).toContain("pid: number");
     expect(jobWorker).toContain("pid: number");
+    expect(jobWorker).toContain("drainQueuedJobs");
+    expect(jobWorker).not.toContain("oldestQueuedJob");
+    expect(jobWorker).not.toContain("acquireJobWorkerLock");
+    expect(queueDrain).not.toContain("process.");
     expect(backgroundStart).not.toContain("process.argv");
     expect(backgroundStart).toContain("workerEnvironment");
     expect(backgroundStart).toContain("workerProgram");
@@ -1467,7 +1475,8 @@ describe("architecture boundaries", () => {
     const codexProvider = await readSource("src/agent/runtime/providers/codex.ts");
     const jobExecutor = await readSource("src/services/jobs/runtime/executor.ts");
     const jobStart = await readSource("src/services/jobs/runtime/start.ts");
-    const jobWorker = await readSource("src/services/jobs/runtime/worker.ts");
+    const jobWorker = await readSource("src/edges/worker/job-worker.ts");
+    const queueDrain = await readSource("src/services/jobs/runtime/queue-drain.ts");
 
     expect(registry).toContain("createAgentRuntimeProviderRegistry");
     expect(registry).toContain("environment: NodeJS.ProcessEnv");
@@ -1483,6 +1492,7 @@ describe("architecture boundaries", () => {
     expect(jobExecutor).toContain("workerEnvironment: NodeJS.ProcessEnv");
     expect(jobStart).toContain("workerEnvironment: NodeJS.ProcessEnv");
     expect(jobWorker).toContain("workerEnvironment: NodeJS.ProcessEnv");
+    expect(queueDrain).toContain("workerEnvironment: NodeJS.ProcessEnv");
   });
 
   it("passes agent readiness runtime facts through an explicit context", async () => {

@@ -15,7 +15,7 @@ import { readJobSpec } from "../../../stores/jobs/specs.js";
 import { startQueuedJob } from "./start.js";
 import type { JobRecord } from "../../../stores/jobs/types.js";
 
-export interface RunJobWorkerOptions {
+export interface DrainQueuedJobsOptions {
   repoRoot: string;
   now?: () => Date;
   pid: number;
@@ -27,8 +27,8 @@ export interface RunJobWorkerOptions {
   ) => Promise<AgentRuntimeResult>;
 }
 
-export async function runJobWorker(
-  options: RunJobWorkerOptions,
+export async function drainQueuedJobs(
+  options: DrainQueuedJobsOptions,
 ): Promise<void> {
   const now = options.now ?? (() => new Date());
   while (true) {

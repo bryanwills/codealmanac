@@ -1110,3 +1110,11 @@ One-hundred-sixty-fourth production slice:
 - Kept `src/edges/viewer/server.ts` as the HTTP/static route owner that wires platform PID liveness into the viewer read model.
 - Updated viewer tests and architecture-boundary guards so the old `src/services/viewer/` and `src/viewer/` source buckets stay deleted.
 - Updated living wiki pages and the codebase map to point at the viewer edge/read-model home.
+
+One-hundred-sixty-fifth production slice:
+
+- Moved the hidden internal job worker entrypoint into `src/edges/worker/job-worker.ts`.
+- Renamed the service-side queued job runner to `src/services/jobs/runtime/queue-drain.ts`.
+- Kept queue selection, worker-lock use, queued spec rehydration, queued-job failure marking, and `startQueuedJob()` orchestration in the job service runtime.
+- Updated CLI internal worker dispatch and worker tests to import the edge entrypoint instead of the job service runtime facade.
+- Added boundary coverage that `src/services/jobs/runtime/worker.ts` stays deleted while the edge entrypoint delegates to `drainQueuedJobs()`.

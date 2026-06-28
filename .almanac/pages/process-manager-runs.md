@@ -40,7 +40,7 @@ sources:
     note: Starts foreground, background, and queued jobs.
   - id: worker
     type: file
-    path: src/jobs/worker.ts
+    path: src/edges/worker/job-worker.ts
     note: Drains queued jobs under the per-wiki worker lock.
   - id: queue
     type: file

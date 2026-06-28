@@ -7,13 +7,13 @@ import {
   markJobCancelled,
   readJobRecord,
   readJobSpec,
-  runJobWorker,
   jobRecordPath,
   jobWorkerLockPath,
   startBackgroundJob as startBackgroundJobCommand,
   type StartBackgroundJobOptions,
   writeJobRecord,
 } from "../src/services/jobs/runtime/index.js";
+import { runJobWorker } from "../src/edges/worker/job-worker.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {

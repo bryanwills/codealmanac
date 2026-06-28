@@ -6,7 +6,7 @@ export {
   startForegroundJob,
   startQueuedJob,
 } from "./start.js";
-export { runJobWorker } from "./worker.js";
+export { drainQueuedJobs } from "./queue-drain.js";
 export { appendJobEvent } from "./logs.js";
 export { buildJobLogEntry, inferActor } from "../../../stores/jobs/log-entry.js";
 export {
@@ -67,7 +67,7 @@ export type {
 export type {
   StartJobResult,
 } from "./executor.js";
-export type { RunJobWorkerOptions } from "./worker.js";
+export type { DrainQueuedJobsOptions } from "./queue-drain.js";
 export type {
   DisplayJobStatus,
   JobPageChanges,

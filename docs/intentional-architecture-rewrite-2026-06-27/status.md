@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 212 committed rewrite commits past `dev`. The worklog records 164 production slices so far.
+The branch has 213 committed rewrite commits past `dev`. The worklog records 165 production slices so far.
 
-The diff is broad: 450 files changed, with 22,354 insertions and 12,067 deletions.
+The diff is broad: 452 files changed, with 22,458 insertions and 12,125 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -23,6 +23,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed the old top-level `src/config/` source bucket; persisted config mechanics now live under `src/stores/config/`, service verbs live under `src/services/config/`, and provider enablement policy lives under `src/agent/`.
 - Removed the old top-level `src/wiki/` source bucket; local wiki index, query, health, topic-file, and source-frontmatter mechanics now live under `src/stores/wiki/`.
 - Removed the `src/services/viewer/` service bucket; viewer-only route read models now live under `src/edges/viewer/read-model/`.
+- Moved the hidden internal job worker entrypoint into `src/edges/worker/`; queued job draining remains a job service runtime workflow.
 - Moved sync ledger and lock persistence into explicit stores.
 - Moved local Claude/Codex transcript discovery into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
@@ -44,13 +45,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed the `src/services/viewer/` service bucket. Local viewer HTTP/static routing stays in `src/edges/viewer/`, and viewer-only API DTO assembly now lives in `src/edges/viewer/read-model/` instead of pretending to be a product service.
+The latest slice moved the hidden internal job worker entrypoint into `src/edges/worker/job-worker.ts` and renamed the service-side queued runner to `src/services/jobs/runtime/queue-drain.ts`.
 
-Verification passed: focused viewer/jobs/boundary tests with 104 tests, `npm run lint`, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js serve --help`, `node dist/codealmanac.js search "viewer read model" --limit 3 --json`, `node dist/codealmanac.js show almanac-serve --lead`, and a short-lived `node dist/codealmanac.js serve --port 0` startup/interrupt smoke.
+Verification passed: focused worker/job/operation/boundary tests with 125 tests, `npm run lint`, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js __job-worker`, and `node dist/codealmanac.js jobs --help`.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, and viewer read models have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, automation scheduling policy cleanup, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, and worker entrypoints have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, automation scheduling policy cleanup, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 
