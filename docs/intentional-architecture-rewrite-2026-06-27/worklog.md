@@ -1678,3 +1678,10 @@ Two-hundred-thirty-eighth production slice:
 - Moved inline process signal registration out of `src/agent/runtime/providers/claude.ts`.
 - Kept `claude.ts` as the runtime coordinator and `claude/options.ts` as the `OperationSpec` to Claude SDK option mapper.
 - Strengthened architecture-boundary tests so Claude option mapping does not regain managed child-process mechanics and the runtime coordinator does not regain raw signal handling.
+
+Two-hundred-thirty-ninth production slice:
+
+- Added `src/platform/path-case.ts` for current-platform path case-sensitivity checks.
+- Moved `process.platform` use out of `src/stores/wiki-registry/store.ts`.
+- Kept registry storage responsible for registry JSON persistence, reachability checks, and idempotent entry mutation.
+- Strengthened architecture-boundary tests so registry storage does not regain ambient `process.platform` reads and path-case OS behavior remains under platform ownership.

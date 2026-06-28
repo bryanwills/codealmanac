@@ -2870,17 +2870,24 @@ describe("architecture boundaries", () => {
     const autoRegistration = await readSource(
       "src/services/wiki/autoregistration.ts",
     );
+    const registryStore = await readSource("src/stores/wiki-registry/store.ts");
+    const platformPathCase = await readSource("src/platform/path-case.ts");
 
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/path-case.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry/store.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry/index.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry"))).toBe(false);
+    expect(registryStore).toContain("pathsEqualOnCurrentPlatform");
+    expect(registryStore).not.toContain("process.platform");
     expect(autoRegistration).toContain("findRegistryEntry");
     expect(autoRegistration).not.toContain("existsSync");
     expect(autoRegistration).not.toContain("node:fs");
     expect(autoRegistration).not.toContain("process.platform");
     expect(autoRegistration).not.toContain("function samePath");
     expect(autoRegistration).not.toContain("toLowerCase()");
+    expect(platformPathCase).toContain("process.platform");
+    expect(platformPathCase).toContain("isCaseInsensitivePathPlatform");
   });
 });
 

@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 238 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 239 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -37,6 +37,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved job page snapshot file reads and page hashing into `src/stores/wiki-files/`.
 - Moved repo `.almanac` path construction and nearest-wiki-root discovery into `src/stores/wiki-files/repo-location.ts`.
 - Moved registry path reachability checks into `src/stores/wiki-registry/`.
+- Moved registry path case-sensitivity detection into `src/platform/path-case.ts`.
 - Moved global state path and registry path construction into `src/stores/global-paths.ts` and `src/stores/wiki-registry/paths.ts`, deleting the old top-level `src/paths.ts`.
 - Moved cross-cutting slug, user-facing error, and ANSI theme helper contracts into `src/shared/`, deleting the old root-level helper files.
 - Removed the mixed `src/services/jobs/runtime/index.ts` compatibility barrel; callers now import concrete runtime, store, platform, or record-lifecycle modules.
@@ -114,7 +115,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split Claude SDK process mechanics into `src/agent/runtime/providers/claude/process.ts`. `claude.ts` remains the runtime coordinator, while `claude/options.ts` maps `OperationSpec` to Claude SDK options without owning managed child-process spawning or process signal registration.
+The latest slice moved current-platform path case behavior into `src/platform/path-case.ts`. Registry storage still owns registry JSON persistence and idempotent entry mutation, but it no longer reads `process.platform` directly when comparing repo paths.
 
 Verification passed:
 

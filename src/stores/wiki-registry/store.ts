@@ -3,6 +3,7 @@ import { mkdir, readFile } from "node:fs/promises";
 
 import { getGlobalAlmanacDir } from "../global-paths.js";
 import { getRegistryPath } from "./paths.js";
+import { pathsEqualOnCurrentPlatform } from "../../platform/path-case.js";
 import { UserFacingError } from "../../shared/user-facing-error.js";
 import { writeTextFileAtomically } from "../atomic-write.js";
 
@@ -129,10 +130,7 @@ export async function writeRegistry(entries: RegistryEntry[]): Promise<void> {
  * Callers still store the original casing; only comparisons are lowercased.
  */
 function pathsEqual(a: string, b: string): boolean {
-  if (process.platform === "darwin" || process.platform === "win32") {
-    return a.toLowerCase() === b.toLowerCase();
-  }
-  return a === b;
+  return pathsEqualOnCurrentPlatform(a, b);
 }
 
 /**
