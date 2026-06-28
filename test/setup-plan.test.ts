@@ -85,6 +85,7 @@ describe("setup plan", () => {
       cliAutoUpdate: SETUP_DEFAULTS.cliAutoUpdate,
       selfManagedAutomation: true,
       autoCommit: true,
+      nextStepsMode: "self-managed",
     });
 
     expect(resolveSetupPlan({
@@ -100,6 +101,7 @@ describe("setup plan", () => {
       cliAutoUpdate: false,
       selfManagedAutomation: false,
       autoCommit: false,
+      nextStepsMode: "hosted",
     });
   });
 
@@ -134,6 +136,7 @@ describe("setup plan", () => {
       cliAutoUpdate: SETUP_DEFAULTS.cliAutoUpdate,
       selfManagedAutomation: SETUP_DEFAULTS.selfManagedAutomation,
       autoCommit: SETUP_DEFAULTS.autoCommit,
+      nextStepsMode: "hosted",
     });
   });
 

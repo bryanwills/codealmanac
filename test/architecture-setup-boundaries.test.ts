@@ -103,6 +103,15 @@ describe("architecture boundaries: setup and uninstall", () => {
     );
     const setupIndex = await readSource("src/edges/cli/setup/index.ts");
     const setupFlow = await readSource("src/edges/cli/setup/setup-flow.ts");
+    const plannedAutoUpdate = await readSource(
+      "src/edges/cli/setup/planned-auto-update.ts",
+    );
+    const selfManagedAutomation = await readSource(
+      "src/edges/cli/setup/self-managed-automation.ts",
+    );
+    const setupFlowResult = await readSource(
+      "src/edges/cli/setup/setup-flow-result.ts",
+    );
     const setupNextSteps = await readSource(
       "src/edges/cli/setup/next-steps.ts",
     );
@@ -146,6 +155,12 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(existsSync(join(ROOT, "src/edges/cli/setup/select-choice.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/setup/raw-input.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/setup/setup-interruption.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/planned-auto-update.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/self-managed-automation.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/setup-flow-result.ts")))
+      .toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/setup-shortcut.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/automation-install-flags.ts")))
       .toBe(true);
@@ -209,10 +224,19 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(setupFlow).toContain("buildSetupPlan");
     expect(setupFlow).toContain("runGuidesSetupStep");
     expect(setupFlow).toContain("runGlobalInstallStep");
-    expect(setupFlow).toContain("runAutoUpdateSetupStep");
-    expect(setupFlow).toContain("chooseDefaultAgent");
-    expect(setupFlow).toContain("runAutomationSetupStep");
+    expect(setupFlow).toContain("runPlannedAutoUpdate");
+    expect(setupFlow).toContain("runSelfManagedAutomation");
     expect(setupFlow).toContain("runAutoCommitSetupStep");
+    expect(setupFlow).not.toContain("runAutoUpdateSetupStep");
+    expect(setupFlow).not.toContain("chooseDefaultAgent");
+    expect(setupFlow).not.toContain("runAutomationSetupStep");
+    expect(setupFlow).not.toContain("selfManagedAutomation ? \"self-managed\"");
+    expect(plannedAutoUpdate).toContain("runAutoUpdateSetupStep");
+    expect(plannedAutoUpdate).toContain("globalUpdateProgramArguments");
+    expect(selfManagedAutomation).toContain("chooseDefaultAgent");
+    expect(selfManagedAutomation).toContain("runAutomationSetupStep");
+    expect(setupFlowResult).toContain("SetupFlowResult");
+    expect(setupServicePlan).toContain("nextStepsMode");
     expect(setupIndex).toContain("services/wiki/setup-state.js");
     expect(setupNextSteps).not.toContain("node:fs");
     expect(setupNextSteps).not.toContain("existsSync");

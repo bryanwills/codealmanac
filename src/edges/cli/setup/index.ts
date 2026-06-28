@@ -15,6 +15,7 @@ import {
   stepDone,
 } from "./output.js";
 import { runSetupFlow } from "./setup-flow.js";
+import type { SetupNextStepsMode } from "../../../services/setup/index.js";
 import type {
   SetupOptions,
   SetupResult,
@@ -79,7 +80,7 @@ export async function runSetup(
   printBanner(out, theme);
   printBadge(out, theme);
 
-  let nextStepsMode: "hosted" | "self-managed" = "hosted";
+  let nextStepsMode: SetupNextStepsMode = "hosted";
   try {
     const flow = await runSetupFlow({
       options,

@@ -7,6 +7,7 @@ export {
 } from "./setup-plan.js";
 export type {
   SetupPlan,
+  SetupNextStepsMode,
   SetupPlanPromptInput,
   SetupPlanRequest,
 } from "./setup-plan.js";

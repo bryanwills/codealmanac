@@ -6,11 +6,14 @@ export const SETUP_DEFAULTS = {
   autoCommit: false,
 } as const;
 
+export type SetupNextStepsMode = "hosted" | "self-managed";
+
 export interface SetupPlan {
   instructionTargets: SetupInstructionTargetId[];
   cliAutoUpdate: boolean;
   selfManagedAutomation: boolean;
   autoCommit: boolean;
+  nextStepsMode: SetupNextStepsMode;
 }
 
 export interface SetupPlanPromptInput {
@@ -66,13 +69,15 @@ export function shouldPromptForAutoCommit(input: {
 
 export function resolveSetupPlan(request: SetupPlanRequest): SetupPlan {
   const selfManagedAutomation = resolveSelfManagedAutomation(request);
+  const autoCommit = resolveAutoCommit(request, selfManagedAutomation);
   return {
     instructionTargets: request.skipGuides === true
       ? []
       : request.instructionTargets,
     cliAutoUpdate: resolveCliAutoUpdate(request),
     selfManagedAutomation,
-    autoCommit: resolveAutoCommit(request, selfManagedAutomation),
+    autoCommit,
+    nextStepsMode: selfManagedAutomation ? "self-managed" : "hosted",
   };
 }
 
