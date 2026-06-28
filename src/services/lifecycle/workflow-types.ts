@@ -11,7 +11,7 @@ import type {
   SourceRef,
 } from "../../shared/absorb-sources.js";
 import type { JobRecord } from "../../stores/jobs/types.js";
-import type { JobAgentRunner } from "../jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 import type { LifecycleOperationRunResult } from "./operation-results.js";
 
 export type LifecycleOperationKind = "init" | "absorb" | "garden";
@@ -29,7 +29,7 @@ export interface LifecycleForegroundStartRequest {
   pid: number;
   isPidAlive: IsPidAlive;
   onEvent?: LifecycleOperationEventHandler;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
 }
 
 export interface LifecycleBackgroundStartRequest {
@@ -79,7 +79,7 @@ export interface InitOperationWorkflowOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
 }
 
@@ -97,7 +97,7 @@ export interface AbsorbOperationWorkflowOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
@@ -115,7 +115,7 @@ export interface GardenOperationWorkflowOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
 }
 
@@ -131,7 +131,7 @@ export interface PreparedAbsorbOperationWorkflowOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
 }
 

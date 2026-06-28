@@ -11,7 +11,7 @@ import {
   type InitCommandOptions,
 } from "../src/cli/commands/operations.js";
 import { parseLifecycleProviderSelection } from "../src/services/lifecycle/index.js";
-import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../src/shared/agent-runtime/runner.js";
 import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { writeConfig } from "../src/stores/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
@@ -21,7 +21,7 @@ const TEST_WORKER_PROGRAM = {
   entrypoint: "/tmp/codealmanac.js",
 };
 
-const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
+const TEST_AGENT_RUNNER: AgentRuntimeRunner = async () => ({
   success: true,
   result: "done",
 });
@@ -30,7 +30,7 @@ const TEST_PROMPT_LOADER: OperationPromptLoader = async (name) => `${name} promp
 
 function runInitCommand(
   options: Omit<InitCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
-    agentRunner?: JobAgentRunner;
+    agentRunner?: AgentRuntimeRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: InitCommandOptions["workerProgram"];
     pid?: number;
@@ -51,7 +51,7 @@ function runInitCommand(
 
 function runAbsorbCommand(
   options: Omit<AbsorbCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
-    agentRunner?: JobAgentRunner;
+    agentRunner?: AgentRuntimeRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: AbsorbCommandOptions["workerProgram"];
     pid?: number;
@@ -72,7 +72,7 @@ function runAbsorbCommand(
 
 function runGardenCommand(
   options: Omit<GardenCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
-    agentRunner?: JobAgentRunner;
+    agentRunner?: AgentRuntimeRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: GardenCommandOptions["workerProgram"];
     pid?: number;

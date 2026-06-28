@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 228 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 229 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -81,7 +81,8 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split the automation task catalog out of platform launchd mechanics: task meaning/defaults live under `src/services/automation/tasks.ts`, while plist/log paths live under `src/platform/automation/paths.ts`.
 - Moved the automation scheduler port into `src/shared/automation-scheduler.ts`, so launchd platform mechanics no longer import automation services.
 - Moved automation scheduler mechanics behind the shared scheduler port, with launchd implementation in `src/platform/automation/scheduler.ts`; automation services no longer import `src/platform/automation/`.
-- Moved concrete agent runtime provider registry creation out of job runtime services; CLI and worker edges now inject a `JobAgentRunner`, while `src/agent/runtime/job-runner.ts` owns provider-registry composition.
+- Moved concrete agent runtime provider registry creation out of job runtime services; CLI and worker edges now inject an `AgentRuntimeRunner`, while `src/agent/runtime/job-runner.ts` owns provider-registry composition.
+- Moved the provider-neutral agent runner contract into `src/shared/agent-runtime/runner.ts`, deleting the old job-runtime-private contract file.
 - Moved provider identity and provider-neutral runtime event/final-output/tool contracts into `src/shared/`, so services and stores no longer import provider runtime contract files from `src/agent/runtime/`.
 - Moved provider enablement policy into `src/shared/agent-provider-enablement.ts` and provider setup/readiness view construction into `src/services/agents/`, leaving `src/agent/readiness/providers/` focused on provider status probing.
 - Moved provider readiness/model-choice contracts into `src/shared/agent-readiness.ts` and concrete readiness wiring into `src/app/agent-readiness-runtime.ts`, so provider setup views consume an injected runtime instead of importing provider internals.
@@ -104,18 +105,18 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice deleted the remaining root-level helper files and moved cross-cutting slug, user-facing error, and ANSI theme contracts into `src/shared/`.
+The latest slice moved the provider-neutral agent runner contract into `src/shared/agent-runtime/runner.ts` and deleted the old job-runtime-private runner contract file.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/slug.test.ts test/ansi.test.ts test/outcome.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/operation-commands.test.ts test/build-operation.test.ts test/absorb-operation.test.ts test/garden-operation.test.ts test/sync.test.ts test/jobs-executor.test.ts test/jobs-worker.test.ts`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js doctor --wiki-only --json`
-- `node dist/launcher.js list --help`
-- `node dist/launcher.js topics list`
+- `node dist/launcher.js jobs --help`
+- `node dist/launcher.js sync status --help`
 - `node dist/launcher.js search provider --limit 1`
 
 ## Immediate Next Work

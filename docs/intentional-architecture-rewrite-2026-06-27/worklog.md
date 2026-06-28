@@ -1598,3 +1598,11 @@ Two-hundred-twenty-eighth production slice:
 - Updated CLI renderers, viewer read models, services, stores, platform GitHub source resolution, and tests to import those shared contracts from `src/shared/`.
 - Left `src/cli.ts` and `src/abi-guard.ts` at the root because they are startup/entrypoint surfaces rather than reusable helper buckets.
 - Strengthened architecture-boundary tests so the old root helper files stay deleted and the shared contract files remain explicit.
+
+Two-hundred-twenty-ninth production slice:
+
+- Moved the injected agent-runner contract out of `src/services/jobs/runtime/agent-runner.ts` and into `src/shared/agent-runtime/runner.ts`.
+- Renamed the contract from `JobAgentRunner` to `AgentRuntimeRunner` because app composition, lifecycle, sync, job runtime, worker edge, and tests all consume the same provider-neutral operation runner.
+- Updated agent runtime provider types to re-export the shared runner contract instead of defining a second runner shape over `OperationSpec`.
+- Updated CLI command adapters, app composition, worker edge, lifecycle services, sync services, job runtime services, and tests to depend on the shared runner contract instead of a job-runtime-private file.
+- Strengthened architecture-boundary tests so the old job-runtime runner contract file stays deleted and the shared runtime runner remains the source of truth.

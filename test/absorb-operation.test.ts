@@ -7,7 +7,7 @@ import {
   type AbsorbOperationOptions,
 } from "../src/services/lifecycle/operations/absorb.js";
 import { loadBundledPrompt } from "../src/platform/prompts.js";
-import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../src/shared/agent-runtime/runner.js";
 import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
@@ -16,14 +16,14 @@ const TEST_WORKER_PROGRAM = {
   entrypoint: "/tmp/codealmanac.js",
 };
 
-const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
+const TEST_AGENT_RUNNER: AgentRuntimeRunner = async () => ({
   success: true,
   result: "done",
 });
 
 function runAbsorbOperation(
   options: Omit<AbsorbOperationOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
-    agentRunner?: JobAgentRunner;
+    agentRunner?: AgentRuntimeRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: AbsorbOperationOptions["workerProgram"];
     pid?: number;

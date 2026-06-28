@@ -5,7 +5,7 @@ import { loadBundledPrompt } from "../platform/prompts.js";
 import { createPlatformAbsorbSourceResolver } from "../platform/sources/absorb.js";
 import { createPlatformSyncTranscriptRuntime } from "../platform/transcripts/runtime.js";
 import { startBackgroundJob } from "../services/jobs/runtime/background-start.js";
-import type { JobAgentRunner } from "../services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../shared/agent-runtime/runner.js";
 import type {
   LifecycleAbsorbSourceResolver,
   LifecycleOperationBackgroundStarter,
@@ -17,7 +17,7 @@ import type { SyncTranscriptRuntime } from "../shared/transcripts.js";
 export interface CliRuntime {
   workerEnvironment: NodeJS.ProcessEnv;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   startBackground: LifecycleOperationBackgroundStarter;
   resolveAbsorbSource: LifecycleAbsorbSourceResolver;
   loadPrompt: LifecyclePromptLoader;

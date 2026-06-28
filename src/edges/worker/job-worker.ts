@@ -1,7 +1,7 @@
 import type { AgentRuntimeEvent } from "../../shared/agent-runtime/events.js";
 import { createAgentRuntimeJobRunner } from "../../agent/runtime/job-runner.js";
 import { drainQueuedJobs } from "../../services/jobs/runtime/queue-drain.js";
-import type { JobAgentRunner } from "../../services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
 
 export interface RunJobWorkerOptions {
@@ -11,7 +11,7 @@ export interface RunJobWorkerOptions {
   isPidAlive: IsPidAlive;
   workerEnvironment: NodeJS.ProcessEnv;
   onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
-  agentRunner?: JobAgentRunner;
+  agentRunner?: AgentRuntimeRunner;
 }
 
 export async function runJobWorker(

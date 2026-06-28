@@ -1,5 +1,5 @@
 import { createAgentRuntimeProviderRegistry } from "./providers/index.js";
-import type { AgentRuntimeRunner } from "./types.js";
+import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 
 export function createAgentRuntimeJobRunner(args: {
   environment: NodeJS.ProcessEnv;

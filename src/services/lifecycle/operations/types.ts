@@ -2,7 +2,7 @@ import type { AgentRuntimeProviderId } from "../../../shared/agent-runtime/event
 import type { OperationSpec } from "../../../shared/operation-spec.js";
 import type { OperationPromptLoader } from "../../../shared/operation-prompts.js";
 import type { AgentRuntimeEvent } from "../../../shared/agent-runtime/events.js";
-import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 import type { StartBackgroundJobResult } from "../../jobs/runtime/background-start.js";
 import type { StartJobResult } from "../../jobs/runtime/executor.js";
 import type { JobWorkerProgram } from "../../../shared/worker-program.js";
@@ -34,7 +34,7 @@ export type StartForegroundJob = (options: {
   pid: number;
   isPidAlive: IsPidAlive;
   onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
 }) => Promise<StartJobResult>;
 
 export type StartBackgroundJob = (options: {

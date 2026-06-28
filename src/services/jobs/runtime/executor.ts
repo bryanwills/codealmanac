@@ -17,7 +17,7 @@ import type {
   JobRecord,
   JobSummary,
 } from "../../../stores/jobs/types.js";
-import type { JobAgentEventHandler, JobAgentRunner } from "./agent-runner.js";
+import type { AgentRuntimeEventHandler, AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 
 export interface StartJobResult {
   jobId: string;
@@ -30,8 +30,8 @@ export interface ExecuteStartedJobOptions {
   spec: OperationSpec;
   record: JobRecord;
   now: () => Date;
-  onEvent?: JobAgentEventHandler;
-  agentRunner: JobAgentRunner;
+  onEvent?: AgentRuntimeEventHandler;
+  agentRunner: AgentRuntimeRunner;
 }
 
 export async function executeStartedJob(

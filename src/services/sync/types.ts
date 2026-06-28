@@ -3,7 +3,7 @@ import type {
   LifecycleOperationBackgroundStarter,
   LifecyclePromptLoader,
 } from "../lifecycle/index.js";
-import type { JobAgentRunner } from "../jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
 import type {
   SyncTranscriptRuntime,
@@ -24,7 +24,7 @@ export interface SyncWorkflowOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
   transcriptRuntime: SyncTranscriptRuntime;
 }

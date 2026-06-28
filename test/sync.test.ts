@@ -8,7 +8,7 @@ import {
   type SyncCommandOptions,
 } from "../src/cli/commands/sync.js";
 import { createPlatformSyncTranscriptRuntime } from "../src/platform/transcripts/runtime.js";
-import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../src/shared/agent-runtime/runner.js";
 import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/stores/config/index.js";
@@ -19,7 +19,7 @@ const TEST_WORKER_PROGRAM = {
   entrypoint: "/tmp/codealmanac.js",
 };
 
-const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
+const TEST_AGENT_RUNNER: AgentRuntimeRunner = async () => ({
   success: true,
   result: "done",
 });
@@ -36,7 +36,7 @@ type SyncCommandTestOptions = Omit<
   | "loadPrompt"
   | "transcriptRuntime"
 > & {
-  agentRunner?: JobAgentRunner;
+  agentRunner?: AgentRuntimeRunner;
   workerEnvironment?: NodeJS.ProcessEnv;
   workerProgram?: SyncCommandOptions["workerProgram"];
   pid?: number;

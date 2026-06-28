@@ -3,7 +3,7 @@ import type { FinalOutputSpec } from "../../../shared/agent-runtime/final-output
 import type { OperationKind, OperationSpec } from "../../../shared/operation-spec.js";
 import { joinPromptSections } from "../../../shared/operation-prompts.js";
 import type { ToolRequest } from "../../../shared/agent-runtime/tools.js";
-import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 import { startForegroundJob } from "../../jobs/runtime/start.js";
 import type { JobWorkerProgram } from "../../../shared/worker-program.js";
 import type { IsPidAlive } from "../../../shared/pid-liveness.js";
@@ -94,7 +94,7 @@ export async function runOperationProcess(args: {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
 }): Promise<OperationRunResult> {
   if (args.background) {
     if (args.startBackground === undefined) {

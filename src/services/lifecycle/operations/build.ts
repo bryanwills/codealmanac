@@ -9,7 +9,7 @@ import type {
   StartBackgroundJob,
   StartForegroundJob,
 } from "./types.js";
-import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../../shared/pid-liveness.js";
 import { OperationError } from "./errors.js";
 import { createOperationRunSpec, runOperationProcess } from "./run.js";
@@ -28,7 +28,7 @@ export interface BuildOperationOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: OperationPromptLoader;
 }
 

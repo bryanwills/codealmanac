@@ -11,7 +11,7 @@ import { acquireJobWorkerLock } from "../../../stores/jobs/worker-lock.js";
 import { oldestQueuedJob } from "./queue.js";
 import { startQueuedJob } from "./start.js";
 import type { JobRecord } from "../../../stores/jobs/index.js";
-import type { JobAgentEventHandler, JobAgentRunner } from "./agent-runner.js";
+import type { AgentRuntimeEventHandler, AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../../shared/pid-liveness.js";
 
 export interface DrainQueuedJobsOptions {
@@ -19,8 +19,8 @@ export interface DrainQueuedJobsOptions {
   now?: () => Date;
   pid: number;
   isPidAlive: IsPidAlive;
-  onEvent?: JobAgentEventHandler;
-  agentRunner: JobAgentRunner;
+  onEvent?: AgentRuntimeEventHandler;
+  agentRunner: AgentRuntimeRunner;
 }
 
 export async function drainQueuedJobs(

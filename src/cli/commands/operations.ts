@@ -12,7 +12,7 @@ import {
   type LifecycleOperationForegroundStarter,
   type LifecyclePromptLoader,
 } from "../../services/lifecycle/index.js";
-import type { JobAgentRunner } from "../../services/jobs/runtime/agent-runner.js";
+import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
 import {
   renderWorkflowResult,
@@ -35,7 +35,7 @@ export interface InitCommandOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
 }
 
@@ -53,7 +53,7 @@ export interface AbsorbCommandOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
@@ -71,7 +71,7 @@ export interface GardenCommandOptions {
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
   isPidAlive: IsPidAlive;
-  agentRunner: JobAgentRunner;
+  agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
 }
 
