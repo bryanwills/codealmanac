@@ -2,7 +2,7 @@ import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "./wiki-root.js";
 import { ancestorsInFile } from "../../stores/wiki/topics/dag.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";

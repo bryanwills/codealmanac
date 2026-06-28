@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 260 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 261 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -117,6 +117,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split the monolithic architecture boundary test file into subsystem-owned boundary test files, so the guardrails now follow the same ownership map as `src/`.
 - Moved the SQLite ABI startup guard into `src/edges/cli/`, leaving root `src/` with only the intentional stable CLI facade.
 - Removed platform path-case mechanics from registry stores and wiki services; CLI/app composition now injects current-platform registry path equality.
+- Moved wiki command target resolution into `src/services/wiki/wiki-root.ts`, deleting the old indexer-store resolver path.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -135,12 +136,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed the registry store's direct dependency on platform path-case mechanics. Registry persistence now exposes a typed `RegistryPathEquality` contract, while CLI/app composition supplies `pathsEqualOnCurrentPlatform()` to auto-registration, init, and doctor flows.
+The latest slice moved wiki command target resolution from the indexer store into `src/services/wiki/wiki-root.ts`. Stores still provide nearest-root and registry reachability mechanics; wiki services now own `--wiki` lookup behavior and user-facing missing/unreachable errors.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/registry.test.ts test/autoregister.test.ts test/architecture-indexer-diagnostics-boundaries.test.ts test/init-helper.test.ts test/operation-commands.test.ts test/doctor.test.ts`
+- `npx vitest run test/architecture-wiki-command-boundaries.test.ts test/search.test.ts test/show.test.ts test/health.test.ts test/topics.test.ts test/paths.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`

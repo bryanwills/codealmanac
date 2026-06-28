@@ -1846,3 +1846,11 @@ Two-hundred-sixtieth production slice:
 - Added `src/edges/cli/autoregistration.ts` as the CLI edge adapter that supplies `pathsEqualOnCurrentPlatform()` to wiki auto-registration.
 - Threaded the same current-platform comparer through CLI runtime, init lifecycle workflows, and doctor runtime facts so production registration behavior stays case-aware on macOS and Windows.
 - Strengthened registry, autoregistration, foundation/CLI, and indexer/diagnostics boundary tests so stores and services cannot regain platform path-case mechanics.
+
+Two-hundred-sixty-first production slice:
+
+- Moved wiki command target resolution from `src/stores/wiki/indexer/resolve-wiki.ts` into `src/services/wiki/wiki-root.ts`.
+- Kept stores responsible for nearest wiki-root lookup and registry reachability mechanics, while wiki services now own `--wiki` lookup behavior and user-facing missing/unreachable errors.
+- Updated wiki service callers for search, show, health, reindex, topics, page-topic mutation, review workspace, and source migration to import the service-owned resolver.
+- Deleted the old indexer-store resolver path so storage no longer owns command target semantics.
+- Strengthened wiki command boundary tests so the resolver stays in wiki services and cannot drift back into indexer storage.

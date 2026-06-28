@@ -7,6 +7,34 @@ import { describe, expect, it } from "vitest";
 const ROOT = process.cwd();
 
 describe("architecture boundaries: wiki commands and viewer", () => {
+  it("keeps wiki command target resolution in wiki services, not indexer stores", async () => {
+    const wikiRootService = await readSource("src/services/wiki/wiki-root.ts");
+    const searchService = await readSource("src/services/wiki/search.ts");
+    const pageViewService = await readSource("src/services/wiki/page-view.ts");
+    const healthService = await readSource("src/services/wiki/health.ts");
+    const reindexService = await readSource("src/services/wiki/reindex.ts");
+
+    expect(existsSync(join(ROOT, "src/services/wiki/wiki-root.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/resolve-wiki.ts")))
+      .toBe(false);
+    expect(wikiRootService).toContain("resolveWikiRoot");
+    expect(wikiRootService).toContain("findNearestAlmanacDir");
+    expect(wikiRootService).toContain("findEntry");
+    expect(wikiRootService).toContain("isRegistryEntryWikiRoot");
+    expect(wikiRootService).toContain("UserFacingError");
+    expect(wikiRootService).not.toContain("openIndex");
+    expect(wikiRootService).not.toContain("db.prepare");
+    for (const source of [
+      searchService,
+      pageViewService,
+      healthService,
+      reindexService,
+    ]) {
+      expect(source).toContain("./wiki-root.js");
+      expect(source).not.toContain("stores/wiki/indexer/resolve-wiki");
+    }
+  });
+
   it("keeps search command adapters out of index storage mechanics", async () => {
     const searchCommand = await readSource("src/edges/cli/commands/search.ts");
     const searchRender = await readSource("src/edges/cli/commands/search-render.ts");

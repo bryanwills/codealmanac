@@ -1,5 +1,5 @@
 import { runIndexer, type IndexResult } from "../../stores/wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "./wiki-root.js";
 
 export type ReindexWikiWarningSink = (message: string) => void;
 

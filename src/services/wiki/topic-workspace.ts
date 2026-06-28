@@ -2,7 +2,7 @@ import type Database from "better-sqlite3";
 import { join } from "node:path";
 
 import { ensureFreshIndex } from "../../stores/wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "./wiki-root.js";
 import { openIndex } from "../../stores/wiki/indexer/schema.js";
 import { topics as topicQueries } from "../../stores/wiki/query/index.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
