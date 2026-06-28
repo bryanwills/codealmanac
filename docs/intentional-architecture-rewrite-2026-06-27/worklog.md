@@ -2050,3 +2050,13 @@ Two-hundred-eighty-sixth production slice:
 - Added `src/stores/wiki/indexer/page-source-types.ts` for indexed page-source, derived file-ref, and normalized page-source contracts.
 - Kept `page-sources.ts` focused on the normalization workflow that combines structured sources, legacy files, legacy source strings, derived file refs, and ambiguous legacy-source reporting.
 - Strengthened indexer boundary tests so page-source projection, legacy conversion, source ID generation, and type contracts do not collapse back into the coordinator.
+
+Two-hundred-eighty-seventh production slice:
+
+- Deleted the mixed `src/edges/cli/setup/input.ts` setup input bucket.
+- Added `src/edges/cli/setup/line-prompt.ts` for yes/no prompts, text prompts, and Enter-to-continue prompts.
+- Added `src/edges/cli/setup/select-choice.ts` for single-choice selection, raw-mode arrow navigation, and single-choice rendering.
+- Added `src/edges/cli/setup/raw-input.ts` for the shared raw-mode capability check.
+- Added `src/edges/cli/setup/setup-interruption.ts` for setup interruption errors and classification.
+- Updated setup callers to import the specific input-control owner instead of the deleted mixed `input.ts` module.
+- Strengthened setup boundary tests so line prompts, single select, multi-select, raw-mode capability, and interruption handling stay separate.

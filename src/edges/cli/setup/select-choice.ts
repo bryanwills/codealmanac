@@ -4,81 +4,10 @@ import {
   type SetupTheme,
   whiteBold,
 } from "./output.js";
+import { canUseRawInput } from "./raw-input.js";
+import { SetupInterruptedError } from "./setup-interruption.js";
+import { promptText } from "./line-prompt.js";
 import type { SetupInputStream } from "./types.js";
-
-export type InstallDecision = "install" | "skip";
-
-export function confirm(
-  input: SetupInputStream,
-  out: NodeJS.WritableStream,
-  theme: SetupTheme,
-  question: string,
-  defaultYes: boolean,
-): Promise<InstallDecision> {
-  return new Promise((resolve) => {
-    const hint = defaultYes ? "[Y/n]" : "[y/N]";
-    out.write(
-      `  ${blue(theme, "◆")}  ${question} ${dim(theme, hint)} `,
-    );
-
-    let buf = "";
-    const onData = (chunk: Buffer): void => {
-      buf += chunk.toString("utf8");
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      input.removeListener("data", onData);
-      input.pause();
-
-      const answer = buf.slice(0, nl).trim().toLowerCase();
-      const accepted =
-        answer.length === 0
-          ? defaultYes
-          : answer === "y" || answer === "yes";
-      resolve(accepted ? "install" : "skip");
-    };
-
-    input.resume();
-    input.on("data", onData);
-  });
-}
-
-export function promptText(
-  input: SetupInputStream,
-  out: NodeJS.WritableStream,
-  theme: SetupTheme,
-  question: string,
-  defaultValue: string,
-): Promise<string> {
-  return new Promise((resolve) => {
-    out.write(
-      `  ${blue(theme, "◆")}  ${question} ${dim(theme, `[${defaultValue}]`)} `,
-    );
-
-    let buf = "";
-    const onData = (chunk: Buffer): void => {
-      buf += chunk.toString("utf8");
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      input.removeListener("data", onData);
-      input.pause();
-
-      const answer = buf.slice(0, nl).trim();
-      resolve(answer.length === 0 ? defaultValue : answer);
-    };
-
-    input.resume();
-    input.on("data", onData);
-  });
-}
-
-export async function waitForEnter(
-  input: SetupInputStream,
-  out: NodeJS.WritableStream,
-  theme: SetupTheme,
-  message: string,
-): Promise<void> {
-  await promptText(input, out, theme, message, "");
-}
 
 export interface SelectChoice<T> {
   value: T;
@@ -96,7 +25,7 @@ export async function selectChoice<T>(args: {
   defaultIndex: number;
 }): Promise<T> {
   const selected = clampIndex(args.defaultIndex, args.choices.length);
-  if (canUseRawSelect(args.input)) {
+  if (canUseRawInput(args.input)) {
     return await selectChoiceRaw({ ...args, defaultIndex: selected });
   }
   renderSelect(args.out, args.theme, {
@@ -128,7 +57,7 @@ export async function selectChoice<T>(args: {
   return (matched ?? args.choices[selected])!.value;
 }
 
-async function selectChoiceRaw<T>(args: {
+function selectChoiceRaw<T>(args: {
   input: SetupInputStream;
   out: NodeJS.WritableStream;
   theme: SetupTheme;
@@ -218,20 +147,6 @@ function renderSelect<T>(
   out.write(`\n  ${dim(theme, hint)}\n`);
   lines += 2;
   return lines;
-}
-
-export class SetupInterruptedError extends Error {
-  constructor() {
-    super("setup interrupted");
-  }
-}
-
-export function isSetupInterrupted(err: unknown): boolean {
-  return err instanceof SetupInterruptedError;
-}
-
-function canUseRawSelect(input: SetupInputStream): boolean {
-  return input.isTTY === true && typeof input.setRawMode === "function";
 }
 
 function clampIndex(index: number, length: number): number {

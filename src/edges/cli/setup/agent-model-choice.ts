@@ -7,8 +7,10 @@ import type { AgentReadinessRuntime } from "../../../shared/agent-readiness.js";
 import { readSetupProviderModelChoices } from "../../../services/setup/index.js";
 import {
   promptText,
+} from "./line-prompt.js";
+import {
   selectChoice,
-} from "./input.js";
+} from "./select-choice.js";
 import {
   dim,
   type SetupTheme,

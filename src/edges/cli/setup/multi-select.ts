@@ -9,16 +9,12 @@ import {
 } from "./output.js";
 import {
   SetupInterruptedError,
-} from "./input.js";
+} from "./setup-interruption.js";
 import type { SetupInputStream } from "./types.js";
 
 export interface MultiSelectChoice<T> {
   value: T;
   label: string;
-}
-
-export function canUseRawSelect(input: SetupInputStream): boolean {
-  return input.isTTY === true && typeof input.setRawMode === "function";
 }
 
 export function selectManyRaw<T>(args: {

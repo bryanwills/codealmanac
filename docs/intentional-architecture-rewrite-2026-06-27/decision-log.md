@@ -193,6 +193,8 @@ Setup provider-choice edge UI is also split by reason to change. `src/edges/cli/
 
 Setup raw multi-select is an input-control concern, not instruction-target product logic. `src/edges/cli/setup/multi-select.ts` owns raw-mode toggling, key handling, cursor movement, selected-set rendering, and interrupted-input cleanup. `instruction-target-choice.ts` owns the instruction target defaults, requested-target dedupe, line-mode text parsing, and target ordering.
 
+Setup input controls are not one bucket. `src/edges/cli/setup/line-prompt.ts` owns line-oriented yes/no, text, and Enter prompts. `select-choice.ts` owns single-choice selection and raw arrow navigation. `multi-select.ts` owns multi-select raw-mode behavior. `raw-input.ts` owns the raw-mode capability check. `setup-interruption.ts` owns interruption errors and classification. The deleted `src/edges/cli/setup/input.ts` bucket should not return as a mixed input facade.
+
 Setup has two edge layers. `src/edges/cli/setup/index.ts` is the public command entry wrapper: it derives theme/interactive state, handles the no-op fast path, renders the banner and completion, converts setup cancellation into exit code 130, and prints next steps. `src/edges/cli/setup/setup-flow.ts` sequences the setup TUI phases over service-owned decisions and step files. Concrete step imports should stay in `setup-flow.ts`.
 
 Claude auth stays provider-owned, but provider-owned does not mean one file. `src/agent/providers/claude/auth.ts` owns auth policy and public re-exports. `auth-cli.ts` owns Claude executable discovery, public CLI spawning, legacy SDK CLI fallback, timeout behavior, and subprocess output collection. `auth-status.ts` owns the parsed JSON contract returned by `claude auth status --json`.

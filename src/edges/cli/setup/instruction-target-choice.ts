@@ -5,7 +5,7 @@ import {
 } from "../../../services/setup/index.js";
 import {
   promptText,
-} from "./input.js";
+} from "./line-prompt.js";
 import {
   blue,
   bold,
@@ -16,9 +16,9 @@ import {
   writeSetupDivider,
 } from "./output.js";
 import {
-  canUseRawSelect,
   selectManyRaw,
 } from "./multi-select.js";
+import { canUseRawInput } from "./raw-input.js";
 import type { SetupInputStream } from "./types.js";
 
 export async function chooseInstructionTargets(args: {
@@ -30,7 +30,7 @@ export async function chooseInstructionTargets(args: {
 }): Promise<SetupInstructionTargetId[]> {
   if (args.requested !== undefined) return [...dedupeTargets(args.requested)];
   if (!args.interactive) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
-  if (canUseRawSelect(args.input)) {
+  if (canUseRawInput(args.input)) {
     return await chooseInstructionTargetsRaw(args.input, args.out, args.theme);
   }
   return await chooseInstructionTargetsLine(args.input, args.out, args.theme);

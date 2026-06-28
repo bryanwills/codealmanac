@@ -13,9 +13,11 @@ import {
 } from "../../../services/setup/index.js";
 import {
   confirm,
-  selectChoice,
   waitForEnter,
-} from "./input.js";
+} from "./line-prompt.js";
+import {
+  selectChoice,
+} from "./select-choice.js";
 import type { SetupTheme } from "./output.js";
 import {
   stepActive,

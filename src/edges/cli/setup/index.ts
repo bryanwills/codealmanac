@@ -6,7 +6,7 @@ export {
 import { readSetupWikiState } from "../../../services/wiki/setup-state.js";
 export { IMPORT_LINE, hasImportLine } from "./guides.js";
 import { printNextSteps } from "./next-steps.js";
-import { isSetupInterrupted } from "./input.js";
+import { isSetupInterrupted } from "./setup-interruption.js";
 import {
   blue,
   makeSetupTheme,

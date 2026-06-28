@@ -94,7 +94,13 @@ describe("architecture boundaries: setup and uninstall", () => {
 
   it("keeps setup input controls out of display rendering", async () => {
     const setupOutput = await readSource("src/edges/cli/setup/output.ts");
-    const setupInput = await readSource("src/edges/cli/setup/input.ts");
+    const linePrompt = await readSource("src/edges/cli/setup/line-prompt.ts");
+    const selectChoice = await readSource("src/edges/cli/setup/select-choice.ts");
+    const multiSelect = await readSource("src/edges/cli/setup/multi-select.ts");
+    const rawInput = await readSource("src/edges/cli/setup/raw-input.ts");
+    const setupInterruption = await readSource(
+      "src/edges/cli/setup/setup-interruption.ts",
+    );
     const setupIndex = await readSource("src/edges/cli/setup/index.ts");
     const setupFlow = await readSource("src/edges/cli/setup/setup-flow.ts");
     const setupNextSteps = await readSource(
@@ -130,11 +136,42 @@ describe("architecture boundaries: setup and uninstall", () => {
 
     expect(existsSync(join(ROOT, "src/edges/cli/commands/setup"))).toBe(false);
     expect(existsSync(join(ROOT, "src/edges/cli/setup"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/edges/cli/setup/input.ts"))).toBe(true);
-    expect(setupInput).not.toContain("process.stdin");
-    expect(setupInput).toContain("SetupInputStream");
-    expect(setupInput).toContain("from \"./output.js\"");
-    expect(setupInput).toContain("theme: SetupTheme");
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/input.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/line-prompt.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/select-choice.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/raw-input.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/setup-interruption.ts"))).toBe(true);
+    expect(linePrompt).toContain("export function confirm");
+    expect(linePrompt).toContain("export function promptText");
+    expect(linePrompt).toContain("export async function waitForEnter");
+    expect(linePrompt).toContain("SetupInputStream");
+    expect(linePrompt).toContain("theme: SetupTheme");
+    expect(linePrompt).not.toContain("setRawMode");
+    expect(linePrompt).not.toContain("SetupInterruptedError");
+    expect(linePrompt).not.toContain("selectChoice");
+    expect(selectChoice).toContain("export async function selectChoice");
+    expect(selectChoice).toContain("canUseRawInput");
+    expect(selectChoice).toContain("SetupInterruptedError");
+    expect(selectChoice).toContain("promptText");
+    expect(selectChoice).not.toContain("export function confirm");
+    expect(selectChoice).not.toContain("export function promptText");
+    expect(multiSelect).toContain("export function selectManyRaw");
+    expect(multiSelect).toContain("SetupInterruptedError");
+    expect(multiSelect).not.toContain("export function canUseRawSelect");
+    expect(rawInput).toContain("export function canUseRawInput");
+    expect(rawInput).toContain("setRawMode");
+    expect(rawInput).not.toContain("SetupInterruptedError");
+    expect(setupInterruption).toContain("export class SetupInterruptedError");
+    expect(setupInterruption).toContain("export function isSetupInterrupted");
+    for (const setupInputFile of [
+      linePrompt,
+      selectChoice,
+      multiSelect,
+      rawInput,
+      setupInterruption,
+    ]) {
+      expect(setupInputFile).not.toContain("process.stdin");
+    }
     expect(setupOutput).toContain("makeSetupTheme");
     expect(setupOutput).toContain("../../../shared/ansi-theme.js");
     expect(setupOutput).not.toContain("export const RST");
@@ -217,6 +254,7 @@ describe("architecture boundaries: setup and uninstall", () => {
       expect(caller).not.toContain("selectChoice,\n} from \"./output.js\"");
       expect(caller).not.toContain("isSetupInterrupted,\n} from \"./output.js\"");
       expect(caller).not.toContain("SetupInterruptedError,\n} from \"./output.js\"");
+      expect(caller).not.toContain("./input.js");
       expect(caller).not.toContain("process.stdin");
     }
   });

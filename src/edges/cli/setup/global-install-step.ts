@@ -7,7 +7,7 @@ import { createPlatformSetupGlobalInstallRuntime } from "../../../platform/setup
 import {
   confirm,
   type InstallDecision,
-} from "./input.js";
+} from "./line-prompt.js";
 import {
   type SetupTheme,
   dim,
