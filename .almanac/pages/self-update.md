@@ -31,16 +31,16 @@ sources:
     note: Migrated from legacy files.
   - id: state
     type: file
-    path: src/platform/update/state.ts
-    note: Migrated from legacy files.
+    path: src/stores/update/state.ts
+    note: Update-state persistence.
   - id: install
     type: file
     path: src/platform/update/install.ts
     note: Migrated from legacy files.
   - id: lock
     type: file
-    path: src/platform/update/lock.ts
-    note: Migrated from legacy files.
+    path: src/stores/update/lock.ts
+    note: Update install-lock persistence.
   - id: version
     type: file
     path: src/platform/update/version.ts
@@ -92,9 +92,9 @@ Almanac self-update means updating the globally installed `codealmanac` package 
 
 `[[src/cli/commands/update.ts]]` is the command adapter for the update surface and renders user-facing text. `[[src/services/update/update.ts]]` owns the workflow states: `almanac update --check` forces a registry query, `--dismiss` suppresses the current latest version, the deprecated notifier flags write `update_notifier`, and bare `almanac update` checks npm before running `npm i -g codealmanac@latest` with inherited stdio. The install path does not run `sudo`; permission failures are left visible in npm output and summarized afterward.
 
-`[[src/platform/update/install.ts]]` owns the npm install subprocess and its user-facing failure messages. `[[src/platform/update/lock.ts]]` owns the global `.update-install.lock` file so manual and scheduled update attempts cannot overlap. `[[src/platform/update/version.ts]]` owns installed package-version lookup for the check, announce, and update paths.
+`[[src/platform/update/install.ts]]` owns the npm install subprocess and its user-facing failure messages. `[[src/stores/update/lock.ts]]` owns the global `.update-install.lock` file so manual and scheduled update attempts cannot overlap. `[[src/platform/update/version.ts]]` owns installed package-version lookup for the check, announce, and update paths.
 
-`[[src/platform/update/state.ts]]` is intentionally a small regenerable JSON file. Missing, empty, malformed, or unreadable state becomes an empty state instead of breaking every CLI invocation.
+`[[src/stores/update/state.ts]]` is intentionally a small regenerable JSON file. Missing, empty, malformed, or unreadable state becomes an empty state instead of breaking every CLI invocation.
 
 ## Auto-update design pressure
 
@@ -134,7 +134,7 @@ Automation status reports automatic self-update through the same task status API
 
 `[[src/platform/update/notifier-worker.ts]]` is named for the detached notifier worker for `--internal-check-updates`. Recurring launchd automation lives under `[[src/platform/automation/]]`, so notifier scheduling and OS scheduler management do not share a misleading module name.
 
-Installed-version lookup has one shared owner in `[[src/platform/update/version.ts]]`. Update-state parsing still has a tolerant async owner in `[[src/platform/update/state.ts]]` and a small synchronous doctor reader in `[[src/platform/update/notifier-worker.ts]]`.
+Installed-version lookup has one shared owner in `[[src/platform/update/version.ts]]`. Update-state parsing has tolerant async and sync readers in `[[src/stores/update/state.ts]]`.
 
 ## Fast-path requirement
 

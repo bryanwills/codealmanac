@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 185 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 186 production slices so far.
 
-The diff is broad: 475 files changed, with 23,969 insertions and 12,950 deletions.
+The diff is broad: 481 files changed, with 24,118 insertions and 13,045 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -38,6 +38,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
 - Moved worker-program shape into `src/shared/worker-program.ts` so lifecycle services no longer import platform worker-process mechanics.
 - Reshaped update install injection so update services accept typed install results while platform update modules own npm child-process mechanics.
+- Moved update state and install-lock persistence into `src/stores/update/`; platform update modules now own registry/npm/version behavior, not JSON state-file mechanics.
 - Moved GitHub source resolution mechanics into `src/platform/github/`.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
@@ -61,9 +62,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice replaced the update workflow's child-process-shaped `spawnFn` option with a typed `installFn` contract. `src/services/update/` now sees installer outcomes as `{ output, errorOutput, code }`, while `src/platform/update/install.ts` owns the npm command, spawn options, ENOENT handling, and install-failure hints.
+The latest slice moved `~/.almanac/update-state.json` and `.update-install.lock` mechanics from `src/platform/update/` into `src/stores/update/`. The update store now owns tolerant async/sync state reads, atomic state writes, lock acquisition, stale-lock cleanup, and explicit lock owner PIDs. The CLI edge passes `process.pid` into the update command; the lock store no longer reads ambient process state.
 
-Verification passed: focused update/update-install/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js update --help`, and `node dist/codealmanac.js config --help`.
+Verification passed: focused update/update-check/update-announce/update-install/update-store/doctor/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js update --help`, and `node dist/codealmanac.js doctor --help`.
 
 ## Immediate Next Work
 

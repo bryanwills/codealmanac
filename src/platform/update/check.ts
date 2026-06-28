@@ -1,4 +1,4 @@
-import { readState, writeState, type UpdateState } from "./state.js";
+import { readState, writeState, type UpdateState } from "../../stores/update/index.js";
 import { readInstalledVersion } from "./version.js";
 
 /**

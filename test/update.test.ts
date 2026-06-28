@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { runUpdate } from "../src/cli/commands/update.js";
 import { runConfigSet } from "../src/cli/commands/config.js";
 import { parseConfigText, readConfig, writeConfig } from "../src/stores/config/index.js";
-import { readState, writeState } from "../src/platform/update/state.js";
+import { readState, writeState } from "../src/stores/update/index.js";
 import type { UpdateInstallFn } from "../src/services/update/index.js";
 import { withTempHome } from "./helpers.js";
 

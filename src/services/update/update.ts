@@ -8,10 +8,9 @@ import {
   installLatestPackage,
   type InstallLatestPackageResult,
 } from "../../platform/update/install.js";
-import { acquireUpdateLock } from "../../platform/update/lock.js";
-import { readState, writeState } from "../../platform/update/state.js";
 import { readInstalledVersion } from "../../platform/update/version.js";
 import { isNewerVersion } from "../../shared/version.js";
+import { acquireUpdateLock, readState, writeState } from "../../stores/update/index.js";
 import type {
   UpdateInstallResult,
   UpdateOptions,
@@ -130,6 +129,7 @@ async function installIfNeeded(
   }
 
   const lock = await acquireUpdateLock({
+    pid: opts.pid ?? 0,
     path: opts.lockPath,
     now: opts.now,
     staleSeconds: opts.lockStaleSeconds,

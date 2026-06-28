@@ -45,6 +45,7 @@ export interface UpdateOptions {
   installedVersion?: string;
   checkFn?: UpdateCheckFn;
   installFn?: UpdateInstallFn;
+  pid?: number;
   now?: () => number;
   lockPath?: string;
   lockStaleSeconds?: number;

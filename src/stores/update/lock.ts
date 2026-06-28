@@ -9,6 +9,7 @@ export interface UpdateLock {
 }
 
 export interface AcquireUpdateLockOptions {
+  pid: number;
   path?: string;
   now?: () => number;
   staleSeconds?: number;
@@ -21,7 +22,7 @@ export function getUpdateLockPath(): string {
 }
 
 export async function acquireUpdateLock(
-  options: AcquireUpdateLockOptions = {},
+  options: AcquireUpdateLockOptions,
 ): Promise<UpdateLock | null> {
   const path = options.path ?? getUpdateLockPath();
   const staleSeconds = options.staleSeconds ?? DEFAULT_STALE_SECONDS;
@@ -32,7 +33,7 @@ export async function acquireUpdateLock(
     try {
       const handle = await open(path, "wx");
       await handle.writeFile(JSON.stringify({
-        pid: process.pid,
+        pid: options.pid,
         created_at: now(),
       }));
       await handle.close();

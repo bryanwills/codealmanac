@@ -1,5 +1,5 @@
 import { readConfig } from "../../stores/config/index.js";
-import { readState } from "../update/state.js";
+import { readState } from "../../stores/update/index.js";
 import type { DiagnosticsUpdateStatus } from "./types.js";
 
 export interface UpdateDiagnosticsProbeOptions {

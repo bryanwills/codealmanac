@@ -1265,3 +1265,13 @@ One-hundred-eighty-fifth production slice:
 - Kept npm command, spawn options, ENOENT handling, and nonzero-exit hints in `src/platform/update/install.ts`.
 - Moved npm spawn argument coverage into `test/update-install.test.ts`, while update workflow tests now inject installer outcomes.
 - Strengthened boundary coverage so update service types cannot reintroduce platform spawn mechanics.
+
+One-hundred-eighty-sixth production slice:
+
+- Moved update state persistence from `src/platform/update/state.ts` to `src/stores/update/state.ts`.
+- Moved update install-lock persistence from `src/platform/update/lock.ts` to `src/stores/update/lock.ts`.
+- Added `src/stores/update/index.ts` as the store-owned update persistence API.
+- Moved tolerant synchronous update-state parsing into the store so `src/platform/update/announce.ts` no longer duplicates JSON state parsing.
+- Changed update lock acquisition to accept an explicit `pid`, and updated the CLI edge to pass `process.pid` into `almanac update`.
+- Added `test/update-store.test.ts` for explicit lock owner PIDs and synchronous state reads.
+- Strengthened boundary coverage so the old platform state/lock files stay deleted and update service imports the store API.

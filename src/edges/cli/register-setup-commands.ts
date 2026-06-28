@@ -149,6 +149,7 @@ export function registerSetupCommands(
           check: opts.check,
           enableNotifier: opts.enableNotifier,
           disableNotifier: opts.disableNotifier,
+          pid: process.pid,
         });
         emit(result);
       },

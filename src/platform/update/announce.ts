@@ -7,7 +7,7 @@ import {
 } from "../../stores/config/index.js";
 import { makeAnsiTheme } from "../../ansi-theme.js";
 import { isNewerVersion } from "../../shared/version.js";
-import { getStatePath, type UpdateState } from "./state.js";
+import { getStatePath, readStateSync } from "../../stores/update/index.js";
 import { readInstalledVersion } from "./version.js";
 
 /**
@@ -75,45 +75,6 @@ function shouldUseStreamColor(stream: NodeJS.WritableStream): boolean {
 
 function streamIsTTY(stream: NodeJS.WritableStream): boolean {
   return (stream as NodeJS.WritableStream & { isTTY?: boolean }).isTTY === true;
-}
-
-/**
- * Sync-read the state file. Returns `null` when missing, empty, or
- * malformed — the announce path MUST NOT throw into the CLI critical
- * path. Avoids the `async readState` used by the worker because
- * `run()` would otherwise need `await announceUpdateIfAvailable(...)`
- * on every invocation, which turns into a multi-millisecond penalty
- * on commands that don't care.
- */
-function readStateSync(path: string): UpdateState | null {
-  let raw: string;
-  try {
-    raw = readFileSync(path, "utf8");
-  } catch {
-    return null;
-  }
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) return null;
-  try {
-    const parsed = JSON.parse(trimmed) as Partial<UpdateState>;
-    return {
-      last_check_at:
-        typeof parsed.last_check_at === "number" ? parsed.last_check_at : 0,
-      installed_version:
-        typeof parsed.installed_version === "string"
-          ? parsed.installed_version
-          : "",
-      latest_version:
-        typeof parsed.latest_version === "string" ? parsed.latest_version : "",
-      dismissed_versions: Array.isArray(parsed.dismissed_versions)
-        ? parsed.dismissed_versions.filter(
-            (v): v is string => typeof v === "string",
-          )
-        : [],
-    };
-  } catch {
-    return null;
-  }
 }
 
 function shouldNotify(configPath: string): boolean {

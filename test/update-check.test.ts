@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import { checkForUpdate } from "../src/platform/update/check.js";
-import { writeState } from "../src/platform/update/state.js";
+import { writeState } from "../src/stores/update/index.js";
 import { withTempHome } from "./helpers.js";
 
 /**

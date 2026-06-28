@@ -109,6 +109,10 @@ The CLI edge owns discovering the current Node command and entrypoint. Lifecycle
 
 The update service owns update workflow policy: check latest, honor dismissals, acquire the update lock, decide whether installation should run, refresh state after success, and return a user-facing result. The platform update install module owns npm mechanics: command, arguments, child-process spawn options, missing-npm handling, and install-failure hints. Tests for update workflow inject `UpdateInstallFn`, while tests for `src/platform/update/install.ts` inject spawn mechanics.
 
+### Update state and locks are stores
+
+`~/.almanac/update-state.json` and `.update-install.lock` are local persistence mechanics, so they live under `src/stores/update/`. Platform update modules still own registry fetches, npm installation, version lookup, notifier spawning, and pre-command announcement behavior, but they call the update store for state and lock mechanics. The update lock store accepts an explicit `pid` because edges own process facts.
+
 ### Guard boundaries with tests
 
 Architecture-boundary tests are part of the rewrite, not decoration. When a smell is removed, add or update a test that makes the old leak harder to reintroduce.

@@ -1005,10 +1005,20 @@ describe("architecture boundaries", () => {
     const updateService = await readSource("src/services/update/update.ts");
     const updateTypes = await readSource("src/services/update/types.ts");
     const updateInstall = await readSource("src/platform/update/install.ts");
+    const updateCheck = await readSource("src/platform/update/check.ts");
+    const updateAnnounce = await readSource("src/platform/update/announce.ts");
+    const updateStoreIndex = await readSource("src/stores/update/index.ts");
+    const updateStateStore = await readSource("src/stores/update/state.ts");
+    const updateLockStore = await readSource("src/stores/update/lock.ts");
+    const setupRegistration = await readSource("src/edges/cli/register-setup-commands.ts");
 
     expect(existsSync(join(ROOT, "src/cli/commands/update-render.ts"))).toBe(
       true,
     );
+    expect(existsSync(join(ROOT, "src/stores/update/state.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/update/lock.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/update/state.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/platform/update/lock.ts"))).toBe(false);
     expect(updateServiceIndex).not.toContain("platform/update");
     expect(updateCommand).toContain("services/update/index.js");
     expect(updateCommand).toContain("./update-render.js");
@@ -1036,6 +1046,9 @@ describe("architecture boundaries", () => {
     expect(updateService).not.toContain("stderr:");
     expect(updateService).not.toContain("exitCode:");
     expect(updateService).not.toContain("node:child_process");
+    expect(updateService).not.toContain("platform/update/state");
+    expect(updateService).not.toContain("platform/update/lock");
+    expect(updateService).toContain("stores/update/index.js");
     expect(updateService).toContain("installFn");
     expect(updateService).toContain("updateInstallResultFromPlatform");
     expect(updateTypes).not.toContain(
@@ -1047,9 +1060,19 @@ describe("architecture boundaries", () => {
     expect(updateTypes).not.toContain("SpawnOptions");
     expect(updateTypes).not.toContain("node:child_process");
     expect(updateTypes).toContain("UpdateInstallFn");
+    expect(updateTypes).toContain("pid?: number");
     expect(updateTypes).not.toContain("platform/update/check");
     expect(updateInstall).toContain("node:child_process");
     expect(updateInstall).toContain("spawnFn");
+    expect(updateCheck).toContain("stores/update/index.js");
+    expect(updateAnnounce).toContain("stores/update/index.js");
+    expect(updateAnnounce).not.toContain("readFileSync(path");
+    expect(updateStoreIndex).toContain("readStateSync");
+    expect(updateStateStore).toContain("readFileSync");
+    expect(updateLockStore).toContain("pid: number");
+    expect(updateLockStore).toContain("pid: options.pid");
+    expect(updateLockStore).not.toContain("process.pid");
+    expect(setupRegistration).toContain("pid: process.pid");
   });
 
   it("keeps config command adapters out of config persistence mechanics", async () => {
