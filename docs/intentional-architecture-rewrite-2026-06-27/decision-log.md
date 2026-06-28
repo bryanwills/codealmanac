@@ -47,7 +47,11 @@ Doctor probe result contracts that describe local machine facts belong under `sr
 
 ### Setup/uninstall terminal UI belongs to the CLI edge
 
-Setup terminal prompts, display text, setup step rendering, uninstall confirmations, and uninstall output rendering belong under `src/edges/cli/` because they are CLI interaction surfaces. Provider fix-command normalization/execution and global-install state/execution are setup product workflow, so they live under `src/services/setup/` and call platform shell or package-manager mechanics there. CLI setup edge files should not import `src/platform/shell.ts` or `src/platform/install/global-package.ts` directly.
+Setup terminal prompts, display text, setup step rendering, uninstall confirmations, and uninstall output rendering belong under `src/edges/cli/` because they are CLI interaction surfaces. Provider fix-command normalization and global-install result shaping are setup product workflow, so they live under `src/services/setup/`. CLI setup edge files should not import `src/platform/shell.ts` or `src/platform/install/global-package.ts` directly.
+
+### Setup services depend on setup runtime contracts
+
+Setup services own product-level normalization, state/result contracts, and error wrapping for provider fix commands and durable global installs. They do not import shell, npm, install-path, or package-manager mechanics directly. `src/platform/setup/runtime.ts` implements the service-owned setup runtime contracts by composing platform shell and global-install helpers, and `src/edges/cli/setup/` wires that concrete runtime into the setup flow.
 
 ### Transcript file mechanics are platform, sync eligibility is service
 

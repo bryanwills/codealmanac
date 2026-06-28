@@ -53,10 +53,12 @@ export type {
   SetupSpawnCliFn,
 } from "./agent-choice.js";
 export type {
+  SetupProviderFixCommandRunner,
   SetupProviderFixCommandResult,
 } from "./provider-fix-command.js";
 export type {
   RunSetupGlobalInstallOptions,
+  SetupGlobalInstallRuntime,
   SetupGlobalInstallResult,
   SetupGlobalInstallState,
   SetupGlobalInstallStateOptions,

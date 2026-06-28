@@ -1,5 +1,7 @@
 import type {
+  SetupGlobalInstallRuntime,
   SetupInstructionTargetId,
+  SetupProviderFixCommandRunner,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
 
@@ -51,6 +53,8 @@ export interface SetupOptions {
   cliProgramArguments: string[];
   /** Override the subprocess spawner for provider login checks. */
   spawnCli?: SetupSpawnCliFn;
+  /** Override provider login command execution. */
+  runProviderFixCommand?: SetupProviderFixCommandRunner;
   /** Override the launchd plist path. */
   automationPlistPath?: string;
   /** Override the Garden launchd plist path. */
@@ -85,6 +89,8 @@ export interface SetupOptions {
   installPath?: string | null;
   /** Override the npm global install spawner. */
   spawnGlobalInstall?: () => Promise<void>;
+  /** Override global install state/install mechanics. */
+  globalInstallRuntime?: SetupGlobalInstallRuntime;
 }
 
 export interface SetupResult {

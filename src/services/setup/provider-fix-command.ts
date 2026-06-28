@@ -1,8 +1,10 @@
-import { runInheritedShellCommand } from "../../platform/shell.js";
-
 export type SetupProviderFixCommandResult =
   | { ok: true }
   | { ok: false; error: string };
+
+export type SetupProviderFixCommandRunner = (
+  command: string,
+) => Promise<SetupProviderFixCommandResult>;
 
 export function normalizeSetupProviderFixCommand(
   fixCommand: string | null,
@@ -22,6 +24,7 @@ export function runnableSetupProviderFixCommand(
 
 export function runSetupProviderFixCommand(
   command: string,
+  runner: SetupProviderFixCommandRunner,
 ): Promise<SetupProviderFixCommandResult> {
-  return runInheritedShellCommand(command);
+  return runner(command);
 }

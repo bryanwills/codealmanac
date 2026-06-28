@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 191 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 192 production slices so far.
 
-The diff is broad: 489 files changed, with 24,739 insertions and 13,154 deletions.
+The diff is broad: 490 files changed, with 24,829 insertions and 13,154 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -48,6 +48,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved diagnostic probe result contracts into `src/platform/diagnostics/types.ts`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
+- Moved setup shell/global-install mechanics behind `src/platform/setup/runtime.ts`, so setup services own contracts/results while the CLI setup edge owns concrete runtime composition.
 - Split the automation task catalog out of platform launchd mechanics: task meaning/defaults live under `src/services/automation/tasks.ts`, while plist/log paths live under `src/platform/automation/paths.ts`.
 - Moved automation scheduler mechanics behind `src/services/automation/scheduler.ts`, with launchd implementation in `src/platform/automation/scheduler.ts`; automation services no longer import `src/platform/automation/`.
 - Moved concrete agent runtime provider registry creation out of job runtime services; CLI and worker edges now inject a `JobAgentRunner`, while `src/agent/runtime/job-runner.ts` owns provider-registry composition.
@@ -66,13 +67,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved GitHub Absorb source resolution out of lifecycle services. `src/services/lifecycle/absorb/input.ts` now parses source refs and uses an injected resolver for external sources; `src/platform/sources/absorb.ts` owns the concrete GitHub/web source resolver; `src/edges/cli/register-lifecycle-run-commands.ts` wires that resolver for `absorb` and `ingest`.
+The latest slice moved setup shell and global-install mechanics out of setup services. `src/services/setup/provider-fix-command.ts` now depends on an injected provider-fix runner, `src/services/setup/global-install.ts` now depends on a service-owned global-install runtime contract, and `src/platform/setup/runtime.ts` composes shell/npm install mechanics for the CLI setup edge.
 
-Verification passed so far: `npx tsc --noEmit --pretty false` and focused Absorb input, GitHub source resolver, operation command, and boundary tests.
+Verification passed so far: `npx tsc --noEmit --pretty false` and focused setup/setup-plan/boundary tests.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, and Absorb source resolver composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, Absorb source resolver composition, and setup runtime composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 

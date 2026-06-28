@@ -1327,14 +1327,17 @@ describe("architecture boundaries", () => {
       "src/services/setup/global-install.ts",
     );
     const setupServiceIndex = await readSource("src/services/setup/index.ts");
+    const platformSetupRuntime = await readSource("src/platform/setup/runtime.ts");
     const globalPackage = await readSource(
       "src/platform/install/global-package.ts",
     );
 
     expect(existsSync(join(ROOT, "src/platform/install/global-package.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/setup/runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/setup/global-install.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/setup/install-path.ts"))).toBe(false);
     expect(globalInstallStep).not.toContain("platform/install/global-package.js");
+    expect(globalInstallStep).toContain("platform/setup/runtime.js");
     expect(globalInstallStep).toContain("services/setup/index.js");
     expect(globalInstallStep).not.toContain("node:child_process");
     expect(globalInstallStep).not.toContain("node:module");
@@ -1343,10 +1346,14 @@ describe("architecture boundaries", () => {
     expect(globalInstallStep).not.toContain("execFile");
     expect(globalInstallStep).not.toContain("detectCurrentInstallPath");
     expect(globalInstallStep).not.toContain("detectEphemeral");
-    expect(setupGlobalInstall).toContain("platform/install/global-package.js");
+    expect(setupGlobalInstall).not.toContain("platform/");
+    expect(setupGlobalInstall).toContain("interface SetupGlobalInstallRuntime");
     expect(setupGlobalInstall).toContain("readSetupGlobalInstallState");
     expect(setupGlobalInstall).toContain("runSetupGlobalInstall");
     expect(setupServiceIndex).toContain("global-install.js");
+    expect(platformSetupRuntime).toContain("detectCurrentInstallPath");
+    expect(platformSetupRuntime).toContain("detectEphemeral");
+    expect(platformSetupRuntime).toContain("spawnGlobalInstall");
     expect(globalPackage).toContain("detectCurrentInstallPath");
     expect(globalPackage).toContain("detectEphemeral");
     expect(globalPackage).toContain("spawnGlobalInstall");
@@ -1378,18 +1385,22 @@ describe("architecture boundaries", () => {
       "src/services/setup/provider-fix-command.ts",
     );
     const setupServiceIndex = await readSource("src/services/setup/index.ts");
+    const platformSetupRuntime = await readSource("src/platform/setup/runtime.ts");
     const platformShell = await readSource("src/platform/shell.ts");
 
     expect(existsSync(join(ROOT, "src/platform/shell.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/setup/runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/setup/provider-fix-command.ts"))).toBe(true);
     expect(setupAgentChoice).not.toContain("platform/shell.js");
+    expect(setupAgentChoice).toContain("platform/setup/runtime.js");
     expect(setupAgentChoice).toContain("runSetupProviderFixCommand");
     expect(setupAgentChoice).not.toContain("node:child_process");
     expect(setupAgentChoice).not.toContain("spawn(command");
     expect(setupAgentChoice).not.toContain("shell: true");
     expect(setupAgentChoice).not.toContain("stdio: \"inherit\"");
-    expect(setupProviderFixCommand).toContain("../../platform/shell.js");
-    expect(setupProviderFixCommand).toContain("runInheritedShellCommand");
+    expect(setupProviderFixCommand).not.toContain("platform/");
+    expect(setupProviderFixCommand).not.toContain("runInheritedShellCommand");
+    expect(setupProviderFixCommand).toContain("SetupProviderFixCommandRunner");
     expect(setupProviderFixCommand).toContain(
       "normalizeSetupProviderFixCommand",
     );
@@ -1397,6 +1408,7 @@ describe("architecture boundaries", () => {
       "runnableSetupProviderFixCommand",
     );
     expect(setupServiceIndex).toContain("provider-fix-command.js");
+    expect(platformSetupRuntime).toContain("runInheritedShellCommand");
     expect(platformShell).toContain("runInheritedShellCommand");
   });
 

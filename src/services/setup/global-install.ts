@@ -1,9 +1,3 @@
-import {
-  detectCurrentInstallPath,
-  detectEphemeral,
-  spawnGlobalInstall,
-} from "../../platform/install/global-package.js";
-
 export interface SetupGlobalInstallStateOptions {
   installPath?: string | null;
 }
@@ -12,8 +6,13 @@ export interface SetupGlobalInstallState {
   ephemeral: boolean;
 }
 
+export interface SetupGlobalInstallRuntime {
+  readState(options?: SetupGlobalInstallStateOptions): SetupGlobalInstallState;
+  install(): Promise<void>;
+}
+
 export interface RunSetupGlobalInstallOptions {
-  spawnGlobalInstall?: () => Promise<void>;
+  runtime: SetupGlobalInstallRuntime;
 }
 
 export type SetupGlobalInstallResult =
@@ -21,19 +20,18 @@ export type SetupGlobalInstallResult =
   | { ok: false; error: string };
 
 export function readSetupGlobalInstallState(
-  options: SetupGlobalInstallStateOptions = {},
+  options: SetupGlobalInstallStateOptions & {
+    runtime: SetupGlobalInstallRuntime;
+  },
 ): SetupGlobalInstallState {
-  const ephemeral = options.installPath !== undefined
-    ? options.installPath !== null && detectEphemeral(options.installPath)
-    : detectEphemeral(detectCurrentInstallPath());
-  return { ephemeral };
+  return options.runtime.readState({ installPath: options.installPath });
 }
 
 export async function runSetupGlobalInstall(
-  options: RunSetupGlobalInstallOptions = {},
+  options: RunSetupGlobalInstallOptions,
 ): Promise<SetupGlobalInstallResult> {
   try {
-    await (options.spawnGlobalInstall ?? spawnGlobalInstall)();
+    await options.runtime.install();
     return { ok: true };
   } catch (err: unknown) {
     return {

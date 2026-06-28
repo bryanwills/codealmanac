@@ -1,5 +1,6 @@
 import type {
   SetupAgentProviderId,
+  SetupProviderFixCommandRunner,
   SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
@@ -12,6 +13,7 @@ import {
   runSetupProviderFixCommand,
   saveSetupAgentChoice,
 } from "../../../services/setup/index.js";
+import { runPlatformSetupProviderFixCommand } from "../../../platform/setup/runtime.js";
 import { chooseProviderModel } from "./agent-model-choice.js";
 import {
   confirm,
@@ -39,8 +41,11 @@ export async function chooseDefaultAgent(args: {
   requested?: string;
   requestedModel?: string;
   spawnCli?: SetupSpawnCliFn;
+  runProviderFixCommand?: SetupProviderFixCommandRunner;
   environment: NodeJS.ProcessEnv;
 }): Promise<AgentChoice> {
+  const runProviderFixCommand = args.runProviderFixCommand ??
+    runPlatformSetupProviderFixCommand;
   const state = await readSetupAgentChoiceState({
     requested: args.requested,
     includeView: args.interactive || args.requested !== undefined,
@@ -83,7 +88,10 @@ export async function chooseDefaultAgent(args: {
           true,
         );
         if (runLogin === "install") {
-          const login = await runSetupProviderFixCommand(command);
+          const login = await runSetupProviderFixCommand(
+            command,
+            runProviderFixCommand,
+          );
           if (!login.ok) {
             stepActive(
               args.out,
@@ -136,7 +144,10 @@ export async function chooseDefaultAgent(args: {
       true,
     );
     if (runLogin === "install") {
-      const login = await runSetupProviderFixCommand(runnableFixCommand);
+      const login = await runSetupProviderFixCommand(
+        runnableFixCommand,
+        runProviderFixCommand,
+      );
       if (login.ok) {
         view = await refreshSetupAgentChoiceView({
           spawnCli: args.spawnCli,

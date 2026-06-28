@@ -1318,3 +1318,11 @@ One-hundred-ninety-first production slice:
 - Kept `src/services/lifecycle/absorb/input.ts` responsible for parsing source refs, local path targets, mixed target shape, and the service-owned resolver contract.
 - Updated the lifecycle CLI edge to pass `createPlatformAbsorbSourceResolver()` into `absorb` and `ingest`.
 - Strengthened Absorb input and architecture-boundary tests so lifecycle services cannot reintroduce GitHub platform mechanics.
+
+One-hundred-ninety-second production slice:
+
+- Added `src/platform/setup/runtime.ts` as the concrete setup runtime that composes shell command execution with global package install-path/install mechanics.
+- Changed `src/services/setup/provider-fix-command.ts` to depend on an injected `SetupProviderFixCommandRunner` instead of importing the platform shell helper.
+- Changed `src/services/setup/global-install.ts` to depend on an injected `SetupGlobalInstallRuntime` instead of importing npm/global-install mechanics.
+- Updated CLI setup edge files to compose the platform setup runtime and pass service-owned contracts into setup workflows.
+- Strengthened architecture-boundary tests so setup services cannot reintroduce platform shell or package-manager imports.

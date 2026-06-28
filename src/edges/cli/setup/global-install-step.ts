@@ -1,7 +1,9 @@
 import {
   readSetupGlobalInstallState,
   runSetupGlobalInstall,
+  type SetupGlobalInstallRuntime,
 } from "../../../services/setup/index.js";
+import { createPlatformSetupGlobalInstallRuntime } from "../../../platform/setup/runtime.js";
 import {
   confirm,
   type InstallDecision,
@@ -19,6 +21,7 @@ import type { SetupInputStream } from "./types.js";
 export interface GlobalInstallStepOptions {
   installPath?: string | null;
   spawnGlobalInstall?: () => Promise<void>;
+  globalInstallRuntime?: SetupGlobalInstallRuntime;
 }
 
 export interface GlobalInstallStepResult {
@@ -33,8 +36,13 @@ export async function runGlobalInstallStep(args: {
   interactive: boolean;
   options: GlobalInstallStepOptions;
 }): Promise<GlobalInstallStepResult> {
+  const runtime = args.options.globalInstallRuntime ??
+    createPlatformSetupGlobalInstallRuntime({
+      spawnGlobalInstall: args.options.spawnGlobalInstall,
+    });
   const { ephemeral } = readSetupGlobalInstallState({
     installPath: args.options.installPath,
+    runtime,
   });
   let durableGlobalInstall = false;
   if (!ephemeral) {
@@ -54,7 +62,7 @@ export async function runGlobalInstallStep(args: {
   if (globalAction === "install") {
     stepActive(args.out, args.theme, "Installing Almanac package globally...");
     const install = await runSetupGlobalInstall({
-      spawnGlobalInstall: args.options.spawnGlobalInstall,
+      runtime,
     });
     if (install.ok) {
       durableGlobalInstall = true;
