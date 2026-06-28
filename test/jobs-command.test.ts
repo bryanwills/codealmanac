@@ -4,12 +4,14 @@ import { describe, expect, it } from "vitest";
 
 import { initWiki } from "../src/services/wiki/initialization.js";
 import {
-  runJobsCancel,
-  streamJobsAttach,
   runJobsList,
-  runJobsLogs,
   runJobsShow,
-} from "../src/edges/cli/commands/jobs.js";
+} from "../src/edges/cli/commands/jobs/read.js";
+import {
+  runJobsLogs,
+  streamJobsAttach,
+} from "../src/edges/cli/commands/jobs/logs.js";
+import { runJobsCancel } from "../src/edges/cli/commands/jobs/cancel.js";
 import {
   buildQueuedJobRecord,
   buildStartedJobRecord,

@@ -1919,3 +1919,12 @@ Two-hundred-seventieth production slice:
 - Added owner-named automation command files for install, uninstall, status, and rendering under `src/edges/cli/commands/automation/`.
 - Updated automation command registration and tests to import the verb-owned adapters directly.
 - Strengthened automation boundary tests so the old automation command and render catchalls cannot return.
+
+Two-hundred-seventy-first production slice:
+
+- Deleted the catchall `src/edges/cli/commands/jobs.ts` command adapter.
+- Deleted the catchall `src/edges/cli/commands/jobs-render.ts` renderer and `jobs-format.ts` formatter.
+- Added owner-named jobs command files for read, logs, cancel, render, and format under `src/edges/cli/commands/jobs/`.
+- Removed the unused non-stream attach compatibility helper while preserving the real streaming attach command path.
+- Updated jobs command registration and tests to import the verb-owned adapters directly.
+- Strengthened jobs/sync boundary tests so the old jobs command, render, and format catchalls cannot return.

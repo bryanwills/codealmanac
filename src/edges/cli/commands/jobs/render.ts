@@ -1,4 +1,4 @@
-import { UserFacingError } from "../../../shared/user-facing-error.js";
+import { UserFacingError } from "../../../../shared/user-facing-error.js";
 import type {
   CancelJobServiceResult,
   ListJobsServiceResult,
@@ -7,14 +7,19 @@ import type {
   ReadJobLogServiceResult,
   ReadJobServiceResult,
   StreamJobLogServiceResult,
-} from "../../../services/jobs/index.js";
-import { renderError, renderOutcome } from "./outcome.js";
-import type { JobsCommandResult } from "./jobs.js";
+} from "../../../../services/jobs/index.js";
+import { renderError, renderOutcome } from "../outcome.js";
 import {
   formatJobDetails,
   formatJobRows,
   terminalAttachSummary,
-} from "./jobs-format.js";
+} from "./format.js";
+
+export interface JobsCommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
 
 export function renderJobsListResult(
   result: ListJobsServiceResult,
@@ -43,15 +48,6 @@ export function renderJobsShowResult(
     return ok(`${JSON.stringify(result.job, null, 2)}\n`);
   }
   return ok(formatJobDetails(result.job));
-}
-
-export function renderJobsAttachResult(
-  logs: JobsCommandResult,
-  json: boolean | undefined,
-): JobsCommandResult {
-  if (logs.exitCode !== 0 || json === true) return logs;
-  if (logs.stdout.length > 0) return logs;
-  return { ...logs, stdout: "No log events have been written yet.\n" };
 }
 
 export function renderStreamJobLogResult(

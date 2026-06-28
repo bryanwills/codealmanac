@@ -34,8 +34,12 @@ describe("architecture boundaries: jobs and sync", () => {
     const jobsRecordView = await readSource("src/services/jobs/record-view.ts");
     const jobsRepoRoot = await readSource("src/services/jobs/repo-root.ts");
     const jobsServiceView = await readSource("src/services/jobs/view.ts");
-    const jobsCommand = await readSource("src/edges/cli/commands/jobs.ts");
-    const jobsRender = await readSource("src/edges/cli/commands/jobs-render.ts");
+    const jobsReadCommand = await readSource("src/edges/cli/commands/jobs/read.ts");
+    const jobsLogCommand = await readSource("src/edges/cli/commands/jobs/logs.ts");
+    const jobsCancelCommand = await readSource(
+      "src/edges/cli/commands/jobs/cancel.ts",
+    );
+    const jobsRender = await readSource("src/edges/cli/commands/jobs/render.ts");
     const jobsRegistration = await readSource(
       "src/edges/cli/register-jobs-commands.ts",
     );
@@ -49,8 +53,14 @@ describe("architecture boundaries: jobs and sync", () => {
       "src/edges/cli/register-job-cancel-command.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs-format.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs-render.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs-format.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs-render.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs/format.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs/render.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs/read.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs/logs.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/jobs/cancel.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/view.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/jobs.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/jobs/read.ts"))).toBe(true);
@@ -78,32 +88,38 @@ describe("architecture boundaries: jobs and sync", () => {
     expect(jobsRecordView).toContain("export interface JobView");
     expect(jobsRecordView).toContain("displayStatus: JobDisplayStatus");
     expect(jobsRecordView).toContain("isPidAlive");
-    expect(jobsCommand).toContain("services/jobs/index.js");
-    expect(jobsCommand).not.toContain("../../jobs/index");
-    expect(jobsCommand).not.toContain("import type { CommandResult }");
-    expect(jobsCommand).not.toContain("extends JobsOptions");
-    expect(jobsCommand).toContain("JobsCommandResult");
-    expect(jobsCommand).toContain("toJobsRequest");
-    expect(jobsCommand).toContain("toJobRequest");
-    expect(jobsCommand).toContain("toStreamJobLogRequest");
-    expect(jobsCommand).toContain("toCancelJobRequest");
-    expect(jobsCommand).not.toContain("readJobRecord");
-    expect(jobsCommand).not.toContain("writeJobRecord");
-    expect(jobsCommand).not.toContain("resolveJobRecordPath");
-    expect(jobsCommand).not.toContain("resolveJobLogPath");
-    expect(jobsCommand).not.toContain("finishJobRecord");
-    expect(jobsCommand).not.toContain("process.kill");
-    expect(jobsCommand).not.toContain("process.stdout");
-    expect(jobsCommand).not.toContain("JSON.stringify");
-    expect(jobsCommand).not.toContain("formatJobRows");
-    expect(jobsCommand).not.toContain("formatJobDetails");
-    expect(jobsCommand).not.toContain("terminalAttachSummary");
-    expect(jobsCommand).not.toContain("No jobs found");
-    expect(jobsCommand).not.toContain("No log events");
-    expect(jobsCommand).not.toContain("cancelled job");
-    expect(jobsCommand).not.toContain("function formatPageChanges");
-    expect(jobsCommand).not.toContain("function formatMs");
-    expect(jobsCommand).not.toContain("function missingWiki");
+    for (const jobsCommand of [
+      jobsReadCommand,
+      jobsLogCommand,
+      jobsCancelCommand,
+    ]) {
+      expect(jobsCommand).toContain("services/jobs/index.js");
+      expect(jobsCommand).not.toContain("../../jobs/index");
+      expect(jobsCommand).not.toContain("import type { CommandResult }");
+      expect(jobsCommand).not.toContain("extends JobsOptions");
+      expect(jobsCommand).toContain("JobsCommandResult");
+      expect(jobsCommand).not.toContain("readJobRecord");
+      expect(jobsCommand).not.toContain("writeJobRecord");
+      expect(jobsCommand).not.toContain("resolveJobRecordPath");
+      expect(jobsCommand).not.toContain("resolveJobLogPath");
+      expect(jobsCommand).not.toContain("finishJobRecord");
+      expect(jobsCommand).not.toContain("process.kill");
+      expect(jobsCommand).not.toContain("process.stdout");
+      expect(jobsCommand).not.toContain("JSON.stringify");
+      expect(jobsCommand).not.toContain("formatJobRows");
+      expect(jobsCommand).not.toContain("formatJobDetails");
+      expect(jobsCommand).not.toContain("terminalAttachSummary");
+      expect(jobsCommand).not.toContain("No jobs found");
+      expect(jobsCommand).not.toContain("No log events");
+      expect(jobsCommand).not.toContain("cancelled job");
+      expect(jobsCommand).not.toContain("function formatPageChanges");
+      expect(jobsCommand).not.toContain("function formatMs");
+      expect(jobsCommand).not.toContain("function missingWiki");
+    }
+    expect(jobsReadCommand).toContain("toJobsRequest");
+    expect(jobsReadCommand).toContain("toJobRequest");
+    expect(jobsLogCommand).toContain("toStreamJobLogRequest");
+    expect(jobsCancelCommand).toContain("toCancelJobRequest");
     expect(jobsRender).toContain("renderJobsListResult");
     expect(jobsRender).toContain("renderJobsShowResult");
     expect(jobsRender).toContain("renderStreamJobLogResult");

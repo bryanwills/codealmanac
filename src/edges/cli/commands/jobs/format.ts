@@ -1,5 +1,5 @@
-import { formatTextTable } from "./table.js";
-import type { JobServiceView } from "../../../services/jobs/index.js";
+import { formatTextTable } from "../table.js";
+import type { JobServiceView } from "../../../../services/jobs/index.js";
 
 export function formatJobRows(views: JobServiceView[]): string[] {
   return formatTextTable({
