@@ -536,6 +536,43 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     expect(existsSync(join(ROOT, "src/edges/cli/commands/topics/render.ts"))).toBe(false);
   });
 
+  it("keeps topic yaml file IO separate from codec and entry helpers", async () => {
+    const topicsYamlStore = await readSource("src/stores/wiki/topics/yaml.ts");
+    const topicsCodec = await readSource("src/stores/wiki/topics/codec.ts");
+    const topicEntries = await readSource("src/stores/wiki/topics/entries.ts");
+    const topicTypes = await readSource("src/stores/wiki/topics/types.ts");
+    const topicDag = await readSource("src/stores/wiki/topics/dag.ts");
+
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/codec.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/entries.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/types.ts"))).toBe(true);
+    expect(topicsYamlStore).toContain("parseTopicsFileContent");
+    expect(topicsYamlStore).toContain("formatTopicsFileContent");
+    expect(topicsYamlStore).toContain("writeTextFileAtomically");
+    expect(topicsYamlStore).not.toContain("js-yaml");
+    expect(topicsYamlStore).not.toContain("toKebabCase");
+    expect(topicsYamlStore).not.toContain("UserFacingError");
+    expect(topicsYamlStore).not.toContain("topicTitleFromSlug");
+    expect(topicsYamlStore).not.toContain("export function findTopic");
+    expect(topicsYamlStore).not.toContain("export function ensureTopic");
+    expect(topicsYamlStore).not.toContain("interface TopicEntry");
+    expect(topicsCodec).toContain("js-yaml");
+    expect(topicsCodec).toContain("toKebabCase");
+    expect(topicsCodec).toContain("UserFacingError");
+    expect(topicsCodec).toContain("parseTopicsFileContent");
+    expect(topicsCodec).toContain("formatTopicsFileContent");
+    expect(topicEntries).toContain("export function findTopic");
+    expect(topicEntries).toContain("export function ensureTopic");
+    expect(topicEntries).toContain("topicTitleFromSlug");
+    expect(topicEntries).not.toContain("readFile");
+    expect(topicEntries).not.toContain("js-yaml");
+    expect(topicEntries).not.toContain("writeTextFileAtomically");
+    expect(topicTypes).toContain("export interface TopicEntry");
+    expect(topicTypes).toContain("export interface TopicsFile");
+    expect(topicDag).toContain("./types.js");
+    expect(topicDag).not.toContain("./yaml.js");
+  });
+
   it("keeps topic frontmatter block splitting separate from topic rewrites", async () => {
     const frontmatterRewrite = await readSource(
       "src/stores/wiki/topics/frontmatter-rewrite.ts",

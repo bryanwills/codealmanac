@@ -5,12 +5,10 @@ import { ensureFreshIndex } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "./wiki-root.js";
 import { openIndex } from "../../stores/wiki/indexer/schema.js";
 import { topics as topicQueries } from "../../stores/wiki/query/index.js";
+import { findTopic } from "../../stores/wiki/topics/entries.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
-import {
-  findTopic,
-  loadTopicsFile,
-  type TopicsFile,
-} from "../../stores/wiki/topics/yaml.js";
+import type { TopicsFile } from "../../stores/wiki/topics/types.js";
+import { loadTopicsFile } from "../../stores/wiki/topics/yaml.js";
 import type { WikiTopicsRequest } from "./topic-types.js";
 
 export interface FreshTopicIndex {

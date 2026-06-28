@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-import type { TopicsFile } from "./yaml.js";
+import type { TopicsFile } from "./types.js";
 
 /**
  * Depth cap for all recursive traversals of the topics DAG. Belt and

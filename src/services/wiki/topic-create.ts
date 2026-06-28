@@ -4,15 +4,17 @@ import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "./wiki-root.js";
 import { ancestorsInFile } from "../../stores/wiki/topics/dag.js";
-import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
-import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";
 import {
   ensureTopic,
   findTopic,
-  type TopicEntry,
-  type TopicsFile,
-  writeTopicsFile,
-} from "../../stores/wiki/topics/yaml.js";
+} from "../../stores/wiki/topics/entries.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
+import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";
+import type {
+  TopicEntry,
+  TopicsFile,
+} from "../../stores/wiki/topics/types.js";
+import { writeTopicsFile } from "../../stores/wiki/topics/yaml.js";
 import type {
   CreateWikiTopicRequest,
   CreateWikiTopicResult,

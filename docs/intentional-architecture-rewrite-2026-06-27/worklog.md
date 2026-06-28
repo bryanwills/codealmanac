@@ -2030,3 +2030,13 @@ Two-hundred-eighty-fourth production slice:
 - Added `src/stores/wiki-registry/types.ts` for registry entry and path-lookup contracts.
 - Kept `store.ts` focused on read/write/add/drop/find persistence verbs.
 - Strengthened architecture tests so registry parsing, path lookup, and filesystem checks do not collapse back into the store catchall.
+
+Two-hundred-eighty-fifth production slice:
+
+- Split `src/stores/wiki/topics/yaml.ts` into topic-file IO, YAML codec, in-memory entry helpers, and type owners.
+- Added `src/stores/wiki/topics/codec.ts` for `topics.yaml` parsing, raw-shape validation, slug normalization, and stable YAML formatting.
+- Added `src/stores/wiki/topics/entries.ts` for `findTopic()` and `ensureTopic()` in-memory entry helpers.
+- Added `src/stores/wiki/topics/types.ts` for `TopicEntry` and `TopicsFile` contracts.
+- Kept `yaml.ts` focused on `.almanac/topics.yaml` existence, missing-file handling, reads, and atomic writes.
+- Updated topic services and DAG helpers to import the specific topic-store owner they need instead of using `yaml.ts` as a mixed catchall.
+- Strengthened wiki command boundary tests so topic YAML file IO, codec, entry helpers, and type contracts cannot collapse back into one store file.

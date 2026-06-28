@@ -1,12 +1,10 @@
 import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "./wiki-root.js";
+import { findTopic } from "../../stores/wiki/topics/entries.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";
-import {
-  findTopic,
-  writeTopicsFile,
-} from "../../stores/wiki/topics/yaml.js";
+import { writeTopicsFile } from "../../stores/wiki/topics/yaml.js";
 import type {
   DeleteWikiTopicRequest,
   DeleteWikiTopicResult,

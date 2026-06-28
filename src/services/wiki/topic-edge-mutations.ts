@@ -2,10 +2,12 @@ import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "./wiki-root.js";
 import { ancestorsInFile } from "../../stores/wiki/topics/dag.js";
-import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {
   ensureTopic,
   findTopic,
+} from "../../stores/wiki/topics/entries.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
+import {
   loadTopicsFile,
   writeTopicsFile,
 } from "../../stores/wiki/topics/yaml.js";

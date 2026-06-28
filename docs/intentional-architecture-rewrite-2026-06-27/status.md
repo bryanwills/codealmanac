@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 279 production slices so far.
+The branch has more than 330 committed rewrite commits past `dev`. The worklog records 285 production slices so far.
 
-The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
+The diff is broad: more than 680 files changed, with tens of thousands of lines reshaped.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -143,6 +143,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split setup phase orchestration into `setup-flow.ts`, leaving setup `index.ts` as the public TUI entry wrapper and next-step renderer.
 - Split Claude auth provider internals into auth policy, CLI subprocess mechanics, and parsed status-contract files under `src/agent/providers/claude/`.
 - Split wiki-registry storage into read/write mutation verbs, JSON codec, lookup, filesystem reachability, and type contracts.
+- Split topic YAML storage into file IO, YAML codec, in-memory entry helpers, and type contracts.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
@@ -159,22 +160,20 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split review CLI output rendering by review verb and shared helper ownership. Review add, read/show, decision/apply/reopen, error, item, output, and type rendering now live in separate files under `src/edges/cli/commands/review/render/`; the old mixed `review/render.ts` file is gone.
+The latest slice split topic YAML storage by reason to change. `src/stores/wiki/topics/yaml.ts` now owns file existence/read/write mechanics only; `codec.ts` owns YAML parsing/normalization/formatting, `entries.ts` owns in-memory topic entry helpers, and `types.ts` owns the shared topic-file contracts.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/architecture-wiki-command-boundaries.test.ts test/review-command.test.ts`
+- `npx vitest run test/topics.test.ts test/tag.test.ts test/architecture-wiki-command-boundaries.test.ts test/architecture-jobs-sync-boundaries.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js --version`
-- `node dist/launcher.js doctor --help`
-- `node dist/launcher.js agents --help`
-- `node dist/launcher.js jobs --help`
+- `node dist/launcher.js topics --help`
+- `node dist/launcher.js topics show systems --json`
 - `node dist/launcher.js doctor --json --install-only`
-- `node dist/launcher.js reindex`
 
 Previous full-slice verification also passed:
 

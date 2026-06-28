@@ -1,10 +1,10 @@
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "./wiki-root.js";
 import { toKebabCase } from "../../shared/slug.js";
+import { ensureTopic } from "../../stores/wiki/topics/entries.js";
 import { rewritePageTopics } from "../../stores/wiki/topics/frontmatter-rewrite.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {
-  ensureTopic,
   loadTopicsFile,
   writeTopicsFile,
 } from "../../stores/wiki/topics/yaml.js";
