@@ -434,6 +434,18 @@ describe("architecture boundaries", () => {
     const registerTopics = await readSource(
       "src/edges/cli/register-topics-commands.ts",
     );
+    const registerTopicRead = await readSource(
+      "src/edges/cli/register-topic-read-commands.ts",
+    );
+    const registerTopicCreate = await readSource(
+      "src/edges/cli/register-topic-create-command.ts",
+    );
+    const registerTopicEdges = await readSource(
+      "src/edges/cli/register-topic-edge-commands.ts",
+    );
+    const registerTopicMutations = await readSource(
+      "src/edges/cli/register-topic-mutation-commands.ts",
+    );
     const topicTypes = await readSource("src/services/wiki/topic-types.ts");
     const topicWorkspace = await readSource(
       "src/services/wiki/topic-workspace.ts",
@@ -454,7 +466,23 @@ describe("architecture boundaries", () => {
     expect(topicsReadRender).toContain("../../../ansi-theme.js");
     expect(topicsReadRender).not.toContain("../../../ansi.js");
     expect(topicsReadRender).toContain("makeAnsiTheme(options.color === true)");
-    expect(registerTopics).toContain("shouldUseStdoutColor()");
+    expect(registerTopics).toContain("registerTopicReadCommands(topics)");
+    expect(registerTopics).toContain("registerTopicCreateCommand(topics)");
+    expect(registerTopics).toContain("registerTopicEdgeCommands(topics)");
+    expect(registerTopics).toContain("registerTopicMutationCommands(topics)");
+    expect(registerTopics).not.toContain('.command("list"');
+    expect(registerTopics).not.toContain(".command(\"show <slug>\")");
+    expect(registerTopics).not.toContain(".command(\"create <name>\")");
+    expect(registerTopics).not.toContain(".command(\"rename <old> <new>\")");
+    expect(registerTopicRead).toContain("shouldUseStdoutColor()");
+    expect(registerTopicRead).toContain('.command("list"');
+    expect(registerTopicRead).toContain(".command(\"show <slug>\")");
+    expect(registerTopicCreate).toContain(".command(\"create <name>\")");
+    expect(registerTopicEdges).toContain(".command(\"link <child> <parent>\")");
+    expect(registerTopicEdges).toContain(".command(\"unlink <child> <parent>\")");
+    expect(registerTopicMutations).toContain(".command(\"rename <old> <new>\")");
+    expect(registerTopicMutations).toContain(".command(\"delete <slug>\")");
+    expect(registerTopicMutations).toContain(".command(\"describe <slug> <text>\")");
     expect(registerTopics).not.toContain("process.stdout.isTTY");
     expect(topicsCommandTypes).toContain("color?: boolean");
     expect(topicTypes).not.toContain("stores/wiki/query");

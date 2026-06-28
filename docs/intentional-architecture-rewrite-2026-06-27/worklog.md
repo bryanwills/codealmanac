@@ -1532,3 +1532,10 @@ Two-hundred-nineteenth production slice:
 - Kept setup option shaping, doctor diagnostic probe composition, update runtime composition, and uninstall TUI wiring in their concrete command edge files.
 - Preserved the public setup-family registration entrypoint for `register-commands.ts` while removing the misleading mixed-command body from that file.
 - Strengthened architecture-boundary tests so setup-family registration stays split by command surface.
+
+Two-hundred-twentieth production slice:
+
+- Split `src/edges/cli/register-topics-commands.ts` into a thin root-command aggregator plus topic read, create, graph-edge, and page-mutation registration files.
+- Kept topic list/show color handling in read registration, parent option collection in create registration, graph link/unlink wiring in edge registration, and rename/delete/describe wiring in mutation registration.
+- Preserved the existing `topics` command surface while making each topic command group readable at the file level.
+- Strengthened architecture-boundary tests so topic registration stays grouped by command responsibility.
