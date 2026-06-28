@@ -1,6 +1,6 @@
 import {
-  isScheduledTaskId,
-} from "../../platform/automation/tasks.js";
+  isAutomationTaskId,
+} from "./tasks.js";
 import type { AutomationTaskId } from "./types.js";
 
 const TASK_LABELS: Record<AutomationTaskId, string> = {
@@ -18,7 +18,7 @@ export function parseAutomationTaskIds(
 ): { ok: true; tasks: AutomationTaskId[] } | { ok: false; error: string } {
   const tasks: AutomationTaskId[] = [];
   for (const value of values) {
-    if (!isScheduledTaskId(value)) {
+    if (!isAutomationTaskId(value)) {
       return {
         ok: false,
         error: `unknown automation task '${value}' (expected sync, garden, or update)`,

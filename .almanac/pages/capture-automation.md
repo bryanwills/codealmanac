@@ -48,10 +48,9 @@ sources:
     note: Detects legacy launchd plists whose ProgramArguments still invoke `capture sweep`.
   - id: sync-task-definition
     type: file
-    path: src/platform/automation/tasks.ts
+    path: src/services/automation/tasks.ts
     note: >-
-      Defines the current sync, Garden, and update scheduled tasks plus the legacy capture-sweep
-      label and plist path.
+      Defines the current sync, Garden, and update scheduled tasks, defaults, and command arguments.
   - id: 2026-05-11-scheduled-quiet-session-capture
     type: file
     path: docs/plans/2026-05-11-scheduled-quiet-session-capture.md
@@ -90,7 +89,7 @@ sources:
     note: Migrated from legacy files.
   - id: tasks
     type: file
-    path: src/platform/automation/tasks.ts
+    path: src/services/automation/tasks.ts
     note: Migrated from legacy files.
   - id: launchd
     type: file

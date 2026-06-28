@@ -42,14 +42,14 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/edges/worker/` | Hidden internal worker entrypoints for background job draining | `job-worker.ts` |
 | `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show/index.ts`, `reindex.ts` |
 | `src/stores/config/` | Config schema, TOML/JSON codec, raw-object editing, origin tracking, and global/project config store | `schema.ts`, `codec.ts`, `store.ts`, `editor.ts`, `origins.ts`, `paths.ts`, `index.ts` |
-| `src/platform/` | Local machine integration for install, self-update, scheduler automation, diagnostics probes, local transcript discovery, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
+| `src/platform/` | Local machine integration for install, self-update, launchd/path mechanics, diagnostics probes, local transcript discovery, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
 | `src/agent/` | Agent provider identity, readiness, auth, instructions, and runtime support | `provider-id.ts`, `readiness/`, `auth/`, `runtime/` |
 | `src/agent/runtime/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
 | `src/stores/wiki/` | Local wiki index, query, topic-file, source-frontmatter, and health-check mechanics | `indexer/`, `query/`, `topics/`, `sources/`, `health/` |
 | `src/stores/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/agents/` | Agent-facing provider view and provider/model config workflows over readiness and config services | `agents.ts`, `index.ts` |
-| `src/services/automation/` | Automation product workflows, task catalog/parsing, scheduled-task planning, legacy hook cleanup, and legacy automation migration over platform scheduler mechanics | `automation.ts`, `catalog.ts`, `legacy-hooks.ts`, `migration.ts`, `planning.ts`, `types.ts`, `index.ts` |
+| `src/services/automation/` | Automation product workflows, task definitions/parsing, scheduled-task planning, legacy hook cleanup, and legacy automation migration over platform launchd mechanics | `automation.ts`, `tasks.ts`, `catalog.ts`, `legacy-hooks.ts`, `migration.ts`, `planning.ts`, `types.ts`, `index.ts` |
 | `src/services/config/` | User-facing config verbs and config-key catalog over persisted config mechanics | `config.ts`, `keys.ts`, `index.ts` |
 | `src/services/diagnostics/` | Install, agent, update, and wiki diagnostic read models for `almanac doctor` | `doctor.ts`, `install.ts`, `agents.ts`, `updates.ts`, `probes.ts`, `types.ts`, `index.ts` |
 | `src/services/jobs/` | Job product workflows, record lifecycle/read models, execution lifecycle, queue coordination, and viewer/job projections | `jobs.ts`, `types.ts`, `record-lifecycle.ts`, `record-view.ts`, `runtime/`, `projections/`, `index.ts` |

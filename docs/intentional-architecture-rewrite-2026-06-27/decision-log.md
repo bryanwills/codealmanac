@@ -37,6 +37,10 @@ Command-private render modules own service-result-to-output branching. When a co
 
 Stores own persistence mechanics. Provider adapters, process spawning, app-server protocols, launchd, npm, and OS behavior stay in integration-shaped modules unless they are product service contracts.
 
+### Automation task policy is service-owned
+
+Automation task definitions are product policy, not launchd mechanics. `src/services/automation/tasks.ts` owns the sync, Garden, and update task ids, labels, default cadences, command arguments, and working-directory policy. `src/platform/automation/paths.ts` owns launchd plist/log path construction, and `src/platform/automation/launchd.ts` owns plist rendering, bootstrap/removal, and loaded-state checks.
+
 ### Transcript discovery is platform, sync eligibility is service
 
 Claude and Codex transcript-store scanning reads local provider files and normalizes raw JSONL shapes into typed transcript candidates. That belongs under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over those normalized candidates.

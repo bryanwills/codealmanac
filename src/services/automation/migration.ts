@@ -3,11 +3,11 @@ import {
   removeLaunchdJob,
 } from "../../platform/automation/launchd.js";
 import { detectLegacyCaptureSweepAutomation } from "../../platform/automation/legacy-capture.js";
+import { defaultCapturePlistPath, launchAgentPlistPath } from "../../platform/automation/paths.js";
 import {
   DEFAULT_SYNC_QUIET,
-  defaultCapturePlistPath,
-  defaultSyncPlistPath,
-} from "../../platform/automation/tasks.js";
+  automationTaskDefinition,
+} from "./tasks.js";
 import { installAutomation } from "./automation.js";
 import type { AutomationExecFn, AutomationInstallResult } from "./types.js";
 
@@ -44,7 +44,8 @@ export async function migrateLegacyAutomation(
 ): Promise<MigrateLegacyAutomationResult> {
   const home = options.homeDir;
   const legacyPlistPath = options.legacyPlistPath ?? defaultCapturePlistPath(home);
-  const syncPlistPath = options.syncPlistPath ?? defaultSyncPlistPath(home);
+  const syncPlistPath = options.syncPlistPath ??
+    launchAgentPlistPath(automationTaskDefinition("sync").label, home);
   const legacy = await detectLegacyCaptureSweepAutomation({
     homeDir: home,
     plistPath: legacyPlistPath,

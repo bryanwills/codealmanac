@@ -55,7 +55,7 @@ sources:
     note: SQLite-free install-management fast path.
   - id: tasks
     type: file
-    path: src/platform/automation/tasks.ts
+    path: src/services/automation/tasks.ts
     note: Migrated from legacy files.
   - id: automation
     type: file
@@ -106,7 +106,7 @@ The 2026-05-14 auto-update implementation rejected private scheduler-only update
 
 The scheduled job runs the same visible command, `almanac update`. There is no documented private flag like `--auto-if-needed`, `--scheduled`, or `--from-automation`.
 
-The scheduler-management surface stays under [[automation]] as task selection: `almanac automation install update`, `almanac automation status update`, and `almanac automation uninstall update`. Installing the update task without `--every` uses the default `1d` cadence from `[[src/platform/automation/tasks.ts]]`, which renders to a launchd `StartInterval` of `86400` seconds. That shape keeps the product concepts separate: `update` owns package mutation and version checks, while `automation` owns launchd installation, status, and removal for recurring Almanac tasks.
+The scheduler-management surface stays under [[automation]] as task selection: `almanac automation install update`, `almanac automation status update`, and `almanac automation uninstall update`. Installing the update task without `--every` uses the default `1d` cadence from `[[src/services/automation/tasks.ts]]`, which renders to a launchd `StartInterval` of `86400` seconds. That shape keeps the product concepts separate: `update` owns package mutation and version checks, while `automation` owns launchd installation, status, and removal for recurring Almanac tasks.
 
 Bare `almanac update` is idempotent enough for launchd. It checks the registry first, exits successfully when the installed version is current, installs only when a newer version exists, skips dismissed versions, and holds a global lock so manual and scheduled invocations cannot overlap.
 
@@ -120,7 +120,7 @@ The user-facing syntax does not leak launchd implementation details. The public 
 
 ## Relationship to automation
 
-`[[src/platform/automation/tasks.ts]]` models known scheduled Almanac tasks with labels, default intervals, plist paths, log names, working-directory policy, and program arguments. Auto-update extends that task-definition model instead of copying plist construction into `[[src/cli/commands/update.ts]]` or adding another ad hoc branch to `[[src/cli/commands/automation.ts]]`.
+`[[src/services/automation/tasks.ts]]` models known scheduled Almanac tasks with labels, default intervals, log names, working-directory policy, and program arguments. `[[src/platform/automation/paths.ts]]` supplies the launchd plist path mechanics for those tasks. Auto-update extends that task-definition model instead of copying plist construction into `[[src/cli/commands/update.ts]]` or adding another ad hoc branch to `[[src/cli/commands/automation.ts]]`.
 
 `[[src/cli/commands/automation.ts]]` selects task IDs and iterates task definitions. The default install still targets capture plus Garden for compatibility, while positional task selection handles explicit operations such as `almanac automation install update --every 1d`.
 

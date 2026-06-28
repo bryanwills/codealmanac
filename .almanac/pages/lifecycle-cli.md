@@ -82,7 +82,7 @@ sources:
     note: Migrated from legacy files.
   - id: tasks
     type: file
-    path: src/platform/automation/tasks.ts
+    path: src/services/automation/tasks.ts
     note: Migrated from legacy files.
   - >-
     /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl

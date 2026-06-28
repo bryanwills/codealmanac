@@ -1127,3 +1127,11 @@ One-hundred-sixty-sixth production slice:
 - Updated `src/services/jobs/jobs.ts` so list/read/log/cancel/stream service verbs use store APIs instead of reading files, resolving record paths, or importing the job runtime facade.
 - Updated `src/edges/viewer/read-model/jobs.ts` so viewer job payloads use stores plus service read-model/projection helpers instead of importing `src/services/jobs/runtime/index.ts`.
 - Added boundary coverage that the public jobs service and viewer read model stay out of job runtime and raw storage path mechanics.
+
+One-hundred-sixty-seventh production slice:
+
+- Removed the old mixed `src/platform/automation/tasks.ts` file.
+- Added `src/services/automation/tasks.ts` for sync, Garden, and update task definitions, default intervals, command arguments, labels, and working-directory policy.
+- Added `src/platform/automation/paths.ts` for launchd plist paths, legacy capture plist paths, and automation log paths.
+- Updated automation planning, install/status/uninstall workflows, migration, diagnostics, and task parsing to use the new service/platform split.
+- Added boundary coverage that service task definitions do not own `LaunchAgents` path mechanics and platform path helpers do.

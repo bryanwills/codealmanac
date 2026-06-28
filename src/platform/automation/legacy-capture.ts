@@ -2,7 +2,7 @@ import {
   readLaunchdPlistStatus,
   type LaunchdPlistStatus,
 } from "./launchd.js";
-import { defaultCapturePlistPath } from "./tasks.js";
+import { defaultCapturePlistPath } from "./paths.js";
 
 export interface LegacyCaptureSweepAutomation {
   plistPath: string;

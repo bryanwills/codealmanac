@@ -2,21 +2,21 @@ import path from "node:path";
 
 import { buildLaunchPath } from "../../platform/automation/launchd.js";
 import {
+  automationLogPaths,
+  launchAgentPlistPath,
+} from "../../platform/automation/paths.js";
+import {
   DEFAULT_AUTOMATION_TASK_IDS,
   DEFAULT_GARDEN_INTERVAL,
   DEFAULT_SYNC_INTERVAL,
   DEFAULT_SYNC_QUIET,
   DEFAULT_UPDATE_INTERVAL,
-  defaultGardenPlistPath,
-  defaultSyncPlistPath,
-  defaultUpdatePlistPath,
   gardenProgramArguments,
-  scheduledTaskDefinition,
-  scheduledTaskLogPaths,
   syncProgramArguments,
-  type ScheduledTaskDefinition,
+  automationTaskDefinition,
+  type AutomationTaskDefinition,
   updateProgramArguments,
-} from "../../platform/automation/tasks.js";
+} from "./tasks.js";
 import { findNearestAlmanacDir } from "../../paths.js";
 import { parseDuration } from "../../shared/duration.js";
 import type {
@@ -25,7 +25,7 @@ import type {
 } from "./types.js";
 
 export interface PlannedAutomationJob {
-  task: ScheduledTaskDefinition;
+  task: AutomationTaskDefinition;
   intervalInput: string;
   job: import("../../platform/automation/launchd.js").LaunchdJobDefinition;
 }
@@ -61,7 +61,7 @@ export function buildAutomationInstallPlan(
   const jobs: PlannedAutomationJob[] = [];
 
   for (const taskId of taskIds) {
-    const task = scheduledTaskDefinition(taskId);
+    const task = automationTaskDefinition(taskId);
     if (taskId === "sync") {
       const quiet = parseQuiet(options.quiet ?? DEFAULT_SYNC_QUIET);
       if (!quiet.ok) return quiet;
@@ -69,7 +69,11 @@ export function buildAutomationInstallPlan(
     const intervalInput = intervalInputForTask(taskId, options, explicitTasks);
     const interval = parseInterval(intervalInput);
     if (!interval.ok) return interval;
-    const logs = scheduledTaskLogPaths(task, home);
+    const logs = automationLogPaths({
+      home,
+      stdoutLogName: task.stdoutLogName,
+      stderrLogName: task.stderrLogName,
+    });
     jobs.push({
       task,
       intervalInput,
@@ -92,7 +96,7 @@ export function buildAutomationInstallPlan(
       jobs,
       disabledGardenPlistPath:
         options.gardenOff === true && !explicitTasks
-          ? options.gardenPlistPath ?? defaultGardenPlistPath(home)
+          ? plistPathForTask(automationTaskDefinition("garden"), home, options)
           : null,
     },
   };
@@ -109,16 +113,20 @@ export function selectedTaskIds(
 }
 
 export function plistPathForTask(
-  task: ScheduledTaskDefinition,
+  task: AutomationTaskDefinition,
   home: string,
   options: Pick<
     AutomationInstallOptions,
     "plistPath" | "gardenPlistPath" | "updatePlistPath"
   >,
 ): string {
-  if (task.id === "sync") return options.plistPath ?? defaultSyncPlistPath(home);
-  if (task.id === "garden") return options.gardenPlistPath ?? defaultGardenPlistPath(home);
-  return options.updatePlistPath ?? defaultUpdatePlistPath(home);
+  if (task.id === "sync") {
+    return options.plistPath ?? launchAgentPlistPath(task.label, home);
+  }
+  if (task.id === "garden") {
+    return options.gardenPlistPath ?? launchAgentPlistPath(task.label, home);
+  }
+  return options.updatePlistPath ?? launchAgentPlistPath(task.label, home);
 }
 
 function dedupeTaskIds(tasks: AutomationTaskId[]): AutomationTaskId[] {
@@ -143,7 +151,7 @@ function intervalInputForTask(
 }
 
 function programArgumentsForTask(
-  task: ScheduledTaskDefinition,
+  task: AutomationTaskDefinition,
   options: AutomationInstallOptions,
 ): string[] {
   if (task.id === "sync") {
@@ -162,7 +170,7 @@ function programArgumentsForTask(
 }
 
 function resolveTaskWorkingDirectory(
-  task: ScheduledTaskDefinition,
+  task: AutomationTaskDefinition,
   cwd: string,
 ): string | undefined {
   if (task.workingDirectory === "none") return undefined;

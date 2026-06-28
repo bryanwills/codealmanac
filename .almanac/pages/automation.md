@@ -43,8 +43,12 @@ sources:
     note: Migrated from legacy files.
   - id: tasks
     type: file
-    path: src/platform/automation/tasks.ts
-    note: Migrated from legacy files.
+    path: src/services/automation/tasks.ts
+    note: Owns sync, Garden, and update task definitions, defaults, labels, and command arguments.
+  - id: launchd-paths
+    type: file
+    path: src/platform/automation/paths.ts
+    note: Owns launch agent plist paths and automation log paths.
   - id: launchd
     type: file
     path: src/platform/automation/launchd.ts
@@ -154,7 +158,7 @@ The sync plist path is `~/Library/LaunchAgents/com.codealmanac.sync.plist`. The 
 
 The sync job runs `almanac sync --quiet <duration>`. The default schedule is every `5h`, and the default quiet window is `45m`. The Garden job runs `almanac garden` every `4h` by default. The update job runs bare `almanac update` every `1d` by default and relies on [[self-update]] for no-op behavior when the installed package is current.
 
-The automation code is split by responsibility. `[[src/platform/automation/tasks.ts]]` owns `ScheduledTaskDefinition` records for sync, Garden, and update: labels, default intervals, plist paths, log filenames, working-directory policy, and default command arguments. `[[src/platform/automation/launchd.ts]]` owns plist rendering, PATH construction, bootstrap/removal, and loaded-state checks. `[[src/platform/automation/legacy-hooks.ts]]` owns private migration cleanup for older hook-based installs. `[[src/platform/automation/legacy-capture.ts]]` detects legacy launchd plists that still invoke `capture sweep`, and `[[src/cli/commands/migrate.ts]]` owns `almanac migrate automation`. `[[src/services/automation/planning.ts]]` validates scheduler options and turns scheduled task definitions into launchd job definitions. `[[src/services/automation/automation.ts]]` coordinates install, status, and uninstall workflows: writing plists, recording the sync activation baseline, bootstrapping jobs, disabling Garden when requested, and reading launchd status. `[[src/cli/commands/automation.ts]]` parses task ids and formats command output. [@migrate-automation-command] [@automation-service] [@automation-planning]
+The automation code is split by responsibility. `[[src/services/automation/tasks.ts]]` owns task definitions for sync, Garden, and update: task ids, labels, default intervals, log filenames, working-directory policy, and default command arguments. `[[src/platform/automation/paths.ts]]` owns launch agent plist paths and automation log paths. `[[src/platform/automation/launchd.ts]]` owns plist rendering, PATH construction, bootstrap/removal, and loaded-state checks. `[[src/platform/automation/legacy-hooks.ts]]` owns private migration cleanup for older hook-based installs. `[[src/platform/automation/legacy-capture.ts]]` detects legacy launchd plists that still invoke `capture sweep`, and `[[src/cli/commands/migrate.ts]]` owns `almanac migrate automation`. `[[src/services/automation/planning.ts]]` validates scheduler options and turns task definitions into launchd job definitions. `[[src/services/automation/automation.ts]]` coordinates install, status, and uninstall workflows: writing plists, recording the sync activation baseline, bootstrapping jobs, disabling Garden when requested, and reading launchd status. `[[src/cli/commands/automation.ts]]` parses task ids and formats command output. [@migrate-automation-command] [@automation-service] [@automation-planning]
 
 Every task gets an explicit `PATH` assembled for launchd from the current environment plus fallback locations such as `/usr/local/bin`, `/opt/homebrew/bin`, and `/usr/bin`. The Garden plist also records a `WorkingDirectory`: `runAutomationInstall()` resolves it to the nearest repo containing `.almanac/`, falling back to the current directory when no wiki root is found.
 
@@ -181,13 +185,13 @@ The task/run/operation relationship is asymmetric:
 
 That terminology keeps `sync` honest. `sync` is not a lifecycle operation; it is a coordinator that discovers quiet external transcripts, maps them to repos, reconciles ledger state, and may enqueue zero or more Absorb runs. Scheduled Garden is simpler: the scheduler invokes `almanac garden`, and that command starts one Garden operation run.
 
-The 2026-05-14 refactor chose a `ScheduledTaskDefinition` model for known Almanac tasks such as sync, Garden, and update. That model shares launchd plist rendering, PATH construction, log naming, bootstrap/bootout, and status mechanics while preserving the distinction between scheduler tasks, coordinator commands, jobs, and semantic wiki operations. Adding another scheduled Almanac maintenance command should start by adding a task definition, not by copying plist labels, log paths, and working-directory rules into `[[src/cli/commands/automation.ts]]`.
+The 2026-05-14 refactor chose an `AutomationTaskDefinition` model for known Almanac tasks such as sync, Garden, and update. That model shares launchd plist rendering, PATH construction, log naming, bootstrap/bootout, and status mechanics while preserving the distinction between scheduler tasks, coordinator commands, jobs, and semantic wiki operations. Adding another scheduled Almanac maintenance command should start by adding a task definition, not by copying plist labels, log paths, and working-directory rules into `[[src/cli/commands/automation.ts]]`.
 
-The task definition is the source of truth for each task's scheduler identity: label, plist path, logs, working-directory policy, and command arguments. The default interval constants live in `[[src/platform/automation/tasks.ts]]` beside those task records, so changing scheduled task cadence stays inside the task-definition module instead of in command-level plist branches.
+The task definition is the source of truth for each task's product scheduler identity: task id, label, default interval, log names, working-directory policy, and command arguments. Plist path construction lives in `[[src/platform/automation/paths.ts]]`, so changing task cadence stays in the service task catalog while changing launchd path mechanics stays in platform code.
 
 The 2026-05-14 [[self-update]] work added a boundary case to this model. Automatic CLI self-update uses scheduler mechanics, but the work command stays `almanac update` rather than becoming a private scheduler-only update command. Automation owns task selection, the launchd task definition, and status plumbing through `almanac automation install update`; the update command owns package mutation, version checks, and idempotent no-op behavior when the installed version is current.
 
-There is no `.almanac/triggers.yaml` in the current implementation. A trigger file is a future product generalization discussed for non-code Almanacs: one scheduler command such as `almanac sweep` could read project-local trigger rules and decide whether to index changed sources, absorb new source records, or garden a changed graph. The current implementation uses typed scheduled tasks in `[[src/platform/automation/tasks.ts]]`, not project-local trigger configuration.
+There is no `.almanac/triggers.yaml` in the current implementation. A trigger file is a future product generalization discussed for non-code Almanacs: one scheduler command such as `almanac sweep` could read project-local trigger rules and decide whether to index changed sources, absorb new source records, or garden a changed graph. The current implementation uses typed scheduled tasks in `[[src/services/automation/tasks.ts]]`, not project-local trigger configuration.
 
 ## Freshness trigger policy
 

@@ -9,8 +9,8 @@ import {
 } from "../../platform/automation/launchd.js";
 import { detectLegacyCaptureSweepAutomation } from "../../platform/automation/legacy-capture.js";
 import {
-  scheduledTaskDefinition,
-} from "../../platform/automation/tasks.js";
+  automationTaskDefinition,
+} from "./tasks.js";
 import {
   buildAutomationInstallPlan,
   type AutomationInstallPlan,
@@ -60,7 +60,7 @@ export async function uninstallAutomation(
   const tasks = selectedTaskIds(options.tasks, false);
   const removed: string[] = [];
 
-  for (const task of tasks.map((id) => scheduledTaskDefinition(id))) {
+  for (const task of tasks.map((id) => automationTaskDefinition(id))) {
     const plist = plistPathForTask(task, home, options);
     if (await removeLaunchdJob(plist, options.exec)) {
       removed.push(plist);
@@ -85,7 +85,7 @@ export async function readAutomationStatus(
     })
     : null;
 
-  for (const task of tasks.map((id) => scheduledTaskDefinition(id))) {
+  for (const task of tasks.map((id) => automationTaskDefinition(id))) {
     const status = await readLaunchdJobStatus({
       label: task.label,
       plistPath: plistPathForTask(task, home, options),

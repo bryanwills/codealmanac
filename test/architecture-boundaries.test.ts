@@ -862,7 +862,8 @@ describe("architecture boundaries", () => {
     const automationMigration = await readSource("src/services/automation/migration.ts");
     const automationCatalog = await readSource("src/services/automation/catalog.ts");
     const automationLegacyHooks = await readSource("src/services/automation/legacy-hooks.ts");
-    const automationTasks = await readSource("src/platform/automation/tasks.ts");
+    const automationTasks = await readSource("src/services/automation/tasks.ts");
+    const automationPaths = await readSource("src/platform/automation/paths.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
     const automationRender = await readSource("src/cli/commands/automation-render.ts");
 
@@ -878,6 +879,7 @@ describe("architecture boundaries", () => {
     expect(automationPlanning).not.toContain("process.cwd()");
     expect(automationPlanning).not.toContain("process.env");
     expect(automationPlanning).not.toContain("homedir");
+    expect(automationPlanning).not.toContain("platform/automation/tasks");
     expect(automationWorkflow).not.toContain("homedir");
     expect(automationWorkflow).not.toContain("existsSync");
     expect(automationMigration).not.toContain("homedir");
@@ -888,6 +890,12 @@ describe("architecture boundaries", () => {
     expect(automationTasks).not.toContain("process.cwd()");
     expect(automationTasks).not.toContain("process.execPath");
     expect(automationTasks).not.toContain("task.programArguments");
+    expect(automationTasks).not.toContain("LaunchAgents");
+    expect(automationTasks).not.toContain("path.join");
+    expect(automationTasks).toContain("automationTaskDefinition");
+    expect(automationPaths).toContain("LaunchAgents");
+    expect(automationPaths).toContain("launchAgentPlistPath");
+    expect(existsSync(join(ROOT, "src/platform/automation/tasks.ts"))).toBe(false);
     expect(automationCommand).toContain("services/automation/index.js");
     expect(automationCommand).not.toContain("import type { CommandResult }");
     expect(automationCommand).toContain("AutomationCommandResult");
@@ -1814,7 +1822,7 @@ describe("architecture boundaries", () => {
     expect(platformAutomationDiagnostics).toContain(
       "../automation/legacy-capture.js",
     );
-    expect(platformAutomationDiagnostics).toContain("../automation/tasks.js");
+    expect(platformAutomationDiagnostics).toContain("../automation/paths.js");
     expect(platformInstructionDiagnostics).toContain("checkAgentInstructions");
     expect(platformInstructionDiagnostics).toContain("homedir()");
     expect(platformUpdateDiagnostics).toContain("readState");

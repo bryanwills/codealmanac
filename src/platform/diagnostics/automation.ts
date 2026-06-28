@@ -6,7 +6,7 @@ import { detectLegacyCaptureSweepAutomation } from "../automation/legacy-capture
 import {
   defaultCapturePlistPath,
   defaultSyncPlistPath,
-} from "../automation/tasks.js";
+} from "../automation/paths.js";
 
 export interface AutomationDiagnosticsProbeOptions {
   homeDir?: string;
