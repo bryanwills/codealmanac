@@ -1774,9 +1774,8 @@ describe("architecture boundaries", () => {
     const jobWorker = await readSource("src/edges/worker/job-worker.ts");
     const queueDrain = await readSource("src/services/jobs/runtime/queue-drain.ts");
     const jobStoreTypes = await readSource("src/stores/jobs/types.ts");
-    const lifecycleOperationSpec = await readSource(
-      "src/services/lifecycle/operations/spec.ts",
-    );
+    const jobStoreSpecs = await readSource("src/stores/jobs/specs.ts");
+    const sharedOperationSpec = await readSource("src/shared/operation-spec.ts");
 
     expect(existsSync(join(ROOT, "src/agent/provider-id.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/agent/runtime/events.ts"))).toBe(false);
@@ -1793,6 +1792,9 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/shared/agent-runtime/tools.ts"))).toBe(
       true,
     );
+    expect(existsSync(join(ROOT, "src/shared/operation-spec.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/operations/spec.ts")))
+      .toBe(false);
     expect(sharedProviderCatalog).toContain("ALL_AGENT_PROVIDER_IDS");
     expect(sharedProviderCatalog).toContain("PROVIDER_DEFINITIONS");
     expect(sharedRuntimeEvents).toContain("AgentRuntimeEvent");
@@ -1818,10 +1820,12 @@ describe("architecture boundaries", () => {
     expect(jobAgentRunner).not.toContain("agent/runtime/types");
     expect(jobStoreTypes).toContain("../../shared/agent-runtime/events.js");
     expect(jobStoreTypes).not.toContain("../../agent/runtime");
-    expect(lifecycleOperationSpec).toContain(
-      "../../../shared/agent-runtime/final-output.js",
-    );
-    expect(lifecycleOperationSpec).not.toContain("../../../agent/runtime");
+    expect(jobStoreTypes).toContain("../../shared/operation-spec.js");
+    expect(jobStoreTypes).not.toContain("../../services/lifecycle");
+    expect(jobStoreSpecs).toContain("../../shared/operation-spec.js");
+    expect(jobStoreSpecs).not.toContain("../../services/lifecycle");
+    expect(sharedOperationSpec).toContain("./agent-runtime/final-output.js");
+    expect(sharedOperationSpec).not.toContain("../agent/runtime");
     expect(claudeProvider).not.toContain("process.env");
     expect(codexProvider).not.toContain("process.env");
     expect(claudeProvider).not.toContain("claudeAgentRuntimeProvider");

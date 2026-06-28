@@ -7,7 +7,7 @@ import type {
   OperationKind,
   OperationSpec,
   ProviderSessionPersistence,
-} from "../../services/lifecycle/operations/spec.js";
+} from "../../shared/operation-spec.js";
 import { jobsDir, legacyRunsDir } from "./records.js";
 
 export function jobSpecPath(repoRoot: string, jobId: string): string {

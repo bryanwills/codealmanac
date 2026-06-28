@@ -1,4 +1,4 @@
-import type { OperationSpec } from "./spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 import { findNearestAlmanacDir } from "../../../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {

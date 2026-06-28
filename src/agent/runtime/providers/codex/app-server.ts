@@ -1,6 +1,6 @@
 import type { AgentRuntimeResult } from "../../../../shared/agent-runtime/events.js";
 import type { AgentRuntimeRunHooks } from "../../types.js";
-import type { OperationSpec } from "../../../../services/lifecycle/operations/spec.js";
+import type { OperationSpec } from "../../../../shared/operation-spec.js";
 import { spawnManagedChildProcess } from "../../../../platform/managed-child.js";
 import { buildCodexAppServerRequest } from "./request.js";
 import { mapCodexAppServerNotification } from "./app-notifications.js";

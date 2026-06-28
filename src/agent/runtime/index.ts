@@ -8,7 +8,7 @@ export type {
   OperationSpec,
   OperationAgentSpec,
   OperationKind,
-} from "../../services/lifecycle/operations/spec.js";
+} from "../../shared/operation-spec.js";
 export type {
   AgentUsage,
   AgentRuntimeEvent,

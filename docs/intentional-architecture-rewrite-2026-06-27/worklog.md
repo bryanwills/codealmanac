@@ -1367,3 +1367,10 @@ One-hundred-ninety-seventh production slice:
 - Threaded `isPidAlive` through lifecycle foreground operation requests, job worker draining, Absorb/Garden/Build operation runners, sync workflow/sweep, and command adapters.
 - Updated CLI lifecycle/sync/internal-worker edges to provide `isLocalPidAlive` from `src/platform/process.ts`.
 - Strengthened focused lock, worker, executor, sync, and architecture tests around the new injected process-liveness boundary.
+
+One-hundred-ninety-eighth production slice:
+
+- Added `src/shared/operation-spec.ts` as the neutral execution and persistence contract for provider-neutral operation specs.
+- Deleted `src/services/lifecycle/operations/spec.ts` after moving `OperationSpec`, `OperationKind`, `OperationAgentSpec`, and provider session persistence to the shared contract boundary.
+- Updated lifecycle operations, job runtime services, job stores, and provider adapters to import operation specs from `src/shared/operation-spec.ts`.
+- Strengthened architecture-boundary tests so `src/stores/jobs/` cannot import lifecycle service internals for persisted job specs or record operation types.

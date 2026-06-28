@@ -3,7 +3,7 @@ import type {
   AgentRuntimeResult,
   AgentRuntimeRunHooks,
 } from "../../../shared/agent-runtime/events.js";
-import type { OperationSpec } from "../../lifecycle/operations/spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 
 export type JobAgentRunner = (
   spec: OperationSpec,

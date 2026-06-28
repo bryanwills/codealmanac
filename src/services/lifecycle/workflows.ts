@@ -8,7 +8,7 @@ import type { IsPidAlive } from "../../shared/pid-liveness.js";
 import type { JobAgentRunner } from "../jobs/runtime/agent-runner.js";
 import type { AbsorbInputSource } from "./absorb/input-source.js";
 import type { SourceRef } from "./absorb/source-ref.js";
-import type { OperationSpec } from "./operations/spec.js";
+import type { OperationSpec } from "../../shared/operation-spec.js";
 import * as absorb from "./absorb/index.js";
 import * as operations from "./operations/index.js";
 import {

@@ -1,7 +1,7 @@
 import type { AgentUsage, AgentRuntimeFailure } from "../../shared/agent-runtime/events.js";
 import type { JsonValue } from "../../shared/agent-runtime/final-output.js";
 import type { AgentRuntimeProviderId } from "../../shared/agent-runtime/events.js";
-import type { OperationKind } from "../../services/lifecycle/operations/spec.js";
+import type { OperationKind } from "../../shared/operation-spec.js";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
 export type DisplayJobStatus = JobStatus | "stale";

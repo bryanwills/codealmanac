@@ -1,5 +1,5 @@
 import type { AgentRuntimeProviderId } from "../../../shared/agent-runtime/events.js";
-import type { OperationSpec } from "./spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 import type { AgentRuntimeEvent } from "../../../shared/agent-runtime/events.js";
 import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
 import type { StartBackgroundJobResult } from "../../jobs/runtime/background-start.js";

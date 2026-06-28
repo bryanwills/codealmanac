@@ -3,7 +3,7 @@ import type {
   ProviderMetadata,
   ProviderStatus,
 } from "../types.js";
-import type { OperationSpec } from "../../../services/lifecycle/operations/spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 
 export function createNotImplementedProvider(
   metadata: ProviderMetadata,

@@ -1,7 +1,7 @@
 import { joinPrompts, loadPrompt } from "../../../agent/prompts.js";
 import type { AgentRuntimeEvent } from "../../../shared/agent-runtime/events.js";
 import type { FinalOutputSpec } from "../../../shared/agent-runtime/final-output.js";
-import type { OperationKind, OperationSpec } from "./spec.js";
+import type { OperationKind, OperationSpec } from "../../../shared/operation-spec.js";
 import type { ToolRequest } from "../../../shared/agent-runtime/tools.js";
 import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
 import { startForegroundJob } from "../../jobs/runtime/start.js";

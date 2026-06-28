@@ -1,4 +1,4 @@
-import type { OperationSpec } from "./spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 import { initWiki } from "../../wiki/initialization.js";
 import { countWikiPageFiles } from "../../../stores/wiki-files/pages.js";
 import type {

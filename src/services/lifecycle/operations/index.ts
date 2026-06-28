@@ -31,4 +31,9 @@ export type {
   StartForegroundJob,
 } from "./types.js";
 export { summarizeOperationOutput } from "./output.js";
-export type { OperationAgentSpec, OperationKind, OperationSpec, ProviderSessionPersistence } from "./spec.js";
+export type {
+  OperationAgentSpec,
+  OperationKind,
+  OperationSpec,
+  ProviderSessionPersistence,
+} from "../../../shared/operation-spec.js";

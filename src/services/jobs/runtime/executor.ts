@@ -1,5 +1,5 @@
 import type { AgentRuntimeResult } from "../../../shared/agent-runtime/events.js";
-import type { OperationSpec } from "../../lifecycle/operations/spec.js";
+import type { OperationSpec } from "../../../shared/operation-spec.js";
 import { createJobEventLogger } from "./events.js";
 import { finishUnlessCancelled } from "./finalization.js";
 import {
