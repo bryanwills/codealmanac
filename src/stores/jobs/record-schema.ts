@@ -1,6 +1,6 @@
 import { isJsonValue } from "../../shared/agent-runtime/final-output.js";
+import type { OperationOutput } from "../../shared/operation-output.js";
 import type {
-  JobOperationOutput,
   JobPageChanges,
   JobRecord,
 } from "./types.js";
@@ -28,9 +28,9 @@ export function isJobRecord(value: unknown): value is JobRecord {
   );
 }
 
-function isJobOperationOutput(value: unknown): value is JobOperationOutput {
+function isJobOperationOutput(value: unknown): value is OperationOutput {
   if (value === null || typeof value !== "object") return false;
-  const v = value as Partial<JobOperationOutput>;
+  const v = value as Partial<OperationOutput>;
   return (
     v.version === 1 &&
     typeof v.contract === "string" &&

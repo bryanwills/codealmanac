@@ -1,3 +1,5 @@
+import type { OperationOutput } from "../../shared/operation-output.js";
+
 export type JobServiceStatus =
   | "queued"
   | "running"
@@ -6,14 +8,6 @@ export type JobServiceStatus =
   | "cancelled";
 export type JobServiceDisplayStatus = JobServiceStatus | "stale";
 export type JobServiceOperation = "build" | "absorb" | "garden";
-
-export type JobServiceJsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JobServiceJsonValue[]
-  | { [key: string]: JobServiceJsonValue };
 
 export interface JobServiceUsage {
   inputTokens?: number;
@@ -45,11 +39,7 @@ export interface JobServicePageChanges {
   summary?: string;
 }
 
-export interface JobServiceOperationOutput {
-  version: 1;
-  contract: string;
-  value: JobServiceJsonValue;
-}
+export type JobServiceOperationOutput = OperationOutput;
 
 export interface JobServiceFailure {
   provider: string;

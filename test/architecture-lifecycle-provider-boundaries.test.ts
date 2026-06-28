@@ -361,6 +361,13 @@ describe("architecture boundaries: lifecycle and providers", () => {
     const jobStoreTypes = await readSource("src/stores/jobs/types.ts");
     const jobStoreSpecs = await readSource("src/stores/jobs/specs.ts");
     const sharedOperationSpec = await readSource("src/shared/operation-spec.ts");
+    const sharedOperationOutput = await readSource(
+      "src/shared/operation-output.ts",
+    );
+    const lifecycleOperationOutput = await readSource(
+      "src/services/lifecycle/operations/output.ts",
+    );
+    const jobsServiceTypes = await readSource("src/services/jobs/types.ts");
 
     expect(existsSync(join(ROOT, "src/agent/provider-id.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/agent/runtime/events.ts"))).toBe(false);
@@ -378,6 +385,7 @@ describe("architecture boundaries: lifecycle and providers", () => {
       true,
     );
     expect(existsSync(join(ROOT, "src/shared/operation-spec.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/shared/operation-output.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/operations/spec.ts")))
       .toBe(false);
     expect(sharedProviderCatalog).toContain("ALL_AGENT_PROVIDER_IDS");
@@ -413,6 +421,14 @@ describe("architecture boundaries: lifecycle and providers", () => {
     expect(jobStoreSpecs).not.toContain("../../services/lifecycle");
     expect(sharedOperationSpec).toContain("./agent-runtime/final-output.js");
     expect(sharedOperationSpec).not.toContain("../agent/runtime");
+    expect(sharedOperationOutput).toContain("interface OperationOutput");
+    expect(sharedOperationOutput).toContain("./agent-runtime/final-output.js");
+    expect(lifecycleOperationOutput).toContain("shared/operation-output.js");
+    expect(lifecycleOperationOutput).not.toContain("stores/jobs/types");
+    expect(jobStoreTypes).toContain("../../shared/operation-output.js");
+    expect(jobStoreTypes).not.toContain("interface JobOperationOutput");
+    expect(jobsServiceTypes).toContain("OperationOutput");
+    expect(jobsServiceTypes).not.toContain("JobServiceJsonValue");
     expect(claudeProvider).not.toContain("process.env");
     expect(codexProvider).not.toContain("process.env");
     expect(claudeProvider).not.toContain("claudeAgentRuntimeProvider");

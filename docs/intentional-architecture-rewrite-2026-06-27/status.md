@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 264 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 265 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -121,6 +121,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved cross-wiki health reachability classification into wiki health services, leaving wiki health stores to report indexed cross-wiki link facts.
 - Moved `JobView` and stale display-status contracts out of job stores and into `src/services/jobs/record-view.ts`.
 - Moved lifecycle operation starter result contracts off concrete job runtime/store result types.
+- Moved operation-output contracts into `src/shared/operation-output.ts` so lifecycle, jobs services, and job stores share one neutral type.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -139,12 +140,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved lifecycle operation starter result contracts off concrete job runtime/store result types. `src/services/lifecycle/operations/types.ts` now defines the minimal started-job snapshot lifecycle needs, while job runtime results remain structurally compatible without becoming lifecycle's public contract.
+The latest slice moved operation-output contracts into `src/shared/operation-output.ts`. Lifecycle output summarization, jobs runtime effects, jobs service views, and persisted job records now share one neutral `OperationOutput` type instead of treating job stores as the owner of structured operation output.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/architecture-lifecycle-provider-boundaries.test.ts test/build-operation.test.ts test/absorb-operation.test.ts test/garden-operation.test.ts test/operation-commands.test.ts test/sync.test.ts`
+- `npx vitest run test/architecture-lifecycle-provider-boundaries.test.ts test/jobs-records.test.ts test/jobs-executor.test.ts test/jobs-command.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
@@ -169,7 +170,7 @@ Previous full-slice verification also passed:
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, automation scheduler app composition, setup instruction runtime composition, provider setup-view ownership, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, Absorb source contract ownership, prompt loader mechanics, update runtime composition, update notifier ownership, setup runtime composition, sync transcript runtime composition, sync-to-job session lookup, CLI app composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, lifecycle workflow type ownership, path construction ownership, shared helper-contract ownership, wiki command target resolution, cross-wiki health coordination, job service view ownership, and lifecycle/job starter result ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, remaining platform modules that read config/store state directly, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, automation scheduler app composition, setup instruction runtime composition, provider setup-view ownership, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, Absorb source contract ownership, prompt loader mechanics, update runtime composition, update notifier ownership, setup runtime composition, sync transcript runtime composition, sync-to-job session lookup, CLI app composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, operation-output type ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, lifecycle workflow type ownership, path construction ownership, shared helper-contract ownership, wiki command target resolution, cross-wiki health coordination, job service view ownership, and lifecycle/job starter result ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, remaining platform modules that read config/store state directly, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
 
 ## Decision Log
 

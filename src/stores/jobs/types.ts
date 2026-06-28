@@ -1,6 +1,6 @@
 import type { AgentUsage, AgentRuntimeFailure } from "../../shared/agent-runtime/events.js";
-import type { JsonValue } from "../../shared/agent-runtime/final-output.js";
 import type { AgentRuntimeProviderId } from "../../shared/agent-runtime/events.js";
+import type { OperationOutput } from "../../shared/operation-output.js";
 import type { OperationKind } from "../../shared/operation-spec.js";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
@@ -25,12 +25,6 @@ export interface JobPageChanges {
   summary?: string;
 }
 
-export interface JobOperationOutput {
-  version: 1;
-  contract: string;
-  value: JsonValue;
-}
-
 export interface JobRecord {
   version: 1;
   id: string;
@@ -49,7 +43,7 @@ export interface JobRecord {
   targetPaths?: string[];
   summary?: JobSummary;
   pageChanges?: JobPageChanges;
-  operationOutput?: JobOperationOutput;
+  operationOutput?: OperationOutput;
   error?: string;
   failure?: AgentRuntimeFailure;
 }

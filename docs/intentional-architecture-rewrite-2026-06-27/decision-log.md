@@ -89,6 +89,8 @@ Job service views map from durable store records plus service-owned display view
 
 Lifecycle operation starter contracts expose a lifecycle-owned started-job snapshot, not concrete job runtime or store result types. Job runtime can return richer persisted records, but lifecycle workflow and operation contracts name only the fields lifecycle needs: status, pid, log path, failure, foreground result, and background child pid.
 
+Structured operation output is a shared contract. `src/shared/operation-output.ts` owns `OperationOutput` because lifecycle output summarization, job runtime wiki effects, job service views, and persisted job records all use the same `{ version, contract, value }` shape. Job stores validate and persist that shape; they do not define it.
+
 ### Internal workers are edges over service workflows
 
 Hidden CLI worker entrypoints belong under `src/edges/worker/`. They can receive process facts such as cwd, pid, and environment, then call one service workflow. Queue draining remains under `src/services/jobs/runtime/` because it owns job lifecycle semantics over records, specs, locks, and agent execution.

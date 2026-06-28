@@ -1,4 +1,5 @@
 import type { AgentRuntimeResult } from "../../../shared/agent-runtime/events.js";
+import type { OperationOutput } from "../../../shared/operation-output.js";
 import type { OperationSpec } from "../../../shared/operation-spec.js";
 import { createJobEventLogger } from "./events.js";
 import { finishUnlessCancelled } from "./finalization.js";
@@ -12,7 +13,6 @@ import {
   resolveJobRecordPath,
 } from "../../../stores/jobs/records.js";
 import type {
-  JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobSummary,
@@ -56,7 +56,7 @@ export async function executeStartedJob(
   let finalRecord: JobRecord;
   let summary: JobSummary | undefined;
   let pageChanges: JobPageChanges | undefined;
-  let operationOutput: JobOperationOutput | undefined;
+  let operationOutput: OperationOutput | undefined;
   try {
     const wikiSnapshot = await snapshotJobWiki(options.repoRoot);
     try {

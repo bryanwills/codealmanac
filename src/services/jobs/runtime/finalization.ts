@@ -1,4 +1,5 @@
 import type { AgentRuntimeFailure } from "../../../shared/agent-runtime/events.js";
+import type { OperationOutput } from "../../../shared/operation-output.js";
 import { finishJobRecord } from "../record-lifecycle.js";
 import {
   isJobCancellationRequested,
@@ -6,7 +7,6 @@ import {
   writeJobRecord,
 } from "../../../stores/jobs/index.js";
 import type {
-  JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobSummary,
@@ -20,7 +20,7 @@ export async function finishUnlessCancelled(args: {
   providerSessionId?: string;
   summary?: JobSummary;
   pageChanges?: JobPageChanges;
-  operationOutput?: JobOperationOutput;
+  operationOutput?: OperationOutput;
   error?: string;
   failure?: AgentRuntimeFailure;
 }): Promise<JobRecord> {

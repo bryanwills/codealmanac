@@ -1,5 +1,6 @@
 import type { AgentRuntimeResult } from "../../../shared/agent-runtime/events.js";
 import type { FinalOutputResult } from "../../../shared/agent-runtime/final-output.js";
+import type { OperationOutput } from "../../../shared/operation-output.js";
 import { summarizeOperationOutput } from "../../lifecycle/operations/output.js";
 import { runIndexer } from "../../../stores/wiki/indexer/index.js";
 import {
@@ -8,7 +9,6 @@ import {
   type PageSnapshot,
 } from "../../../stores/wiki-files/page-snapshots.js";
 import type {
-  JobOperationOutput,
   JobPageChanges,
   JobSummary,
 } from "../../../stores/jobs/types.js";
@@ -21,7 +21,7 @@ export interface JobWikiSnapshot {
 export interface JobWikiEffects {
   summary: JobSummary;
   pageChanges: JobPageChanges;
-  operationOutput?: JobOperationOutput;
+  operationOutput?: OperationOutput;
 }
 
 export async function snapshotJobWiki(repoRoot: string): Promise<JobWikiSnapshot> {
@@ -78,7 +78,7 @@ function harnessResultSummary(result: string): string | undefined {
 
 function jobOperationOutput(
   output: FinalOutputResult | undefined,
-): JobOperationOutput | undefined {
+): OperationOutput | undefined {
   if (output?.kind !== "json_schema") return undefined;
   return {
     version: 1,

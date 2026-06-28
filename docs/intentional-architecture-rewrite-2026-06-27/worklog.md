@@ -1875,3 +1875,10 @@ Two-hundred-sixty-fourth production slice:
 - Removed the workflow-type dependency on persisted `JobRecord` store contracts.
 - Added lifecycle-owned started-job snapshot contracts in `src/services/lifecycle/operations/types.ts`, naming only the fields lifecycle result rendering needs.
 - Strengthened lifecycle/provider boundary tests so lifecycle operation and workflow types cannot depend on job runtime result modules or job store record types.
+
+Two-hundred-sixty-fifth production slice:
+
+- Added `src/shared/operation-output.ts` as the neutral owner for structured operation output captured from agent final-output contracts.
+- Removed `JobOperationOutput` from job store types; persisted job records now consume the shared `OperationOutput` contract.
+- Updated lifecycle output summarization, jobs runtime wiki effects/finalization, and jobs service views to use the shared operation-output type.
+- Strengthened lifecycle/provider boundary tests so operation-output ownership stays in `src/shared/` instead of drifting back into job stores or lifecycle internals.
