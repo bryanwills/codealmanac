@@ -6,7 +6,7 @@ import fg from "fast-glob";
 import {
   applyTopicsTransform,
   rewritePageTopics,
-} from "../../stores/wiki/topics/frontmatter-rewrite.js";
+} from "./frontmatter-rewrite.js";
 
 /**
  * Apply a `topic-list transform` to every `.almanac/pages/*.md` file

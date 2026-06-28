@@ -1235,3 +1235,10 @@ One-hundred-eighty-first production slice:
 - Added `snapshotWikiPages(repoRoot)` so job runtime no longer constructs `.almanac/pages` paths directly.
 - Kept `src/services/jobs/runtime/wiki-effects.ts` responsible for turning before/after page snapshots into job summaries and page-change records.
 - Strengthened boundary coverage so job runtime cannot reintroduce direct page-file reads or the old snapshots module.
+
+One-hundred-eighty-second production slice:
+
+- Moved topic page rewrite scanning from `src/services/wiki/topic-page-rewrite.ts` to `src/stores/wiki/topics/page-rewrite.ts`.
+- Updated topic rename/delete services to call the store-owned page rewrite scanner while keeping mutation decisions in `src/services/wiki/topic-page-mutations.ts`.
+- Deleted the old service helper path instead of leaving a compatibility shim.
+- Strengthened boundary coverage so topic services cannot reintroduce `fast-glob` or raw page reads for rename/delete frontmatter rewrites.

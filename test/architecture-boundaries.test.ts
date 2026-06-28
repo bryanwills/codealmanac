@@ -462,6 +462,12 @@ describe("architecture boundaries", () => {
     const mutationRender = await readSource(
       "src/cli/commands/topics/mutation-render.ts",
     );
+    const topicPageMutations = await readSource(
+      "src/services/wiki/topic-page-mutations.ts",
+    );
+    const topicPageRewrite = await readSource(
+      "src/stores/wiki/topics/page-rewrite.ts",
+    );
 
     for (const source of [
       createCommand,
@@ -500,6 +506,13 @@ describe("architecture boundaries", () => {
     expect(mutationRender).toContain("renderTopicsUnlink");
     expect(existsSync(join(ROOT, "src/cli/commands/topics/workspace.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/topics/page-rewrite.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/wiki/topic-page-rewrite.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/page-rewrite.ts"))).toBe(true);
+    expect(topicPageMutations).toContain("stores/wiki/topics/page-rewrite.js");
+    expect(topicPageMutations).not.toContain("fast-glob");
+    expect(topicPageMutations).not.toContain("readFile");
+    expect(topicPageRewrite).toContain("fast-glob");
+    expect(topicPageRewrite).toContain("readFile");
     expect(existsSync(join(ROOT, "src/services/wiki/topic-mutations.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/topics/read.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/topics/render.ts"))).toBe(false);

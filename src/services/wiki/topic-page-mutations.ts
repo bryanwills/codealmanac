@@ -13,7 +13,7 @@ import type {
   RenameWikiTopicRequest,
   RenameWikiTopicResult,
 } from "./topic-types.js";
-import { rewriteTopicOnPages } from "./topic-page-rewrite.js";
+import { rewriteTopicOnPages } from "../../stores/wiki/topics/page-rewrite.js";
 import {
   openEditableTopicWorkspace,
   topicExists,

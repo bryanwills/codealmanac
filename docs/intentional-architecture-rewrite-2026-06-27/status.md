@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 229 committed rewrite commits past `dev`. The worklog records 181 production slices so far.
+The branch has 230 committed rewrite commits past `dev`. The worklog records 182 production slices so far.
 
-The diff is broad: 473 files changed, with 23,752 insertions and 12,883 deletions.
+The diff is broad: 473 files changed, with 23,775 insertions and 12,883 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -26,6 +26,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed the old top-level `src/init/` source bucket; wiki initialization now lives under `src/services/wiki/`, and mechanical `.almanac/` file scaffolding, page-file counting, and absorb-log scanning live under `src/stores/wiki-files/`.
 - Removed the old top-level `src/config/` source bucket; persisted config mechanics now live under `src/stores/config/`, service verbs live under `src/services/config/`, and provider enablement policy lives under `src/agent/`.
 - Removed the old top-level `src/wiki/` source bucket; local wiki index, query, health, topic-file, and source-frontmatter mechanics now live under `src/stores/wiki/`.
+- Moved topic page rewrite scanning and frontmatter read mechanics into `src/stores/wiki/topics/`.
 - Removed the `src/services/viewer/` service bucket; viewer-only route read models now live under `src/edges/viewer/read-model/`.
 - Moved the interactive setup and uninstall terminal UI out of `src/cli/commands/` and into `src/edges/cli/`, leaving setup services as the product workflow owner.
 - Moved `almanac serve` process lifetime and startup rendering into `src/edges/cli/`, leaving viewer server code as the HTTP/static route owner.
@@ -57,9 +58,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved job page snapshot reads and hashing from `src/services/jobs/runtime/` to `src/stores/wiki-files/page-snapshots.ts`. Job runtime now asks the wiki-file store for before/after page snapshots and keeps only job-effect summary behavior.
+The latest slice moved topic page rewrite scanning from `src/services/wiki/topic-page-rewrite.ts` to `src/stores/wiki/topics/page-rewrite.ts`. Topic rename/delete services now own the topic mutation decision, while the store owns globbing page files and reading frontmatter before rewrites.
 
-Verification passed: focused job-snapshot/job-executor/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js init --help`, `node dist/codealmanac.js absorb --help`, and `node dist/codealmanac.js jobs --help`.
+Verification passed: focused topics/tag/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js topics --help`, `node dist/codealmanac.js topics rename --help`, and `node dist/codealmanac.js topics delete --help`.
 
 ## Immediate Next Work
 
