@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 330 committed rewrite commits past `dev`. The worklog records 287 production slices so far.
+The branch has more than 340 committed rewrite commits past `dev`. The worklog records 288 production slices so far.
 
 The diff is broad: more than 680 files changed, with tens of thousands of lines reshaped.
 
@@ -146,6 +146,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split topic YAML storage into file IO, YAML codec, in-memory entry helpers, and type contracts.
 - Split indexer page-source normalization into coordination, structured projection, legacy projection, source-id generation, and type contracts.
 - Split setup input controls into line prompts, single-choice select, raw input capability, multi-select, and interruption handling.
+- Split viewer read-model route payloads into overview, page, topic, search/file, DB freshness, and type owners.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
@@ -162,12 +163,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice deleted the mixed setup `input.ts` bucket. Line prompts, single-choice select, raw input capability, multi-select, and setup interruption handling now live in owner-named setup edge files.
+The latest slice split the viewer read-model API bucket. `api.ts` now composes the route-facing viewer API, while `db.ts`, `overview.ts`, `page.ts`, `topic.ts`, `search.ts`, and `types.ts` own the individual read-model responsibilities.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/setup.test.ts test/setup-plan.test.ts test/architecture-setup-boundaries.test.ts`
+- `npx vitest run test/viewer-api.test.ts test/viewer-global-api.test.ts test/architecture-wiki-command-boundaries.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`

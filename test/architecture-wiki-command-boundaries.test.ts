@@ -209,6 +209,14 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     const serveRender = await readSource("src/edges/cli/serve-render.ts");
     const viewerServer = await readSource("src/edges/viewer/server.ts");
     const viewerReadModel = await readSource("src/edges/viewer/read-model/api.ts");
+    const viewerReadModelDb = await readSource("src/edges/viewer/read-model/db.ts");
+    const viewerOverview = await readSource(
+      "src/edges/viewer/read-model/overview.ts",
+    );
+    const viewerPage = await readSource("src/edges/viewer/read-model/page.ts");
+    const viewerSearch = await readSource("src/edges/viewer/read-model/search.ts");
+    const viewerTopic = await readSource("src/edges/viewer/read-model/topic.ts");
+    const viewerTypes = await readSource("src/edges/viewer/read-model/types.ts");
     const viewerOverviewQuery = await readSource("src/stores/wiki/query/overview.ts");
     const topicsYamlStore = await readSource("src/stores/wiki/topics/yaml.ts");
     const viewerGlobalReadModel = await readSource(
@@ -232,6 +240,19 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     expect(existsSync(join(ROOT, "src/edges/cli/interrupt.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/viewer/server.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/viewer/read-model/api.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/db.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/overview.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/page.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/search.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/topic.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/edges/viewer/read-model/types.ts"))).toBe(
+      true,
+    );
     expect(existsSync(join(ROOT, "src/services/viewer"))).toBe(false);
     expect(existsSync(join(ROOT, "src/viewer/server.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/viewer/api.ts"))).toBe(false);
@@ -257,8 +278,23 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     expect(viewerReadModel).not.toContain("existsSync");
     expect(viewerReadModel).not.toContain("SELECT COUNT(*) FROM pages");
     expect(viewerReadModel).not.toContain("db.prepare");
-    expect(viewerReadModel).toContain("wikiOverviewCounts");
-    expect(viewerReadModel).toContain("hasTopicsFile");
+    expect(viewerReadModel).not.toContain("wikiOverviewCounts");
+    expect(viewerReadModel).not.toContain("hasTopicsFile");
+    expect(viewerReadModel).toContain("getViewerOverview");
+    expect(viewerReadModel).toContain("getViewerPage");
+    expect(viewerReadModel).toContain("getViewerTopic");
+    expect(viewerReadModel).toContain("searchViewerPages");
+    expect(viewerReadModelDb).toContain("ensureFreshIndex");
+    expect(viewerReadModelDb).toContain("openIndex");
+    expect(viewerReadModelDb).toContain("db.close()");
+    expect(viewerOverview).toContain("wikiOverviewCounts");
+    expect(viewerOverview).toContain("hasTopicsFile");
+    expect(viewerPage).toContain("getPageView");
+    expect(viewerPage).toContain("related_pages");
+    expect(viewerSearch).toContain("searchPages");
+    expect(viewerSearch).toContain("pagesMentioningPath");
+    expect(viewerTopic).toContain("topicDetail");
+    expect(viewerTypes).toContain("interface ViewerApi");
     expect(viewerOverviewQuery).toContain("SELECT COUNT(*) FROM pages");
     expect(topicsYamlStore).toContain("hasTopicsFile");
     expect(topicsYamlStore).toContain("existsSync");

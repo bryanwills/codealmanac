@@ -2060,3 +2060,11 @@ Two-hundred-eighty-seventh production slice:
 - Added `src/edges/cli/setup/setup-interruption.ts` for setup interruption errors and classification.
 - Updated setup callers to import the specific input-control owner instead of the deleted mixed `input.ts` module.
 - Strengthened setup boundary tests so line prompts, single select, multi-select, raw-mode capability, and interruption handling stay separate.
+
+Two-hundred-eighty-eighth production slice:
+
+- Split the viewer read-model API out of `src/edges/viewer/read-model/api.ts`.
+- Added `src/edges/viewer/read-model/db.ts` for freshness, index opening, and close-on-exit mechanics used by viewer route read models.
+- Added owner-named viewer read-model files for overview, page detail, topic detail, search/suggest/file mentions, and shared route-facing types.
+- Kept `api.ts` focused on composing the public viewer API over the owner-named route payload builders.
+- Strengthened viewer boundary tests so overview/page/search/topic payload logic and DB freshness mechanics do not collapse back into one API bucket.
