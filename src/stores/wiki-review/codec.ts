@@ -1,6 +1,6 @@
 import yaml from "js-yaml";
 
-import { UserFacingError } from "../../errors.js";
+import { UserFacingError } from "../../shared/user-facing-error.js";
 
 export type ReviewStatus = "open" | "decided" | "applied";
 

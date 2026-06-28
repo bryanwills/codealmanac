@@ -1,4 +1,4 @@
-import { makeAnsiTheme, type AnsiTheme } from "../../ansi-theme.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../shared/ansi-theme.js";
 import type { SetupUninstallResult } from "../../services/setup/index.js";
 
 type CheckedAutomation = Extract<

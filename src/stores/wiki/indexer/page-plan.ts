@@ -5,7 +5,7 @@ import { basename, join } from "node:path";
 
 import fg from "fast-glob";
 
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { firstH1, parseFrontmatter } from "./frontmatter.js";
 import { PAGES_GLOB } from "./freshness.js";
 import {

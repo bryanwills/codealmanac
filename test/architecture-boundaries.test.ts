@@ -76,14 +76,21 @@ describe("architecture boundaries", () => {
     const updateAnnounce = await readSource("src/edges/cli/update-announcement.ts");
 
     expect(existsSync(join(ROOT, "src/ansi.ts"))).toBe(false);
-    expect(existsSync(join(ROOT, "src/ansi-theme.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/ansi-theme.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/slug.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/errors.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/shared/ansi-theme.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/shared/slug.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/shared/user-facing-error.ts"))).toBe(
+      true,
+    );
     expect(runner).toContain("from \"commander\"");
     expect(runner).toContain("tryRunInternalJob");
     expect(runner).toContain("readPackageVersion");
-    expect(help).toContain("../../ansi-theme.js");
+    expect(help).toContain("../../shared/ansi-theme.js");
     expect(help).not.toContain("../../ansi.js");
     expect(help).toContain("shouldUseStdoutColor()");
-    expect(updateAnnounce).toContain("../../ansi-theme.js");
+    expect(updateAnnounce).toContain("../../shared/ansi-theme.js");
     expect(updateAnnounce).not.toContain("process.stderr.isTTY");
     expect(updateAnnounce).not.toContain("\\x1b[");
   });
@@ -232,7 +239,7 @@ describe("architecture boundaries", () => {
     expect(searchCommand).not.toContain("# 0 results");
     expect(searchCommand).not.toContain("consider --limit");
     expect(searchRender).toContain("renderSearchResults");
-    expect(searchRender).toContain("../../ansi-theme.js");
+    expect(searchRender).toContain("../../shared/ansi-theme.js");
     expect(searchRender).not.toContain("../../ansi.js");
     expect(searchRender).toContain("makeAnsiTheme(options.color === true)");
     expect(searchRender).toContain("formatSearchResult");
@@ -261,7 +268,7 @@ describe("architecture boundaries", () => {
     expect(showRender).toContain("formatShowRecords");
     expect(showRender).not.toContain("ansi");
     const showFormat = await readSource("src/cli/commands/show/format.ts");
-    expect(showFormat).toContain("../../../ansi-theme.js");
+    expect(showFormat).toContain("../../../shared/ansi-theme.js");
     expect(showFormat).not.toContain("../../../ansi.js");
     expect(showFormat).toContain("makeAnsiTheme(options.color === true)");
     expect(showRender).toContain("renderShowResult");
@@ -288,7 +295,7 @@ describe("architecture boundaries", () => {
     expect(healthCommand).not.toContain("BLUE");
     expect(healthCommand).toContain("color?: boolean");
     expect(healthCommand).not.toContain("legacy source frontmatter");
-    expect(healthRender).toContain("../../../ansi-theme.js");
+    expect(healthRender).toContain("../../../shared/ansi-theme.js");
     expect(healthRender).not.toContain("../../../ansi.js");
     expect(healthRender).toContain("makeAnsiTheme(options.color === true)");
     expect(healthRender).toContain("renderHealthReport");
@@ -420,7 +427,7 @@ describe("architecture boundaries", () => {
     expect(listCommand).not.toContain("removed \\\"");
     expect(listCommand).toContain("color?: boolean");
     expect(listRender).toContain("renderListWikis");
-    expect(listRender).toContain("../../ansi-theme.js");
+    expect(listRender).toContain("../../shared/ansi-theme.js");
     expect(listRender).not.toContain("../../ansi.js");
     expect(listRender).toContain("makeAnsiTheme(options.color === true)");
     expect(listRender).toContain("renderListDropResult");
@@ -476,7 +483,7 @@ describe("architecture boundaries", () => {
     }
     expect(topicsReadRender).not.toContain("stores/wiki/topics/yaml");
     expect(topicsReadRender).not.toContain("titleCase");
-    expect(topicsReadRender).toContain("../../../ansi-theme.js");
+    expect(topicsReadRender).toContain("../../../shared/ansi-theme.js");
     expect(topicsReadRender).not.toContain("../../../ansi.js");
     expect(topicsReadRender).toContain("makeAnsiTheme(options.color === true)");
     expect(registerTopics).toContain("registerTopicReadCommands(topics)");
@@ -1592,7 +1599,7 @@ describe("architecture boundaries", () => {
     expect(setupInput).toContain("from \"./output.js\"");
     expect(setupInput).toContain("theme: SetupTheme");
     expect(setupOutput).toContain("makeSetupTheme");
-    expect(setupOutput).toContain("../../../ansi-theme.js");
+    expect(setupOutput).toContain("../../../shared/ansi-theme.js");
     expect(setupOutput).not.toContain("export const RST");
     expect(setupOutput).not.toContain("export const BAR");
     expect(setupOutput).not.toContain("process.stdout.columns");
@@ -1899,7 +1906,7 @@ describe("architecture boundaries", () => {
     expect(uninstallCommand).not.toContain("homedir");
     expect(uninstallRender).toContain("renderUninstallResult");
     expect(uninstallRender).toContain("formatAutomationResult");
-    expect(uninstallRender).toContain("../../ansi-theme.js");
+    expect(uninstallRender).toContain("../../shared/ansi-theme.js");
     expect(uninstallRender).not.toContain("../../ansi.js");
     expect(uninstallRender).toContain("makeAnsiTheme(options.color === true)");
     expect(uninstallCommand).toContain("color?: boolean");
@@ -2594,7 +2601,7 @@ describe("architecture boundaries", () => {
     expect(doctorRender).toContain("renderDoctorReport");
     expect(doctorRender).toContain("formatReport");
     expect(doctorFormat).not.toContain("process.stdout");
-    expect(doctorFormat).toContain("../../../ansi-theme.js");
+    expect(doctorFormat).toContain("../../../shared/ansi-theme.js");
     expect(doctorFormat).not.toContain("../../../ansi.js");
     expect(doctorFormat).toContain("makeAnsiTheme(options.color === true)");
     expect(doctorFormat).not.toContain("DoctorOptions");

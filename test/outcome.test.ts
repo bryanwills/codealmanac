@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { renderError, renderOutcome } from "../src/cli/outcome.js";
-import { UserFacingError } from "../src/errors.js";
+import { UserFacingError } from "../src/shared/user-facing-error.js";
 
 describe("CommandOutcome renderer", () => {
   it("renders the four shapes as JSON", () => {

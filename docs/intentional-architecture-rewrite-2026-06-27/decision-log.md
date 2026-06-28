@@ -155,6 +155,10 @@ Atomic store writes use a store-owned helper. Stores can own same-directory temp
 
 Machine-global paths and repo `.almanac` paths are persistence mechanics, not a root-level subsystem. `src/stores/global-paths.ts` owns the global `~/.almanac/` directory, `src/stores/wiki-registry/paths.ts` owns the registry file path, and `src/stores/wiki-files/repo-location.ts` owns repo `.almanac` path construction plus nearest-wiki-root discovery. Services can depend on these store-owned facts when deciding product behavior, but the old top-level `src/paths.ts` bucket should stay deleted.
 
+### Cross-cutting helpers are shared contracts
+
+Root-level helper files are not an ownership category. Cross-cutting contracts such as canonical slugification, user-facing error shape, and ANSI theme construction live under `src/shared/` because edges, services, stores, platform modules, and tests all depend on the same neutral vocabulary. Root-level source files should be entrypoints or startup guards, not reusable helper buckets.
+
 ### Operation specs are shared contracts
 
 `OperationSpec` is the provider-neutral execution and persistence contract for Build, Absorb, and Garden jobs. Lifecycle operations build specs, job stores persist and validate specs, job runtime services execute specs, and provider adapters translate specs into concrete Claude/Codex mechanics. The contract lives in `src/shared/operation-spec.ts` so stores and provider adapters do not import lifecycle service internals just to understand persisted job files or executable run shape.

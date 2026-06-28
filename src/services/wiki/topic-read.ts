@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import * as query from "../../stores/wiki/query/index.js";
 import { descendantsInDb } from "../../stores/wiki/topics/dag.js";
 import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";

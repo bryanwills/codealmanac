@@ -1,7 +1,7 @@
 import { basename } from "node:path";
 
 import { findNearestAlmanacDir } from "../../stores/wiki-files/repo-location.js";
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import {
   addEntry,
   ensureGlobalDir,

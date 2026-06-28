@@ -1,4 +1,4 @@
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import * as query from "../../stores/wiki/query/index.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";

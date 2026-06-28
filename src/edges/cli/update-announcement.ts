@@ -1,4 +1,4 @@
-import { makeAnsiTheme } from "../../ansi-theme.js";
+import { makeAnsiTheme } from "../../shared/ansi-theme.js";
 import { readUpdateAnnouncement } from "../../services/update/index.js";
 import { readInstalledVersion } from "../../platform/update/version.js";
 

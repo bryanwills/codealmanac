@@ -1,4 +1,4 @@
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import {
   looksLikeDir,
   normalizePath,

@@ -1,4 +1,4 @@
-import { makeAnsiTheme } from "../../../ansi-theme.js";
+import { makeAnsiTheme } from "../../../shared/ansi-theme.js";
 
 export interface SetupTheme {
   RST: string;

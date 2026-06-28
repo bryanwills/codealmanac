@@ -1,6 +1,6 @@
 import { Command, type Help } from "commander";
 
-import { makeAnsiTheme, type AnsiTheme } from "../../ansi-theme.js";
+import { makeAnsiTheme, type AnsiTheme } from "../../shared/ansi-theme.js";
 import { shouldUseStdoutColor } from "./helpers.js";
 
 const HELP_GROUPS: Array<{ title: string; commands: string[] }> = [

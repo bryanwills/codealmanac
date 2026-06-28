@@ -18,7 +18,7 @@ afterEach(() => {
 
 describe("ansi", () => {
   it("can build explicit color and plain themes without reading terminal state", async () => {
-    const { makeAnsiTheme } = await import("../src/ansi-theme.js");
+    const { makeAnsiTheme } = await import("../src/shared/ansi-theme.js");
 
     expect(makeAnsiTheme(false).BOLD).toBe("");
     expect(makeAnsiTheme(true).BOLD).not.toBe("");

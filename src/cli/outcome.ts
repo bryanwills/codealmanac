@@ -1,4 +1,4 @@
-import { UserFacingError } from "../errors.js";
+import { UserFacingError } from "../shared/user-facing-error.js";
 
 export interface CommandResult {
   stdout: string;

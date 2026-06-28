@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toKebabCase } from "../src/slug.js";
+import { toKebabCase } from "../src/shared/slug.js";
 
 describe("toKebabCase", () => {
   it("lowercases and hyphenates", () => {

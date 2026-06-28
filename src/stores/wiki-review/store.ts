@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import { writeTextFileAtomically } from "../atomic-write.js";
 import {
   emptyReviewFile,

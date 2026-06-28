@@ -5,7 +5,7 @@ import { basename } from "node:path";
 import fg from "fast-glob";
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { parseFrontmatter } from "../indexer/frontmatter.js";
 import { inPageScope, type HealthScope } from "./scope.js";
 

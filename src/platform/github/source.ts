@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
-import { UserFacingError } from "../../errors.js";
+import { UserFacingError } from "../../shared/user-facing-error.js";
 import type {
   GitHubAbsorbInputSource,
   GitHubRepoRef,

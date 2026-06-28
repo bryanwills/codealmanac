@@ -1590,3 +1590,11 @@ Two-hundred-twenty-seventh production slice:
 - Updated config, registry, update, jobs, sync, wiki, lifecycle, transcript, and tests to import the owned path module they actually depend on.
 - Removed `node:path` and direct repo walk-up from automation planning by using the wiki-file repo-location helper.
 - Strengthened architecture-boundary tests so the top-level path bucket stays deleted and automation planning does not regain path-resolution mechanics.
+
+Two-hundred-twenty-eighth production slice:
+
+- Deleted the old top-level `src/slug.ts`, `src/errors.ts`, and `src/ansi-theme.ts` helper files because they were shared contracts, not root-level subsystems.
+- Added `src/shared/slug.ts`, `src/shared/user-facing-error.ts`, and `src/shared/ansi-theme.ts` as the neutral home for cross-cutting slugification, command-facing errors, and ANSI theme construction.
+- Updated CLI renderers, viewer read models, services, stores, platform GitHub source resolution, and tests to import those shared contracts from `src/shared/`.
+- Left `src/cli.ts` and `src/abi-guard.ts` at the root because they are startup/entrypoint surfaces rather than reusable helper buckets.
+- Strengthened architecture-boundary tests so the old root helper files stay deleted and the shared contract files remain explicit.

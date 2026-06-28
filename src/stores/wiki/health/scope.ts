@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { subtreeInDb } from "../topics/dag.js";
 
 export interface HealthScopeOptions {

@@ -3,9 +3,9 @@ import { readFile } from "node:fs/promises";
 
 import yaml from "js-yaml";
 
-import { UserFacingError } from "../../../errors.js";
+import { UserFacingError } from "../../../shared/user-facing-error.js";
 import { writeTextFileAtomically } from "../../atomic-write.js";
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { topicTitleFromSlug } from "./title.js";
 
 /**

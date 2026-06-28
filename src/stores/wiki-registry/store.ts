@@ -3,7 +3,7 @@ import { mkdir, readFile } from "node:fs/promises";
 
 import { getGlobalAlmanacDir } from "../global-paths.js";
 import { getRegistryPath } from "./paths.js";
-import { UserFacingError } from "../../errors.js";
+import { UserFacingError } from "../../shared/user-facing-error.js";
 import { writeTextFileAtomically } from "../atomic-write.js";
 
 /**

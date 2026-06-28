@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
 import { ancestorsInFile } from "../../stores/wiki/topics/dag.js";

@@ -1,6 +1,6 @@
 import { runIndexer } from "../../stores/wiki/indexer/index.js";
 import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
-import { toKebabCase } from "../../slug.js";
+import { toKebabCase } from "../../shared/slug.js";
 import { rewritePageTopics } from "../../stores/wiki/topics/frontmatter-rewrite.js";
 import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {

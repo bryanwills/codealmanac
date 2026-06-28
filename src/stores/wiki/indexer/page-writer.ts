@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { topicTitleFromSlug } from "../topics/title.js";
 import {
   looksLikeDir,

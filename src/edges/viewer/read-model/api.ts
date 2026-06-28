@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { toKebabCase } from "../../../slug.js";
+import { toKebabCase } from "../../../shared/slug.js";
 import { ensureFreshIndex } from "../../../stores/wiki/indexer/index.js";
 import { openIndex } from "../../../stores/wiki/indexer/schema.js";
 import * as wikiQuery from "../../../stores/wiki/query/index.js";

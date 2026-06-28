@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { UserFacingError } from "../../../errors.js";
+import { UserFacingError } from "../../../shared/user-facing-error.js";
 import { findNearestAlmanacDir } from "../../wiki-files/repo-location.js";
 import { findEntry } from "../../wiki-registry/index.js";
 
