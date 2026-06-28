@@ -1,13 +1,13 @@
-import type { HarnessEvent, HarnessToolDisplay } from "../../harness/events.js";
+import type { AgentRuntimeEvent, AgentRuntimeToolDisplay } from "../../agent/runtime/events.js";
 
-function writeForegroundEvent(event: HarnessEvent): void {
+function writeForegroundEvent(event: AgentRuntimeEvent): void {
   const line = formatForegroundEvent(event);
   if (line !== null) process.stdout.write(`${line}\n`);
 }
 
 export function lifecycleForegroundEventHandler(
   opts: { verbose?: boolean },
-): ((event: HarnessEvent) => void) | undefined {
+): ((event: AgentRuntimeEvent) => void) | undefined {
   return opts.verbose === true ? writeForegroundEvent : undefined;
 }
 
@@ -18,7 +18,7 @@ export function initStartMessage(
   return "Analyzing codebase... This usually takes 5-10 minutes.\n";
 }
 
-export function formatForegroundEvent(event: HarnessEvent): string | null {
+export function formatForegroundEvent(event: AgentRuntimeEvent): string | null {
   switch (event.type) {
     case "text":
       return event.content.trim().length > 0 ? event.content.trim() : null;
@@ -41,7 +41,7 @@ export function formatForegroundEvent(event: HarnessEvent): string | null {
 
 function formatToolDisplay(
   fallbackTool: string,
-  display: HarnessToolDisplay | undefined,
+  display: AgentRuntimeToolDisplay | undefined,
 ): string {
   if (display === undefined) return fallbackTool;
   const title = display.title ?? fallbackTool;

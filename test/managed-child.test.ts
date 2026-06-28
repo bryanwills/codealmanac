@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { spawnManagedChildProcess } from "../src/harness/process/managed-child.js";
+import { spawnManagedChildProcess } from "../src/platform/managed-child.js";
 import {
   createProcessTreeFixture,
   isProcessAlive,

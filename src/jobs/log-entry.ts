@@ -1,8 +1,8 @@
-import type { HarnessEvent, RunActor } from "../harness/events.js";
+import type { AgentRuntimeEvent, RunActor } from "../agent/runtime/events.js";
 
 export interface JobLogEntryV1 {
   timestamp: string;
-  event: HarnessEvent;
+  event: AgentRuntimeEvent;
 }
 
 export interface JobLogEntryV2 {
@@ -11,7 +11,7 @@ export interface JobLogEntryV2 {
   sequence: number;
   jobId: string;
   actor: RunActor;
-  event: HarnessEvent;
+  event: AgentRuntimeEvent;
   raw?: unknown;
 }
 
@@ -23,7 +23,7 @@ export interface AppendJobEventOptions {
 }
 
 export function buildJobLogEntry(
-  event: HarnessEvent,
+  event: AgentRuntimeEvent,
   now: Date,
   options: AppendJobEventOptions = {},
 ): JobLogEntry {
@@ -44,7 +44,7 @@ export function buildJobLogEntry(
       };
 }
 
-export function inferActor(event: HarnessEvent): RunActor {
+export function inferActor(event: AgentRuntimeEvent): RunActor {
   if (event.type === "done" && event.sourceRole !== undefined) {
     return {
       threadId: event.sourceThreadId ?? null,
@@ -62,9 +62,9 @@ export function inferActor(event: HarnessEvent): RunActor {
   };
 }
 
-function stripEnvelopeFields(event: HarnessEvent): HarnessEvent {
+function stripEnvelopeFields(event: AgentRuntimeEvent): AgentRuntimeEvent {
   const { actor: _actor, raw: _raw, ...rest } = event;
-  return rest as HarnessEvent;
+  return rest as AgentRuntimeEvent;
 }
 
 function actorLabel(role: RunActor["role"]): string {

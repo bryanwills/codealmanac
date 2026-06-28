@@ -1,7 +1,7 @@
-import type { HarnessEvent, HarnessResult } from "../harness/events.js";
-import type { HarnessRunHooks } from "../harness/types.js";
+import type { AgentRuntimeEvent, AgentRuntimeResult } from "../agent/runtime/events.js";
+import type { AgentRuntimeRunHooks } from "../agent/runtime/types.js";
 import type { OperationSpec } from "../operations/spec.js";
-import { createHarnessProviderRegistry } from "../harness/providers/index.js";
+import { createAgentRuntimeProviderRegistry } from "../agent/runtime/providers/index.js";
 import { createJobEventLogger } from "./events.js";
 import { finishUnlessCancelled } from "./finalization.js";
 import {
@@ -23,7 +23,7 @@ import type {
 export interface StartJobResult {
   jobId: string;
   record: JobRecord;
-  result: HarnessResult;
+  result: AgentRuntimeResult;
 }
 
 export interface ExecuteStartedJobOptions {
@@ -32,11 +32,11 @@ export interface ExecuteStartedJobOptions {
   record: JobRecord;
   workerEnvironment: NodeJS.ProcessEnv;
   now: () => Date;
-  onEvent?: (event: HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
   harnessRun?: (
     spec: OperationSpec,
-    hooks?: HarnessRunHooks,
-  ) => Promise<HarnessResult>;
+    hooks?: AgentRuntimeRunHooks,
+  ) => Promise<AgentRuntimeResult>;
 }
 
 export async function executeStartedJob(
@@ -47,13 +47,13 @@ export async function executeStartedJob(
   const logPath = await resolveJobLogPath(options.repoRoot, jobId);
   const started = options.record;
   const now = options.now;
-  const harnessProviderRegistry = createHarnessProviderRegistry({
+  const agentRuntimeProviderRegistry = createAgentRuntimeProviderRegistry({
     environment: options.workerEnvironment,
   });
   const harnessRun =
     options.harnessRun ??
     ((spec, hooks) =>
-      harnessProviderRegistry.getProvider(spec.provider.id).run(spec, hooks));
+      agentRuntimeProviderRegistry.getProvider(spec.provider.id).run(spec, hooks));
 
   const events = createJobEventLogger({
     logPath,
@@ -64,7 +64,7 @@ export async function executeStartedJob(
     observer: options.onEvent,
   });
 
-  let result: HarnessResult;
+  let result: AgentRuntimeResult;
   let finalRecord: JobRecord;
   let summary: JobSummary | undefined;
   let pageChanges: JobPageChanges | undefined;

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
-import type { HarnessResult } from "../harness/events.js";
-import type { FinalOutputResult } from "../harness/final-output.js";
+import type { AgentRuntimeResult } from "../agent/runtime/events.js";
+import type { FinalOutputResult } from "../agent/runtime/final-output.js";
 import { summarizeOperationOutput } from "../operations/output.js";
 import { runIndexer } from "../wiki/indexer/index.js";
 import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
@@ -34,7 +34,7 @@ export async function snapshotJobWiki(repoRoot: string): Promise<JobWikiSnapshot
 export async function collectJobWikiEffects(args: {
   snapshot: JobWikiSnapshot;
   jobId: string;
-  result: HarnessResult;
+  result: AgentRuntimeResult;
 }): Promise<JobWikiEffects> {
   const after = await snapshotPages(args.snapshot.pagesDir);
   const delta = diffPageSnapshots(args.snapshot.before, after);

@@ -1,4 +1,4 @@
-import type { HarnessEvent } from "../harness/events.js";
+import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
 import {
   buildJobLogEntry,
   type AppendJobEventOptions,
@@ -14,7 +14,7 @@ export { initializeJobLog };
 
 export async function appendJobEvent(
   path: string,
-  event: HarnessEvent,
+  event: AgentRuntimeEvent,
   now: Date = new Date(),
   options: AppendJobEventOptions = {},
 ): Promise<void> {

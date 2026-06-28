@@ -1,8 +1,8 @@
 import { joinPrompts, loadPrompt } from "../agent/prompts.js";
-import type { HarnessEvent } from "../harness/events.js";
-import type { FinalOutputSpec } from "../harness/final-output.js";
+import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
+import type { FinalOutputSpec } from "../agent/runtime/final-output.js";
 import type { OperationKind, OperationSpec } from "./spec.js";
-import type { ToolRequest } from "../harness/tools.js";
+import type { ToolRequest } from "../agent/runtime/tools.js";
 import {
   startBackgroundJob,
   startForegroundJob,
@@ -86,7 +86,7 @@ export async function runOperationProcess(args: {
   spec: OperationSpec;
   background: boolean;
   jobId?: string;
-  onEvent?: (event: HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

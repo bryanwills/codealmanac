@@ -20,7 +20,7 @@ This is a TypeScript rewrite. The Python implementation is reference material, n
 The current codebase has real product value, but ownership is not obvious enough from location and names. Several areas are named by historical implementation shape rather than present responsibility:
 
 - `cli/commands/*` contains edge parsing/rendering plus workflow decisions.
-- `operations/`, `jobs/`, `harness/`, and `agent/` overlap in provider and lifecycle vocabulary.
+- `operations/`, `jobs/`, and `agent/runtime/` still need continued audit for lifecycle vocabulary, but the old top-level `harness/` bucket has been removed.
 - `wiki/indexer/`, `wiki/query/`, `wiki/health/`, `wiki/topics/`, and `wiki/registry/` are useful but not yet presented as one coherent wiki service boundary.
 - `sync/` owns transcript discovery and scheduling decisions, while `automation/` and lifecycle commands also expose scheduling behavior.
 - Viewer API modules are server/read-model edges but sit beside product services rather than behind an explicit edge boundary.
@@ -74,7 +74,7 @@ src/
     sync/
     wiki/
   integrations/
-    agent-runtimes/
+    agent-runtime/
     filesystem/
     os/
     package-manager/

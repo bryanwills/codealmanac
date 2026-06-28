@@ -1,11 +1,11 @@
-import type { HarnessEvent, RunActor } from "../../harness/events.js";
+import type { AgentRuntimeEvent, RunActor } from "../../agent/runtime/events.js";
 import type { JobView } from "../types.js";
 
 export type JobLogEvent =
   | {
       line: number;
       timestamp: string | null;
-      event: HarnessEvent;
+      event: AgentRuntimeEvent;
       version?: number;
       sequence?: number;
       jobId?: string;

@@ -41,8 +41,8 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/config/` | Config schema, TOML/JSON codec, raw-object editing, origin tracking, and global/project config store | `schema.ts`, `codec.ts`, `store.ts`, `editor.ts`, `providers.ts`, `origins.ts`, `paths.ts`, `index.ts` |
 | `src/platform/` | Local machine integration for install, self-update, and scheduler automation | `install/`, `update/`, `automation/` |
 | `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
-| `src/agent/` | Agent facade, provider registry, provider adapters, prompt loading | `sdk.ts`, `types.ts`, `providers/` |
-| `src/harness/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
+| `src/agent/` | Agent provider identity, readiness, auth, instructions, and runtime support | `provider-id.ts`, `readiness/`, `auth/`, `runtime/` |
+| `src/agent/runtime/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
 | `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/agents/` | Agent-facing provider view and provider/model config workflows over readiness and config services | `agents.ts`, `index.ts` |
@@ -116,7 +116,7 @@ Design rules every change must respect. The spec has the full rationale; these a
 - **DAG cycle prevention is belt-and-suspenders.** `CHECK (child_slug != parent_slug)` in the schema, pre-insert cycle check on `topics link`, and a depth cap of 32 on any recursive CTE.
 - **Registry entries are never auto-dropped.** Unreachable paths are silently skipped in `--all` queries. `almanac list --drop <name>` is the only explicit removal. Cloning a repo with a committed `.almanac/` that isn't registered triggers silent auto-registration on any command except `init` (which registers explicitly) and `list --drop` (intent is to shrink).
 - **Archived pages are excluded from search by default**, are not flagged for dead-refs by `health`, and keep their backlinks resolvable. `--include-archive` and `--archived` change scope.
-- **Prompts are shipped from the npm package.** They live in `prompts/` at repo root, are bundled into `files` in `package.json`, and the agent harness reads them from the package install path at runtime. They are not embedded as TS string literals.
+- **Prompts are shipped from the npm package.** They live in `prompts/` at repo root, are bundled into `files` in `package.json`, and the agent runtime reads them from the package install path at runtime. They are not embedded as TS string literals.
 
 ## Philosophy anti-patterns
 

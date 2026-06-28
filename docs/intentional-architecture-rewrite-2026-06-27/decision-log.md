@@ -23,9 +23,9 @@ CLI edges also own process lifetime signals. Viewer/server code serves HTTP and 
 
 Services do not own local process mechanics by default. When a service needs PID liveness or process signaling, the command or edge contract passes an explicit function so platform behavior stays at the boundary.
 
-### Harness provider registries are runtime-scoped
+### Agent runtime provider registries are runtime-scoped
 
-Claude and Codex harness providers are created from an explicit runtime environment. Jobs and workers pass environment through the executor instead of importing singleton providers that close over `process.env`.
+Claude and Codex agent runtime providers are created from an explicit runtime environment. Jobs and workers pass environment through the executor instead of importing singleton providers that close over `process.env`.
 
 ### Services own product decisions
 

@@ -1373,44 +1373,44 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps Claude provider protocol mechanics in provider-local modules", async () => {
-    const claudeProvider = await readSource("src/harness/providers/claude.ts");
+    const claudeProvider = await readSource("src/agent/runtime/providers/claude.ts");
     const claudeOptions = await readSource(
-      "src/harness/providers/claude/options.ts",
+      "src/agent/runtime/providers/claude/options.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/harness/providers/claude/options.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/claude/events.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/claude/failures.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/claude/usage.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/claude/options.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/claude/events.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/claude/failures.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/claude/usage.ts"))).toBe(true);
     expect(claudeProvider).not.toContain("spawnManagedChildProcess");
     expect(claudeProvider).not.toContain("function buildClaudeOptions");
-    expect(claudeProvider).not.toContain("function toClaudeHarnessEvents");
+    expect(claudeProvider).not.toContain("function toClaudeAgentRuntimeEvents");
     expect(claudeProvider).not.toContain("function classifyClaudeFailure");
     expect(claudeProvider).not.toContain("function mapClaudeUsage");
     expect(claudeOptions).not.toContain("process.env");
     expect(claudeOptions).toContain("environment: NodeJS.ProcessEnv");
   });
 
-  it("keeps harness provider runtime environment explicit", async () => {
-    const registry = await readSource("src/harness/providers/index.ts");
-    const harnessIndex = await readSource("src/harness/index.ts");
-    const claudeProvider = await readSource("src/harness/providers/claude.ts");
-    const codexProvider = await readSource("src/harness/providers/codex.ts");
+  it("keeps agent runtime provider runtime environment explicit", async () => {
+    const registry = await readSource("src/agent/runtime/providers/index.ts");
+    const runtimeIndex = await readSource("src/agent/runtime/index.ts");
+    const claudeProvider = await readSource("src/agent/runtime/providers/claude.ts");
+    const codexProvider = await readSource("src/agent/runtime/providers/codex.ts");
     const jobExecutor = await readSource("src/jobs/executor.ts");
     const jobStart = await readSource("src/jobs/start.ts");
     const jobWorker = await readSource("src/jobs/worker.ts");
 
-    expect(registry).toContain("createHarnessProviderRegistry");
+    expect(registry).toContain("createAgentRuntimeProviderRegistry");
     expect(registry).toContain("environment: NodeJS.ProcessEnv");
     expect(registry).not.toContain("process.env");
-    expect(harnessIndex).toContain("createHarnessProviderRegistry");
-    expect(harnessIndex).not.toContain("getHarnessProvider");
-    expect(harnessIndex).not.toContain("listHarnessProviders");
+    expect(runtimeIndex).toContain("createAgentRuntimeProviderRegistry");
+    expect(runtimeIndex).not.toContain("getAgentRuntimeProvider");
+    expect(runtimeIndex).not.toContain("listAgentRuntimeProviders");
     expect(claudeProvider).not.toContain("process.env");
     expect(codexProvider).not.toContain("process.env");
-    expect(claudeProvider).not.toContain("claudeHarnessProvider");
-    expect(codexProvider).not.toContain("codexHarnessProvider");
-    expect(jobExecutor).toContain("createHarnessProviderRegistry");
+    expect(claudeProvider).not.toContain("claudeAgentRuntimeProvider");
+    expect(codexProvider).not.toContain("codexAgentRuntimeProvider");
+    expect(jobExecutor).toContain("createAgentRuntimeProviderRegistry");
     expect(jobExecutor).toContain("workerEnvironment: NodeJS.ProcessEnv");
     expect(jobStart).toContain("workerEnvironment: NodeJS.ProcessEnv");
     expect(jobWorker).toContain("workerEnvironment: NodeJS.ProcessEnv");
@@ -1443,23 +1443,23 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps Codex app-server policy out of the JSON-RPC run loop", async () => {
-    const appServer = await readSource("src/harness/providers/codex/app-server.ts");
-    const request = await readSource("src/harness/providers/codex/request.ts");
+    const appServer = await readSource("src/agent/runtime/providers/codex/app-server.ts");
+    const request = await readSource("src/agent/runtime/providers/codex/request.ts");
     const appServerRpc = await readSource(
-      "src/harness/providers/codex/app-server-rpc.ts",
+      "src/agent/runtime/providers/codex/app-server-rpc.ts",
     );
     const appServerSession = await readSource(
-      "src/harness/providers/codex/app-server-session.ts",
+      "src/agent/runtime/providers/codex/app-server-session.ts",
     );
     const appServerRootTurn = await readSource(
-      "src/harness/providers/codex/app-server-root-turn.ts",
+      "src/agent/runtime/providers/codex/app-server-root-turn.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-config.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/codex/server-requests.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-session.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-rpc.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/harness/providers/codex/app-server-root-turn.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-config.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/server-requests.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-session.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-rpc.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-root-turn.ts"))).toBe(true);
     expect(appServer).not.toContain("CODEALMANAC_CODEX_APP_SERVER");
     expect(appServer).not.toContain("function parsePositiveEnvInt");
     expect(appServer).not.toContain("interface PendingRequest");

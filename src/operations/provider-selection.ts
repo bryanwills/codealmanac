@@ -1,6 +1,6 @@
 import { readConfig } from "../config/index.js";
 import { PROVIDER_DEFINITIONS } from "../agent/provider-id.js";
-import type { HarnessProviderId } from "../harness/types.js";
+import type { AgentRuntimeProviderId } from "../agent/runtime/types.js";
 import { OperationError } from "./errors.js";
 import type { OperationProviderSelection } from "./types.js";
 
@@ -35,6 +35,6 @@ export async function resolveOperationProviderSelection(options: {
   return { id, model: model ?? undefined };
 }
 
-function isProviderId(value: string | undefined): value is HarnessProviderId {
+function isProviderId(value: string | undefined): value is AgentRuntimeProviderId {
   return value === "claude" || value === "codex" || value === "cursor";
 }

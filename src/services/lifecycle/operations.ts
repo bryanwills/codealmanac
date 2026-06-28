@@ -1,7 +1,7 @@
 import type {
-  HarnessEvent,
-  HarnessResult,
-} from "../../harness/events.js";
+  AgentRuntimeEvent,
+  AgentRuntimeResult,
+} from "../../agent/runtime/events.js";
 import type { JobWorkerProgram } from "../../jobs/index.js";
 import type { JobRecord } from "../../jobs/types.js";
 import type { AbsorbInputSource } from "../../absorb/input-source.js";
@@ -18,7 +18,7 @@ export type LifecycleOperationKind = "init" | "absorb" | "garden";
 export type LifecycleJobWorkerProgram = JobWorkerProgram;
 
 export type LifecycleOperationEventHandler = (
-  event: HarnessEvent,
+  event: AgentRuntimeEvent,
 ) => void | Promise<void>;
 
 export interface LifecycleForegroundStartRequest {
@@ -41,7 +41,7 @@ export interface LifecycleBackgroundStartRequest {
 export interface LifecycleForegroundStartResult {
   jobId: string;
   record: JobRecord;
-  result: HarnessResult;
+  result: AgentRuntimeResult;
 }
 
 export interface LifecycleBackgroundStartResult {

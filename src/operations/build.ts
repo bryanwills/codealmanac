@@ -21,7 +21,7 @@ export interface BuildOperationOptions {
   context?: string;
   force?: boolean;
   jobId?: string;
-  onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: import("../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

@@ -1,5 +1,5 @@
 import type { OperationSpec } from "./spec.js";
-import type { FinalOutputSpec } from "../harness/final-output.js";
+import type { FinalOutputSpec } from "../agent/runtime/final-output.js";
 import { findNearestAlmanacDir } from "../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {
@@ -21,7 +21,7 @@ export interface AbsorbOperationOptions {
   networkAccess?: boolean;
   output?: FinalOutputSpec;
   jobId?: string;
-  onEvent?: (event: import("../harness/events.js").HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: import("../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

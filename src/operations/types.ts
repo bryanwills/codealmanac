@@ -1,6 +1,6 @@
-import type { HarnessProviderId } from "../harness/types.js";
+import type { AgentRuntimeProviderId } from "../agent/runtime/types.js";
 import type { OperationSpec } from "./spec.js";
-import type { HarnessEvent } from "../harness/events.js";
+import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
 import type {
   JobWorkerProgram,
   StartBackgroundJobResult,
@@ -10,7 +10,7 @@ import type {
 export type { JobWorkerProgram };
 
 export interface OperationProviderSelection {
-  id: HarnessProviderId;
+  id: AgentRuntimeProviderId;
   model?: string;
   effort?: string;
 }
@@ -30,7 +30,7 @@ export type StartForegroundJob = (options: {
   jobId?: string;
   pid: number;
   workerEnvironment: NodeJS.ProcessEnv;
-  onEvent?: (event: HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
 }) => Promise<StartJobResult>;
 
 export type StartBackgroundJob = (options: {

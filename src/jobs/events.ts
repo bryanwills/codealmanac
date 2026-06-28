@@ -1,10 +1,10 @@
-import type { HarnessEvent } from "../harness/events.js";
+import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
 import { appendJobEvent } from "./logs.js";
 import { readJobRecord, writeJobRecord } from "../stores/jobs/records.js";
 import type { JobRecord } from "./types.js";
 
 export interface JobEventLogger {
-  onEvent(event: HarnessEvent): Promise<void>;
+  onEvent(event: AgentRuntimeEvent): Promise<void>;
   appendError(error: string): Promise<void>;
   waitForWrites(): Promise<void>;
 }
@@ -15,7 +15,7 @@ export function createJobEventLogger(args: {
   now: () => Date;
   recordPath: string;
   fallbackRecord: JobRecord;
-  observer?: (event: HarnessEvent) => void | Promise<void>;
+  observer?: (event: AgentRuntimeEvent) => void | Promise<void>;
 }): JobEventLogger {
   let sequence = 0;
   const pendingWrites: Promise<void>[] = [];
@@ -58,7 +58,7 @@ export function createJobEventLogger(args: {
 async function persistProviderSessionId(args: {
   recordPath: string;
   fallbackRecord: JobRecord;
-  event: HarnessEvent;
+  event: AgentRuntimeEvent;
 }): Promise<void> {
   const providerSessionId = providerSessionIdFromEvent(args.event);
   if (providerSessionId === undefined) return;
@@ -71,7 +71,7 @@ async function persistProviderSessionId(args: {
   });
 }
 
-function providerSessionIdFromEvent(event: HarnessEvent): string | undefined {
+function providerSessionIdFromEvent(event: AgentRuntimeEvent): string | undefined {
   if (event.type === "provider_session") {
     return event.providerSessionId;
   }

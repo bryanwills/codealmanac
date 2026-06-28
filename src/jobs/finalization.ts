@@ -1,4 +1,4 @@
-import type { HarnessFailure } from "../harness/events.js";
+import type { AgentRuntimeFailure } from "../agent/runtime/events.js";
 import { finishJobRecord } from "./record-factory.js";
 import {
   isJobCancellationRequested,
@@ -22,7 +22,7 @@ export async function finishUnlessCancelled(args: {
   pageChanges?: JobPageChanges;
   operationOutput?: JobOperationOutput;
   error?: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }): Promise<JobRecord> {
   const current = await readJobRecord(args.recordPath);
   if (

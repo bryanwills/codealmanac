@@ -1,4 +1,4 @@
-import type { HarnessFailure } from "../../harness/events.js";
+import type { AgentRuntimeFailure } from "../../agent/runtime/events.js";
 import * as operations from "../../operations/index.js";
 
 export type LifecycleOperationMode = "foreground" | "background";
@@ -13,13 +13,13 @@ export interface LifecycleOperationJobResult {
   status: LifecycleOperationJobStatus;
   pid: number;
   logPath: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }
 
 export interface LifecycleOperationForegroundResult {
   success: boolean;
   error?: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }
 
 export interface LifecycleOperationBackgroundResult {

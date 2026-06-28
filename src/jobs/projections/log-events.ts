@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import type { HarnessEvent, RunActor } from "../../harness/events.js";
+import type { AgentRuntimeEvent, RunActor } from "../../agent/runtime/events.js";
 import type { JobLogEvent } from "./types.js";
 
 export async function readJobLogEvents(path: string): Promise<JobLogEvent[]> {
@@ -17,9 +17,9 @@ export async function readJobLogEvents(path: string): Promise<JobLogEvent[]> {
       if (line.trim().length === 0) return null;
       try {
         const parsed = JSON.parse(line) as unknown;
-        const wrapped = parseWrappedHarnessEvent(parsed);
+        const wrapped = parseWrappedAgentRuntimeEvent(parsed);
         if (wrapped !== null) return { line: index + 1, ...wrapped };
-        return { line: index + 1, timestamp: null, event: parsed as HarnessEvent };
+        return { line: index + 1, timestamp: null, event: parsed as AgentRuntimeEvent };
       } catch (error) {
         return {
           line: index + 1,
@@ -42,8 +42,8 @@ function compareJobLogEvents(a: JobLogEvent, b: JobLogEvent): number {
   return a.line - b.line;
 }
 
-function parseWrappedHarnessEvent(value: unknown): Omit<
-  Extract<JobLogEvent, { event: HarnessEvent }>,
+function parseWrappedAgentRuntimeEvent(value: unknown): Omit<
+  Extract<JobLogEvent, { event: AgentRuntimeEvent }>,
   "line"
 > | null {
   if (value === null || typeof value !== "object") return null;
@@ -66,7 +66,7 @@ function parseWrappedHarnessEvent(value: unknown): Omit<
       : undefined;
   return {
     timestamp: typeof object.timestamp === "string" ? object.timestamp : null,
-    event: object.event as HarnessEvent,
+    event: object.event as AgentRuntimeEvent,
     ...(object.version === 2 ? { version: 2 } : {}),
     ...(typeof object.sequence === "number" ? { sequence: object.sequence } : {}),
     ...(jobId !== undefined ? { jobId } : {}),

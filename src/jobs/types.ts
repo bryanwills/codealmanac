@@ -1,6 +1,6 @@
-import type { AgentUsage, HarnessFailure } from "../harness/events.js";
-import type { JsonValue } from "../harness/final-output.js";
-import type { HarnessProviderId } from "../harness/types.js";
+import type { AgentUsage, AgentRuntimeFailure } from "../agent/runtime/events.js";
+import type { JsonValue } from "../agent/runtime/final-output.js";
+import type { AgentRuntimeProviderId } from "../agent/runtime/types.js";
 import type { OperationKind } from "../operations/spec.js";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
@@ -39,7 +39,7 @@ export interface JobRecord {
   status: JobStatus;
   repoRoot: string;
   pid: number;
-  provider: HarnessProviderId;
+  provider: AgentRuntimeProviderId;
   model?: string;
   providerSessionId?: string;
   startedAt: string;
@@ -52,7 +52,7 @@ export interface JobRecord {
   pageChanges?: JobPageChanges;
   operationOutput?: JobOperationOutput;
   error?: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }
 
 export interface JobView extends JobRecord {

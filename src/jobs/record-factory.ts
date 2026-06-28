@@ -1,4 +1,4 @@
-import type { HarnessFailure } from "../harness/events.js";
+import type { AgentRuntimeFailure } from "../agent/runtime/events.js";
 import type { OperationSpec } from "../operations/spec.js";
 import { jobLogPath } from "../stores/jobs/records.js";
 import type {
@@ -59,7 +59,7 @@ export function finishJobRecord(args: {
   pageChanges?: JobPageChanges;
   operationOutput?: JobOperationOutput;
   error?: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }): JobRecord {
   const started = Date.parse(args.record.startedAt);
   const finished = args.finishedAt.getTime();

@@ -1043,3 +1043,11 @@ One-hundred-fifty-sixth production slice:
 - Updated `almanac serve` to call the viewer edge instead of the old mixed `src/viewer/server.ts` bucket.
 - Made the viewer edge wire platform PID-liveness into the viewer service so service read models no longer import `src/platform/process.ts`.
 - Removed the old `src/viewer/*.ts` source bucket and added boundary guards around the new viewer edge/service split.
+
+One-hundred-fifty-seventh production slice:
+
+- Moved the provider execution runtime out of the old top-level `src/harness/` bucket into `src/agent/runtime/`.
+- Renamed runtime contracts and factories from `Harness*` to `AgentRuntime*` so the type vocabulary matches the new provider-runtime ownership.
+- Moved managed child-process cleanup from `src/harness/process/` to `src/platform/managed-child.ts`.
+- Updated provider, job, lifecycle, operation, CLI-rendering, absorb, and focused runtime tests to consume the new runtime boundary.
+- Added boundary coverage that the old top-level harness source path does not return.

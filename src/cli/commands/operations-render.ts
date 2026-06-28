@@ -1,4 +1,4 @@
-import type { HarnessFailure } from "../../harness/events.js";
+import type { AgentRuntimeFailure } from "../../agent/runtime/events.js";
 import {
   type LifecycleOperationRunResult,
   type LifecycleOperationWorkflowResult,
@@ -90,7 +90,7 @@ function renderOperationFailureMessage(args: {
   operation: string;
   jobId: string;
   error?: string;
-  failure?: HarnessFailure;
+  failure?: AgentRuntimeFailure;
 }): string {
   const lines = [`${args.operation} failed: ${args.jobId}`];
   if (args.failure !== undefined) {

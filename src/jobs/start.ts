@@ -1,5 +1,5 @@
-import type { HarnessEvent, HarnessResult } from "../harness/events.js";
-import type { HarnessRunHooks } from "../harness/types.js";
+import type { AgentRuntimeEvent, AgentRuntimeResult } from "../agent/runtime/events.js";
+import type { AgentRuntimeRunHooks } from "../agent/runtime/types.js";
 import type { OperationSpec } from "../operations/spec.js";
 import { createJobId } from "./ids.js";
 import { initializeJobLog } from "../stores/jobs/logs.js";
@@ -23,11 +23,11 @@ export interface StartJobOptions {
   now?: () => Date;
   pid: number;
   workerEnvironment: NodeJS.ProcessEnv;
-  onEvent?: (event: HarnessEvent) => void | Promise<void>;
+  onEvent?: (event: AgentRuntimeEvent) => void | Promise<void>;
   harnessRun?: (
     spec: OperationSpec,
-    hooks?: HarnessRunHooks,
-  ) => Promise<HarnessResult>;
+    hooks?: AgentRuntimeRunHooks,
+  ) => Promise<AgentRuntimeResult>;
 }
 
 export async function startForegroundJob(
