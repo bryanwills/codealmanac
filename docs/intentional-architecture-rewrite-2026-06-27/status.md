@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 230 committed rewrite commits past `dev`. The worklog records 182 production slices so far.
+The branch has 231 committed rewrite commits past `dev`. The worklog records 183 production slices so far.
 
-The diff is broad: 473 files changed, with 23,775 insertions and 12,883 deletions.
+The diff is broad: 473 files changed, with 23,819 insertions and 12,888 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -22,6 +22,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved job record lifecycle and display-status read-model helpers out of the job runtime folder, and put public job record/log reads behind the `src/stores/jobs/` store API.
 - Removed raw log-file reads from job projections; stores own job log contents while projections parse contents into viewer/job read models.
 - Moved job page snapshot file reads and page hashing into `src/stores/wiki-files/`.
+- Moved registry path reachability checks into `src/stores/wiki-registry/`.
 - Removed the mixed `src/services/jobs/runtime/index.ts` compatibility barrel; callers now import concrete runtime, store, platform, or record-lifecycle modules.
 - Removed the old top-level `src/init/` source bucket; wiki initialization now lives under `src/services/wiki/`, and mechanical `.almanac/` file scaffolding, page-file counting, and absorb-log scanning live under `src/stores/wiki-files/`.
 - Removed the old top-level `src/config/` source bucket; persisted config mechanics now live under `src/stores/config/`, service verbs live under `src/services/config/`, and provider enablement policy lives under `src/agent/`.
@@ -58,9 +59,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved topic page rewrite scanning from `src/services/wiki/topic-page-rewrite.ts` to `src/stores/wiki/topics/page-rewrite.ts`. Topic rename/delete services now own the topic mutation decision, while the store owns globbing page files and reading frontmatter before rewrites.
+The latest slice moved registry path reachability checks from wiki services into `src/stores/wiki-registry/store.ts`. `listReachableWikis()` now filters through the registry store, and auto-registration no longer imports filesystem APIs directly.
 
-Verification passed: focused topics/tag/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js topics --help`, `node dist/codealmanac.js topics rename --help`, and `node dist/codealmanac.js topics delete --help`.
+Verification passed: focused registry/list/autoregister/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js list --help`, and `node dist/codealmanac.js list --json`.
 
 ## Immediate Next Work
 

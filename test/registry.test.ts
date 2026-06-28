@@ -7,6 +7,7 @@ import {
   addEntry,
   dropEntry,
   findEntry,
+  isRegistryEntryReachable,
   readRegistry,
   writeRegistry,
 } from "../src/stores/wiki-registry/index.js";
@@ -124,6 +125,29 @@ describe("registry", () => {
       expect((await findEntry({ name: "findable" }))?.path).toBe(repo);
       expect((await findEntry({ path: repo }))?.name).toBe("findable");
       expect(await findEntry({ name: "missing" })).toBeNull();
+    });
+  });
+
+  it("checks whether a registry entry path is reachable", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "reachable");
+
+      expect(
+        isRegistryEntryReachable({
+          name: "reachable",
+          description: "",
+          path: repo,
+          registered_at: "2026-04-15T00:00:00Z",
+        }),
+      ).toBe(true);
+      expect(
+        isRegistryEntryReachable({
+          name: "missing",
+          description: "",
+          path: `${repo}-missing`,
+          registered_at: "2026-04-15T00:00:00Z",
+        }),
+      ).toBe(false);
     });
   });
 

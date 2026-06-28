@@ -1,7 +1,6 @@
-import { existsSync } from "node:fs";
-
 import {
   dropEntry,
+  isRegistryEntryReachable,
   readRegistry,
   type RegistryEntry,
 } from "../../stores/wiki-registry/index.js";
@@ -16,7 +15,7 @@ export interface RegisteredWiki {
 export async function listReachableWikis(): Promise<RegisteredWiki[]> {
   const entries = await readRegistry();
   return entries
-    .filter((entry) => isReachable(entry))
+    .filter(isRegistryEntryReachable)
     .map(registeredWikiFromStore);
 }
 
@@ -25,15 +24,6 @@ export async function dropRegisteredWiki(
 ): Promise<RegisteredWiki | null> {
   const removed = await dropEntry(name);
   return removed === null ? null : registeredWikiFromStore(removed);
-}
-
-/**
- * A registry path is reachable if something still exists at that path.
- * Unreachable entries stay in the registry until an explicit drop.
- */
-function isReachable(entry: RegisteredWiki): boolean {
-  if (entry.path.length === 0) return false;
-  return existsSync(entry.path);
 }
 
 function registeredWikiFromStore(entry: RegistryEntry): RegisteredWiki {

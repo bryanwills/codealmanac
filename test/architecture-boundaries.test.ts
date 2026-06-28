@@ -350,6 +350,7 @@ describe("architecture boundaries", () => {
       "src/edges/cli/register-query-commands.ts",
     );
     const registryService = await readSource("src/services/wiki/registry.ts");
+    const registryStore = await readSource("src/stores/wiki-registry/store.ts");
 
     expect(existsSync(join(ROOT, "src/cli/commands/list-render.ts"))).toBe(true);
     expect(listCommand).toContain("services/wiki/registry.js");
@@ -373,6 +374,11 @@ describe("architecture boundaries", () => {
     expect(listRender).toContain("formatPretty");
     expect(registerQuery).toContain("shouldUseStdoutColor()");
     expect(registryService).not.toContain("export type RegisteredWiki = RegistryEntry");
+    expect(registryService).toContain("isRegistryEntryReachable");
+    expect(registryService).not.toContain("existsSync");
+    expect(registryService).not.toContain("node:fs");
+    expect(registryStore).toContain("isRegistryEntryReachable");
+    expect(registryStore).toContain("existsSync");
   });
 
   it("keeps topic read command adapters out of index storage mechanics", async () => {
@@ -2038,6 +2044,8 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki/registry/index.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry"))).toBe(false);
     expect(autoRegistration).toContain("findRegistryEntry");
+    expect(autoRegistration).not.toContain("existsSync");
+    expect(autoRegistration).not.toContain("node:fs");
     expect(autoRegistration).not.toContain("process.platform");
     expect(autoRegistration).not.toContain("function samePath");
     expect(autoRegistration).not.toContain("toLowerCase()");

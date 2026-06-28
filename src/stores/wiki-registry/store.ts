@@ -1,4 +1,5 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { getGlobalAlmanacDir, getRegistryPath } from "../../paths.js";
@@ -197,6 +198,14 @@ export function findRegistryEntry(
     }
   }
   return null;
+}
+
+/**
+ * A registry path is reachable if something still exists at that path.
+ * Unreachable entries stay in the registry until an explicit drop.
+ */
+export function isRegistryEntryReachable(entry: RegistryEntry): boolean {
+  return entry.path.length > 0 && existsSync(entry.path);
 }
 
 /**

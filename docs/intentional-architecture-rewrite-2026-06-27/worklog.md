@@ -1242,3 +1242,10 @@ One-hundred-eighty-second production slice:
 - Updated topic rename/delete services to call the store-owned page rewrite scanner while keeping mutation decisions in `src/services/wiki/topic-page-mutations.ts`.
 - Deleted the old service helper path instead of leaving a compatibility shim.
 - Strengthened boundary coverage so topic services cannot reintroduce `fast-glob` or raw page reads for rename/delete frontmatter rewrites.
+
+One-hundred-eighty-third production slice:
+
+- Added `isRegistryEntryReachable()` to `src/stores/wiki-registry/store.ts`.
+- Updated `src/services/wiki/registry.ts` to filter reachable wikis through the registry store instead of importing `existsSync`.
+- Removed the redundant filesystem double-check from `src/services/wiki/autoregistration.ts`; `findNearestAlmanacDir()` already proves the enclosing `.almanac/` path.
+- Strengthened boundary coverage so wiki registry services do not reintroduce direct filesystem reachability checks.

@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { basename } from "node:path";
 
 import { findNearestAlmanacDir } from "../../paths.js";
@@ -28,10 +27,6 @@ export async function autoRegisterIfNeeded(
   try {
     const repoRoot = findNearestAlmanacDir(cwd);
     if (repoRoot === null) return null;
-
-    // Double-check the directory still exists — `findNearestAlmanacDir`
-    // already confirms this, but we're explicit about the precondition.
-    if (!existsSync(repoRoot)) return null;
 
     // Read the registry ONCE. `resolveNameCollision` scans this snapshot
     // in memory; re-reading per iteration would be O(N²) in collision
