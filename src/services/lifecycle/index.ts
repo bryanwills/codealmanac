@@ -1,10 +1,16 @@
 export {
-  runAbsorbOperationWorkflow,
-  runGardenOperationWorkflow,
   runInitOperationWorkflow,
+} from "./workflows/init-workflow.js";
+export {
+  runAbsorbOperationWorkflow,
   runPreparedAbsorbOperationWorkflow,
+} from "./workflows/absorb-workflow.js";
+export {
+  runGardenOperationWorkflow,
+} from "./workflows/garden-workflow.js";
+export {
   parseLifecycleProviderSelection,
-} from "./workflows.js";
+} from "./workflows/provider.js";
 
 export {
   type AbsorbOperationWorkflowOptions,

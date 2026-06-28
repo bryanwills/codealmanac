@@ -1882,3 +1882,10 @@ Two-hundred-sixty-fifth production slice:
 - Removed `JobOperationOutput` from job store types; persisted job records now consume the shared `OperationOutput` contract.
 - Updated lifecycle output summarization, jobs runtime wiki effects/finalization, and jobs service views to use the shared operation-output type.
 - Strengthened lifecycle/provider boundary tests so operation-output ownership stays in `src/shared/` instead of drifting back into job stores or lifecycle internals.
+
+Two-hundred-sixty-sixth production slice:
+
+- Deleted the catchall `src/services/lifecycle/workflows.ts` service bucket.
+- Added owner-named lifecycle workflow files for init, Absorb, Garden, and provider resolution under `src/services/lifecycle/workflows/`.
+- Kept the public lifecycle service exports stable through `src/services/lifecycle/index.ts`.
+- Strengthened lifecycle boundary tests so workflow verb ownership stays split and init prompt context remains service-owned.

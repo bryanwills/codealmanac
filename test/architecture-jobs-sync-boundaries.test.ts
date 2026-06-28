@@ -220,7 +220,9 @@ describe("architecture boundaries: jobs and sync", () => {
     const lifecycleOperations = await readSource(
       "src/services/lifecycle/operations/types.ts",
     );
-    const lifecycleWorkflows = await readSource("src/services/lifecycle/workflows.ts");
+    const lifecycleWorkflowProvider = await readSource(
+      "src/services/lifecycle/workflows/provider.ts",
+    );
     const lifecycleWorkflowTypes = await readSource(
       "src/services/lifecycle/workflow-types.ts",
     );
@@ -274,7 +276,7 @@ describe("architecture boundaries: jobs and sync", () => {
     expect(lifecycleOperations).toContain("shared/worker-program.js");
     expect(lifecycleOperations).not.toContain("platform/jobs/worker-process");
     expect(lifecycleWorkflowTypes).toContain("shared/worker-program.js");
-    expect(lifecycleWorkflows).not.toContain("platform/jobs/worker-process");
+    expect(lifecycleWorkflowProvider).not.toContain("platform/jobs/worker-process");
   });
 
   it("keeps job spec and log persistence in explicit stores", () => {

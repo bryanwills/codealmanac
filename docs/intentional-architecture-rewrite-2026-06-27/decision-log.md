@@ -219,7 +219,9 @@ Root-level helper files are not an ownership category. Cross-cutting contracts s
 
 ### Lifecycle workflows own operation prompt context
 
-Command adapters shape argv/options into typed service requests and render service results. They do not compose text that becomes part of an operation prompt. Init-specific prompt context such as force and non-interactive confirmation lives in `src/services/lifecycle/workflows.ts`, next to provider selection and run-mode workflow policy, because it is lifecycle product context rather than CLI rendering.
+Command adapters shape argv/options into typed service requests and render service results. They do not compose text that becomes part of an operation prompt. Init-specific prompt context such as force and non-interactive confirmation lives in `src/services/lifecycle/workflows/init-workflow.ts` because it is lifecycle product context rather than CLI rendering.
+
+Lifecycle workflows are split by product verb. Init, Absorb, Garden, and workflow provider resolution live in owner-named files under `src/services/lifecycle/workflows/`; the deleted `src/services/lifecycle/workflows.ts` bucket should not return as a catchall.
 
 ### Absorb source resolution is an injected platform resolver
 

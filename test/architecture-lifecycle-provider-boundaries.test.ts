@@ -151,7 +151,18 @@ describe("architecture boundaries: lifecycle and providers", () => {
 
   it("keeps lifecycle operation command adapters out of run-start mechanics", async () => {
     const lifecycleServiceIndex = await readSource("src/services/lifecycle/index.ts");
-    const lifecycleWorkflows = await readSource("src/services/lifecycle/workflows.ts");
+    const initWorkflow = await readSource(
+      "src/services/lifecycle/workflows/init-workflow.ts",
+    );
+    const absorbWorkflow = await readSource(
+      "src/services/lifecycle/workflows/absorb-workflow.ts",
+    );
+    const gardenWorkflow = await readSource(
+      "src/services/lifecycle/workflows/garden-workflow.ts",
+    );
+    const workflowProvider = await readSource(
+      "src/services/lifecycle/workflows/provider.ts",
+    );
     const lifecycleResults = await readSource(
       "src/services/lifecycle/operation-results.ts",
     );
@@ -185,7 +196,15 @@ describe("architecture boundaries: lifecycle and providers", () => {
     const operationsRender = await readSource("src/edges/cli/commands/operations-render.ts");
 
     expect(existsSync(join(ROOT, "src/services/lifecycle/operation-results.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows/init-workflow.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows/absorb-workflow.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows/garden-workflow.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows/provider.ts")))
+      .toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/workflow-types.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/operations"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/absorb"))).toBe(true);
@@ -202,31 +221,41 @@ describe("architecture boundaries: lifecycle and providers", () => {
     expect(existsSync(join(ROOT, "src/operations"))).toBe(false);
     expect(existsSync(join(ROOT, "src/absorb"))).toBe(false);
     expect(lifecycleServiceIndex).not.toContain("../../operations");
-    expect(lifecycleServiceIndex).toContain("./workflows.js");
-    expect(lifecycleWorkflows).not.toContain(
-      "LifecycleOperationRunResult = operations.OperationRunResult",
-    );
-    expect(lifecycleWorkflows).not.toContain("interface LifecycleOperationDeps");
-    expect(lifecycleWorkflows).not.toContain(
-      "InitOperationWorkflowOptions extends LifecycleOperationDeps",
-    );
-    expect(lifecycleWorkflows).not.toContain(
-      "AbsorbOperationWorkflowOptions extends LifecycleOperationDeps",
-    );
-    expect(lifecycleWorkflows).not.toContain(
-      "GardenOperationWorkflowOptions extends LifecycleOperationDeps",
-    );
-    expect(lifecycleWorkflows).not.toContain(
-      "LifecycleOperationForegroundStarter = operations.StartForegroundJob",
-    );
-    expect(lifecycleWorkflows).not.toContain(
-      "LifecycleOperationBackgroundStarter = operations.StartBackgroundJob",
-    );
-    expect(lifecycleWorkflows).not.toContain(
-      "LifecycleAbsorbSourceResolver = absorb.ResolveSourceFn",
-    );
-    expect(lifecycleWorkflows).not.toContain("interface LifecycleForegroundStartRequest");
-    expect(lifecycleWorkflows).not.toContain("interface InitOperationWorkflowOptions");
+    expect(lifecycleServiceIndex).toContain("./workflows/init-workflow.js");
+    expect(lifecycleServiceIndex).toContain("./workflows/absorb-workflow.js");
+    expect(lifecycleServiceIndex).toContain("./workflows/garden-workflow.js");
+    expect(lifecycleServiceIndex).toContain("./workflows/provider.js");
+    for (const workflow of [
+      initWorkflow,
+      absorbWorkflow,
+      gardenWorkflow,
+      workflowProvider,
+    ]) {
+      expect(workflow).not.toContain(
+        "LifecycleOperationRunResult = operations.OperationRunResult",
+      );
+      expect(workflow).not.toContain("interface LifecycleOperationDeps");
+      expect(workflow).not.toContain(
+        "InitOperationWorkflowOptions extends LifecycleOperationDeps",
+      );
+      expect(workflow).not.toContain(
+        "AbsorbOperationWorkflowOptions extends LifecycleOperationDeps",
+      );
+      expect(workflow).not.toContain(
+        "GardenOperationWorkflowOptions extends LifecycleOperationDeps",
+      );
+      expect(workflow).not.toContain(
+        "LifecycleOperationForegroundStarter = operations.StartForegroundJob",
+      );
+      expect(workflow).not.toContain(
+        "LifecycleOperationBackgroundStarter = operations.StartBackgroundJob",
+      );
+      expect(workflow).not.toContain(
+        "LifecycleAbsorbSourceResolver = absorb.ResolveSourceFn",
+      );
+      expect(workflow).not.toContain("interface LifecycleForegroundStartRequest");
+      expect(workflow).not.toContain("interface InitOperationWorkflowOptions");
+    }
     expect(lifecycleWorkflowTypes).toContain("interface LifecycleForegroundStartRequest");
     expect(lifecycleWorkflowTypes).toContain("interface InitOperationWorkflowOptions");
     expect(lifecycleWorkflowTypes).not.toContain("stores/jobs/types");
@@ -237,12 +266,17 @@ describe("architecture boundaries: lifecycle and providers", () => {
     expect(lifecycleOperationTypes).not.toContain("StartJobResult");
     expect(lifecycleOperationTypes).not.toContain("StartBackgroundJobResult");
     expect(lifecycleOperationTypes).not.toContain("stores/jobs/types");
-    expect(lifecycleWorkflows).not.toContain(
+    expect(initWorkflow).not.toContain(
       "function lifecycleOperationRunResultFromOperation",
     );
-    expect(lifecycleWorkflows).toContain("initOperationContext");
-    expect(lifecycleWorkflows).toContain("Command context:");
-    expect(lifecycleWorkflows).toContain("runPreparedAbsorbOperationWorkflow");
+    expect(initWorkflow).toContain("initOperationContext");
+    expect(initWorkflow).toContain("Command context:");
+    expect(absorbWorkflow).toContain("runPreparedAbsorbOperationWorkflow");
+    expect(absorbWorkflow).not.toContain("runGardenOperationWorkflow");
+    expect(gardenWorkflow).toContain("runGardenOperationWorkflow");
+    expect(gardenWorkflow).not.toContain("runAbsorbOperationWorkflow");
+    expect(workflowProvider).toContain("resolveWorkflowProvider");
+    expect(workflowProvider).toContain("parseLifecycleProviderSelection");
     expect(lifecycleWorkflowTypes).toContain("LifecyclePromptLoader");
     expect(lifecycleOperationRun).toContain("joinPromptSections");
     expect(lifecycleOperationRun).toContain("loadPrompt: OperationPromptLoader");
