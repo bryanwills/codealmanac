@@ -1051,3 +1051,11 @@ One-hundred-fifty-seventh production slice:
 - Moved managed child-process cleanup from `src/harness/process/` to `src/platform/managed-child.ts`.
 - Updated provider, job, lifecycle, operation, CLI-rendering, absorb, and focused runtime tests to consume the new runtime boundary.
 - Added boundary coverage that the old top-level harness source path does not return.
+
+One-hundred-fifty-eighth production slice:
+
+- Removed the old top-level `src/sync/` source bucket.
+- Moved Claude/Codex local transcript-store scanning and raw JSONL normalization into `src/platform/transcripts/`.
+- Moved sync sweep coordination, cursor decisions, ledger reconciliation helpers, and summary shaping under `src/services/sync/`.
+- Kept sync ledger and lock persistence in `src/stores/sync/`.
+- Added boundary coverage that transcript discovery stays platform-owned while sync workflow decisions stay service-owned.

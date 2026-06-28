@@ -3,7 +3,7 @@ import { open, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import { findNearestAlmanacDir } from "../../paths.js";
-import type { SessionCandidate, SweepApp } from "./types.js";
+import type { TranscriptCandidate, TranscriptSourceApp } from "./types.js";
 
 export async function collectJsonl(root: string): Promise<string[]> {
   if (!existsSync(root)) return [];
@@ -24,12 +24,12 @@ export async function readFirstLines(file: string, maxLines: number): Promise<st
   }
 }
 
-export async function candidateFromMeta(
-  app: SweepApp,
+export async function transcriptCandidateFromMeta(
+  app: TranscriptSourceApp,
   transcriptPath: string,
   sessionId: string,
   cwd: string,
-): Promise<SessionCandidate | null> {
+): Promise<TranscriptCandidate | null> {
   const repoRoot = findNearestAlmanacDir(cwd);
   if (repoRoot === null) return null;
   try {

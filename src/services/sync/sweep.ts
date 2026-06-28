@@ -1,4 +1,4 @@
-import type { SessionCandidate } from "./discovery/index.js";
+import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
 import {
   type LedgerEntry,
   type SyncLedger,
@@ -26,12 +26,12 @@ import {
 import {
   loadLedgerForRepo,
   writeLedger,
-} from "../stores/sync/ledger.js";
-import { acquireRepoSyncLock, releaseRepoSyncLock } from "../stores/sync/lock.js";
-import { listJobRecords } from "../jobs/index.js";
+} from "../../stores/sync/ledger.js";
+import { acquireRepoSyncLock, releaseRepoSyncLock } from "../../stores/sync/lock.js";
+import { listJobRecords } from "../../jobs/index.js";
 
 export interface StartSyncAbsorbArgs {
-  candidate: SessionCandidate;
+  candidate: TranscriptCandidate;
   contextNote: string;
 }
 
@@ -44,7 +44,7 @@ export type StartSyncAbsorbFn = (
 ) => Promise<StartSyncAbsorbResult>;
 
 export async function executeSyncSweep(args: {
-  candidates: SessionCandidate[];
+  candidates: TranscriptCandidate[];
   syncSince: Date | null;
   quietMs: number;
   mode: "sync" | "status";
@@ -152,7 +152,7 @@ export async function executeSyncSweep(args: {
 }
 
 async function isInternalAlmanacSession(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
   cache: Map<string, Set<string>>,
 ): Promise<boolean> {
   let ids = cache.get(candidate.repoRoot);
@@ -168,7 +168,7 @@ async function isInternalAlmanacSession(
 }
 
 function candidateEligibility(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
   args: {
     syncSince: Date | null;
     quietMs: number;
@@ -187,7 +187,7 @@ function candidateEligibility(
 }
 
 async function enqueueAbsorb(args: {
-  candidate: SessionCandidate;
+  candidate: TranscriptCandidate;
   entry: LedgerEntry;
   decision: Extract<SyncCursorDecision, { kind: "ready" }>;
   snapshot: TranscriptSnapshot;

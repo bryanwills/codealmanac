@@ -37,6 +37,10 @@ Command-private render modules own service-result-to-output branching. When a co
 
 Stores own persistence mechanics. Provider adapters, process spawning, app-server protocols, launchd, npm, and OS behavior stay in integration-shaped modules unless they are product service contracts.
 
+### Transcript discovery is platform, sync eligibility is service
+
+Claude and Codex transcript-store scanning reads local provider files and normalizes raw JSONL shapes into typed transcript candidates. That belongs under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over those normalized candidates.
+
 ### Prefer explicit contracts over compatibility facades
 
 Compatibility facades can remain only when callers still need a stable import. New code should depend on typed service, store, integration, or edge contracts with honest names.

@@ -1,7 +1,7 @@
-export type SweepApp = "claude" | "codex";
+export type TranscriptSourceApp = "claude" | "codex";
 
-export interface SessionCandidate {
-  app: SweepApp;
+export interface TranscriptCandidate {
+  app: TranscriptSourceApp;
   sessionId: string;
   transcriptPath: string;
   cwd: string;

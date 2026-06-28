@@ -1,26 +1,26 @@
 import { join, sep } from "node:path";
 
 import {
-  candidateFromMeta,
+  transcriptCandidateFromMeta,
   collectJsonl,
   parseJsonObject,
   readFirstLines,
   stringField,
 } from "./jsonl.js";
-import type { SessionCandidate } from "./types.js";
+import type { TranscriptCandidate } from "./types.js";
 
 export async function discoverClaude(
   home: string,
   projectsDir?: string,
-): Promise<SessionCandidate[]> {
+): Promise<TranscriptCandidate[]> {
   const root = projectsDir ?? join(home, ".claude", "projects");
   const files = await collectJsonl(root);
-  const out: SessionCandidate[] = [];
+  const out: TranscriptCandidate[] = [];
   for (const file of files) {
     if (file.split(sep).includes("subagents")) continue;
     const meta = await readClaudeMeta(file);
     if (meta === null) continue;
-    const candidate = await candidateFromMeta("claude", file, meta.sessionId, meta.cwd);
+    const candidate = await transcriptCandidateFromMeta("claude", file, meta.sessionId, meta.cwd);
     if (candidate !== null) out.push(candidate);
   }
   return out;

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import type { SessionCandidate } from "./discovery/index.js";
+import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
 import {
   type LedgerEntry,
   countLines,
@@ -24,7 +24,7 @@ export type SyncCursorDecision =
   | { kind: "ready"; fromLine: number; toLine: number };
 
 export async function readTranscriptSnapshot(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
 ): Promise<TranscriptReadResult> {
   try {
     const content = await readFile(candidate.transcriptPath);

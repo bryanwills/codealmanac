@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 
-import type { SessionCandidate } from "./discovery/index.js";
-import { objectField, parseJsonObject, stringField } from "./discovery/jsonl.js";
-import { readJobRecord, resolveJobRecordPath } from "../stores/jobs/records.js";
-import type { JobRecord } from "../jobs/types.js";
+import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
+import { objectField, parseJsonObject, stringField } from "../../platform/transcripts/jsonl.js";
+import { readJobRecord, resolveJobRecordPath } from "../../stores/jobs/records.js";
+import type { JobRecord } from "../../jobs/types.js";
 import type {
   LedgerEntry,
   SyncCursor,
   SyncLedger,
-} from "../stores/sync/ledger.js";
+} from "../../stores/sync/ledger.js";
 
 export type {
   LedgerApp,
@@ -16,7 +16,7 @@ export type {
   LedgerStatus,
   SyncCursor,
   SyncLedger,
-} from "../stores/sync/ledger.js";
+} from "../../stores/sync/ledger.js";
 
 const EMPTY_SHA256 = `sha256:${createHash("sha256").update("").digest("hex")}`;
 
@@ -49,7 +49,7 @@ export async function reconcileLedger(
 }
 
 export function freshLedgerEntry(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
   content: Buffer,
   syncSince: Date | null,
 ): LedgerEntry {
@@ -73,7 +73,7 @@ export function syncCursor(content: Buffer, line: number): SyncCursor {
   };
 }
 
-export function ledgerKey(candidate: Pick<SessionCandidate, "app" | "transcriptPath">): string {
+export function ledgerKey(candidate: Pick<TranscriptCandidate, "app" | "transcriptPath">): string {
   return `${candidate.app}:${candidate.transcriptPath}`;
 }
 

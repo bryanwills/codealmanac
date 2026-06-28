@@ -1,7 +1,12 @@
 import * as operations from "../../operations/index.js";
-import * as sync from "../../sync/index.js";
 import { readConfig } from "../../config/index.js";
+import {
+  discoverTranscriptCandidates,
+  type TranscriptSourceApp,
+} from "../../platform/transcripts/index.js";
 import { parseDuration } from "../../shared/duration.js";
+import { executeSyncSweep } from "./sweep.js";
+import type { SyncSummary } from "./sweep-results.js";
 import type {
   SyncWorkflowOptions,
   SyncWorkflowReadyItem,
@@ -26,8 +31,8 @@ export async function runSyncWorkflow(
   return {
     status: "completed",
     summary: syncWorkflowSummaryFromSweep(
-      await sync.sweep({
-        candidates: await sync.discoverCandidates({
+      await executeSyncSweep({
+        candidates: await discoverTranscriptCandidates({
           apps: sources.value,
           home: options.homeDir,
         }),
@@ -73,7 +78,7 @@ export async function runSyncWorkflow(
 }
 
 function syncWorkflowSummaryFromSweep(
-  summary: sync.SyncSummary,
+  summary: SyncSummary,
 ): SyncWorkflowSummary {
   return {
     mode: summary.mode,
@@ -88,7 +93,7 @@ function syncWorkflowSummaryFromSweep(
 }
 
 function syncWorkflowReadyItemFromSweep(
-  item: sync.SyncSummary["ready"][number],
+  item: SyncSummary["ready"][number],
 ): SyncWorkflowReadyItem {
   return {
     app: item.app,
@@ -101,7 +106,7 @@ function syncWorkflowReadyItemFromSweep(
 }
 
 function syncWorkflowStartedItemFromSweep(
-  item: sync.SyncSummary["started"][number],
+  item: SyncSummary["started"][number],
 ): SyncWorkflowStartedItem {
   return {
     app: item.app,
@@ -115,7 +120,7 @@ function syncWorkflowStartedItemFromSweep(
 }
 
 function syncWorkflowSkippedItemFromSweep(
-  item: sync.SyncSummary["skipped"][number],
+  item: SyncSummary["skipped"][number],
 ): SyncWorkflowSkippedItem {
   return {
     app: item.app,
@@ -144,13 +149,13 @@ async function providerForRepo(args: {
 }
 
 function parseSources(value: string | undefined):
-  | { ok: true; value: sync.SweepApp[] }
+  | { ok: true; value: TranscriptSourceApp[] }
   | { ok: false; error: Error } {
   if (value === undefined || value.trim().length === 0) {
     return { ok: true, value: ["claude", "codex"] };
   }
 
-  const apps: sync.SweepApp[] = [];
+  const apps: TranscriptSourceApp[] = [];
   for (const raw of value.split(",")) {
     const app = raw.trim();
     if (app === "claude" || app === "codex") {
@@ -188,7 +193,7 @@ async function readSyncSince(configPath: string | undefined): Promise<Date | nul
 }
 
 function syncAbsorbContext(args: {
-  app: sync.SweepApp;
+  app: TranscriptSourceApp;
   sessionId: string;
   transcriptPath: string;
   contextNote: string;

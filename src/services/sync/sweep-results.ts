@@ -1,8 +1,8 @@
-import type { SessionCandidate, SweepApp } from "./discovery/index.js";
+import type { TranscriptCandidate, TranscriptSourceApp } from "../../platform/transcripts/index.js";
 import type { SyncCursorDecision } from "./transcript-cursor.js";
 
 export interface SyncStarted {
-  app: SweepApp;
+  app: TranscriptSourceApp;
   sessionId: string;
   transcriptPath: string;
   repoRoot: string;
@@ -12,7 +12,7 @@ export interface SyncStarted {
 }
 
 export interface SyncReady {
-  app: SweepApp;
+  app: TranscriptSourceApp;
   sessionId: string;
   transcriptPath: string;
   repoRoot: string;
@@ -21,7 +21,7 @@ export interface SyncReady {
 }
 
 export interface SyncSkipped {
-  app?: SweepApp;
+  app?: TranscriptSourceApp;
   sessionId?: string;
   transcriptPath: string;
   repoRoot?: string;
@@ -57,7 +57,7 @@ export function emptySyncSummary(args: {
 }
 
 export function syncStartedSummary(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
   jobId: string,
   decision: Extract<SyncCursorDecision, { kind: "ready" }>,
 ): SyncStarted {
@@ -73,7 +73,7 @@ export function syncStartedSummary(
 }
 
 export function syncReadySummary(
-  candidate: SessionCandidate,
+  candidate: TranscriptCandidate,
   decision: Extract<SyncCursorDecision, { kind: "ready" }>,
 ): SyncReady {
   return {
@@ -87,7 +87,7 @@ export function syncReadySummary(
 }
 
 export function syncSkippedSummary(
-  candidate: Partial<SessionCandidate> & { transcriptPath: string },
+  candidate: Partial<TranscriptCandidate> & { transcriptPath: string },
   reason: string,
 ): SyncSkipped {
   return {
@@ -100,7 +100,7 @@ export function syncSkippedSummary(
 }
 
 export function syncCursorContext(args: {
-  candidate: SessionCandidate;
+  candidate: TranscriptCandidate;
   fromLine: number;
   lastAbsorbedLine: number;
   lastAbsorbedSize: number;

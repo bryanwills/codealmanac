@@ -1,16 +1,16 @@
 import { discoverClaude } from "./claude.js";
 import { discoverCodex } from "./codex.js";
-import type { SessionCandidate, SweepApp } from "./types.js";
+import type { TranscriptCandidate, TranscriptSourceApp } from "./types.js";
 
-export type { SessionCandidate, SweepApp } from "./types.js";
+export type { TranscriptCandidate, TranscriptSourceApp } from "./types.js";
 
-export async function discoverCandidates(args: {
-  apps: SweepApp[];
+export async function discoverTranscriptCandidates(args: {
+  apps: TranscriptSourceApp[];
   home: string;
   claudeProjectsDir?: string;
   codexSessionsDir?: string;
-}): Promise<SessionCandidate[]> {
-  const out: SessionCandidate[] = [];
+}): Promise<TranscriptCandidate[]> {
+  const out: TranscriptCandidate[] = [];
   if (args.apps.includes("claude")) {
     out.push(...await discoverClaude(args.home, args.claudeProjectsDir));
   }

@@ -749,12 +749,12 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps sync runtime persistence in explicit stores", async () => {
-    const syncLedger = await readSource("src/sync/ledger.ts");
-    const syncSweep = await readSource("src/sync/sweep.ts");
+    const syncLedger = await readSource("src/services/sync/ledger.ts");
+    const syncSweep = await readSource("src/services/sync/sweep.ts");
 
     expect(existsSync(join(ROOT, "src/stores/sync/ledger.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/sync/lock.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/sync/lock.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/sync"))).toBe(false);
     expect(syncLedger).not.toContain("sync-ledger.json");
     expect(syncLedger).not.toContain("capture-ledger.json");
     expect(syncLedger).not.toContain("mkdir");
@@ -762,10 +762,10 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps sync transcript cursor decisions out of the sweep coordinator", async () => {
-    const syncSweep = await readSource("src/sync/sweep.ts");
-    const transcriptCursor = await readSource("src/sync/transcript-cursor.ts");
+    const syncSweep = await readSource("src/services/sync/sweep.ts");
+    const transcriptCursor = await readSource("src/services/sync/transcript-cursor.ts");
 
-    expect(existsSync(join(ROOT, "src/sync/transcript-cursor.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/sync/transcript-cursor.ts"))).toBe(true);
     expect(syncSweep).toContain("transcript-cursor.js");
     expect(syncSweep).not.toContain("from \"node:fs/promises\"");
     expect(syncSweep).not.toContain("function readTranscriptSnapshot");
@@ -1276,12 +1276,15 @@ describe("architecture boundaries", () => {
     const syncServiceIndex = await readSource("src/services/sync/index.ts");
     const syncService = await readSource("src/services/sync/sync.ts");
     const syncServiceTypes = await readSource("src/services/sync/types.ts");
-    const syncSweep = await readSource("src/sync/sweep.ts");
-    const syncSweepResults = await readSource("src/sync/sweep-results.ts");
+    const syncSweep = await readSource("src/services/sync/sweep.ts");
+    const syncSweepResults = await readSource("src/services/sync/sweep-results.ts");
+    const transcriptDiscovery = await readSource("src/platform/transcripts/index.ts");
     const syncCommand = await readSource("src/cli/commands/sync.ts");
 
     expect(existsSync(join(ROOT, "src/services/sync/types.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/sync/sweep-results.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/sync/sweep-results.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/transcripts/index.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/sync"))).toBe(false);
     expect(syncServiceIndex).not.toContain("../../sync");
     expect(syncService).not.toContain("interface SyncWorkflowOptions");
     expect(syncService).not.toContain("interface SyncWorkflowSummary");
@@ -1296,13 +1299,18 @@ describe("architecture boundaries", () => {
     );
     expect(syncService).not.toContain("...syncWorkflowReadyItemFromSweep(item)");
     expect(syncService).toContain("syncWorkflowSummaryFromSweep");
+    expect(syncService).toContain("platform/transcripts/index.js");
+    expect(transcriptDiscovery).toContain("discoverTranscriptCandidates");
+    expect(transcriptDiscovery).not.toContain("operations");
+    expect(transcriptDiscovery).not.toContain("stores/sync");
+    expect(transcriptDiscovery).not.toContain("services/sync");
     expect(syncCommand).toContain("services/sync/index.js");
     expect(syncCommand).not.toContain("../../sync");
     expect(syncCommand).not.toContain("../../operations");
     expect(syncCommand).not.toContain("readConfig");
     expect(syncCommand).not.toContain("parseDuration");
     expect(syncCommand).not.toContain("homedir");
-    expect(syncCommand).not.toContain("discoverCandidates");
+    expect(syncCommand).not.toContain("discoverTranscriptCandidates");
     expect(syncCommand).not.toContain("sync completed");
     expect(syncCommand).not.toContain("providerForRepo");
     expect(syncCommand).not.toContain("syncAbsorbContext");
