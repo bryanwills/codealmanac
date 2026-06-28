@@ -1854,3 +1854,10 @@ Two-hundred-sixty-first production slice:
 - Updated wiki service callers for search, show, health, reindex, topics, page-topic mutation, review workspace, and source migration to import the service-owned resolver.
 - Deleted the old indexer-store resolver path so storage no longer owns command target semantics.
 - Strengthened wiki command boundary tests so the resolver stays in wiki services and cannot drift back into indexer storage.
+
+Two-hundred-sixty-second production slice:
+
+- Moved cross-wiki health reachability classification from `src/stores/wiki/health/link-checks.ts` into `src/services/wiki/health.ts`.
+- Renamed the store-owned cross-wiki check to `findCrossWikiLinks()` so the store reports indexed link facts instead of deciding whether registry entries are broken.
+- Kept the public wiki health report shape as `broken_xwiki`, with the service coordinating registry lookup and wiki-root reachability over store facts.
+- Strengthened wiki command boundary tests so health link checks cannot import the registry store or regain registry reachability policy.

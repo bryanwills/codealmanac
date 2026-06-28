@@ -4,6 +4,10 @@ import {
   DEFAULT_STALE_SECONDS,
   type HealthReport,
 } from "../../stores/wiki/health/index.js";
+import {
+  findEntry,
+  isRegistryEntryWikiRoot,
+} from "../../stores/wiki-registry/index.js";
 
 export interface CheckWikiHealthRequest {
   cwd: string;
@@ -64,19 +68,19 @@ export async function checkWikiHealth(
 export async function collectWikiHealthReport(
   request: CollectWikiHealthReportRequest,
 ): Promise<WikiHealthReport> {
-  return wikiHealthReportFromIndexerReport(
-    await collectIndexerHealthReport({
-      repoRoot: request.repoRoot,
-      topic: request.topic,
-      staleSeconds: request.staleSeconds,
-      stdinSlugs: request.stdinSlugs,
-    }),
-  );
+  const report = await collectIndexerHealthReport({
+    repoRoot: request.repoRoot,
+    topic: request.topic,
+    staleSeconds: request.staleSeconds,
+    stdinSlugs: request.stdinSlugs,
+  });
+
+  return wikiHealthReportFromIndexerReport(report);
 }
 
-function wikiHealthReportFromIndexerReport(
+async function wikiHealthReportFromIndexerReport(
   report: HealthReport,
-): WikiHealthReport {
+): Promise<WikiHealthReport> {
   return {
     orphans: report.orphans.map((item) => ({ slug: item.slug })),
     stale: report.stale.map((item) => ({
@@ -91,11 +95,7 @@ function wikiHealthReportFromIndexerReport(
       source_slug: item.source_slug,
       target_slug: item.target_slug,
     })),
-    broken_xwiki: report.broken_xwiki.map((item) => ({
-      source_slug: item.source_slug,
-      target_wiki: item.target_wiki,
-      target_slug: item.target_slug,
-    })),
+    broken_xwiki: await brokenCrossWikiLinks(report.cross_wiki_links),
     missing_sources: report.missing_sources.map((item) => ({
       slug: item.slug,
       source_id: item.source_id,
@@ -123,4 +123,30 @@ function wikiHealthReportFromIndexerReport(
       paths: [...item.paths],
     })),
   };
+}
+
+async function brokenCrossWikiLinks(
+  links: HealthReport["cross_wiki_links"],
+): Promise<WikiHealthReport["broken_xwiki"]> {
+  const reachableByWiki = new Map<string, boolean>();
+  const broken: WikiHealthReport["broken_xwiki"] = [];
+
+  for (const link of links) {
+    let reachable = reachableByWiki.get(link.target_wiki);
+    if (reachable === undefined) {
+      const entry = await findEntry({ name: link.target_wiki });
+      reachable = entry !== null && isRegistryEntryWikiRoot(entry);
+      reachableByWiki.set(link.target_wiki, reachable);
+    }
+
+    if (!reachable) {
+      broken.push({
+        source_slug: link.source_slug,
+        target_wiki: link.target_wiki,
+        target_slug: link.target_slug,
+      });
+    }
+  }
+
+  return broken;
 }

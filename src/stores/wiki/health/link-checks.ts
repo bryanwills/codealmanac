@@ -3,8 +3,13 @@ import { join } from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { findEntry } from "../../wiki-registry/index.js";
 import { inPageScope, type HealthScope } from "./scope.js";
+
+export interface CrossWikiLinkRef {
+  source_slug: string;
+  target_wiki: string;
+  target_slug: string;
+}
 
 /**
  * `file_refs` whose target paths no longer exist on disk. We `stat`
@@ -61,16 +66,16 @@ export function findBrokenLinks(
 }
 
 /**
- * Cross-wiki links whose target wiki is unregistered or unreachable.
+ * Indexed cross-wiki links from active pages.
  */
-export async function findBrokenXwiki(
+export function findCrossWikiLinks(
   db: Database.Database,
   scope: HealthScope,
-): Promise<{ source_slug: string; target_wiki: string; target_slug: string }[]> {
+): CrossWikiLinkRef[] {
   const rows = db
     .prepare<
       [],
-      { source_slug: string; target_wiki: string; target_slug: string }
+      CrossWikiLinkRef
     >(
       `SELECT x.source_slug, x.target_wiki, x.target_slug
        FROM cross_wiki_links x
@@ -79,23 +84,5 @@ export async function findBrokenXwiki(
        ORDER BY x.source_slug, x.target_wiki, x.target_slug`,
     )
     .all();
-  const out: { source_slug: string; target_wiki: string; target_slug: string }[] = [];
-  const reachableCache = new Map<string, boolean>();
-  for (const r of rows) {
-    if (!inPageScope(scope, r.source_slug)) continue;
-    let ok = reachableCache.get(r.target_wiki);
-    if (ok === undefined) {
-      const entry = await findEntry({ name: r.target_wiki });
-      ok = entry !== null && existsSync(join(entry.path, ".almanac"));
-      reachableCache.set(r.target_wiki, ok);
-    }
-    if (!ok) {
-      out.push({
-        source_slug: r.source_slug,
-        target_wiki: r.target_wiki,
-        target_slug: r.target_slug,
-      });
-    }
-  }
-  return out;
+  return rows.filter((r) => inPageScope(scope, r.source_slug));
 }

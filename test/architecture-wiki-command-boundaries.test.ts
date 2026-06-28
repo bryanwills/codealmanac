@@ -126,6 +126,8 @@ describe("architecture boundaries: wiki commands and viewer", () => {
 
   it("keeps wiki health report composition separate from individual checks", async () => {
     const healthIndex = await readSource("src/stores/wiki/health/index.ts");
+    const linkChecks = await readSource("src/stores/wiki/health/link-checks.ts");
+    const healthService = await readSource("src/services/wiki/health.ts");
 
     expect(existsSync(join(ROOT, "src/wiki"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki"))).toBe(true);
@@ -137,6 +139,13 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     expect(healthIndex).not.toContain("SELECT w.source_slug");
     expect(healthIndex).not.toContain("fast-glob");
     expect(healthIndex).not.toContain("findEntry");
+    expect(linkChecks).toContain("findCrossWikiLinks");
+    expect(linkChecks).not.toContain("wiki-registry");
+    expect(linkChecks).not.toContain("findEntry");
+    expect(linkChecks).not.toContain("isRegistryEntryWikiRoot");
+    expect(healthService).toContain("brokenCrossWikiLinks");
+    expect(healthService).toContain("findEntry");
+    expect(healthService).toContain("isRegistryEntryWikiRoot");
   });
 
   it("keeps reindex command adapters out of index storage mechanics", async () => {

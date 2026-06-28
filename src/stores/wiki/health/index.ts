@@ -5,8 +5,9 @@ import { openIndex } from "../indexer/schema.js";
 import * as sources from "../sources/index.js";
 import {
   findBrokenLinks,
-  findBrokenXwiki,
+  findCrossWikiLinks,
   findDeadRefs,
+  type CrossWikiLinkRef,
 } from "./link-checks.js";
 import {
   findEmptyPages,
@@ -31,7 +32,7 @@ export interface HealthReport {
   stale: { slug: string; days_since_update: number }[];
   dead_refs: { slug: string; path: string }[];
   broken_links: { source_slug: string; target_slug: string }[];
-  broken_xwiki: { source_slug: string; target_wiki: string; target_slug: string }[];
+  cross_wiki_links: CrossWikiLinkRef[];
   missing_sources: { slug: string; source_id: string }[];
   unused_sources: { slug: string; source_id: string }[];
   legacy_frontmatter: { slug: string; fields: string[] }[];
@@ -76,7 +77,7 @@ export async function collectHealthReport(
       stale: findStale(db, scope, staleSeconds),
       dead_refs: await findDeadRefs(db, scope, repoRoot),
       broken_links: findBrokenLinks(db, scope),
-      broken_xwiki: await findBrokenXwiki(db, scope),
+      cross_wiki_links: findCrossWikiLinks(db, scope),
       missing_sources: sourceFindings.missing_sources,
       unused_sources: sourceFindings.unused_sources,
       legacy_frontmatter: sourceFindings.legacy_frontmatter,
