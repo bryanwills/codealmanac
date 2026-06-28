@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 236 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 237 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -76,6 +76,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Split Codex app-server process mechanics out of the JSON-RPC runtime coordinator.
 - Split Codex app-server agent-message handling out of the generic notification router.
+- Split Codex app-server terminal event handling out of the generic notification router.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
 - Moved diagnostic probe mechanics into `src/platform/diagnostics/`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
 - Moved diagnostic fact contracts into `src/shared/diagnostics.ts`, so platform probes and diagnostics services meet through a neutral contract instead of a service-to-platform type import.
@@ -112,7 +113,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split Codex app-server agent-message handling into `src/agent/runtime/providers/codex/app-agent-messages.ts`, leaving `app-notifications.ts` as the protocol notification router.
+The latest slice split Codex app-server terminal events into `src/agent/runtime/providers/codex/app-terminal-events.ts`. `app-notifications.ts` remains the protocol notification router, while terminal run-state mutation and provider failure classification live in the terminal-events module.
 
 Verification passed:
 

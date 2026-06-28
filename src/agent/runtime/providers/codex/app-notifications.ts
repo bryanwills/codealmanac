@@ -4,13 +4,16 @@ import {
   mapCodexAgentMessageDelta,
 } from "./app-agent-messages.js";
 import {
+  mapCodexErrorNotification,
+  mapCodexTurnCompleted,
+  mapCodexWarningNotification,
+} from "./app-terminal-events.js";
+import {
   actorForCodexThread,
   codexLifecycleEvents,
 } from "./actors.js";
-import { classifyCodexFailure } from "./failures.js";
 import {
   asRecord,
-  numberField,
   stringField,
 } from "./fields.js";
 import {
@@ -116,50 +119,21 @@ export function mapCodexAppServerNotification(
   }
 
   if (notification.method === "turn/completed") {
-    const turn = asRecord(params.turn);
-    const error = asRecord(turn.error);
-    const errorMessage = stringField(error, "message");
-    if (errorMessage !== undefined) {
-      const failure = classifyCodexFailure({
-        message: errorMessage,
-        statusCode: numberField(error, "statusCode") ?? numberField(error, "code"),
-        data: error,
-      });
-      if (context.isRootCompletion !== false) {
-        state.success = false;
-        state.error = failure.message;
-        state.failure = failure;
-      }
-      return [{ type: "error", error: failure.message, failure, actor }];
-    }
-    if (context.isRootCompletion !== false) {
-      state.success = true;
-      state.turns = context.activeTurnId !== undefined ? 1 : 1;
-    }
-    return [];
+    return mapCodexTurnCompleted({
+      params,
+      state,
+      actor,
+      activeTurnId: context.activeTurnId,
+      isRootCompletion: context.isRootCompletion,
+    });
   }
 
   if (notification.method === "warning") {
-    const message = stringField(params, "message") ?? "Codex warning";
-    return [{ type: "tool_summary", summary: `Warning: ${message}`, actor }];
+    return mapCodexWarningNotification({ params, actor });
   }
 
   if (notification.method === "error") {
-    const error = asRecord(params.error);
-    const message =
-      stringField(error, "message") ??
-      stringField(error, "detail") ??
-      stringField(params, "message") ??
-      "Codex error";
-    const failure = classifyCodexFailure({
-      message,
-      statusCode: numberField(error, "statusCode") ?? numberField(error, "code"),
-      data: error,
-    });
-    state.success = false;
-    state.error = failure.message;
-    state.failure = failure;
-    return [{ type: "error", error: failure.message, failure, actor }];
+    return mapCodexErrorNotification({ params, state, actor });
   }
 
   return [];

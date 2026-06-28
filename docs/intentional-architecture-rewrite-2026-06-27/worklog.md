@@ -1663,3 +1663,10 @@ Two-hundred-thirty-sixth production slice:
 - Moved root-result capture, structured output parsing, structured-output failure events, and helper-agent completion events out of `app-notifications.ts`.
 - Kept `src/agent/runtime/providers/codex/app-notifications.ts` as the protocol notification router for plan, usage, tool, terminal, warning, and error notifications.
 - Strengthened architecture-boundary tests so generic notification routing does not regain structured output parsing or helper-agent completion mutation.
+
+Two-hundred-thirty-seventh production slice:
+
+- Added `src/agent/runtime/providers/codex/app-terminal-events.ts` for turn completion, warnings, and app-server error notifications.
+- Moved terminal run-state mutation and provider failure classification out of `app-notifications.ts`.
+- Kept `src/agent/runtime/providers/codex/app-notifications.ts` as the protocol notification router.
+- Strengthened architecture-boundary tests so generic notification routing does not regain failure classification or terminal success/failure mutation.

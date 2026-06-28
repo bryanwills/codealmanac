@@ -2451,6 +2451,9 @@ describe("architecture boundaries", () => {
     const appAgentMessages = await readSource(
       "src/agent/runtime/providers/codex/app-agent-messages.ts",
     );
+    const appTerminalEvents = await readSource(
+      "src/agent/runtime/providers/codex/app-terminal-events.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-config.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/server-requests.ts"))).toBe(true);
@@ -2459,6 +2462,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-process.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-root-turn.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-agent-messages.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-terminal-events.ts"))).toBe(true);
     expect(appServer).not.toContain("CODEALMANAC_CODEX_APP_SERVER");
     expect(appServer).not.toContain("function parsePositiveEnvInt");
     expect(appServer).not.toContain("interface PendingRequest");
@@ -2495,9 +2499,16 @@ describe("architecture boundaries", () => {
     expect(appServerRootTurn).toContain("isCodexRootThreadNotification");
     expect(appNotifications).not.toContain("parseJsonSchemaFinalOutputText");
     expect(appNotifications).not.toContain("markAgentCompleted");
+    expect(appNotifications).not.toContain("classifyCodexFailure");
+    expect(appNotifications).not.toContain("Codex warning");
+    expect(appNotifications).not.toContain("state.success = true");
     expect(appNotifications).toContain("mapCodexAgentMessageCompletion");
+    expect(appNotifications).toContain("mapCodexTurnCompleted");
     expect(appAgentMessages).toContain("parseJsonSchemaFinalOutputText");
     expect(appAgentMessages).toContain("markAgentCompleted");
+    expect(appTerminalEvents).toContain("classifyCodexFailure");
+    expect(appTerminalEvents).toContain("mapCodexWarningNotification");
+    expect(appTerminalEvents).toContain("state.success = true");
     expect(request).not.toContain("process.env");
     expect(request).toContain("environment: NodeJS.ProcessEnv");
   });
