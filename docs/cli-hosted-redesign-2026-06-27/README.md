@@ -13,6 +13,9 @@ codebase disagrees.
   current behaviour → final behaviour, grouped by zone. Open in a browser.
 - [`delivery-model.md`](./delivery-model.md) — how the wiki should be delivered
   back into a repo (beyond PR-only).
+- [`product-boundary-notes.md`](./product-boundary-notes.md) — follow-up notes
+  on open-core posture, hosted features, Modal, conversation capture, and
+  rejected product frames.
 
 ---
 
