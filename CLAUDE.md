@@ -42,7 +42,7 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/edges/worker/` | Hidden internal worker entrypoints for background job draining | `job-worker.ts` |
 | `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show/index.ts`, `reindex.ts` |
 | `src/stores/config/` | Config schema, TOML/JSON codec, raw-object editing, origin tracking, and global/project config store | `schema.ts`, `codec.ts`, `store.ts`, `editor.ts`, `origins.ts`, `paths.ts`, `index.ts` |
-| `src/platform/` | Local machine integration for install, self-update, launchd/path mechanics, diagnostics probes and probe result contracts, local transcript discovery, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
+| `src/platform/` | Local machine integration for install, self-update, launchd/path mechanics, diagnostics probes and probe result contracts, local transcript discovery/snapshot reads, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
 | `src/agent/` | Agent provider identity, readiness, auth, instructions, and runtime support | `provider-id.ts`, `readiness/`, `auth/`, `runtime/` |
 | `src/agent/runtime/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
 | `src/stores/wiki/` | Local wiki index, query, topic-file, source-frontmatter, and health-check mechanics | `indexer/`, `query/`, `topics/`, `sources/`, `health/` |

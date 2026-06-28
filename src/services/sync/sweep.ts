@@ -1,4 +1,8 @@
-import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
+import {
+  readTranscriptSnapshot,
+  type TranscriptCandidate,
+  type TranscriptSnapshot,
+} from "../../platform/transcripts/index.js";
 import {
   type LedgerEntry,
   type SyncLedger,
@@ -8,11 +12,9 @@ import {
 } from "./ledger.js";
 import {
   type SyncCursorDecision,
-  type TranscriptSnapshot,
   evaluateSyncCursor,
   failedLedgerEntry,
   pendingLedgerEntry,
-  readTranscriptSnapshot,
 } from "./transcript-cursor.js";
 import {
   type SyncSkipped,
@@ -90,7 +92,7 @@ export async function executeSyncSweep(args: {
       await reconcileLedger(candidate.repoRoot, ledger, args.now);
       const key = ledgerKey(candidate);
 
-      const transcript = await readTranscriptSnapshot(candidate);
+      const transcript = await readTranscriptSnapshot(candidate.transcriptPath);
       if (!transcript.ok) {
         summary.needsAttention.push(syncSkippedSummary(candidate, transcript.reason));
         continue;

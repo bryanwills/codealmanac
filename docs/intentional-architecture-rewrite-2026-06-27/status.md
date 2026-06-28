@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 218 committed rewrite commits past `dev`. The worklog records 170 production slices so far.
+The branch has 219 committed rewrite commits past `dev`. The worklog records 171 production slices so far.
 
-The diff is broad: 459 files changed, with 22,950 insertions and 12,309 deletions.
+The diff is broad: 461 files changed, with 23,012 insertions and 12,324 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -26,7 +26,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed the `src/services/viewer/` service bucket; viewer-only route read models now live under `src/edges/viewer/read-model/`.
 - Moved the hidden internal job worker entrypoint into `src/edges/worker/`; queued job draining remains a job service runtime workflow.
 - Moved sync ledger and lock persistence into explicit stores.
-- Moved local Claude/Codex transcript discovery into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
+- Moved local Claude/Codex transcript discovery, transcript snapshot reads, and timestamp boundary parsing into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Moved GitHub source resolution mechanics into `src/platform/github/`.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
@@ -50,9 +50,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved setup global-install state and execution into `src/services/setup/global-install.ts`. The setup TUI still asks the user and renders status, but install-path detection and global package installation now flow through the setup service before reaching platform install mechanics.
+The latest slice moved raw transcript snapshot reads, line counting, and JSONL timestamp cursor boundaries into `src/platform/transcripts/snapshot.ts`. Sync services now consume typed transcript snapshots and keep product decisions around quiet windows, ledger cursor state, and Absorb enqueueing.
 
-Verification passed: `npm run lint`, focused setup/boundary tests with 123 tests, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js setup --help`, and `node dist/codealmanac.js doctor --help`.
+Verification passed: `npm run lint`, focused sync/boundary tests with 69 tests, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js sync --help`, and `node dist/codealmanac.js doctor --help`.
 
 ## Immediate Next Work
 

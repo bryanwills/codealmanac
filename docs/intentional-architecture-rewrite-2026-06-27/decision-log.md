@@ -49,9 +49,9 @@ Doctor probe result contracts that describe local machine facts belong under `sr
 
 Setup command files may own terminal prompts and display text. Provider fix-command normalization/execution and global-install state/execution are setup product workflow, so they live under `src/services/setup/` and call platform shell or package-manager mechanics there. CLI setup files should not import `src/platform/shell.ts` or `src/platform/install/global-package.ts` directly.
 
-### Transcript discovery is platform, sync eligibility is service
+### Transcript file mechanics are platform, sync eligibility is service
 
-Claude and Codex transcript-store scanning reads local provider files and normalizes raw JSONL shapes into typed transcript candidates. That belongs under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over those normalized candidates.
+Claude and Codex transcript-store scanning, raw transcript snapshot reads, line counting, and JSONL timestamp extraction belong under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over typed transcript candidates and snapshots.
 
 ### Lifecycle owns operation construction
 

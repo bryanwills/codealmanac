@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 
-import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
-import { objectField, parseJsonObject, stringField } from "../../platform/transcripts/jsonl.js";
+import {
+  transcriptCursorForSince,
+  type TranscriptCandidate,
+} from "../../platform/transcripts/index.js";
 import { readJobRecord, resolveJobRecordPath } from "../../stores/jobs/records.js";
 import type { JobRecord } from "../../stores/jobs/types.js";
 import type {
@@ -81,12 +83,6 @@ export function sha256(content: string | Buffer): string {
   return `sha256:${createHash("sha256").update(content).digest("hex")}`;
 }
 
-export function countLines(content: string): number {
-  if (content.length === 0) return 0;
-  const matches = content.match(/\n/g);
-  return (matches?.length ?? 0) + (content.endsWith("\n") ? 0 : 1);
-}
-
 function initialLedgerCursor(
   content: Buffer,
   syncSince: Date | null,
@@ -94,34 +90,13 @@ function initialLedgerCursor(
   if (syncSince === null || content.length === 0) {
     return { size: 0, line: 0, prefixHash: EMPTY_SHA256 };
   }
-  const text = content.toString("utf8");
-  let offset = 0;
-  let line = 0;
-  for (const rawLine of text.split(/(?<=\n)/)) {
-    if (rawLine.length === 0) continue;
-    const lineWithoutNewline = rawLine.replace(/\r?\n$/, "");
-    const timestamp = transcriptLineTimestamp(lineWithoutNewline);
-    if (timestamp !== null && timestamp >= syncSince.getTime()) {
-      return {
-        size: offset,
-        line,
-        prefixHash: offset === 0 ? EMPTY_SHA256 : sha256(content.subarray(0, offset)),
-      };
-    }
-    offset += Buffer.byteLength(rawLine);
-    line += 1;
-  }
-  return { size: content.length, line, prefixHash: sha256(content) };
-}
-
-function transcriptLineTimestamp(line: string): number | null {
-  const parsed = parseJsonObject(line);
-  if (parsed === null) return null;
-  const rawTimestamp = stringField(parsed, "timestamp") ??
-    stringField(objectField(parsed, "payload") ?? {}, "timestamp");
-  if (rawTimestamp === undefined) return null;
-  const ms = Date.parse(rawTimestamp);
-  return Number.isFinite(ms) ? ms : null;
+  const cursor = transcriptCursorForSince(content, syncSince);
+  return {
+    ...cursor,
+    prefixHash: cursor.size === 0
+      ? EMPTY_SHA256
+      : sha256(content.subarray(0, cursor.size)),
+  };
 }
 
 function terminalJobError(record: JobRecord): string {

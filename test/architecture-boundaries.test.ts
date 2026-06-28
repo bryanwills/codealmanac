@@ -826,20 +826,31 @@ describe("architecture boundaries", () => {
     expect(syncSweep).not.toContain("sync.lock");
   });
 
-  it("keeps sync transcript cursor decisions out of the sweep coordinator", async () => {
+  it("keeps sync transcript file mechanics in platform transcripts", async () => {
     const syncSweep = await readSource("src/services/sync/sweep.ts");
+    const syncLedger = await readSource("src/services/sync/ledger.ts");
     const transcriptCursor = await readSource("src/services/sync/transcript-cursor.ts");
+    const transcriptSnapshot = await readSource("src/platform/transcripts/snapshot.ts");
 
     expect(existsSync(join(ROOT, "src/services/sync/transcript-cursor.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/transcripts/snapshot.ts"))).toBe(true);
     expect(syncSweep).toContain("transcript-cursor.js");
+    expect(syncSweep).toContain("platform/transcripts/index.js");
     expect(syncSweep).not.toContain("from \"node:fs/promises\"");
     expect(syncSweep).not.toContain("function readTranscriptSnapshot");
     expect(syncSweep).not.toContain("function evaluateSyncCursor");
     expect(syncSweep).not.toContain("lastAbsorbedPrefixHash");
     expect(syncSweep).not.toContain("pendingPrefixHash");
-    expect(transcriptCursor).toContain("export async function readTranscriptSnapshot");
+    expect(syncLedger).not.toContain("platform/transcripts/jsonl.js");
+    expect(syncLedger).toContain("transcriptCursorForSince");
+    expect(transcriptCursor).not.toContain("from \"node:fs/promises\"");
+    expect(transcriptCursor).not.toContain("readTranscriptSnapshot");
     expect(transcriptCursor).toContain("export function evaluateSyncCursor");
     expect(transcriptCursor).toContain("export function pendingLedgerEntry");
+    expect(transcriptSnapshot).toContain("from \"node:fs/promises\"");
+    expect(transcriptSnapshot).toContain("export async function readTranscriptSnapshot");
+    expect(transcriptSnapshot).toContain("export function transcriptCursorForSince");
+    expect(transcriptSnapshot).toContain("parseJsonObject");
   });
 
   it("keeps local process signaling in the platform layer", async () => {

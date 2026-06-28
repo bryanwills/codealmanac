@@ -1,46 +1,16 @@
-import { readFile } from "node:fs/promises";
-
-import type { TranscriptCandidate } from "../../platform/transcripts/index.js";
+import type {
+  TranscriptSnapshot,
+} from "../../platform/transcripts/index.js";
 import {
   type LedgerEntry,
-  countLines,
   sha256,
   syncCursor,
 } from "./ledger.js";
-
-export interface TranscriptSnapshot {
-  content: Buffer;
-  currentSize: number;
-  currentLine: number;
-}
-
-export type TranscriptReadResult =
-  | { ok: true; snapshot: TranscriptSnapshot }
-  | { ok: false; reason: string };
 
 export type SyncCursorDecision =
   | { kind: "skip"; reason: string }
   | { kind: "needs_attention"; reason: string; entry: LedgerEntry }
   | { kind: "ready"; fromLine: number; toLine: number };
-
-export async function readTranscriptSnapshot(
-  candidate: TranscriptCandidate,
-): Promise<TranscriptReadResult> {
-  try {
-    const content = await readFile(candidate.transcriptPath);
-    return {
-      ok: true,
-      snapshot: {
-        content,
-        currentSize: content.length,
-        currentLine: countLines(content.toString("utf8")),
-      },
-    };
-  } catch (err: unknown) {
-    const reason = `read-failed: ${err instanceof Error ? err.message : String(err)}`;
-    return { ok: false, reason };
-  }
-}
 
 export function evaluateSyncCursor(
   entry: LedgerEntry,

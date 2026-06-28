@@ -3,6 +3,15 @@ import { discoverCodex } from "./codex.js";
 import type { TranscriptCandidate, TranscriptSourceApp } from "./types.js";
 
 export type { TranscriptCandidate, TranscriptSourceApp } from "./types.js";
+export {
+  readTranscriptSnapshot,
+  transcriptCursorForSince,
+} from "./snapshot.js";
+export type {
+  TranscriptCursorBoundary,
+  TranscriptReadResult,
+  TranscriptSnapshot,
+} from "./snapshot.js";
 
 export async function discoverTranscriptCandidates(args: {
   apps: TranscriptSourceApp[];

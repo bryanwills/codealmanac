@@ -1156,3 +1156,10 @@ One-hundred-seventieth production slice:
 - Updated `src/cli/commands/setup/global-install-step.ts` so the setup TUI prompts/renders while the setup service owns install path and global npm install workflow.
 - Removed the direct `platform/install/global-package.js` import from the setup global-install TUI file.
 - Strengthened boundary coverage so setup global-install package-manager mechanics stay behind setup service and platform install boundaries.
+
+One-hundred-seventy-first production slice:
+
+- Added `src/platform/transcripts/snapshot.ts` for raw transcript file reads, line counting, and JSONL timestamp cursor boundaries.
+- Updated sync ledger/cursor services so they consume typed transcript snapshots and timestamp boundaries instead of parsing raw transcript files directly.
+- Kept sync services responsible for product decisions: quiet-window eligibility, ledger cursor status, prefix mismatch handling, and Absorb enqueueing.
+- Strengthened boundary coverage so transcript file mechanics stay in platform transcripts while sync cursor decisions stay in services.
