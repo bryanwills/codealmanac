@@ -1546,3 +1546,10 @@ Two-hundred-twenty-first production slice:
 - Kept raw markdown argument joining and stdin fallback in the CLI edge, beside the commands that consume review markdown.
 - Replaced the inline decide/apply/reopen registration switch with a small command-definition list in the decision registration file.
 - Strengthened architecture-boundary tests so review registration stays split by command responsibility and raw markdown intake does not move into the root aggregator.
+
+Two-hundred-twenty-second production slice:
+
+- Split `src/edges/cli/register-automation-commands.ts` into a thin root-command aggregator plus automation install, uninstall, status, and task-input edge files.
+- Kept scheduler construction and process environment facts in concrete command registration files.
+- Moved repeated automation task parsing/error emission into a small CLI-edge helper instead of duplicating it across install, uninstall, and status actions.
+- Strengthened architecture-boundary tests so automation registration stays split by command surface while launchd mechanics remain behind app/platform runtime composition.

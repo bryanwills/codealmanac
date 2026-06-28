@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 221 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 222 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -24,6 +24,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split setup-family command registration into per-command edge files for setup, doctor, update, and uninstall.
 - Split topic command registration into read, create, graph-edge, and page-mutation edge files.
 - Split review command registration into add, read, decision, and markdown-input edge files.
+- Split automation command registration into install, uninstall, status, and task-input edge files.
 - Made CLI command files much thinner by moving product workflows into `src/services/`.
 - Split wiki workflows into clearer service boundaries: search, show, health, registry, topics, review, reindex, source migration, and doctor wiki checks.
 - Moved durable job persistence into explicit stores for records, specs, logs, and worker locks.
@@ -96,20 +97,19 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split review command registration into a thin root-command aggregator plus add, read, decision, and markdown-input edge files.
+The latest slice split automation command registration into a thin root-command aggregator plus install, uninstall, status, and task-input edge files.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/review-command.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/automation.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js review --help`
-- `node dist/launcher.js review add --help`
-- `node dist/launcher.js review list --help`
-- `node dist/launcher.js review decide --help`
-- `node dist/launcher.js review reopen --help`
+- `node dist/launcher.js automation --help`
+- `node dist/launcher.js automation install --help`
+- `node dist/launcher.js automation uninstall --help`
+- `node dist/launcher.js automation status --help`
 
 ## Immediate Next Work
 

@@ -1126,6 +1126,18 @@ describe("architecture boundaries", () => {
     const automationScheduler = await readSource("src/shared/automation-scheduler.ts");
     const automationAppRuntime = await readSource("src/app/automation-runtime.ts");
     const automationRegistration = await readSource("src/edges/cli/register-automation-commands.ts");
+    const automationInstallRegistration = await readSource(
+      "src/edges/cli/register-automation-install-command.ts",
+    );
+    const automationUninstallRegistration = await readSource(
+      "src/edges/cli/register-automation-uninstall-command.ts",
+    );
+    const automationStatusRegistration = await readSource(
+      "src/edges/cli/register-automation-status-command.ts",
+    );
+    const automationTaskInput = await readSource(
+      "src/edges/cli/automation-task-input.ts",
+    );
     const migrateRegistration = await readSource("src/edges/cli/register-migrate-commands.ts");
     const setupAutomationStep = await readSource("src/edges/cli/setup/automation-step.ts");
     const setupAutoUpdateStep = await readSource("src/edges/cli/setup/auto-update-step.ts");
@@ -1183,8 +1195,20 @@ describe("architecture boundaries", () => {
     expect(automationScheduler).toContain("programArguments: string[] | null");
     expect(existsSync(join(ROOT, "src/app/automation-runtime.ts"))).toBe(true);
     expect(automationAppRuntime).toContain("createLaunchdAutomationScheduler");
+    expect(automationRegistration).toContain("registerAutomationInstallCommand(automation)");
+    expect(automationRegistration).toContain("registerAutomationUninstallCommand(automation)");
+    expect(automationRegistration).toContain("registerAutomationStatusCommand(automation)");
+    expect(automationRegistration).not.toContain("createAutomationScheduler");
+    expect(automationRegistration).not.toContain("parseAutomationTaskIds");
+    expect(automationInstallRegistration).toContain("createAutomationScheduler");
+    expect(automationInstallRegistration).toContain("currentCliProgramArguments");
+    expect(automationUninstallRegistration).toContain("createAutomationScheduler");
+    expect(automationStatusRegistration).toContain("createAutomationScheduler");
+    expect(automationTaskInput).toContain("parseAutomationTaskIds");
     for (const source of [
-      automationRegistration,
+      automationInstallRegistration,
+      automationUninstallRegistration,
+      automationStatusRegistration,
       migrateRegistration,
       setupAutomationStep,
       setupAutoUpdateStep,
