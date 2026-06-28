@@ -24,6 +24,12 @@ describe("architecture boundaries: setup and uninstall", () => {
     const setupAgentChoice = await readSource(
       "src/edges/cli/setup/agent-choice.ts",
     );
+    const setupAgentProviderChoice = await readSource(
+      "src/edges/cli/setup/agent-provider-choice.ts",
+    );
+    const setupAgentProviderDisplay = await readSource(
+      "src/edges/cli/setup/agent-provider-display.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/services/setup/agent-choice.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/setup/agent-choice-types.ts")))
@@ -66,14 +72,24 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(setupAgentSelection).toContain("parseAgentSelection");
     expect(setupAgentSelection).toContain("isEnabledAgentProviderId");
     expect(setupAgentChoice).toContain("services/setup/index.js");
+    expect(setupAgentProviderChoice).toContain("services/setup/index.js");
+    expect(setupAgentProviderDisplay).toContain("services/setup/index.js");
     expect(setupAgentChoice).not.toContain("../../../agent");
+    expect(setupAgentProviderChoice).not.toContain("../../../agent");
     expect(setupAgentChoice).not.toContain("agent/readiness/view");
+    expect(setupAgentProviderChoice).not.toContain("agent/readiness/view");
     expect(setupAgentChoice).not.toContain("../../../config/index");
+    expect(setupAgentProviderChoice).not.toContain("../../../config/index");
     expect(setupAgentChoice).not.toContain("readConfig");
+    expect(setupAgentProviderChoice).not.toContain("readConfig");
     expect(setupAgentChoice).not.toContain("writeConfig");
+    expect(setupAgentProviderChoice).not.toContain("writeConfig");
     expect(setupAgentChoice).not.toContain("config.agent");
+    expect(setupAgentProviderChoice).not.toContain("config.agent");
     expect(setupAgentChoice).not.toContain("parseAgentSelection");
+    expect(setupAgentProviderChoice).not.toContain("parseAgentSelection");
     expect(setupAgentChoice).not.toContain("isAgentProviderId");
+    expect(setupAgentProviderChoice).not.toContain("isAgentProviderId");
   });
 
   it("keeps setup input controls out of display rendering", async () => {
@@ -102,6 +118,8 @@ describe("architecture boundaries: setup and uninstall", () => {
     const setupCallers = await Promise.all([
       readSource("src/edges/cli/setup/agent-model-choice.ts"),
       readSource("src/edges/cli/setup/agent-choice.ts"),
+      readSource("src/edges/cli/setup/agent-provider-choice.ts"),
+      readSource("src/edges/cli/setup/agent-provider-display.ts"),
       readSource("src/edges/cli/setup/global-install-step.ts"),
       readSource("src/edges/cli/setup/index.ts"),
       readSource("src/edges/cli/setup/instruction-target-choice.ts"),
@@ -255,6 +273,9 @@ describe("architecture boundaries: setup and uninstall", () => {
     const setupAgentChoice = await readSource(
       "src/edges/cli/setup/agent-choice.ts",
     );
+    const setupAgentProviderChoice = await readSource(
+      "src/edges/cli/setup/agent-provider-choice.ts",
+    );
     const setupProviderFixCommand = await readSource(
       "src/services/setup/provider-fix-command.ts",
     );
@@ -268,14 +289,22 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(existsSync(join(ROOT, "src/platform/shell.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/setup/runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/setup/provider-fix-command.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/agent-provider-choice.ts"))).toBe(true);
     expect(setupAgentChoice).not.toContain("platform/shell.js");
     expect(setupAgentChoice).not.toContain("platform/setup/runtime.js");
     expect(setupAgentChoice).toContain("runProviderFixCommand:");
-    expect(setupAgentChoice).toContain("runSetupProviderFixCommand");
+    expect(setupAgentChoice).not.toContain("runSetupProviderFixCommand");
     expect(setupAgentChoice).not.toContain("node:child_process");
     expect(setupAgentChoice).not.toContain("spawn(command");
     expect(setupAgentChoice).not.toContain("shell: true");
     expect(setupAgentChoice).not.toContain("stdio: \"inherit\"");
+    expect(setupAgentProviderChoice).not.toContain("platform/shell.js");
+    expect(setupAgentProviderChoice).not.toContain("platform/setup/runtime.js");
+    expect(setupAgentProviderChoice).toContain("runSetupProviderFixCommand");
+    expect(setupAgentProviderChoice).not.toContain("node:child_process");
+    expect(setupAgentProviderChoice).not.toContain("spawn(command");
+    expect(setupAgentProviderChoice).not.toContain("shell: true");
+    expect(setupAgentProviderChoice).not.toContain("stdio: \"inherit\"");
     expect(setupProviderFixCommand).not.toContain("platform/");
     expect(setupProviderFixCommand).not.toContain("runInheritedShellCommand");
     expect(setupProviderFixCommand).toContain("SetupProviderFixCommandRunner");
@@ -296,16 +325,31 @@ describe("architecture boundaries: setup and uninstall", () => {
     const setupAgentChoice = await readSource(
       "src/edges/cli/setup/agent-choice.ts",
     );
+    const setupProviderChoice = await readSource(
+      "src/edges/cli/setup/agent-provider-choice.ts",
+    );
+    const setupProviderDisplay = await readSource(
+      "src/edges/cli/setup/agent-provider-display.ts",
+    );
     const setupModelChoice = await readSource(
       "src/edges/cli/setup/agent-model-choice.ts",
     );
 
     expect(existsSync(join(ROOT, "src/edges/cli/setup/agent-model-choice.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/agent-provider-choice.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/agent-provider-display.ts"))).toBe(true);
     expect(setupAgentChoice).toContain("agent-model-choice.js");
+    expect(setupAgentChoice).toContain("agent-provider-choice.js");
+    expect(setupProviderChoice).toContain("agent-provider-display.js");
     expect(setupAgentChoice).not.toContain("readSetupProviderModelChoices");
     expect(setupAgentChoice).not.toContain("formatModelChoice");
+    expect(setupAgentChoice).not.toContain("formatProviderChoice");
+    expect(setupAgentChoice).not.toContain("showUnavailableProvider");
+    expect(setupProviderChoice).not.toContain("readSetupProviderModelChoices");
     expect(setupAgentChoice).not.toContain("friendlyModelLabel");
     expect(setupAgentChoice).not.toContain("providerDisplayName");
+    expect(setupProviderDisplay).toContain("formatProviderChoice");
+    expect(setupProviderDisplay).toContain("showUnavailableProvider");
     expect(setupModelChoice).toContain("readSetupProviderModelChoices");
     expect(setupModelChoice).toContain("formatModelChoice");
   });

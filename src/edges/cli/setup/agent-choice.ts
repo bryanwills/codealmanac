@@ -1,31 +1,22 @@
 import type {
   SetupAgentProviderId,
   SetupProviderFixCommandRunner,
-  SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
 import type { AgentReadinessRuntime } from "../../../shared/agent-readiness.js";
 import {
-  normalizeSetupProviderFixCommand,
   readSetupAgentChoiceState,
-  refreshSetupAgentChoiceView,
   resolveSetupAgentSelection,
-  runnableSetupProviderFixCommand,
-  runSetupProviderFixCommand,
   saveSetupAgentChoice,
 } from "../../../services/setup/index.js";
 import { chooseProviderModel } from "./agent-model-choice.js";
 import {
-  confirm,
-  selectChoice,
-  waitForEnter,
-} from "./input.js";
+  chooseInteractiveSetupProvider,
+  promptForSelectedProviderFix,
+} from "./agent-provider-choice.js";
 import {
   type SetupTheme,
-  dim,
-  stepActive,
   stepDone,
-  whiteBold,
 } from "./output.js";
 import type { SetupInputStream } from "./types.js";
 
@@ -55,71 +46,18 @@ export async function chooseDefaultAgent(args: {
   let view = state.view;
   let selected = state.selected;
   if (args.interactive && args.requested === undefined && view !== null) {
-    while (true) {
-      const choice = await selectChoice({
-        input: args.input,
-        out: args.out,
-        theme: args.theme,
-        title: "Choose your agent",
-        help: "Choose the AI agent Almanac should use.",
-        choices: view.choices.map((choice) => ({
-          value: choice,
-          line: formatProviderChoice(args.theme, choice),
-          aliases: [choice.id, choice.label.toLowerCase()],
-        })),
-        defaultIndex: Math.max(
-          0,
-          view.choices.findIndex((choice) =>
-            choice.id === view?.recommendedProvider
-          ),
-        ),
-      });
-      if (choice.ready) {
-        selected = choice.id;
-        break;
-      }
-      const command = normalizeSetupProviderFixCommand(choice.fixCommand);
-      if (choice.readiness === "not-authenticated" && command !== null) {
-        const runLogin = await confirm(
-          args.input,
-          args.out,
-          args.theme,
-          `${choice.label} sign-in is needed. Run '${command}' now?`,
-          true,
-        );
-        if (runLogin === "install") {
-          const login = await runSetupProviderFixCommand(
-            command,
-            args.runProviderFixCommand,
-          );
-          if (!login.ok) {
-            stepActive(
-              args.out,
-              args.theme,
-              `${choice.label} login failed: ${login.error}`,
-            );
-          }
-          view = await refreshSetupAgentChoiceView({
-            readinessRuntime: args.readinessRuntime,
-            spawnCli: args.spawnCli,
-            environment: args.environment,
-          });
-          const refreshed = view.choices.find((next) => next.id === choice.id);
-          if (refreshed?.ready === true) {
-            selected = refreshed.id;
-            break;
-          }
-        }
-        continue;
-      }
-      showUnavailableProvider(args.out, args.theme, choice);
-      await waitForEnter(
-        args.input,
-        args.out,
-        args.theme,
-        "Press Enter to choose a different agent.",
-      );
-    }
+    const providerChoice = await chooseInteractiveSetupProvider({
+      input: args.input,
+      out: args.out,
+      theme: args.theme,
+      view,
+      readinessRuntime: args.readinessRuntime,
+      spawnCli: args.spawnCli,
+      runProviderFixCommand: args.runProviderFixCommand,
+      environment: args.environment,
+    });
+    selected = providerChoice.selected;
+    view = providerChoice.view;
   }
   const selection = resolveSetupAgentSelection({
     selected,
@@ -128,42 +66,24 @@ export async function chooseDefaultAgent(args: {
   if (!selection.ok) return selection;
   const provider = selection.provider;
   let selectedChoice = view?.choices.find((choice) => choice.id === provider);
-  const runnableFixCommand = selectedChoice !== undefined
-    ? runnableSetupProviderFixCommand(selectedChoice.fixCommand)
-    : null;
   if (
     args.interactive &&
     selectedChoice !== undefined &&
-    !selectedChoice.ready &&
-    runnableFixCommand !== null
+    !selectedChoice.ready
   ) {
-    const runLogin = await confirm(
-      args.input,
-      args.out,
-      args.theme,
-      `${selectedChoice.label} is not ready. Run '${runnableFixCommand}' now?`,
-      true,
-    );
-    if (runLogin === "install") {
-      const login = await runSetupProviderFixCommand(
-        runnableFixCommand,
-        args.runProviderFixCommand,
-      );
-      if (login.ok) {
-        view = await refreshSetupAgentChoiceView({
-          readinessRuntime: args.readinessRuntime,
-          spawnCli: args.spawnCli,
-          environment: args.environment,
-        });
-        selectedChoice = view.choices.find((choice) => choice.id === provider);
-      } else {
-        stepActive(
-          args.out,
-          args.theme,
-          `${selectedChoice.label} login failed: ${login.error}`,
-        );
-      }
-    }
+    const fixAttempt = await promptForSelectedProviderFix({
+      input: args.input,
+      out: args.out,
+      theme: args.theme,
+      provider,
+      selectedChoice,
+      readinessRuntime: args.readinessRuntime,
+      spawnCli: args.spawnCli,
+      runProviderFixCommand: args.runProviderFixCommand,
+      environment: args.environment,
+    });
+    view = fixAttempt.view ?? view;
+    selectedChoice = fixAttempt.selectedChoice;
   }
   if (selectedChoice !== undefined && !selectedChoice.ready) {
     return {
@@ -192,51 +112,4 @@ export async function chooseDefaultAgent(args: {
     stepDone(args.out, args.theme, `Agent readiness: ${detail}`);
   }
   return { ok: true, provider, model };
-}
-
-function formatProviderChoice(
-  theme: SetupTheme,
-  choice: SetupProviderView["choices"][number],
-): string {
-  const status = providerStatusLabel(choice);
-  const detail = providerDetailLabel(choice);
-  const tag = choice.recommended
-    ? `  ${dim(theme, "recommended")}`
-    : "";
-  return `${choice.label.padEnd(8)} ${status.padEnd(15)} ${detail}${tag}`;
-}
-
-function providerStatusLabel(
-  choice: SetupProviderView["choices"][number],
-): string {
-  if (choice.ready) {
-    return choice.detail === "ANTHROPIC_API_KEY set" ? "API key set" : "signed in";
-  }
-  return choice.readiness === "missing" ? "not installed" : "sign in needed";
-}
-
-function providerDetailLabel(
-  choice: SetupProviderView["choices"][number],
-): string {
-  if (choice.ready) return choice.account ?? choice.detail;
-  if (choice.fixCommand === null) return choice.detail;
-  return normalizeSetupProviderFixCommand(choice.fixCommand) ?? choice.detail;
-}
-
-function showUnavailableProvider(
-  out: NodeJS.WritableStream,
-  theme: SetupTheme,
-  choice: SetupProviderView["choices"][number],
-): void {
-  if (choice.readiness === "missing") {
-    out.write(
-      `\n  ${whiteBold(theme, `${choice.label} is not installed.`)}\n` +
-        `  ${providerDetailLabel(choice)}\n\n`,
-    );
-    return;
-  }
-  out.write(
-    `\n  ${whiteBold(theme, `${choice.label} is not signed in.`)}\n` +
-      `  Run: ${providerDetailLabel(choice)}\n\n`,
-  );
 }

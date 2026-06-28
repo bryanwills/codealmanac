@@ -138,6 +138,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split review CLI output rendering into add, read, decision, shared error, item, output, and type owner files, deleting the remaining mixed review renderer.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
+- Split setup provider selection UI into a coordinator, an interactive readiness/sign-in loop, and provider-choice display helpers, so setup agent choice no longer mixes provider display text with model/config coordination.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.

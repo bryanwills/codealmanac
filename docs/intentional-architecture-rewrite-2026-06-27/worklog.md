@@ -1990,3 +1990,11 @@ Two-hundred-seventy-ninth production slice:
 - Added owner-named review render files for add, read/show, decide/apply/reopen, shared errors, item details, output helpers, and output types under `src/edges/cli/commands/review/render/`.
 - Updated review command adapters to import the specific renderer they call.
 - Strengthened wiki command boundary tests so review renderer ownership follows the already-split review command adapters.
+
+Two-hundred-eightieth production slice:
+
+- Split setup agent provider selection out of `src/edges/cli/setup/agent-choice.ts`.
+- Added `src/edges/cli/setup/agent-provider-choice.ts` for the interactive provider readiness/sign-in loop.
+- Added `src/edges/cli/setup/agent-provider-display.ts` for provider choice status/detail rendering.
+- Kept `agent-choice.ts` focused on coordinating setup agent state, selection resolution, model choice, config persistence, and final readiness output.
+- Strengthened setup boundary tests so provider choice UI remains separate from model choice UI and platform process execution.
