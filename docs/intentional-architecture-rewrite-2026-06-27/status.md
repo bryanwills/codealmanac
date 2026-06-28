@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 257 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 258 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -114,6 +114,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split the old `src/services/agents/agents.ts` bucket into owned service files for agents read views, default-provider writes, provider-model writes, and config-write mechanics.
 - Removed setup's duplicate spawned-process contract; setup now aliases the shared agent readiness spawn contract.
 - Removed the stale wiki indexer `total` compatibility alias; `pagesIndexed` is now the single result contract name through indexer, reindex service, CLI adapter, and renderer.
+- Split the monolithic architecture boundary test file into subsystem-owned boundary test files, so the guardrails now follow the same ownership map as `src/`.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -132,12 +133,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed the stale `total` compatibility alias from the wiki indexer result contract. `pagesIndexed` is now the single indexed-page count through the indexer store, wiki reindex service, CLI reindex adapter, and reindex renderer.
+The latest slice split the monolithic `test/architecture-boundaries.test.ts` file into subsystem-owned boundary test files for foundation/CLI, wiki commands, jobs/sync, automation/update/config/agents, setup, lifecycle/providers, and indexer/diagnostics/registry.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/indexer.test.ts test/architecture-boundaries.test.ts`
+- `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
@@ -150,7 +151,7 @@ Verification passed:
 Previous full-slice verification also passed:
 
 - `npm run lint`
-- `npx vitest run test/update-announce.test.ts test/update.test.ts test/cli.test.ts test/architecture-boundaries.test.ts`
+- `npx vitest run test/update-announce.test.ts test/update.test.ts test/cli.test.ts test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`

@@ -1824,3 +1824,10 @@ Two-hundred-fifty-seventh production slice:
 - Kept `pagesIndexed` as the single indexed-page count through the indexer store, wiki reindex service, CLI reindex adapter, and reindex renderer.
 - Updated indexer tests to assert the current result name instead of the old compatibility field.
 - Strengthened architecture-boundary tests so the reindex service and command adapter do not reintroduce `total:` as a parallel result field.
+
+Two-hundred-fifty-eighth production slice:
+
+- Split the 3,125-line `test/architecture-boundaries.test.ts` mixed guardrail bucket into seven subsystem-owned boundary test files.
+- Added separate boundary suites for foundation/CLI, wiki commands/viewer, jobs/sync, automation/update/config/agents, setup/uninstall, lifecycle/providers, and indexer/diagnostics/registry.
+- Preserved the same 60 architecture-boundary assertions while making each guardrail file change for one subsystem family instead of every rewrite boundary.
+- Kept the focused boundary test command as `npx vitest run test/architecture-*-boundaries.test.ts`.
