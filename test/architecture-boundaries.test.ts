@@ -127,6 +127,9 @@ describe("architecture boundaries", () => {
     const registerQuery = await readSource(
       "src/edges/cli/register-query-commands.ts",
     );
+    const registerListCommand = await readSource(
+      "src/edges/cli/register-list-command.ts",
+    );
 
     expect(edgeHelpers).toContain("export function emit");
     expect(edgeHelpers).toContain("process.stdout.write");
@@ -140,10 +143,12 @@ describe("architecture boundaries", () => {
     expect(registerMaintenance).not.toContain("process.stdout.write");
     expect(registerMaintenance).not.toContain("process.exitCode");
 
-    expect(registerQuery).toContain("from \"./helpers.js\"");
-    expect(registerQuery).toContain("const result = await listWikis({");
-    expect(registerQuery).toContain("color: shouldUseStdoutColor()");
-    expect(registerQuery).toContain("emit(result)");
+    expect(registerQuery).toContain("registerListCommand");
+    expect(registerQuery).not.toContain("const result = await listWikis({");
+    expect(registerListCommand).toContain("from \"./helpers.js\"");
+    expect(registerListCommand).toContain("const result = await listWikis({");
+    expect(registerListCommand).toContain("color: shouldUseStdoutColor()");
+    expect(registerListCommand).toContain("emit(result)");
     expect(registerQuery).not.toContain("process.stdout.write(result.stdout)");
     expect(registerQuery).not.toContain("process.exitCode = result.exitCode");
   });
@@ -305,11 +310,16 @@ describe("architecture boundaries", () => {
     const registerQueryCommands = await readSource(
       "src/edges/cli/register-query-commands.ts",
     );
+    const registerServeCommand = await readSource(
+      "src/edges/cli/register-serve-command.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/cli/commands/serve.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/serve-render.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/edges/cli/serve.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/serve-render.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/register-serve-command.ts")))
+      .toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/interrupt.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/viewer/server.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/viewer/read-model/api.ts"))).toBe(true);
@@ -338,9 +348,12 @@ describe("architecture boundaries", () => {
     expect(viewerJobs).not.toContain("platform/process");
     expect(cliInterrupt).toContain("process.once");
     expect(cliInterrupt).toContain("SIGINT");
-    expect(registerQueryCommands).toContain("waitForCliInterrupt");
-    expect(registerQueryCommands).toContain("./serve.js");
-    expect(registerQueryCommands).toContain("write: (chunk)");
+    expect(registerQueryCommands).toContain("registerServeCommand");
+    expect(registerQueryCommands).not.toContain("waitForCliInterrupt");
+    expect(registerQueryCommands).not.toContain("write: (chunk)");
+    expect(registerServeCommand).toContain("waitForCliInterrupt");
+    expect(registerServeCommand).toContain("./serve.js");
+    expect(registerServeCommand).toContain("write: (chunk)");
   });
 
   it("keeps list command adapters out of registry storage mechanics", async () => {
@@ -348,6 +361,9 @@ describe("architecture boundaries", () => {
     const listRender = await readSource("src/cli/commands/list-render.ts");
     const registerQuery = await readSource(
       "src/edges/cli/register-query-commands.ts",
+    );
+    const registerListCommand = await readSource(
+      "src/edges/cli/register-list-command.ts",
     );
     const registryService = await readSource("src/services/wiki/registry.ts");
     const registryStore = await readSource("src/stores/wiki-registry/store.ts");
@@ -372,7 +388,8 @@ describe("architecture boundaries", () => {
     expect(listRender).toContain("makeAnsiTheme(options.color === true)");
     expect(listRender).toContain("renderListDropResult");
     expect(listRender).toContain("formatPretty");
-    expect(registerQuery).toContain("shouldUseStdoutColor()");
+    expect(registerQuery).toContain("registerListCommand");
+    expect(registerListCommand).toContain("shouldUseStdoutColor()");
     expect(registryService).not.toContain("export type RegisteredWiki = RegistryEntry");
     expect(registryService).toContain("isRegistryEntryReachable");
     expect(registryService).not.toContain("existsSync");

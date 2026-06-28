@@ -1511,3 +1511,10 @@ Two-hundred-sixteenth production slice:
 - Removed `taskId` from scheduler job input/output because launchd mechanics do not need product task identity; automation services keep task ids in planning/result objects.
 - Changed launchd automation scheduler, automation planning, automation types, migration, and legacy-hook cleanup to import the shared scheduler contract.
 - Strengthened architecture-boundary tests so platform automation scheduler no longer imports automation services and the shared scheduler contract stays free of `AutomationTaskId`.
+
+Two-hundred-seventeenth production slice:
+
+- Split `src/edges/cli/register-query-commands.ts` into a thin aggregator plus per-command registration files for serve, search, show, health, and list.
+- Kept command parsing, stdin reading, color selection, auto-registration, and service invocation in command-specific edge files instead of one mixed query registration file.
+- Kept `resolveSearchOutputMode()` re-exported from the aggregator for existing tests while moving its implementation next to search registration.
+- Strengthened architecture-boundary tests so serve/list edge assertions target the specific registration files rather than the query aggregator.

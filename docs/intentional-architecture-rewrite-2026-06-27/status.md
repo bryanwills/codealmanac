@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 216 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 217 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -19,6 +19,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved bundled operation prompt file mechanics into `src/platform/prompts.ts`, with lifecycle services receiving an injected prompt loader.
 - Moved setup instruction file mechanics into `src/platform/setup/instructions.ts`, with setup services receiving an injected setup instruction runtime.
 - Moved CLI process execution and command registration into `src/edges/cli/`.
+- Split query command registration into per-command edge files for serve, search, show, health, and list.
 - Made CLI command files much thinner by moving product workflows into `src/services/`.
 - Split wiki workflows into clearer service boundaries: search, show, health, registry, topics, review, reindex, source migration, and doctor wiki checks.
 - Moved durable job persistence into explicit stores for records, specs, logs, and worker locks.
@@ -91,16 +92,20 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved the automation scheduler port into `src/shared/automation-scheduler.ts`, deleted the old service scheduler contract file, and removed product `taskId` from the launchd-facing job shape.
+The latest slice split the large query command registration file into a thin aggregator plus per-command edge registration files for serve, search, show, health, and list.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/automation.test.ts test/setup.test.ts test/uninstall.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/search.test.ts test/show.test.ts test/health.test.ts test/list.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js automation --help`
+- `node dist/launcher.js --help`
+- `node dist/launcher.js search --help`
+- `node dist/launcher.js show --help`
+- `node dist/launcher.js health --help`
+- `node dist/launcher.js list --help`
 
 ## Immediate Next Work
 
