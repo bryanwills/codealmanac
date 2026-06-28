@@ -99,6 +99,18 @@ describe("architecture boundaries", () => {
     const registerSetup = await readSource(
       "src/edges/cli/register-setup-commands.ts",
     );
+    const registerSetupCommand = await readSource(
+      "src/edges/cli/register-setup-command.ts",
+    );
+    const registerDoctorCommand = await readSource(
+      "src/edges/cli/register-doctor-command.ts",
+    );
+    const registerUpdateCommand = await readSource(
+      "src/edges/cli/register-update-command.ts",
+    );
+    const registerUninstallCommand = await readSource(
+      "src/edges/cli/register-uninstall-command.ts",
+    );
     const registerAgents = await readSource(
       "src/edges/cli/register-agent-commands.ts",
     );
@@ -112,8 +124,20 @@ describe("architecture boundaries", () => {
       .toBe(true);
     expect(registerCommands).toContain("registerAgentCommands(program)");
     expect(registerCommands).toContain("registerConfigCommands(program)");
+    expect(registerSetup).toContain("registerSetupCommand(program, deps)");
+    expect(registerSetup).toContain("registerDoctorCommand(program, deps)");
+    expect(registerSetup).toContain("registerUpdateCommand(program)");
+    expect(registerSetup).toContain("registerUninstallCommand(program)");
+    expect(registerSetup).not.toContain(".command(\"setup\")");
+    expect(registerSetup).not.toContain(".command(\"doctor\")");
+    expect(registerSetup).not.toContain(".command(\"update\")");
+    expect(registerSetup).not.toContain(".command(\"uninstall\")");
     expect(registerSetup).not.toContain(".command(\"agents\")");
     expect(registerSetup).not.toContain(".command(\"config\")");
+    expect(registerSetupCommand).toContain(".command(\"setup\")");
+    expect(registerDoctorCommand).toContain(".command(\"doctor\")");
+    expect(registerUpdateCommand).toContain(".command(\"update\")");
+    expect(registerUninstallCommand).toContain(".command(\"uninstall\")");
     expect(registerAgents).toContain(".command(\"agents\")");
     expect(registerConfig).toContain(".command(\"config\")");
   });
@@ -1164,7 +1188,7 @@ describe("architecture boundaries", () => {
     const updateStoreIndex = await readSource("src/stores/update/index.ts");
     const updateStateStore = await readSource("src/stores/update/state.ts");
     const updateLockStore = await readSource("src/stores/update/lock.ts");
-    const setupRegistration = await readSource("src/edges/cli/register-setup-commands.ts");
+    const updateRegistration = await readSource("src/edges/cli/register-update-command.ts");
 
     expect(existsSync(join(ROOT, "src/cli/commands/update-render.ts"))).toBe(
       true,
@@ -1272,9 +1296,9 @@ describe("architecture boundaries", () => {
     expect(updateLockStore).toContain("pid: number");
     expect(updateLockStore).toContain("pid: options.pid");
     expect(updateLockStore).not.toContain("process.pid");
-    expect(setupRegistration).toContain("createUpdateRuntime");
-    expect(setupRegistration).toContain("runtime: createUpdateRuntime()");
-    expect(setupRegistration).toContain("pid: process.pid");
+    expect(updateRegistration).toContain("createUpdateRuntime");
+    expect(updateRegistration).toContain("runtime: createUpdateRuntime()");
+    expect(updateRegistration).toContain("pid: process.pid");
   });
 
   it("keeps config command adapters out of config persistence mechanics", async () => {
@@ -1419,7 +1443,7 @@ describe("architecture boundaries", () => {
     const setupWikiState = await readSource("src/services/wiki/setup-state.ts");
     const setupTypes = await readSource("src/edges/cli/setup/types.ts");
     const setupRegistration = await readSource(
-      "src/edges/cli/register-setup-commands.ts",
+      "src/edges/cli/register-setup-command.ts",
     );
     const sqliteFree = await readSource("src/edges/cli/sqlite-free.ts");
     const currentCli = await readSource("src/edges/cli/current-cli.ts");
@@ -1643,7 +1667,7 @@ describe("architecture boundaries", () => {
     const guides = await readSource("src/edges/cli/setup/guides.ts");
     const platformGuides = await readSource("src/platform/install/guides.ts");
     const setupRegistration = await readSource(
-      "src/edges/cli/register-setup-commands.ts",
+      "src/edges/cli/register-setup-command.ts",
     );
     const targetChoice = await readSource(
       "src/edges/cli/setup/instruction-target-choice.ts",
@@ -1712,8 +1736,8 @@ describe("architecture boundaries", () => {
       "src/edges/cli/uninstall-render.ts",
     );
     const setupUninstall = await readSource("src/services/setup/uninstall.ts");
-    const setupRegistration = await readSource(
-      "src/edges/cli/register-setup-commands.ts",
+    const uninstallRegistration = await readSource(
+      "src/edges/cli/register-uninstall-command.ts",
     );
 
     expect(existsSync(join(ROOT, "src/services/setup/uninstall.ts"))).toBe(true);
@@ -1751,9 +1775,9 @@ describe("architecture boundaries", () => {
     expect(uninstallRender).not.toContain("../../ansi.js");
     expect(uninstallRender).toContain("makeAnsiTheme(options.color === true)");
     expect(uninstallCommand).toContain("color?: boolean");
-    expect(setupRegistration).toContain("isTTY: process.stdin.isTTY === true");
-    expect(setupRegistration).toContain("stdin: process.stdin");
-    expect(setupRegistration).toContain("stdout: process.stdout");
+    expect(uninstallRegistration).toContain("isTTY: process.stdin.isTTY === true");
+    expect(uninstallRegistration).toContain("stdin: process.stdin");
+    expect(uninstallRegistration).toContain("stdout: process.stdout");
   });
 
   it("keeps setup cleanup services behind automation service cleanup verbs", async () => {
@@ -2345,8 +2369,8 @@ describe("architecture boundaries", () => {
     );
     const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
     const diagnosticsIndex = await readSource("src/services/diagnostics/index.ts");
-    const setupRegistration = await readSource(
-      "src/edges/cli/register-setup-commands.ts",
+    const doctorRegistration = await readSource(
+      "src/edges/cli/register-doctor-command.ts",
     );
     const doctorService = await readSource("src/services/wiki/doctor.ts");
     const doctorTypes = await readSource("src/services/wiki/doctor-types.ts");
@@ -2442,15 +2466,15 @@ describe("architecture boundaries", () => {
     expect(updateStatusDiagnostics).toContain("stores/config/index.js");
     expect(updateStatusDiagnostics).toContain("stores/update/index.js");
     expect(updateStatusDiagnostics).not.toContain("../../platform/");
-    expect(setupRegistration).toContain("shouldUseStdoutColor()");
-    expect(setupRegistration).toContain("nodeVersion: process.version");
-    expect(setupRegistration).toContain("probeDiagnosticInstall({ homeDir: homedir() })");
-    expect(setupRegistration).toContain("probeDiagnosticClaudeAuth()");
-    expect(setupRegistration).toContain("probeDiagnosticAutomation()");
-    expect(setupRegistration).toContain("probeDiagnosticGuides()");
-    expect(setupRegistration).toContain("probeDiagnosticInstructionEntries()");
-    expect(setupRegistration).toContain("readDiagnosticUpdateStatus()");
-    expect(setupRegistration).not.toContain("color: process.stdout.isTTY === true");
+    expect(doctorRegistration).toContain("shouldUseStdoutColor()");
+    expect(doctorRegistration).toContain("nodeVersion: process.version");
+    expect(doctorRegistration).toContain("probeDiagnosticInstall({ homeDir: homedir() })");
+    expect(doctorRegistration).toContain("probeDiagnosticClaudeAuth()");
+    expect(doctorRegistration).toContain("probeDiagnosticAutomation()");
+    expect(doctorRegistration).toContain("probeDiagnosticGuides()");
+    expect(doctorRegistration).toContain("probeDiagnosticInstructionEntries()");
+    expect(doctorRegistration).toContain("readDiagnosticUpdateStatus()");
+    expect(doctorRegistration).not.toContain("color: process.stdout.isTTY === true");
     expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
     expect(platformInstallDiagnostics).toContain("probeBetterSqlite3");
     expect(platformInstallDiagnostics).toContain("readPackageVersion");

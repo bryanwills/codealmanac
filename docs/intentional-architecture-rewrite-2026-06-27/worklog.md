@@ -1525,3 +1525,10 @@ Two-hundred-eighteenth production slice:
 - Kept init startup messaging, foreground event handling, CLI runtime composition, worker-program facts, and source-resolver wiring in operation-specific edge files.
 - Collapsed the duplicated absorb and ingest registration bodies behind one absorb-like command helper.
 - Strengthened architecture-boundary tests so lifecycle app-runtime/source-resolver assertions target the concrete operation registration files rather than the aggregator.
+
+Two-hundred-nineteenth production slice:
+
+- Split `src/edges/cli/register-setup-commands.ts` into a thin aggregator plus command-specific registration files for setup, doctor, update, and uninstall.
+- Kept setup option shaping, doctor diagnostic probe composition, update runtime composition, and uninstall TUI wiring in their concrete command edge files.
+- Preserved the public setup-family registration entrypoint for `register-commands.ts` while removing the misleading mixed-command body from that file.
+- Strengthened architecture-boundary tests so setup-family registration stays split by command surface.
