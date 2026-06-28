@@ -456,6 +456,12 @@ describe("architecture boundaries: setup and uninstall", () => {
     const platformSetupInstructions = await readSource(
       "src/platform/setup/instructions.ts",
     );
+    const platformInstructionGuides = await readSource(
+      "src/platform/setup/instructions/guides.ts",
+    );
+    const platformInstructionTargets = await readSource(
+      "src/platform/setup/instructions/targets.ts",
+    );
     const guidesStep = await readSource("src/edges/cli/setup/guides-step.ts");
     const guides = await readSource("src/edges/cli/setup/guides.ts");
     const platformGuides = await readSource("src/platform/install/guides.ts");
@@ -470,6 +476,12 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(existsSync(join(ROOT, "src/services/setup/instructions.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/install/guides.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/setup/instructions.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/setup/instructions/guides.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/setup/instructions/targets.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/setup/instructions/types.ts")))
+      .toBe(true);
     expect(existsSync(join(ROOT, "src/app/setup-runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/shared/setup-instructions.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/setup/multi-select.ts"))).toBe(true);
@@ -507,6 +519,17 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(platformSetupInstructions).toContain("installAgentInstructions");
     expect(platformSetupInstructions).toContain("removeAgentInstructions");
     expect(platformSetupInstructions).toContain("createPlatformSetupInstructionRuntime");
+    expect(platformSetupInstructions).toContain("readSetupInstructionGuides");
+    expect(platformSetupInstructions).toContain("installInstructionTargets");
+    expect(platformSetupInstructions).not.toContain("existsSync");
+    expect(platformSetupInstructions).not.toContain("readFile");
+    expect(platformSetupInstructions).not.toContain("ensureClaudeInstructions");
+    expect(platformSetupInstructions).not.toContain("ensureCodexInstructions");
+    expect(platformInstructionGuides).toContain("readSetupInstructionGuides");
+    expect(platformInstructionGuides).toContain("missing bundled guide");
+    expect(platformInstructionTargets).toContain("ensureClaudeInstructions");
+    expect(platformInstructionTargets).toContain("ensureCodexInstructions");
+    expect(platformInstructionTargets).toContain("missingInstructionTargets");
     expect(appSetupRuntime).toContain("createPlatformSetupInstructionRuntime");
     expect(platformGuides).toContain("resolveBundledGuidesDir");
     expect(platformGuides).toContain("createRequire");

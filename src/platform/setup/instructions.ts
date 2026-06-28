@@ -1,37 +1,31 @@
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
   CLAUDE_IMPORT_LINE,
-  ensureClaudeInstructions,
   hasClaudeImportLine,
   removeClaudeImportLine,
-  removeClaudeInstructions,
-  claudeInstructionsPresent,
 } from "./instructions/claude.js";
 import {
   codexInstructionBlockPresent,
   CODEX_INSTRUCTIONS_END,
   CODEX_INSTRUCTIONS_START,
-  ensureCodexInstructions,
-  removeCodexInstructions,
 } from "./instructions/codex.js";
+import { readSetupInstructionGuides } from "./instructions/guides.js";
 import {
-  cursorInstructionsPresent,
-  ensureCursorInstructions,
-  removeCursorInstructions,
-} from "./instructions/cursor.js";
-import {
-  ensureOpenCodeInstructions,
-  openCodeInstructionsPresent,
-  removeOpenCodeInstructions,
-} from "./instructions/opencode.js";
-import {
-  ensureWindsurfInstructions,
-  removeWindsurfInstructions,
-  windsurfInstructionsPresent,
-} from "./instructions/windsurf.js";
+  AGENT_INSTRUCTION_TARGETS,
+  DEFAULT_INSTRUCTION_TARGETS,
+  installInstructionTargets,
+  missingInstructionTargets,
+  removeInstructionTargets,
+} from "./instructions/targets.js";
+import type {
+  AgentInstructionCheck,
+  AgentInstructionDirs,
+  AgentInstructionsChange,
+  InstallAgentInstructionsOptions,
+  InstructionTarget,
+  InstructionTargetId,
+} from "./instructions/types.js";
 import type {
   SetupInstructionInstallRequest,
   SetupInstructionRuntime,
@@ -42,53 +36,16 @@ export {
   CODEX_INSTRUCTIONS_START,
   codexInstructionBlockPresent,
 };
-
-export type InstructionTargetId =
-  | "claude"
-  | "codex"
-  | "cursor"
-  | "windsurf"
-  | "opencode";
-
-export interface InstructionTarget {
-  id: InstructionTargetId;
-  displayName: string;
-}
-
-export const AGENT_INSTRUCTION_TARGETS: readonly InstructionTarget[] = [
-  { id: "claude", displayName: "Claude Code" },
-  { id: "codex", displayName: "Codex" },
-  { id: "cursor", displayName: "Cursor" },
-  { id: "windsurf", displayName: "Windsurf" },
-  { id: "opencode", displayName: "OpenCode" },
-];
-
-export const DEFAULT_INSTRUCTION_TARGETS: readonly InstructionTargetId[] =
-  AGENT_INSTRUCTION_TARGETS.map((target) => target.id);
-
-export interface AgentInstructionDirs {
-  claudeDir: string;
-  codexDir: string;
-  cursorDir: string;
-  windsurfDir: string;
-  opencodeDir: string;
-}
-
-export interface InstallAgentInstructionsOptions extends AgentInstructionDirs {
-  guidesDir: string;
-  targets?: readonly InstructionTargetId[];
-}
-
-export interface AgentInstructionsChange {
-  anyChanges: boolean;
-  filesTouched: string[];
-}
-
-export interface AgentInstructionCheck {
-  ok: boolean;
-  message: string;
-  missing: string[];
-}
+export {
+  AGENT_INSTRUCTION_TARGETS,
+  DEFAULT_INSTRUCTION_TARGETS,
+  type AgentInstructionCheck,
+  type AgentInstructionDirs,
+  type AgentInstructionsChange,
+  type InstallAgentInstructionsOptions,
+  type InstructionTarget,
+  type InstructionTargetId,
+};
 
 export function createPlatformSetupInstructionRuntime(): SetupInstructionRuntime {
   return {
@@ -100,27 +57,9 @@ export function createPlatformSetupInstructionRuntime(): SetupInstructionRuntime
 export async function installAgentInstructions(
   options: InstallAgentInstructionsOptions,
 ): Promise<AgentInstructionsChange> {
-  const srcMini = path.join(options.guidesDir, "mini.md");
-  const srcRef = path.join(options.guidesDir, "reference.md");
-  if (!existsSync(srcMini)) {
-    throw new Error(`missing bundled guide: ${srcMini}`);
-  }
-  if (!existsSync(srcRef)) {
-    throw new Error(`missing bundled guide: ${srcRef}`);
-  }
-
-  const miniContents = await readFile(srcMini, "utf8");
+  const guides = await readSetupInstructionGuides(options.guidesDir);
   const targets = options.targets ?? DEFAULT_INSTRUCTION_TARGETS;
-  const touched: string[] = [];
-
-  for (const target of targets) {
-    touched.push(...await installInstructionTarget(target, {
-      ...options,
-      miniGuidePath: srcMini,
-      referenceGuidePath: srcRef,
-      miniContents,
-    }));
-  }
+  const touched = await installInstructionTargets(targets, options, guides);
 
   return { anyChanges: touched.length > 0, filesTouched: touched };
 }
@@ -128,13 +67,7 @@ export async function installAgentInstructions(
 export async function removeAgentInstructions(
   dirs: AgentInstructionDirs,
 ): Promise<AgentInstructionsChange> {
-  const touched = [
-    ...await removeClaudeInstructions(dirs.claudeDir),
-    ...await removeCodexInstructions(dirs.codexDir),
-    ...await removeCursorInstructions(dirs.cursorDir),
-    ...await removeWindsurfInstructions(dirs.windsurfDir),
-    ...await removeOpenCodeInstructions(dirs.opencodeDir),
-  ];
+  const touched = await removeInstructionTargets(dirs);
 
   return { anyChanges: touched.length > 0, filesTouched: touched };
 }
@@ -142,13 +75,7 @@ export async function removeAgentInstructions(
 export async function checkAgentInstructions(
   dirs: AgentInstructionDirs,
 ): Promise<AgentInstructionCheck> {
-  const missing = [
-    ...await claudeInstructionsPresent(dirs.claudeDir),
-    ...await codexInstructionsMissing(dirs.codexDir),
-    ...cursorInstructionsPresent(dirs.cursorDir),
-    ...await windsurfInstructionsPresent(dirs.windsurfDir),
-    ...await openCodeInstructionsPresent(dirs.opencodeDir),
-  ];
+  const missing = await missingInstructionTargets(dirs);
 
   return {
     ok: missing.length === 0,
@@ -157,43 +84,6 @@ export async function checkAgentInstructions(
       ? "Agent instructions installed"
       : `Agent instructions missing (${missing.join(", ")})`,
   };
-}
-
-async function installInstructionTarget(
-  target: InstructionTargetId,
-  options: InstallAgentInstructionsOptions & {
-    miniGuidePath: string;
-    referenceGuidePath: string;
-    miniContents: string;
-  },
-): Promise<string[]> {
-  switch (target) {
-    case "claude":
-      return await ensureClaudeInstructions({
-        claudeDir: options.claudeDir,
-        miniGuidePath: options.miniGuidePath,
-        referenceGuidePath: options.referenceGuidePath,
-      });
-    case "codex":
-      return await ensureCodexInstructions(options.codexDir, options.miniContents)
-        ? ["AGENTS.md"]
-        : [];
-    case "cursor":
-      return await ensureCursorInstructions(options.cursorDir, options.miniContents);
-    case "windsurf":
-      return await ensureWindsurfInstructions(options.windsurfDir, options.miniContents);
-    case "opencode":
-      return await ensureOpenCodeInstructions(options.opencodeDir, options.miniContents);
-    default: {
-      const exhaustive: never = target;
-      throw new Error(`unknown instruction target: ${exhaustive}`);
-    }
-  }
-}
-
-async function codexInstructionsMissing(codexDir: string): Promise<string[]> {
-  if (await codexInstructionBlockPresent(codexDir)) return [];
-  return ["Codex AGENTS.md instructions"];
 }
 
 function platformInstallOptions(
