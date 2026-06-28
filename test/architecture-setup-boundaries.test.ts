@@ -171,6 +171,8 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(setupRegistration).toContain("stdin: process.stdin");
     expect(setupRegistration).toContain("stdout: process.stdout");
     expect(setupRegistration).toContain("color: shouldUseStdoutColor()");
+    expect(setupRegistration).toContain("runPlatformSetupProviderFixCommand");
+    expect(setupRegistration).toContain("runProviderFixCommand");
     expect(sqliteFree).toContain("stdin: process.stdin");
     expect(sqliteFree).toContain("color: shouldUseStdoutColor()");
     expect(currentCli).toContain("process.argv");
@@ -267,7 +269,8 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(existsSync(join(ROOT, "src/platform/setup/runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/setup/provider-fix-command.ts"))).toBe(true);
     expect(setupAgentChoice).not.toContain("platform/shell.js");
-    expect(setupAgentChoice).toContain("platform/setup/runtime.js");
+    expect(setupAgentChoice).not.toContain("platform/setup/runtime.js");
+    expect(setupAgentChoice).toContain("runProviderFixCommand:");
     expect(setupAgentChoice).toContain("runSetupProviderFixCommand");
     expect(setupAgentChoice).not.toContain("node:child_process");
     expect(setupAgentChoice).not.toContain("spawn(command");

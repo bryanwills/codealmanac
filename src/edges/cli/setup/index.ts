@@ -149,7 +149,7 @@ export async function runSetup(
         requestedModel: options.model,
         readinessRuntime: requireAgentReadinessRuntime(options),
         spawnCli: options.spawnCli,
-        runProviderFixCommand: options.runProviderFixCommand,
+        runProviderFixCommand: requireSetupProviderFixCommand(options),
         environment: options.environment,
       });
       if (!agentChoice.ok) {
@@ -231,4 +231,13 @@ function requireAgentReadinessRuntime(
     throw new Error("setup requires an agent readiness runtime");
   }
   return options.agentReadinessRuntime;
+}
+
+function requireSetupProviderFixCommand(
+  options: SetupOptions,
+): NonNullable<SetupOptions["runProviderFixCommand"]> {
+  if (options.runProviderFixCommand === undefined) {
+    throw new Error("setup requires a provider fix-command runner");
+  }
+  return options.runProviderFixCommand;
 }

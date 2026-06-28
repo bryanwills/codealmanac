@@ -1904,3 +1904,10 @@ Two-hundred-sixty-eighth production slice:
 - Moved lifecycle command output rendering from `operations-render.ts` into `src/edges/cli/commands/operations/render.ts`.
 - Updated command registration and operation command tests to import the verb-owned adapters directly.
 - Strengthened CLI/lifecycle boundary tests so the old lifecycle command catchalls cannot return.
+
+Two-hundred-sixty-ninth production slice:
+
+- Moved setup provider-fix runtime wiring from `src/edges/cli/setup/agent-choice.ts` to `src/edges/cli/register-setup-command.ts`.
+- Made setup agent-choice UI consume an explicit `runProviderFixCommand` runner instead of importing the platform setup runtime fallback.
+- Updated setup tests to provide a fake provider-fix runner through setup options.
+- Strengthened setup boundary tests so setup TUI files do not import platform setup runtime mechanics for provider login execution.

@@ -14,6 +14,7 @@ import {
 } from "../src/edges/cli/setup/index.js";
 import type { SetupOptions } from "../src/edges/cli/setup/index.js";
 import type { AgentReadinessRuntime } from "../src/shared/agent-readiness.js";
+import type { SetupProviderFixCommandRunner } from "../src/shared/setup-runtime.js";
 import { runAutomationSetupStep } from "../src/edges/cli/setup/automation-step.js";
 import { makeSetupTheme } from "../src/edges/cli/setup/output.js";
 import { readConfig, writeConfig } from "../src/stores/config/index.js";
@@ -71,6 +72,9 @@ const TEST_AGENT_READINESS_RUNTIME: AgentReadinessRuntime = {
   ],
   listModelChoices: () => null,
 };
+const TEST_PROVIDER_FIX_COMMAND_RUNNER: SetupProviderFixCommandRunner = async () => ({
+  ok: true,
+});
 
 function runSetup(
   options: Omit<
@@ -104,6 +108,8 @@ function runSetup(
     environment: options.environment ?? process.env,
     agentReadinessRuntime: options.agentReadinessRuntime ??
       TEST_AGENT_READINESS_RUNTIME,
+    runProviderFixCommand: options.runProviderFixCommand ??
+      TEST_PROVIDER_FIX_COMMAND_RUNNER,
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     isTTY: options.isTTY ?? false,
     stdin: options.stdin ?? new PassThrough(),

@@ -14,7 +14,6 @@ import {
   runSetupProviderFixCommand,
   saveSetupAgentChoice,
 } from "../../../services/setup/index.js";
-import { runPlatformSetupProviderFixCommand } from "../../../platform/setup/runtime.js";
 import { chooseProviderModel } from "./agent-model-choice.js";
 import {
   confirm,
@@ -43,11 +42,9 @@ export async function chooseDefaultAgent(args: {
   requestedModel?: string;
   readinessRuntime: AgentReadinessRuntime;
   spawnCli?: SetupSpawnCliFn;
-  runProviderFixCommand?: SetupProviderFixCommandRunner;
+  runProviderFixCommand: SetupProviderFixCommandRunner;
   environment: NodeJS.ProcessEnv;
 }): Promise<AgentChoice> {
-  const runProviderFixCommand = args.runProviderFixCommand ??
-    runPlatformSetupProviderFixCommand;
   const state = await readSetupAgentChoiceState({
     requested: args.requested,
     includeView: args.interactive || args.requested !== undefined,
@@ -93,7 +90,7 @@ export async function chooseDefaultAgent(args: {
         if (runLogin === "install") {
           const login = await runSetupProviderFixCommand(
             command,
-            runProviderFixCommand,
+            args.runProviderFixCommand,
           );
           if (!login.ok) {
             stepActive(
@@ -150,7 +147,7 @@ export async function chooseDefaultAgent(args: {
     if (runLogin === "install") {
       const login = await runSetupProviderFixCommand(
         runnableFixCommand,
-        runProviderFixCommand,
+        args.runProviderFixCommand,
       );
       if (login.ok) {
         view = await refreshSetupAgentChoiceView({

@@ -5,6 +5,7 @@ import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
 import { createAgentReadinessRuntime } from "../../app/agent-readiness-runtime.js";
 import { resolveBundledGuidesDir } from "../../platform/install/guides.js";
+import { runPlatformSetupProviderFixCommand } from "../../platform/setup/runtime.js";
 
 export interface RegisterSetupCommandDeps {
   runSetup?: typeof import("./setup/index.js").runSetup;
@@ -65,6 +66,7 @@ export function registerSetupCommand(
           pathEnvironment: process.env.PATH,
           environment: process.env,
           agentReadinessRuntime: createAgentReadinessRuntime(),
+          runProviderFixCommand: runPlatformSetupProviderFixCommand,
           cliProgramArguments: currentCliProgramArguments(),
           isTTY: process.stdin.isTTY === true,
           stdin: process.stdin,
