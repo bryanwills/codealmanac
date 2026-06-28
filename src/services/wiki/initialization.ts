@@ -1,14 +1,13 @@
-import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 
-import { findNearestAlmanacDir, getRepoAlmanacDir } from "../paths.js";
-import { toKebabCase } from "../slug.js";
+import { findNearestAlmanacDir } from "../../paths.js";
+import { toKebabCase } from "../../slug.js";
 import {
   addEntry,
   ensureGlobalDir,
   type RegistryEntry,
-} from "../stores/wiki-registry/index.js";
+} from "../../stores/wiki-registry/index.js";
+import { scaffoldWikiFiles } from "../../stores/wiki-files/scaffold.js";
 
 export interface InitOptions {
   cwd: string;
@@ -40,20 +39,10 @@ export async function initWiki(options: InitOptions): Promise<InitResult> {
   // If cwd is already inside a wiki, prefer that root. Otherwise treat
   // cwd as the new wiki root.
   const repoRoot = findNearestAlmanacDir(options.cwd) ?? options.cwd;
-
-  const almanacDir = getRepoAlmanacDir(repoRoot);
-  const pagesDir = join(almanacDir, "pages");
-  const readmePath = join(almanacDir, "README.md");
-
-  const alreadyExisted = existsSync(almanacDir);
-
-  await mkdir(pagesDir, { recursive: true });
-
-  if (!existsSync(readmePath)) {
-    await writeFile(readmePath, starterReadme(), "utf8");
-  }
-
-  await ensureGitignoreHasRuntimeArtifacts(repoRoot);
+  const scaffold = await scaffoldWikiFiles({
+    repoRoot,
+    readmeContents: starterReadme(),
+  });
 
   const name = toKebabCase(options.name ?? basename(repoRoot));
   if (name.length === 0) {
@@ -73,60 +62,7 @@ export async function initWiki(options: InitOptions): Promise<InitResult> {
   };
   await addEntry(entry);
 
-  return { entry, almanacDir, created: !alreadyExisted };
-}
-
-/**
- * Ensure `.gitignore` in the repo root contains the Almanac-derived
- * runtime files that should never be committed.
- *
- * The SQLite index is derived from markdown pages. Job records are local
- * lifecycle state and JSONL event logs; they can be large and are not wiki
- * content.
- *
- * We add the block regardless of whether the file exists (creating
- * `.gitignore` if needed), and we add any target lines that aren't
- * already present. Existing targets are left alone. If none of the
- * target lines need adding, the file is not touched at all.
- *
- * Formatting: when we do append, we guarantee exactly one blank line
- * between the prior content and our appended block. If the `# codealmanac`
- * header is already present but new targets need adding, we just append
- * the missing lines (no duplicate header).
- */
-async function ensureGitignoreHasRuntimeArtifacts(cwd: string): Promise<void> {
-  const path = join(cwd, ".gitignore");
-  const targets = [
-    ".almanac/index.db",
-    ".almanac/index.db-wal",
-    ".almanac/index.db-shm",
-    ".almanac/jobs/",
-  ];
-
-  let existing = "";
-  if (existsSync(path)) {
-    existing = await readFile(path, "utf8");
-  }
-
-  // Normalize to line comparison to avoid false negatives on trailing
-  // whitespace or CRLF line endings.
-  const lines = existing.split(/\r?\n/).map((l) => l.trim());
-  const missing = targets.filter((t) => !lines.includes(t));
-  if (missing.length === 0) return;
-
-  const hasHeader = lines.includes("# codealmanac");
-  const block = hasHeader
-    ? missing.join("\n") + "\n"
-    : `# codealmanac\n${missing.join("\n")}\n`;
-
-  // Three cases for the separator before the appended block:
-  //  - empty file: no separator needed
-  //  - ends with newline: one more newline produces a single blank line
-  //  - no trailing newline: two newlines (one to terminate the last line,
-  //    one for the blank separator)
-  const sep =
-    existing.length === 0 ? "" : existing.endsWith("\n") ? "\n" : "\n\n";
-  await writeFile(path, `${existing}${sep}${block}`, "utf8");
+  return { entry, almanacDir: scaffold.almanacDir, created: scaffold.created };
 }
 
 /**

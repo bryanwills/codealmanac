@@ -40,7 +40,6 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show/index.ts`, `reindex.ts` |
 | `src/config/` | Config schema, TOML/JSON codec, raw-object editing, origin tracking, and global/project config store | `schema.ts`, `codec.ts`, `store.ts`, `editor.ts`, `providers.ts`, `origins.ts`, `paths.ts`, `index.ts` |
 | `src/platform/` | Local machine integration for install, self-update, scheduler automation, diagnostics probes, local transcript discovery, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
-| `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
 | `src/agent/` | Agent provider identity, readiness, auth, instructions, and runtime support | `provider-id.ts`, `readiness/`, `auth/`, `runtime/` |
 | `src/agent/runtime/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
 | `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
@@ -57,9 +56,10 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/services/lifecycle/absorb/` | Absorb input parsing, source normalization, context rendering, and run-start shaping | `input.ts`, `source-ref.ts`, `input-source.ts`, `context.ts`, `start.ts` |
 | `src/services/setup/` | Setup and uninstall product workflows over agent readiness/config state, instruction targets, automation cleanup, and guide cleanup while CLI setup files own terminal UI | `agent-choice.ts`, `auto-commit.ts`, `instructions.ts`, `uninstall.ts`, `index.ts` |
 | `src/services/update/` | Self-update product workflow over registry, config, lock, state, and npm-install mechanics | `update.ts`, `types.ts`, `index.ts` |
-| `src/services/wiki/` | Wiki product workflows that coordinate stores/indexes/filesystem mechanics | `search.ts`, `page-view.ts`, `health.ts`, `reindex.ts`, `registry.ts`, `autoregistration.ts`, `topic-read.ts`, `topic-description.ts`, `topic-graph-mutations.ts`, `topic-page-mutations.ts`, `topic-page-rewrite.ts`, `page-topic-mutations.ts`, `page-topic-pages.ts`, `page-topic-types.ts`, `reviews.ts`, `review-types.ts`, `review-text.ts`, `review-workspace.ts`, `source-migration.ts`, `doctor.ts`, `doctor-index.ts`, `doctor-health.ts`, `doctor-absorb.ts`, `doctor-registry.ts`, `doctor-types.ts` |
+| `src/services/wiki/` | Wiki product workflows that coordinate stores/indexes/filesystem mechanics | `initialization.ts`, `search.ts`, `page-view.ts`, `health.ts`, `reindex.ts`, `registry.ts`, `autoregistration.ts`, `topic-read.ts`, `topic-description.ts`, `topic-graph-mutations.ts`, `topic-page-mutations.ts`, `topic-page-rewrite.ts`, `page-topic-mutations.ts`, `page-topic-pages.ts`, `page-topic-types.ts`, `reviews.ts`, `review-types.ts`, `review-text.ts`, `review-workspace.ts`, `source-migration.ts`, `doctor.ts`, `doctor-index.ts`, `doctor-health.ts`, `doctor-absorb.ts`, `doctor-registry.ts`, `doctor-types.ts` |
 | `src/stores/wiki-registry/` | Global registry persistence at `~/.almanac/registry.json` — atomic read/write | `store.ts`, `index.ts` |
 | `src/stores/jobs/` | Job record, spec, log, lock, and persisted job/log schema mechanics under `.almanac/jobs/` | `records.ts`, `specs.ts`, `logs.ts`, `worker-lock.ts`, `types.ts`, `record-schema.ts`, `log-entry.ts` |
+| `src/stores/wiki-files/` | Mechanical `.almanac/` scaffolding and repo file writes used by wiki initialization | `scaffold.ts` |
 | `src/stores/wiki-review/` | Review queue persistence at `.almanac/review.yaml` — validation, ID generation, atomic writes | `store.ts` |
 | `src/wiki/topics/` | Topic DAG serialized to `.almanac/topics.yaml` + page frontmatter rewrites (slice 3) | `yaml.ts`, `frontmatter-rewrite.ts` |
 | `test/` | Vitest suites, one per feature area | `helpers.ts` (`withTempHome`, `makeRepo`, `writePage`), `*.test.ts` |
@@ -144,7 +144,7 @@ Things we do not do. If a plan proposes one, push back.
 - **Agent SDK reference:** `docs/research/agent-sdk.md` — version pin, auth, message types, streaming, subagent routing, pitfalls. Read before slice 4 or 5 work.
 - **Prompts:** `prompts/bootstrap.md`, `prompts/writer.md`, `prompts/reviewer.md`
 - **SQLite schema DDL:** `src/wiki/indexer/schema.ts` (single-source, applied idempotently on open)
-- **Init scaffolding:** `src/init/scaffold.ts` (creates `.almanac/`, starter README, runtime `.gitignore` entries, and registry entry)
+- **Init scaffolding:** `src/services/wiki/initialization.ts` (creates `.almanac/`, starter README, runtime `.gitignore` entries, and registry entry)
 - **Registry I/O:** `src/stores/wiki-registry/store.ts` (atomic read/write) and `src/services/wiki/autoregistration.ts` (silent-on-command policy)
 - **Walk-up resolver:** `src/paths.ts` — nearest `.almanac/` from a `cwd`, like git's nearest `.git/`
 - **Test sandbox helpers:** `test/helpers.ts`

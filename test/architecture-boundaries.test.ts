@@ -7,6 +7,31 @@ import { describe, expect, it } from "vitest";
 const ROOT = process.cwd();
 
 describe("architecture boundaries", () => {
+  it("keeps wiki initialization inside service and store ownership", async () => {
+    const initialization = await readSource("src/services/wiki/initialization.ts");
+    const fileScaffold = await readSource("src/stores/wiki-files/scaffold.ts");
+    const buildOperation = await readSource(
+      "src/services/lifecycle/operations/build.ts",
+    );
+
+    expect(existsSync(join(ROOT, "src/init"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/wiki/initialization.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/stores/wiki-files/scaffold.ts"))).toBe(
+      true,
+    );
+    expect(initialization).toContain("scaffoldWikiFiles");
+    expect(initialization).toContain("addEntry");
+    expect(initialization).not.toContain("writeFile");
+    expect(initialization).not.toContain("mkdir");
+    expect(fileScaffold).toContain("writeFile");
+    expect(fileScaffold).toContain("mkdir");
+    expect(fileScaffold).not.toContain("addEntry");
+    expect(buildOperation).toContain("from \"../../wiki/initialization.js\"");
+    expect(buildOperation).not.toContain("init/scaffold");
+  });
+
   it("keeps src/cli.ts as a stable facade over the CLI edge runner", async () => {
     const facade = await readSource("src/cli.ts");
 

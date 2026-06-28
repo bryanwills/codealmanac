@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { initWiki } from "../src/init/scaffold.js";
+import { initWiki } from "../src/services/wiki/initialization.js";
 import { getRegistryPath } from "../src/paths.js";
 import { autoRegisterIfNeeded } from "../src/services/wiki/autoregistration.js";
 import { readRegistry, addEntry } from "../src/stores/wiki-registry/index.js";

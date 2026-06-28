@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { OperationSpec } from "./spec.js";
-import { initWiki } from "../../../init/scaffold.js";
+import { initWiki } from "../../wiki/initialization.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,

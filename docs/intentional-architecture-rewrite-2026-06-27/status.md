@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 207 committed rewrite commits past `dev`. The worklog records 160 production slices so far.
+The branch has 208 committed rewrite commits past `dev`. The worklog records 161 production slices so far.
 
-The diff is broad: 418 files changed, with 21,742 insertions and 11,539 deletions.
+The diff is broad: 418 files changed, with 21,774 insertions and 11,761 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -19,6 +19,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split wiki workflows into clearer service boundaries: search, show, health, registry, topics, review, reindex, source migration, and doctor wiki checks.
 - Moved durable job persistence into explicit stores for records, specs, logs, and worker locks.
 - Removed the old top-level `src/jobs/` source bucket; job runtime and projections now live under `src/services/jobs/`, durable job schemas live under `src/stores/jobs/`, and detached worker spawning lives under `src/platform/jobs/`.
+- Removed the old top-level `src/init/` source bucket; wiki initialization now lives under `src/services/wiki/`, and mechanical `.almanac/` file scaffolding lives under `src/stores/wiki-files/`.
 - Moved sync ledger and lock persistence into explicit stores.
 - Moved local Claude/Codex transcript discovery into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
@@ -40,13 +41,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed the old top-level `src/jobs/` source bucket. Job execution lifecycle now lives under `src/services/jobs/runtime/`, job viewer/read-model derivation lives under `src/services/jobs/projections/`, durable job record/log schema contracts live under `src/stores/jobs/`, and detached worker process spawning lives under `src/platform/jobs/`.
+The latest slice removed the old top-level `src/init/` source bucket. Wiki initialization now lives under `src/services/wiki/initialization.ts`, while mechanical `.almanac/` directory creation, starter README writes, and runtime `.gitignore` writes live under `src/stores/wiki-files/scaffold.ts`.
 
-Verification passed: `npm run lint`, focused job/viewer/worker/sync/boundary tests with 122 tests, full `npm test` with 655 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js jobs --help`, `node dist/codealmanac.js serve --help`, `node dist/codealmanac.js jobs --json`, and `node dist/codealmanac.js search "job runtime" --limit 3 --json`.
+Verification passed: `npm run lint`, focused init/list/jobs/build-command/boundary tests with 110 tests, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js init --help`, and `node dist/codealmanac.js search "wiki initialization" --limit 3 --json`.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The indexer warning, provider enablement, autoregistration registry-matching, agent runtime boundary, sync transcript-discovery boundary, lifecycle operation/absorb boundary, GitHub source platform boundary, job runtime/store/platform boundary, job-record PID paths, serve interrupt handling, setup/uninstall terminal sinks and input streams, setup guide package lookup, setup next-step wiki-state ownership, automation disabled-plist existence probing, doctor Node runtime version, doctor auth/automation/instruction/update probing, doctor index-db probing, doctor option cleanup, jobs PID liveness/signaling paths, lifecycle init request context, review command result rendering, and viewer edge/read-model split are now explicit. Remaining candidates include command workflow decisions, service taxonomy, automation scheduling policy cleanup, and any remaining lifecycle/job boundary duplication.
+Continue top-down subsystem passes before small leak cleanup. The indexer warning, provider enablement, autoregistration registry-matching, agent runtime boundary, sync transcript-discovery boundary, lifecycle operation/absorb boundary, GitHub source platform boundary, job runtime/store/platform boundary, wiki initialization/store split, job-record PID paths, serve interrupt handling, setup/uninstall terminal sinks and input streams, setup guide package lookup, setup next-step wiki-state ownership, automation disabled-plist existence probing, doctor Node runtime version, doctor auth/automation/instruction/update probing, doctor index-db probing, doctor option cleanup, jobs PID liveness/signaling paths, lifecycle init request context, review command result rendering, and viewer edge/read-model split are now explicit. Remaining candidates include command workflow decisions, service taxonomy, automation scheduling policy cleanup, and any remaining lifecycle/job boundary duplication.
 
 ## Decision Log
 

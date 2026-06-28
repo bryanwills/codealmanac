@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { initWiki } from "../src/init/scaffold.js";
+import { initWiki } from "../src/services/wiki/initialization.js";
 import {
   runAbsorbCommand as runAbsorbCommandHandler,
   runGardenCommand as runGardenCommandHandler,

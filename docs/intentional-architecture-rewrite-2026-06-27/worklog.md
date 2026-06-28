@@ -1078,3 +1078,11 @@ One-hundred-sixtieth production slice:
 - Moved detached worker process spawning into `src/platform/jobs/worker-process.ts`.
 - Updated lifecycle, sync, viewer, CLI worker-entry, and tests to use the service/store/platform job boundaries instead of importing `src/jobs/`.
 - Added boundary coverage that `src/jobs/` stays deleted and that job runtime, projections, persisted schemas, and process spawning stay in their owned homes.
+
+One-hundred-sixty-first production slice:
+
+- Removed the old top-level `src/init/` source bucket.
+- Moved wiki initialization into `src/services/wiki/initialization.ts` so `initWiki()` reads as a wiki product workflow shared by CLI tests and Build.
+- Moved mechanical `.almanac/` directory creation, starter README writes, and runtime `.gitignore` writes into `src/stores/wiki-files/scaffold.ts`.
+- Updated Build and tests to import initialization through the wiki service boundary instead of a loose top-level helper.
+- Added boundary coverage that `src/init/` stays deleted, wiki initialization does not own raw file writes, and file scaffolding does not own registry writes.
