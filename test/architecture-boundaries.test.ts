@@ -965,6 +965,15 @@ describe("architecture boundaries", () => {
     const lifecycleRegistration = await readSource(
       "src/edges/cli/register-lifecycle-run-commands.ts",
     );
+    const initRegistration = await readSource(
+      "src/edges/cli/register-init-command.ts",
+    );
+    const absorbRegistration = await readSource(
+      "src/edges/cli/register-absorb-command.ts",
+    );
+    const gardenRegistration = await readSource(
+      "src/edges/cli/register-garden-command.ts",
+    );
     const syncRegistration = await readSource(
       "src/edges/cli/register-sync-commands.ts",
     );
@@ -986,7 +995,11 @@ describe("architecture boundaries", () => {
     expect(jobWorker).not.toContain("platform/process");
     expect(appCliRuntime).toContain("isLocalPidAlive");
     expect(cliRunner).toContain("isLocalPidAlive");
-    expect(lifecycleRegistration).toContain("createCliRuntime");
+    expect(lifecycleRegistration).toContain("registerInitCommand");
+    expect(lifecycleRegistration).not.toContain("createCliRuntime");
+    for (const source of [initRegistration, absorbRegistration, gardenRegistration]) {
+      expect(source).toContain("createCliRuntime");
+    }
     expect(lifecycleRegistration).not.toContain("platform/process");
     expect(syncRegistration).toContain("createCliRuntime");
     expect(syncRegistration).not.toContain("platform/process");
@@ -1854,6 +1867,9 @@ describe("architecture boundaries", () => {
     const lifecycleCliEdge = await readSource(
       "src/edges/cli/register-lifecycle-run-commands.ts",
     );
+    const absorbCliEdge = await readSource(
+      "src/edges/cli/register-absorb-command.ts",
+    );
     const syncService = await readSource("src/services/sync/sync.ts");
     const operationsCommand = await readSource("src/cli/commands/operations.ts");
     const operationsRender = await readSource("src/cli/commands/operations-render.ts");
@@ -1931,9 +1947,11 @@ describe("architecture boundaries", () => {
     expect(platformAbsorbSourceResolver).toContain("shared/absorb-sources");
     expect(platformAbsorbSourceResolver).not.toContain("services/lifecycle/absorb");
     expect(platformGithubSource).toContain("shared/absorb-sources");
-    expect(lifecycleCliEdge).toContain("createCliRuntime");
-    expect(lifecycleCliEdge).toContain("resolveSource: runtime.resolveAbsorbSource");
-    expect(lifecycleCliEdge).toContain("loadPrompt: runtime.loadPrompt");
+    expect(lifecycleCliEdge).toContain("registerAbsorbCommand");
+    expect(lifecycleCliEdge).not.toContain("createCliRuntime");
+    expect(absorbCliEdge).toContain("createCliRuntime");
+    expect(absorbCliEdge).toContain("resolveSource: runtime.resolveAbsorbSource");
+    expect(absorbCliEdge).toContain("loadPrompt: runtime.loadPrompt");
     expect(lifecycleCliEdge).not.toContain("platform/sources");
     expect(lifecycleCliEdge).not.toContain("platform/prompts");
     expect(appCliRuntime).toContain("createPlatformAbsorbSourceResolver");

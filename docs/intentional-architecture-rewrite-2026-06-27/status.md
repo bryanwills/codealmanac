@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 217 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 218 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -20,6 +20,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved setup instruction file mechanics into `src/platform/setup/instructions.ts`, with setup services receiving an injected setup instruction runtime.
 - Moved CLI process execution and command registration into `src/edges/cli/`.
 - Split query command registration into per-command edge files for serve, search, show, health, and list.
+- Split lifecycle run command registration into per-operation edge files for init, absorb/ingest, and Garden.
 - Made CLI command files much thinner by moving product workflows into `src/services/`.
 - Split wiki workflows into clearer service boundaries: search, show, health, registry, topics, review, reindex, source migration, and doctor wiki checks.
 - Moved durable job persistence into explicit stores for records, specs, logs, and worker locks.
@@ -92,20 +93,19 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split the large query command registration file into a thin aggregator plus per-command edge registration files for serve, search, show, health, and list.
+The latest slice split lifecycle run command registration into a thin aggregator plus command-specific edge files for init, absorb/ingest, and Garden.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/search.test.ts test/show.test.ts test/health.test.ts test/list.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/operation-commands.test.ts test/init-helper.test.ts test/absorb-operation.test.ts test/garden-operation.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js --help`
-- `node dist/launcher.js search --help`
-- `node dist/launcher.js show --help`
-- `node dist/launcher.js health --help`
-- `node dist/launcher.js list --help`
+- `node dist/launcher.js init --help`
+- `node dist/launcher.js absorb --help`
+- `node dist/launcher.js ingest --help`
+- `node dist/launcher.js garden --help`
 
 ## Immediate Next Work
 

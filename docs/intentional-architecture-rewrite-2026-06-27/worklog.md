@@ -1518,3 +1518,10 @@ Two-hundred-seventeenth production slice:
 - Kept command parsing, stdin reading, color selection, auto-registration, and service invocation in command-specific edge files instead of one mixed query registration file.
 - Kept `resolveSearchOutputMode()` re-exported from the aggregator for existing tests while moving its implementation next to search registration.
 - Strengthened architecture-boundary tests so serve/list edge assertions target the specific registration files rather than the query aggregator.
+
+Two-hundred-eighteenth production slice:
+
+- Split `src/edges/cli/register-lifecycle-run-commands.ts` into a thin aggregator plus command-specific registration files for init, absorb/ingest, and Garden.
+- Kept init startup messaging, foreground event handling, CLI runtime composition, worker-program facts, and source-resolver wiring in operation-specific edge files.
+- Collapsed the duplicated absorb and ingest registration bodies behind one absorb-like command helper.
+- Strengthened architecture-boundary tests so lifecycle app-runtime/source-resolver assertions target the concrete operation registration files rather than the aggregator.
