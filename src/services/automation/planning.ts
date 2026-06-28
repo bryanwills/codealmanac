@@ -1,10 +1,10 @@
 import path from "node:path";
 
-import { buildLaunchPath } from "../../platform/automation/launchd.js";
 import {
-  automationLogPaths,
-  launchAgentPlistPath,
-} from "../../platform/automation/paths.js";
+  automationSchedulerPlistPath,
+  buildAutomationSchedulerJob,
+  type AutomationSchedulerJob,
+} from "../../platform/automation/job-plan.js";
 import {
   DEFAULT_AUTOMATION_TASK_IDS,
   DEFAULT_GARDEN_INTERVAL,
@@ -27,7 +27,7 @@ import type {
 export interface PlannedAutomationJob {
   task: AutomationTaskDefinition;
   intervalInput: string;
-  job: import("../../platform/automation/launchd.js").LaunchdJobDefinition;
+  job: AutomationSchedulerJob;
 }
 
 export interface AutomationInstallPlan {
@@ -55,9 +55,6 @@ export function buildAutomationInstallPlan(
   const taskIds = selectedTaskIds(options.tasks, true)
     .filter((id) => !(id === "garden" && options.gardenOff === true));
   const home = options.homeDir;
-  const environmentVariables = {
-    PATH: buildLaunchPath(home, options.pathEnvironment),
-  };
   const jobs: PlannedAutomationJob[] = [];
 
   for (const taskId of taskIds) {
@@ -69,24 +66,20 @@ export function buildAutomationInstallPlan(
     const intervalInput = intervalInputForTask(taskId, options, explicitTasks);
     const interval = parseInterval(intervalInput);
     if (!interval.ok) return interval;
-    const logs = automationLogPaths({
-      home,
-      stdoutLogName: task.stdoutLogName,
-      stderrLogName: task.stderrLogName,
-    });
     jobs.push({
       task,
       intervalInput,
-      job: {
+      job: buildAutomationSchedulerJob({
+        home,
         plistPath: plistPathForTask(task, home, options),
         label: task.label,
         programArguments: programArgumentsForTask(task, options),
         intervalSeconds: interval.seconds,
-        environmentVariables,
+        pathEnvironment: options.pathEnvironment,
         workingDirectory: resolveTaskWorkingDirectory(task, options.cwd),
-        stdoutPath: logs.stdoutPath,
-        stderrPath: logs.stderrPath,
-      },
+        stdoutLogName: task.stdoutLogName,
+        stderrLogName: task.stderrLogName,
+      }),
     });
   }
 
@@ -121,12 +114,24 @@ export function plistPathForTask(
   >,
 ): string {
   if (task.id === "sync") {
-    return options.plistPath ?? launchAgentPlistPath(task.label, home);
+    return automationSchedulerPlistPath({
+      home,
+      label: task.label,
+      plistPath: options.plistPath,
+    });
   }
   if (task.id === "garden") {
-    return options.gardenPlistPath ?? launchAgentPlistPath(task.label, home);
+    return automationSchedulerPlistPath({
+      home,
+      label: task.label,
+      plistPath: options.gardenPlistPath,
+    });
   }
-  return options.updatePlistPath ?? launchAgentPlistPath(task.label, home);
+  return automationSchedulerPlistPath({
+    home,
+    label: task.label,
+    plistPath: options.updatePlistPath,
+  });
 }
 
 function dedupeTaskIds(tasks: AutomationTaskId[]): AutomationTaskId[] {

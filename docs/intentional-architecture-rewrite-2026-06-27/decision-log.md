@@ -39,7 +39,7 @@ Stores own persistence mechanics. Provider adapters, process spawning, app-serve
 
 ### Automation task policy is service-owned
 
-Automation task definitions are product policy, not launchd mechanics. `src/services/automation/tasks.ts` owns the sync, Garden, and update task ids, labels, default cadences, command arguments, and working-directory policy. `src/platform/automation/paths.ts` owns launchd plist/log path construction, and `src/platform/automation/launchd.ts` owns plist rendering, bootstrap/removal, and loaded-state checks.
+Automation task definitions are product policy, not launchd mechanics. `src/services/automation/tasks.ts` owns the sync, Garden, and update task ids, labels, default cadences, command arguments, and working-directory policy. `src/platform/automation/job-plan.ts` owns concrete scheduler job construction, including PATH, plist path, and log path assembly. `src/platform/automation/paths.ts` owns launchd plist/log path construction, and `src/platform/automation/launchd.ts` owns plist rendering, bootstrap/removal, and loaded-state checks.
 
 ### Diagnostic probe facts are platform-owned
 

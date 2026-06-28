@@ -877,6 +877,7 @@ describe("architecture boundaries", () => {
     const automationCatalog = await readSource("src/services/automation/catalog.ts");
     const automationLegacyHooks = await readSource("src/services/automation/legacy-hooks.ts");
     const automationTasks = await readSource("src/services/automation/tasks.ts");
+    const automationJobPlan = await readSource("src/platform/automation/job-plan.ts");
     const automationPaths = await readSource("src/platform/automation/paths.ts");
     const automationCommand = await readSource("src/cli/commands/automation.ts");
     const automationRender = await readSource("src/cli/commands/automation-render.ts");
@@ -894,6 +895,12 @@ describe("architecture boundaries", () => {
     expect(automationPlanning).not.toContain("process.env");
     expect(automationPlanning).not.toContain("homedir");
     expect(automationPlanning).not.toContain("platform/automation/tasks");
+    expect(automationPlanning).not.toContain("platform/automation/launchd");
+    expect(automationPlanning).not.toContain("platform/automation/paths");
+    expect(automationPlanning).not.toContain("buildLaunchPath");
+    expect(automationPlanning).not.toContain("automationLogPaths");
+    expect(automationPlanning).not.toContain("launchAgentPlistPath");
+    expect(automationPlanning).not.toContain("LaunchdJobDefinition");
     expect(automationWorkflow).not.toContain("homedir");
     expect(automationWorkflow).not.toContain("existsSync");
     expect(automationMigration).not.toContain("homedir");
@@ -909,6 +916,10 @@ describe("architecture boundaries", () => {
     expect(automationTasks).toContain("automationTaskDefinition");
     expect(automationPaths).toContain("LaunchAgents");
     expect(automationPaths).toContain("launchAgentPlistPath");
+    expect(automationJobPlan).toContain("buildLaunchPath");
+    expect(automationJobPlan).toContain("automationLogPaths");
+    expect(automationJobPlan).toContain("launchAgentPlistPath");
+    expect(automationJobPlan).toContain("LaunchdJobDefinition");
     expect(existsSync(join(ROOT, "src/platform/automation/tasks.ts"))).toBe(false);
     expect(automationCommand).toContain("services/automation/index.js");
     expect(automationCommand).not.toContain("import type { CommandResult }");

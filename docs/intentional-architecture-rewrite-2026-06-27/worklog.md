@@ -1179,3 +1179,10 @@ One-hundred-seventy-third production slice:
 - Deleted the old command files instead of leaving compatibility paths.
 - Updated command registration so `serve` imports the CLI-edge runner directly.
 - Strengthened boundary coverage so `src/cli/commands/serve.ts` and `src/cli/commands/serve-render.ts` stay deleted while viewer HTTP serving remains under `src/edges/viewer/`.
+
+One-hundred-seventy-fourth production slice:
+
+- Added `src/platform/automation/job-plan.ts` for concrete automation scheduler job construction.
+- Moved launch PATH construction, automation log path assembly, plist path fallback, and `LaunchdJobDefinition` knowledge out of `src/services/automation/planning.ts`.
+- Kept automation service planning responsible for product policy: task selection, interval validation, quiet-window validation, command arguments, and working-directory policy.
+- Strengthened boundary coverage so service planning does not import launchd/path mechanics directly while the platform job-plan owns those mechanics.

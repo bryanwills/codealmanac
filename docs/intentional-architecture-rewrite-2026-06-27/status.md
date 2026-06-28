@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 221 committed rewrite commits past `dev`. The worklog records 173 production slices so far.
+The branch has 222 committed rewrite commits past `dev`. The worklog records 174 production slices so far.
 
-The diff is broad: 462 files changed, with 23,019 insertions and 12,383 deletions.
+The diff is broad: 463 files changed, with 23,090 insertions and 12,383 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -37,6 +37,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
 - Split the automation task catalog out of platform launchd mechanics: task meaning/defaults live under `src/services/automation/tasks.ts`, while plist/log paths live under `src/platform/automation/paths.ts`.
+- Moved automation scheduler job construction into `src/platform/automation/job-plan.ts`; automation services now keep task/interval policy while platform owns PATH/log/plist job mechanics.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
 - Ran repeated lint, focused tests, full test suites, builds, CLI smokes, and review passes across the branch.
@@ -52,13 +53,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved `almanac serve` process lifetime and startup rendering from `src/cli/commands/` into `src/edges/cli/`. The old command files were deleted, and command registration now imports the edge runner directly.
+The latest slice moved automation scheduler job construction from service planning into `src/platform/automation/job-plan.ts`. Service planning still selects tasks, validates intervals, and chooses command arguments, while platform automation now builds the concrete launchd-shaped job definition.
 
-Verification passed: `npm run lint`, focused serve/viewer/boundary tests, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js serve --help`, and `node dist/codealmanac.js doctor --help`.
+Verification passed: `npm run lint`, focused automation/boundary tests, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js automation --help`, and `node dist/codealmanac.js doctor --help`.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, and serve process lifetime have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, and automation scheduler job mechanics have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 
