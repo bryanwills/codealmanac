@@ -4,7 +4,6 @@ import type { AgentRuntimeProviderId } from "../../shared/agent-runtime/events.j
 import type { OperationKind } from "../../shared/operation-spec.js";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
-export type DisplayJobStatus = JobStatus | "stale";
 
 export interface JobSummary {
   created: number;
@@ -53,9 +52,4 @@ export interface JobRecord {
   operationOutput?: JobOperationOutput;
   error?: string;
   failure?: AgentRuntimeFailure;
-}
-
-export interface JobView extends JobRecord {
-  displayStatus: DisplayJobStatus;
-  elapsedMs: number;
 }

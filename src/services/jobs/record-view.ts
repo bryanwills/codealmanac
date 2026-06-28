@@ -1,4 +1,11 @@
-import type { JobRecord, JobView } from "../../stores/jobs/index.js";
+import type { JobRecord } from "../../stores/jobs/index.js";
+
+export type JobDisplayStatus = JobRecord["status"] | "stale";
+
+export interface JobView extends JobRecord {
+  displayStatus: JobDisplayStatus;
+  elapsedMs: number;
+}
 
 export function toJobView(args: {
   record: JobRecord;

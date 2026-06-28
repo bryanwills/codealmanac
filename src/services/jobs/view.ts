@@ -1,5 +1,5 @@
-import { toJobView } from "./record-view.js";
-import type { JobRecord, JobView as StoredJobView } from "../../stores/jobs/index.js";
+import { toJobView, type JobView } from "./record-view.js";
+import type { JobRecord } from "../../stores/jobs/index.js";
 import type {
   JobServiceView,
   JobsRequest,
@@ -9,7 +9,7 @@ export function buildJobServiceView(args: {
   record: JobRecord;
   request: Pick<JobsRequest, "now" | "isPidAlive">;
 }): JobServiceView {
-  return jobServiceViewFromStore(
+  return jobServiceViewFromRecordView(
     toJobView({
       record: args.record,
       now: args.request.now?.() ?? new Date(),
@@ -27,7 +27,7 @@ export function isTerminalJobServiceView(view: JobServiceView): boolean {
   );
 }
 
-function jobServiceViewFromStore(view: StoredJobView): JobServiceView {
+function jobServiceViewFromRecordView(view: JobView): JobServiceView {
   return {
     version: view.version,
     id: view.id,

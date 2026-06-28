@@ -1,4 +1,4 @@
-import type { JobView } from "../../../stores/jobs/types.js";
+import type { JobView } from "../record-view.js";
 import type { JobLogEvent, JobWarning } from "./types.js";
 
 export function deriveJobWarnings(

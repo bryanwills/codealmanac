@@ -27,9 +27,11 @@ describe("architecture boundaries: jobs and sync", () => {
   it("keeps jobs command adapters out of job storage and process mechanics", async () => {
     const jobsServiceIndex = await readSource("src/services/jobs/index.ts");
     const jobsServiceTypes = await readSource("src/services/jobs/types.ts");
+    const jobsStoreTypes = await readSource("src/stores/jobs/types.ts");
     const jobsReadService = await readSource("src/services/jobs/read.ts");
     const jobsLogService = await readSource("src/services/jobs/log-read.ts");
     const jobsCancelService = await readSource("src/services/jobs/cancel.ts");
+    const jobsRecordView = await readSource("src/services/jobs/record-view.ts");
     const jobsRepoRoot = await readSource("src/services/jobs/repo-root.ts");
     const jobsServiceView = await readSource("src/services/jobs/view.ts");
     const jobsCommand = await readSource("src/edges/cli/commands/jobs.ts");
@@ -70,6 +72,12 @@ describe("architecture boundaries: jobs and sync", () => {
       "StreamJobLogRequest extends JobRequest",
     );
     expect(jobsServiceTypes).not.toContain("CancelJobRequest extends JobRequest");
+    expect(jobsStoreTypes).not.toContain("DisplayJobStatus");
+    expect(jobsStoreTypes).not.toContain("interface JobView");
+    expect(jobsStoreTypes).not.toContain("displayStatus:");
+    expect(jobsRecordView).toContain("export interface JobView");
+    expect(jobsRecordView).toContain("displayStatus: JobDisplayStatus");
+    expect(jobsRecordView).toContain("isPidAlive");
     expect(jobsCommand).toContain("services/jobs/index.js");
     expect(jobsCommand).not.toContain("../../jobs/index");
     expect(jobsCommand).not.toContain("import type { CommandResult }");
@@ -144,6 +152,8 @@ describe("architecture boundaries: jobs and sync", () => {
     expect(jobsServiceView).not.toContain("./runtime/index.js");
     expect(jobsServiceView).not.toContain("RuntimeJobView");
     expect(jobsServiceView).not.toContain("jobServiceViewFromRuntime");
+    expect(jobsServiceView).not.toContain("StoredJobView");
+    expect(jobsServiceView).not.toContain("jobServiceViewFromStore");
     expect(jobsServiceView).toContain("./record-view.js");
     expect(jobsServiceTypes).toContain("isPidAlive: (pid: number) => boolean");
     expect(jobsServiceTypes).toContain(
@@ -151,7 +161,7 @@ describe("architecture boundaries: jobs and sync", () => {
     );
     expect(jobReadRegistration).toContain("isLocalPidAlive");
     expect(jobCancelRegistration).toContain("signalLocalPid");
-    expect(jobsServiceView).toContain("function jobServiceViewFromStore");
+    expect(jobsServiceView).toContain("function jobServiceViewFromRecordView");
     expect(jobsServiceView).toContain("toJobView");
   });
 
@@ -160,6 +170,7 @@ describe("architecture boundaries: jobs and sync", () => {
     const logEvents = await readSource("src/services/jobs/projections/log-events.ts");
     const agentTraces = await readSource("src/services/jobs/projections/agent-traces.ts");
     const warnings = await readSource("src/services/jobs/projections/warnings.ts");
+    const projectionTypes = await readSource("src/services/jobs/projections/types.ts");
     const viewerJobs = await readSource("src/edges/viewer/read-model/jobs.ts");
 
     expect(existsSync(join(ROOT, "src/jobs"))).toBe(false);
@@ -172,6 +183,10 @@ describe("architecture boundaries: jobs and sync", () => {
     expect(logEvents).not.toContain("readFile");
     expect(logEvents).not.toContain("readJobLogEvents(path");
     expect(logEvents).toContain("readJobLogContents");
+    expect(projectionView).not.toContain("../../../stores/jobs/types.js");
+    expect(projectionTypes).not.toContain("../../../stores/jobs/types.js");
+    expect(warnings).not.toContain("../../../stores/jobs/types.js");
+    expect(projectionTypes).toContain("../record-view.js");
     expect(agentTraces).toContain("export function deriveJobAgentTraces");
     expect(warnings).toContain("export function deriveJobWarnings");
     expect(viewerJobs).toContain("projections/agent-traces.js");

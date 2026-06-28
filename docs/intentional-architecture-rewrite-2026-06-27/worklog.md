@@ -1861,3 +1861,10 @@ Two-hundred-sixty-second production slice:
 - Renamed the store-owned cross-wiki check to `findCrossWikiLinks()` so the store reports indexed link facts instead of deciding whether registry entries are broken.
 - Kept the public wiki health report shape as `broken_xwiki`, with the service coordinating registry lookup and wiki-root reachability over store facts.
 - Strengthened wiki command boundary tests so health link checks cannot import the registry store or regain registry reachability policy.
+
+Two-hundred-sixty-third production slice:
+
+- Moved `JobView` and stale display-status contracts from `src/stores/jobs/types.ts` into `src/services/jobs/record-view.ts`.
+- Kept job stores focused on durable `JobRecord` persistence contracts while jobs services own PID-liveness-derived read-model state.
+- Updated job projections to consume the service-owned `JobView` type instead of importing store job types.
+- Strengthened jobs/sync boundary tests so store job types cannot regain display-status fields and job projections cannot depend on store view contracts.

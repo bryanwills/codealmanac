@@ -28,11 +28,9 @@ export {
   writeJobSpec,
 } from "./specs.js";
 export type {
-  DisplayJobStatus,
   JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobStatus,
   JobSummary,
-  JobView,
 } from "./types.js";

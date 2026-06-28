@@ -85,7 +85,7 @@ Public jobs service verbs do not read job files or resolve job paths directly. T
 
 Public jobs service files are split by verb. `src/services/jobs/read.ts` owns list/show read workflows, `log-read.ts` owns log reads and attach streaming, `cancel.ts` owns cancellation and record finalization, and `repo-root.ts` owns nearest-wiki-root resolution for public jobs verbs. The deleted `src/services/jobs/jobs.ts` file should not return as a catchall.
 
-Job service views map from store-owned job views, not runtime-owned views. `src/services/jobs/view.ts` should describe that boundary with store terminology because durable job records and display-status shaping now live outside the job runtime folder.
+Job service views map from durable store records plus service-owned display views. `src/stores/jobs/types.ts` describes persisted job records only. `src/services/jobs/record-view.ts` owns `JobView`, stale display-status shaping, and PID-liveness-derived read-model state because those facts are product/runtime interpretation rather than persistence schema.
 
 ### Internal workers are edges over service workflows
 

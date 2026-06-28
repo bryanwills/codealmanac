@@ -1,5 +1,5 @@
 import type { AgentRuntimeEvent, RunActor } from "../../../shared/agent-runtime/events.js";
-import type { JobView } from "../../../stores/jobs/types.js";
+import type { JobView } from "../record-view.js";
 
 export type JobLogEvent =
   | {
