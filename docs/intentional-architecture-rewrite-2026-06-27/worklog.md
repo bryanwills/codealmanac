@@ -1640,3 +1640,12 @@ Two-hundred-thirty-third production slice:
 - Kept ledger loading/reconciliation, repo sync locking, transcript snapshot reads, and summary accounting visible in `sweep.ts` because those are the sweep workflow steps.
 - Moved cursor context text out of `sweep-results.ts`, leaving that file as summary projection only.
 - Strengthened architecture-boundary tests so `sweep.ts` does not regain provider-session lookup or cursor context text.
+
+Two-hundred-thirty-fourth production slice:
+
+- Split `src/services/setup/agent-choice.ts` so it owns setup agent-choice state/read/save workflows instead of every setup-agent support concept.
+- Added `src/services/setup/agent-choice-types.ts` for setup-specific provider choice, model choice, selection, and spawn contracts.
+- Added `src/services/setup/agent-choice-view.ts` for translating provider setup views into setup-owned view contracts and configured model state.
+- Added `src/services/setup/agent-selection.ts` for parsing/validating requested setup agent selections against enabled providers.
+- Updated `src/services/setup/index.ts` to re-export the concrete setup concepts from their owned files.
+- Strengthened architecture-boundary tests so setup agent-choice state does not regain provider selection parsing or provider-view mapping details.

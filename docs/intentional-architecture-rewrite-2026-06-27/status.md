@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 233 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 234 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -82,6 +82,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
 - Moved setup runtime ports into `src/shared/setup-runtime.ts`, so platform setup mechanics no longer import setup service files for contract types.
 - Moved setup shell/global-install mechanics behind `src/platform/setup/runtime.ts`, so setup services own contracts/results while the CLI setup edge owns concrete runtime composition.
+- Split setup agent-choice services into state persistence, setup-specific contracts, provider-view mapping, and selection validation files.
 - Split the automation task catalog out of platform launchd mechanics: task meaning/defaults live under `src/services/automation/tasks.ts`, while plist/log paths live under `src/platform/automation/paths.ts`.
 - Moved the automation scheduler port into `src/shared/automation-scheduler.ts`, so launchd platform mechanics no longer import automation services.
 - Moved automation scheduler mechanics behind the shared scheduler port, with launchd implementation in `src/platform/automation/scheduler.ts`; automation services no longer import `src/platform/automation/`.
@@ -109,18 +110,18 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split sync sweep helper logic into owned files so `src/services/sync/sweep.ts` reads as candidate orchestration instead of a mixed eligibility/session/enqueue bucket.
+The latest slice split setup agent-choice service ownership so `src/services/setup/agent-choice.ts` owns state/read/save workflows while setup-specific contracts, provider-view mapping, and selection validation have named files.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/sync.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/setup.test.ts test/setup-plan.test.ts test/provider-view.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js sync status --help`
-- `node dist/launcher.js sync status --from codex --quiet 999999999s --json`
-- `node dist/launcher.js search transcript --limit 1`
+- `node dist/launcher.js setup --help`
+- `node dist/launcher.js doctor --help`
+- `node dist/launcher.js agents --help`
 
 ## Immediate Next Work
 

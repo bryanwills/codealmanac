@@ -1526,13 +1526,30 @@ describe("architecture boundaries", () => {
     const setupServiceAgentChoice = await readSource(
       "src/services/setup/agent-choice.ts",
     );
+    const setupAgentChoiceTypes = await readSource(
+      "src/services/setup/agent-choice-types.ts",
+    );
+    const setupAgentChoiceView = await readSource(
+      "src/services/setup/agent-choice-view.ts",
+    );
+    const setupAgentSelection = await readSource(
+      "src/services/setup/agent-selection.ts",
+    );
     const setupAgentChoice = await readSource(
       "src/edges/cli/setup/agent-choice.ts",
     );
 
     expect(existsSync(join(ROOT, "src/services/setup/agent-choice.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/setup/agent-choice-types.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/setup/agent-choice-view.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/setup/agent-selection.ts")))
+      .toBe(true);
     expect(setupServiceIndex).not.toContain("../../agent/");
     expect(setupServiceIndex).not.toContain("../../config/");
+    expect(setupServiceIndex).toContain("agent-choice-types.js");
+    expect(setupServiceIndex).toContain("agent-selection.js");
     expect(setupServiceAgentChoice).not.toContain("SetupSpawnCliFn = SpawnCliFn");
     expect(setupServiceAgentChoice).not.toContain(
       "SetupProviderView = ProviderSetupView",
@@ -1546,12 +1563,18 @@ describe("architecture boundaries", () => {
     expect(setupServiceAgentChoice).not.toContain(
       "SetupConfiguredModels = Partial",
     );
-    expect(setupServiceAgentChoice).toContain(
+    expect(setupServiceAgentChoice).not.toContain("parseAgentSelection");
+    expect(setupServiceAgentChoice).not.toContain("ProviderSetupChoice");
+    expect(setupServiceAgentChoice).not.toContain("interface SetupProviderView");
+    expect(setupAgentChoiceTypes).toContain("interface SetupProviderView");
+    expect(setupAgentChoiceView).toContain(
       "setupConfiguredModelsFromConfig",
     );
-    expect(setupServiceAgentChoice).toContain(
+    expect(setupAgentChoiceView).toContain(
       "setupProviderViewFromReadinessView",
     );
+    expect(setupAgentSelection).toContain("parseAgentSelection");
+    expect(setupAgentSelection).toContain("isEnabledAgentProviderId");
     expect(setupAgentChoice).toContain("services/setup/index.js");
     expect(setupAgentChoice).not.toContain("../../../agent");
     expect(setupAgentChoice).not.toContain("agent/readiness/view");
