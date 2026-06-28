@@ -48,28 +48,22 @@ sources:
   - id: rfs
     type: web
     url: https://www.ycombinator.com/rfs?year=2025
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-31
+    note: YC S2026 RFS page where Tom Blomfield defined Company Brain as an explicit startup category, framing it as a living operational map for AI automation.
   - id: gbrain
     type: web
     url: https://github.com/garrytan/gbrain
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-31
+    note: Garry Tan's open-source GBrain reference implementation; supports the GBrain As Reference Primitive section showing architectural overlap with CodeAlmanac.
   - id: hyper-4
     type: web
     url: https://www.ycombinator.com/companies/hyper-4
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-31
+    note: YC listing for Hyper (Spring 2026); supports the Hyper As Managed Product Contrast section.
   - id: qkg-hyper-the-self-driving-company-brain
     type: web
     url: https://www.ycombinator.com/launches/QKg-hyper-the-self-driving-company-brain
-    note: Migrated from legacy sources.
-  - /tmp/company-brain-research.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T22-39-10-019e43e5-2148-7f80-a2f3-9823dae31139.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T02-37-42-019e2a5a-eb3c-7180-89fb-b5591b3c7d24.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
+    note: Supports the Hyper YC launch page copy used in the Managed Product Contrast section.
 status: active
 verified: 2026-06-09
 ---
@@ -200,4 +194,4 @@ The product experience should still move toward [[just-in-time-context-surfacing
 
 ## Related Pages
 
-[[customer-segmentation]] explains the customer groups CodeAlmanac should prioritize before broad company-brain markets. [[github-native-wiki-maintenance]] explains the remote CodeAlmanac product thesis: a GitHub App and hosted maintenance layer over repo-owned `.almanac/` pages, not a hosted canonical memory store. [[almanac-product-family]] explains the broader product vocabulary for scoped almanacs over codebases, personal contexts, companies, projects, and research corpora. [[pitch-deck-fundraising]] explains how this category should be compressed into an investor deck. [[agentmemory-competitor]] explains the strongest adjacent local-daemon coding-agent memory product found in the 2026-05-15 comparison. [[codex-supermemory]] explains the lighter Codex hook integration that makes Supermemory feel immediate after install. [[mem0]] explains an operational memory-store competitor whose extraction and retrieval model clarifies the difference between runtime recall and repo-governed project knowledge. [[moxie-docs]] and [[dosu]] explain the close hosted docs-maintenance competitors that make generic "AI codebase docs" positioning weak. [[just-in-time-context-surfacing]] explains the product mechanism that would make repo-owned memory automatic without becoming uncited memory injection. [[wiki-lifecycle-operations]] explains the Build, Absorb, and Garden operations that keep the wiki current. [[farzapedia]] explains an adjacent AI-maintained wiki reference whose synthesis-first writing rules shaped Almanac prompts.
+[[competitive-landscape]] is the hub for the full competitive research cluster; start there when navigating across competitors, influences, and positioning pages. [[customer-segmentation]] explains the customer groups CodeAlmanac should prioritize before broad company-brain markets. [[github-native-wiki-maintenance]] explains the remote CodeAlmanac product thesis: a GitHub App and hosted maintenance layer over repo-owned `.almanac/` pages, not a hosted canonical memory store. [[almanac-product-family]] explains the broader product vocabulary for scoped almanacs over codebases, personal contexts, companies, projects, and research corpora. [[pitch-deck-fundraising]] explains how this category should be compressed into an investor deck. [[agentmemory-competitor]] explains the strongest adjacent local-daemon coding-agent memory product found in the 2026-05-15 comparison. [[codex-supermemory]] explains the lighter Codex hook integration that makes Supermemory feel immediate after install. [[mem0]] explains an operational memory-store competitor whose extraction and retrieval model clarifies the difference between runtime recall and repo-governed project knowledge. [[moxie-docs]] and [[dosu]] explain the close hosted docs-maintenance competitors that make generic "AI codebase docs" positioning weak. [[just-in-time-context-surfacing]] explains the product mechanism that would make repo-owned memory automatic without becoming uncited memory injection. [[wiki-lifecycle-operations]] explains the Build, Absorb, and Garden operations that keep the wiki current. [[farzapedia]] explains an adjacent AI-maintained wiki reference whose synthesis-first writing rules shaped Almanac prompts.

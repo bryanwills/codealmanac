@@ -106,8 +106,10 @@ sources:
     type: file
     path: viewer/jobs.css
     note: Migrated from legacy files.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: process-manager-design-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Records the 2026-05-28 session that designed the process manager run record shape, job JSONL log structure, and viewer jobs integration.
 verified: 2026-06-07T00:00:00.000Z
 
 ---

@@ -127,15 +127,31 @@ sources:
     type: file
     path: test/viewer-ui-assets.test.ts
     note: Migrated from legacy files.
-  - docs/plans/2026-05-10-local-viewer.md
-  - docs/plans/2026-05-10-viewer-jobs-dashboard.md
-  - docs/plans/2026-05-11-jobs-stream-ui-garden.md
-  - ../openalmanac/frontend/src/components/wiki/wiki-theme.css
-  - ../openalmanac/frontend/src/components/wiki/wiki-chrome.css
-  - ../openalmanac/frontend/src/components/wiki/vintage-prose.css
-  - ../openalmanac/frontend/src/components/wiki/layout/WikiLayout.tsx
-  - ../usealmanac/index.html
-  - ../usealmanac/logo1.png
+  - id: local-viewer-plan
+    type: file
+    path: docs/plans/2026-05-10-local-viewer.md
+    note: Documents the 2026-05-10 local viewer design that established the read-only wiki browsing surface and its relationship to the SQLite index.
+  - id: viewer-jobs-dashboard-plan
+    type: file
+    path: docs/plans/2026-05-10-viewer-jobs-dashboard.md
+    note: Documents the 2026-05-10 jobs dashboard design that added job records and transcript streaming to the local viewer.
+  - id: jobs-stream-ui-plan
+    type: file
+    path: docs/plans/2026-05-11-jobs-stream-ui-garden.md
+    note: Documents the 2026-05-11 jobs stream UI and Garden viewer integration plan.
+  - id: openalmanac-ui-inspection
+    type: manual
+    note: >-
+      Inspected CSS and component files from the sibling openalmanac project
+      (../openalmanac/frontend/src/components/wiki/) to inform viewer theme and layout choices:
+      wiki-theme.css, wiki-chrome.css, vintage-prose.css, and WikiLayout.tsx. Sibling project,
+      not tracked in this repository.
+  - id: usealmanac-ui-inspection
+    type: manual
+    note: >-
+      Inspected ../usealmanac/index.html and ../usealmanac/logo1.png from the sibling usealmanac
+      project to inform viewer chrome and brand decisions. Sibling project, not tracked in this
+      repository.
 
 ---
 

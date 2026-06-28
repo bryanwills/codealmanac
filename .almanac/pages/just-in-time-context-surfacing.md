@@ -3,8 +3,14 @@ title: Just-In-Time Context Surfacing
 summary: Just-in-time context surfacing is the product direction where CodeAlmanac automatically shows a few cited, file-aware constraints before an agent makes risky edits.
 topics: [product-positioning, agents]
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-11-37-019e6b10-6850-7512-ac56-e74118e4c6d2.jsonl
+  - id: activation-gap-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
+    note: Records the early activation-gap discussion that identified automatic context surfacing as the product direction for making repo memory useful without explicit agent search.
+  - id: codex-supermemory-contrast-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-11-37-019e6b10-6850-7512-ac56-e74118e4c6d2.jsonl
+    note: Records the Codex Supermemory session showing automatic recall in a non-code Gmail context, which sharpened the boundary between broad personal memory injection and repo-governed file-aware surfacing.
   - id: market-validation
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl

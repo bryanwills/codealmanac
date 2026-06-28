@@ -32,12 +32,14 @@ sources:
     type: file
     path: viewer/app.js
     note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/10/rollout-2026-05-10T14-49-00-019e13dd-740e-7421-9d32-51615ab7c84f.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T00-28-55-019e6d0e-a0d0-7ec0-bbbd-92d2c677608c.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
+  - id: build-design-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/10/rollout-2026-05-10T14-49-00-019e13dd-740e-7421-9d32-51615ab7c84f.jsonl
+    note: Records the 2026-05-10 session that defined Build as the first-pass wiki initializer for a project, distinct from a generic compiler.
+  - id: build-scope-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T00-28-55-019e6d0e-a0d0-7ec0-bbbd-92d2c677608c.jsonl
+    note: Records the 2026-05-28 session that clarified Build scope, viewer integration, and the boundary between Build and subsequent Absorb passes.
 status: active
 verified: 2026-05-28T00:00:00.000Z
 

@@ -47,9 +47,16 @@ sources:
     type: file
     path: test/setup.test.ts
     note: Migrated from legacy files.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-  - node_modules/@anthropic-ai/claude-agent-sdk/sdk.d.ts
+  - id: sdk-integration-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Records the 2026-05-28 session covering Claude Agent SDK integration, the harness adapter boundary, and the structured-output mapping for the Claude provider.
+  - id: sdk-types
+    type: manual
+    note: >-
+      Inspected node_modules/@anthropic-ai/claude-agent-sdk/sdk.d.ts locally to read the SDK's
+      TypeScript surface (outputFormat, structured_output, tool shapes). This file is an installed
+      dependency, not tracked in the repository.
 verified: 2026-06-07T00:00:00.000Z
 
 ---

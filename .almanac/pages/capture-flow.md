@@ -10,7 +10,7 @@ sources:
   - id: operations
     type: file
     path: src/cli/commands/operations.ts
-    note: Migrated from legacy files.
+    note: CLI command adapter that renders lifecycle operation workflow results used during sync-started Absorb.
   - id: register-sync-commands
     type: file
     path: src/edges/cli/register-sync-commands.ts
@@ -18,23 +18,23 @@ sources:
   - id: absorb
     type: file
     path: src/operations/absorb.ts
-    note: Migrated from legacy files.
+    note: Constructs the Absorb operation spec that sync starts for each eligible transcript range.
   - id: absorb-2
     type: file
     path: prompts/operations/absorb.md
-    note: Migrated from legacy files.
+    note: Operation prompt that receives the session path and cursor context and decides what wiki changes, if any, the transcript warrants.
   - id: sync
     type: file
     path: src/cli/commands/sync.ts
-    note: Migrated from legacy files.
+    note: CLI adapter that parses options, loads config, starts background Absorb jobs for eligible transcripts, and renders sync output.
   - id: discovery
     type: file
     path: src/sync/discovery/
-    note: Migrated from legacy files.
+    note: Provider-specific transcript discovery modules for Claude and Codex session stores.
   - id: jsonl
     type: file
     path: src/sync/discovery/jsonl.ts
-    note: Migrated from legacy files.
+    note: Discovers Codex transcripts; maps each transcript's recorded cwd to the nearest repo root containing .almanac.
   - id: ledger
     type: file
     path: src/sync/ledger.ts
@@ -50,23 +50,25 @@ sources:
   - id: sweep
     type: file
     path: src/sync/sweep.ts
-    note: Migrated from legacy files.
+    note: Sweep coordinator; owns eligibility checks, internal session filtering, lock acquisition, ledger reconciliation, cursor validation, and Absorb enqueueing.
   - id: background
     type: file
     path: src/jobs/start.ts
-    note: Migrated from legacy files.
+    note: Background job start helper that sync uses to spawn Absorb jobs for eligible transcript continuations.
   - id: automation
     type: file
     path: src/cli/commands/automation.ts
-    note: Migrated from legacy files.
+    note: Automation command that installs, inspects, and uninstalls scheduled sync; sync automation is described in the Scheduled Automation section.
   - id: pricing
     type: web
     url: https://openai.com/api/pricing/
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-11
+    note: OpenAI pricing page referenced in transcript capture-cost benchmarking to estimate GPT-5.5 run cost.
   - id: gpt-5
     type: web
     url: https://developers.openai.com/api/docs/models/gpt-5.5
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-11
+    note: GPT-5.5 model page referenced to clarify that prompts above 272K input tokens are billed at higher full-session rates during capture-cost benchmarking.
   - id: capture-discovery-cwd
     type: file
     path: src/sync/discovery/jsonl.ts
@@ -79,21 +81,6 @@ sources:
     type: conversation
     path: /Users/kushagrachitkara/.codex/sessions/2026/06/09/rollout-2026-06-09T10-54-13-019ead85-4907-76b2-b07f-2f843f0d836a.jsonl
     note: Records a Codex maintenance session that left a repo-mapped but project-unrelated transcript note uncommitted, clarifying the boundary between repo ownership and project relevance.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T21-33-50-019e1a76-701d-7583-a76c-b3739632ee9b.jsonl
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
 verified: 2026-06-09
 ---
 

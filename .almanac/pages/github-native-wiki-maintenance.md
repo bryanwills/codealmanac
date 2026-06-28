@@ -484,14 +484,30 @@ sources:
     type: web
     url: https://www.mintlify.com/docs/deploy/preview-deployments
     note: Migrated from legacy sources.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
-  - docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
-  - docs/research/2026-05-29-github-context-connectors.md
-  - docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
-  - docs/strategy/2026-05-29-open-source-almanac-concept.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+  - id: remote-product-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
+    note: Records the 2026-05-28 remote CodeAlmanac product research session that examined GitHub-native wiki maintenance, open-source codebase wiki tools, and the hosted product boundary.
+  - id: oss-wiki-tools-research
+    type: file
+    path: docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
+    note: Records the 2026-05-28 survey of open-source codebase wiki and review tools that informed the GitHub-native maintenance direction.
+  - id: github-context-connectors-research
+    type: file
+    path: docs/research/2026-05-29-github-context-connectors.md
+    note: Records the 2026-05-29 research into GitHub context connector patterns relevant to the remote CodeAlmanac product design.
+  - id: remote-product-concept
+    type: file
+    path: docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
+    note: Documents the 2026-05-28 remote CodeAlmanac product concept that defines the hosted product boundary and GitHub-native wiki maintenance loop.
+  - id: oss-almanac-concept
+    type: file
+    path: docs/strategy/2026-05-29-open-source-almanac-concept.md
+    note: Documents the 2026-05-29 open-source Almanac concept that shapes the free-public-repo product direction distinct from the hosted GitHub App.
+  - id: sdk-integration-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Records the 2026-05-28 session covering Claude Agent SDK integration and its relationship to the hosted worker architecture for GitHub-native Almanac updates.
 status: active
 verified: 2026-06-06T00:00:00.000Z
 

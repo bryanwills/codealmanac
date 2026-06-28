@@ -3,11 +3,13 @@ title: Superpaper
 summary: Superpaper is an Obsidian-first personal knowledge system whose operating discipline informs Almanac, while its schema and vault ownership model should not be copied into codebase wikis.
 topics: [wiki-design, product-positioning, agents, competitive-research]
 sources:
-  - /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
-  - /Users/rohan/Documents/life/AGENTS.md
-  - /Users/rohan/Documents/life/.agents/skills/superpaper/SKILL.md
-  - /Users/rohan/Documents/life/superpaper/Knowledge map.md
-  - /Users/rohan/Documents/life/_templates/
+  - id: superpaper-comparison-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T16-27-22-019e6b55-bee7-79d3-ba21-2852c5372082.jsonl
+    note: Records the Superpaper comparison that drew the vault-as-product vs wiki-beside-repo distinction and produced the subject-neighborhood rule for Almanac.
+  - id: superpaper-vault
+    type: manual
+    note: Inspected the life vault at /Users/rohan/Documents/life on 2026-05-27, including AGENTS.md, .agents/skills/superpaper/SKILL.md, superpaper/Knowledge map.md, and _templates/ structure. Vault is not in this repo.
 verified: 2026-05-27
 ---
 

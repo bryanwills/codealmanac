@@ -21,24 +21,19 @@ sources:
   - id: agents
     type: file
     path: AGENTS.md
-    note: Migrated from legacy files.
+    note: Symlink to CLAUDE.md that carries the special-case architecture rule to Codex.
   - id: claude
     type: file
     path: CLAUDE.md
-    note: Migrated from legacy files.
+    note: Contains the repo rule requiring explicit justification for one-off mechanisms where the existing general model could be extended.
   - id: review
     type: file
     path: .claude/agents/review.md
-    note: Migrated from legacy files.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T10-09-42-019e21ac-062a-7830-af2e-f8e719f85d89.jsonl
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T11-33-08-019e271e-c639-72f2-bf85-e598ad83ce62.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+    note: Contains the Special-case architecture section that requires active review agent questioning of copied files, command-specific parsers, and parallel lifecycle paths.
+  - id: provider-boundary-plan
+    type: file
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Records the capture-automation review that applied the accidental-special-case rule to scheduler ownership and the ephemeral-npx durable-install branch.
 status: active
 verified: 2026-06-08T00:00:00.000Z
 

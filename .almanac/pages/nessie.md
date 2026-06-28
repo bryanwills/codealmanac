@@ -39,4 +39,4 @@ The product lesson is that provenance matters. Nessie's public copy stresses dec
 
 ## Related Pages
 
-[[company-brain]] explains the broader category. [[agentmemory-competitor]] explains a coding-agent memory daemon that is closer to CodeAlmanac's runtime. [[moxie-docs]] explains the hosted codebase-documentation competitor that overlaps more directly with GitHub docs workflows.
+[[competitive-landscape]] is the hub for the full competitive research cluster. [[company-brain]] explains the broader category. [[agentmemory-competitor]] explains a coding-agent memory daemon that is closer to CodeAlmanac's runtime. [[moxie-docs]] explains the hosted codebase-documentation competitor that overlaps more directly with GitHub docs workflows.

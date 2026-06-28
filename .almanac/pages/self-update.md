@@ -69,10 +69,14 @@ sources:
     type: file
     path: src/cli/commands/setup/automation-step.ts
     note: Migrated from legacy files.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
+  - id: self-update-design-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
+    note: Records the 2026-05-14 session that designed the notifier-first self-update flow, npm registry check, and idempotent update command.
+  - id: self-update-impl-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
+    note: Records the 2026-05-14 follow-up session implementing the pre-command update banner and detached registry check behavior.
 status: active
 verified: 2026-05-14T00:00:00.000Z
 

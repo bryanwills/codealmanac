@@ -84,13 +84,26 @@ sources:
     type: file
     path: src/services/automation/tasks.ts
     note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - docs/research/2026-05-07-cli-surface-design.md
-  - docs/research/2026-05-07-cli-config-best-practices.md
-  - docs/plans/2026-05-08-wiki-agent-operations-and-cli-design.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+  - id: cli-design-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
+    note: Records the 2026-05-11 session that worked through lifecycle CLI routing, backgroundable run infrastructure, and the sqlite-free install-management fast path.
+  - id: cli-surface-research
+    type: file
+    path: docs/research/2026-05-07-cli-surface-design.md
+    note: Records the 2026-05-07 CLI surface design research that informed the lifecycle command routing and noun-first command structure.
+  - id: cli-config-research
+    type: file
+    path: docs/research/2026-05-07-cli-config-best-practices.md
+    note: Records the 2026-05-07 CLI config best practices research used to shape setup, uninstall, and config command conventions.
+  - id: wiki-operations-plan
+    type: file
+    path: docs/plans/2026-05-08-wiki-agent-operations-and-cli-design.md
+    note: Documents the 2026-05-08 design plan for wiki agent operations and CLI integration that defined the Build, Absorb, and Garden lifecycle shape.
+  - id: lifecycle-design-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+    note: Records the 2026-05-15 session that settled the no-interactive-prompts constraint for background lifecycle operations.
 verified: 2026-05-15T00:00:00.000Z
 
 ---

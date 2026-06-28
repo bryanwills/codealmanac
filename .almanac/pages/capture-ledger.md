@@ -25,11 +25,11 @@ sources:
   - id: 2026-05-11-scheduled-quiet-session-capture
     type: file
     path: docs/plans/2026-05-11-scheduled-quiet-session-capture.md
-    note: Migrated from legacy files.
+    note: Contains the original quiet-session capture plan that established the ledger as the per-transcript cursor and dedupe state.
   - id: sync
     type: file
     path: src/cli/commands/sync.ts
-    note: Migrated from legacy files.
+    note: CLI adapter that runs sync command, reads config, discovers transcripts, and renders results.
   - id: ledger
     type: file
     path: src/stores/sync/ledger.ts
@@ -41,29 +41,19 @@ sources:
   - id: sweep
     type: file
     path: src/sync/sweep.ts
-    note: Migrated from legacy files.
-  - id: index
-    type: file
-    path: src/config/index.ts
-    note: Migrated from legacy files.
+    note: Owns sweep coordinator including eligibility checks, lock acquisition, ledger reconciliation, cursor decision, and enqueue.
   - id: records
     type: file
     path: src/stores/jobs/records.ts
-    note: Migrated from legacy files.
+    note: Job record store that the ledger reconciles pending cursors against.
   - id: types
     type: file
     path: src/jobs/types.ts
-    note: Migrated from legacy files.
+    note: Job type definitions used by ledger reconciliation and pending-state logic.
   - id: sync-test
     type: file
     path: test/sync.test.ts
-    note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Tests ledger behavior, sweep discovery, quiet-window handling, repo locking, and subagent skipping.
 status: implemented
 verified: 2026-06-08T00:00:00.000Z
 

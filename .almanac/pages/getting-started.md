@@ -59,6 +59,7 @@ Use this page to choose a reading path before changing code. The wiki's job is t
 | Change Claude, Codex, Cursor, or future provider execution | [[harness-providers]] | [[provider-lifecycle-boundary]], [[claude-agent-sdk]], [[agents-md]], [[global-agent-instructions]] |
 | Change operation prompts or wiki-writing doctrine | [[wiki-organization-primitives]] | [[operation-prompts]], [[documenting-software-architectures]], [[farzapedia]], [[source-provenance]] |
 | Change product shape, hosted GitHub workflows, or positioning | [[almanac-product-family]] | [[just-in-time-context-surfacing]], [[github-native-wiki-maintenance]], [[company-brain]], [[customer-segmentation]] |
+| Understand competitors, adjacent products, or external wiki influences | [[competitive-landscape]] | [[company-brain]], [[agentmemory-competitor]], [[dosu]], [[moxie-docs]], [[farzapedia]] |
 
 [[lifecycle-architecture]] is the current hub for the write-capable runtime: operations, CLI routing, provider execution, job records, and scheduled maintenance. [@lifecycle-architecture]
 

@@ -10,38 +10,38 @@ sources:
   - id: codealmanac-vs-deepwiki-supermemory
     type: file
     path: docs/strategy/codealmanac-vs-deepwiki-supermemory.md
-    note: Migrated from legacy files.
+    note: Records the three-way competitive comparison between CodeAlmanac, DeepWiki, and Supermemory, establishing the offline wiki compiler vs online daemon distinction.
   - id: karpathy-llm-wiki
     type: file
     path: docs/research/karpathy-llm-wiki.md
-    note: Migrated from legacy files.
+    note: Describes the Karpathy-style LLM-maintained markdown wiki pattern that agentmemory claims to extend with graph edges and confidence scoring.
   - id: readme
     type: file
     path: README.md
-    note: Migrated from legacy files.
+    note: Defines CodeAlmanac's public product positioning that this competitive analysis informs.
   - id: agentmemory
     type: web
     url: https://github.com/rohitg00/agentmemory
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-15
+    note: Agentmemory public repo; supports product description and hook architecture claims.
   - id: iii
     type: web
     url: https://github.com/iii-hq/iii
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-15
+    note: iii-engine repo underlying agentmemory; supports the WebSocket-connected worker runtime description.
   - id: workers
     type: web
     url: https://iii.dev/docs/0-10-0/architecture/workers
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-15
+    note: iii architecture docs; supports the worker-registration and function-registry description.
   - id: workers-iii-dev
     type: web
     url: https://workers.iii.dev/
-    note: Migrated from legacy sources.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - /Users/rohan/Desktop/Projects/agentmemory/README.md
-  - /Users/rohan/Desktop/Projects/agentmemory/src/index.ts
-  - /Users/rohan/Desktop/Projects/agentmemory/src/hooks/post-tool-use.ts
-  - /Users/rohan/Desktop/Projects/agentmemory/src/functions/context.ts
-  - /Users/rohan/Desktop/Projects/agentmemory/src/functions/observe.ts
+    retrieved_at: 2026-05-15
+    note: iii workers dashboard; supports the MCP/REST/composition surface description.
+  - id: agentmemory-clone-inspection
+    type: manual
+    note: Inspected local clone of rohitg00/agentmemory at commit 4b354b7 on 2026-05-15, including README.md, src/index.ts, src/hooks/post-tool-use.ts, src/functions/context.ts, and src/functions/observe.ts. Clone was at /Users/rohan/Desktop/Projects/agentmemory and is not in this repo.
 verified: 2026-05-15T00:00:00.000Z
 
 ---
@@ -92,4 +92,4 @@ This keeps the differentiation sharp. CodeAlmanac should not become generic cont
 
 ## Related Pages
 
-[[codex-supermemory]] covers the lighter Supermemory hook integration tested after this local-daemon comparison. [[company-brain]] places memory-daemon products inside the broader company-brain market.
+[[competitive-landscape]] is the hub for the full competitive research cluster. [[codex-supermemory]] covers the lighter Supermemory hook integration tested after this local-daemon comparison. [[company-brain]] places memory-daemon products inside the broader company-brain market.

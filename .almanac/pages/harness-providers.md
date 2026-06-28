@@ -35,94 +35,91 @@ sources:
   - id: metadata
     type: file
     path: src/harness/providers/metadata.ts
-    note: Migrated from legacy files.
+    note: Defines HarnessEvent types and normalizes stream output into text, tool-use, tool-result, tool-summary, context-usage, error, and done event shapes.
   - id: claude
     type: file
     path: src/harness/providers/claude.ts
-    note: Migrated from legacy files.
+    note: Claude provider adapter; maps base tools to Claude Agent SDK tools, handles structured output, and reports cost and usage.
   - id: codex
     type: file
     path: src/harness/providers/codex.ts
-    note: Migrated from legacy files.
+    note: Codex provider facade; delegates to codex/ submodules for request construction, app-server protocol, and result projection.
   - id: app-server
     type: file
     path: src/harness/providers/codex/app-server.ts
-    note: Migrated from legacy files.
+    note: Codex app-server JSON-RPC handshake, notification streaming, turn-completion, and managed-child lifecycle for per-job runs.
   - id: app-notifications
     type: file
     path: src/harness/providers/codex/app-notifications.ts
-    note: Migrated from legacy files.
+    note: Maps Codex app-server notification types to normalized HarnessEvents.
   - id: actors
     type: file
     path: src/harness/providers/codex/actors.ts
-    note: Migrated from legacy files.
+    note: Actor and subagent trace state for Codex provider runs.
   - id: events-2
     type: file
     path: src/harness/providers/codex/events.ts
-    note: Migrated from legacy files.
+    note: Public compatibility facade re-exporting the stable import surface from Codex submodules.
   - id: failures
     type: file
     path: src/harness/providers/codex/failures.ts
-    note: Migrated from legacy files.
+    note: Classifies Codex failure types from app-server error notifications.
   - id: fields
     type: file
     path: src/harness/providers/codex/fields.ts
-    note: Migrated from legacy files.
+    note: Loose protocol-field decoding for Codex app-server message shapes.
   - id: request
     type: file
     path: src/harness/providers/codex/request.ts
-    note: Migrated from legacy files.
+    note: Constructs the three-phase Codex app-server JSON-RPC request from an OperationSpec.
   - id: result
     type: file
     path: src/harness/providers/codex/result.ts
-    note: Migrated from legacy files.
+    note: Projects app-server turn completion into a normalized HarnessResult.
   - id: status
     type: file
     path: src/harness/providers/codex/status.ts
-    note: Migrated from legacy files.
+    note: Readiness probing for the Codex app-server provider.
   - id: tool-display
     type: file
     path: src/harness/providers/codex/tool-display.ts
-    note: Migrated from legacy files.
+    note: Shapes Codex tool events into structured display details (kind, title, path, command, status, exit code, duration).
   - id: types-2
     type: file
     path: src/harness/providers/codex/types.ts
-    note: Migrated from legacy files.
+    note: Internal type definitions for the Codex app-server provider protocol.
   - id: usage
     type: file
     path: src/harness/providers/codex/usage.ts
-    note: Migrated from legacy files.
+    note: Parses tokenUsage fields from Codex app-server token-count notifications.
   - id: final-output
     type: file
     path: src/harness/final-output.ts
-    note: Migrated from legacy files.
+    note: Defines the provider-neutral FinalOutputSpec and FinalOutputResult used by the structured output contract.
   - id: reports
     type: file
     path: src/operations/reports.ts
-    note: Migrated from legacy files.
+    note: Implements the almanac_operation_report_v1 output schema whose summary field becomes the GitHub PR comment after almanac ingest.
   - id: cursor
     type: file
     path: src/harness/providers/cursor.ts
-    note: Migrated from legacy files.
+    note: Cursor provider placeholder; present in metadata as the future extension point but currently fails clearly on run.
   - id: view
     type: file
     path: src/agent/readiness/view.ts
-    note: Migrated from legacy files.
+    note: Builds the readiness projection for setup, almanac agents, and doctor from config plus provider status metadata; not the execution adapter.
   - id: providers
     type: file
     path: src/agent/readiness/providers/
-    note: Migrated from legacy files.
+    note: Provider-specific readiness checks for install and auth state; separate from runtime execution in src/harness/providers/.
   - id: codex-harness-provider-test
     type: file
     path: test/codex-harness-provider.test.ts
-    note: Migrated from legacy files.
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    note: Unit tests for the Codex app-server adapter using an in-process fake server covering approvals, structured output, timeouts, and usage parsing.
+  - id: provider-boundary-plan
+    type: file
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Records the refactor plan that separated provider runtime execution from lifecycle command and automation concerns, establishing the OperationSpec provider-neutral contract.
 verified: 2026-06-03T00:00:00.000Z
 
 ---

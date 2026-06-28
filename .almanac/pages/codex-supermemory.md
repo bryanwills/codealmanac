@@ -5,44 +5,40 @@ summary: >-
   sharpens CodeAlmanac's activation-gap lesson.
 topics:
   - product-positioning
-  - agents
   - competitive-research
 sources:
   - id: codealmanac-vs-deepwiki-supermemory
     type: file
     path: docs/strategy/codealmanac-vs-deepwiki-supermemory.md
-    note: Migrated from legacy files.
+    note: Records the competitive comparison between CodeAlmanac, DeepWiki, and Supermemory that produced the activation-gap lesson and repo-governed vs hosted-memory distinction.
   - id: supermemory
     type: web
     url: https://github.com/supermemoryai/supermemory
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-27
+    note: Supports description of the Supermemory open-source project and hosted API.
   - id: how-it-works
     type: web
     url: https://supermemory.ai/docs/concepts/how-it-works
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-27
+    note: Supports how Supermemory processes memories and exposes them via MCP and search.
   - id: graph-memory
     type: web
     url: https://supermemory.ai/docs/concepts/graph-memory
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-27
+    note: Supports Supermemory's graph memory model contrasted with CodeAlmanac's wikilink graph.
   - id: memory-vs-rag
     type: web
     url: https://supermemory.ai/docs/concepts/memory-vs-rag
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-27
+    note: Supports the comparison between memory-layer recall and standard RAG retrieval.
   - id: user-profiles
     type: web
     url: https://supermemory.ai/docs/concepts/user-profiles
-    note: Migrated from legacy sources.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/27/rollout-2026-05-27T15-11-37-019e6b10-6850-7512-ac56-e74118e4c6d2.jsonl
-  - /Users/rohan/.codex/hooks.json
-  - /Users/rohan/.codex/supermemory/recall.js
-  - /Users/rohan/.codex/supermemory/flush.js
-  - /Users/rohan/.codex/supermemory/search-memory.js
-  - /Users/rohan/.codex/supermemory/save-memory.js
-  - /Users/rohan/.codex/supermemory/forget-memory.js
-  - /Users/rohan/.codex/supermemory/login.js
+    retrieved_at: 2026-05-27
+    note: Supports description of Supermemory's user-profile memory segmentation.
+  - id: codex-hooks-inspection
+    type: manual
+    note: Inspected installed codex-supermemory@1.0.5 hook scripts at ~/.codex/supermemory/ (recall.js, flush.js, search-memory.js, save-memory.js, forget-memory.js, login.js) and ~/.codex/hooks.json on 2026-05-27. Local machine files not in this repo.
 verified: 2026-05-27T00:00:00.000Z
 
 ---

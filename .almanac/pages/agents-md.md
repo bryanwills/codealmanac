@@ -36,11 +36,18 @@ sources:
     type: web
     url: https://developers.openai.com/codex/guides/agents-md
     note: Migrated from legacy sources.
-  - docs/research/2026-05-09-codex-harness-capabilities.md
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-39-37-019e1e21-939f-79f1-9722-c890eb4d1f38.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T10-09-42-019e21ac-062a-7830-af2e-f8e719f85d89.jsonl
+  - id: codex-harness-research
+    type: file
+    path: docs/research/2026-05-09-codex-harness-capabilities.md
+    note: Records the 2026-05-09 Codex harness capabilities research that clarified AGENTS.md discovery rules and the @file reference gap in Codex.
+  - id: agents-md-setup-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-39-37-019e1e21-939f-79f1-9722-c890eb4d1f38.jsonl
+    note: Records the 2026-05-12 session that worked through AGENTS.md setup, the symlink to CLAUDE.md, and the managed-block inline strategy for Codex.
+  - id: agents-md-naming-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T10-09-42-019e21ac-062a-7830-af2e-f8e719f85d89.jsonl
+    note: Records the 2026-05-13 session covering AGENTS.md placement, managed-block boundaries, and the split between descriptive wiki memory and prescriptive agent guidance.
 status: active
 verified: 2026-05-14T00:00:00.000Z
 

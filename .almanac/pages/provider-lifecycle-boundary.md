@@ -93,24 +93,46 @@ sources:
     type: file
     path: src/config/origins.ts
     note: Migrated from legacy files.
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.config/superpowers/worktrees/codealmanac/long-term-arch-cleanup/docs/plans/2026-05-14-long-term-architecture-cleanup.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T13-38-45-019e2791-c776-7f62-a6fc-25a8f07c6a6e.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
-  - /Users/rohan/Desktop/Projects/t3code/packages/contracts/src/providerInstance.ts
-  - /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/ProviderDriver.ts
-  - /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/Services/ProviderRegistry.ts
-  - >-
-    /Users/rohan/Desktop/Projects/t3code/apps/server/src/provider/Services/ProviderAdapterRegistry.ts
+  - id: provider-boundary-plan
+    type: file
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Documents the 2026-05-14 refactor that established the provider boundary separating harness execution from readiness checks, auth probing, and instruction installation.
+  - id: arch-cleanup-plan
+    type: manual
+    note: >-
+      docs/plans/2026-05-14-long-term-architecture-cleanup.md from the long-term-arch-cleanup
+      Git worktree (~/. config/superpowers/worktrees/codealmanac/long-term-arch-cleanup). Branch
+      document not merged to main; contains the long-term architecture cleanup proposal that
+      informed provider boundary decisions.
+  - id: provider-boundary-design-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
+    note: Records the 2026-05-13 session that designed the provider lifecycle boundary and separated automation scheduling from provider execution.
+  - id: provider-boundary-impl-session-1
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-03-51-019e273a-e4b1-7510-981d-d1deb31bc8e2.jsonl
+    note: Records the 2026-05-14 morning session implementing the provider boundary refactor.
+  - id: provider-boundary-impl-session-2
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T12-11-57-019e2742-4c9c-7241-8ccd-a6d36a889d7d.jsonl
+    note: Records the 2026-05-14 follow-up session continuing the provider boundary implementation.
+  - id: provider-boundary-impl-session-3
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T13-38-45-019e2791-c776-7f62-a6fc-25a8f07c6a6e.jsonl
+    note: Records the 2026-05-14 afternoon session completing provider boundary work and wiring readiness checks.
+  - id: provider-boundary-verify-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+    note: Records the 2026-05-15 session that verified the shipped provider boundary shape.
+  - id: t3code-provider-inspection
+    type: manual
+    note: >-
+      Inspected provider pattern files from the t3code project on Rohan's Desktop
+      (~/Desktop/Projects/t3code/) for comparison: packages/contracts/src/providerInstance.ts,
+      apps/server/src/provider/ProviderDriver.ts,
+      apps/server/src/provider/Services/ProviderRegistry.ts, and
+      apps/server/src/provider/Services/ProviderAdapterRegistry.ts. External project, not in
+      this repository.
 status: active
 verified: 2026-05-31T00:00:00.000Z
 

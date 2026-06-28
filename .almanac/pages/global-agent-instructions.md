@@ -49,13 +49,22 @@ sources:
     type: file
     path: test/doctor.test.ts
     note: Migrated from legacy files.
-  - docs/plans/2026-05-11-almanac-naming-migration.md
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-29-09-019e1e17-fe55-7362-b42e-bb000f81f93e.jsonl
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-34-26-019e230c-4437-7422-9e8d-b7caa9b592fc.jsonl
+  - id: naming-migration-plan
+    type: file
+    path: docs/plans/2026-05-11-almanac-naming-migration.md
+    note: Documents the naming migration that renamed capture-flow artifacts and settled the almanac command prefix, informing how setup manages global agent instruction entries.
+  - id: global-instructions-setup-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T14-29-09-019e1e17-fe55-7362-b42e-bb000f81f93e.jsonl
+    note: Records the 2026-05-12 session that established how setup installs Claude guide files versus inline Codex managed blocks in global agent instruction files.
+  - id: global-instructions-codex-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T20-25-14-019e1f5d-ff59-7ee1-a73b-836277d8092b.jsonl
+    note: Records the 2026-05-12 evening session that worked through the Codex AGENTS.md override path, managed-block boundaries, and idempotent uninstall behavior.
+  - id: global-instructions-verify-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-34-26-019e230c-4437-7422-9e8d-b7caa9b592fc.jsonl
+    note: Records the 2026-05-13 session that verified the Claude and Codex global instruction installation after the naming migration landed.
 status: active
 verified: 2026-05-13T00:00:00.000Z
 

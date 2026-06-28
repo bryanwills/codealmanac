@@ -105,10 +105,14 @@ sources:
     type: file
     path: src/cli.ts
     note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+  - id: indexer-design-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
+    note: Records the 2026-05-11 session that designed the SQLite indexer freshness model, content-hash deduplication, and query-command integration.
+  - id: indexer-constraints-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-43-21-019e2a29-293a-7263-b6ce-0a9dc0af792a.jsonl
+    note: Records the 2026-05-15 session that settled the no-interactive-prompts constraint and the ABI guard relationship to the indexer.
 verified: 2026-05-15T00:00:00.000Z
 
 ---

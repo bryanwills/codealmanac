@@ -43,10 +43,18 @@ sources:
     type: file
     path: test/doctor.test.ts
     note: Migrated from legacy files.
-  - docs/plans/2026-04-30-doctor-refactor.md
-  - docs/bugs/codealmanac-known-bugs.md
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T00-52-10-019e1b2c-0679-7bb0-a926-b8643aa710c1.jsonl
+  - id: doctor-refactor-plan
+    type: file
+    path: docs/plans/2026-04-30-doctor-refactor.md
+    note: Documents the 2026-04-30 doctor command refactor to the four-group diagnostic model (install, agent, updates, wiki).
+  - id: known-bugs
+    type: file
+    path: docs/bugs/codealmanac-known-bugs.md
+    note: Tracks known CodeAlmanac bugs including the SQLite ABI mismatch failure mode that motivated the doctor SQLite check and repair guidance.
+  - id: doctor-sqlite-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/12/rollout-2026-05-12T00-52-10-019e1b2c-0679-7bb0-a926-b8643aa710c1.jsonl
+    note: Records the 2026-05-12 doctor session that encountered a real better-sqlite3 ABI mismatch and proposed doctor --fix auto-repair features.
 verified: 2026-05-13T00:00:00.000Z
 status: active
 

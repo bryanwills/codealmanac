@@ -1,7 +1,7 @@
 ---
 title: Wiki Clarifications
 summary: Wiki clarifications are asynchronous human answers to unresolved questions raised by intelligent wiki operations.
-topics: [agents, flows, product-positioning]
+topics: [agents, flows, wiki-design, systems]
 sources:
   - id: absorb-operation
     type: file

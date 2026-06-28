@@ -121,22 +121,14 @@ sources:
     type: web
     url: https://www.npmjs.com/package/node-windows
     note: Migrated from legacy sources.
-  - docs/plans/2026-05-11-scheduled-quiet-session-capture.md
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T11-33-08-019e271e-c639-72f2-bf85-e598ad83ce62.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-02-00-019e2814-eaf1-77a1-848f-737a32ef277b.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T15-56-34-019e280f-f145-7432-a87a-55b96c429856.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/14/rollout-2026-05-14T16-08-39-019e281b-0256-7b60-86f9-ca8990e73c39.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T11-12-35-019e6f5b-eaff-7600-abd8-c83c7cdc491a.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T12-14-55-019e6f94-fae1-7780-b2c9-3e2f3d6b6f3e.jsonl
+  - id: scheduled-capture-plan
+    type: file
+    path: docs/plans/2026-05-11-scheduled-quiet-session-capture.md
+    note: Documents the initial design for scheduled quiet session capture, the basis for the launchd automation layer.
+  - id: provider-boundary-plan
+    type: file
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Documents the provider and automation boundary refactor that separated capture provider logic from the scheduled automation layer.
 status: active
 verified: 2026-06-08T00:00:00.000Z
 

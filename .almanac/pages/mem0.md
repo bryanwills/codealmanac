@@ -10,11 +10,13 @@ sources:
   - id: mem0
     type: web
     url: https://github.com/mem0ai/mem0
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-31
+    note: Mem0 public repo; supports the product description and extraction/retrieval model claims.
   - id: '2504'
     type: web
     url: https://arxiv.org/abs/2504.19413
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-31
+    note: Mem0 research paper; supports the extraction, storage, and retrieval architecture that clarifies how CodeAlmanac differs from runtime memory stores.
   - id: platform-v2-to-v3
     type: web
     url: https://docs.mem0.ai/migration/platform-v2-to-v3
@@ -51,17 +53,23 @@ sources:
     type: web
     url: https://docs.langchain.com/oss/javascript/langgraph/memory
     note: Migrated from legacy sources.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T20-19-07-019e4364-e949-7d40-969e-a5baf98aa944.jsonl
-  - /Users/rohan/Desktop/Projects/mem0/mem0/memory/main.py
-  - /Users/rohan/Desktop/Projects/mem0/mem0/configs/prompts.py
-  - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-memory.md
-  - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-add-pipeline.md
-  - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-search-pipeline.md
-  - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-entity-linking.md
-  - /Users/rohan/Desktop/Projects/mem0/.almanac/pages/python-oss-storage-and-history.md
+  - id: mem0-research-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/15/rollout-2026-05-15T01-30-45-019e2a1d-a038-7633-81ea-a1dfc6cb50bd.jsonl
+    note: Records the 2026-05-15 memory-competitor research session that began the Mem0 and agent-memory product comparison thread.
+  - id: mem0-clone-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/05/19/rollout-2026-05-19T20-19-07-019e4364-e949-7d40-969e-a5baf98aa944.jsonl
+    note: Records the 2026-05-19 session that inspected the local mem0 clone and examined the extraction, storage, and retrieval architecture.
+  - id: mem0-clone-inspection
+    type: manual
+    note: >-
+      Rohan cloned mem0ai/mem0 on the local machine (~/Desktop/Projects/mem0) at commit a623cfaf
+      on main. Inspected mem0/memory/main.py (Memory.add() entry point and additive extraction
+      pipeline), mem0/configs/prompts.py (ADDITIVE_EXTRACTION_PROMPT), and five pages from the
+      mem0 project's own .almanac wiki: python-oss-memory, python-oss-add-pipeline,
+      python-oss-search-pipeline, python-oss-entity-linking, and python-oss-storage-and-history.
+      Inspection date: 2026-05-19. Clone not in this repository.
 verified: 2026-05-20T00:00:00.000Z
 
 ---
@@ -124,4 +132,4 @@ The practical positioning rule matches [[codex-supermemory]] and [[agentmemory-c
 
 ## Related Pages
 
-[[codex-supermemory]] covers the Supermemory Codex hook integration tested in the same research arc. [[agentmemory-competitor]] covers the heavier local-daemon competitor. [[just-in-time-context-surfacing]] describes the CodeAlmanac response to memory products with better automatic recall.
+[[competitive-landscape]] is the hub for the full competitive research cluster. [[codex-supermemory]] covers the Supermemory Codex hook integration tested in the same research arc. [[agentmemory-competitor]] covers the heavier local-daemon competitor. [[just-in-time-context-surfacing]] describes the CodeAlmanac response to memory products with better automatic recall.

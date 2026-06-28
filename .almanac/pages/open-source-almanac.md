@@ -28,35 +28,46 @@ sources:
     type: web
     url: >-
       https://4008838.fs1.hubspotusercontent-na1.net/hubfs/4008838/2024-tidelift-state-of-the-open-source-maintainer-report.pdf
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-29
+    note: Supports the 60% maintainer burnout statistic and the named causes (compensation, appreciation, time balance, support burden) used in the Maintainer Problem section.
   - id: octoverse-2024
     type: web
     url: https://github.blog/news-insights/octoverse/octoverse-2024/
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-29
+    note: Supports the claim that AI-tool adoption is broad among open-source respondents, raising the cost of low-quality AI contributions.
   - id: understanding-the-state-of-open-source-funding-in-2024
     type: web
     url: https://www.linuxfoundation.org/blog/understanding-the-state-of-open-source-funding-in-2024
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-29
+    note: Supports the framing that most ecosystem investment arrives as contributor labor rather than direct maintainer funding.
   - id: scorecard
     type: web
     url: https://github.com/ossf/scorecard
-    note: Migrated from legacy sources.
+    retrieved_at: 2026-05-29
+    note: OpenSSF Scorecard; supports framing of maintainer contribution health infrastructure.
   - id: creating-a-default-community-health-file
     type: web
     url: >-
       https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file
-    note: Migrated from legacy sources.
-  - id: '178'
+    retrieved_at: 2026-05-29
+    note: GitHub docs on community health files; supports the context that Almanac OSS complements rather than replaces README, CONTRIBUTING, SECURITY, and issue templates.
+  - id: ossf-vulnerability-disclosure-issue
     type: web
     url: https://github.com/ossf/wg-vulnerability-disclosures/issues/178
-    note: Migrated from legacy sources.
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-24-15-019e70e7-1dc0-7e30-a996-f47b766b4ee6.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
-  - docs/strategy/2026-05-29-open-source-almanac-concept.md
-  - docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
-  - docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
+    retrieved_at: 2026-05-29
+    note: OpenSSF vulnerability-disclosure discussion identifying low-quality AI-generated reports as a current maintainer burden.
+  - id: oss-concept-doc
+    type: file
+    path: docs/strategy/2026-05-29-open-source-almanac-concept.md
+    note: Records the open-source Almanac concept document including the maintainer-attention framing, OSS starter page set, and free vs paid boundary.
+  - id: remote-product-concept
+    type: file
+    path: docs/strategy/2026-05-28-remote-codealmanac-product-concept.md
+    note: Records the remote product concept that shaped the docs/almanac/ vs .almanac/ directory discussion and public/team profile.
+  - id: oss-wiki-tools-research
+    type: file
+    path: docs/research/2026-05-28-open-source-codebase-wiki-and-review-tools.md
+    note: Records open-source codebase wiki and review tool research that informed OSS competitor positioning.
 status: active
 verified: 2026-06-01T00:00:00.000Z
 

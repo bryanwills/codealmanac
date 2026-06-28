@@ -53,4 +53,4 @@ The transferable invariant is: hubs route, leaves explain. A dense subject shoul
 
 ## Related Pages
 
-[[wiki-organization-primitives]] explains how this lesson fits CodeAlmanac's page, link, topic, source, hub, and browse-projection model. [[operation-prompts]] explains why better organization behavior should live in prompts before it becomes CLI machinery. [[moxie-docs]] explains the closest hosted codebase-docs competitor found before this OpenDeepWiki comparison.
+[[competitive-landscape]] is the hub for the full competitive research and external-influence cluster. [[wiki-organization-primitives]] explains how this lesson fits CodeAlmanac's page, link, topic, source, hub, and browse-projection model. [[operation-prompts]] explains why better organization behavior should live in prompts before it becomes CLI machinery. [[moxie-docs]] explains the closest hosted codebase-docs competitor found before this OpenDeepWiki comparison.

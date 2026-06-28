@@ -54,15 +54,15 @@ sources:
   - id: 2026-05-11-scheduled-quiet-session-capture
     type: file
     path: docs/plans/2026-05-11-scheduled-quiet-session-capture.md
-    note: Migrated from legacy files.
+    note: Original scheduled quiet-session capture plan that established the scheduler-only wakeup model, quiet window, per-transcript cursor dedupe, and activation baseline (sync_since).
   - id: sync
     type: file
     path: src/cli/commands/sync.ts
-    note: Migrated from legacy files.
+    note: CLI adapter for almanac sync; applies quiet-window, ledger reconciliation, and starts background Absorb jobs for eligible transcripts.
   - id: discovery
     type: file
     path: src/sync/discovery/
-    note: Migrated from legacy files.
+    note: Provider-specific transcript discovery for Claude and Codex; maps transcripts to repos by recovering cwd from transcript metadata.
   - id: ledger
     type: file
     path: src/stores/sync/ledger.ts
@@ -74,106 +74,35 @@ sources:
   - id: sweep
     type: file
     path: src/sync/sweep.ts
-    note: Migrated from legacy files.
+    note: Sweep coordinator; owns eligibility checks, internal-session filtering, lock acquisition, ledger reconciliation, and Absorb enqueueing.
   - id: records
     type: file
     path: src/stores/jobs/records.ts
-    note: Migrated from legacy files.
+    note: Job record store that the sweep reconciles pending cursors against before advancing to absorbed state.
   - id: paths
     type: file
     path: src/paths.ts
-    note: Migrated from legacy files.
+    note: Contains findNearestAlmanacDir() walk-up rule used by sync discovery to map transcript cwd to the nearest wiki root.
   - id: automation
     type: file
     path: src/cli/commands/automation.ts
-    note: Migrated from legacy files.
-  - id: tasks
-    type: file
-    path: src/services/automation/tasks.ts
-    note: Migrated from legacy files.
-  - id: launchd
-    type: file
-    path: src/platform/automation/launchd.ts
-    note: Migrated from legacy files.
-  - id: legacy-capture
-    type: file
-    path: src/platform/automation/legacy-capture.ts
-    note: Migrated from legacy files.
-  - id: legacy-hooks
-    type: file
-    path: src/platform/automation/legacy-hooks.ts
-    note: Migrated from legacy files.
-  - id: migrate
-    type: file
-    path: src/cli/commands/migrate.ts
-    note: Migrated from legacy files.
-  - id: register-edit-commands
-    type: file
-    path: src/edges/cli/register-edit-commands.ts
-    note: Migrated from legacy files.
-  - id: index
-    type: file
-    path: src/config/index.ts
-    note: Migrated from legacy files.
-  - id: store
-    type: file
-    path: src/config/store.ts
-    note: Migrated from legacy files.
+    note: Implements automation install, status, and uninstall commands; removes CodeAlmanac-owned legacy hook commands by content and event name.
   - id: schema
     type: file
     path: src/config/schema.ts
-    note: Migrated from legacy files.
-  - id: operations
-    type: file
-    path: src/cli/commands/operations.ts
-    note: Migrated from legacy files.
-  - id: index-2
-    type: file
-    path: src/cli/commands/setup/index.ts
-    note: Migrated from legacy files.
-  - id: uninstall
-    type: file
-    path: src/cli/commands/uninstall.ts
-    note: Migrated from legacy files.
-  - id: register-setup-commands
-    type: file
-    path: src/edges/cli/register-setup-commands.ts
-    note: Migrated from legacy files.
-  - id: cli
-    type: file
-    path: src/cli.ts
-    note: Migrated from legacy files.
-  - id: claude
-    type: file
-    path: src/harness/providers/claude.ts
-    note: Migrated from legacy files.
-  - id: request
-    type: file
-    path: src/harness/providers/codex/request.ts
-    note: Migrated from legacy files.
-  - id: app-server
-    type: file
-    path: src/harness/providers/codex/app-server.ts
-    note: Migrated from legacy files.
+    note: Defines the automation.sync_since config field that records the activation baseline for scheduled sync.
   - id: setup-test
     type: file
     path: test/setup.test.ts
-    note: Migrated from legacy files.
+    note: Tests setup and uninstall automation behavior including launchd plist generation and legacy hook cleanup.
   - id: automation-test
     type: file
     path: test/automation.test.ts
-    note: Migrated from legacy files.
-  - id: paths-test
+    note: Tests automation install, status, uninstall, quiet-window handling, and scheduler wiring.
+  - id: provider-boundary-plan
     type: file
-    path: test/paths.test.ts
-    note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/11/rollout-2026-05-11T14-32-08-019e18f4-5e73-7790-ba49-73cc02544a58.jsonl
-  - docs/plans/2026-05-14-provider-automation-boundary-refactor.md
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/13/rollout-2026-05-13T23-00-06-019e246d-595d-76d3-bd45-6433245065ac.jsonl
-  - >-
-    /Users/rohan/.codex/sessions/2026/05/28/rollout-2026-05-28T18-27-05-019e70e9-b7d7-7900-9fc0-da2a6f0b532d.jsonl
+    path: docs/plans/2026-05-14-provider-automation-boundary-refactor.md
+    note: Records the provider-automation boundary refactor that separated sync/automation concerns and established the scheduler-only wakeup model.
 status: implemented
 verified: 2026-06-08T00:00:00.000Z
 

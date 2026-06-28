@@ -56,8 +56,10 @@ sources:
     type: file
     path: tsup.config.ts
     note: Migrated from legacy files.
-  - >-
-    /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-46-05-019e2316-ec37-75a1-9e29-c1b5edb40354.jsonl
+  - id: launcher-design-session
+    type: conversation
+    path: /Users/kushagrachitkara/.codex/sessions/2026/05/13/rollout-2026-05-13T13-46-05-019e2316-ec37-75a1-9e29-c1b5edb40354.jsonl
+    note: Records the 2026-05-13 session that designed the install-time Node launcher to pin the installing Node executable and prevent better-sqlite3 ABI mismatches after shell changes.
 verified: 2026-05-13T00:00:00.000Z
 status: active
 
