@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 import {
   emit,
   shouldUseStdoutColor,
@@ -19,7 +19,7 @@ export function registerListCommand(program: Command): void {
     .action(
       async (opts: { json?: boolean; drop?: string; verbose?: boolean }) => {
         if (opts.drop === undefined) {
-          await autoRegisterIfNeeded(process.cwd());
+          await autoRegisterCurrentWikiIfNeeded(process.cwd());
         }
         const { listWikis } = await import("./commands/list.js");
         const result = await listWikis({

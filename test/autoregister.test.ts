@@ -43,6 +43,26 @@ describe("autoRegisterIfNeeded", () => {
     });
   });
 
+  it("uses injected path equality for already-registered path checks", async () => {
+    await withTempHome(async (home) => {
+      const repo = await makeRepo(home, "case-repo");
+      await scaffoldDotAlmanac(repo);
+      await addEntry({
+        name: "case-repo",
+        description: "",
+        path: repo.toUpperCase(),
+        registered_at: "2026-04-15T00:00:00Z",
+      });
+
+      const entry = await autoRegisterIfNeeded(repo, {
+        pathEquals: (a, b) => a.toLowerCase() === b.toLowerCase(),
+      });
+
+      expect(entry?.name).toBe("case-repo");
+      expect(await readRegistry()).toHaveLength(1);
+    });
+  });
+
   it("returns null when there is no enclosing .almanac/", async () => {
     await withTempHome(async (home) => {
       const bare = await makeRepo(home, "plain-dir");

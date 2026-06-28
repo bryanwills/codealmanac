@@ -45,6 +45,7 @@ export function registerInitCommand(program: Command): void {
           isPidAlive: runtime.isPidAlive,
           agentRunner: runtime.agentRunner,
           loadPrompt: runtime.loadPrompt,
+          registryPathEquals: runtime.registryPathEquals,
           startBackground: runtime.startBackground,
           onEvent: opts.background === true
             ? undefined

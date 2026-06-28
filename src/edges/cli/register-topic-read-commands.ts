@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import { emit, shouldUseStdoutColor } from "./helpers.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerTopicReadCommands(topics: Command): void {
   topics
@@ -10,7 +10,7 @@ export function registerTopicReadCommands(topics: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "emit structured JSON")
     .action(async (opts: { wiki?: string; json?: boolean }) => {
-      await autoRegisterIfNeeded(process.cwd());
+      await autoRegisterCurrentWikiIfNeeded(process.cwd());
       const { runTopicsList } = await import("./commands/topics/list.js");
       const result = await runTopicsList({
         cwd: process.cwd(),
@@ -32,7 +32,7 @@ export function registerTopicReadCommands(topics: Command): void {
         slug: string,
         opts: { descendants?: boolean; wiki?: string; json?: boolean },
       ) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runTopicsShow } = await import("./commands/topics/show.js");
         const result = await runTopicsShow({
           cwd: process.cwd(),

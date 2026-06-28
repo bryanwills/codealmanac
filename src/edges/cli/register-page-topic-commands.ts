@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import { emit, readStdin } from "./helpers.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerPageTopicCommands(program: Command): void {
   program
@@ -15,7 +15,7 @@ export function registerPageTopicCommands(program: Command): void {
         topicsArg: string[],
         opts: { stdin?: boolean; wiki?: string },
       ) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runTag } = await import("./commands/tag.js");
         const result = await runTag({
           cwd: process.cwd(),
@@ -35,7 +35,7 @@ export function registerPageTopicCommands(program: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .action(
       async (page: string, topic: string, opts: { wiki?: string }) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runUntag } = await import("./commands/tag.js");
         const result = await runUntag({
           cwd: process.cwd(),

@@ -1838,3 +1838,11 @@ Two-hundred-fifty-ninth production slice:
 - Moved the ABI-check routing predicate out of the npm bin shim and into the CLI edge guard module.
 - Kept `bin/codealmanac.ts` focused on package entrypoint behavior: run the guard, import the CLI facade, render uncaught errors.
 - Strengthened foundation/CLI boundary tests so root `src/` keeps only the intentional `src/cli.ts` facade and startup guard policy stays under `src/edges/cli/`.
+
+Two-hundred-sixtieth production slice:
+
+- Removed the registry store's direct import of `src/platform/path-case.ts`.
+- Added a typed `RegistryPathEquality` contract to `src/stores/wiki-registry/store.ts`, so registry persistence accepts path-comparison policy without owning OS facts.
+- Added `src/edges/cli/autoregistration.ts` as the CLI edge adapter that supplies `pathsEqualOnCurrentPlatform()` to wiki auto-registration.
+- Threaded the same current-platform comparer through CLI runtime, init lifecycle workflows, and doctor runtime facts so production registration behavior stays case-aware on macOS and Windows.
+- Strengthened registry, autoregistration, foundation/CLI, and indexer/diagnostics boundary tests so stores and services cannot regain platform path-case mechanics.

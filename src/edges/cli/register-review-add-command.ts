@@ -2,7 +2,7 @@ import { Command } from "commander";
 
 import { emit } from "./helpers.js";
 import { reviewMarkdownInput } from "./review-markdown-input.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerReviewAddCommand(review: Command): void {
   review
@@ -11,7 +11,7 @@ export function registerReviewAddCommand(review: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "emit structured JSON")
     .action(async (markdownArg: string[], opts: { wiki?: string; json?: boolean }) => {
-      await autoRegisterIfNeeded(process.cwd());
+      await autoRegisterCurrentWikiIfNeeded(process.cwd());
       const { runReviewAdd } = await import("./commands/review.js");
       const markdownInput = await reviewMarkdownInput(markdownArg);
       const result = await runReviewAdd({

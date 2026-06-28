@@ -4,7 +4,6 @@ import { join } from "node:path";
 
 import { getGlobalAlmanacDir } from "../global-paths.js";
 import { getRegistryPath } from "./paths.js";
-import { pathsEqualOnCurrentPlatform } from "../../platform/path-case.js";
 import { UserFacingError } from "../../shared/user-facing-error.js";
 import { writeTextFileAtomically } from "../atomic-write.js";
 
@@ -21,6 +20,12 @@ export interface RegistryEntry {
   description: string;
   path: string;
   registered_at: string;
+}
+
+export type RegistryPathEquality = (a: string, b: string) => boolean;
+
+export interface RegistryPathLookupOptions {
+  pathEquals?: RegistryPathEquality;
 }
 
 /**
@@ -122,19 +127,6 @@ export async function writeRegistry(entries: RegistryEntry[]): Promise<void> {
 }
 
 /**
- * macOS (HFS+/APFS default) and Windows (NTFS default) are case-insensitive
- * but case-preserving. `/Users/x/Project` and `/Users/x/project` are the
- * same directory. We must treat them as the same registry entry, or a
- * single `almanac init` from a differently-cased cwd would duplicate the
- * row. Linux is case-sensitive — do not normalize there.
- *
- * Callers still store the original casing; only comparisons are lowercased.
- */
-function pathsEqual(a: string, b: string): boolean {
-  return pathsEqualOnCurrentPlatform(a, b);
-}
-
-/**
  * Add (or replace) an entry in the registry.
  *
  * Uniqueness is enforced on BOTH `name` and `path`: a repo can only appear
@@ -142,10 +134,14 @@ function pathsEqual(a: string, b: string): boolean {
  * replace the existing entry rather than creating a duplicate. This is
  * what makes auto-registration idempotent.
  */
-export async function addEntry(entry: RegistryEntry): Promise<RegistryEntry[]> {
+export async function addEntry(
+  entry: RegistryEntry,
+  options: RegistryPathLookupOptions = {},
+): Promise<RegistryEntry[]> {
   const existing = await readRegistry();
+  const pathEquals = options.pathEquals ?? exactPathEquality;
   const filtered = existing.filter(
-    (e) => e.name !== entry.name && !pathsEqual(e.path, entry.path),
+    (e) => e.name !== entry.name && !pathEquals(e.path, entry.path),
   );
   filtered.push(entry);
   await writeRegistry(filtered);
@@ -171,14 +167,15 @@ export async function dropEntry(name: string): Promise<RegistryEntry | null> {
 /**
  * Find an entry by either name or absolute path. Used by auto-registration
  * to decide whether the current repo is already known.
- *
- * Path comparison is case-insensitive on macOS/Windows (see `pathsEqual`).
  */
-export async function findEntry(params: {
-  name?: string;
-  path?: string;
-}): Promise<RegistryEntry | null> {
-  return findRegistryEntry(await readRegistry(), params);
+export async function findEntry(
+  params: {
+    name?: string;
+    path?: string;
+  },
+  options: RegistryPathLookupOptions = {},
+): Promise<RegistryEntry | null> {
+  return findRegistryEntry(await readRegistry(), params, options);
 }
 
 export function findRegistryEntry(
@@ -187,10 +184,12 @@ export function findRegistryEntry(
     name?: string;
     path?: string;
   },
+  options: RegistryPathLookupOptions = {},
 ): RegistryEntry | null {
+  const pathEquals = options.pathEquals ?? exactPathEquality;
   for (const entry of entries) {
     if (params.name !== undefined && entry.name === params.name) return entry;
-    if (params.path !== undefined && pathsEqual(entry.path, params.path)) {
+    if (params.path !== undefined && pathEquals(entry.path, params.path)) {
       return entry;
     }
   }
@@ -219,4 +218,8 @@ export async function ensureGlobalDir(): Promise<void> {
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {
   return err instanceof Error && "code" in err;
+}
+
+function exactPathEquality(a: string, b: string): boolean {
+  return a === b;
 }

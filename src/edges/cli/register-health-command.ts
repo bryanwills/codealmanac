@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 import {
   emit,
   readStdin,
@@ -24,7 +24,7 @@ export function registerHealthCommand(program: Command): void {
         json?: boolean;
         wiki?: string;
       }) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runHealth } = await import("./commands/health/index.js");
         const result = await runHealth({
           cwd: process.cwd(),

@@ -6,6 +6,7 @@ import {
   probeDiagnosticGuides,
   probeDiagnosticInstructionEntries,
 } from "../platform/diagnostics/instructions.js";
+import { pathsEqualOnCurrentPlatform } from "../platform/path-case.js";
 import {
   readDiagnosticUpdateStatus,
   type DoctorOptions,
@@ -22,6 +23,7 @@ export type DoctorRuntimeFacts = Pick<
   | "installStatus"
   | "instructionEntriesStatus"
   | "nodeVersion"
+  | "registryPathEquals"
   | "updateStatus"
 >;
 
@@ -42,5 +44,6 @@ export async function readDoctorRuntimeFacts(options: {
     instructionEntriesStatus: await probeDiagnosticInstructionEntries(),
     updateStatus: await readDiagnosticUpdateStatus(),
     installStatus: probeDiagnosticInstall({ homeDir: options.homeDir }),
+    registryPathEquals: pathsEqualOnCurrentPlatform,
   };
 }

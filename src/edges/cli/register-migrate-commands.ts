@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, readStdin } from "./helpers.js";
 import { createAutomationScheduler } from "../../app/automation-runtime.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerMigrateCommands(program: Command): void {
   const migrate = program
@@ -24,7 +24,7 @@ export function registerMigrateCommands(program: Command): void {
       wiki?: string;
       json?: boolean;
     }) => {
-      await autoRegisterIfNeeded(process.cwd());
+      await autoRegisterCurrentWikiIfNeeded(process.cwd());
       const { runMigrateLegacySources } = await import("./commands/migrate.js");
       const result = await runMigrateLegacySources({
         cwd: process.cwd(),

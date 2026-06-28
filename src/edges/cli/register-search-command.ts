@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 import {
   collectOption,
   emit,
@@ -54,7 +54,7 @@ export function registerSearchCommand(program: Command): void {
           limit?: number;
         },
       ) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runSearch } = await import("./commands/search.js");
         const result = await runSearch({
           cwd: process.cwd(),

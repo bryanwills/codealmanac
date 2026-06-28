@@ -1,5 +1,6 @@
 import { createAgentRuntimeJobRunner } from "../agent/runtime/job-runner.js";
 import { startDetachedJobWorkerProcess } from "../platform/jobs/worker-process.js";
+import { pathsEqualOnCurrentPlatform } from "../platform/path-case.js";
 import { isLocalPidAlive } from "../platform/process.js";
 import { loadBundledPrompt } from "../platform/prompts.js";
 import { createPlatformAbsorbSourceResolver } from "../platform/sources/absorb.js";
@@ -13,6 +14,7 @@ import type {
 } from "../services/lifecycle/index.js";
 import type { IsPidAlive } from "../shared/pid-liveness.js";
 import type { SyncTranscriptRuntime } from "../shared/transcripts.js";
+import type { RegistryPathEquality } from "../stores/wiki-registry/index.js";
 
 export interface CliRuntime {
   workerEnvironment: NodeJS.ProcessEnv;
@@ -22,6 +24,7 @@ export interface CliRuntime {
   resolveAbsorbSource: LifecycleAbsorbSourceResolver;
   loadPrompt: LifecyclePromptLoader;
   transcriptRuntime: SyncTranscriptRuntime;
+  registryPathEquals: RegistryPathEquality;
 }
 
 export function createCliRuntime(options: {
@@ -37,6 +40,7 @@ export function createCliRuntime(options: {
     resolveAbsorbSource: createPlatformAbsorbSourceResolver(),
     loadPrompt: loadBundledPrompt,
     transcriptRuntime: createPlatformSyncTranscriptRuntime(),
+    registryPathEquals: pathsEqualOnCurrentPlatform,
   };
 }
 

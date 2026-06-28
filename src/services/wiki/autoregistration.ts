@@ -7,6 +7,7 @@ import {
   findRegistryEntry,
   readRegistry,
   type RegistryEntry,
+  type RegistryPathLookupOptions,
 } from "../../stores/wiki-registry/index.js";
 
 /**
@@ -23,6 +24,7 @@ import {
  */
 export async function autoRegisterIfNeeded(
   cwd: string,
+  options: RegistryPathLookupOptions = {},
 ): Promise<RegistryEntry | null> {
   try {
     const repoRoot = findNearestAlmanacDir(cwd);
@@ -33,7 +35,7 @@ export async function autoRegisterIfNeeded(
     // count and needlessly hit the filesystem.
     const entries = await readRegistry();
 
-    const existing = findRegistryEntry(entries, { path: repoRoot });
+    const existing = findRegistryEntry(entries, { path: repoRoot }, options);
     if (existing !== null) return existing;
 
     // Derive a kebab-case name from the directory. If the dir name is
@@ -54,7 +56,7 @@ export async function autoRegisterIfNeeded(
       path: repoRoot,
       registered_at: new Date().toISOString(),
     };
-    await addEntry(entry);
+    await addEntry(entry, options);
     return entry;
   } catch (err: unknown) {
     // Only swallow errors that mean "registry state isn't readable right

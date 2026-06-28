@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import { emit } from "./helpers.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerReviewReadCommands(review: Command): void {
   review
@@ -16,7 +16,7 @@ export function registerReviewReadCommands(review: Command): void {
         wiki?: string;
         json?: boolean;
       }) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runReviewList } = await import("./commands/review.js");
         const result = await runReviewList({
           cwd: process.cwd(),
@@ -34,7 +34,7 @@ export function registerReviewReadCommands(review: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .option("--json", "emit structured JSON")
     .action(async (id: string, opts: { wiki?: string; json?: boolean }) => {
-      await autoRegisterIfNeeded(process.cwd());
+      await autoRegisterCurrentWikiIfNeeded(process.cwd());
       const { runReviewShow } = await import("./commands/review.js");
       const result = await runReviewShow({
         cwd: process.cwd(),

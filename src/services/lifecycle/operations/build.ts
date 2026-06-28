@@ -11,6 +11,7 @@ import type {
 } from "./types.js";
 import type { AgentRuntimeRunner } from "../../../shared/agent-runtime/runner.js";
 import type { IsPidAlive } from "../../../shared/pid-liveness.js";
+import type { RegistryPathEquality } from "../../../stores/wiki-registry/index.js";
 import { OperationError } from "./errors.js";
 import { createOperationRunSpec, runOperationProcess } from "./run.js";
 
@@ -30,6 +31,7 @@ export interface BuildOperationOptions {
   isPidAlive: IsPidAlive;
   agentRunner: AgentRuntimeRunner;
   loadPrompt: OperationPromptLoader;
+  registryPathEquals?: RegistryPathEquality;
 }
 
 export async function createBuildRunSpec(args: {
@@ -53,7 +55,10 @@ export async function createBuildRunSpec(args: {
 export async function runBuildOperation(
   options: BuildOperationOptions,
 ): Promise<OperationRunResult> {
-  const init = await initWiki({ cwd: options.cwd });
+  const init = await initWiki({
+    cwd: options.cwd,
+    registryPathEquals: options.registryPathEquals,
+  });
   const repoRoot = init.entry.path;
   const pageCount = await countWikiPageFiles(repoRoot);
   if (pageCount > 0 && options.force !== true) {

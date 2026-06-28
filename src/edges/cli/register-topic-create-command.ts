@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import { collectOption, emit } from "./helpers.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 export function registerTopicCreateCommand(topics: Command): void {
   topics
@@ -16,7 +16,7 @@ export function registerTopicCreateCommand(topics: Command): void {
     .option("--wiki <name>", "target a specific registered wiki")
     .action(
       async (name: string, opts: { parent?: string[]; wiki?: string }) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runTopicsCreate } = await import("./commands/topics/create.js");
         const result = await runTopicsCreate({
           cwd: process.cwd(),

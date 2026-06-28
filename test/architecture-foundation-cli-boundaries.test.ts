@@ -27,6 +27,9 @@ describe("architecture boundaries: foundation and CLI", () => {
     const pageSnapshots = await readSource(
       "src/stores/wiki-files/page-snapshots.ts",
     );
+    const cliRuntime = await readSource("src/app/cli-runtime.ts");
+    const registerInit = await readSource("src/edges/cli/register-init-command.ts");
+    const operationsCommand = await readSource("src/edges/cli/commands/operations.ts");
     const buildOperation = await readSource(
       "src/services/lifecycle/operations/build.ts",
     );
@@ -44,6 +47,8 @@ describe("architecture boundaries: foundation and CLI", () => {
     );
     expect(initialization).toContain("scaffoldWikiFiles");
     expect(initialization).toContain("addEntry");
+    expect(initialization).toContain("registryPathEquals");
+    expect(initialization).not.toContain("platform/path-case");
     expect(initialization).not.toContain("writeFile");
     expect(initialization).not.toContain("mkdir");
     expect(fileScaffold).toContain("writeFile");
@@ -53,7 +58,12 @@ describe("architecture boundaries: foundation and CLI", () => {
     expect(filePages).toContain("countWikiPageFiles");
     expect(pageSnapshots).toContain("readFile");
     expect(pageSnapshots).toContain("snapshotWikiPages");
+    expect(cliRuntime).toContain("pathsEqualOnCurrentPlatform");
+    expect(registerInit).toContain("runtime.registryPathEquals");
+    expect(operationsCommand).toContain("registryPathEquals");
     expect(buildOperation).toContain("from \"../../wiki/initialization.js\"");
+    expect(buildOperation).toContain("registryPathEquals");
+    expect(buildOperation).not.toContain("platform/path-case");
     expect(buildOperation).toContain("countWikiPageFiles");
     expect(buildOperation).not.toContain("node:fs");
     expect(buildOperation).not.toContain("readdir");

@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 import {
   emit,
   readStdin,
@@ -49,7 +49,7 @@ export function registerShowCommand(program: Command): void {
           path?: boolean;
         },
       ) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const { runShow } = await import("./commands/show/index.js");
         const result = await runShow({
           cwd: process.cwd(),

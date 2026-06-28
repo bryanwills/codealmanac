@@ -1,11 +1,15 @@
-import { findEntry } from "../../stores/wiki-registry/index.js";
+import {
+  findEntry,
+  type RegistryPathLookupOptions,
+} from "../../stores/wiki-registry/index.js";
 import type { WikiDoctorCheck } from "./doctor-types.js";
 
 export async function describeWikiRegistry(
   repoRoot: string,
+  options: RegistryPathLookupOptions = {},
 ): Promise<WikiDoctorCheck> {
   try {
-    const entry = await findEntry({ path: repoRoot });
+    const entry = await findEntry({ path: repoRoot }, options);
     if (entry !== null) {
       return {
         status: "ok",

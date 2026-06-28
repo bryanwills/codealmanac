@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import { createCliRuntime } from "../../app/cli-runtime.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
 import { lifecycleForegroundEventHandler } from "./lifecycle-events.js";
@@ -47,7 +47,7 @@ function registerAbsorbLikeCommand(
           verbose?: boolean;
         },
       ) => {
-        await autoRegisterIfNeeded(process.cwd());
+        await autoRegisterCurrentWikiIfNeeded(process.cwd());
         const runtime = createCliRuntime({ environment: process.env });
         const { runAbsorbCommand } = await import("./commands/operations.js");
         const result = await runAbsorbCommand({

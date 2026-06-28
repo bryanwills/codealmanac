@@ -50,7 +50,9 @@ export async function gatherWikiDoctorChecks(
     // non-fatal: counts below and the health probe report any real issue.
   }
 
-  checks.push(await describeWikiRegistry(repoRoot));
+  checks.push(await describeWikiRegistry(repoRoot, {
+    pathEquals: options.registryPathEquals,
+  }));
 
   const almanacDir = path.join(repoRoot, ".almanac");
   const dbPath = path.join(almanacDir, "index.db");

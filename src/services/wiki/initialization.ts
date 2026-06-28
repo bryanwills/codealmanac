@@ -6,6 +6,7 @@ import {
   addEntry,
   ensureGlobalDir,
   type RegistryEntry,
+  type RegistryPathEquality,
 } from "../../stores/wiki-registry/index.js";
 import { scaffoldWikiFiles } from "../../stores/wiki-files/scaffold.js";
 
@@ -13,6 +14,7 @@ export interface InitOptions {
   cwd: string;
   name?: string;
   description?: string;
+  registryPathEquals?: RegistryPathEquality;
 }
 
 export interface InitResult {
@@ -60,7 +62,7 @@ export async function initWiki(options: InitOptions): Promise<InitResult> {
     path: repoRoot,
     registered_at: new Date().toISOString(),
   };
-  await addEntry(entry);
+  await addEntry(entry, { pathEquals: options.registryPathEquals });
 
   return { entry, almanacDir: scaffold.almanacDir, created: scaffold.created };
 }

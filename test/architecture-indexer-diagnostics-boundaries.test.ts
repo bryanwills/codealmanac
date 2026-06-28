@@ -290,21 +290,33 @@ describe("architecture boundaries: indexer, diagnostics, and registry", () => {
       "src/services/wiki/autoregistration.ts",
     );
     const registryStore = await readSource("src/stores/wiki-registry/store.ts");
+    const cliAutoRegistration = await readSource(
+      "src/edges/cli/autoregistration.ts",
+    );
     const platformPathCase = await readSource("src/platform/path-case.ts");
 
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/path-case.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/autoregistration.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry/store.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry/index.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/stores/wiki/registry"))).toBe(false);
-    expect(registryStore).toContain("pathsEqualOnCurrentPlatform");
+    expect(registryStore).toContain("RegistryPathEquality");
+    expect(registryStore).toContain("pathEquals");
+    expect(registryStore).not.toContain("platform/path-case");
+    expect(registryStore).not.toContain("pathsEqualOnCurrentPlatform");
     expect(registryStore).not.toContain("process.platform");
+    expect(registryStore).not.toContain("toLowerCase()");
     expect(autoRegistration).toContain("findRegistryEntry");
+    expect(autoRegistration).toContain("RegistryPathLookupOptions");
+    expect(autoRegistration).not.toContain("platform/path-case");
     expect(autoRegistration).not.toContain("existsSync");
     expect(autoRegistration).not.toContain("node:fs");
     expect(autoRegistration).not.toContain("process.platform");
     expect(autoRegistration).not.toContain("function samePath");
     expect(autoRegistration).not.toContain("toLowerCase()");
+    expect(cliAutoRegistration).toContain("pathsEqualOnCurrentPlatform");
+    expect(cliAutoRegistration).toContain("autoRegisterIfNeeded");
     expect(platformPathCase).toContain("process.platform");
     expect(platformPathCase).toContain("isCaseInsensitivePathPlatform");
   });

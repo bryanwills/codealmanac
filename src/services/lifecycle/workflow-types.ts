@@ -11,6 +11,7 @@ import type {
   SourceRef,
 } from "../../shared/absorb-sources.js";
 import type { JobRecord } from "../../stores/jobs/types.js";
+import type { RegistryPathEquality } from "../../stores/wiki-registry/index.js";
 import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
 import type { LifecycleOperationRunResult } from "./operation-results.js";
 
@@ -81,6 +82,7 @@ export interface InitOperationWorkflowOptions {
   isPidAlive: IsPidAlive;
   agentRunner: AgentRuntimeRunner;
   loadPrompt: LifecyclePromptLoader;
+  registryPathEquals?: RegistryPathEquality;
 }
 
 export interface AbsorbOperationWorkflowOptions {

@@ -7,6 +7,7 @@ import {
   addEntry,
   dropEntry,
   findEntry,
+  findRegistryEntry,
   isRegistryEntryReachable,
   readRegistry,
   writeRegistry,
@@ -90,6 +91,41 @@ describe("registry", () => {
       const entries = await readRegistry();
       expect(entries).toHaveLength(1);
       expect(entries[0]?.name).toBe("new-name");
+    });
+  });
+
+  it("accepts injected path equality for platform-specific path dedupe", async () => {
+    await withTempHome(async () => {
+      await writeRegistry([
+        {
+          name: "old-name",
+          description: "",
+          path: "/Users/example/Project",
+          registered_at: "2026-04-15T00:00:00Z",
+        },
+      ]);
+
+      await addEntry(
+        {
+          name: "new-name",
+          description: "",
+          path: "/users/example/project",
+          registered_at: "2026-04-15T01:00:00Z",
+        },
+        { pathEquals: caseInsensitivePathEquality },
+      );
+
+      const entries = await readRegistry();
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.name).toBe("new-name");
+      expect(entries[0]?.path).toBe("/users/example/project");
+      expect(
+        findRegistryEntry(
+          entries,
+          { path: "/USERS/EXAMPLE/PROJECT" },
+          { pathEquals: caseInsensitivePathEquality },
+        )?.name,
+      ).toBe("new-name");
     });
   });
 
@@ -225,3 +261,7 @@ describe("registry", () => {
     });
   });
 });
+
+function caseInsensitivePathEquality(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}

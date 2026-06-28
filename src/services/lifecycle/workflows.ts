@@ -46,6 +46,7 @@ export async function runInitOperationWorkflow(
           isPidAlive: options.isPidAlive,
           agentRunner: options.agentRunner,
           loadPrompt: options.loadPrompt,
+          registryPathEquals: options.registryPathEquals,
         }),
       ),
     };

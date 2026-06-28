@@ -9,6 +9,7 @@ import type {
 } from "../../shared/diagnostics.js";
 import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import type { CollectWikiHealthReport } from "../wiki/doctor.js";
+import type { RegistryPathEquality } from "../../stores/wiki-registry/index.js";
 
 export type {
   DiagnosticsAuthStatus,
@@ -63,6 +64,8 @@ export interface DoctorOptions {
   updateStatus: DiagnosticsUpdateStatus;
   /** Platform-owned install path, package version, and native binding probe facts. */
   installStatus: DiagnosticsInstallStatus;
+  /** Platform-owned path comparison for registry paths on this machine. */
+  registryPathEquals?: RegistryPathEquality;
 
   /** Emit structured JSON instead of the colored report. */
   json?: boolean;

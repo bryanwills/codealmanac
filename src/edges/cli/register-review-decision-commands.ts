@@ -2,7 +2,7 @@ import { Command } from "commander";
 
 import { emit } from "./helpers.js";
 import { reviewMarkdownInput } from "./review-markdown-input.js";
-import { autoRegisterIfNeeded } from "../../services/wiki/autoregistration.js";
+import { autoRegisterCurrentWikiIfNeeded } from "./autoregistration.js";
 
 type ReviewDecisionVerb = "decide" | "apply" | "reopen";
 
@@ -41,7 +41,7 @@ function registerReviewDecisionCommand(
     .description(command.description)
     .option("--wiki <name>", "target a specific registered wiki")
     .action(async (id: string, markdownArg: string[], opts: { wiki?: string }) => {
-      await autoRegisterIfNeeded(process.cwd());
+      await autoRegisterCurrentWikiIfNeeded(process.cwd());
       const commandModule = await import("./commands/review.js");
       const markdownInput = await reviewMarkdownInput(markdownArg);
       const request = {
