@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 229 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 230 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -74,6 +74,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
 - Moved diagnostic probe mechanics into `src/platform/diagnostics/`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
 - Moved diagnostic fact contracts into `src/shared/diagnostics.ts`, so platform probes and diagnostics services meet through a neutral contract instead of a service-to-platform type import.
+- Moved doctor diagnostic runtime composition into `src/app/diagnostics-runtime.ts`, so doctor command registration owns process facts but not concrete probe wiring.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
 - Moved setup runtime ports into `src/shared/setup-runtime.ts`, so platform setup mechanics no longer import setup service files for contract types.
@@ -105,18 +106,17 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved the provider-neutral agent runner contract into `src/shared/agent-runtime/runner.ts` and deleted the old job-runtime-private runner contract file.
+The latest slice moved concrete doctor diagnostic probe wiring into `src/app/diagnostics-runtime.ts`, leaving doctor command registration as request shaping over process facts and rendering options.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/operation-commands.test.ts test/build-operation.test.ts test/absorb-operation.test.ts test/garden-operation.test.ts test/sync.test.ts test/jobs-executor.test.ts test/jobs-worker.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/doctor.test.ts test/cli.test.ts`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js doctor --wiki-only --json`
-- `node dist/launcher.js jobs --help`
-- `node dist/launcher.js sync status --help`
+- `node dist/launcher.js doctor --install-only --json`
 - `node dist/launcher.js search provider --limit 1`
 
 ## Immediate Next Work

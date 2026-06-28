@@ -47,6 +47,8 @@ Automation task definitions are product policy, not launchd mechanics. `src/serv
 
 Doctor probe result shapes live in `src/shared/diagnostics.ts` because they are the contract between platform probes and diagnostics services. Platform diagnostics modules own install path, SQLite binding, auth probe, automation plist, guide-file, instruction-entry, update-state, and subprocess-spawn mechanics. `src/services/diagnostics/` owns the doctor product read model: options, checks, reports, update/install/agent sections, and stable service-facing re-exports.
 
+Doctor command registration does not wire every concrete probe directly. `src/app/diagnostics-runtime.ts` composes platform probes, update-status reads, and agent readiness into doctor runtime facts. The CLI edge owns process facts such as `process.env`, `process.version`, `process.cwd()`, `homedir()`, and stdout color capability, then passes typed facts into the command adapter.
+
 ### Setup/uninstall terminal UI belongs to the CLI edge
 
 Setup terminal prompts, display text, setup step rendering, uninstall confirmations, and uninstall output rendering belong under `src/edges/cli/` because they are CLI interaction surfaces. Provider fix-command normalization and global-install result shaping are setup product workflow, so they live under `src/services/setup/`. CLI setup edge files should not import `src/platform/shell.ts` or `src/platform/install/global-package.ts` directly.

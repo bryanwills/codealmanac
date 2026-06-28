@@ -1,16 +1,8 @@
 import { Command } from "commander";
 import { homedir } from "node:os";
 
+import { readDoctorRuntimeFacts } from "../../app/diagnostics-runtime.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
-import { createAgentReadinessRuntime } from "../../app/agent-readiness-runtime.js";
-import { readDiagnosticUpdateStatus } from "../../services/diagnostics/index.js";
-import { probeDiagnosticAutomation } from "../../platform/diagnostics/automation.js";
-import { probeDiagnosticClaudeAuth } from "../../platform/diagnostics/auth.js";
-import { probeDiagnosticInstall } from "../../platform/diagnostics/install.js";
-import {
-  probeDiagnosticGuides,
-  probeDiagnosticInstructionEntries,
-} from "../../platform/diagnostics/instructions.js";
 
 export interface RegisterDoctorCommandDeps {
   runDoctor?: typeof import("../../cli/commands/doctor/index.js").runDoctor;
@@ -37,19 +29,14 @@ export function registerDoctorCommand(
       }) => {
         const runDoctor = deps.runDoctor ??
           (await import("../../cli/commands/doctor/index.js")).runDoctor;
+        const runtimeFacts = await readDoctorRuntimeFacts({
+          environment: process.env,
+          homeDir: homedir(),
+          nodeVersion: process.version,
+        });
         const result = await runDoctor({
           cwd: process.cwd(),
-          claudeApiKeySet: process.env.ANTHROPIC_API_KEY !== undefined &&
-            process.env.ANTHROPIC_API_KEY.length > 0,
-          environment: process.env,
-          nodeVersion: process.version,
-          authStatus: await probeDiagnosticClaudeAuth(),
-          agentReadinessRuntime: createAgentReadinessRuntime(),
-          automationStatus: await probeDiagnosticAutomation(),
-          guideStatus: probeDiagnosticGuides(),
-          instructionEntriesStatus: await probeDiagnosticInstructionEntries(),
-          updateStatus: await readDiagnosticUpdateStatus(),
-          installStatus: probeDiagnosticInstall({ homeDir: homedir() }),
+          ...runtimeFacts,
           json: opts.json,
           installOnly: opts.installOnly,
           wikiOnly: opts.wikiOnly,

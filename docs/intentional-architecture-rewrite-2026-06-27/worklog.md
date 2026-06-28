@@ -1606,3 +1606,11 @@ Two-hundred-twenty-ninth production slice:
 - Updated agent runtime provider types to re-export the shared runner contract instead of defining a second runner shape over `OperationSpec`.
 - Updated CLI command adapters, app composition, worker edge, lifecycle services, sync services, job runtime services, and tests to depend on the shared runner contract instead of a job-runtime-private file.
 - Strengthened architecture-boundary tests so the old job-runtime runner contract file stays deleted and the shared runtime runner remains the source of truth.
+
+Two-hundred-thirtieth production slice:
+
+- Added `src/app/diagnostics-runtime.ts` as the app-composition point for doctor runtime facts.
+- Moved concrete doctor probe wiring for Claude auth, automation, install, guide files, instruction entries, update status, and agent readiness out of `src/edges/cli/register-doctor-command.ts`.
+- Kept process facts in the CLI edge: current working directory, environment, Node version, home directory, and color-capable stdout.
+- Left diagnostics services focused on doctor read models over typed facts, while platform diagnostics still own the individual probe mechanics.
+- Strengthened architecture-boundary tests so doctor command registration stays thin and diagnostic probe composition remains visible in app composition.

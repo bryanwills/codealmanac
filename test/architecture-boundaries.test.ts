@@ -2552,6 +2552,7 @@ describe("architecture boundaries", () => {
     const doctorRegistration = await readSource(
       "src/edges/cli/register-doctor-command.ts",
     );
+    const diagnosticsRuntime = await readSource("src/app/diagnostics-runtime.ts");
     const doctorService = await readSource("src/services/wiki/doctor.ts");
     const doctorTypes = await readSource("src/services/wiki/doctor-types.ts");
     const doctorHealth = await readSource("src/services/wiki/doctor-health.ts");
@@ -2648,12 +2649,22 @@ describe("architecture boundaries", () => {
     expect(updateStatusDiagnostics).not.toContain("../../platform/");
     expect(doctorRegistration).toContain("shouldUseStdoutColor()");
     expect(doctorRegistration).toContain("nodeVersion: process.version");
-    expect(doctorRegistration).toContain("probeDiagnosticInstall({ homeDir: homedir() })");
-    expect(doctorRegistration).toContain("probeDiagnosticClaudeAuth()");
-    expect(doctorRegistration).toContain("probeDiagnosticAutomation()");
-    expect(doctorRegistration).toContain("probeDiagnosticGuides()");
-    expect(doctorRegistration).toContain("probeDiagnosticInstructionEntries()");
-    expect(doctorRegistration).toContain("readDiagnosticUpdateStatus()");
+    expect(doctorRegistration).toContain("readDoctorRuntimeFacts");
+    expect(doctorRegistration).toContain("homeDir: homedir()");
+    expect(doctorRegistration).toContain("environment: process.env");
+    expect(doctorRegistration).not.toContain("probeDiagnosticInstall");
+    expect(doctorRegistration).not.toContain("probeDiagnosticClaudeAuth");
+    expect(doctorRegistration).not.toContain("probeDiagnosticAutomation");
+    expect(doctorRegistration).not.toContain("probeDiagnosticGuides");
+    expect(doctorRegistration).not.toContain("probeDiagnosticInstructionEntries");
+    expect(doctorRegistration).not.toContain("readDiagnosticUpdateStatus()");
+    expect(diagnosticsRuntime).toContain("createAgentReadinessRuntime");
+    expect(diagnosticsRuntime).toContain("probeDiagnosticInstall");
+    expect(diagnosticsRuntime).toContain("probeDiagnosticClaudeAuth");
+    expect(diagnosticsRuntime).toContain("probeDiagnosticAutomation");
+    expect(diagnosticsRuntime).toContain("probeDiagnosticGuides");
+    expect(diagnosticsRuntime).toContain("probeDiagnosticInstructionEntries");
+    expect(diagnosticsRuntime).toContain("readDiagnosticUpdateStatus");
     expect(doctorRegistration).not.toContain("color: process.stdout.isTTY === true");
     expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
     expect(platformInstallDiagnostics).toContain("probeBetterSqlite3");
