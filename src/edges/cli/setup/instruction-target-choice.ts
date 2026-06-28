@@ -4,7 +4,6 @@ import {
   type SetupInstructionTargetId,
 } from "../../../services/setup/index.js";
 import {
-  SetupInterruptedError,
   promptText,
 } from "./input.js";
 import {
@@ -16,6 +15,10 @@ import {
   whiteBold,
   writeSetupDivider,
 } from "./output.js";
+import {
+  canUseRawSelect,
+  selectManyRaw,
+} from "./multi-select.js";
 import type { SetupInputStream } from "./types.js";
 
 export async function chooseInstructionTargets(args: {
@@ -43,7 +46,6 @@ async function chooseInstructionTargetsLine(
     theme,
     new Set(DEFAULT_SETUP_INSTRUCTION_TARGETS),
     0,
-    false,
   );
   const answer = await promptText(input, out, theme, "Select targets", "all");
   if (answer.trim().length === 0) return [...DEFAULT_SETUP_INSTRUCTION_TARGETS];
@@ -55,65 +57,16 @@ function chooseInstructionTargetsRaw(
   out: NodeJS.WritableStream,
   theme: SetupTheme,
 ): Promise<SetupInstructionTargetId[]> {
-  return new Promise((resolve, reject) => {
-    const selected = new Set<SetupInstructionTargetId>(DEFAULT_SETUP_INSTRUCTION_TARGETS);
-    let cursor = 0;
-    let renderedLines = 0;
-    const render = (): void => {
-      if (renderedLines > 0) {
-        out.write(`\x1b[${renderedLines}A\x1b[0J`);
-      }
-      renderedLines = renderInstructionTargets(out, theme, selected, cursor, true);
-    };
-    const cleanup = (): void => {
-      input.removeListener("data", onData);
-      input.setRawMode?.(false);
-      input.pause();
-    };
-    const onData = (chunk: Buffer): void => {
-      const key = chunk.toString("utf8");
-      if (key === "\u0003" || key === "q") {
-        cleanup();
-        out.write("\n");
-        reject(new SetupInterruptedError());
-        return;
-      }
-      if (key === "\u001b[A" || key === "k") {
-        cursor = cursor === 0 ? SETUP_INSTRUCTION_TARGETS.length - 1 : cursor - 1;
-        render();
-        return;
-      }
-      if (key === "\u001b[B" || key === "j") {
-        cursor = cursor === SETUP_INSTRUCTION_TARGETS.length - 1 ? 0 : cursor + 1;
-        render();
-        return;
-      }
-      if (key === " ") {
-        const id = SETUP_INSTRUCTION_TARGETS[cursor]!.id;
-        if (selected.has(id)) selected.delete(id);
-        else selected.add(id);
-        render();
-        return;
-      }
-      if (key === "a") {
-        const allSelected = selected.size === SETUP_INSTRUCTION_TARGETS.length;
-        selected.clear();
-        if (!allSelected) {
-          for (const target of SETUP_INSTRUCTION_TARGETS) selected.add(target.id);
-        }
-        render();
-        return;
-      }
-      if (key === "\r" || key === "\n") {
-        cleanup();
-        out.write("\n");
-        resolve(orderedTargets(selected));
-      }
-    };
-    input.setRawMode?.(true);
-    input.resume();
-    input.on("data", onData);
-    render();
+  return selectManyRaw({
+    input,
+    out,
+    theme,
+    title: "Where do you want to install Almanac?",
+    choices: SETUP_INSTRUCTION_TARGETS.map((target) => ({
+      value: target.id,
+      label: target.displayName,
+    })),
+    selected: new Set(DEFAULT_SETUP_INSTRUCTION_TARGETS),
   });
 }
 
@@ -122,7 +75,6 @@ function renderInstructionTargets(
   theme: SetupTheme,
   selected: Set<SetupInstructionTargetId>,
   cursor: number,
-  raw: boolean,
 ): number {
   let lines = 0;
   out.write(
@@ -149,20 +101,9 @@ function renderInstructionTargets(
 
   writeSetupDivider(out, theme);
   lines++;
-  const hint = raw ? rawModeHint(theme) : lineModeHint(theme);
-  out.write(`  ${dim(theme, "\u2502")}   ${hint}\n`);
+  out.write(`  ${dim(theme, "\u2502")}   ${lineModeHint(theme)}\n`);
   lines++;
   return lines;
-}
-
-function rawModeHint(theme: SetupTheme): string {
-  return [
-    `${controlLabel(theme, "[space]")} toggle`,
-    `${controlLabel(theme, "[↑↓]")} move`,
-    `${controlLabel(theme, "[a]")} all`,
-    `${controlLabel(theme, "[enter]")} confirm`,
-    `${dim(theme, "[q] quit")}`,
-  ].join("  ");
 }
 
 function lineModeHint(theme: SetupTheme): string {
@@ -209,8 +150,4 @@ function dedupeTargets(
   const seen = new Set<SetupInstructionTargetId>();
   for (const target of targets) seen.add(target);
   return orderedTargets(seen);
-}
-
-function canUseRawSelect(input: SetupInputStream): boolean {
-  return input.isTTY === true && typeof input.setRawMode === "function";
 }

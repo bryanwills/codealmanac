@@ -1998,3 +1998,10 @@ Two-hundred-eightieth production slice:
 - Added `src/edges/cli/setup/agent-provider-display.ts` for provider choice status/detail rendering.
 - Kept `agent-choice.ts` focused on coordinating setup agent state, selection resolution, model choice, config persistence, and final readiness output.
 - Strengthened setup boundary tests so provider choice UI remains separate from model choice UI and platform process execution.
+
+Two-hundred-eighty-first production slice:
+
+- Moved raw setup multi-select keyboard mechanics out of `src/edges/cli/setup/instruction-target-choice.ts`.
+- Added `src/edges/cli/setup/multi-select.ts` as the setup edge owner for reusable raw multi-select stdin handling and rendering.
+- Kept instruction-target choice focused on setup instruction target defaults, requested-target dedupe, line-mode parsing, and target ordering.
+- Strengthened setup boundary tests so instruction target choice cannot regain raw-mode listener mechanics.

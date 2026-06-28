@@ -384,12 +384,14 @@ describe("architecture boundaries: setup and uninstall", () => {
     const targetChoice = await readSource(
       "src/edges/cli/setup/instruction-target-choice.ts",
     );
+    const multiSelect = await readSource("src/edges/cli/setup/multi-select.ts");
 
     expect(existsSync(join(ROOT, "src/services/setup/instructions.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/install/guides.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/setup/instructions.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/app/setup-runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/shared/setup-instructions.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/setup/multi-select.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/install-targets.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/agent/instructions"))).toBe(false);
     expect(setupInstructions).not.toContain(
@@ -431,6 +433,13 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(platformGuides).toContain("existsSync");
     expect(setupRegistration).toContain("resolveBundledGuidesDir()");
     expect(setupIndex).not.toContain("../../../agent");
+    expect(targetChoice).toContain("multi-select.js");
+    expect(targetChoice).not.toContain("setRawMode");
+    expect(targetChoice).not.toContain("input.on(\"data\"");
+    expect(targetChoice).not.toContain("removeListener");
+    expect(multiSelect).toContain("setRawMode");
+    expect(multiSelect).toContain("input.on(\"data\"");
+    expect(multiSelect).toContain("removeListener");
     for (const source of [setupIndex, guidesStep, guides, targetChoice]) {
       expect(source).toContain("services/setup/index.js");
       expect(source).not.toContain("agent/install-targets");
