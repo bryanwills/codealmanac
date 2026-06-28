@@ -1463,3 +1463,12 @@ Two-hundred-tenth production slice:
 - Changed lifecycle Absorb input resolution, workflow types, platform source resolution, and GitHub source resolution to meet through the shared source contract.
 - Removed duplicate GitHub source-ref/result interfaces from `src/platform/github/source.ts`.
 - Strengthened architecture-boundary tests so platform source resolution imports `src/shared/absorb-sources.ts` instead of service-internal lifecycle Absorb files.
+
+Two-hundred-eleventh production slice:
+
+- Added `src/shared/update-runtime.ts` for the update runtime, install result, check result, and latest-version fetch contracts.
+- Moved update cache/check workflow out of `src/platform/update/check.ts` and into `src/services/update/check.ts`, where it owns update-state reads, cache-window policy, failure preservation, and state writes.
+- Replaced `src/platform/update/check.ts` with a registry-only latest-version fetcher over `globalThis.fetch`, timeout, and npm registry response parsing.
+- Added `src/app/update-runtime.ts` as the concrete composition point for service check/cache workflow plus platform registry fetch, installed-version reads, and npm install mechanics.
+- Deleted `src/platform/update/runtime.ts` and rewired CLI setup/update paths to use app update runtime composition.
+- Strengthened architecture-boundary tests so platform update check no longer imports update stores and service update check no longer imports platform registry mechanics.

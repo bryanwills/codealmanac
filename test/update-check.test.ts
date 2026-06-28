@@ -3,7 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { checkForUpdate } from "../src/platform/update/check.js";
+import { fetchLatestVersion } from "../src/platform/update/check.js";
+import { checkForUpdate } from "../src/services/update/check.js";
 import { writeState } from "../src/stores/update/index.js";
 import { withTempHome } from "./helpers.js";
 
@@ -24,6 +25,11 @@ function pathIn(home: string): string {
   return join(home, ".almanac", "update-state.json");
 }
 
+function testFetchLatestVersion(fetchFn: typeof fetch) {
+  return (request?: { timeoutMs?: number }) =>
+    fetchLatestVersion({ ...request, fetchFn });
+}
+
 describe("checkForUpdate", () => {
   it("writes a fresh state file on first run", async () => {
     await withTempHome(async (home) => {
@@ -35,7 +41,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -74,7 +80,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -104,7 +110,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -133,7 +139,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
         force: true,
@@ -163,7 +169,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -182,7 +188,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -213,7 +219,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
       });
@@ -246,7 +252,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => now,
         timeoutMs: 20,
@@ -265,7 +271,7 @@ describe("checkForUpdate", () => {
 
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
         now: () => 1_700_000_000,
       });
@@ -291,7 +297,7 @@ describe("checkForUpdate", () => {
       // Must NOT throw — the return is the only signal the caller has.
       const result = await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
       });
 
@@ -310,7 +316,7 @@ describe("checkForUpdate", () => {
 
       await checkForUpdate({
         installedVersion: "0.1.5",
-        fetchFn: fetchFn as typeof fetch,
+        fetchLatestVersion: testFetchLatestVersion(fetchFn as typeof fetch),
         statePath,
       });
 

@@ -1,7 +1,6 @@
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-import { checkForUpdate } from "./check.js";
 import {
   getConfigPath,
   getLegacyConfigPath,
@@ -62,13 +61,5 @@ function readConfigSync(path: string): { update_notifier?: unknown } | null {
     return parseConfigText(raw, path) as { update_notifier?: unknown };
   } catch {
     return null;
-  }
-}
-
-export async function runInternalUpdateCheck(): Promise<void> {
-  try {
-    await checkForUpdate({});
-  } catch {
-    // Nothing from the worker should escape into the foreground command.
   }
 }

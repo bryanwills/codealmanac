@@ -1112,9 +1112,11 @@ describe("architecture boundaries", () => {
     const updateRender = await readSource("src/cli/commands/update-render.ts");
     const updateServiceIndex = await readSource("src/services/update/index.ts");
     const updateService = await readSource("src/services/update/update.ts");
+    const updateServiceCheck = await readSource("src/services/update/check.ts");
     const updateTypes = await readSource("src/services/update/types.ts");
+    const sharedUpdateRuntime = await readSource("src/shared/update-runtime.ts");
     const updateInstall = await readSource("src/platform/update/install.ts");
-    const updateRuntime = await readSource("src/platform/update/runtime.ts");
+    const updateRuntime = await readSource("src/app/update-runtime.ts");
     const updateCheck = await readSource("src/platform/update/check.ts");
     const updateAnnounce = await readSource("src/platform/update/announce.ts");
     const updateStoreIndex = await readSource("src/stores/update/index.ts");
@@ -1127,9 +1129,14 @@ describe("architecture boundaries", () => {
     );
     expect(existsSync(join(ROOT, "src/stores/update/state.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/update/lock.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/app/update-runtime.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/shared/update-runtime.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/update/check.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/update/runtime.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/platform/update/state.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/platform/update/lock.ts"))).toBe(false);
     expect(updateServiceIndex).not.toContain("platform/update");
+    expect(updateServiceIndex).toContain("./check.js");
     expect(updateCommand).toContain("services/update/index.js");
     expect(updateCommand).toContain("./update-render.js");
     expect(updateCommand).not.toContain("platform/update");
@@ -1164,6 +1171,11 @@ describe("architecture boundaries", () => {
     expect(updateService).toContain("opts.runtime.checkForUpdate");
     expect(updateService).toContain("opts.runtime.installLatestPackage()");
     expect(updateService).not.toContain("updateInstallResultFromPlatform");
+    expect(updateServiceCheck).toContain("stores/update/index.js");
+    expect(updateServiceCheck).toContain("fetchLatestVersion");
+    expect(updateServiceCheck).not.toContain("globalThis.fetch");
+    expect(updateServiceCheck).not.toContain("registry.npmjs.org");
+    expect(updateServiceCheck).not.toContain("platform/update");
     expect(updateTypes).not.toContain(
       "UpdateInstallResult = PlatformInstallLatestPackageResult",
     );
@@ -1173,17 +1185,24 @@ describe("architecture boundaries", () => {
     expect(updateTypes).not.toContain("SpawnOptions");
     expect(updateTypes).not.toContain("node:child_process");
     expect(updateTypes).toContain("UpdateInstallFn");
-    expect(updateTypes).toContain("export interface UpdateRuntime");
+    expect(updateTypes).toContain("UpdateRuntime");
     expect(updateTypes).toContain("runtime: UpdateRuntime");
     expect(updateTypes).toContain("pid?: number");
     expect(updateTypes).not.toContain("platform/update/check");
+    expect(sharedUpdateRuntime).toContain("export interface UpdateRuntime");
+    expect(sharedUpdateRuntime).toContain("UpdateLatestVersionResult");
     expect(updateInstall).toContain("node:child_process");
     expect(updateInstall).toContain("spawnFn");
-    expect(updateRuntime).toContain("createPlatformUpdateRuntime");
+    expect(updateRuntime).toContain("createUpdateRuntime");
+    expect(updateRuntime).toContain("checkForUpdate");
+    expect(updateRuntime).toContain("fetchLatestVersion");
     expect(updateRuntime).toContain("installLatestPackage");
     expect(updateRuntime).toContain("readInstalledVersion");
     expect(updateRuntime).toContain("updateInstallResultFromPlatform");
-    expect(updateCheck).toContain("stores/update/index.js");
+    expect(updateCheck).toContain("globalThis.fetch");
+    expect(updateCheck).toContain("registry.npmjs.org/codealmanac");
+    expect(updateCheck).not.toContain("stores/update");
+    expect(updateCheck).not.toContain("services/update");
     expect(updateAnnounce).toContain("stores/update/index.js");
     expect(updateAnnounce).not.toContain("readFileSync(path");
     expect(updateStoreIndex).toContain("readStateSync");
@@ -1191,8 +1210,8 @@ describe("architecture boundaries", () => {
     expect(updateLockStore).toContain("pid: number");
     expect(updateLockStore).toContain("pid: options.pid");
     expect(updateLockStore).not.toContain("process.pid");
-    expect(setupRegistration).toContain("createPlatformUpdateRuntime");
-    expect(setupRegistration).toContain("runtime: createPlatformUpdateRuntime()");
+    expect(setupRegistration).toContain("createUpdateRuntime");
+    expect(setupRegistration).toContain("runtime: createUpdateRuntime()");
     expect(setupRegistration).toContain("pid: process.pid");
   });
 

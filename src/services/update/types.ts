@@ -1,44 +1,20 @@
-export interface UpdateCheckRequest {
-  installedVersion?: string;
-  cacheSeconds?: number;
-  timeoutMs?: number;
-  now?: () => number;
-  fetchFn?: typeof fetch;
-  statePath?: string;
-  force?: boolean;
-}
+export type {
+  UpdateCheckFn,
+  UpdateCheckRequest,
+  UpdateCheckResult,
+  UpdateCheckState,
+  UpdateInstallFn,
+  UpdateInstallResult,
+  UpdateLatestVersionFn,
+  UpdateLatestVersionRequest,
+  UpdateLatestVersionResult,
+  UpdateRuntime,
+} from "../../shared/update-runtime.js";
 
-export interface UpdateCheckState {
-  last_check_at: number;
-  installed_version: string;
-  latest_version: string;
-  dismissed_versions: string[];
-  last_fetch_failed_at?: number;
-}
-
-export interface UpdateCheckResult {
-  state: UpdateCheckState;
-  fetched: boolean;
-  fetchFailed: boolean;
-}
-
-export type UpdateCheckFn = (
-  request?: UpdateCheckRequest,
-) => Promise<UpdateCheckResult>;
-
-export interface UpdateInstallResult {
-  output: string;
-  errorOutput: string;
-  code: number;
-}
-
-export type UpdateInstallFn = () => Promise<UpdateInstallResult>;
-
-export interface UpdateRuntime {
-  readInstalledVersion(): string;
-  checkForUpdate(request?: UpdateCheckRequest): Promise<UpdateCheckResult>;
-  installLatestPackage(): Promise<UpdateInstallResult>;
-}
+import type {
+  UpdateInstallResult,
+  UpdateRuntime,
+} from "../../shared/update-runtime.js";
 
 export interface UpdateOptions {
   dismiss?: boolean;
