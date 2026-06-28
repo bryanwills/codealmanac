@@ -6,9 +6,9 @@ import {
   type ConfigRow,
   type ConfigSetResult,
   type ConfigUnsetResult,
-} from "../../../services/config/index.js";
-import { renderError, renderOutcome } from "./outcome.js";
-import { formatTextTable } from "./table.js";
+} from "../../../../services/config/index.js";
+import { renderError, renderOutcome } from "../outcome.js";
+import { formatTextTable } from "../table.js";
 
 type ConfigInvalidRenderResult = Extract<
   ConfigReadResult | ConfigSetResult | ConfigUnsetResult,

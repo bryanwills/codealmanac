@@ -1953,3 +1953,11 @@ Two-hundred-seventy-fourth production slice:
 - Removed the unused `runSetDefaultAgent` and `runSetAgentModel` alias exports.
 - Updated agent command registration and tests to import the owned adapters directly.
 - Strengthened automation/update/agents boundary tests so the old agents command and render catchalls cannot return.
+
+Two-hundred-seventy-fifth production slice:
+
+- Deleted the catchall `src/edges/cli/commands/config.ts` command adapter.
+- Deleted the catchall `src/edges/cli/commands/config-render.ts` renderer.
+- Added owner-named config command files for read, write, and rendering under `src/edges/cli/commands/config/`.
+- Updated config command registration and tests to import read/write adapters directly.
+- Strengthened automation/update/config boundary tests so the old config command and render catchalls cannot return.

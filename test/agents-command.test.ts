@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runAgentsList } from "../src/edges/cli/commands/agents/read.js";
 import { runAgentsUse } from "../src/edges/cli/commands/agents/default.js";
 import { runAgentsModel } from "../src/edges/cli/commands/agents/model.js";
-import { runConfigList } from "../src/edges/cli/commands/config.js";
+import { runConfigList } from "../src/edges/cli/commands/config/read.js";
 import { readConfig } from "../src/stores/config/index.js";
 import { withTempHome } from "./helpers.js";
 

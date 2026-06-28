@@ -324,8 +324,13 @@ describe("architecture boundaries: automation, update, config, and agents", () =
   });
 
   it("keeps config command adapters out of config persistence mechanics", async () => {
-    const configCommand = await readSource("src/edges/cli/commands/config.ts");
-    const configRender = await readSource("src/edges/cli/commands/config-render.ts");
+    const configReadCommand = await readSource(
+      "src/edges/cli/commands/config/read.ts",
+    );
+    const configWriteCommand = await readSource(
+      "src/edges/cli/commands/config/write.ts",
+    );
+    const configRender = await readSource("src/edges/cli/commands/config/render.ts");
     const configServiceIndex = await readSource("src/services/config/index.ts");
     const configReadService = await readSource("src/services/config/config-read.ts");
     const configWriteService = await readSource("src/services/config/config-write.ts");
@@ -345,7 +350,14 @@ describe("architecture boundaries: automation, update, config, and agents", () =
     expect(existsSync(join(ROOT, "src/services/config/config-types.ts"))).toBe(
       true,
     );
-    expect(existsSync(join(ROOT, "src/edges/cli/commands/config-render.ts"))).toBe(
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/config.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/config-render.ts")))
+      .toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/config/read.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/config/write.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/config/render.ts"))).toBe(
       true,
     );
     expect(existsSync(join(ROOT, "src/stores/config/stored-patch.ts"))).toBe(true);
@@ -355,25 +367,30 @@ describe("architecture boundaries: automation, update, config, and agents", () =
     expect(existsSync(join(ROOT, "src/agent/provider-enablement.ts"))).toBe(
       false,
     );
-    expect(configCommand).toContain("services/config/index.js");
-    expect(configCommand).not.toContain("../../config/index");
-    expect(configCommand).not.toContain("node:fs");
-    expect(configCommand).not.toContain("parseConfigText");
-    expect(configCommand).not.toContain("readConfig(");
-    expect(configCommand).not.toContain("readConfigWithOrigins(");
-    expect(configCommand).not.toContain("serializeConfig");
-    expect(configCommand).not.toContain("getProjectConfigPath");
-    expect(configCommand).not.toContain("process.cwd()");
-    expect(configCommand).not.toContain("parseConfigKey");
-    expect(configCommand).not.toContain("formatTextTable");
-    expect(configCommand).not.toContain("JSON.stringify");
-    expect(configCommand).not.toContain("formatConfigValue");
-    expect(configCommand).not.toContain("unknown config key");
-    expect(configCommand).not.toContain("missing value");
-    expect(configCommand).not.toContain("no .almanac/ found");
-    expect(configCommand).toContain("readConfigEntryByKey");
-    expect(configCommand).toContain("setConfigEntryByKey");
-    expect(configCommand).toContain("unsetConfigEntryByKey");
+    for (const configCommand of [configReadCommand, configWriteCommand]) {
+      expect(configCommand).toContain("services/config/index.js");
+      expect(configCommand).not.toContain("../../config/index");
+      expect(configCommand).not.toContain("node:fs");
+      expect(configCommand).not.toContain("parseConfigText");
+      expect(configCommand).not.toContain("readConfig(");
+      expect(configCommand).not.toContain("readConfigWithOrigins(");
+      expect(configCommand).not.toContain("serializeConfig");
+      expect(configCommand).not.toContain("getProjectConfigPath");
+      expect(configCommand).not.toContain("process.cwd()");
+      expect(configCommand).not.toContain("parseConfigKey");
+      expect(configCommand).not.toContain("formatTextTable");
+      expect(configCommand).not.toContain("JSON.stringify");
+      expect(configCommand).not.toContain("formatConfigValue");
+      expect(configCommand).not.toContain("unknown config key");
+      expect(configCommand).not.toContain("missing value");
+      expect(configCommand).not.toContain("no .almanac/ found");
+    }
+    expect(configReadCommand).toContain("readConfigEntryByKey");
+    expect(configReadCommand).not.toContain("setConfigEntryByKey");
+    expect(configReadCommand).not.toContain("unsetConfigEntryByKey");
+    expect(configWriteCommand).toContain("setConfigEntryByKey");
+    expect(configWriteCommand).toContain("unsetConfigEntryByKey");
+    expect(configWriteCommand).not.toContain("readConfigEntryByKey");
     expect(configServiceIndex).not.toContain("./config.js");
     expect(configServiceIndex).toContain("config-read.js");
     expect(configServiceIndex).toContain("config-write.js");

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { runUpdate as runUpdateCommand } from "../src/edges/cli/commands/update.js";
 import type { UpdateOptions } from "../src/edges/cli/commands/update.js";
-import { runConfigSet } from "../src/edges/cli/commands/config.js";
+import { runConfigSet } from "../src/edges/cli/commands/config/write.js";
 import { parseConfigText, readConfig, writeConfig } from "../src/stores/config/index.js";
 import { readState, writeState } from "../src/stores/update/index.js";
 import type {

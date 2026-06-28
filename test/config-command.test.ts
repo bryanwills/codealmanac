@@ -6,9 +6,11 @@ import { describe, expect, it } from "vitest";
 import {
   runConfigGet as runConfigGetCommand,
   runConfigList as runConfigListCommand,
+} from "../src/edges/cli/commands/config/read.js";
+import {
   runConfigSet as runConfigSetCommand,
   runConfigUnset as runConfigUnsetCommand,
-} from "../src/edges/cli/commands/config.js";
+} from "../src/edges/cli/commands/config/write.js";
 import { parseConfigText, readConfig } from "../src/stores/config/index.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
