@@ -4,6 +4,7 @@ import {
   type ProviderSetupChoice,
   type ProviderSetupView,
 } from "./provider-view.js";
+import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import {
   isAgentProviderId,
   type AgentProviderId,
@@ -50,7 +51,11 @@ export interface AgentsProviderView {
 
 export type AgentViewOptions =
   | { view: AgentsProviderView; environment?: NodeJS.ProcessEnv }
-  | { view?: undefined; environment: NodeJS.ProcessEnv };
+  | {
+      view?: undefined;
+      environment: NodeJS.ProcessEnv;
+      readinessRuntime: AgentReadinessRuntime;
+    };
 
 export type AgentUseResult =
   | {
@@ -87,7 +92,10 @@ export async function readAgentsView(
 ): Promise<AgentsProviderView> {
   if (opts.view !== undefined) return opts.view;
   return agentsProviderViewFromSetupView(
-    await buildProviderSetupView({ environment: opts.environment }),
+    await buildProviderSetupView({
+      environment: opts.environment,
+      readinessRuntime: opts.readinessRuntime,
+    }),
   );
 }
 

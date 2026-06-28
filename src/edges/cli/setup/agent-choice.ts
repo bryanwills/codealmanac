@@ -4,6 +4,7 @@ import type {
   SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
+import type { AgentReadinessRuntime } from "../../../shared/agent-readiness.js";
 import {
   normalizeSetupProviderFixCommand,
   readSetupAgentChoiceState,
@@ -40,6 +41,7 @@ export async function chooseDefaultAgent(args: {
   interactive: boolean;
   requested?: string;
   requestedModel?: string;
+  readinessRuntime: AgentReadinessRuntime;
   spawnCli?: SetupSpawnCliFn;
   runProviderFixCommand?: SetupProviderFixCommandRunner;
   environment: NodeJS.ProcessEnv;
@@ -49,6 +51,7 @@ export async function chooseDefaultAgent(args: {
   const state = await readSetupAgentChoiceState({
     requested: args.requested,
     includeView: args.interactive || args.requested !== undefined,
+    readinessRuntime: args.readinessRuntime,
     spawnCli: args.spawnCli,
     environment: args.environment,
   });
@@ -100,6 +103,7 @@ export async function chooseDefaultAgent(args: {
             );
           }
           view = await refreshSetupAgentChoiceView({
+            readinessRuntime: args.readinessRuntime,
             spawnCli: args.spawnCli,
             environment: args.environment,
           });
@@ -150,6 +154,7 @@ export async function chooseDefaultAgent(args: {
       );
       if (login.ok) {
         view = await refreshSetupAgentChoiceView({
+          readinessRuntime: args.readinessRuntime,
           spawnCli: args.spawnCli,
           environment: args.environment,
         });
@@ -180,6 +185,7 @@ export async function chooseDefaultAgent(args: {
     provider,
     choice: selectedChoice,
     configuredModel: state.configuredModels[provider] ?? null,
+    readinessRuntime: args.readinessRuntime,
   });
   await saveSetupAgentChoice({ provider, model });
   if ((!args.interactive || args.requested !== undefined) && selectedChoice !== undefined) {

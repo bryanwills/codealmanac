@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 
 import { currentCliProgramArguments } from "./current-cli.js";
 import { emit, shouldUseStdoutColor } from "./helpers.js";
+import { createAgentReadinessRuntime } from "../../app/agent-readiness-runtime.js";
 import { resolveBundledGuidesDir } from "../../platform/install/guides.js";
 
 export interface RegisterSetupCommandDeps {
@@ -63,6 +64,7 @@ export function registerSetupCommand(
           homeDir: homedir(),
           pathEnvironment: process.env.PATH,
           environment: process.env,
+          agentReadinessRuntime: createAgentReadinessRuntime(),
           cliProgramArguments: currentCliProgramArguments(),
           isTTY: process.stdin.isTTY === true,
           stdin: process.stdin,

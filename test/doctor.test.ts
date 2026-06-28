@@ -7,6 +7,7 @@ import type {
   DiagnosticsSpawnedProcess,
   DoctorReport,
 } from "../src/services/diagnostics/index.js";
+import type { AgentReadinessRuntime } from "../src/shared/agent-readiness.js";
 import { formatReport } from "../src/cli/commands/doctor/format.js";
 import {
   runDoctor as runDoctorCommand,
@@ -81,9 +82,14 @@ const INSTALL_OK = {
   version: "0.1.3",
 };
 
+const EMPTY_AGENT_READINESS_RUNTIME: AgentReadinessRuntime = {
+  listStatuses: async () => [],
+};
+
 function runDoctor(
   options: Omit<
     DoctorOptions,
+    | "agentReadinessRuntime"
     | "automationStatus"
     | "authStatus"
     | "claudeApiKeySet"
@@ -110,6 +116,7 @@ function runDoctor(
     environment: process.env,
     nodeVersion: options.nodeVersion ?? "v20.0.0-test",
     authStatus: options.authStatus ?? LOGGED_IN_AUTH,
+    agentReadinessRuntime: EMPTY_AGENT_READINESS_RUNTIME,
     automationStatus: options.automationStatus ?? { status: "missing" },
     guideStatus: options.guideStatus ?? {
       status: "installed",

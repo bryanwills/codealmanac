@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import { emit } from "./helpers.js";
+import { createAgentReadinessRuntime } from "../../app/agent-readiness-runtime.js";
 
 export function registerAgentCommands(program: Command): void {
   const agents = program
@@ -12,7 +13,10 @@ export function registerAgentCommands(program: Command): void {
     .description("show Claude, Codex, and Cursor provider status")
     .action(async () => {
       const { runAgentsList } = await import("../../cli/commands/agents.js");
-      emit(await runAgentsList({ environment: process.env }));
+      emit(await runAgentsList({
+        environment: process.env,
+        readinessRuntime: createAgentReadinessRuntime(),
+      }));
     });
 
   agents
@@ -20,7 +24,10 @@ export function registerAgentCommands(program: Command): void {
     .description("diagnose supported AI agent providers")
     .action(async () => {
       const { runAgentsDoctor } = await import("../../cli/commands/agents.js");
-      emit(await runAgentsDoctor({ environment: process.env }));
+      emit(await runAgentsDoctor({
+        environment: process.env,
+        readinessRuntime: createAgentReadinessRuntime(),
+      }));
     });
 
   agents

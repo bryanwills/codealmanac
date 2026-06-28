@@ -4,6 +4,7 @@ import type {
   SetupProviderFixCommandRunner,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
+import type { AgentReadinessRuntime } from "../../../shared/agent-readiness.js";
 
 export type AutomationExecFn = (
   file: string,
@@ -49,6 +50,8 @@ export interface SetupOptions {
   pathEnvironment: string | undefined;
   /** Current process environment used by provider readiness checks. */
   environment: NodeJS.ProcessEnv;
+  /** Concrete provider readiness/model-choice runtime. */
+  agentReadinessRuntime?: AgentReadinessRuntime;
   /** Base CLI command used by scheduled launchd jobs. */
   cliProgramArguments: string[];
   /** Override the subprocess spawner for provider login checks. */

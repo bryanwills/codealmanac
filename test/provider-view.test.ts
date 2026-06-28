@@ -5,10 +5,11 @@ import {
   chooseRecommendedProvider,
   parseAgentSelection,
 } from "../src/services/agents/provider-view.js";
-import type { ProviderStatus } from "../src/agent/types.js";
+import { createAgentReadinessRuntime } from "../src/app/agent-readiness-runtime.js";
+import type { AgentProviderStatus } from "../src/shared/agent-readiness.js";
 import { defaultConfig } from "../src/stores/config/index.js";
 
-const statuses: ProviderStatus[] = [
+const statuses: AgentProviderStatus[] = [
   {
     id: "claude",
     installed: true,
@@ -52,6 +53,7 @@ describe("provider setup view", () => {
     const view = await buildProviderSetupView({
       config,
       statuses,
+      readinessRuntime: createAgentReadinessRuntime(),
       environment: {},
     });
 

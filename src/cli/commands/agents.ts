@@ -22,9 +22,9 @@ export async function runAgentsList(
   return renderAgentsList(await readAgentsView(opts));
 }
 
-export async function runAgentsDoctor(opts: {
-  environment: NodeJS.ProcessEnv;
-}): Promise<AgentsResult> {
+export async function runAgentsDoctor(
+  opts: AgentsListOptions,
+): Promise<AgentsResult> {
   return renderAgentsDoctor(await readAgentsView(opts));
 }
 

@@ -3,6 +3,7 @@ import type {
   SetupProviderModelChoice,
   SetupProviderView,
 } from "../../../services/setup/index.js";
+import type { AgentReadinessRuntime } from "../../../shared/agent-readiness.js";
 import { readSetupProviderModelChoices } from "../../../services/setup/index.js";
 import {
   promptText,
@@ -22,10 +23,12 @@ export async function chooseProviderModel(args: {
   provider: SetupAgentProviderId;
   choice?: SetupProviderView["choices"][number];
   configuredModel: string | null;
+  readinessRuntime: AgentReadinessRuntime;
 }): Promise<string | null> {
   const choices = await readSetupProviderModelChoices({
     provider: args.provider,
     configuredModel: args.configuredModel,
+    readinessRuntime: args.readinessRuntime,
     choice: args.choice,
   });
   const recommended =

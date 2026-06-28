@@ -5,6 +5,7 @@ import {
   type ProviderSetupChoice,
   type ProviderSetupView,
 } from "../agents/provider-view.js";
+import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import {
   disabledAgentProviderMessage,
   formatEnabledAgentProviderList,
@@ -77,6 +78,7 @@ export type SetupAgentSelection =
 export async function readSetupAgentChoiceState(input: {
   requested?: string;
   includeView: boolean;
+  readinessRuntime: AgentReadinessRuntime;
   spawnCli?: SetupSpawnCliFn;
   environment: NodeJS.ProcessEnv;
 }): Promise<SetupAgentChoiceState> {
@@ -88,6 +90,7 @@ export async function readSetupAgentChoiceState(input: {
       ? setupProviderViewFromReadinessView(
           await buildProviderSetupView({
             config,
+            readinessRuntime: input.readinessRuntime,
             spawnCli: input.spawnCli,
             environment: input.environment,
           }),
@@ -97,6 +100,7 @@ export async function readSetupAgentChoiceState(input: {
 }
 
 export async function refreshSetupAgentChoiceView(input: {
+  readinessRuntime: AgentReadinessRuntime;
   spawnCli?: SetupSpawnCliFn;
   environment: NodeJS.ProcessEnv;
 }): Promise<SetupProviderView> {
@@ -104,6 +108,7 @@ export async function refreshSetupAgentChoiceView(input: {
   return setupProviderViewFromReadinessView(
     await buildProviderSetupView({
       config,
+      readinessRuntime: input.readinessRuntime,
       spawnCli: input.spawnCli,
       environment: input.environment,
     }),
@@ -142,12 +147,14 @@ export function resolveSetupAgentSelection(
 export async function readSetupProviderModelChoices(input: {
   provider: SetupAgentProviderId;
   configuredModel: string | null;
+  readinessRuntime: AgentReadinessRuntime;
   choice?: SetupProviderView["choices"][number];
 }): Promise<SetupProviderModelChoice[]> {
   if (input.choice !== undefined) return input.choice.modelChoices;
   const choices = await buildProviderModelChoices(
     input.provider,
     input.configuredModel,
+    { readinessRuntime: input.readinessRuntime },
   );
   return choices.map((choice) => ({ ...choice }));
 }

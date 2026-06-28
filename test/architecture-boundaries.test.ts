@@ -2278,6 +2278,10 @@ describe("architecture boundaries", () => {
 
   it("passes agent readiness runtime facts through an explicit context", async () => {
     const agentTypes = await readSource("src/agent/types.ts");
+    const sharedReadiness = await readSource("src/shared/agent-readiness.ts");
+    const appReadinessRuntime = await readSource(
+      "src/app/agent-readiness-runtime.ts",
+    );
     const configProviders = await readSource(
       "src/shared/agent-provider-enablement.ts",
     );
@@ -2293,6 +2297,9 @@ describe("architecture boundaries", () => {
     expect(agentTypes).toContain("export interface AgentProviderRuntime");
     expect(agentTypes).toContain("environment: NodeJS.ProcessEnv");
     expect(agentTypes).toContain("checkStatus(runtime: AgentProviderRuntime)");
+    expect(sharedReadiness).toContain("export interface AgentReadinessRuntime");
+    expect(appReadinessRuntime).toContain("agent/readiness/providers/index.js");
+    expect(appReadinessRuntime).toContain("createAgentReadinessRuntime");
     expect(existsSync(join(ROOT, "src/agent/readiness/view.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/agents/provider-view.ts"))).toBe(
       true,
@@ -2302,6 +2309,9 @@ describe("architecture boundaries", () => {
     expect(configProviders).toContain("getEnabledAgentProviderIds(\n  env: NodeJS.ProcessEnv");
     expect(readinessStatus).toContain("providerRuntime(args)");
     expect(readinessStatus).toContain("shared/agent-provider-enablement");
+    expect(providerView).not.toContain("agent/readiness/providers");
+    expect(providerView).not.toContain("../../agent/types");
+    expect(providerView).toContain("readinessRuntime");
     expect(providerView).not.toContain("process.env");
     expect(providerView).toContain("buildProviderSetupView");
     expect(claudeReadiness).not.toContain("process.env");

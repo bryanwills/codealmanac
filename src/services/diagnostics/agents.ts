@@ -5,6 +5,7 @@ export async function gatherAgentChecks(
   options: DoctorOptions,
 ): Promise<AgentDoctorCheck[]> {
   const view = await buildProviderSetupView({
+    readinessRuntime: options.agentReadinessRuntime,
     spawnCli: options.spawnCli,
     statuses: options.providerStatuses,
     environment: options.environment,

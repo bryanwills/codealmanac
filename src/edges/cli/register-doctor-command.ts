@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { homedir } from "node:os";
 
 import { emit, shouldUseStdoutColor } from "./helpers.js";
+import { createAgentReadinessRuntime } from "../../app/agent-readiness-runtime.js";
 import { readDiagnosticUpdateStatus } from "../../services/diagnostics/index.js";
 import { probeDiagnosticAutomation } from "../../platform/diagnostics/automation.js";
 import { probeDiagnosticClaudeAuth } from "../../platform/diagnostics/auth.js";
@@ -43,6 +44,7 @@ export function registerDoctorCommand(
           environment: process.env,
           nodeVersion: process.version,
           authStatus: await probeDiagnosticClaudeAuth(),
+          agentReadinessRuntime: createAgentReadinessRuntime(),
           automationStatus: await probeDiagnosticAutomation(),
           guideStatus: probeDiagnosticGuides(),
           instructionEntriesStatus: await probeDiagnosticInstructionEntries(),

@@ -7,6 +7,7 @@ import type {
   DiagnosticsSpawnCliFn,
   DiagnosticsUpdateStatus,
 } from "../../shared/diagnostics.js";
+import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import type { CollectWikiHealthReport } from "../wiki/doctor.js";
 
 export type {
@@ -50,6 +51,8 @@ export interface DoctorOptions {
   nodeVersion: string;
   /** Provider-owned Claude auth probe result for the current process. */
   authStatus: DiagnosticsAuthStatus;
+  /** Concrete agent readiness probes and model catalog reads. */
+  agentReadinessRuntime: AgentReadinessRuntime;
   /** Platform-owned automation probe result for the current machine. */
   automationStatus: DiagnosticsAutomationStatus;
   /** Platform-owned guide-file probe result for the current machine. */

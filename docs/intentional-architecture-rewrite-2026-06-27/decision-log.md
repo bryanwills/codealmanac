@@ -137,6 +137,10 @@ Foreground and queued job execution services own job records, logs, locks, wiki 
 
 Provider ids and static provider definitions live in `src/shared/agent-provider.ts` because config stores, job stores, lifecycle operations, readiness, and provider adapters all need the same id vocabulary. Provider-neutral runtime facts live in `src/shared/agent-runtime/`: normalized events, usage, failures, final-output specs/results, runtime hooks, and tool requests. Concrete provider execution remains under `src/agent/runtime/`, where provider adapters translate `OperationSpec` into Claude/Codex mechanics and emit the shared contracts.
 
+### Provider readiness uses an app-composed runtime
+
+Provider readiness status and provider-specific model catalogs are concrete provider facts. Services can decide how those facts become setup, agents, or doctor read models, but they should not import the provider readiness registry directly. `src/shared/agent-readiness.ts` defines the provider readiness/model-choice runtime contract. `src/app/agent-readiness-runtime.ts` wires that contract to `src/agent/readiness/providers/`. CLI setup, agents, and doctor edges pass the concrete runtime into services so app composition is the visible provider wiring point.
+
 ### Lock stores receive process facts
 
 Job worker locks and sync locks are persistence mechanics, but process ownership and liveness are runtime facts. `src/stores/jobs/worker-lock.ts` and `src/stores/sync/lock.ts` own lock paths, owner-file persistence, stale-lock grace policy, and legacy lock cleanup. CLI and worker edges provide the current owner PID and `isLocalPidAlive` from `src/platform/process.ts` through service workflows. The neutral liveness function type lives in `src/shared/pid-liveness.ts`.

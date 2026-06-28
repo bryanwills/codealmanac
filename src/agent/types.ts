@@ -1,13 +1,14 @@
 import type { AgentProviderId } from "../shared/agent-provider.js";
+import type {
+  AgentProviderModelChoice,
+  AgentProviderReadinessStatus,
+  AgentProviderStatus,
+  AgentReadinessSpawnCliFn,
+  AgentReadinessSpawnedProcess,
+} from "../shared/agent-readiness.js";
 
-export interface SpawnedProcess {
-  stdout: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
-  stderr: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
-  on: (event: "close" | "error", cb: (arg: number | null | Error) => void) => void;
-  kill: (signal?: string) => void;
-}
-
-export type SpawnCliFn = (args: string[]) => SpawnedProcess;
+export type SpawnedProcess = AgentReadinessSpawnedProcess;
+export type SpawnCliFn = AgentReadinessSpawnCliFn;
 
 export interface AgentProviderRuntime {
   spawnCli?: SpawnCliFn;
@@ -21,29 +22,9 @@ export interface AgentProviderMetadata {
   executable: string;
 }
 
-export interface ProviderStatus {
-  id: AgentProviderId;
-  installed: boolean;
-  authenticated: boolean;
-  readiness: ProviderReadinessStatus;
-  detail: string;
-  accountLabel?: string;
-  installFix?: string;
-  loginFix?: string;
-}
-
-export type ProviderReadinessStatus =
-  | "ready"
-  | "missing_executable"
-  | "not_authenticated"
-  | "unknown";
-
-export interface ProviderModelChoice {
-  value: string | null;
-  label: string;
-  recommended: boolean;
-  source: "configured" | "provider-default" | "catalog" | "custom";
-}
+export type ProviderStatus = AgentProviderStatus;
+export type ProviderReadinessStatus = AgentProviderReadinessStatus;
+export type ProviderModelChoice = AgentProviderModelChoice;
 
 export interface AgentProvider {
   metadata: AgentProviderMetadata;

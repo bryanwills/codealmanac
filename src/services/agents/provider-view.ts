@@ -1,22 +1,23 @@
-import {
-  AGENT_PROVIDER_METADATA,
-  getAgentProvider,
-  listProviderStatuses,
-} from "../../agent/readiness/providers/index.js";
 import type {
-  ProviderModelChoice,
-  ProviderStatus,
-  SpawnCliFn,
-} from "../../agent/types.js";
+  AgentProviderModelChoice,
+  AgentProviderStatus,
+  AgentReadinessRuntime,
+  AgentReadinessSpawnCliFn,
+} from "../../shared/agent-readiness.js";
 import {
   getEnabledAgentProviderIds,
   isAgentProviderId,
   type AgentProviderId,
 } from "../../shared/agent-provider-enablement.js";
+import { PROVIDER_DEFINITIONS } from "../../shared/agent-provider.js";
 import {
   readConfig,
   type GlobalConfig,
 } from "../../stores/config/index.js";
+
+export type ProviderModelChoice = AgentProviderModelChoice;
+export type ProviderStatus = AgentProviderStatus;
+export type ProviderSpawnCliFn = AgentReadinessSpawnCliFn;
 
 export type ProviderReadiness = "ready" | "not-authenticated" | "missing";
 
@@ -47,26 +48,24 @@ export interface ProviderSetupView {
 export interface ProviderViewOptions {
   config?: GlobalConfig;
   statuses?: ProviderStatus[];
-  spawnCli?: SpawnCliFn;
+  readinessRuntime?: AgentReadinessRuntime;
+  spawnCli?: ProviderSpawnCliFn;
   environment: NodeJS.ProcessEnv;
 }
 
 export function getProviderLabel(id: AgentProviderId): string {
-  return AGENT_PROVIDER_METADATA[id].displayName;
+  return PROVIDER_DEFINITIONS[id].displayName;
 }
 
 export function getProviderDefaultModel(id: AgentProviderId): string | null {
-  return AGENT_PROVIDER_METADATA[id].defaultModel;
+  return PROVIDER_DEFINITIONS[id].defaultModel;
 }
 
 export async function buildProviderSetupView(
   opts: ProviderViewOptions,
 ): Promise<ProviderSetupView> {
   const config = opts.config ?? await readConfig();
-  const statuses = opts.statuses ?? await listProviderStatuses({
-    spawnCli: opts.spawnCli,
-    environment: opts.environment,
-  });
+  const statuses = opts.statuses ?? await listStatusesFromRuntime(opts);
   const statusById = new Map(statuses.map((status) => [status.id, status]));
   const recommendedProvider = chooseRecommendedProvider(
     statuses,
@@ -96,6 +95,7 @@ export async function buildProviderSetupView(
       fixCommand: fixFor(status),
       modelChoices: await buildProviderModelChoices(id, configuredModel, {
         spawnCli: opts.spawnCli,
+        readinessRuntime: opts.readinessRuntime,
       }),
     });
   }
@@ -109,12 +109,28 @@ export async function buildProviderSetupView(
 export function buildProviderModelChoices(
   id: AgentProviderId,
   configuredModel: string | null = null,
-  opts: { spawnCli?: SpawnCliFn } = {},
+  opts: {
+    readinessRuntime?: AgentReadinessRuntime;
+    spawnCli?: ProviderSpawnCliFn;
+  } = {},
 ): Promise<ProviderModelChoice[]> | ProviderModelChoice[] {
-  const provider = getAgentProvider(id);
-  if (provider.modelChoices !== undefined) {
-    return provider.modelChoices({ configuredModel, spawnCli: opts.spawnCli });
+  const runtimeChoices = opts.readinessRuntime?.listModelChoices?.({
+    provider: id,
+    configuredModel,
+    spawnCli: opts.spawnCli,
+  });
+  if (runtimeChoices !== undefined) {
+    return resolveRuntimeModelChoices(runtimeChoices, () =>
+      buildDefaultProviderModelChoices(id, configuredModel)
+    );
   }
+  return buildDefaultProviderModelChoices(id, configuredModel);
+}
+
+function buildDefaultProviderModelChoices(
+  id: AgentProviderId,
+  configuredModel: string | null,
+): ProviderModelChoice[] {
   const choices: ProviderModelChoice[] = [];
   if (configuredModel !== null) {
     choices.push({
@@ -153,6 +169,17 @@ export function buildProviderModelChoices(
     source: "custom",
   });
   return choices;
+}
+
+async function resolveRuntimeModelChoices(
+  choices:
+    | Promise<ProviderModelChoice[] | null>
+    | ProviderModelChoice[]
+    | null,
+  fallback: () => ProviderModelChoice[],
+): Promise<ProviderModelChoice[]> {
+  const resolved = await choices;
+  return resolved ?? fallback();
 }
 
 export function chooseRecommendedProvider(
@@ -210,6 +237,18 @@ function fixFor(status: ProviderStatus): string | null {
 
 function normalizeModel(value: string | null | undefined): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+async function listStatusesFromRuntime(
+  opts: ProviderViewOptions,
+): Promise<ProviderStatus[]> {
+  if (opts.readinessRuntime === undefined) {
+    throw new Error("provider readiness runtime is required");
+  }
+  return opts.readinessRuntime.listStatuses({
+    spawnCli: opts.spawnCli,
+    environment: opts.environment,
+  });
 }
 
 function missingStatus(id: AgentProviderId): ProviderStatus {

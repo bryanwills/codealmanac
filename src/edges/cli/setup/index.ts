@@ -147,6 +147,7 @@ export async function runSetup(
         interactive,
         requested: options.agent,
         requestedModel: options.model,
+        readinessRuntime: requireAgentReadinessRuntime(options),
         spawnCli: options.spawnCli,
         runProviderFixCommand: options.runProviderFixCommand,
         environment: options.environment,
@@ -221,4 +222,13 @@ export async function runSetup(
 
 function globalUpdateProgramArguments(): string[] {
   return ["/usr/bin/env", "almanac", "update"];
+}
+
+function requireAgentReadinessRuntime(
+  options: SetupOptions,
+): NonNullable<SetupOptions["agentReadinessRuntime"]> {
+  if (options.agentReadinessRuntime === undefined) {
+    throw new Error("setup requires an agent readiness runtime");
+  }
+  return options.agentReadinessRuntime;
 }

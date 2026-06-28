@@ -1567,3 +1567,11 @@ Two-hundred-twenty-fourth production slice:
 - Kept app runtime construction, process facts, home directory, worker program, prompt loader, agent runner, and transcript runtime wiring in a CLI-edge helper.
 - Kept default sync execution and sync status option fallback in separate command registration files, with status receiving a runtime input that does not include background-start capability.
 - Strengthened architecture-boundary tests so sync registration stays split while transcript mechanics still flow through app/platform runtime composition.
+
+Two-hundred-twenty-fifth production slice:
+
+- Added `src/shared/agent-readiness.ts` for the provider readiness/model-choice contract shared by app composition, services, setup, diagnostics, and provider modules.
+- Added `src/app/agent-readiness-runtime.ts` as the concrete wiring point for provider readiness probes and provider-owned model catalog reads.
+- Changed `src/services/agents/provider-view.ts` to build product-facing provider setup views over an injected readiness runtime instead of importing `src/agent/readiness/providers/` or `src/agent/types.ts` directly.
+- Threaded the readiness runtime through `almanac agents`, setup agent selection, and doctor diagnostics, keeping concrete provider mechanics at CLI/app composition boundaries.
+- Strengthened architecture-boundary tests so provider-view services cannot re-import provider readiness internals, while app composition remains the explicit provider wiring point.

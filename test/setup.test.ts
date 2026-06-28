@@ -13,6 +13,7 @@ import {
   runSetup as runSetupCommand,
 } from "../src/edges/cli/setup/index.js";
 import type { SetupOptions } from "../src/edges/cli/setup/index.js";
+import type { AgentReadinessRuntime } from "../src/shared/agent-readiness.js";
 import { runAutomationSetupStep } from "../src/edges/cli/setup/automation-step.js";
 import { makeSetupTheme } from "../src/edges/cli/setup/output.js";
 import { readConfig, writeConfig } from "../src/stores/config/index.js";
@@ -49,6 +50,27 @@ const LOGGED_IN_STDOUT = JSON.stringify({
 const LOGGED_OUT_STDOUT = JSON.stringify({ loggedIn: false });
 const TEST_SETUP_THEME = makeSetupTheme(false);
 const TEST_CLI_PROGRAM_ARGUMENTS = ["node", "dist/launcher.js"];
+const TEST_AGENT_READINESS_RUNTIME: AgentReadinessRuntime = {
+  listStatuses: async () => [
+    {
+      id: "claude",
+      installed: true,
+      authenticated: true,
+      readiness: "ready",
+      detail: "Claude account: test@example.com",
+      accountLabel: "Claude account: test@example.com",
+    },
+    {
+      id: "codex",
+      installed: true,
+      authenticated: true,
+      readiness: "ready",
+      detail: "ChatGPT account: test@example.com",
+      accountLabel: "ChatGPT account: test@example.com",
+    },
+  ],
+  listModelChoices: () => null,
+};
 
 function runSetup(
   options: Omit<
@@ -80,6 +102,8 @@ function runSetup(
       ? options.pathEnvironment
       : process.env.PATH,
     environment: options.environment ?? process.env,
+    agentReadinessRuntime: options.agentReadinessRuntime ??
+      TEST_AGENT_READINESS_RUNTIME,
     cliProgramArguments: options.cliProgramArguments ?? TEST_CLI_PROGRAM_ARGUMENTS,
     isTTY: options.isTTY ?? false,
     stdin: options.stdin ?? new PassThrough(),
