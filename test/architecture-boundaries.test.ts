@@ -2872,9 +2872,7 @@ describe("architecture boundaries", () => {
     const doctorFormat = await readSource("src/edges/cli/commands/doctor/format.ts");
     const doctorDiagnostics = await readSource("src/services/diagnostics/doctor.ts");
     const installDiagnostics = await readSource("src/services/diagnostics/install.ts");
-    const platformAuthDiagnostics = await readSource(
-      "src/platform/diagnostics/auth.ts",
-    );
+    const appDiagnosticAuth = await readSource("src/app/diagnostic-auth.ts");
     const platformInstallDiagnostics = await readSource(
       "src/platform/diagnostics/install.ts",
     );
@@ -2922,6 +2920,10 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/platform/diagnostics/install.ts"))).toBe(
       true,
     );
+    expect(existsSync(join(ROOT, "src/platform/diagnostics/auth.ts"))).toBe(
+      false,
+    );
+    expect(existsSync(join(ROOT, "src/app/diagnostic-auth.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/diagnostics/types.ts"))).toBe(
       false,
     );
@@ -3003,16 +3005,16 @@ describe("architecture boundaries", () => {
     expect(doctorRegistration).not.toContain("probeDiagnosticInstructionEntries");
     expect(doctorRegistration).not.toContain("readDiagnosticUpdateStatus()");
     expect(diagnosticsRuntime).toContain("createAgentReadinessRuntime");
+    expect(diagnosticsRuntime).toContain("readDiagnosticClaudeAuth");
     expect(diagnosticsRuntime).toContain("probeDiagnosticInstall");
-    expect(diagnosticsRuntime).toContain("probeDiagnosticClaudeAuth");
     expect(diagnosticsRuntime).toContain("probeDiagnosticAutomation");
     expect(diagnosticsRuntime).toContain("probeDiagnosticGuides");
     expect(diagnosticsRuntime).toContain("probeDiagnosticInstructionEntries");
     expect(diagnosticsRuntime).toContain("readDiagnosticUpdateStatus");
     expect(doctorRegistration).not.toContain("color: process.stdout.isTTY === true");
-    expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
-    expect(platformAuthDiagnostics).toContain("agent/providers/claude/auth");
-    expect(platformAuthDiagnostics).not.toContain("agent/readiness/providers");
+    expect(appDiagnosticAuth).toContain("checkClaudeAuth");
+    expect(appDiagnosticAuth).toContain("agent/providers/claude/auth");
+    expect(appDiagnosticAuth).not.toContain("agent/readiness/providers");
     expect(platformInstallDiagnostics).toContain("probeBetterSqlite3");
     expect(platformInstallDiagnostics).toContain("readPackageVersion");
     expect(platformInstallDiagnostics).toContain("homedir()");
@@ -3023,7 +3025,6 @@ describe("architecture boundaries", () => {
     expect(platformInstructionDiagnostics).toContain("checkAgentInstructions");
     expect(platformInstructionDiagnostics).toContain("homedir()");
     for (const platformDiagnostics of [
-      platformAuthDiagnostics,
       platformInstallDiagnostics,
       platformAutomationDiagnostics,
       platformInstructionDiagnostics,

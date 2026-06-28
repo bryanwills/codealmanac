@@ -13,7 +13,7 @@ import {
   runDoctor as runDoctorCommand,
   type DoctorOptions,
 } from "../src/edges/cli/commands/doctor/index.js";
-import { probeDiagnosticClaudeAuth } from "../src/platform/diagnostics/auth.js";
+import { readDiagnosticClaudeAuth } from "../src/app/diagnostic-auth.js";
 import { probeDiagnosticAutomation } from "../src/platform/diagnostics/automation.js";
 import {
   probeDiagnosticGuides,
@@ -336,9 +336,9 @@ describe("almanac doctor", () => {
       await expect(
         probeDiagnosticInstructionEntries({ homeDir: home }),
       ).resolves.toEqual({ status: "present" });
-      await expect(probeDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_IN_STDOUT)))
+      await expect(readDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_IN_STDOUT)))
         .resolves.toEqual(LOGGED_IN_AUTH);
-      await expect(probeDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_OUT_STDOUT)))
+      await expect(readDiagnosticClaudeAuth(fakeSpawnCli(LOGGED_OUT_STDOUT)))
         .resolves.toEqual({ loggedIn: false });
 
       const updateStatePath = join(home, ".almanac", "update-state.json");

@@ -51,6 +51,8 @@ Doctor probe result shapes live in `src/shared/diagnostics.ts` because they are 
 
 Doctor command registration does not wire every concrete probe directly. `src/app/diagnostics-runtime.ts` composes platform probes, update-status reads, and agent readiness into doctor runtime facts. The CLI edge owns process facts such as `process.env`, `process.version`, `process.cwd()`, `homedir()`, and stdout color capability, then passes typed facts into the command adapter.
 
+Claude auth is provider truth, not platform diagnostics mechanics. `src/app/diagnostic-auth.ts` adapts `checkClaudeAuth()` into the doctor auth fact because app composition is the place where provider modules become concrete doctor runtime facts. `src/platform/diagnostics/` should stay focused on local install, automation, guide, and instruction probes.
+
 ### Setup/uninstall terminal UI belongs to the CLI edge
 
 Setup terminal prompts, display text, setup step rendering, uninstall confirmations, and uninstall output rendering belong under `src/edges/cli/` because they are CLI interaction surfaces. Provider fix-command normalization and global-install result shaping are setup product workflow, so they live under `src/services/setup/`. CLI setup edge files should not import `src/platform/shell.ts` or `src/platform/install/global-package.ts` directly.

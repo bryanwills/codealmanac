@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 255 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 256 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -94,6 +94,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved diagnostic probe mechanics into `src/platform/diagnostics/`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
 - Moved diagnostic fact contracts into `src/shared/diagnostics.ts`, so platform probes and diagnostics services meet through a neutral contract instead of a service-to-platform type import.
 - Moved doctor diagnostic runtime composition into `src/app/diagnostics-runtime.ts`, so doctor command registration owns process facts but not concrete probe wiring.
+- Moved Claude auth diagnostic wiring into `src/app/diagnostic-auth.ts`, so platform diagnostics no longer import provider auth modules.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
 - Moved setup runtime ports into `src/shared/setup-runtime.ts`, so platform setup mechanics no longer import setup service files for contract types.
@@ -130,19 +131,19 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed setup's duplicate spawned-process contract from `src/services/setup/agent-choice-types.ts`. Setup agent-choice services now consume `AgentReadinessSpawnCliFn` from `src/shared/agent-readiness.ts`, so readiness owns the provider status spawn port shape instead of setup restating stdout/stderr process machinery.
+The latest slice moved Claude auth diagnostic wiring out of `src/platform/diagnostics/auth.ts` and into `src/app/diagnostic-auth.ts`. Platform diagnostics now stay focused on install, automation, and instruction probes; app composition owns the concrete provider-auth-to-doctor-fact adapter.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/setup.test.ts test/provider-view.test.ts test/architecture-boundaries.test.ts`
+- `npx vitest run test/doctor.test.ts test/architecture-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js doctor --help`
 - `node dist/launcher.js agents --help`
 - `node dist/launcher.js jobs --help`
-- `node dist/launcher.js setup --help`
+- `node dist/launcher.js doctor --json --install-only`
 
 Previous full-slice verification also passed:
 

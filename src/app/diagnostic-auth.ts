@@ -1,13 +1,13 @@
 import {
   checkClaudeAuth,
   type ClaudeAuthStatus,
-} from "../../agent/providers/claude/auth.js";
+} from "../agent/providers/claude/auth.js";
 import type {
   DiagnosticsAuthStatus,
   DiagnosticsSpawnCliFn,
-} from "../../shared/diagnostics.js";
+} from "../shared/diagnostics.js";
 
-export async function probeDiagnosticClaudeAuth(
+export async function readDiagnosticClaudeAuth(
   spawnCli?: DiagnosticsSpawnCliFn,
 ): Promise<DiagnosticsAuthStatus> {
   try {

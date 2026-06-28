@@ -1810,3 +1810,10 @@ Two-hundred-fifty-fifth production slice:
 - Made `SetupSpawnCliFn` alias the shared `AgentReadinessSpawnCliFn` contract from `src/shared/agent-readiness.ts`.
 - Kept setup-specific agent-choice types focused on setup UI state and provider selection, not process stream shape.
 - Strengthened architecture-boundary tests so setup agent-choice types cannot regain stdout/stderr process machinery.
+
+Two-hundred-fifty-sixth production slice:
+
+- Deleted `src/platform/diagnostics/auth.ts` so platform diagnostics no longer import Claude provider auth modules.
+- Added `src/app/diagnostic-auth.ts` as the app-composition adapter from provider-owned `checkClaudeAuth()` to doctor auth facts.
+- Updated doctor runtime composition to call `readDiagnosticClaudeAuth()` alongside platform install, automation, guide, and instruction probes.
+- Strengthened architecture-boundary tests so provider auth diagnostic wiring stays in `src/app/` and does not return to `src/platform/diagnostics/`.
