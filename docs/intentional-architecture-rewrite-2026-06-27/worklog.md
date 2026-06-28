@@ -1831,3 +1831,10 @@ Two-hundred-fifty-eighth production slice:
 - Added separate boundary suites for foundation/CLI, wiki commands/viewer, jobs/sync, automation/update/config/agents, setup/uninstall, lifecycle/providers, and indexer/diagnostics/registry.
 - Preserved the same 60 architecture-boundary assertions while making each guardrail file change for one subsystem family instead of every rewrite boundary.
 - Kept the focused boundary test command as `npx vitest run test/architecture-*-boundaries.test.ts`.
+
+Two-hundred-fifty-ninth production slice:
+
+- Moved the SQLite ABI startup guard from root-level `src/abi-guard.ts` into `src/edges/cli/abi-guard.ts`.
+- Moved the ABI-check routing predicate out of the npm bin shim and into the CLI edge guard module.
+- Kept `bin/codealmanac.ts` focused on package entrypoint behavior: run the guard, import the CLI facade, render uncaught errors.
+- Strengthened foundation/CLI boundary tests so root `src/` keeps only the intentional `src/cli.ts` facade and startup guard policy stays under `src/edges/cli/`.

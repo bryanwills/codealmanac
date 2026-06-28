@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 258 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 259 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -115,6 +115,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed setup's duplicate spawned-process contract; setup now aliases the shared agent readiness spawn contract.
 - Removed the stale wiki indexer `total` compatibility alias; `pagesIndexed` is now the single result contract name through indexer, reindex service, CLI adapter, and renderer.
 - Split the monolithic architecture boundary test file into subsystem-owned boundary test files, so the guardrails now follow the same ownership map as `src/`.
+- Moved the SQLite ABI startup guard into `src/edges/cli/`, leaving root `src/` with only the intentional stable CLI facade.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -133,15 +134,17 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split the monolithic `test/architecture-boundaries.test.ts` file into subsystem-owned boundary test files for foundation/CLI, wiki commands, jobs/sync, automation/update/config/agents, setup, lifecycle/providers, and indexer/diagnostics/registry.
+The latest slice moved the SQLite ABI startup guard from root-level `src/abi-guard.ts` into `src/edges/cli/abi-guard.ts`, and moved the ABI-check routing predicate out of the npm bin shim into the CLI edge. Root `src/` now keeps only the intentional `src/cli.ts` facade.
 
 Verification passed:
 
 - `npm run lint`
+- `npx vitest run test/architecture-foundation-cli-boundaries.test.ts test/cli.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
 - `npm run build`
+- `node dist/launcher.js --version`
 - `node dist/launcher.js doctor --help`
 - `node dist/launcher.js agents --help`
 - `node dist/launcher.js jobs --help`

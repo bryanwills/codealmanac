@@ -72,10 +72,14 @@ describe("architecture boundaries: foundation and CLI", () => {
   });
 
   it("keeps process-level CLI machinery inside the CLI edge", async () => {
+    const binShim = await readSource("bin/codealmanac.ts");
     const runner = await readSource("src/edges/cli/run.ts");
+    const abiGuard = await readSource("src/edges/cli/abi-guard.ts");
     const help = await readSource("src/edges/cli/help.ts");
     const updateAnnounce = await readSource("src/edges/cli/update-announcement.ts");
 
+    expect(existsSync(join(ROOT, "src/abi-guard.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/abi-guard.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/ansi.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/ansi-theme.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/slug.ts"))).toBe(false);
@@ -88,6 +92,12 @@ describe("architecture boundaries: foundation and CLI", () => {
     expect(runner).toContain("from \"commander\"");
     expect(runner).toContain("tryRunInternalJob");
     expect(runner).toContain("readPackageVersion");
+    expect(binShim).toContain("../src/edges/cli/abi-guard.js");
+    expect(binShim).not.toContain("../src/abi-guard.js");
+    expect(binShim).not.toContain("const sqliteFreeCommands");
+    expect(abiGuard).toContain("checkSqliteAbi");
+    expect(abiGuard).toContain("shouldCheckSqliteAbi");
+    expect(abiGuard).toContain("../../platform/install/launcher-runtime.js");
     expect(help).toContain("../../shared/ansi-theme.js");
     expect(help).not.toContain("../../ansi.js");
     expect(help).toContain("shouldUseStdoutColor()");

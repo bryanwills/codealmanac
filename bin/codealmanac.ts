@@ -1,4 +1,7 @@
-import { checkSqliteAbi } from "../src/abi-guard.js";
+import {
+  checkSqliteAbi,
+  shouldCheckSqliteAbi,
+} from "../src/edges/cli/abi-guard.js";
 import { renderErrorText } from "../src/edges/cli/commands/outcome.js";
 
 // ABI guard: detect better-sqlite3 binding mismatch before commands that may
@@ -19,39 +22,3 @@ run(process.argv).catch((err: unknown) => {
   process.stderr.write(renderErrorText(err));
   process.exit(1);
 });
-
-function shouldCheckSqliteAbi(argv: string[]): boolean {
-  const invoked = process.env.CODEALMANAC_INVOKED_AS ??
-    argv[1]?.split(/[\\/]/).pop() ??
-    "almanac";
-  const args = argv.slice(2);
-
-  if (args.includes("--internal-check-updates")) return false;
-  if (args.length === 1 && (args[0] === "--version" || args[0] === "-v")) {
-    return false;
-  }
-
-  if (invoked === "almanac" || invoked === "codealmanac") {
-    if (args.length === 0) return false;
-    if (
-      args.every((arg) =>
-        arg === "--yes" ||
-        arg === "-y" ||
-        arg === "--skip-automation" ||
-        arg === "--skip-guides"
-      )
-    ) {
-      return false;
-    }
-  }
-
-  const sqliteFreeCommands = new Set([
-    "setup",
-    "automation",
-    "uninstall",
-    "update",
-    "doctor",
-  ]);
-  const firstCommand = args.find((arg) => !arg.startsWith("-"));
-  return firstCommand === undefined || !sqliteFreeCommands.has(firstCommand);
-}
