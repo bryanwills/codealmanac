@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 213 committed rewrite commits past `dev`. The worklog records 165 production slices so far.
+The branch has 214 committed rewrite commits past `dev`. The worklog records 166 production slices so far.
 
-The diff is broad: 452 files changed, with 22,458 insertions and 12,125 deletions.
+The diff is broad: 453 files changed, with 22,571 insertions and 12,149 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -19,6 +19,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split wiki workflows into clearer service boundaries: search, show, health, registry, topics, review, reindex, source migration, and doctor wiki checks.
 - Moved durable job persistence into explicit stores for records, specs, logs, and worker locks.
 - Removed the old top-level `src/jobs/` source bucket; job runtime and projections now live under `src/services/jobs/`, durable job schemas live under `src/stores/jobs/`, and detached worker spawning lives under `src/platform/jobs/`.
+- Moved job record lifecycle and display-status read-model helpers out of the job runtime folder, and put public job record/log reads behind the `src/stores/jobs/` store API.
 - Removed the old top-level `src/init/` source bucket; wiki initialization now lives under `src/services/wiki/`, and mechanical `.almanac/` file scaffolding lives under `src/stores/wiki-files/`.
 - Removed the old top-level `src/config/` source bucket; persisted config mechanics now live under `src/stores/config/`, service verbs live under `src/services/config/`, and provider enablement policy lives under `src/agent/`.
 - Removed the old top-level `src/wiki/` source bucket; local wiki index, query, health, topic-file, and source-frontmatter mechanics now live under `src/stores/wiki/`.
@@ -45,9 +46,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved the hidden internal job worker entrypoint into `src/edges/worker/job-worker.ts` and renamed the service-side queued runner to `src/services/jobs/runtime/queue-drain.ts`.
+The latest slice tightened the jobs boundary: public jobs service reads now go through `src/stores/jobs/index.ts`, record lifecycle helpers live at `src/services/jobs/record-lifecycle.ts`, display-status shaping lives at `src/services/jobs/record-view.ts`, and the viewer job read model no longer imports the job runtime facade.
 
-Verification passed: focused worker/job/operation/boundary tests with 125 tests, `npm run lint`, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js __job-worker`, and `node dist/codealmanac.js jobs --help`.
+Verification passed: focused jobs/viewer/boundary tests with 118 tests, `npm run lint`, full `npm test` with 656 tests, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js __job-worker`, `node dist/codealmanac.js jobs --help`, and `node dist/codealmanac.js serve --help`.
 
 ## Immediate Next Work
 

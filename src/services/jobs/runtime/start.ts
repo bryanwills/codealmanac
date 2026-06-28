@@ -2,19 +2,19 @@ import type { AgentRuntimeEvent, AgentRuntimeResult } from "../../../agent/runti
 import type { AgentRuntimeRunHooks } from "../../../agent/runtime/types.js";
 import type { OperationSpec } from "../../lifecycle/operations/spec.js";
 import { createJobId } from "./ids.js";
-import { initializeJobLog } from "../../../stores/jobs/logs.js";
+import { initializeJobLog } from "../../../stores/jobs/index.js";
 import { executeStartedJob, type StartJobResult } from "./executor.js";
-import { buildStartedJobRecord } from "./record-factory.js";
+import { buildStartedJobRecord } from "../record-lifecycle.js";
 import {
   jobRecordPath,
   readJobRecord,
   resolveJobLogPath,
   resolveJobRecordPath,
   writeJobRecord,
-} from "../../../stores/jobs/records.js";
+} from "../../../stores/jobs/index.js";
 import { acquireJobWorkerLock } from "../../../stores/jobs/worker-lock.js";
 import { cancelledRecordIfRequested } from "./finalization.js";
-import type { JobRecord } from "../../../stores/jobs/types.js";
+import type { JobRecord } from "../../../stores/jobs/index.js";
 
 export interface StartJobOptions {
   repoRoot: string;

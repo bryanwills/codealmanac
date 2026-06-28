@@ -1,13 +1,13 @@
-import type { AgentRuntimeFailure } from "../../../agent/runtime/events.js";
-import type { OperationSpec } from "../../lifecycle/operations/spec.js";
-import { jobLogPath } from "../../../stores/jobs/records.js";
+import type { AgentRuntimeFailure } from "../../agent/runtime/events.js";
+import type { OperationSpec } from "../lifecycle/operations/spec.js";
+import { jobLogPath } from "../../stores/jobs/index.js";
 import type {
   JobOperationOutput,
   JobPageChanges,
   JobRecord,
   JobStatus,
   JobSummary,
-} from "../../../stores/jobs/types.js";
+} from "../../stores/jobs/index.js";
 
 export function buildStartedJobRecord(args: {
   jobId: string;

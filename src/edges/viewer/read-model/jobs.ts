@@ -1,17 +1,15 @@
 import {
   listJobRecords,
-  readJobRecord,
   readJobSpec,
-  resolveJobLogPath,
-  resolveJobRecordPath,
-  toJobView,
-} from "../../../services/jobs/runtime/index.js";
+  readJobRecordById,
+} from "../../../stores/jobs/index.js";
+import { toJobView } from "../../../services/jobs/record-view.js";
 import {
   enrichJobView,
 } from "../../../services/jobs/projections/view.js";
 import { deriveJobAgentTraces } from "../../../services/jobs/projections/agent-traces.js";
 import { deriveJobWarnings } from "../../../services/jobs/projections/warnings.js";
-import { readJobLogEvents } from "../../../services/jobs/projections/log-events.js";
+import { readJobLogEventsForJob } from "../../../services/jobs/projections/log-events.js";
 import type {
   ViewerJobDetail,
   ViewerJobRun,
@@ -44,7 +42,7 @@ export async function listViewerJobs(
           now: new Date(),
           isPidAlive: runtime.isPidAlive,
         });
-        const events = await readJobLogEvents(await resolveJobLogPath(repoRoot, record.id));
+        const events = await readJobLogEventsForJob(repoRoot, record.id);
         const specPrompt = await readSpecPrompt(repoRoot, record.id);
         return enrichJobView(view, events, specPrompt);
       }),
@@ -58,9 +56,9 @@ export async function getViewerJob(
   runtime: ViewerJobsRuntime,
 ): Promise<ViewerJobDetail | null> {
   if (!isSafeJobId(jobId)) return null;
-  const record = await readJobRecord(await resolveJobRecordPath(repoRoot, jobId));
+  const record = await readJobRecordById(repoRoot, jobId);
   if (record === null || record.id !== jobId) return null;
-  const events = await readJobLogEvents(await resolveJobLogPath(repoRoot, record.id));
+  const events = await readJobLogEventsForJob(repoRoot, record.id);
   const specPrompt = await readSpecPrompt(repoRoot, record.id);
   const agents = deriveJobAgentTraces(events);
   const run = toJobView({

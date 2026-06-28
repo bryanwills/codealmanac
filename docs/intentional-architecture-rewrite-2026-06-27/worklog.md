@@ -1118,3 +1118,12 @@ One-hundred-sixty-fifth production slice:
 - Kept queue selection, worker-lock use, queued spec rehydration, queued-job failure marking, and `startQueuedJob()` orchestration in the job service runtime.
 - Updated CLI internal worker dispatch and worker tests to import the edge entrypoint instead of the job service runtime facade.
 - Added boundary coverage that `src/services/jobs/runtime/worker.ts` stays deleted while the edge entrypoint delegates to `drainQueuedJobs()`.
+
+One-hundred-sixty-sixth production slice:
+
+- Added `src/stores/jobs/index.ts` as the public jobs-store API over record, log, spec, and cancellation persistence mechanics.
+- Moved job record construction/finalization from `src/services/jobs/runtime/record-factory.ts` to `src/services/jobs/record-lifecycle.ts`.
+- Moved `toJobView()` display-status shaping from `src/services/jobs/runtime/record-view.ts` to `src/services/jobs/record-view.ts`.
+- Updated `src/services/jobs/jobs.ts` so list/read/log/cancel/stream service verbs use store APIs instead of reading files, resolving record paths, or importing the job runtime facade.
+- Updated `src/edges/viewer/read-model/jobs.ts` so viewer job payloads use stores plus service read-model/projection helpers instead of importing `src/services/jobs/runtime/index.ts`.
+- Added boundary coverage that the public jobs service and viewer read model stay out of job runtime and raw storage path mechanics.

@@ -1,15 +1,13 @@
-import { readFile } from "node:fs/promises";
-
 import {
-  finishJobRecord,
   listJobRecords,
   markJobCancelled,
-  readJobRecord,
-  resolveJobLogPath,
-  resolveJobRecordPath,
-  writeJobRecord,
-} from "./runtime/index.js";
+  readJobLogChunk,
+  readJobLogContents,
+  readJobRecordById,
+  writeResolvedJobRecord,
+} from "../../stores/jobs/index.js";
 import { findNearestAlmanacDir } from "../../paths.js";
+import { finishJobRecord } from "./record-lifecycle.js";
 import type {
   CancelJobRequest,
   CancelJobServiceResult,
@@ -65,9 +63,7 @@ export async function readJobLog(
   const repoRoot = resolveRepoRoot(request.cwd);
   if (repoRoot === null) return { status: "missing-wiki" };
 
-  const record = await readJobRecord(
-    await resolveJobRecordPath(repoRoot, request.jobId),
-  );
+  const record = await readJobRecordById(repoRoot, request.jobId);
   if (record === null) {
     return { status: "missing-job", jobId: request.jobId };
   }
@@ -75,10 +71,7 @@ export async function readJobLog(
   try {
     return {
       status: "found",
-      contents: await readFile(
-        await resolveJobLogPath(repoRoot, record.id),
-        "utf8",
-      ),
+      contents: await readJobLogContents(repoRoot, record.id),
     };
   } catch (err: unknown) {
     return {
@@ -94,8 +87,7 @@ export async function cancelJob(
   const repoRoot = resolveRepoRoot(request.cwd);
   if (repoRoot === null) return { status: "missing-wiki" };
 
-  const path = await resolveJobRecordPath(repoRoot, request.jobId);
-  const record = await readJobRecord(path);
+  const record = await readJobRecordById(repoRoot, request.jobId);
   if (record === null) {
     return { status: "missing-job", jobId: request.jobId };
   }
@@ -125,7 +117,7 @@ export async function cancelJob(
     status: "cancelled",
     finishedAt: request.now?.() ?? new Date(),
   });
-  await writeJobRecord(path, cancelled);
+  await writeResolvedJobRecord(repoRoot, record.id, cancelled);
   return { status: "cancelled", jobId: record.id };
 }
 
@@ -135,26 +127,18 @@ export async function streamJobLog(
   const repoRoot = resolveRepoRoot(request.cwd);
   if (repoRoot === null) return { status: "missing-wiki" };
 
-  const initial = await readJobRecord(
-    await resolveJobRecordPath(repoRoot, request.jobId),
-  );
+  const initial = await readJobRecordById(repoRoot, request.jobId);
   if (initial === null) {
     return { status: "missing-job", jobId: request.jobId };
   }
 
   let offset = 0;
   while (true) {
-    const record = await readJobRecord(
-      await resolveJobRecordPath(repoRoot, request.jobId),
-    );
+    const record = await readJobRecordById(repoRoot, request.jobId);
     if (record === null) {
       return { status: "missing-job", jobId: request.jobId };
     }
-    offset = await writeLogChunk(
-      await resolveJobLogPath(repoRoot, record.id),
-      offset,
-      request.write,
-    );
+    offset = await writeLogChunk(repoRoot, record.id, offset, request.write);
     const view = buildJobServiceView({ record, request });
     if (isTerminalJobServiceView(view)) {
       return { status: "streamed", terminalJob: view };
@@ -167,9 +151,7 @@ async function readJobView(
   repoRoot: string,
   request: JobRequest,
 ): Promise<JobServiceView | null> {
-  const record = await readJobRecord(
-    await resolveJobRecordPath(repoRoot, request.jobId),
-  );
+  const record = await readJobRecordById(repoRoot, request.jobId);
   if (record === null) return null;
   return buildJobServiceView({ record, request });
 }
@@ -179,19 +161,18 @@ function resolveRepoRoot(cwd: string): string | null {
 }
 
 async function writeLogChunk(
-  path: string,
+  repoRoot: string,
+  jobId: string,
   offset: number,
   write: (chunk: string) => void,
 ): Promise<number> {
-  let text = "";
   try {
-    text = await readFile(path, "utf8");
+    const chunk = await readJobLogChunk(repoRoot, jobId, offset);
+    if (chunk.contents.length > 0) write(chunk.contents);
+    return chunk.nextOffset;
   } catch {
     return offset;
   }
-  if (text.length <= offset) return offset;
-  write(text.slice(offset));
-  return text.length;
 }
 
 function sleep(ms: number): Promise<void> {

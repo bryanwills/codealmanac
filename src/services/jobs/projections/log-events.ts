@@ -1,17 +1,30 @@
 import { readFile } from "node:fs/promises";
 
 import type { AgentRuntimeEvent, RunActor } from "../../../agent/runtime/events.js";
+import { readJobLogContents } from "../../../stores/jobs/index.js";
 import type { JobLogEvent } from "./types.js";
 
 export async function readJobLogEvents(path: string): Promise<JobLogEvent[]> {
-  let content = "";
   try {
-    content = await readFile(path, "utf8");
+    return parseJobLogEvents(await readFile(path, "utf8"));
   } catch {
     return [];
   }
+}
 
-  const events = content
+export async function readJobLogEventsForJob(
+  repoRoot: string,
+  jobId: string,
+): Promise<JobLogEvent[]> {
+  try {
+    return parseJobLogEvents(await readJobLogContents(repoRoot, jobId));
+  } catch {
+    return [];
+  }
+}
+
+export function parseJobLogEvents(content: string): JobLogEvent[] {
+  return content
     .split(/\r?\n/)
     .map((line, index): JobLogEvent | null => {
       if (line.trim().length === 0) return null;
@@ -29,8 +42,8 @@ export async function readJobLogEvents(path: string): Promise<JobLogEvent[]> {
         };
       }
     })
-    .filter((event): event is JobLogEvent => event !== null);
-  return events.sort(compareJobLogEvents);
+    .filter((event): event is JobLogEvent => event !== null)
+    .sort(compareJobLogEvents);
 }
 
 function compareJobLogEvents(a: JobLogEvent, b: JobLogEvent): number {

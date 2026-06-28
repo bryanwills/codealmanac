@@ -13,9 +13,9 @@ export {
   buildQueuedJobRecord,
   buildStartedJobRecord,
   finishJobRecord,
-} from "./record-factory.js";
+} from "../record-lifecycle.js";
 export { isJobRecord } from "../../../stores/jobs/record-schema.js";
-export { toJobView } from "./record-view.js";
+export { toJobView } from "../record-view.js";
 export {
   isJobCancellationRequested,
   listJobRecords,
@@ -30,17 +30,17 @@ export {
   resolveJobLogPath,
   resolveJobRecordPath,
   writeJobRecord,
-} from "../../../stores/jobs/records.js";
+} from "../../../stores/jobs/index.js";
 export {
   appendJobLogEntry,
   initializeJobLog,
-} from "../../../stores/jobs/logs.js";
+} from "../../../stores/jobs/index.js";
 export {
   readJobSpec,
   jobSpecPath,
   resolveJobSpecPath,
   writeJobSpec,
-} from "../../../stores/jobs/specs.js";
+} from "../../../stores/jobs/index.js";
 export { oldestQueuedJob } from "./queue.js";
 export {
   acquireJobWorkerLock,
@@ -75,7 +75,7 @@ export type {
   JobStatus,
   JobSummary,
   JobView,
-} from "../../../stores/jobs/types.js";
+} from "../../../stores/jobs/index.js";
 export type {
   PageSnapshot,
   PageSnapshotDelta,

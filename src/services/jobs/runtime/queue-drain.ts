@@ -3,17 +3,17 @@ import type { AgentRuntimeRunHooks } from "../../../agent/runtime/types.js";
 import type { OperationSpec } from "../../lifecycle/operations/spec.js";
 import {
   finishJobRecord,
-} from "./record-factory.js";
+} from "../record-lifecycle.js";
 import {
   readJobRecord,
   resolveJobRecordPath,
+  readJobSpec,
   writeJobRecord,
-} from "../../../stores/jobs/records.js";
+} from "../../../stores/jobs/index.js";
 import { acquireJobWorkerLock } from "../../../stores/jobs/worker-lock.js";
 import { oldestQueuedJob } from "./queue.js";
-import { readJobSpec } from "../../../stores/jobs/specs.js";
 import { startQueuedJob } from "./start.js";
-import type { JobRecord } from "../../../stores/jobs/types.js";
+import type { JobRecord } from "../../../stores/jobs/index.js";
 
 export interface DrainQueuedJobsOptions {
   repoRoot: string;

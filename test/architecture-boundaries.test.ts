@@ -701,7 +701,16 @@ describe("architecture boundaries", () => {
     expect(jobsService).not.toContain("function jobServiceViewFromRuntime");
     expect(jobsService).not.toContain("toJobView");
     expect(jobsService).not.toContain("platform/process");
+    expect(jobsService).not.toContain("readFile");
+    expect(jobsService).not.toContain("resolveJobRecordPath");
+    expect(jobsService).not.toContain("resolveJobLogPath");
+    expect(jobsService).not.toContain("writeJobRecord");
+    expect(jobsService).not.toContain("./runtime/index.js");
+    expect(jobsService).toContain("stores/jobs/index.js");
+    expect(jobsService).toContain("record-lifecycle.js");
     expect(jobsServiceView).not.toContain("platform/process");
+    expect(jobsServiceView).not.toContain("./runtime/index.js");
+    expect(jobsServiceView).toContain("./record-view.js");
     expect(jobsServiceTypes).toContain("isPidAlive: (pid: number) => boolean");
     expect(jobsServiceTypes).toContain(
       "signalProcess: (pid: number, signal: NodeJS.Signals) => void",
@@ -728,6 +737,9 @@ describe("architecture boundaries", () => {
     expect(warnings).toContain("export function deriveJobWarnings");
     expect(viewerJobs).toContain("projections/agent-traces.js");
     expect(viewerJobs).toContain("projections/warnings.js");
+    expect(viewerJobs).not.toContain("services/jobs/runtime/index.js");
+    expect(viewerJobs).toContain("stores/jobs/index.js");
+    expect(viewerJobs).toContain("services/jobs/record-view.js");
   });
 
   it("keeps job record persistence in an explicit store", () => {
@@ -740,8 +752,8 @@ describe("architecture boundaries", () => {
 
   it("keeps job worker process spawning out of job record startup", async () => {
     const jobStart = await readSource("src/services/jobs/runtime/start.ts");
-    const jobRecordFactory = await readSource(
-      "src/services/jobs/runtime/record-factory.ts",
+    const jobRecordLifecycle = await readSource(
+      "src/services/jobs/record-lifecycle.ts",
     );
     const jobWorker = await readSource("src/edges/worker/job-worker.ts");
     const queueDrain = await readSource("src/services/jobs/runtime/queue-drain.ts");
@@ -753,6 +765,8 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/edges/worker/job-worker.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/queue-drain.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/worker.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/jobs/runtime/record-factory.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/services/jobs/record-lifecycle.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/background-start.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/jobs/worker-process.ts"))).toBe(true);
     expect(jobStart).not.toContain("node:child_process");
@@ -767,9 +781,9 @@ describe("architecture boundaries", () => {
     expect(backgroundProcess).not.toContain("process.env");
     expect(backgroundProcess).not.toContain("process.execPath");
     expect(jobStart).not.toContain("process.pid");
-    expect(jobRecordFactory).not.toContain("process.pid");
+    expect(jobRecordLifecycle).not.toContain("process.pid");
     expect(queueDrain).not.toContain("process.pid");
-    expect(jobRecordFactory).toContain("pid: number");
+    expect(jobRecordLifecycle).toContain("pid: number");
     expect(jobStart).toContain("pid: number");
     expect(jobWorker).toContain("pid: number");
     expect(jobWorker).toContain("drainQueuedJobs");
@@ -784,6 +798,7 @@ describe("architecture boundaries", () => {
   it("keeps job spec and log persistence in explicit stores", () => {
     expect(existsSync(join(ROOT, "src/stores/jobs/specs.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/jobs/logs.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/jobs/index.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/stores/jobs/log-entry.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/jobs/spec.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/jobs"))).toBe(false);

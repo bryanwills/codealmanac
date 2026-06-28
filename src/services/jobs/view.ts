@@ -1,8 +1,5 @@
-import {
-  toJobView,
-  type JobRecord,
-  type JobView as RuntimeJobView,
-} from "./runtime/index.js";
+import { toJobView } from "./record-view.js";
+import type { JobRecord, JobView as RuntimeJobView } from "../../stores/jobs/index.js";
 import type {
   JobServiceView,
   JobsRequest,

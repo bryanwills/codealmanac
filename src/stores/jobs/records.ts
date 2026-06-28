@@ -95,6 +95,21 @@ export async function readJobRecord(path: string): Promise<JobRecord | null> {
   }
 }
 
+export async function readJobRecordById(
+  repoRoot: string,
+  jobId: string,
+): Promise<JobRecord | null> {
+  return readJobRecord(await resolveJobRecordPath(repoRoot, jobId));
+}
+
+export async function writeResolvedJobRecord(
+  repoRoot: string,
+  jobId: string,
+  record: JobRecord,
+): Promise<void> {
+  await writeJobRecord(await resolveJobRecordPath(repoRoot, jobId), record);
+}
+
 export async function listJobRecords(repoRoot: string): Promise<JobRecord[]> {
   const records: JobRecord[] = [];
   for (const dir of [jobsDir(repoRoot), legacyRunsDir(repoRoot)]) {

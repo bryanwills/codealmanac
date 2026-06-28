@@ -32,19 +32,19 @@ sources:
       kept legacy storage readable, and split the lifecycle file by responsibility.
   - id: manager
     type: file
-    path: src/jobs/executor.ts
+    path: src/services/jobs/runtime/executor.ts
     note: Executes started jobs through the harness and records terminal results.
   - id: background
     type: file
-    path: src/jobs/start.ts
-    note: Starts foreground, background, and queued jobs.
+    path: src/services/jobs/runtime/start.ts
+    note: Starts foreground and queued jobs.
   - id: worker
     type: file
     path: src/edges/worker/job-worker.ts
     note: Drains queued jobs under the per-wiki worker lock.
   - id: queue
     type: file
-    path: src/jobs/queue.ts
+    path: src/services/jobs/runtime/queue.ts
     note: Selects the oldest queued job.
   - id: worker-lock
     type: file
@@ -52,11 +52,11 @@ sources:
     note: Acquires the current worker lock and treats live legacy worker locks as blocking.
   - id: managed-child
     type: file
-    path: src/harness/process/managed-child.ts
+    path: src/platform/managed-child.ts
     note: Owns provider child process group spawning and termination.
   - id: wiki-effects
     type: file
-    path: src/jobs/wiki-effects.ts
+    path: src/services/jobs/runtime/wiki-effects.ts
     note: Collects page snapshot deltas, structured operation output, and post-success reindexing.
   - id: records
     type: file
@@ -68,7 +68,7 @@ sources:
     note: Owns durable job log file writes.
   - id: snapshots
     type: file
-    path: src/jobs/snapshots.ts
+    path: src/services/jobs/runtime/snapshots.ts
     note: Migrated from legacy files.
   - id: spec
     type: file
@@ -76,11 +76,11 @@ sources:
     note: Owns durable job spec JSON files.
   - id: types
     type: file
-    path: src/jobs/types.ts
+    path: src/stores/jobs/types.ts
     note: Migrated from legacy files.
   - id: claude
     type: file
-    path: src/harness/providers/claude.ts
+    path: src/agent/runtime/providers/claude.ts
     note: Migrated from legacy files.
   - id: jobs
     type: file
@@ -131,7 +131,7 @@ The JSON record stores status, operation, provider, model, PID, target metadata,
 
 These job records are CodeAlmanac's canonical job transcript and audit record. Provider-owned Claude or Codex session history is secondary debug material and may be non-persistent for Almanac maintenance jobs. The user-visible transcript feature belongs to `.almanac/jobs/<job-id>.jsonl`, `almanac jobs logs <job-id>`, and the `almanac serve` jobs UI, not to the provider's own session store.
 
-The jobs rename deliberately did not add a read-time storage migration. `[[src/stores/jobs/records.ts]]` resolves current `.almanac/jobs/` records, logs, and cancel markers first, then falls back to legacy `.almanac/runs/` paths when the current artifact is absent. It lists legacy records without moving `.almanac/runs/`, and callers that need a log path use `resolveJobLogPath()` instead of trusting an old `record.logPath` field. That compatibility keeps old job history readable without making read-only commands mutate runtime state. [@records] [@jobs-refactor-session]
+The jobs rename deliberately did not add a read-time storage migration. `[[src/stores/jobs/records.ts]]` resolves current `.almanac/jobs/` records, logs, and cancel markers first, then falls back to legacy `.almanac/runs/` paths when the current artifact is absent. It lists legacy records without moving `.almanac/runs/`, and public read callers use `[[src/stores/jobs/index.ts]]` instead of trusting an old `record.logPath` field. That compatibility keeps old job history readable without making read-only commands mutate runtime state. [@records] [@jobs-refactor-session]
 
 ## Status lifecycle
 
@@ -147,7 +147,7 @@ Maintenance operation specs set `providerSession.persistence = "ephemeral"`. Cla
 
 Claude harness runs install `SIGINT`, `SIGTERM`, and `SIGHUP` handlers around the SDK query and abort its `AbortController` when the job process is asked to stop. This is a normal-termination cleanup path for the Claude CLI and MCP children; `SIGKILL` can still leave no JavaScript cleanup opportunity.
 
-Issue #10 remains a separate provider-process ownership risk from the single-writer queue. The queue reduces fan-out by serializing write-capable jobs per wiki, but it does not by itself prove that a killed CodeAlmanac job will terminate a provider CLI and any MCP children that the provider started. The hardening boundary is now `[[src/harness/process/managed-child.ts]]`: provider adapters receive a managed child process and invoke `terminate()` on completion, timeout, cancellation, or signal handling. On POSIX systems the managed child uses an owned process group and escalates from `SIGTERM` to `SIGKILL`. A process-probe `EPERM` is treated as still alive but not currently signalable, not as proof that the group exited. Windows provider-process cleanup is intentionally unsupported until there is a tested implementation; the managed helper fails clearly on Windows instead of claiming unverified process-tree behavior. [@managed-child]
+Issue #10 remains a separate provider-process ownership risk from the single-writer queue. The queue reduces fan-out by serializing write-capable jobs per wiki, but it does not by itself prove that a killed CodeAlmanac job will terminate a provider CLI and any MCP children that the provider started. The hardening boundary is now `[[src/platform/managed-child.ts]]`: provider adapters receive a managed child process and invoke `terminate()` on completion, timeout, cancellation, or signal handling. On POSIX systems the managed child uses an owned process group and escalates from `SIGTERM` to `SIGKILL`. A process-probe `EPERM` is treated as still alive but not currently signalable, not as proof that the group exited. Windows provider-process cleanup is intentionally unsupported until there is a tested implementation; the managed helper fails clearly on Windows instead of claiming unverified process-tree behavior. [@managed-child]
 
 ## Single-writer queue
 
@@ -167,7 +167,7 @@ The single-writer queue does not replace source provenance. Provider sessions fo
 
 ## Snapshot accounting
 
-The job executor snapshots `.almanac/pages/*.md` before and after the harness run. `[[src/jobs/snapshots.ts]]` computes created, updated, archived, and deleted slug lists from page hashes and archive metadata. `[[src/jobs/wiki-effects.ts]]` writes those lists into `JobRecord.pageChanges` and derives the numeric `JobSummary` counts from the same delta. On success the executor runs the SQLite indexer; on failure it still records the event log, final error, summary counts, and page changes observed before finalization.
+The job executor snapshots `.almanac/pages/*.md` before and after the agent runtime run. `[[src/services/jobs/runtime/snapshots.ts]]` computes created, updated, archived, and deleted slug lists from page hashes and archive metadata. `[[src/services/jobs/runtime/wiki-effects.ts]]` writes those lists into `JobRecord.pageChanges` and derives the numeric `JobSummary` counts from the same delta. On success the executor runs the SQLite indexer; on failure it still records the event log, final error, summary counts, and page changes observed before finalization.
 
 ## Wiki-effect artifact design
 
@@ -193,7 +193,7 @@ pageChanges?: {
 
 `summary` is now compatibility display metadata, not the product boundary for final-output meaning. When the provider returns the `almanac_operation_report_v1` structured final output, the job-effects layer validates that named contract and copies its `summary` into `pageChanges.summary`; otherwise it falls back to the old first-meaningful-line summary capped at 500 characters. The typed result itself is stored separately as `operationOutput: { version: 1, contract, value }`. Counts for `jobs show`, JSON output, capture automation, and the viewer are derived from the same snapshot delta that produces `pageChanges`, rather than from a second comparison path. Computing old changed slug sets on demand from current page files is not reliable because later runs can rewrite, archive, or delete the same pages after the before/after snapshots for the older run are gone.
 
-The 2026-06-07 hosted GitHub App discussion exposed first-line harness-result scraping as the wrong boundary for PR-ready human messages. The current compatibility path in `[[src/jobs/wiki-effects.ts]]` may derive a display summary from the final assistant result, but that is acceptable only as a best-effort jobs-list snippet, not as the contract for a sticky GitHub comment or hosted product summary. When a downstream feature needs a formatted explanation, changed-file list, action label, or other shaped output, the agent run should produce that shape through an explicit prompt or structured output contract and the host should validate it, rather than relying on first-line markdown scraping. [@hosted-summary-contract-session]
+The 2026-06-07 hosted GitHub App discussion exposed first-line runtime-result scraping as the wrong boundary for PR-ready human messages. The current compatibility path in `[[src/services/jobs/runtime/wiki-effects.ts]]` may derive a display summary from the final assistant result, but that is acceptable only as a best-effort jobs-list snippet, not as the contract for a sticky GitHub comment or hosted product summary. When a downstream feature needs a formatted explanation, changed-file list, action label, or other shaped output, the agent run should produce that shape through an explicit prompt or structured output contract and the host should validate it, rather than relying on first-line markdown scraping. [@hosted-summary-contract-session]
 
 Two review constraints protect that contract. If post-harness finalization fails after the page delta has been computed, the failed terminal record should still preserve `summary` and `pageChanges`; failed jobs are one of the cases where operators most need to know what changed before the failure. Readers also need to validate `pageChanges` when present, including `version === 1`, `jobId`, and all four slug arrays, because old records omit the field and malformed persisted metadata should not crash `jobs show` or the viewer.
 
@@ -203,7 +203,7 @@ Two review constraints protect that contract. If post-harness finalization fails
 
 ## Jobs viewer
 
-`almanac serve` exposes the same job data through the local viewer API at `/api/jobs` (list) and `/api/jobs/:jobId` (detail with JSONL events). See [[almanac-serve]] for the type shapes and polling design. The viewer uses `listJobRecords`, `readJobRecord`, `resolveJobRecordPath`, `resolveJobLogPath`, and `toJobView` from `[[src/services/jobs/runtime/index.ts]]` — no storage logic is duplicated. Jobs storage/API logic lives in `src/edges/viewer/read-model/jobs.ts`; JSONL parsing and derived display title/subtitle, transcript-source inference, agent traces, and run warnings live under `[[src/services/jobs/projections/]]`. Viewer job response types live in `src/edges/viewer/read-model/job-types.ts`. The frontend UI is split across `viewer/jobs-view.js` and `viewer/jobs.css`.
+`almanac serve` exposes the same job data through the local viewer API at `/api/jobs` (list) and `/api/jobs/:jobId` (detail with JSONL events). See [[almanac-serve]] for the type shapes and polling design. Viewer job storage/API logic lives in `src/edges/viewer/read-model/jobs.ts`; it reads records and specs through `[[src/stores/jobs/index.ts]]`, builds display status through `[[src/services/jobs/record-view.ts]]`, and keeps JSONL parsing plus derived display title/subtitle, transcript-source inference, agent traces, and run warnings under `[[src/services/jobs/projections/]]`. Viewer job response types live in `src/edges/viewer/read-model/job-types.ts`. The frontend UI is split across `viewer/jobs-view.js` and `viewer/jobs.css`.
 
 ## Agent-thread attribution gap
 
