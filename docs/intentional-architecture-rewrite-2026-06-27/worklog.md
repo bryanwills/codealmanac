@@ -1142,3 +1142,10 @@ One-hundred-sixty-eighth production slice:
 - Updated platform diagnostic probes to import their typed results from the platform diagnostics package instead of depending upward on `src/services/diagnostics/`.
 - Kept `src/services/diagnostics/types.ts` focused on doctor options, reports, checks, and agent read models while re-exporting platform probe facts for stable service and command callers.
 - Added boundary coverage that platform diagnostics do not import `services/diagnostics` and that services intentionally depend on the platform diagnostic fact contracts.
+
+One-hundred-sixty-ninth production slice:
+
+- Added `src/services/setup/provider-fix-command.ts` for provider fix-command normalization and execution over platform shell mechanics.
+- Updated `src/cli/commands/setup/agent-choice.ts` so the setup TUI asks for confirmation and renders status, while the setup service owns the fix-command workflow.
+- Removed the direct `platform/shell.js` import from the setup agent-choice TUI file.
+- Strengthened boundary coverage so setup provider-login process execution stays behind the setup service and platform shell boundary.

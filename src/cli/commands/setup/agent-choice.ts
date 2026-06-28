@@ -3,11 +3,13 @@ import type {
   SetupProviderView,
   SetupSpawnCliFn,
 } from "../../../services/setup/index.js";
-import { runInheritedShellCommand } from "../../../platform/shell.js";
 import {
+  normalizeSetupProviderFixCommand,
   readSetupAgentChoiceState,
   refreshSetupAgentChoiceView,
   resolveSetupAgentSelection,
+  runnableSetupProviderFixCommand,
+  runSetupProviderFixCommand,
   saveSetupAgentChoice,
 } from "../../../services/setup/index.js";
 import { chooseProviderModel } from "./agent-model-choice.js";
@@ -71,10 +73,8 @@ export async function chooseDefaultAgent(args: {
         selected = choice.id;
         break;
       }
-      if (choice.readiness === "not-authenticated" && choice.fixCommand !== null) {
-        const command = choice.fixCommand.startsWith("run: ")
-          ? choice.fixCommand.slice("run: ".length)
-          : choice.fixCommand;
+      const command = normalizeSetupProviderFixCommand(choice.fixCommand);
+      if (choice.readiness === "not-authenticated" && command !== null) {
         const runLogin = await confirm(
           args.input,
           args.out,
@@ -83,7 +83,7 @@ export async function chooseDefaultAgent(args: {
           true,
         );
         if (runLogin === "install") {
-          const login = await runInheritedShellCommand(command);
+          const login = await runSetupProviderFixCommand(command);
           if (!login.ok) {
             stepActive(
               args.out,
@@ -119,22 +119,24 @@ export async function chooseDefaultAgent(args: {
   if (!selection.ok) return selection;
   const provider = selection.provider;
   let selectedChoice = view?.choices.find((choice) => choice.id === provider);
+  const runnableFixCommand = selectedChoice !== undefined
+    ? runnableSetupProviderFixCommand(selectedChoice.fixCommand)
+    : null;
   if (
     args.interactive &&
     selectedChoice !== undefined &&
     !selectedChoice.ready &&
-    selectedChoice.fixCommand?.startsWith("run: ") === true
+    runnableFixCommand !== null
   ) {
-    const command = selectedChoice.fixCommand.slice("run: ".length);
     const runLogin = await confirm(
       args.input,
       args.out,
       args.theme,
-      `${selectedChoice.label} is not ready. Run '${command}' now?`,
+      `${selectedChoice.label} is not ready. Run '${runnableFixCommand}' now?`,
       true,
     );
     if (runLogin === "install") {
-      const login = await runInheritedShellCommand(command);
+      const login = await runSetupProviderFixCommand(runnableFixCommand);
       if (login.ok) {
         view = await refreshSetupAgentChoiceView({
           spawnCli: args.spawnCli,
@@ -204,9 +206,7 @@ function providerDetailLabel(
 ): string {
   if (choice.ready) return choice.account ?? choice.detail;
   if (choice.fixCommand === null) return choice.detail;
-  return choice.fixCommand.startsWith("run: ")
-    ? choice.fixCommand.slice("run: ".length)
-    : choice.fixCommand;
+  return normalizeSetupProviderFixCommand(choice.fixCommand) ?? choice.detail;
 }
 
 function showUnavailableProvider(

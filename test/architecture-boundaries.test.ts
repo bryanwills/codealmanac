@@ -1209,14 +1209,29 @@ describe("architecture boundaries", () => {
     const setupAgentChoice = await readSource(
       "src/cli/commands/setup/agent-choice.ts",
     );
+    const setupProviderFixCommand = await readSource(
+      "src/services/setup/provider-fix-command.ts",
+    );
+    const setupServiceIndex = await readSource("src/services/setup/index.ts");
     const platformShell = await readSource("src/platform/shell.ts");
 
     expect(existsSync(join(ROOT, "src/platform/shell.ts"))).toBe(true);
-    expect(setupAgentChoice).toContain("platform/shell.js");
+    expect(existsSync(join(ROOT, "src/services/setup/provider-fix-command.ts"))).toBe(true);
+    expect(setupAgentChoice).not.toContain("platform/shell.js");
+    expect(setupAgentChoice).toContain("runSetupProviderFixCommand");
     expect(setupAgentChoice).not.toContain("node:child_process");
     expect(setupAgentChoice).not.toContain("spawn(command");
     expect(setupAgentChoice).not.toContain("shell: true");
     expect(setupAgentChoice).not.toContain("stdio: \"inherit\"");
+    expect(setupProviderFixCommand).toContain("../../platform/shell.js");
+    expect(setupProviderFixCommand).toContain("runInheritedShellCommand");
+    expect(setupProviderFixCommand).toContain(
+      "normalizeSetupProviderFixCommand",
+    );
+    expect(setupProviderFixCommand).toContain(
+      "runnableSetupProviderFixCommand",
+    );
+    expect(setupServiceIndex).toContain("provider-fix-command.js");
     expect(platformShell).toContain("runInheritedShellCommand");
   });
 

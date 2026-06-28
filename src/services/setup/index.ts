@@ -35,6 +35,11 @@ export {
   resolveSetupAgentSelection,
   saveSetupAgentChoice,
 } from "./agent-choice.js";
+export {
+  normalizeSetupProviderFixCommand,
+  runnableSetupProviderFixCommand,
+  runSetupProviderFixCommand,
+} from "./provider-fix-command.js";
 export type {
   SetupAgentChoiceState,
   SetupAgentSelection,
@@ -43,3 +48,6 @@ export type {
   SetupProviderView,
   SetupSpawnCliFn,
 } from "./agent-choice.js";
+export type {
+  SetupProviderFixCommandResult,
+} from "./provider-fix-command.js";
