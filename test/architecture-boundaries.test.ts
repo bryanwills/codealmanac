@@ -10,6 +10,7 @@ describe("architecture boundaries", () => {
   it("keeps wiki initialization inside service and store ownership", async () => {
     const initialization = await readSource("src/services/wiki/initialization.ts");
     const fileScaffold = await readSource("src/stores/wiki-files/scaffold.ts");
+    const filePages = await readSource("src/stores/wiki-files/pages.ts");
     const buildOperation = await readSource(
       "src/services/lifecycle/operations/build.ts",
     );
@@ -21,6 +22,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/stores/wiki-files/scaffold.ts"))).toBe(
       true,
     );
+    expect(existsSync(join(ROOT, "src/stores/wiki-files/pages.ts"))).toBe(true);
     expect(initialization).toContain("scaffoldWikiFiles");
     expect(initialization).toContain("addEntry");
     expect(initialization).not.toContain("writeFile");
@@ -28,7 +30,12 @@ describe("architecture boundaries", () => {
     expect(fileScaffold).toContain("writeFile");
     expect(fileScaffold).toContain("mkdir");
     expect(fileScaffold).not.toContain("addEntry");
+    expect(filePages).toContain("readdir");
+    expect(filePages).toContain("countWikiPageFiles");
     expect(buildOperation).toContain("from \"../../wiki/initialization.js\"");
+    expect(buildOperation).toContain("countWikiPageFiles");
+    expect(buildOperation).not.toContain("node:fs");
+    expect(buildOperation).not.toContain("readdir");
     expect(buildOperation).not.toContain("init/scaffold");
   });
 
@@ -1172,7 +1179,10 @@ describe("architecture boundaries", () => {
     expect(setupServiceIndex).not.toContain("readSetupWikiState");
     expect(setupServiceIndex).not.toContain("wiki-state");
     expect(setupWikiState).toContain("existingPageCount");
-    expect(setupWikiState).toContain("readdirSync");
+    expect(setupWikiState).toContain("countWikiPageFilesSync");
+    expect(setupWikiState).not.toContain("node:fs");
+    expect(setupWikiState).not.toContain("readdirSync");
+    expect(setupWikiState).not.toContain("existsSync");
     expect(setupTypes).toContain("interface SetupOptions");
     expect(setupTypes).toContain("interface SetupResult");
     expect(setupTypes).toContain("stdin: SetupInputStream");

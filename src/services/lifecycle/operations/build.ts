@@ -1,9 +1,6 @@
-import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
-
 import type { OperationSpec } from "./spec.js";
 import { initWiki } from "../../wiki/initialization.js";
+import { countWikiPageFiles } from "../../../stores/wiki-files/pages.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
@@ -50,7 +47,7 @@ export async function runBuildOperation(
 ): Promise<OperationRunResult> {
   const init = await initWiki({ cwd: options.cwd });
   const repoRoot = init.entry.path;
-  const pageCount = await countWikiPages(repoRoot);
+  const pageCount = await countWikiPageFiles(repoRoot);
   if (pageCount > 0 && options.force !== true) {
     throw new OperationError(
       `.almanac/ already initialized with ${pageCount} page${pageCount === 1 ? "" : "s"}; pass --force to rebuild`,
@@ -79,11 +76,4 @@ export async function runBuildOperation(
     workerEnvironment: options.workerEnvironment,
     pid: options.pid,
   });
-}
-
-async function countWikiPages(repoRoot: string): Promise<number> {
-  const pagesDir = join(repoRoot, ".almanac", "pages");
-  if (!existsSync(pagesDir)) return 0;
-  const entries = await readdir(pagesDir);
-  return entries.filter((entry) => entry.endsWith(".md")).length;
 }

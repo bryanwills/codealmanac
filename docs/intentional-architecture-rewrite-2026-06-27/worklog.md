@@ -1193,3 +1193,10 @@ One-hundred-seventy-fifth production slice:
 - Removed the direct `node:fs/promises` dependency from job log projections.
 - Kept job projections responsible for parsing log contents and deriving typed event/read-model facts.
 - Strengthened boundary coverage so log file reads stay behind `src/stores/jobs/`.
+
+One-hundred-seventy-sixth production slice:
+
+- Added `src/stores/wiki-files/pages.ts` for `.almanac/pages/*.md` counting.
+- Removed page-count filesystem reads from the Build operation and setup wiki state service.
+- Kept Build and setup services responsible for product behavior: rebuild gating, existing-page counts, and user-facing setup state.
+- Strengthened boundary coverage so page-file counting mechanics stay in `src/stores/wiki-files/`.
