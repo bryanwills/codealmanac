@@ -4,6 +4,9 @@ export {
   runInitOperationWorkflow,
   runPreparedAbsorbOperationWorkflow,
   parseLifecycleProviderSelection,
+} from "./workflows.js";
+
+export {
   type AbsorbOperationWorkflowOptions,
   type GardenOperationWorkflowOptions,
   type InitOperationWorkflowOptions,
@@ -19,7 +22,7 @@ export {
   type LifecycleOperationKind,
   type LifecycleOperationWorkflowResult,
   type PreparedAbsorbOperationWorkflowOptions,
-} from "./workflows.js";
+} from "./workflow-types.js";
 
 export {
   type LifecycleOperationFailure,

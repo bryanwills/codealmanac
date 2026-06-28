@@ -809,6 +809,9 @@ describe("architecture boundaries", () => {
       "src/services/lifecycle/operations/types.ts",
     );
     const lifecycleWorkflows = await readSource("src/services/lifecycle/workflows.ts");
+    const lifecycleWorkflowTypes = await readSource(
+      "src/services/lifecycle/workflow-types.ts",
+    );
     const cliRuntime = await readSource("src/edges/cli/current-cli.ts");
 
     expect(existsSync(join(ROOT, "src/edges/worker/job-worker.ts"))).toBe(true);
@@ -856,7 +859,7 @@ describe("architecture boundaries", () => {
     expect(cliRuntime).toContain("shared/worker-program.js");
     expect(lifecycleOperations).toContain("shared/worker-program.js");
     expect(lifecycleOperations).not.toContain("platform/jobs/worker-process");
-    expect(lifecycleWorkflows).toContain("shared/worker-program.js");
+    expect(lifecycleWorkflowTypes).toContain("shared/worker-program.js");
     expect(lifecycleWorkflows).not.toContain("platform/jobs/worker-process");
   });
 
@@ -1681,6 +1684,9 @@ describe("architecture boundaries", () => {
     const lifecycleResults = await readSource(
       "src/services/lifecycle/operation-results.ts",
     );
+    const lifecycleWorkflowTypes = await readSource(
+      "src/services/lifecycle/workflow-types.ts",
+    );
     const lifecycleAbsorbIndex = await readSource("src/services/lifecycle/absorb/index.ts");
     const lifecycleAbsorbInput = await readSource("src/services/lifecycle/absorb/input.ts");
     const platformGithubSource = await readSource("src/platform/github/source.ts");
@@ -1694,6 +1700,7 @@ describe("architecture boundaries", () => {
 
     expect(existsSync(join(ROOT, "src/services/lifecycle/operation-results.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/workflows.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflow-types.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/operations"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/absorb"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/github/source.ts"))).toBe(true);
@@ -1724,6 +1731,10 @@ describe("architecture boundaries", () => {
     expect(lifecycleWorkflows).not.toContain(
       "LifecycleAbsorbSourceResolver = absorb.ResolveSourceFn",
     );
+    expect(lifecycleWorkflows).not.toContain("interface LifecycleForegroundStartRequest");
+    expect(lifecycleWorkflows).not.toContain("interface InitOperationWorkflowOptions");
+    expect(lifecycleWorkflowTypes).toContain("interface LifecycleForegroundStartRequest");
+    expect(lifecycleWorkflowTypes).toContain("interface InitOperationWorkflowOptions");
     expect(lifecycleWorkflows).not.toContain(
       "function lifecycleOperationRunResultFromOperation",
     );

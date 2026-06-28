@@ -1401,3 +1401,10 @@ Two-hundred-second production slice:
 - Kept review command adapters responsible only for choosing explicit markdown over stdin input and passing that raw text to wiki review services.
 - Left markdown cleanup and missing-markdown classification in `src/services/wiki/review-text.ts` and `src/services/wiki/reviews.ts`.
 - Strengthened architecture-boundary tests so review commands do not reintroduce markdown normalization.
+
+Two-hundred-third production slice:
+
+- Added `src/services/lifecycle/workflow-types.ts` for the public lifecycle workflow request, starter, source-resolver, and result contracts.
+- Removed those contract definitions from `src/services/lifecycle/workflows.ts`, leaving that file focused on provider resolution, run-mode policy, init prompt context, and operation dispatch.
+- Updated the lifecycle service index to re-export workflow functions from `workflows.ts` and workflow contracts from `workflow-types.ts`.
+- Strengthened architecture-boundary tests so lifecycle workflow implementation does not re-absorb request/start contract definitions while the worker-program contract remains outside platform job-process mechanics.
