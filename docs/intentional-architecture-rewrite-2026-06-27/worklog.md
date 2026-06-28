@@ -1553,3 +1553,10 @@ Two-hundred-twenty-second production slice:
 - Kept scheduler construction and process environment facts in concrete command registration files.
 - Moved repeated automation task parsing/error emission into a small CLI-edge helper instead of duplicating it across install, uninstall, and status actions.
 - Strengthened architecture-boundary tests so automation registration stays split by command surface while launchd mechanics remain behind app/platform runtime composition.
+
+Two-hundred-twenty-third production slice:
+
+- Split `src/edges/cli/register-jobs-commands.ts` into a thin root-command aggregator plus jobs read, log/attach, and cancel registration files.
+- Kept process-liveness injection with list/show and attach, stdout streaming with attach, and process-signal wiring with cancel.
+- Preserved the existing jobs command surface while making each command group readable at the file level.
+- Strengthened architecture-boundary tests so jobs registration keeps process and stdout mechanics in concrete edge files instead of the root aggregator.

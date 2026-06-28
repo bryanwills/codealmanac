@@ -789,6 +789,15 @@ describe("architecture boundaries", () => {
     const jobsRegistration = await readSource(
       "src/edges/cli/register-jobs-commands.ts",
     );
+    const jobReadRegistration = await readSource(
+      "src/edges/cli/register-job-read-commands.ts",
+    );
+    const jobLogRegistration = await readSource(
+      "src/edges/cli/register-job-log-commands.ts",
+    );
+    const jobCancelRegistration = await readSource(
+      "src/edges/cli/register-job-cancel-command.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/cli/commands/jobs-format.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/jobs-render.ts"))).toBe(true);
@@ -834,7 +843,19 @@ describe("architecture boundaries", () => {
     expect(jobsRender).toContain("renderJobsShowResult");
     expect(jobsRender).toContain("renderStreamJobLogResult");
     expect(jobsRender).toContain("renderCancelJobResult");
-    expect(jobsRegistration).toContain("write: (chunk)");
+    expect(jobsRegistration).toContain("registerJobReadCommands(jobs)");
+    expect(jobsRegistration).toContain("registerJobLogCommands(jobs)");
+    expect(jobsRegistration).toContain("registerJobCancelCommand(jobs)");
+    expect(jobsRegistration).not.toContain("isLocalPidAlive");
+    expect(jobsRegistration).not.toContain("signalLocalPid");
+    expect(jobsRegistration).not.toContain("process.stdout");
+    expect(jobReadRegistration).toContain("isLocalPidAlive");
+    expect(jobReadRegistration).toContain('.command("list"');
+    expect(jobReadRegistration).toContain('.command("show <run-id>"');
+    expect(jobLogRegistration).toContain("isLocalPidAlive");
+    expect(jobLogRegistration).toContain("write: (chunk)");
+    expect(jobLogRegistration).toContain("process.stdout.write");
+    expect(jobCancelRegistration).toContain("signalLocalPid");
     expect(jobsService).not.toContain("JobView as RuntimeJobView");
     expect(jobsService).not.toContain("function jobServiceViewFromRuntime");
     expect(jobsService).not.toContain("toJobView");
@@ -853,8 +874,8 @@ describe("architecture boundaries", () => {
     expect(jobsServiceTypes).toContain(
       "signalProcess: (pid: number, signal: NodeJS.Signals) => void",
     );
-    expect(jobsRegistration).toContain("isLocalPidAlive");
-    expect(jobsRegistration).toContain("signalLocalPid");
+    expect(jobReadRegistration).toContain("isLocalPidAlive");
+    expect(jobCancelRegistration).toContain("signalLocalPid");
     expect(jobsServiceView).toContain("function jobServiceViewFromRuntime");
     expect(jobsServiceView).toContain("toJobView");
   });
