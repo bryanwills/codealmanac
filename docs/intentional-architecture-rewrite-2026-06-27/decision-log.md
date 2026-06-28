@@ -87,6 +87,8 @@ Public jobs service files are split by verb. `src/services/jobs/read.ts` owns li
 
 Job service views map from durable store records plus service-owned display views. `src/stores/jobs/types.ts` describes persisted job records only. `src/services/jobs/record-view.ts` owns `JobView`, stale display-status shaping, and PID-liveness-derived read-model state because those facts are product/runtime interpretation rather than persistence schema.
 
+Lifecycle operation starter contracts expose a lifecycle-owned started-job snapshot, not concrete job runtime or store result types. Job runtime can return richer persisted records, but lifecycle workflow and operation contracts name only the fields lifecycle needs: status, pid, log path, failure, foreground result, and background child pid.
+
 ### Internal workers are edges over service workflows
 
 Hidden CLI worker entrypoints belong under `src/edges/worker/`. They can receive process facts such as cwd, pid, and environment, then call one service workflow. Queue draining remains under `src/services/jobs/runtime/` because it owns job lifecycle semantics over records, specs, locks, and agent execution.

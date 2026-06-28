@@ -1,7 +1,4 @@
-import type {
-  AgentRuntimeEvent,
-  AgentRuntimeResult,
-} from "../../shared/agent-runtime/events.js";
+import type { AgentRuntimeEvent } from "../../shared/agent-runtime/events.js";
 import type { OperationSpec } from "../../shared/operation-spec.js";
 import type { OperationPromptLoader } from "../../shared/operation-prompts.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
@@ -10,9 +7,12 @@ import type {
   AbsorbInputSource,
   SourceRef,
 } from "../../shared/absorb-sources.js";
-import type { JobRecord } from "../../stores/jobs/types.js";
 import type { RegistryPathEquality } from "../../stores/wiki-registry/index.js";
 import type { AgentRuntimeRunner } from "../../shared/agent-runtime/runner.js";
+import type {
+  OperationBackgroundStartResult,
+  OperationForegroundStartResult,
+} from "./operations/types.js";
 import type { LifecycleOperationRunResult } from "./operation-results.js";
 
 export type LifecycleOperationKind = "init" | "absorb" | "garden";
@@ -41,17 +41,8 @@ export interface LifecycleBackgroundStartRequest {
   workerEnvironment: NodeJS.ProcessEnv;
 }
 
-export interface LifecycleForegroundStartResult {
-  jobId: string;
-  record: JobRecord;
-  result: AgentRuntimeResult;
-}
-
-export interface LifecycleBackgroundStartResult {
-  jobId: string;
-  record: JobRecord;
-  childPid: number;
-}
+export type LifecycleForegroundStartResult = OperationForegroundStartResult;
+export type LifecycleBackgroundStartResult = OperationBackgroundStartResult;
 
 export type LifecycleOperationForegroundStarter = (
   options: LifecycleForegroundStartRequest,

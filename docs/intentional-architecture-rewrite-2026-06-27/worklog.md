@@ -1868,3 +1868,10 @@ Two-hundred-sixty-third production slice:
 - Kept job stores focused on durable `JobRecord` persistence contracts while jobs services own PID-liveness-derived read-model state.
 - Updated job projections to consume the service-owned `JobView` type instead of importing store job types.
 - Strengthened jobs/sync boundary tests so store job types cannot regain display-status fields and job projections cannot depend on store view contracts.
+
+Two-hundred-sixty-fourth production slice:
+
+- Removed lifecycle operation starter result imports from concrete job runtime result types.
+- Removed the workflow-type dependency on persisted `JobRecord` store contracts.
+- Added lifecycle-owned started-job snapshot contracts in `src/services/lifecycle/operations/types.ts`, naming only the fields lifecycle result rendering needs.
+- Strengthened lifecycle/provider boundary tests so lifecycle operation and workflow types cannot depend on job runtime result modules or job store record types.

@@ -161,6 +161,9 @@ describe("architecture boundaries: lifecycle and providers", () => {
     const lifecycleOperationRun = await readSource(
       "src/services/lifecycle/operations/run.ts",
     );
+    const lifecycleOperationTypes = await readSource(
+      "src/services/lifecycle/operations/types.ts",
+    );
     const platformPrompts = await readSource("src/platform/prompts.ts");
     const sharedOperationPrompts = await readSource(
       "src/shared/operation-prompts.ts",
@@ -226,6 +229,14 @@ describe("architecture boundaries: lifecycle and providers", () => {
     expect(lifecycleWorkflows).not.toContain("interface InitOperationWorkflowOptions");
     expect(lifecycleWorkflowTypes).toContain("interface LifecycleForegroundStartRequest");
     expect(lifecycleWorkflowTypes).toContain("interface InitOperationWorkflowOptions");
+    expect(lifecycleWorkflowTypes).not.toContain("stores/jobs/types");
+    expect(lifecycleWorkflowTypes).not.toContain("JobRecord");
+    expect(lifecycleOperationTypes).toContain("OperationStartedJobRecord");
+    expect(lifecycleOperationTypes).not.toContain("jobs/runtime/executor");
+    expect(lifecycleOperationTypes).not.toContain("jobs/runtime/background-start");
+    expect(lifecycleOperationTypes).not.toContain("StartJobResult");
+    expect(lifecycleOperationTypes).not.toContain("StartBackgroundJobResult");
+    expect(lifecycleOperationTypes).not.toContain("stores/jobs/types");
     expect(lifecycleWorkflows).not.toContain(
       "function lifecycleOperationRunResultFromOperation",
     );
