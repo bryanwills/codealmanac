@@ -21,6 +21,7 @@ export {
   type LifecycleForegroundStartResult,
   type LifecycleOperationKind,
   type LifecycleOperationWorkflowResult,
+  type LifecyclePromptLoader,
   type PreparedAbsorbOperationWorkflowOptions,
 } from "./workflow-types.js";
 

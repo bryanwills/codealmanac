@@ -46,6 +46,7 @@ export function registerLifecycleRunCommands(program: Command): void {
           pid: process.pid,
           isPidAlive: runtime.isPidAlive,
           agentRunner: runtime.agentRunner,
+          loadPrompt: runtime.loadPrompt,
           startBackground: runtime.startBackground,
           onEvent: opts.background === true
             ? undefined
@@ -94,6 +95,7 @@ function registerAbsorbCommand(program: Command): void {
           pid: process.pid,
           isPidAlive: runtime.isPidAlive,
           agentRunner: runtime.agentRunner,
+          loadPrompt: runtime.loadPrompt,
           startBackground: runtime.startBackground,
           resolveSource: runtime.resolveAbsorbSource,
           onEvent: opts.foreground === true
@@ -140,6 +142,7 @@ function registerIngestCommand(program: Command): void {
           pid: process.pid,
           isPidAlive: runtime.isPidAlive,
           agentRunner: runtime.agentRunner,
+          loadPrompt: runtime.loadPrompt,
           startBackground: runtime.startBackground,
           resolveSource: runtime.resolveAbsorbSource,
           onEvent: opts.foreground === true
@@ -182,6 +185,7 @@ export function registerGardenCommand(program: Command): void {
           pid: process.pid,
           isPidAlive: runtime.isPidAlive,
           agentRunner: runtime.agentRunner,
+          loadPrompt: runtime.loadPrompt,
           startBackground: runtime.startBackground,
           onEvent: opts.foreground === true
             ? lifecycleForegroundEventHandler(opts)

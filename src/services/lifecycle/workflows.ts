@@ -45,6 +45,7 @@ export async function runInitOperationWorkflow(
           pid: options.pid,
           isPidAlive: options.isPidAlive,
           agentRunner: options.agentRunner,
+          loadPrompt: options.loadPrompt,
         }),
       ),
     };
@@ -114,6 +115,7 @@ export async function runPreparedAbsorbOperationWorkflow(
           pid: options.pid,
           isPidAlive: options.isPidAlive,
           agentRunner: options.agentRunner,
+          loadPrompt: options.loadPrompt,
         }),
       ),
     };
@@ -148,6 +150,7 @@ export async function runGardenOperationWorkflow(
           pid: options.pid,
           isPidAlive: options.isPidAlive,
           agentRunner: options.agentRunner,
+          loadPrompt: options.loadPrompt,
         }),
       ),
     };

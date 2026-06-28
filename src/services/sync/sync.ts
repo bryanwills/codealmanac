@@ -58,6 +58,7 @@ export async function runSyncWorkflow(
               pid: options.pid,
               isPidAlive: options.isPidAlive,
               agentRunner: options.agentRunner,
+              loadPrompt: options.loadPrompt,
             });
             if (result.status === "failed") throw result.error;
             if (result.status !== "completed") {

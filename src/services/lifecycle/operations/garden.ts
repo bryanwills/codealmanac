@@ -4,6 +4,7 @@ import { MissingWikiError } from "./errors.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
+  OperationPromptLoader,
   OperationRunResult,
   StartBackgroundJob,
   StartForegroundJob,
@@ -26,12 +27,14 @@ export interface GardenOperationOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: OperationPromptLoader;
 }
 
 export async function createGardenRunSpec(args: {
   repoRoot: string;
   provider?: OperationProviderSelection;
   context?: string;
+  loadPrompt: OperationPromptLoader;
 }): Promise<OperationSpec> {
   return createOperationRunSpec({
     operation: "garden",
@@ -41,6 +44,7 @@ export async function createGardenRunSpec(args: {
     context: args.context,
     targetKind: "wiki",
     targetPaths: [`${args.repoRoot}/.almanac`],
+    loadPrompt: args.loadPrompt,
   });
 }
 
@@ -53,6 +57,7 @@ export async function runGardenOperation(
     repoRoot,
     provider: options.provider,
     context: options.context,
+    loadPrompt: options.loadPrompt,
   });
 
   return runOperationProcess({

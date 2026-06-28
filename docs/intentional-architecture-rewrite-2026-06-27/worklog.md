@@ -1430,3 +1430,11 @@ Two-hundred-sixth production slice:
 - Changed automation, migration, setup automation, setup auto-update, and uninstall CLI edges to use the app runtime instead of importing `src/platform/automation/scheduler.ts` directly.
 - Kept edges responsible for argv/options/home/path/env values while app composition owns the concrete launchd scheduler wiring.
 - Strengthened architecture-boundary tests so edge automation surfaces cannot reintroduce direct launchd scheduler imports.
+
+Two-hundred-seventh production slice:
+
+- Moved bundled prompt file discovery and reading out of `src/agent/prompts.ts` and into `src/platform/prompts.ts`.
+- Added `src/shared/operation-prompts.ts` for the operation prompt-name catalog, prompt loader contract, and pure prompt-section joining helper.
+- Threaded an injected prompt loader through lifecycle operation specs, lifecycle workflows, prepared Absorb from sync, CLI operation commands, sync commands, and `src/app/cli-runtime.ts`.
+- Kept lifecycle services responsible for operation prompt composition while app composition wires the concrete bundled prompt loader.
+- Strengthened architecture-boundary tests so lifecycle services cannot reintroduce direct bundled prompt file mechanics.

@@ -7,8 +7,10 @@ import {
   runBuildOperation as runBuildOperationCommand,
   type BuildOperationOptions,
 } from "../src/services/lifecycle/operations/build.js";
+import { loadBundledPrompt } from "../src/platform/prompts.js";
 import { runConfigSet } from "../src/cli/commands/config.js";
 import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {
@@ -22,12 +24,13 @@ const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
 });
 
 function runBuildOperation(
-  options: Omit<BuildOperationOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive"> & {
+  options: Omit<BuildOperationOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
     agentRunner?: JobAgentRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: BuildOperationOptions["workerProgram"];
     pid?: number;
     isPidAlive?: BuildOperationOptions["isPidAlive"];
+    loadPrompt?: OperationPromptLoader;
   },
 ) {
   return runBuildOperationCommand({
@@ -37,6 +40,7 @@ function runBuildOperation(
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? loadBundledPrompt,
   });
 }
 
@@ -48,6 +52,7 @@ describe("build operation", () => {
         repoRoot: repo,
         provider: { id: "codex", model: "gpt-5.4", effort: "high" },
         context: "Extra context.",
+        loadPrompt: loadBundledPrompt,
       });
 
       expect(spec).toMatchObject({
@@ -102,7 +107,10 @@ describe("build operation", () => {
       })).resolves.toMatchObject({ exitCode: 0 });
       const repo = await makeRepo(home, "build-no-auto-commit");
 
-      const spec = await createBuildRunSpec({ repoRoot: repo });
+      const spec = await createBuildRunSpec({
+        repoRoot: repo,
+        loadPrompt: loadBundledPrompt,
+      });
 
       expect(spec.prompt).toContain("Auto-commit wiki source changes: disabled");
       expect(spec.prompt).toContain("Do not create a git commit for wiki changes");

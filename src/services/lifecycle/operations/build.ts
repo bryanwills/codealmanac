@@ -4,6 +4,7 @@ import { countWikiPageFiles } from "../../../stores/wiki-files/pages.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
+  OperationPromptLoader,
   OperationRunResult,
   StartBackgroundJob,
   StartForegroundJob,
@@ -28,12 +29,14 @@ export interface BuildOperationOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: OperationPromptLoader;
 }
 
 export async function createBuildRunSpec(args: {
   repoRoot: string;
   provider?: OperationProviderSelection;
   context?: string;
+  loadPrompt: OperationPromptLoader;
 }): Promise<OperationSpec> {
   return createOperationRunSpec({
     operation: "build",
@@ -41,6 +44,7 @@ export async function createBuildRunSpec(args: {
     provider: args.provider,
     repoRoot: args.repoRoot,
     context: args.context,
+    loadPrompt: args.loadPrompt,
     targetKind: "repo",
     targetPaths: [args.repoRoot],
   });
@@ -66,6 +70,7 @@ export async function runBuildOperation(
     repoRoot,
     provider: options.provider,
     context: options.context,
+    loadPrompt: options.loadPrompt,
   });
 
   return runOperationProcess({

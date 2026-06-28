@@ -6,7 +6,9 @@ import {
   runGardenOperation as runGardenOperationCommand,
   type GardenOperationOptions,
 } from "../src/services/lifecycle/operations/garden.js";
+import { loadBundledPrompt } from "../src/platform/prompts.js";
 import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {
@@ -20,12 +22,13 @@ const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
 });
 
 function runGardenOperation(
-  options: Omit<GardenOperationOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive"> & {
+  options: Omit<GardenOperationOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
     agentRunner?: JobAgentRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: GardenOperationOptions["workerProgram"];
     pid?: number;
     isPidAlive?: GardenOperationOptions["isPidAlive"];
+    loadPrompt?: OperationPromptLoader;
   },
 ) {
   return runGardenOperationCommand({
@@ -35,6 +38,7 @@ function runGardenOperation(
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? loadBundledPrompt,
   });
 }
 
@@ -46,6 +50,7 @@ describe("garden operation", () => {
         repoRoot: repo,
         provider: { id: "codex", model: "gpt-5.4" },
         context: "Focus on stale pages.",
+        loadPrompt: loadBundledPrompt,
       });
 
       expect(spec).toMatchObject({

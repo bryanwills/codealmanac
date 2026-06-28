@@ -9,6 +9,7 @@ import {
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
+  OperationPromptLoader,
   OperationRunResult,
   StartBackgroundJob,
   StartForegroundJob,
@@ -42,6 +43,7 @@ export interface StartAbsorbRunOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: OperationPromptLoader;
 }
 
 export interface AbsorbRunStart {
@@ -81,6 +83,7 @@ export async function startAbsorbRun(
     pid: options.pid,
     isPidAlive: options.isPidAlive,
     agentRunner: options.agentRunner,
+    loadPrompt: options.loadPrompt,
   });
   return {
     jobId: result.jobId,

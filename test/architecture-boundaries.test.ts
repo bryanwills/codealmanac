@@ -1721,6 +1721,13 @@ describe("architecture boundaries", () => {
     const lifecycleWorkflowTypes = await readSource(
       "src/services/lifecycle/workflow-types.ts",
     );
+    const lifecycleOperationRun = await readSource(
+      "src/services/lifecycle/operations/run.ts",
+    );
+    const platformPrompts = await readSource("src/platform/prompts.ts");
+    const sharedOperationPrompts = await readSource(
+      "src/shared/operation-prompts.ts",
+    );
     const lifecycleAbsorbIndex = await readSource("src/services/lifecycle/absorb/index.ts");
     const lifecycleAbsorbInput = await readSource("src/services/lifecycle/absorb/input.ts");
     const platformGithubSource = await readSource("src/platform/github/source.ts");
@@ -1738,6 +1745,9 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/services/lifecycle/workflow-types.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/operations"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/lifecycle/absorb"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/prompts.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/prompts.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/shared/operation-prompts.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/github/source.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/sources/absorb.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/operations"))).toBe(false);
@@ -1776,6 +1786,15 @@ describe("architecture boundaries", () => {
     expect(lifecycleWorkflows).toContain("initOperationContext");
     expect(lifecycleWorkflows).toContain("Command context:");
     expect(lifecycleWorkflows).toContain("runPreparedAbsorbOperationWorkflow");
+    expect(lifecycleWorkflowTypes).toContain("LifecyclePromptLoader");
+    expect(lifecycleOperationRun).toContain("joinPromptSections");
+    expect(lifecycleOperationRun).toContain("loadPrompt: OperationPromptLoader");
+    expect(lifecycleOperationRun).not.toContain("agent/prompts");
+    expect(lifecycleOperationRun).not.toContain("platform/prompts");
+    expect(platformPrompts).toContain("loadBundledPrompt");
+    expect(platformPrompts).toContain("resolvePromptsDir");
+    expect(sharedOperationPrompts).toContain("OPERATION_PROMPT_NAMES");
+    expect(sharedOperationPrompts).toContain("OperationPromptLoader");
     expect(lifecycleResults).toContain("lifecycleOperationRunResultFromOperation");
     expect(lifecycleResults).toContain("interface LifecycleOperationFailure");
     expect(lifecycleAbsorbIndex).not.toContain("platform/github");
@@ -1785,8 +1804,11 @@ describe("architecture boundaries", () => {
     expect(platformAbsorbSourceResolver).toContain("ResolveSourceFn");
     expect(lifecycleCliEdge).toContain("createCliRuntime");
     expect(lifecycleCliEdge).toContain("resolveSource: runtime.resolveAbsorbSource");
+    expect(lifecycleCliEdge).toContain("loadPrompt: runtime.loadPrompt");
     expect(lifecycleCliEdge).not.toContain("platform/sources");
+    expect(lifecycleCliEdge).not.toContain("platform/prompts");
     expect(appCliRuntime).toContain("createPlatformAbsorbSourceResolver");
+    expect(appCliRuntime).toContain("loadBundledPrompt");
     expect(platformGithubSource).not.toContain("services/lifecycle");
     expect(syncService).toContain("runPreparedAbsorbOperationWorkflow");
     expect(syncService).not.toContain("services/lifecycle/operations");

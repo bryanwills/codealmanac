@@ -1,7 +1,7 @@
-import { joinPrompts, loadPrompt } from "../../../agent/prompts.js";
 import type { AgentRuntimeEvent } from "../../../shared/agent-runtime/events.js";
 import type { FinalOutputSpec } from "../../../shared/agent-runtime/final-output.js";
 import type { OperationKind, OperationSpec } from "../../../shared/operation-spec.js";
+import { joinPromptSections } from "../../../shared/operation-prompts.js";
 import type { ToolRequest } from "../../../shared/agent-runtime/tools.js";
 import type { JobAgentRunner } from "../../jobs/runtime/agent-runner.js";
 import { startForegroundJob } from "../../jobs/runtime/start.js";
@@ -11,6 +11,7 @@ import { readConfig } from "../../../stores/config/index.js";
 import { PROVIDER_DEFINITIONS } from "../../../shared/agent-provider.js";
 import type {
   OperationProviderSelection,
+  OperationPromptLoader,
   OperationRunResult,
   StartBackgroundJob,
   StartForegroundJob,
@@ -42,13 +43,14 @@ export async function createOperationRunSpec(args: {
   targetPaths?: string[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
+  loadPrompt: OperationPromptLoader;
 }): Promise<OperationSpec> {
   const basePrompts = await Promise.all(
-    BASE_PROMPTS.map((name) => loadPrompt(name)),
+    BASE_PROMPTS.map((name) => args.loadPrompt(name)),
   );
-  const operationPrompt = await loadPrompt(args.promptName);
+  const operationPrompt = await args.loadPrompt(args.promptName);
   const sourceControl = await sourceControlRuntimeContext(args.repoRoot);
-  const prompt = joinPrompts([
+  const prompt = joinPromptSections([
     ...basePrompts,
     operationPrompt,
     operationRuntimeContext(args.repoRoot),

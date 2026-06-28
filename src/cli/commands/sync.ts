@@ -22,6 +22,7 @@ export interface SyncCommandOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: SyncWorkflowOptions["loadPrompt"];
   transcriptRuntime: SyncWorkflowOptions["transcriptRuntime"];
 }
 
@@ -57,6 +58,7 @@ function toSyncWorkflowOptions(
     pid: options.pid,
     isPidAlive: options.isPidAlive,
     agentRunner: options.agentRunner,
+    loadPrompt: options.loadPrompt,
     transcriptRuntime: options.transcriptRuntime,
   };
 }

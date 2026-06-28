@@ -5,6 +5,7 @@ import { MissingWikiError } from "./errors.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
+  OperationPromptLoader,
   OperationRunResult,
   StartBackgroundJob,
   StartForegroundJob,
@@ -31,6 +32,7 @@ export interface AbsorbOperationOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: OperationPromptLoader;
 }
 
 export async function createAbsorbRunSpec(args: {
@@ -41,6 +43,7 @@ export async function createAbsorbRunSpec(args: {
   targetPaths?: string[];
   networkAccess?: boolean;
   output?: FinalOutputSpec;
+  loadPrompt: OperationPromptLoader;
 }): Promise<OperationSpec> {
   return createOperationRunSpec({
     operation: "absorb",
@@ -52,6 +55,7 @@ export async function createAbsorbRunSpec(args: {
     targetPaths: args.targetPaths,
     networkAccess: args.networkAccess,
     output: args.output,
+    loadPrompt: args.loadPrompt,
   });
 }
 
@@ -68,6 +72,7 @@ export async function runAbsorbOperation(
     targetPaths: options.targetPaths,
     networkAccess: options.networkAccess,
     output: options.output,
+    loadPrompt: options.loadPrompt,
   });
 
   return runOperationProcess({

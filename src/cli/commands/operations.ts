@@ -10,6 +10,7 @@ import {
   type LifecycleOperationBackgroundStarter,
   type LifecycleOperationEventHandler,
   type LifecycleOperationForegroundStarter,
+  type LifecyclePromptLoader,
 } from "../../services/lifecycle/index.js";
 import type { JobAgentRunner } from "../../services/jobs/runtime/agent-runner.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
@@ -35,6 +36,7 @@ export interface InitCommandOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: LifecyclePromptLoader;
 }
 
 export interface AbsorbCommandOptions {
@@ -52,6 +54,7 @@ export interface AbsorbCommandOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: LifecyclePromptLoader;
   resolveSource?: LifecycleAbsorbSourceResolver;
 }
 
@@ -69,6 +72,7 @@ export interface GardenCommandOptions {
   pid: number;
   isPidAlive: IsPidAlive;
   agentRunner: JobAgentRunner;
+  loadPrompt: LifecyclePromptLoader;
 }
 
 export async function runInitCommand(
@@ -118,6 +122,7 @@ function toInitOperationWorkflowOptions(
     pid: options.pid,
     isPidAlive: options.isPidAlive,
     agentRunner: options.agentRunner,
+    loadPrompt: options.loadPrompt,
   };
 }
 
@@ -139,6 +144,7 @@ function toAbsorbOperationWorkflowOptions(
     pid: options.pid,
     isPidAlive: options.isPidAlive,
     agentRunner: options.agentRunner,
+    loadPrompt: options.loadPrompt,
     resolveSource: options.resolveSource,
   };
 }
@@ -160,5 +166,6 @@ function toGardenOperationWorkflowOptions(
     pid: options.pid,
     isPidAlive: options.isPidAlive,
     agentRunner: options.agentRunner,
+    loadPrompt: options.loadPrompt,
   };
 }

@@ -12,6 +12,7 @@ import {
 } from "../src/cli/commands/operations.js";
 import { parseLifecycleProviderSelection } from "../src/services/lifecycle/index.js";
 import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { writeConfig } from "../src/stores/config/index.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 
@@ -25,13 +26,16 @@ const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
   result: "done",
 });
 
+const TEST_PROMPT_LOADER: OperationPromptLoader = async (name) => `${name} prompt`;
+
 function runInitCommand(
-  options: Omit<InitCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive"> & {
+  options: Omit<InitCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
     agentRunner?: JobAgentRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: InitCommandOptions["workerProgram"];
     pid?: number;
     isPidAlive?: InitCommandOptions["isPidAlive"];
+    loadPrompt?: OperationPromptLoader;
   },
 ) {
   return runInitCommandHandler({
@@ -41,16 +45,18 @@ function runInitCommand(
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? TEST_PROMPT_LOADER,
   });
 }
 
 function runAbsorbCommand(
-  options: Omit<AbsorbCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive"> & {
+  options: Omit<AbsorbCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
     agentRunner?: JobAgentRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: AbsorbCommandOptions["workerProgram"];
     pid?: number;
     isPidAlive?: AbsorbCommandOptions["isPidAlive"];
+    loadPrompt?: OperationPromptLoader;
   },
 ) {
   return runAbsorbCommandHandler({
@@ -60,16 +66,18 @@ function runAbsorbCommand(
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? TEST_PROMPT_LOADER,
   });
 }
 
 function runGardenCommand(
-  options: Omit<GardenCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive"> & {
+  options: Omit<GardenCommandOptions, "agentRunner" | "workerEnvironment" | "workerProgram" | "pid" | "isPidAlive" | "loadPrompt"> & {
     agentRunner?: JobAgentRunner;
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: GardenCommandOptions["workerProgram"];
     pid?: number;
     isPidAlive?: GardenCommandOptions["isPidAlive"];
+    loadPrompt?: OperationPromptLoader;
   },
 ) {
   return runGardenCommandHandler({
@@ -79,6 +87,7 @@ function runGardenCommand(
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? TEST_PROMPT_LOADER,
   });
 }
 

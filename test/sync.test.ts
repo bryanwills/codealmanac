@@ -9,6 +9,7 @@ import {
 } from "../src/cli/commands/sync.js";
 import { createPlatformSyncTranscriptRuntime } from "../src/platform/transcripts/runtime.js";
 import type { JobAgentRunner } from "../src/services/jobs/runtime/agent-runner.js";
+import type { OperationPromptLoader } from "../src/shared/operation-prompts.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 import { writeConfig } from "../src/stores/config/index.js";
 import { jobRecordPath, writeJobRecord } from "../src/stores/jobs/index.js";
@@ -23,6 +24,8 @@ const TEST_AGENT_RUNNER: JobAgentRunner = async () => ({
   result: "done",
 });
 
+const TEST_PROMPT_LOADER: OperationPromptLoader = async (name) => `${name} prompt`;
+
 type SyncCommandTestOptions = Omit<
   SyncCommandOptions,
   | "agentRunner"
@@ -30,6 +33,7 @@ type SyncCommandTestOptions = Omit<
   | "workerProgram"
   | "pid"
   | "isPidAlive"
+  | "loadPrompt"
   | "transcriptRuntime"
 > & {
   agentRunner?: JobAgentRunner;
@@ -37,6 +41,7 @@ type SyncCommandTestOptions = Omit<
   workerProgram?: SyncCommandOptions["workerProgram"];
   pid?: number;
   isPidAlive?: SyncCommandOptions["isPidAlive"];
+  loadPrompt?: OperationPromptLoader;
   transcriptRuntime?: SyncCommandOptions["transcriptRuntime"];
 };
 
@@ -48,6 +53,7 @@ function runSyncCommand(options: SyncCommandTestOptions) {
     pid: options.pid ?? 123,
     isPidAlive: options.isPidAlive ?? (() => true),
     agentRunner: options.agentRunner ?? TEST_AGENT_RUNNER,
+    loadPrompt: options.loadPrompt ?? TEST_PROMPT_LOADER,
     transcriptRuntime: options.transcriptRuntime ??
       createPlatformSyncTranscriptRuntime(),
   });

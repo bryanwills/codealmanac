@@ -33,6 +33,7 @@ export function registerSyncCommands(program: Command): void {
         pid: process.pid,
         isPidAlive: runtime.isPidAlive,
         agentRunner: runtime.agentRunner,
+        loadPrompt: runtime.loadPrompt,
         transcriptRuntime: runtime.transcriptRuntime,
         startBackground: runtime.startBackground,
       });
@@ -69,6 +70,7 @@ export function registerSyncCommands(program: Command): void {
         pid: process.pid,
         isPidAlive: runtime.isPidAlive,
         agentRunner: runtime.agentRunner,
+        loadPrompt: runtime.loadPrompt,
         transcriptRuntime: runtime.transcriptRuntime,
       });
       emit(result);
