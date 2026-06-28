@@ -1,15 +1,14 @@
-export interface SetupGlobalInstallStateOptions {
-  installPath?: string | null;
-}
+import type {
+  SetupGlobalInstallRuntime,
+  SetupGlobalInstallState,
+  SetupGlobalInstallStateOptions,
+} from "../../shared/setup-runtime.js";
 
-export interface SetupGlobalInstallState {
-  ephemeral: boolean;
-}
-
-export interface SetupGlobalInstallRuntime {
-  readState(options?: SetupGlobalInstallStateOptions): SetupGlobalInstallState;
-  install(): Promise<void>;
-}
+export type {
+  SetupGlobalInstallRuntime,
+  SetupGlobalInstallState,
+  SetupGlobalInstallStateOptions,
+} from "../../shared/setup-runtime.js";
 
 export interface RunSetupGlobalInstallOptions {
   runtime: SetupGlobalInstallRuntime;

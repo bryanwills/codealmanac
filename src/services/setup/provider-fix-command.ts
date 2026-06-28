@@ -1,10 +1,12 @@
-export type SetupProviderFixCommandResult =
-  | { ok: true }
-  | { ok: false; error: string };
+import type {
+  SetupProviderFixCommandResult,
+  SetupProviderFixCommandRunner,
+} from "../../shared/setup-runtime.js";
 
-export type SetupProviderFixCommandRunner = (
-  command: string,
-) => Promise<SetupProviderFixCommandResult>;
+export type {
+  SetupProviderFixCommandResult,
+  SetupProviderFixCommandRunner,
+} from "../../shared/setup-runtime.js";
 
 export function normalizeSetupProviderFixCommand(
   fixCommand: string | null,

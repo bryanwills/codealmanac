@@ -7,10 +7,8 @@ import { runInheritedShellCommand } from "../shell.js";
 import type {
   SetupGlobalInstallRuntime,
   SetupGlobalInstallStateOptions,
-} from "../../services/setup/global-install.js";
-import type {
   SetupProviderFixCommandRunner,
-} from "../../services/setup/provider-fix-command.js";
+} from "../../shared/setup-runtime.js";
 
 export function createPlatformSetupGlobalInstallRuntime(options: {
   spawnGlobalInstall?: () => Promise<void>;

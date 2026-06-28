@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 214 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 215 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -65,6 +65,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved diagnostic fact contracts into `src/shared/diagnostics.ts`, so platform probes and diagnostics services meet through a neutral contract instead of a service-to-platform type import.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
+- Moved setup runtime ports into `src/shared/setup-runtime.ts`, so platform setup mechanics no longer import setup service files for contract types.
 - Moved setup shell/global-install mechanics behind `src/platform/setup/runtime.ts`, so setup services own contracts/results while the CLI setup edge owns concrete runtime composition.
 - Split the automation task catalog out of platform launchd mechanics: task meaning/defaults live under `src/services/automation/tasks.ts`, while plist/log paths live under `src/platform/automation/paths.ts`.
 - Moved automation scheduler mechanics behind `src/services/automation/scheduler.ts`, with launchd implementation in `src/platform/automation/scheduler.ts`; automation services no longer import `src/platform/automation/`.
@@ -89,16 +90,16 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved the `SyncTranscriptRuntime` port out of `src/services/sync/types.ts` and into `src/shared/transcripts.ts`, so platform transcript runtime depends on shared transcript contracts rather than sync service types.
+The latest slice moved setup runtime ports into `src/shared/setup-runtime.ts`, so platform setup mechanics depend on shared setup contracts instead of setup service files.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/sync.test.ts`
+- `npx vitest run test/architecture-boundaries.test.ts test/setup.test.ts test/setup-plan.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js sync --help`
+- `node dist/launcher.js setup --help`
 
 ## Immediate Next Work
 

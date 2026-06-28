@@ -1495,3 +1495,11 @@ Two-hundred-fourteenth production slice:
 - Changed `src/platform/transcripts/runtime.ts` and `src/app/cli-runtime.ts` to depend on the shared transcript contract instead of the sync service type barrel.
 - Kept sync workflow request/result types under `src/services/sync/types.ts`, while the platform/service transcript port now lives beside the transcript data contracts it carries.
 - Strengthened architecture-boundary tests so platform transcript runtime no longer imports `services/sync`.
+
+Two-hundred-fifteenth production slice:
+
+- Added `src/shared/setup-runtime.ts` for setup runtime ports shared by setup services, setup CLI edges, and platform setup mechanics.
+- Moved `SetupGlobalInstallRuntime`, global-install state facts, `SetupProviderFixCommandRunner`, and provider-fix command results out of setup service implementation files and into the shared setup-runtime contract.
+- Kept `src/services/setup/global-install.ts` and `src/services/setup/provider-fix-command.ts` as product helpers for setup state/result shaping and fix-command normalization.
+- Changed `src/platform/setup/runtime.ts` to import only shared setup contracts instead of setup service files.
+- Strengthened architecture-boundary tests so setup service helpers do not own the runtime interfaces and platform setup runtime no longer imports setup services.
