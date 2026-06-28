@@ -101,6 +101,10 @@ Compatibility facades can remain only when callers still need a stable import. N
 
 Wiki services own registry product verbs such as listing and dropping wikis. The registry store owns path reachability checks because that is filesystem state tied to persisted registry entries, not a wiki product decision.
 
+### Worker-program shape is a shared contract
+
+The CLI edge owns discovering the current Node command and entrypoint. Lifecycle services pass that worker-program value through their workflows, and the job runtime validates that an entrypoint exists before queueing a detached worker. `src/platform/jobs/worker-process.ts` owns only the mechanics of spawning the detached process. The shared shape lives in `src/shared/worker-program.ts` so lifecycle code does not import platform worker-process mechanics and platform code does not import service workflow types.
+
 ### Guard boundaries with tests
 
 Architecture-boundary tests are part of the rewrite, not decoration. When a smell is removed, add or update a test that makes the old leak harder to reintroduce.

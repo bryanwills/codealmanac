@@ -1,14 +1,11 @@
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 
+import type { JobWorkerProgram } from "../../shared/worker-program.js";
+
 export interface BackgroundChild {
   pid?: number;
   unref?: () => void;
-}
-
-export interface JobWorkerProgram {
-  command: string;
-  entrypoint: string;
 }
 
 export type SpawnBackgroundFn = (args: {

@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has 231 committed rewrite commits past `dev`. The worklog records 183 production slices so far.
+The branch has 232 committed rewrite commits past `dev`. The worklog records 184 production slices so far.
 
-The diff is broad: 473 files changed, with 23,819 insertions and 12,888 deletions.
+The diff is broad: 473 files changed, with 23,841 insertions and 12,888 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -36,6 +36,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved local Claude/Codex transcript discovery, transcript snapshot reads, and timestamp boundary parsing into `src/platform/transcripts/` and removed the old top-level `src/sync/` source bucket.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
+- Moved worker-program shape into `src/shared/worker-program.ts` so lifecycle services no longer import platform worker-process mechanics.
 - Moved GitHub source resolution mechanics into `src/platform/github/`.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
@@ -59,9 +60,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved registry path reachability checks from wiki services into `src/stores/wiki-registry/store.ts`. `listReachableWikis()` now filters through the registry store, and auto-registration no longer imports filesystem APIs directly.
+The latest slice moved the background job worker-program contract into `src/shared/worker-program.ts`. CLI edges create the current worker program, lifecycle workflows pass the shared contract, job runtime validates it, and `src/platform/jobs/worker-process.ts` owns only detached process spawning.
 
-Verification passed: focused registry/list/autoregister/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js list --help`, and `node dist/codealmanac.js list --json`.
+Verification passed: focused jobs/lifecycle/sync/operation-command/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js absorb --help`, and `node dist/codealmanac.js sync --help`.
 
 ## Immediate Next Work
 

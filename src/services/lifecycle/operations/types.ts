@@ -1,9 +1,9 @@
 import type { AgentRuntimeProviderId } from "../../../agent/runtime/types.js";
 import type { OperationSpec } from "./spec.js";
 import type { AgentRuntimeEvent } from "../../../agent/runtime/events.js";
-import type { JobWorkerProgram } from "../../../platform/jobs/worker-process.js";
 import type { StartBackgroundJobResult } from "../../jobs/runtime/background-start.js";
 import type { StartJobResult } from "../../jobs/runtime/executor.js";
+import type { JobWorkerProgram } from "../../../shared/worker-program.js";
 
 export type { JobWorkerProgram };
 

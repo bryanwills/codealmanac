@@ -5,7 +5,7 @@ import type { OperationKind, OperationSpec } from "./spec.js";
 import type { ToolRequest } from "../../../agent/runtime/tools.js";
 import { startBackgroundJob } from "../../jobs/runtime/background-start.js";
 import { startForegroundJob } from "../../jobs/runtime/start.js";
-import type { JobWorkerProgram } from "../../../platform/jobs/worker-process.js";
+import type { JobWorkerProgram } from "../../../shared/worker-program.js";
 import { readConfig } from "../../../stores/config/index.js";
 import { PROVIDER_DEFINITIONS } from "../../../agent/provider-id.js";
 import type {

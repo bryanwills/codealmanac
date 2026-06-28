@@ -1249,3 +1249,11 @@ One-hundred-eighty-third production slice:
 - Updated `src/services/wiki/registry.ts` to filter reachable wikis through the registry store instead of importing `existsSync`.
 - Removed the redundant filesystem double-check from `src/services/wiki/autoregistration.ts`; `findNearestAlmanacDir()` already proves the enclosing `.almanac/` path.
 - Strengthened boundary coverage so wiki registry services do not reintroduce direct filesystem reachability checks.
+
+One-hundred-eighty-fourth production slice:
+
+- Added `src/shared/worker-program.ts` as the neutral contract for a worker command plus entrypoint.
+- Updated CLI runtime discovery to return the shared worker-program shape.
+- Updated lifecycle workflows and operation types to import the shared contract instead of `src/platform/jobs/worker-process.ts`.
+- Kept detached worker spawning in `src/platform/jobs/worker-process.ts` and queued-job startup in `src/services/jobs/runtime/background-start.ts`.
+- Strengthened boundary coverage so lifecycle services cannot reintroduce the platform worker-process import.

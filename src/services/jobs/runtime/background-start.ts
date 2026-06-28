@@ -7,9 +7,9 @@ import {
 } from "../../../stores/jobs/index.js";
 import {
   startJobWorkerProcess,
-  type JobWorkerProgram,
   type SpawnBackgroundFn,
 } from "../../../platform/jobs/worker-process.js";
+import type { JobWorkerProgram } from "../../../shared/worker-program.js";
 import { createJobId } from "./ids.js";
 import {
   buildQueuedJobRecord,

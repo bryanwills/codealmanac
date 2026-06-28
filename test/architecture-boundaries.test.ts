@@ -796,21 +796,29 @@ describe("architecture boundaries", () => {
     const jobRecordLifecycle = await readSource(
       "src/services/jobs/record-lifecycle.ts",
     );
+    const workerProgram = await readSource("src/shared/worker-program.ts");
     const jobWorker = await readSource("src/edges/worker/job-worker.ts");
     const queueDrain = await readSource("src/services/jobs/runtime/queue-drain.ts");
     const backgroundStart = await readSource(
       "src/services/jobs/runtime/background-start.ts",
     );
     const backgroundProcess = await readSource("src/platform/jobs/worker-process.ts");
+    const lifecycleOperations = await readSource(
+      "src/services/lifecycle/operations/types.ts",
+    );
+    const lifecycleWorkflows = await readSource("src/services/lifecycle/workflows.ts");
+    const cliRuntime = await readSource("src/edges/cli/current-cli.ts");
 
     expect(existsSync(join(ROOT, "src/edges/worker/job-worker.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/queue-drain.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/worker.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/shared/worker-program.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/record-factory.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/index.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/jobs/record-lifecycle.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/background-start.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/jobs/worker-process.ts"))).toBe(true);
+    expect(workerProgram).toContain("export interface JobWorkerProgram");
     expect(jobStart).not.toContain("node:child_process");
     expect(jobStart).not.toContain("startJobWorkerProcess");
     expect(jobStart).not.toContain("writeJobSpec");
@@ -835,6 +843,13 @@ describe("architecture boundaries", () => {
     expect(backgroundStart).not.toContain("process.argv");
     expect(backgroundStart).toContain("workerEnvironment");
     expect(backgroundStart).toContain("workerProgram");
+    expect(backgroundStart).toContain("shared/worker-program.js");
+    expect(backgroundProcess).toContain("shared/worker-program.js");
+    expect(cliRuntime).toContain("shared/worker-program.js");
+    expect(lifecycleOperations).toContain("shared/worker-program.js");
+    expect(lifecycleOperations).not.toContain("platform/jobs/worker-process");
+    expect(lifecycleWorkflows).toContain("shared/worker-program.js");
+    expect(lifecycleWorkflows).not.toContain("platform/jobs/worker-process");
   });
 
   it("keeps job spec and log persistence in explicit stores", () => {

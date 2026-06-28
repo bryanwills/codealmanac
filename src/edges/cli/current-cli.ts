@@ -2,17 +2,14 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import type { JobWorkerProgram } from "../../shared/worker-program.js";
+
 export function currentCliProgramArguments(): string[] {
   const program = currentCliNodeProgram();
   return [program.command, program.entrypoint];
 }
 
-export interface CurrentCliNodeProgram {
-  command: string;
-  entrypoint: string;
-}
-
-export function currentCliNodeProgram(): CurrentCliNodeProgram {
+export function currentCliNodeProgram(): JobWorkerProgram {
   return {
     command: process.execPath,
     entrypoint: findPackageCliEntry() ?? currentCliEntrypointPath(),
