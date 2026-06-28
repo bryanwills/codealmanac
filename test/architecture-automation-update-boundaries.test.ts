@@ -39,6 +39,10 @@ describe("architecture boundaries: automation, update, config, and agents", () =
     const setupAutoUpdateStep = await readSource("src/edges/cli/setup/auto-update-step.ts");
     const uninstallEdge = await readSource("src/edges/cli/uninstall.ts");
     const launchdAutomationScheduler = await readSource("src/platform/automation/scheduler.ts");
+    const launchd = await readSource("src/platform/automation/launchd.ts");
+    const launchdPlist = await readSource(
+      "src/platform/automation/launchd-plist.ts",
+    );
     const automationPaths = await readSource("src/platform/automation/paths.ts");
     const automationInstallCommand = await readSource(
       "src/edges/cli/commands/automation/install.ts",
@@ -155,6 +159,20 @@ describe("architecture boundaries: automation, update, config, and agents", () =
     expect(launchdAutomationScheduler).toContain("automationLogPaths");
     expect(launchdAutomationScheduler).toContain("launchAgentPlistPath");
     expect(launchdAutomationScheduler).toContain("readLaunchdProgramArguments");
+    expect(launchdAutomationScheduler).toContain("launchd-plist.js");
+    expect(existsSync(join(ROOT, "src/platform/automation/launchd-plist.ts")))
+      .toBe(true);
+    expect(launchd).toContain("renderLaunchdPlist");
+    expect(launchd).toContain("readLaunchdStartInterval");
+    expect(launchd).not.toContain("function renderLaunchdPlist");
+    expect(launchd).not.toContain("function escapeXml");
+    expect(launchd).not.toContain("function readLaunchdStartInterval");
+    expect(launchd).not.toContain("automationLogsDir");
+    expect(launchdPlist).toContain("renderLaunchdPlist");
+    expect(launchdPlist).toContain("readLaunchdStartInterval");
+    expect(launchdPlist).toContain("readLaunchdProgramArguments");
+    expect(launchdPlist).toContain("function escapeXml");
+    expect(launchdPlist).toContain("function unescapeXml");
     expect(existsSync(join(ROOT, "src/platform/automation/job-plan.ts"))).toBe(
       false,
     );

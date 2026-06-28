@@ -1,9 +1,15 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { homedir, userInfo } from "node:os";
+import { userInfo } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+
+import {
+  readLaunchdStartInterval,
+  renderLaunchdPlist,
+  type LaunchdPlistDefinition,
+} from "./launchd-plist.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -16,15 +22,9 @@ const LAUNCHD_FALLBACK_PATHS = [
   "/sbin",
 ];
 
-export interface LaunchdJobDefinition {
+export interface LaunchdJobDefinition extends LaunchdPlistDefinition {
   label: string;
   plistPath: string;
-  programArguments: string[];
-  intervalSeconds: number;
-  environmentVariables: Record<string, string>;
-  stdoutPath: string;
-  stderrPath: string;
-  workingDirectory?: string;
 }
 
 export type ExecFn = (
@@ -47,10 +47,6 @@ export function launchdTarget(): string {
   return `gui/${userInfo().uid}`;
 }
 
-export function automationLogsDir(home: string = homedir()): string {
-  return path.join(home, ".almanac", "logs");
-}
-
 export function buildLaunchPath(home: string, envPath: string | undefined): string {
   const installPaths = (envPath ?? "")
     .split(":")
@@ -60,13 +56,19 @@ export function buildLaunchPath(home: string, envPath: string | undefined): stri
     path.join(home, ".local", "bin"),
     path.join(home, ".bun", "bin"),
   ];
-  return unique([...installPaths, ...userPaths, ...LAUNCHD_FALLBACK_PATHS]).join(":");
+  return unique([...installPaths, ...userPaths, ...LAUNCHD_FALLBACK_PATHS])
+    .join(":");
 }
 
 export async function ensureLaunchdDirs(jobs: LaunchdJobDefinition[]): Promise<void> {
   await Promise.all([
     ...jobs.map((job) => mkdir(path.dirname(job.plistPath), { recursive: true })),
-    ...unique(jobs.flatMap((job) => [path.dirname(job.stdoutPath), path.dirname(job.stderrPath)]))
+    ...unique(
+      jobs.flatMap((job) => [
+        path.dirname(job.stdoutPath),
+        path.dirname(job.stderrPath),
+      ]),
+    )
       .map((dir) => mkdir(dir, { recursive: true })),
   ]);
 }
@@ -113,7 +115,7 @@ export async function readLaunchdPlistStatus(
     installed: true,
     plistPath,
     contents,
-    intervalSeconds: readStartInterval(contents),
+    intervalSeconds: readLaunchdStartInterval(contents),
   };
 }
 
@@ -139,57 +141,6 @@ async function isLaunchdJobLoaded(
   } catch {
     return false;
   }
-}
-
-function renderLaunchdPlist(args: LaunchdJobDefinition): string {
-  const programArguments = args.programArguments
-    .map((arg) => `    <string>${escapeXml(arg)}</string>`)
-    .join("\n");
-  const environmentVariables = Object.entries(args.environmentVariables)
-    .map(([key, value]) => `    <key>${escapeXml(key)}</key>\n    <string>${escapeXml(value)}</string>`)
-    .join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>${escapeXml(args.label)}</string>
-  <key>ProgramArguments</key>
-  <array>
-${programArguments}
-  </array>
-  <key>StartInterval</key>
-  <integer>${args.intervalSeconds}</integer>
-${args.workingDirectory !== undefined
-    ? `  <key>WorkingDirectory</key>\n  <string>${escapeXml(args.workingDirectory)}</string>\n`
-    : ""}  <key>EnvironmentVariables</key>
-  <dict>
-${environmentVariables}
-  </dict>
-  <key>RunAtLoad</key>
-  <true/>
-  <key>StandardOutPath</key>
-  <string>${escapeXml(args.stdoutPath)}</string>
-  <key>StandardErrorPath</key>
-  <string>${escapeXml(args.stderrPath)}</string>
-</dict>
-</plist>
-`;
-}
-
-function readStartInterval(contents: string): number | null {
-  const value = contents.match(/<key>StartInterval<\/key>\s*<integer>(\d+)<\/integer>/)?.[1];
-  return value === undefined ? null : Number(value);
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
 }
 
 function unique(values: string[]): string[] {

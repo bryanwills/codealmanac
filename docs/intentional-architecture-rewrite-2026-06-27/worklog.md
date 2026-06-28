@@ -2076,3 +2076,12 @@ Two-hundred-eighty-ninth production slice:
 - Added `src/platform/install/bootstrap-npm.ts` for npm global-root discovery, global package install execution, and npm-install failure text.
 - Kept `global.ts` focused on the bare-`codealmanac` bootstrap flow: local setup bypass, global-root resolution, global install decision, and rerun through the global launcher.
 - Strengthened setup architecture tests so process spawning, package-root/version probing, and npm install mechanics stay in separate install-platform owners.
+
+Two-hundred-ninetieth production slice:
+
+- Split launchd plist XML mechanics out of `src/platform/automation/launchd.ts`.
+- Added `src/platform/automation/launchd-plist.ts` for plist XML rendering, XML escaping/unescaping, StartInterval parsing, and ProgramArguments parsing.
+- Kept `launchd.ts` focused on launchctl target construction, launch PATH construction, plist file writes/removals, directory creation, bootstrap/bootout, and loaded-state checks.
+- Updated the launchd scheduler adapter to consume `readLaunchdProgramArguments()` from the plist owner instead of parsing plist XML locally.
+- Removed the unused `automationLogsDir()` helper because automation log path ownership already lives in `src/platform/automation/paths.ts`.
+- Strengthened automation boundary tests so launchd action mechanics and plist XML mechanics stay separate.

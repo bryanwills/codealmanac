@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 340 committed rewrite commits past `dev`. The worklog records 289 production slices so far.
+The branch has more than 340 committed rewrite commits past `dev`. The worklog records 290 production slices so far.
 
 The diff is broad: more than 680 files changed, with tens of thousands of lines reshaped.
 
@@ -148,6 +148,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split setup input controls into line prompts, single-choice select, raw input capability, multi-select, and interruption handling.
 - Split viewer read-model route payloads into overview, page, topic, search/file, DB freshness, and type owners.
 - Split bare-`codealmanac` install bootstrap into flow coordination, package-root/version, npm global install, and process-spawn owners.
+- Split launchd plist XML mechanics from launchctl action mechanics in the automation platform adapter.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
@@ -164,12 +165,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split the bare-`codealmanac` install bootstrap bucket. `global.ts` now coordinates the bootstrap flow, while `bootstrap-package.ts`, `bootstrap-npm.ts`, and `bootstrap-process.ts` own package-root/version mechanics, npm mechanics, and child-process mechanics.
+The latest slice split launchd plist XML mechanics from launchctl action mechanics. `launchd.ts` now owns launchctl/file/action mechanics, while `launchd-plist.ts` owns XML rendering, escaping, and parsing.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/global-bootstrap.test.ts test/architecture-setup-boundaries.test.ts`
+- `npx vitest run test/automation.test.ts test/architecture-automation-update-boundaries.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`

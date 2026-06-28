@@ -7,6 +7,7 @@ import {
   writeLaunchdPlist,
   type ExecFn,
 } from "./launchd.js";
+import { readLaunchdProgramArguments } from "./launchd-plist.js";
 import { detectLegacyCaptureSweepAutomation } from "./legacy-capture.js";
 import { cleanupLegacyHooks } from "./legacy-hooks.js";
 import { automationLogPaths, launchAgentPlistPath } from "./paths.js";
@@ -87,18 +88,4 @@ function buildLaunchdAutomationJob(
     stdoutPath: logs.stdoutPath,
     stderrPath: logs.stderrPath,
   };
-}
-
-function readLaunchdProgramArguments(contents: string): string[] {
-  return [...contents.matchAll(/<string>([^<]*)<\/string>/g)]
-    .map((match) => unescapeXml(match[1] ?? ""));
-}
-
-function unescapeXml(value: string): string {
-  return value
-    .replaceAll("&apos;", "'")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&gt;", ">")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&amp;", "&");
 }
