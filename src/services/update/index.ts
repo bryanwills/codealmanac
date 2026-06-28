@@ -1,8 +1,8 @@
 export { runUpdateWorkflow } from "./update.js";
 export type {
   UpdateCheckFn,
+  UpdateInstallFn,
   UpdateInstallResult,
-  UpdateInstallSpawnFn,
   UpdateOptions,
   UpdateWorkflowResult,
 } from "./types.js";

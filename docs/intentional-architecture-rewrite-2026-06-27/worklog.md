@@ -1257,3 +1257,11 @@ One-hundred-eighty-fourth production slice:
 - Updated lifecycle workflows and operation types to import the shared contract instead of `src/platform/jobs/worker-process.ts`.
 - Kept detached worker spawning in `src/platform/jobs/worker-process.ts` and queued-job startup in `src/services/jobs/runtime/background-start.ts`.
 - Strengthened boundary coverage so lifecycle services cannot reintroduce the platform worker-process import.
+
+One-hundred-eighty-fifth production slice:
+
+- Replaced the update workflow's child-process-shaped `spawnFn` option with an `UpdateInstallFn` that returns a typed install result.
+- Removed `node:child_process`, `SpawnOptions`, and `UpdateInstallSpawnFn` from `src/services/update/types.ts`.
+- Kept npm command, spawn options, ENOENT handling, and nonzero-exit hints in `src/platform/update/install.ts`.
+- Moved npm spawn argument coverage into `test/update-install.test.ts`, while update workflow tests now inject installer outcomes.
+- Strengthened boundary coverage so update service types cannot reintroduce platform spawn mechanics.

@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 184 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 185 production slices so far.
 
-The diff is broad: 474 files changed, with 23,845 insertions and 12,888 deletions.
+The diff is broad: 475 files changed, with 23,969 insertions and 12,950 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -37,6 +37,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
 - Moved worker-program shape into `src/shared/worker-program.ts` so lifecycle services no longer import platform worker-process mechanics.
+- Reshaped update install injection so update services accept typed install results while platform update modules own npm child-process mechanics.
 - Moved GitHub source resolution mechanics into `src/platform/github/`.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
@@ -60,9 +61,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved the background job worker-program contract into `src/shared/worker-program.ts`. CLI edges create the current worker program, lifecycle workflows pass the shared contract, job runtime validates it, and `src/platform/jobs/worker-process.ts` owns only detached process spawning.
+The latest slice replaced the update workflow's child-process-shaped `spawnFn` option with a typed `installFn` contract. `src/services/update/` now sees installer outcomes as `{ output, errorOutput, code }`, while `src/platform/update/install.ts` owns the npm command, spawn options, ENOENT handling, and install-failure hints.
 
-Verification passed: focused jobs/lifecycle/sync/operation-command/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js absorb --help`, and `node dist/codealmanac.js sync --help`.
+Verification passed: focused update/update-install/boundary tests, `npm run lint`, full `npm test`, `npm run build`, `node dist/codealmanac.js --version`, `node dist/codealmanac.js update --help`, and `node dist/codealmanac.js config --help`.
 
 ## Immediate Next Work
 

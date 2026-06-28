@@ -1,5 +1,3 @@
-import type { SpawnOptions } from "node:child_process";
-
 export interface UpdateCheckRequest {
   installedVersion?: string;
   cacheSeconds?: number;
@@ -28,22 +26,13 @@ export type UpdateCheckFn = (
   request?: UpdateCheckRequest,
 ) => Promise<UpdateCheckResult>;
 
-export interface UpdateInstallChildProcess {
-  on(event: "error", listener: (error: NodeJS.ErrnoException) => void): this;
-  on(event: "exit", listener: (code: number | null) => void): this;
-}
-
-export type UpdateInstallSpawnFn = (
-  command: string,
-  args: readonly string[],
-  options?: SpawnOptions,
-) => UpdateInstallChildProcess;
-
 export interface UpdateInstallResult {
   output: string;
   errorOutput: string;
   code: number;
 }
+
+export type UpdateInstallFn = () => Promise<UpdateInstallResult>;
 
 export interface UpdateOptions {
   dismiss?: boolean;
@@ -55,7 +44,7 @@ export interface UpdateOptions {
   configPath?: string;
   installedVersion?: string;
   checkFn?: UpdateCheckFn;
-  spawnFn?: UpdateInstallSpawnFn;
+  installFn?: UpdateInstallFn;
   now?: () => number;
   lockPath?: string;
   lockStaleSeconds?: number;

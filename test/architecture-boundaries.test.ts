@@ -1004,6 +1004,7 @@ describe("architecture boundaries", () => {
     const updateServiceIndex = await readSource("src/services/update/index.ts");
     const updateService = await readSource("src/services/update/update.ts");
     const updateTypes = await readSource("src/services/update/types.ts");
+    const updateInstall = await readSource("src/platform/update/install.ts");
 
     expect(existsSync(join(ROOT, "src/cli/commands/update-render.ts"))).toBe(
       true,
@@ -1034,13 +1035,21 @@ describe("architecture boundaries", () => {
     expect(updateService).not.toContain("stdout:");
     expect(updateService).not.toContain("stderr:");
     expect(updateService).not.toContain("exitCode:");
+    expect(updateService).not.toContain("node:child_process");
+    expect(updateService).toContain("installFn");
     expect(updateService).toContain("updateInstallResultFromPlatform");
     expect(updateTypes).not.toContain(
       "UpdateInstallResult = PlatformInstallLatestPackageResult",
     );
     expect(updateTypes).not.toContain("typeof platformCheckForUpdate");
     expect(updateTypes).not.toContain("typeof nodeSpawn");
+    expect(updateTypes).not.toContain("UpdateInstallSpawnFn");
+    expect(updateTypes).not.toContain("SpawnOptions");
+    expect(updateTypes).not.toContain("node:child_process");
+    expect(updateTypes).toContain("UpdateInstallFn");
     expect(updateTypes).not.toContain("platform/update/check");
+    expect(updateInstall).toContain("node:child_process");
+    expect(updateInstall).toContain("spawnFn");
   });
 
   it("keeps config command adapters out of config persistence mechanics", async () => {

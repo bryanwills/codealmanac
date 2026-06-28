@@ -105,6 +105,10 @@ Wiki services own registry product verbs such as listing and dropping wikis. The
 
 The CLI edge owns discovering the current Node command and entrypoint. Lifecycle services pass that worker-program value through their workflows, and the job runtime validates that an entrypoint exists before queueing a detached worker. `src/platform/jobs/worker-process.ts` owns only the mechanics of spawning the detached process. The shared shape lives in `src/shared/worker-program.ts` so lifecycle code does not import platform worker-process mechanics and platform code does not import service workflow types.
 
+### Update services consume install outcomes
+
+The update service owns update workflow policy: check latest, honor dismissals, acquire the update lock, decide whether installation should run, refresh state after success, and return a user-facing result. The platform update install module owns npm mechanics: command, arguments, child-process spawn options, missing-npm handling, and install-failure hints. Tests for update workflow inject `UpdateInstallFn`, while tests for `src/platform/update/install.ts` inject spawn mechanics.
+
 ### Guard boundaries with tests
 
 Architecture-boundary tests are part of the rewrite, not decoration. When a smell is removed, add or update a test that makes the old leak harder to reintroduce.
