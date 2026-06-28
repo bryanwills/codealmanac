@@ -96,6 +96,7 @@ describe("architecture boundaries: setup and uninstall", () => {
     const setupOutput = await readSource("src/edges/cli/setup/output.ts");
     const setupInput = await readSource("src/edges/cli/setup/input.ts");
     const setupIndex = await readSource("src/edges/cli/setup/index.ts");
+    const setupFlow = await readSource("src/edges/cli/setup/setup-flow.ts");
     const setupNextSteps = await readSource(
       "src/edges/cli/setup/next-steps.ts",
     );
@@ -123,6 +124,7 @@ describe("architecture boundaries: setup and uninstall", () => {
       readSource("src/edges/cli/setup/global-install-step.ts"),
       readSource("src/edges/cli/setup/index.ts"),
       readSource("src/edges/cli/setup/instruction-target-choice.ts"),
+      readSource("src/edges/cli/setup/setup-flow.ts"),
       readSource("src/edges/cli/setup/setup-plan.ts"),
     ]);
 
@@ -151,6 +153,20 @@ describe("architecture boundaries: setup and uninstall", () => {
     expect(setupIndex).not.toContain("process.stdout");
     expect(setupIndex).not.toContain("process.stdin.isTTY");
     expect(setupIndex).toContain("makeSetupTheme(options.color !== false)");
+    expect(setupIndex).toContain("setup-flow.js");
+    expect(setupIndex).not.toContain("runGuidesSetupStep");
+    expect(setupIndex).not.toContain("runGlobalInstallStep");
+    expect(setupIndex).not.toContain("runAutoUpdateSetupStep");
+    expect(setupIndex).not.toContain("chooseDefaultAgent");
+    expect(setupIndex).not.toContain("runAutomationSetupStep");
+    expect(setupIndex).not.toContain("runAutoCommitSetupStep");
+    expect(setupFlow).toContain("buildSetupPlan");
+    expect(setupFlow).toContain("runGuidesSetupStep");
+    expect(setupFlow).toContain("runGlobalInstallStep");
+    expect(setupFlow).toContain("runAutoUpdateSetupStep");
+    expect(setupFlow).toContain("chooseDefaultAgent");
+    expect(setupFlow).toContain("runAutomationSetupStep");
+    expect(setupFlow).toContain("runAutoCommitSetupStep");
     expect(setupIndex).toContain("services/wiki/setup-state.js");
     expect(setupNextSteps).not.toContain("node:fs");
     expect(setupNextSteps).not.toContain("existsSync");

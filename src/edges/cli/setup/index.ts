@@ -4,16 +4,7 @@ export {
   hasCodexInstructions,
 } from "../../../services/setup/index.js";
 import { readSetupWikiState } from "../../../services/wiki/setup-state.js";
-import { chooseDefaultAgent } from "./agent-choice.js";
-import { runAutoCommitSetupStep } from "./auto-commit-step.js";
-import {
-  runAutoUpdateSetupStep,
-  skipAutoUpdateSetupStep,
-} from "./auto-update-step.js";
-import { runAutomationSetupStep } from "./automation-step.js";
 export { IMPORT_LINE, hasImportLine } from "./guides.js";
-import { runGlobalInstallStep } from "./global-install-step.js";
-import { runGuidesSetupStep } from "./guides-step.js";
 import { printNextSteps } from "./next-steps.js";
 import { isSetupInterrupted } from "./input.js";
 import {
@@ -22,10 +13,8 @@ import {
   printBadge,
   printBanner,
   stepDone,
-  whiteBold,
-  writeSetupDivider,
 } from "./output.js";
-import { buildSetupPlan } from "./setup-plan.js";
+import { runSetupFlow } from "./setup-flow.js";
 import type {
   SetupOptions,
   SetupResult,
@@ -92,109 +81,14 @@ export async function runSetup(
 
   let nextStepsMode: "hosted" | "self-managed" = "hosted";
   try {
-    const plan = await buildSetupPlan({ out, theme, interactive, options });
-    nextStepsMode = plan.selfManagedAutomation ? "self-managed" : "hosted";
-
-    const guides = await runGuidesSetupStep({
-      out,
-      theme,
+    const flow = await runSetupFlow({
       options,
-      targets: plan.instructionTargets,
-    });
-    if (!guides.ok) {
-      return { stdout: "", stderr: guides.stderr, exitCode: guides.exitCode };
-    }
-
-    const globalInstall = await runGlobalInstallStep({
-      input: options.stdin,
       out,
       theme,
       interactive,
-      options,
     });
-
-    if (plan.cliAutoUpdate) {
-      if (globalInstall.ephemeral && !globalInstall.durableGlobalInstall) {
-        skipAutoUpdateSetupStep(out, theme);
-      } else {
-        const update = await runAutoUpdateSetupStep({
-          out,
-          theme,
-          options: {
-            cwd,
-            homeDir: options.homeDir,
-            pathEnvironment: options.pathEnvironment,
-            cliProgramArguments: options.cliProgramArguments,
-            autoUpdateEvery: options.autoUpdateEvery,
-            updatePlistPath: options.updatePlistPath,
-            updateProgramArguments: globalInstall.ephemeral
-              ? globalUpdateProgramArguments()
-              : undefined,
-            automationExec: options.automationExec,
-          },
-        });
-        if (!update.ok) {
-          return { stdout: "", stderr: update.stderr, exitCode: update.exitCode };
-        }
-      }
-    }
-
-    if (plan.selfManagedAutomation) {
-      const agentChoice = await chooseDefaultAgent({
-        input: options.stdin,
-        out,
-        theme,
-        interactive,
-        requested: options.agent,
-        requestedModel: options.model,
-        readinessRuntime: requireAgentReadinessRuntime(options),
-        spawnCli: options.spawnCli,
-        runProviderFixCommand: requireSetupProviderFixCommand(options),
-        environment: options.environment,
-      });
-      if (!agentChoice.ok) {
-        return {
-          stdout: "",
-          stderr: `almanac: ${agentChoice.error}\n`,
-          exitCode: 1,
-        };
-      }
-      stepDone(
-        out,
-        theme,
-        `Agent: ${whiteBold(theme, agentChoice.provider)}` +
-          ` (${agentChoice.model ?? "provider default"})`,
-      );
-      writeSetupDivider(out, theme);
-
-      const automation = await runAutomationSetupStep({
-        out,
-        theme,
-        interactive,
-        options: { ...options, cwd },
-        ephemeral: globalInstall.ephemeral,
-        durableGlobalInstall: globalInstall.durableGlobalInstall,
-      });
-      if (!automation.ok) {
-        return { stdout: "", stderr: automation.stderr, exitCode: automation.exitCode };
-      }
-    }
-
-    if (plan.selfManagedAutomation || plan.autoCommit || options.autoCommit === false) {
-      await runAutoCommitSetupStep({
-        out,
-        theme,
-        interactive,
-        options: { autoCommit: plan.autoCommit },
-      });
-    } else if (plan.autoCommit === false) {
-      await runAutoCommitSetupStep({
-        out,
-        theme,
-        interactive: false,
-        options: { autoCommit: false },
-      });
-    }
+    if (!flow.ok) return flow.result;
+    nextStepsMode = flow.nextStepsMode;
   } catch (err: unknown) {
     if (isSetupInterrupted(err)) {
       return {
@@ -218,26 +112,4 @@ export async function runSetup(
   printNextSteps(out, theme, wikiState.existingPageCount, nextStepsMode);
 
   return { stdout: "", stderr: "", exitCode: 0 };
-}
-
-function globalUpdateProgramArguments(): string[] {
-  return ["/usr/bin/env", "almanac", "update"];
-}
-
-function requireAgentReadinessRuntime(
-  options: SetupOptions,
-): NonNullable<SetupOptions["agentReadinessRuntime"]> {
-  if (options.agentReadinessRuntime === undefined) {
-    throw new Error("setup requires an agent readiness runtime");
-  }
-  return options.agentReadinessRuntime;
-}
-
-function requireSetupProviderFixCommand(
-  options: SetupOptions,
-): NonNullable<SetupOptions["runProviderFixCommand"]> {
-  if (options.runProviderFixCommand === undefined) {
-    throw new Error("setup requires a provider fix-command runner");
-  }
-  return options.runProviderFixCommand;
 }

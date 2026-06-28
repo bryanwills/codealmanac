@@ -2005,3 +2005,10 @@ Two-hundred-eighty-first production slice:
 - Added `src/edges/cli/setup/multi-select.ts` as the setup edge owner for reusable raw multi-select stdin handling and rendering.
 - Kept instruction-target choice focused on setup instruction target defaults, requested-target dedupe, line-mode parsing, and target ordering.
 - Strengthened setup boundary tests so instruction target choice cannot regain raw-mode listener mechanics.
+
+Two-hundred-eighty-second production slice:
+
+- Split setup phase orchestration out of `src/edges/cli/setup/index.ts`.
+- Added `src/edges/cli/setup/setup-flow.ts` for sequencing setup plan resolution, guides, global install, auto-update, agent choice, automation, and auto-commit steps.
+- Kept `index.ts` focused on the public setup entrypoint: theme creation, no-op fast path, banner/badge, cancellation handling, completion marker, and next-step rendering.
+- Strengthened setup boundary tests so concrete setup step imports stay in `setup-flow.ts` instead of drifting back into the public entrypoint.

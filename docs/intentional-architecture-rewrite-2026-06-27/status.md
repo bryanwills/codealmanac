@@ -140,6 +140,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Split setup provider selection UI into a coordinator, an interactive readiness/sign-in loop, and provider-choice display helpers, so setup agent choice no longer mixes provider display text with model/config coordination.
 - Moved setup raw multi-select keyboard mechanics into a reusable setup input-control file, leaving instruction-target choice focused on target semantics and line-mode parsing.
+- Split setup phase orchestration into `setup-flow.ts`, leaving setup `index.ts` as the public TUI entry wrapper and next-step renderer.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
 - Split most command rendering into command-private render files.
 - Added architecture-boundary tests to stop old dependency leaks from returning.
