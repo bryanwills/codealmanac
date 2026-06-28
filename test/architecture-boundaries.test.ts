@@ -1732,6 +1732,10 @@ describe("architecture boundaries", () => {
     expect(setupServiceAgentChoice).not.toContain("parseAgentSelection");
     expect(setupServiceAgentChoice).not.toContain("ProviderSetupChoice");
     expect(setupServiceAgentChoice).not.toContain("interface SetupProviderView");
+    expect(setupAgentChoiceTypes).toContain("AgentReadinessSpawnCliFn");
+    expect(setupAgentChoiceTypes).not.toContain("interface SetupSpawnedProcess");
+    expect(setupAgentChoiceTypes).not.toContain("stdout: { on:");
+    expect(setupAgentChoiceTypes).not.toContain("stderr: { on:");
     expect(setupAgentChoiceTypes).toContain("interface SetupProviderView");
     expect(setupAgentChoiceView).toContain(
       "setupConfiguredModelsFromConfig",

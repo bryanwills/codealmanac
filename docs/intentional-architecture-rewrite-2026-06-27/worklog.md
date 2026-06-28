@@ -1803,3 +1803,10 @@ Two-hundred-fifty-fourth production slice:
 - Added `topicExistsInDb()` as the store-owned helper for checking the indexed `topics` table.
 - Kept topic workspace services responsible for combining editable `topics.yaml` state with indexed topic facts, not preparing SQL directly.
 - Strengthened architecture-boundary tests so topic workspace services cannot regain `db.prepare` or direct `topics` table SQL.
+
+Two-hundred-fifty-fifth production slice:
+
+- Removed setup's duplicate spawned-process interface from `src/services/setup/agent-choice-types.ts`.
+- Made `SetupSpawnCliFn` alias the shared `AgentReadinessSpawnCliFn` contract from `src/shared/agent-readiness.ts`.
+- Kept setup-specific agent-choice types focused on setup UI state and provider selection, not process stream shape.
+- Strengthened architecture-boundary tests so setup agent-choice types cannot regain stdout/stderr process machinery.

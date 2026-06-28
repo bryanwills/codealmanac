@@ -1,11 +1,6 @@
-export interface SetupSpawnedProcess {
-  stdout: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
-  stderr: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
-  on: (event: "close" | "error", cb: (arg: number | null | Error) => void) => void;
-  kill: (signal?: string) => void;
-}
+import type { AgentReadinessSpawnCliFn } from "../../shared/agent-readiness.js";
 
-export type SetupSpawnCliFn = (args: string[]) => SetupSpawnedProcess;
+export type SetupSpawnCliFn = AgentReadinessSpawnCliFn;
 
 export type SetupAgentProviderId = "claude" | "codex" | "cursor";
 export type SetupProviderReadiness = "ready" | "not-authenticated" | "missing";
