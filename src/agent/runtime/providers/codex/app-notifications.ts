@@ -1,9 +1,11 @@
 import type { AgentRuntimeEvent } from "../../../../shared/agent-runtime/events.js";
-import { parseJsonSchemaFinalOutputText } from "../../../../shared/agent-runtime/final-output.js";
+import {
+  mapCodexAgentMessageCompletion,
+  mapCodexAgentMessageDelta,
+} from "./app-agent-messages.js";
 import {
   actorForCodexThread,
   codexLifecycleEvents,
-  markAgentCompleted,
 } from "./actors.js";
 import { classifyCodexFailure } from "./failures.js";
 import {
@@ -40,8 +42,7 @@ export function mapCodexAppServerNotification(
   }
 
   if (notification.method === "item/agentMessage/delta") {
-    const delta = stringField(params, "delta");
-    return delta !== undefined ? [{ type: "text_delta", content: delta, actor }] : [];
+    return mapCodexAgentMessageDelta(params, actor);
   }
 
   if (notification.method === "item/plan/delta") {
@@ -76,53 +77,13 @@ export function mapCodexAppServerNotification(
   if (notification.method === "item/completed") {
     const item = asRecord(params.item);
     if (item.type === "agentMessage") {
-      const text = stringField(item, "text");
-      if (text !== undefined) {
-        const role = actor.role;
-        if (role === "root") {
-          state.result = text;
-          state.resultSourceThreadId = threadId;
-          state.resultSourceTurnId = turnId;
-          state.resultSourceRole = role;
-          if (state.outputSpec?.kind === "json_schema") {
-            try {
-              state.output = parseJsonSchemaFinalOutputText(state.outputSpec, text);
-            } catch (err: unknown) {
-              const message =
-                err instanceof Error ? err.message : String(err);
-              state.error = message;
-              state.failure = {
-                provider: "codex",
-                code: "codex.structured_output_invalid",
-                message,
-                raw: text,
-                details: { output: state.outputSpec.name },
-              };
-            }
-          }
-        }
-        const events: AgentRuntimeEvent[] = [{ type: "text", content: text, actor }];
-        if (role === "root" && state.failure?.code === "codex.structured_output_invalid") {
-          events.push({
-            type: "error",
-            error: state.failure.message,
-            failure: state.failure,
-            actor,
-          });
-        }
-        if (role === "helper" && threadId !== undefined) {
-          markAgentCompleted(state, threadId);
-          events.push({
-            type: "agent_completed",
-            threadId,
-            parentThreadId: state.agentParents?.[threadId] ?? null,
-            result: text,
-            actor,
-          });
-        }
-        return events;
-      }
-      return [];
+      return mapCodexAgentMessageCompletion({
+        item,
+        state,
+        threadId,
+        turnId,
+        actor,
+      });
     }
     const display = codexItemDisplay(item, "completed", { threadId, turnId });
     if (display === undefined) return [];

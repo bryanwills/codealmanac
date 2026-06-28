@@ -2445,6 +2445,12 @@ describe("architecture boundaries", () => {
     const appServerRootTurn = await readSource(
       "src/agent/runtime/providers/codex/app-server-root-turn.ts",
     );
+    const appNotifications = await readSource(
+      "src/agent/runtime/providers/codex/app-notifications.ts",
+    );
+    const appAgentMessages = await readSource(
+      "src/agent/runtime/providers/codex/app-agent-messages.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-config.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/server-requests.ts"))).toBe(true);
@@ -2452,6 +2458,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-rpc.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-process.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-root-turn.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-agent-messages.ts"))).toBe(true);
     expect(appServer).not.toContain("CODEALMANAC_CODEX_APP_SERVER");
     expect(appServer).not.toContain("function parsePositiveEnvInt");
     expect(appServer).not.toContain("interface PendingRequest");
@@ -2486,6 +2493,11 @@ describe("architecture boundaries", () => {
     expect(appServerRpc).toContain("function handleResponse");
     expect(appServerRootTurn).toContain("isCodexRootTurnCompletion");
     expect(appServerRootTurn).toContain("isCodexRootThreadNotification");
+    expect(appNotifications).not.toContain("parseJsonSchemaFinalOutputText");
+    expect(appNotifications).not.toContain("markAgentCompleted");
+    expect(appNotifications).toContain("mapCodexAgentMessageCompletion");
+    expect(appAgentMessages).toContain("parseJsonSchemaFinalOutputText");
+    expect(appAgentMessages).toContain("markAgentCompleted");
     expect(request).not.toContain("process.env");
     expect(request).toContain("environment: NodeJS.ProcessEnv");
   });
