@@ -6,7 +6,7 @@ import {
   defaultCapturePlistPath,
   defaultSyncPlistPath,
 } from "../automation/paths.js";
-import type { DiagnosticsAutomationStatus } from "./types.js";
+import type { DiagnosticsAutomationStatus } from "../../shared/diagnostics.js";
 
 export interface AutomationDiagnosticsProbeOptions {
   homeDir?: string;

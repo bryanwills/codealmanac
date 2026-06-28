@@ -2004,8 +2004,8 @@ describe("architecture boundaries", () => {
     const platformUpdateDiagnostics = await readSource(
       "src/platform/diagnostics/updates.ts",
     );
-    const platformDiagnosticTypes = await readSource(
-      "src/platform/diagnostics/types.ts",
+    const sharedDiagnosticTypes = await readSource(
+      "src/shared/diagnostics.ts",
     );
     const updateDiagnostics = await readSource("src/services/diagnostics/updates.ts");
     const diagnosticsTypes = await readSource("src/services/diagnostics/types.ts");
@@ -2039,6 +2039,9 @@ describe("architecture boundaries", () => {
       true,
     );
     expect(existsSync(join(ROOT, "src/platform/diagnostics/types.ts"))).toBe(
+      false,
+    );
+    expect(existsSync(join(ROOT, "src/shared/diagnostics.ts"))).toBe(
       true,
     );
     expect(doctorIndex).toContain("services/diagnostics/index.js");
@@ -2122,14 +2125,17 @@ describe("architecture boundaries", () => {
       platformAutomationDiagnostics,
       platformInstructionDiagnostics,
       platformUpdateDiagnostics,
-      platformDiagnosticTypes,
     ]) {
       expect(platformDiagnostics).not.toContain("services/diagnostics");
     }
-    expect(platformDiagnosticTypes).toContain("DiagnosticsInstallStatus");
-    expect(platformDiagnosticTypes).toContain("SqliteProbeResult");
-    expect(platformDiagnosticTypes).toContain("DiagnosticsSpawnCliFn");
-    expect(diagnosticsTypes).toContain("../../platform/diagnostics/types.js");
+    expect(sharedDiagnosticTypes).toContain("DiagnosticsInstallStatus");
+    expect(sharedDiagnosticTypes).toContain("SqliteProbeResult");
+    expect(sharedDiagnosticTypes).toContain("DiagnosticsSpawnCliFn");
+    expect(sharedDiagnosticTypes).not.toContain("platform/");
+    expect(sharedDiagnosticTypes).not.toContain("services/");
+    expect(platformInstallDiagnostics).toContain("../../shared/diagnostics.js");
+    expect(diagnosticsTypes).toContain("../../shared/diagnostics.js");
+    expect(diagnosticsTypes).not.toContain("../../platform/diagnostics/types.js");
     expect(existsSync(join(ROOT, "src/platform/update/semver.ts"))).toBe(false);
     expect(diagnosticsTypes).not.toContain("agent/readiness/providers/claude");
     expect(diagnosticsTypes).not.toContain("from \"../../agent/types.js\"");

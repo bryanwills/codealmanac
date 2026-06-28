@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import type {
   DiagnosticsInstallStatus,
   SqliteProbeResult,
-} from "./types.js";
+} from "../../shared/diagnostics.js";
 
 const req = createRequire(import.meta.url);
 

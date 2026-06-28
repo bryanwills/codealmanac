@@ -6,7 +6,7 @@ import type {
   DiagnosticsInstructionEntriesStatus,
   DiagnosticsSpawnCliFn,
   DiagnosticsUpdateStatus,
-} from "../../platform/diagnostics/types.js";
+} from "../../shared/diagnostics.js";
 import type { CollectWikiHealthReport } from "../wiki/doctor.js";
 
 export type {
@@ -19,7 +19,7 @@ export type {
   DiagnosticsSpawnedProcess,
   DiagnosticsUpdateStatus,
   SqliteProbeResult,
-} from "../../platform/diagnostics/types.js";
+} from "../../shared/diagnostics.js";
 
 export type DiagnosticsAgentProviderId = "claude" | "codex" | "cursor";
 

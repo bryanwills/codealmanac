@@ -41,9 +41,9 @@ Stores own persistence mechanics. Provider adapters, process spawning, app-serve
 
 Automation task definitions are product policy, not launchd mechanics. `src/services/automation/tasks.ts` owns the sync, Garden, and update task ids, labels, default cadences, command arguments, and working-directory policy. `src/services/automation/scheduler.ts` defines the scheduler contract automation workflows depend on. `src/platform/automation/scheduler.ts` owns the launchd implementation, including PATH construction, plist/log path assembly, plist command-array normalization, job writes, bootstrap/removal, loaded-state checks, legacy capture detection, and legacy-hook cleanup.
 
-### Diagnostic probe facts are platform-owned
+### Diagnostic probe facts use shared contracts
 
-Doctor probe result contracts that describe local machine facts belong under `src/platform/diagnostics/types.ts`. Platform probes own install path, SQLite binding, auth probe, automation plist, guide-file, instruction-entry, update-state, and subprocess-spawn facts. `src/services/diagnostics/` owns the doctor product read model: options, checks, reports, update/install/agent sections, and stable service-facing re-exports.
+Doctor probe result shapes live in `src/shared/diagnostics.ts` because they are the contract between platform probes and diagnostics services. Platform diagnostics modules own install path, SQLite binding, auth probe, automation plist, guide-file, instruction-entry, update-state, and subprocess-spawn mechanics. `src/services/diagnostics/` owns the doctor product read model: options, checks, reports, update/install/agent sections, and stable service-facing re-exports.
 
 ### Setup/uninstall terminal UI belongs to the CLI edge
 

@@ -9,7 +9,7 @@ import {
 import type {
   DiagnosticsGuideStatus,
   DiagnosticsInstructionEntriesStatus,
-} from "./types.js";
+} from "../../shared/diagnostics.js";
 
 export interface InstructionDiagnosticsProbeOptions {
   homeDir?: string;

@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 194 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 195 production slices so far.
 
-The diff is broad: 492 files changed, with 24,962 insertions and 13,155 deletions.
+The diff is broad: 492 files changed, with 24,977 insertions and 13,155 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -47,7 +47,8 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved Absorb source resolver composition into `src/platform/sources/absorb.ts` and the CLI edge, so lifecycle Absorb services no longer import platform GitHub mechanics.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Moved setup, diagnostics, update, automation, jobs, sync, lifecycle, config, and agents workflows behind service-owned contracts.
-- Moved diagnostic probe result contracts into `src/platform/diagnostics/types.ts`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
+- Moved diagnostic probe mechanics into `src/platform/diagnostics/`, while `src/services/diagnostics/` now owns only doctor read models and service-facing re-exports.
+- Moved diagnostic fact contracts into `src/shared/diagnostics.ts`, so platform probes and diagnostics services meet through a neutral contract instead of a service-to-platform type import.
 - Moved setup provider fix-command normalization/execution into `src/services/setup/provider-fix-command.ts`, so setup TUI files no longer import platform shell mechanics.
 - Moved setup global-install state/execution into `src/services/setup/global-install.ts`, so setup TUI files no longer import platform package-manager mechanics.
 - Moved setup shell/global-install mechanics behind `src/platform/setup/runtime.ts`, so setup services own contracts/results while the CLI setup edge owns concrete runtime composition.
@@ -69,13 +70,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved detached job-worker process startup out of job services. `src/services/jobs/runtime/background-start.ts` now queues records/specs/logs and calls an injected worker starter, `src/platform/jobs/worker-process.ts` owns detached process mechanics, and `src/edges/cli/background-jobs.ts` wires the concrete platform starter for lifecycle and sync commands.
+The latest slice moved diagnostic fact contracts out of the platform diagnostics folder. `src/shared/diagnostics.ts` now owns probe result shapes, platform diagnostics modules produce those facts, and `src/services/diagnostics/types.ts` consumes/re-exports the shared contracts for doctor read models.
 
-Verification passed so far: `npx tsc --noEmit --pretty false` and focused job-worker, lifecycle operation, sync, and boundary tests.
+Verification passed so far: `npx tsc --noEmit --pretty false` and focused doctor/boundary tests.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, and sync transcript runtime composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, sync transcript runtime composition, and diagnostic fact contracts have now been removed or assigned. Remaining candidates include service files that still know provider runtime mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 

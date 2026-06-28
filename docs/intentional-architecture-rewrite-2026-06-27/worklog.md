@@ -1342,3 +1342,10 @@ One-hundred-ninety-fourth production slice:
 - Added `startDetachedJobWorkerProcess()` to `src/platform/jobs/worker-process.ts` so platform owns child-process spawning, unref, and child PID extraction.
 - Updated lifecycle and sync CLI edges to pass the concrete background starter into operation/sync commands.
 - Strengthened architecture-boundary tests so job services cannot reintroduce platform job-worker process imports.
+
+One-hundred-ninety-fifth production slice:
+
+- Added `src/shared/diagnostics.ts` for doctor probe result contracts shared by platform probes and diagnostics services.
+- Removed `src/platform/diagnostics/types.ts`; platform diagnostics modules now import shared diagnostic contracts instead of owning cross-layer types.
+- Updated `src/services/diagnostics/types.ts` to consume/re-export shared diagnostic facts instead of importing platform diagnostics types.
+- Strengthened doctor boundary coverage so diagnostics services cannot reintroduce `platform/diagnostics/types.js`.
