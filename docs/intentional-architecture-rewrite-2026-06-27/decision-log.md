@@ -141,6 +141,10 @@ Provider ids and static provider definitions live in `src/shared/agent-provider.
 
 Provider readiness status and provider-specific model catalogs are concrete provider facts. Services can decide how those facts become setup, agents, or doctor read models, but they should not import the provider readiness registry directly. `src/shared/agent-readiness.ts` defines the provider readiness/model-choice runtime contract. `src/app/agent-readiness-runtime.ts` wires that contract to `src/agent/readiness/providers/`. CLI setup, agents, and doctor edges pass the concrete runtime into services so app composition is the visible provider wiring point.
 
+### Agent provider views are not one bucket
+
+Provider setup-view assembly, provider model-choice fallback behavior, provider recommendation policy, provider/model shorthand parsing, readiness normalization, static provider labels, and shared setup-view types have different reasons to change. They live as separate `src/services/agents/provider-*.ts` files instead of one provider-view file. Callers import the specific concept they need so future changes do not turn the provider setup surface back into a mixed service bucket.
+
 ### Lock stores receive process facts
 
 Job worker locks and sync locks are persistence mechanics, but process ownership and liveness are runtime facts. `src/stores/jobs/worker-lock.ts` and `src/stores/sync/lock.ts` own lock paths, owner-file persistence, stale-lock grace policy, and legacy lock cleanup. CLI and worker edges provide the current owner PID and `isLocalPidAlive` from `src/platform/process.ts` through service workflows. The neutral liveness function type lives in `src/shared/pid-liveness.ts`.

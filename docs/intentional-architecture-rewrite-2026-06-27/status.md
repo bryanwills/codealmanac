@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 250 committed rewrite commits past `dev`. The worklog records 225 production slices so far.
+The branch has more than 250 committed rewrite commits past `dev`. The worklog records 226 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -80,8 +80,9 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved automation scheduler mechanics behind the shared scheduler port, with launchd implementation in `src/platform/automation/scheduler.ts`; automation services no longer import `src/platform/automation/`.
 - Moved concrete agent runtime provider registry creation out of job runtime services; CLI and worker edges now inject a `JobAgentRunner`, while `src/agent/runtime/job-runner.ts` owns provider-registry composition.
 - Moved provider identity and provider-neutral runtime event/final-output/tool contracts into `src/shared/`, so services and stores no longer import provider runtime contract files from `src/agent/runtime/`.
-- Moved provider enablement policy into `src/shared/agent-provider-enablement.ts` and provider setup/readiness view construction into `src/services/agents/provider-view.ts`, leaving `src/agent/readiness/providers/` focused on provider status probing.
+- Moved provider enablement policy into `src/shared/agent-provider-enablement.ts` and provider setup/readiness view construction into `src/services/agents/`, leaving `src/agent/readiness/providers/` focused on provider status probing.
 - Moved provider readiness/model-choice contracts into `src/shared/agent-readiness.ts` and concrete readiness wiring into `src/app/agent-readiness-runtime.ts`, so provider setup views consume an injected runtime instead of importing provider internals.
+- Split the former provider setup-view bucket into provider setup-view, model-choice, recommendation, selection, readiness, catalog, and type files under `src/services/agents/`.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -100,7 +101,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved provider readiness/model-choice access behind a shared `AgentReadinessRuntime` contract and explicit app composition.
+The latest slice deleted the mixed provider-view service file and split provider setup-view responsibilities into owned agent-service files.
 
 Verification passed:
 
@@ -110,9 +111,7 @@ Verification passed:
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js agents list`
-- `node dist/launcher.js agents doctor`
 - `node dist/launcher.js setup --help`
-- `node dist/launcher.js doctor --wiki-only --json`
 
 ## Immediate Next Work
 

@@ -2285,7 +2285,15 @@ describe("architecture boundaries", () => {
     const configProviders = await readSource(
       "src/shared/agent-provider-enablement.ts",
     );
-    const providerView = await readSource("src/services/agents/provider-view.ts");
+    const providerSetupView = await readSource(
+      "src/services/agents/provider-setup-view.ts",
+    );
+    const providerModelChoices = await readSource(
+      "src/services/agents/provider-model-choices.ts",
+    );
+    const providerSelection = await readSource(
+      "src/services/agents/provider-selection.ts",
+    );
     const readinessStatus = await readSource(
       "src/agent/readiness/providers/status.ts",
     );
@@ -2302,6 +2310,9 @@ describe("architecture boundaries", () => {
     expect(appReadinessRuntime).toContain("createAgentReadinessRuntime");
     expect(existsSync(join(ROOT, "src/agent/readiness/view.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/services/agents/provider-view.ts"))).toBe(
+      false,
+    );
+    expect(existsSync(join(ROOT, "src/services/agents/provider-setup-view.ts"))).toBe(
       true,
     );
     expect(configProviders).not.toContain("process.env");
@@ -2309,11 +2320,15 @@ describe("architecture boundaries", () => {
     expect(configProviders).toContain("getEnabledAgentProviderIds(\n  env: NodeJS.ProcessEnv");
     expect(readinessStatus).toContain("providerRuntime(args)");
     expect(readinessStatus).toContain("shared/agent-provider-enablement");
-    expect(providerView).not.toContain("agent/readiness/providers");
-    expect(providerView).not.toContain("../../agent/types");
-    expect(providerView).toContain("readinessRuntime");
-    expect(providerView).not.toContain("process.env");
-    expect(providerView).toContain("buildProviderSetupView");
+    expect(providerSetupView).not.toContain("agent/readiness/providers");
+    expect(providerSetupView).not.toContain("../../agent/types");
+    expect(providerSetupView).toContain("readinessRuntime");
+    expect(providerSetupView).not.toContain("process.env");
+    expect(providerSetupView).toContain("buildProviderSetupView");
+    expect(providerModelChoices).toContain("buildProviderModelChoices");
+    expect(providerModelChoices).not.toContain("buildProviderSetupView");
+    expect(providerSelection).toContain("parseAgentSelection");
+    expect(providerSelection).not.toContain("buildProviderSetupView");
     expect(claudeReadiness).not.toContain("process.env");
     expect(claudeAuth).not.toContain("process.env");
     expect(claudeReadiness).toContain("runtime.environment.ANTHROPIC_API_KEY");

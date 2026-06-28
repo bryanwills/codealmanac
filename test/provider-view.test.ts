@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildProviderSetupView,
+} from "../src/services/agents/provider-setup-view.js";
+import {
   chooseRecommendedProvider,
+} from "../src/services/agents/provider-recommendation.js";
+import {
   parseAgentSelection,
-} from "../src/services/agents/provider-view.js";
+} from "../src/services/agents/provider-selection.js";
 import { createAgentReadinessRuntime } from "../src/app/agent-readiness-runtime.js";
 import type { AgentProviderStatus } from "../src/shared/agent-readiness.js";
 import { defaultConfig } from "../src/stores/config/index.js";

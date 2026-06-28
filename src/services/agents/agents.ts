@@ -1,9 +1,11 @@
 import {
   buildProviderSetupView,
-  parseAgentSelection,
+} from "./provider-setup-view.js";
+import {
   type ProviderSetupChoice,
   type ProviderSetupView,
-} from "./provider-view.js";
+} from "./provider-types.js";
+import { parseAgentSelection } from "./provider-selection.js";
 import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import {
   isAgentProviderId,

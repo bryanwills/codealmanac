@@ -1,4 +1,4 @@
-import { buildProviderSetupView } from "../agents/provider-view.js";
+import { buildProviderSetupView } from "../agents/provider-setup-view.js";
 import type { AgentDoctorCheck, DoctorOptions } from "./types.js";
 
 export async function gatherAgentChecks(

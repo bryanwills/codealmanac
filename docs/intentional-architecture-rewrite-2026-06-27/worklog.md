@@ -1575,3 +1575,10 @@ Two-hundred-twenty-fifth production slice:
 - Changed `src/services/agents/provider-view.ts` to build product-facing provider setup views over an injected readiness runtime instead of importing `src/agent/readiness/providers/` or `src/agent/types.ts` directly.
 - Threaded the readiness runtime through `almanac agents`, setup agent selection, and doctor diagnostics, keeping concrete provider mechanics at CLI/app composition boundaries.
 - Strengthened architecture-boundary tests so provider-view services cannot re-import provider readiness internals, while app composition remains the explicit provider wiring point.
+
+Two-hundred-twenty-sixth production slice:
+
+- Deleted the mixed `src/services/agents/provider-view.ts` bucket after the readiness runtime seam landed.
+- Split provider setup-view assembly, model-choice fallback behavior, recommendation policy, provider/model shorthand parsing, readiness normalization, provider labels, and shared setup-view types into separate `src/services/agents/provider-*.ts` files.
+- Updated agents, setup, diagnostics, and provider-view tests to import the specific service-owned concept they use instead of the old aggregate file.
+- Strengthened architecture-boundary tests so the old provider-view file stays deleted and the new provider service files keep distinct responsibilities.

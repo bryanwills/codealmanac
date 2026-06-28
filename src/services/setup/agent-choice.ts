@@ -1,10 +1,16 @@
 import {
   buildProviderModelChoices,
+} from "../agents/provider-model-choices.js";
+import {
   buildProviderSetupView,
+} from "../agents/provider-setup-view.js";
+import {
   parseAgentSelection,
+} from "../agents/provider-selection.js";
+import {
   type ProviderSetupChoice,
   type ProviderSetupView,
-} from "../agents/provider-view.js";
+} from "../agents/provider-types.js";
 import type { AgentReadinessRuntime } from "../../shared/agent-readiness.js";
 import {
   disabledAgentProviderMessage,
