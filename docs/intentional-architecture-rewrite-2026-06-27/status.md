@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 241 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 242 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -78,6 +78,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved Absorb source-ref and resolved-source contracts into `src/shared/absorb-sources.ts`, so platform source resolvers no longer import lifecycle service-internal Absorb files.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Split Claude SDK process mechanics out of the SDK option mapper and runtime coordinator.
+- Moved Claude auth probing from the generic `src/agent/auth/` bucket into provider-owned `src/agent/providers/claude/auth.ts`.
 - Split Codex app-server process mechanics out of the JSON-RPC runtime coordinator.
 - Split Codex app-server agent-message handling out of the generic notification router.
 - Split Codex app-server terminal event handling out of the generic notification router.
@@ -117,13 +118,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice removed the old top-level `src/cli/` source directory. `src/cli.ts` remains the stable facade over the CLI edge runner, while command adapters, command renderers, text table helpers, and command outcome rendering now live under `src/edges/cli/commands/`.
+The latest slice moved Claude auth probing into `src/agent/providers/claude/auth.ts` and deleted the old generic `src/agent/auth/` bucket. Claude readiness, Claude runtime status, and diagnostics now consume the provider-owned auth module directly.
 
 Verification passed:
 
 - `git diff --check`
 - `npm run lint`
-- `npx vitest run test/architecture-boundaries.test.ts test/cli.test.ts test/operation-commands.test.ts test/search.test.ts test/show.test.ts test/health.test.ts test/topics.test.ts test/tag.test.ts test/review-command.test.ts test/jobs-command.test.ts test/automation.test.ts test/config-command.test.ts test/agents-command.test.ts test/update.test.ts test/sync.test.ts test/outcome.test.ts`
+- `npx vitest run test/auth.test.ts test/doctor.test.ts test/claude-agent-runtime-provider.test.ts test/architecture-boundaries.test.ts`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js doctor --help`

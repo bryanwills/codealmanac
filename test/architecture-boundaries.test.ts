@@ -2424,8 +2424,12 @@ describe("architecture boundaries", () => {
     const claudeReadiness = await readSource(
       "src/agent/readiness/providers/claude/index.ts",
     );
-    const claudeAuth = await readSource("src/agent/auth/claude.ts");
+    const claudeAuth = await readSource("src/agent/providers/claude/auth.ts");
 
+    expect(existsSync(join(ROOT, "src/agent/auth"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/agent/providers/claude/auth.ts"))).toBe(
+      true,
+    );
     expect(agentTypes).toContain("export interface AgentProviderRuntime");
     expect(agentTypes).toContain("environment: NodeJS.ProcessEnv");
     expect(agentTypes).toContain("checkStatus(runtime: AgentProviderRuntime)");
@@ -2453,6 +2457,7 @@ describe("architecture boundaries", () => {
     expect(providerModelChoices).not.toContain("buildProviderSetupView");
     expect(providerSelection).toContain("parseAgentSelection");
     expect(providerSelection).not.toContain("buildProviderSetupView");
+    expect(claudeReadiness).toContain("providers/claude/auth.js");
     expect(claudeReadiness).not.toContain("process.env");
     expect(claudeAuth).not.toContain("process.env");
     expect(claudeReadiness).toContain("runtime.environment.ANTHROPIC_API_KEY");
@@ -2802,6 +2807,8 @@ describe("architecture boundaries", () => {
     expect(diagnosticsRuntime).toContain("readDiagnosticUpdateStatus");
     expect(doctorRegistration).not.toContain("color: process.stdout.isTTY === true");
     expect(platformAuthDiagnostics).toContain("checkClaudeAuth");
+    expect(platformAuthDiagnostics).toContain("agent/providers/claude/auth");
+    expect(platformAuthDiagnostics).not.toContain("agent/readiness/providers");
     expect(platformInstallDiagnostics).toContain("probeBetterSqlite3");
     expect(platformInstallDiagnostics).toContain("readPackageVersion");
     expect(platformInstallDiagnostics).toContain("homedir()");

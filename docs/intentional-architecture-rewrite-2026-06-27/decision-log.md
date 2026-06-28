@@ -159,6 +159,8 @@ Provider ids and static provider definitions live in `src/shared/agent-provider.
 
 Claude SDK runtime has separate provider-local owners. `src/agent/runtime/providers/claude.ts` coordinates provider status and run result projection. `src/agent/runtime/providers/claude/options.ts` maps `OperationSpec` into Claude SDK options. `src/agent/runtime/providers/claude/process.ts` owns managed child-process spawning and signal-to-abort registration because those mechanics change with Claude SDK process behavior, not with option mapping or result projection.
 
+Claude auth probing is provider-owned. The executable lookup, `claude auth status --json` subprocess probe, legacy SDK CLI fallback, `ANTHROPIC_API_KEY` fallback, and Claude auth error text live in `src/agent/providers/claude/auth.ts`. Readiness, runtime status, and diagnostics consume that provider-owned module directly instead of sharing a generic `src/agent/auth/` bucket.
+
 ### Provider readiness uses an app-composed runtime
 
 Provider readiness status and provider-specific model catalogs are concrete provider facts. Services can decide how those facts become setup, agents, or doctor read models, but they should not import the provider readiness registry directly. `src/shared/agent-readiness.ts` defines the provider readiness/model-choice runtime contract. `src/app/agent-readiness-runtime.ts` wires that contract to `src/agent/readiness/providers/`. CLI setup, agents, and doctor edges pass the concrete runtime into services so app composition is the visible provider wiring point.

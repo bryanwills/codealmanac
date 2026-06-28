@@ -12,7 +12,7 @@ import {
   resolveClaudeExecutable,
   UNAUTHENTICATED_MESSAGE,
   type ClaudeAuthStatus,
-} from "../../../auth/claude.js";
+} from "../../../providers/claude/auth.js";
 
 export const DEFAULT_AGENT_MODEL = PROVIDER_DEFINITIONS.claude.defaultModel!;
 
@@ -111,5 +111,5 @@ async function assertReady(runtime: AgentProviderRuntime): Promise<void> {
 }
 
 export { assertClaudeAuth, checkClaudeAuth, UNAUTHENTICATED_MESSAGE };
-export type { ClaudeAuthStatus } from "../../../auth/claude.js";
+export type { ClaudeAuthStatus } from "../../../providers/claude/auth.js";
 export type { SpawnCliFn, SpawnedProcess } from "../../../types.js";

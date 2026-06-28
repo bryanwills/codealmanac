@@ -1701,3 +1701,11 @@ Two-hundred-forty-first production slice:
 - Updated CLI registration files and command tests to import command modules from the CLI edge.
 - Updated the health store comment to point at the new CLI command location.
 - Strengthened architecture-boundary tests so the old `src/cli/` directory stays deleted.
+
+Two-hundred-forty-second production slice:
+
+- Moved Claude auth probing from `src/agent/auth/claude.ts` to provider-owned `src/agent/providers/claude/auth.ts`.
+- Deleted the old generic `src/agent/auth/` bucket.
+- Updated Claude readiness, Claude runtime status, diagnostics auth probing, and auth tests to import provider-owned Claude auth directly.
+- Kept diagnostics from routing through readiness just to call the Claude auth probe.
+- Strengthened architecture-boundary tests so Claude auth stays under the Claude provider and the old generic auth bucket stays deleted.

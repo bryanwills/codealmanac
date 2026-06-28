@@ -17,7 +17,7 @@ import {
   checkClaudeAuth,
   resolveClaudeExecutable,
   type ClaudeAuthStatus,
-} from "../../auth/claude.js";
+} from "../../providers/claude/auth.js";
 import {
   getClaudeSessionId,
   rootClaudeActor,

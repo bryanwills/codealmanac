@@ -1,7 +1,7 @@
 import {
   checkClaudeAuth,
   type ClaudeAuthStatus,
-} from "../../agent/readiness/providers/claude/index.js";
+} from "../../agent/providers/claude/auth.js";
 import type {
   DiagnosticsAuthStatus,
   DiagnosticsSpawnCliFn,
