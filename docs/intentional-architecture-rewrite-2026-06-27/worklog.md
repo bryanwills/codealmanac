@@ -1961,3 +1961,11 @@ Two-hundred-seventy-fifth production slice:
 - Added owner-named config command files for read, write, and rendering under `src/edges/cli/commands/config/`.
 - Updated config command registration and tests to import read/write adapters directly.
 - Strengthened automation/update/config boundary tests so the old config command and render catchalls cannot return.
+
+Two-hundred-seventy-sixth production slice:
+
+- Deleted the catchall `src/edges/cli/commands/tag.ts` command adapter.
+- Deleted the catchall `src/edges/cli/commands/tag-render.ts` renderer.
+- Added owner-named tag command files for apply, remove, and rendering under `src/edges/cli/commands/tag/`.
+- Updated page-topic command registration and tag tests to import apply/remove adapters directly.
+- Strengthened wiki command boundary tests so the old tag command and render catchalls cannot return.

@@ -518,27 +518,51 @@ describe("architecture boundaries: wiki commands and viewer", () => {
   });
 
   it("keeps tag command adapters out of page topic write mechanics", async () => {
-    const tagCommand = await readSource("src/edges/cli/commands/tag.ts");
-    const tagRender = await readSource("src/edges/cli/commands/tag-render.ts");
+    const tagApplyCommand = await readSource(
+      "src/edges/cli/commands/tag/apply.ts",
+    );
+    const tagRemoveCommand = await readSource(
+      "src/edges/cli/commands/tag/remove.ts",
+    );
+    const tagRender = await readSource("src/edges/cli/commands/tag/render.ts");
     const pageTopicService = await readSource(
       "src/services/wiki/page-topic-mutations.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag-render.ts"))).toBe(true);
-    expect(tagCommand).toContain("services/wiki/page-topic-mutations.js");
-    expect(tagCommand).not.toContain("stores/wiki/indexer");
-    expect(tagCommand).not.toContain("stores/wiki/topics");
-    expect(tagCommand).not.toContain("resolveWikiRoot");
-    expect(tagCommand).not.toContain("openIndex");
-    expect(tagCommand).not.toContain("runIndexer");
-    expect(tagCommand).not.toContain("rewritePageTopics");
-    expect(tagCommand).not.toContain("loadTopicsFile");
-    expect(tagCommand).not.toContain("writeTopicsFile");
-    expect(tagCommand).not.toContain("renderTaggedPages");
-    expect(tagCommand).not.toContain("renderMissingPages");
-    expect(tagCommand).not.toContain("no such page");
-    expect(tagCommand).not.toContain("tag requires");
-    expect(tagCommand).not.toContain("untagged");
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag-render.ts"))).toBe(
+      false,
+    );
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag/apply.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag/remove.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/tag/render.ts"))).toBe(
+      true,
+    );
+    expect(tagApplyCommand).toContain("services/wiki/page-topic-mutations.js");
+    expect(tagRemoveCommand).toContain("services/wiki/page-topic-mutations.js");
+    expect(tagApplyCommand).toContain("./render.js");
+    expect(tagRemoveCommand).toContain("./render.js");
+    expect(tagApplyCommand).toContain("runTag");
+    expect(tagRemoveCommand).toContain("runUntag");
+    for (const tagCommand of [tagApplyCommand, tagRemoveCommand]) {
+      expect(tagCommand).not.toContain("stores/wiki/indexer");
+      expect(tagCommand).not.toContain("stores/wiki/topics");
+      expect(tagCommand).not.toContain("resolveWikiRoot");
+      expect(tagCommand).not.toContain("openIndex");
+      expect(tagCommand).not.toContain("runIndexer");
+      expect(tagCommand).not.toContain("rewritePageTopics");
+      expect(tagCommand).not.toContain("loadTopicsFile");
+      expect(tagCommand).not.toContain("writeTopicsFile");
+      expect(tagCommand).not.toContain("renderTaggedPages");
+      expect(tagCommand).not.toContain("renderMissingPages");
+      expect(tagCommand).not.toContain("no such page");
+      expect(tagCommand).not.toContain("tag requires");
+      expect(tagCommand).not.toContain("untagged");
+    }
     expect(tagRender).toContain("renderTagResult");
     expect(tagRender).toContain("renderUntagResult");
 

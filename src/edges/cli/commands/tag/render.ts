@@ -2,8 +2,13 @@ import type {
   TaggedPageResult,
   TagWikiPagesResult,
   UntagWikiPageResult,
-} from "../../../services/wiki/page-topic-types.js";
-import type { TagCommandOutput } from "./tag.js";
+} from "../../../../services/wiki/page-topic-types.js";
+
+export interface TagCommandOutput {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
 
 export function renderTagResult(result: TagWikiPagesResult): TagCommandOutput {
   switch (result.status) {
