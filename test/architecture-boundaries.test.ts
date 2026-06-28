@@ -1164,11 +1164,18 @@ describe("architecture boundaries", () => {
     expect(configCommand).not.toContain("serializeConfig");
     expect(configCommand).not.toContain("getProjectConfigPath");
     expect(configCommand).not.toContain("process.cwd()");
+    expect(configCommand).not.toContain("parseConfigKey");
     expect(configCommand).not.toContain("formatTextTable");
     expect(configCommand).not.toContain("JSON.stringify");
     expect(configCommand).not.toContain("formatConfigValue");
     expect(configCommand).not.toContain("unknown config key");
+    expect(configCommand).not.toContain("missing value");
     expect(configCommand).not.toContain("no .almanac/ found");
+    expect(configCommand).toContain("readConfigEntryByKey");
+    expect(configCommand).toContain("setConfigEntryByKey");
+    expect(configCommand).toContain("unsetConfigEntryByKey");
+    expect(configRender).toContain("unknown config key");
+    expect(configRender).toContain("missing value");
     expect(configRender).toContain("formatTextTable");
     expect(configRender).toContain("renderConfigList");
     expect(configRender).toContain("renderConfigSet");

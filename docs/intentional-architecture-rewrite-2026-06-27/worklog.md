@@ -1380,3 +1380,10 @@ One-hundred-ninety-ninth production slice:
 - Removed init prompt-context formatting from `src/cli/commands/operations.ts`.
 - Added lifecycle-owned init context construction in `src/services/lifecycle/workflows.ts`.
 - Strengthened architecture-boundary tests so operation command adapters cannot reintroduce prompt-context wording while lifecycle workflows own the Build/init command context.
+
+Two-hundredth production slice:
+
+- Moved raw config-key validation for `get`, `set`, and `unset` out of `src/cli/commands/config.ts` and into `src/services/config/config.ts`.
+- Added service-owned raw-key entrypoints for config reads and mutations while keeping typed entrypoints for internal callers that already hold a `ConfigKey`.
+- Changed `src/cli/commands/config-render.ts` to render config invalid-request statuses from service results instead of exposing command-side unknown-key and missing-value helpers.
+- Strengthened architecture-boundary tests so config command adapters cannot reintroduce `parseConfigKey` or config validation wording.

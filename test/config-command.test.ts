@@ -208,6 +208,10 @@ describe("config command", () => {
       expect(unknown.exitCode).toBe(1);
       expect(unknown.stderr).toContain("unknown config key");
 
+      const missingValue = await runConfigSet({ key: "agent.default" });
+      expect(missingValue.exitCode).toBe(1);
+      expect(missingValue.stderr).toContain("missing value for agent.default");
+
       const connectorKey = await runConfigGet({
         key: "connectors.composio.api_key_env",
       });

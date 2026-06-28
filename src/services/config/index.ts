@@ -1,7 +1,10 @@
 export {
   listConfigEntries,
+  readConfigEntryByKey,
   readConfigEntry,
+  setConfigEntryByKey,
   setConfigEntry,
+  unsetConfigEntryByKey,
   unsetConfigEntry,
 } from "./config.js";
 export {
@@ -11,6 +14,8 @@ export {
 } from "./keys.js";
 export type {
   ConfigRejectedMutation,
+  ConfigInvalidRequest,
+  ConfigReadResult,
   ConfigRow,
   ConfigServiceOptions,
   ConfigSetResult,

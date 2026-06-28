@@ -1,13 +1,13 @@
 # Intentional Architecture Rewrite Status
 
-Date: 2026-06-27
+Date: 2026-06-28
 Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 199 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 200 production slices so far.
 
-The diff is broad: 494 files changed, with 25,331 insertions and 13,191 deletions.
+The diff is broad: 494 files changed, with 25,435 insertions and 13,197 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -40,6 +40,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
 - Moved init prompt context construction out of the operation command adapter and into lifecycle workflows, so command code only shapes flags into service requests and renders service results.
+- Moved raw config-key validation for config get/set/unset into config services, so config command code only passes raw input and renders service result statuses.
 - Moved worker-program shape into `src/shared/worker-program.ts` so lifecycle services no longer import platform worker-process mechanics.
 - Reshaped update install injection so update services accept typed install results while platform update modules own npm child-process mechanics.
 - Moved update state and install-lock persistence into `src/stores/update/`; platform update modules now own registry/npm/version behavior, not JSON state-file mechanics.
@@ -74,21 +75,26 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved init prompt-context construction out of `src/cli/commands/operations.ts` and into `src/services/lifecycle/workflows.ts`. The command adapter now passes flags through to lifecycle services, while the lifecycle workflow owns the `Command context` text that becomes part of the Build operation prompt.
+The latest slice moved raw config-key validation for `get`, `set`, and `unset` out of `src/cli/commands/config.ts` and into `src/services/config/config.ts`. The command adapter now passes raw key/value input to config services, while config render code maps service invalid-request statuses to CLI output.
 
 Verification passed:
 
-- `npx vitest run test/operation-commands.test.ts test/build-operation.test.ts test/architecture-boundaries.test.ts`
+- `npx tsc --noEmit --pretty false`
+- `npx vitest run test/config-command.test.ts test/architecture-boundaries.test.ts`
 - `git diff --check`
 - `npm run lint`
 - `npm test`
 - `npm run build`
 - `node dist/launcher.js --help | head -40`
 - `node dist/launcher.js doctor --json --install-only`
+- `HOME=$(mktemp -d) node dist/launcher.js config get agent.default`
+- `HOME=$(mktemp -d) node dist/launcher.js config get agent.nope`
+- `HOME=$(mktemp -d) node dist/launcher.js config set agent.nope codex`
+- `HOME=$(mktemp -d) node dist/launcher.js config set agent.default nope`
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, sync transcript runtime composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, and init prompt-context ownership have now been removed or assigned. Remaining candidates include temp-file PID suffixes still visible in stores, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, sync transcript runtime composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, init prompt-context ownership, and config command validation ownership have now been removed or assigned. Remaining candidates include temp-file PID suffixes still visible in stores, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 

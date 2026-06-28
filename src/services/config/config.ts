@@ -13,6 +13,7 @@ import {
   configEntries,
   getConfigValue,
   isUserLevelOnlyKey,
+  parseConfigKey,
   setConfigValue,
   type ConfigKey,
 } from "./keys.js";
@@ -34,7 +35,8 @@ export type ConfigSetResult =
       value: string | boolean | null;
       project: boolean;
     }
-  | ConfigRejectedMutation;
+  | ConfigRejectedMutation
+  | ConfigInvalidRequest;
 
 export type ConfigUnsetResult =
   | {
@@ -42,7 +44,25 @@ export type ConfigUnsetResult =
       key: ConfigKey;
       project: boolean;
     }
-  | ConfigRejectedMutation;
+  | ConfigRejectedMutation
+  | ConfigInvalidRequest;
+
+export type ConfigReadResult =
+  | {
+      status: "read";
+      row: ConfigRow;
+    }
+  | ConfigUnknownKey;
+
+export type ConfigInvalidRequest = ConfigUnknownKey | {
+  status: "missing-value";
+  key: ConfigKey;
+};
+
+export interface ConfigUnknownKey {
+  status: "unknown-key";
+  key: string;
+}
 
 export type ConfigRejectedMutation =
   | {
@@ -75,6 +95,35 @@ export async function readConfigEntry(
   };
 }
 
+export async function readConfigEntryByKey(
+  input: { key: string } & ConfigServiceOptions,
+): Promise<ConfigReadResult> {
+  const key = parseConfigKey(input.key);
+  if (key === null) return { status: "unknown-key", key: input.key };
+  return {
+    status: "read",
+    row: await readConfigEntry(key, input),
+  };
+}
+
+export async function setConfigEntryByKey(
+  input: {
+    key: string;
+    value?: string;
+    project: boolean;
+  } & ConfigServiceOptions,
+): Promise<ConfigSetResult> {
+  const key = parseConfigKey(input.key);
+  if (key === null) return { status: "unknown-key", key: input.key };
+  if (input.value === undefined) return { status: "missing-value", key };
+  return setConfigEntry({
+    key,
+    value: input.value,
+    project: input.project,
+    cwd: input.cwd,
+  });
+}
+
 export async function setConfigEntry(
   input: {
     key: ConfigKey;
@@ -105,6 +154,21 @@ export async function setConfigEntry(
     value,
     project: input.project,
   };
+}
+
+export async function unsetConfigEntryByKey(
+  input: {
+    key: string;
+    project: boolean;
+  } & ConfigServiceOptions,
+): Promise<ConfigUnsetResult> {
+  const key = parseConfigKey(input.key);
+  if (key === null) return { status: "unknown-key", key: input.key };
+  return unsetConfigEntry({
+    key,
+    project: input.project,
+    cwd: input.cwd,
+  });
 }
 
 export async function unsetConfigEntry(

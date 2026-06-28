@@ -1,9 +1,8 @@
 import {
   listConfigEntries,
-  parseConfigKey,
-  readConfigEntry,
-  setConfigEntry,
-  unsetConfigEntry,
+  readConfigEntryByKey,
+  setConfigEntryByKey,
+  unsetConfigEntryByKey,
 } from "../../services/config/index.js";
 import {
   renderConfigException,
@@ -11,8 +10,6 @@ import {
   renderConfigList,
   renderConfigSet,
   renderConfigUnset,
-  renderMissingConfigValue,
-  renderUnknownConfigKey,
   type ConfigResult,
 } from "./config-render.js";
 
@@ -36,10 +33,8 @@ export async function runConfigGet(opts: {
   json?: boolean;
   showOrigin?: boolean;
 }): Promise<ConfigResult> {
-  const key = parseConfigKey(opts.key);
-  if (key === null) return renderUnknownConfigKey(opts.key);
   return renderConfigGet(
-    await readConfigEntry(key, { cwd: opts.cwd }),
+    await readConfigEntryByKey({ key: opts.key, cwd: opts.cwd }),
     opts,
   );
 }
@@ -49,15 +44,10 @@ export async function runConfigSet(opts: ConfigCommandScope & {
   value?: string;
   project?: boolean;
 }): Promise<ConfigResult> {
-  const key = parseConfigKey(opts.key);
-  if (key === null) return renderUnknownConfigKey(opts.key);
-  if (opts.value === undefined) {
-    return renderMissingConfigValue(key);
-  }
   try {
     return renderConfigSet(
-      await setConfigEntry({
-        key,
+      await setConfigEntryByKey({
+        key: opts.key,
         value: opts.value,
         project: opts.project === true,
         cwd: opts.cwd,
@@ -72,11 +62,9 @@ export async function runConfigUnset(opts: ConfigCommandScope & {
   key: string;
   project?: boolean;
 }): Promise<ConfigResult> {
-  const key = parseConfigKey(opts.key);
-  if (key === null) return renderUnknownConfigKey(opts.key);
   return renderConfigUnset(
-    await unsetConfigEntry({
-      key,
+    await unsetConfigEntryByKey({
+      key: opts.key,
       project: opts.project === true,
       cwd: opts.cwd,
     }),

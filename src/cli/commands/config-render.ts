@@ -1,6 +1,7 @@
 import {
   CONFIG_KEYS,
   formatConfigValue,
+  type ConfigReadResult,
   type ConfigRejectedMutation,
   type ConfigRow,
   type ConfigSetResult,
@@ -8,6 +9,11 @@ import {
 } from "../../services/config/index.js";
 import { renderError, renderOutcome } from "../outcome.js";
 import { formatTextTable } from "./table.js";
+
+type ConfigInvalidRenderResult = Extract<
+  ConfigReadResult | ConfigSetResult | ConfigUnsetResult,
+  { status: "unknown-key" | "missing-value" }
+>;
 
 export interface ConfigResult {
   stdout: string;
@@ -36,9 +42,11 @@ export function renderConfigList(
 }
 
 export function renderConfigGet(
-  row: ConfigRow,
+  result: ConfigReadResult,
   opts: { json?: boolean; showOrigin?: boolean } = {},
 ): ConfigResult {
+  if (result.status !== "read") return renderInvalidRequest(result);
+  const row = result.row;
   if (opts.json === true) return ok(`${JSON.stringify(row, null, 2)}\n`);
 
   const rendered = formatConfigValue(row.value);
@@ -50,6 +58,9 @@ export function renderConfigGet(
 }
 
 export function renderConfigSet(result: ConfigSetResult): ConfigResult {
+  if (result.status === "unknown-key" || result.status === "missing-value") {
+    return renderInvalidRequest(result);
+  }
   if (result.status !== "set") return renderRejectedMutation(result);
   return ok(
     `almanac: set ${result.key}=${formatConfigValue(result.value)}` +
@@ -58,20 +69,13 @@ export function renderConfigSet(result: ConfigSetResult): ConfigResult {
 }
 
 export function renderConfigUnset(result: ConfigUnsetResult): ConfigResult {
+  if (result.status === "unknown-key" || result.status === "missing-value") {
+    return renderInvalidRequest(result);
+  }
   if (result.status !== "unset") return renderRejectedMutation(result);
   return ok(
     `almanac: unset ${result.key}${result.project ? " in project config" : ""}.\n`,
   );
-}
-
-export function renderUnknownConfigKey(key: string): ConfigResult {
-  return renderConfigError(
-    `unknown config key '${key}'. Expected one of: ${CONFIG_KEYS.join(", ")}`,
-  );
-}
-
-export function renderMissingConfigValue(key: string): ConfigResult {
-  return renderConfigError(`missing value for ${key}`);
 }
 
 export function renderConfigException(err: unknown): ConfigResult {
@@ -84,6 +88,17 @@ function ok(stdout: string): ConfigResult {
 
 function renderConfigError(message: string): ConfigResult {
   return renderOutcome({ type: "error", message });
+}
+
+function renderInvalidRequest(result: ConfigInvalidRenderResult): ConfigResult {
+  switch (result.status) {
+    case "unknown-key":
+      return renderConfigError(
+        `unknown config key '${result.key}'. Expected one of: ${CONFIG_KEYS.join(", ")}`,
+      );
+    case "missing-value":
+      return renderConfigError(`missing value for ${result.key}`);
+  }
 }
 
 function renderRejectedMutation(result: ConfigRejectedMutation): ConfigResult {
