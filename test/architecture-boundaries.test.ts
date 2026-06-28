@@ -2436,6 +2436,9 @@ describe("architecture boundaries", () => {
     const appServerRpc = await readSource(
       "src/agent/runtime/providers/codex/app-server-rpc.ts",
     );
+    const appServerProcess = await readSource(
+      "src/agent/runtime/providers/codex/app-server-process.ts",
+    );
     const appServerSession = await readSource(
       "src/agent/runtime/providers/codex/app-server-session.ts",
     );
@@ -2447,6 +2450,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/server-requests.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-session.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-rpc.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-process.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/agent/runtime/providers/codex/app-server-root-turn.ts"))).toBe(true);
     expect(appServer).not.toContain("CODEALMANAC_CODEX_APP_SERVER");
     expect(appServer).not.toContain("function parsePositiveEnvInt");
@@ -2462,8 +2466,17 @@ describe("architecture boundaries", () => {
     expect(appServer).not.toContain("requestRpc(\"initialize\"");
     expect(appServer).not.toContain("requestRpc(\"thread/start\"");
     expect(appServer).not.toContain("requestRpc(\"turn/start\"");
+    expect(appServer).not.toContain("spawnManagedChildProcess");
+    expect(appServer).not.toContain("child.stdout");
+    expect(appServer).not.toContain("NodeJS.ErrnoException");
+    expect(appServer).not.toContain("process.once");
+    expect(appServer).toContain("startCodexAppServerProcess");
     expect(appServer).not.toContain("function isRootTurnCompletion");
     expect(appServer).not.toContain("function isRootThreadNotification");
+    expect(appServerProcess).toContain("spawnManagedChildProcess");
+    expect(appServerProcess).toContain("child.stdout");
+    expect(appServerProcess).toContain("JSON.parse");
+    expect(appServerProcess).toContain("installCodexAppServerSignalHandlers");
     expect(appServerSession).toContain("startCodexAppServerTurn");
     expect(appServerSession).toContain("requestRpc(\"initialize\"");
     expect(appServerSession).toContain("requestRpc(\"thread/start\"");

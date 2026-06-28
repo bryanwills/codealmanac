@@ -1,7 +1,6 @@
 import type { AgentRuntimeResult } from "../../../../shared/agent-runtime/events.js";
 import type { AgentRuntimeRunHooks } from "../../types.js";
 import type { OperationSpec } from "../../../../shared/operation-spec.js";
-import { spawnManagedChildProcess } from "../../../../platform/managed-child.js";
 import { buildCodexAppServerRequest } from "./request.js";
 import { mapCodexAppServerNotification } from "./app-notifications.js";
 import {
@@ -11,6 +10,10 @@ import {
   type CodexAppServerSandboxMode,
 } from "./app-server-config.js";
 import { createCodexAppServerRpcTransport } from "./app-server-rpc.js";
+import {
+  installCodexAppServerSignalHandlers,
+  startCodexAppServerProcess,
+} from "./app-server-process.js";
 import {
   codexNotificationTurnId,
   isCodexRootThreadNotification,
@@ -41,24 +44,17 @@ export async function runCodexAppServer(
     };
   }
   return new Promise((resolve) => {
-    const managed = spawnManagedChildProcess(request.command, request.args, {
-      cwd: request.cwd,
-      env: request.env,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    const child = managed.child;
     const state: CodexRunState = {
       success: false,
       result: "",
       outputSpec: spec.output,
     };
     const eventWrites: Promise<void>[] = [];
-    let stdoutBuf = "";
-    let stderr = "";
     let settled = false;
     let activeTurnId: string | undefined;
     let turnTimeout: NodeJS.Timeout | undefined;
     let removeSignalHandlers = (): void => {};
+    let receiveAppServerMessage = (_message: unknown): void => {};
 
     const finish = async (result: AgentRuntimeResult): Promise<void> => {
       if (settled) return;
@@ -70,7 +66,7 @@ export async function runCodexAppServer(
       }
       rpc.rejectPending(new Error("Codex app-server run finished"));
       await Promise.allSettled(eventWrites);
-      const cleanupError = await terminateManagedChildSafely(managed);
+      const cleanupError = await appServerProcess.terminateSafely();
       if (cleanupError !== undefined) {
         await hooks?.onEvent?.({
           type: "error",
@@ -99,10 +95,6 @@ export async function runCodexAppServer(
       turnTimeout = setTimeout(() => {
         fail(`Codex app-server turn timed out after ${turnTimeoutMs}ms`);
       }, turnTimeoutMs);
-    };
-
-    const write = (message: Record<string, unknown>): void => {
-      child.stdin?.write(`${JSON.stringify(message)}\n`);
     };
 
     const handleNotification = (message: JsonRpcNotification): void => {
@@ -153,52 +145,23 @@ export async function runCodexAppServer(
       }
     };
 
+    const appServerProcess = startCodexAppServerProcess({
+      command: request.command,
+      commandArgs: request.args,
+      cwd: request.cwd,
+      env: request.env,
+      onMessage: (message) => receiveAppServerMessage(message),
+      onFailure: fail,
+    });
     const rpc = createCodexAppServerRpcTransport({
       rpcTimeoutMs,
-      write,
+      write: appServerProcess.write,
       onNotification: handleNotification,
       onServerRequest: respondToCodexServerRequest,
     });
-    removeSignalHandlers = installSignalHandlers((signal) => {
+    receiveAppServerMessage = rpc.receive;
+    removeSignalHandlers = installCodexAppServerSignalHandlers((signal) => {
       fail(`Codex app-server interrupted by ${signal}`);
-    });
-
-    const flushLines = (): void => {
-      let idx = stdoutBuf.indexOf("\n");
-      while (idx !== -1) {
-        const rawLine = stdoutBuf.slice(0, idx);
-        stdoutBuf = stdoutBuf.slice(idx + 1);
-        const line = rawLine.trim();
-        if (line.length > 0) {
-          try {
-            rpc.receive(JSON.parse(line) as unknown);
-          } catch {
-            // Ignore non-JSON chatter; stderr is captured for failures.
-          }
-        }
-        idx = stdoutBuf.indexOf("\n");
-      }
-    };
-
-    child.stdout?.on("data", (chunk) => {
-      stdoutBuf += chunk.toString("utf8");
-      flushLines();
-    });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString("utf8");
-    });
-    child.on("error", (err: NodeJS.ErrnoException) => {
-      fail(err.code === "ENOENT" ? `${request.command} not found on PATH` : err.message);
-    });
-    child.on("close", (code) => {
-      if (settled) return;
-      flushLines();
-      const firstStderr = stderr.trim().split("\n")[0];
-      fail(
-        firstStderr !== undefined && firstStderr.length > 0
-          ? firstStderr
-          : `${request.command} app-server exited ${code ?? 1}`,
-      );
     });
 
     void (async () => {
@@ -219,29 +182,4 @@ export async function runCodexAppServer(
       }
     })();
   });
-}
-
-function installSignalHandlers(onSignal: (signal: NodeJS.Signals) => void): () => void {
-  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"];
-  const handlers = signals.map((signal) => {
-    const handler = () => onSignal(signal);
-    process.once(signal, handler);
-    return { signal, handler };
-  });
-  return () => {
-    for (const { signal, handler } of handlers) {
-      process.off(signal, handler);
-    }
-  };
-}
-
-async function terminateManagedChildSafely(
-  managed: ReturnType<typeof spawnManagedChildProcess>,
-): Promise<string | undefined> {
-  try {
-    await managed.terminate({ graceMs: 500 });
-    return undefined;
-  } catch (err: unknown) {
-    return `Provider process cleanup failed: ${err instanceof Error ? err.message : String(err)}`;
-  }
 }

@@ -1649,3 +1649,10 @@ Two-hundred-thirty-fourth production slice:
 - Added `src/services/setup/agent-selection.ts` for parsing/validating requested setup agent selections against enabled providers.
 - Updated `src/services/setup/index.ts` to re-export the concrete setup concepts from their owned files.
 - Strengthened architecture-boundary tests so setup agent-choice state does not regain provider selection parsing or provider-view mapping details.
+
+Two-hundred-thirty-fifth production slice:
+
+- Added `src/agent/runtime/providers/codex/app-server-process.ts` for Codex app-server child-process ownership, stdout JSONL decoding, stderr close-failure shaping, signal handler installation, and managed-child cleanup.
+- Kept `src/agent/runtime/providers/codex/app-server.ts` focused on request/config setup, runtime state, JSON-RPC transport wiring, notification handling, turn watchdogs, and final result resolution.
+- Removed direct `spawnManagedChildProcess`, child stdout/stderr listeners, process signal registration, and cleanup helpers from `app-server.ts`.
+- Strengthened architecture-boundary tests so Codex app-server process mechanics stay out of the JSON-RPC runtime coordinator.
