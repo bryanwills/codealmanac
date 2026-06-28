@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 232 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 233 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -56,6 +56,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved concrete transcript discovery/snapshot composition behind an injected sync transcript runtime contract, with `src/platform/transcripts/runtime.ts` wired by the CLI sync edge.
 - Moved sync's internal-Almanac-session lookup behind a jobs-service provider-session helper, so sync no longer reads job record storage shape directly.
 - Split sync workflow helpers into owned files for input parsing, transcript candidate shaping, summary projection, and Absorb context rendering.
+- Split sync sweep helpers into owned files for candidate eligibility, internal-session detection, and Absorb enqueue/ledger transitions.
 - Moved lifecycle operation construction and Absorb input/source handling into `src/services/lifecycle/` and removed the old top-level `src/operations/` and `src/absorb/` source buckets.
 - Normalized lifecycle operation failures into lifecycle-owned result contracts before command rendering sees them.
 - Moved init prompt context construction out of the operation command adapter and into lifecycle workflows, so command code only shapes flags into service requests and renders service results.
@@ -108,7 +109,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split the sync workflow helper logic into owned files so `src/services/sync/sync.ts` reads as orchestration instead of a mixed helper bucket.
+The latest slice split sync sweep helper logic into owned files so `src/services/sync/sweep.ts` reads as candidate orchestration instead of a mixed eligibility/session/enqueue bucket.
 
 Verification passed:
 
@@ -117,8 +118,8 @@ Verification passed:
 - `npx vitest run test/architecture-boundaries.test.ts test/sync.test.ts`
 - `npm test`
 - `npm run build`
-- `node dist/launcher.js sync status --json --quiet 1m`
 - `node dist/launcher.js sync status --help`
+- `node dist/launcher.js sync status --from codex --quiet 999999999s --json`
 - `node dist/launcher.js search transcript --limit 1`
 
 ## Immediate Next Work

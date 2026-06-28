@@ -1,50 +1,34 @@
 import {
   type TranscriptCandidate,
   type TranscriptReadResult,
-  type TranscriptSnapshot,
 } from "../../shared/transcripts.js";
 import {
-  type LedgerEntry,
   type SyncLedger,
   freshLedgerEntry,
   ledgerKey,
   reconcileLedger,
 } from "./ledger.js";
+import { evaluateSyncCursor } from "./transcript-cursor.js";
 import {
-  type SyncCursorDecision,
-  evaluateSyncCursor,
-  failedLedgerEntry,
-  pendingLedgerEntry,
-} from "./transcript-cursor.js";
-import {
-  type SyncSkipped,
   type SyncSummary,
   emptySyncSummary,
-  syncCursorContext,
   syncReadySummary,
   syncSkippedSummary,
   syncStartedSummary,
 } from "./sweep-results.js";
 import type { IsPidAlive } from "../../shared/pid-liveness.js";
 import {
+  enqueueSyncAbsorb,
+  type StartSyncAbsorbFn,
+} from "./absorb-enqueue.js";
+import { syncCandidateEligibility } from "./candidate-eligibility.js";
+import { isInternalAlmanacSession } from "./internal-sessions.js";
+import {
   loadLedgerForRepo,
   writeLedger,
 } from "../../stores/sync/ledger.js";
 import { acquireRepoSyncLock, releaseRepoSyncLock } from "../../stores/sync/lock.js";
-import { listJobProviderSessionIds } from "../jobs/index.js";
 
-export interface StartSyncAbsorbArgs {
-  candidate: TranscriptCandidate;
-  contextNote: string;
-}
-
-export type StartSyncAbsorbResult =
-  | { ok: true; jobId: string }
-  | { ok: false; error: string };
-
-export type StartSyncAbsorbFn = (
-  args: StartSyncAbsorbArgs,
-) => Promise<StartSyncAbsorbResult>;
 export type ReadSyncTranscriptSnapshotFn = (
   transcriptPath: string,
 ) => Promise<TranscriptReadResult>;
@@ -71,7 +55,7 @@ export async function executeSyncSweep(args: {
   const heldLocks = new Set<string>();
   try {
     for (const candidate of args.candidates) {
-      const eligibilitySkip = candidateEligibility(candidate, args);
+      const eligibilitySkip = syncCandidateEligibility(candidate, args);
       if (eligibilitySkip !== null) {
         summary.skipped.push(eligibilitySkip);
         continue;
@@ -102,9 +86,13 @@ export async function executeSyncSweep(args: {
       await reconcileLedger(candidate.repoRoot, ledger, args.now);
       const key = ledgerKey(candidate);
 
-      const transcript = await args.readTranscriptSnapshot(candidate.transcriptPath);
+      const transcript = await args.readTranscriptSnapshot(
+        candidate.transcriptPath,
+      );
       if (!transcript.ok) {
-        summary.needsAttention.push(syncSkippedSummary(candidate, transcript.reason));
+        summary.needsAttention.push(
+          syncSkippedSummary(candidate, transcript.reason),
+        );
         continue;
       }
       const entry = ledger.sessions[key] ??
@@ -130,7 +118,7 @@ export async function executeSyncSweep(args: {
         continue;
       }
 
-      const enqueue = await enqueueAbsorb({
+      const enqueue = await enqueueSyncAbsorb({
         candidate,
         entry,
         decision,
@@ -140,7 +128,9 @@ export async function executeSyncSweep(args: {
       });
       if (!enqueue.ok) {
         ledger.sessions[key] = enqueue.entry;
-        summary.needsAttention.push(syncSkippedSummary(candidate, enqueue.reason));
+        summary.needsAttention.push(
+          syncSkippedSummary(candidate, enqueue.reason),
+        );
         await writeLedger(candidate.repoRoot, ledger, args.now);
         continue;
       }
@@ -161,74 +151,4 @@ export async function executeSyncSweep(args: {
   }
 
   return summary;
-}
-
-async function isInternalAlmanacSession(
-  candidate: TranscriptCandidate,
-  cache: Map<string, Set<string>>,
-): Promise<boolean> {
-  let ids = cache.get(candidate.repoRoot);
-  if (ids === undefined) {
-    ids = await listJobProviderSessionIds(candidate.repoRoot);
-    cache.set(candidate.repoRoot, ids);
-  }
-  return ids.has(candidate.sessionId);
-}
-
-function candidateEligibility(
-  candidate: TranscriptCandidate,
-  args: {
-    syncSince: Date | null;
-    quietMs: number;
-    now: Date;
-  },
-): SyncSkipped | null {
-  if (args.syncSince !== null && candidate.mtimeMs < args.syncSince.getTime()) {
-    return syncSkippedSummary(candidate, "before-automation-activation");
-  }
-
-  const quietForMs = args.now.getTime() - candidate.mtimeMs;
-  if (quietForMs < args.quietMs) {
-    return syncSkippedSummary(candidate, "quiet-window");
-  }
-  return null;
-}
-
-async function enqueueAbsorb(args: {
-  candidate: TranscriptCandidate;
-  entry: LedgerEntry;
-  decision: Extract<SyncCursorDecision, { kind: "ready" }>;
-  snapshot: TranscriptSnapshot;
-  now: Date;
-  startAbsorb: StartSyncAbsorbFn;
-}): Promise<
-  | { ok: true; jobId: string; entry: LedgerEntry }
-  | { ok: false; reason: string; entry: LedgerEntry }
-> {
-  const result = await args.startAbsorb({
-    candidate: args.candidate,
-    contextNote: syncCursorContext({
-      candidate: args.candidate,
-      fromLine: args.decision.fromLine,
-      lastAbsorbedLine: args.entry.lastAbsorbedLine,
-      lastAbsorbedSize: args.entry.lastAbsorbedSize,
-    }),
-  });
-  if (!result.ok) {
-    return {
-      ok: false,
-      reason: "absorb-start-failed",
-      entry: failedLedgerEntry(args.entry, result.error),
-    };
-  }
-  return {
-    ok: true,
-    jobId: result.jobId,
-    entry: pendingLedgerEntry({
-      entry: args.entry,
-      snapshot: args.snapshot,
-      jobId: result.jobId,
-      now: args.now,
-    }),
-  };
 }

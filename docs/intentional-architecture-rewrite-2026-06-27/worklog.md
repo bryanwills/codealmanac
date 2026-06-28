@@ -1630,3 +1630,13 @@ Two-hundred-thirty-second production slice:
 - Kept config `sync_since` lookup and lifecycle Absorb handoff in `sync.ts` because those are the workflow decisions the top-level sync verb coordinates.
 - Reduced `src/services/sync/sync.ts` from a large mixed file to a small orchestrator over named sync helpers.
 - Strengthened architecture-boundary tests so sync parsing, summary projection, repo candidate shaping, and Absorb context rendering stay in their owned files.
+
+Two-hundred-thirty-third production slice:
+
+- Split `src/services/sync/sweep.ts` so it stays focused on per-candidate sweep orchestration instead of owning every helper decision inline.
+- Added `src/services/sync/candidate-eligibility.ts` for activation and quiet-window eligibility checks.
+- Added `src/services/sync/internal-sessions.ts` for the internal-Almanac-session skip check over job provider session ids.
+- Added `src/services/sync/absorb-enqueue.ts` for ready-cursor-to-Absorb-job handoff, sync cursor context text, and the resulting ledger transition.
+- Kept ledger loading/reconciliation, repo sync locking, transcript snapshot reads, and summary accounting visible in `sweep.ts` because those are the sweep workflow steps.
+- Moved cursor context text out of `sweep-results.ts`, leaving that file as summary projection only.
+- Strengthened architecture-boundary tests so `sweep.ts` does not regain provider-session lookup or cursor context text.

@@ -1,4 +1,7 @@
-import type { TranscriptCandidate, TranscriptSourceApp } from "../../shared/transcripts.js";
+import type {
+  TranscriptCandidate,
+  TranscriptSourceApp,
+} from "../../shared/transcripts.js";
 import type { SyncCursorDecision } from "./transcript-cursor.js";
 
 export interface SyncStarted {
@@ -97,24 +100,4 @@ export function syncSkippedSummary(
     repoRoot: candidate.repoRoot,
     reason,
   };
-}
-
-export function syncCursorContext(args: {
-  candidate: TranscriptCandidate;
-  fromLine: number;
-  lastAbsorbedLine: number;
-  lastAbsorbedSize: number;
-}): string {
-  return [
-    "Scheduled sync cursor:",
-    `- App: ${args.candidate.app}`,
-    `- Session id: ${args.candidate.sessionId}`,
-    `- Transcript: ${args.candidate.transcriptPath}`,
-    `- Previously absorbed through line: ${args.lastAbsorbedLine}`,
-    `- Previously absorbed through byte: ${args.lastAbsorbedSize}`,
-    `- Focus on line ${args.fromLine} onward.`,
-    "- You may inspect earlier lines only for context.",
-    "- Do not re-document decisions already absorbed unless newer lines amend, " +
-      "invalidate, or add important nuance to them.",
-  ].join("\n");
 }

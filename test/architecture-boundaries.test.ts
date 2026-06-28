@@ -1930,6 +1930,15 @@ describe("architecture boundaries", () => {
     const syncServiceTypes = await readSource("src/services/sync/types.ts");
     const syncSweep = await readSource("src/services/sync/sweep.ts");
     const syncSweepResults = await readSource("src/services/sync/sweep-results.ts");
+    const syncCandidateEligibility = await readSource(
+      "src/services/sync/candidate-eligibility.ts",
+    );
+    const syncInternalSessions = await readSource(
+      "src/services/sync/internal-sessions.ts",
+    );
+    const syncAbsorbEnqueue = await readSource(
+      "src/services/sync/absorb-enqueue.ts",
+    );
     const syncInput = await readSource("src/services/sync/input.ts");
     const syncSummary = await readSource("src/services/sync/summary.ts");
     const syncCandidates = await readSource(
@@ -1961,6 +1970,11 @@ describe("architecture boundaries", () => {
 
     expect(existsSync(join(ROOT, "src/services/sync/types.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/sync/sweep-results.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/sync/candidate-eligibility.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/sync/internal-sessions.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/services/sync/absorb-enqueue.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/transcripts/index.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/transcripts/runtime.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/sync"))).toBe(false);
@@ -1996,8 +2010,17 @@ describe("architecture boundaries", () => {
     expect(syncServiceTypes).not.toContain("interface SyncTranscriptRuntime");
     expect(syncSweep).not.toContain("platform/transcripts");
     expect(syncSweep).not.toContain("stores/jobs");
-    expect(syncSweep).toContain("listJobProviderSessionIds");
+    expect(syncSweep).not.toContain("listJobProviderSessionIds");
+    expect(syncSweep).toContain("syncCandidateEligibility");
+    expect(syncSweep).toContain("isInternalAlmanacSession");
+    expect(syncSweep).toContain("enqueueSyncAbsorb");
+    expect(syncCandidateEligibility).toContain("syncCandidateEligibility");
+    expect(syncCandidateEligibility).toContain("quiet-window");
+    expect(syncInternalSessions).toContain("listJobProviderSessionIds");
+    expect(syncAbsorbEnqueue).toContain("enqueueSyncAbsorb");
+    expect(syncAbsorbEnqueue).toContain("syncCursorContext");
     expect(syncSweepResults).not.toContain("platform/transcripts");
+    expect(syncSweepResults).not.toContain("syncCursorContext");
     expect(jobsProviderSessions).toContain("listJobRecords");
     expect(syncCommand).not.toContain("platform/transcripts");
     expect(syncRegistration).not.toContain("platform/transcripts");
@@ -2038,7 +2061,7 @@ describe("architecture boundaries", () => {
     expect(syncCommand).not.toContain("syncAbsorbContext");
     expect(syncSweep).not.toContain("interface SyncSummary");
     expect(syncSweep).not.toContain("function cursorContext");
-    expect(syncSweep).toContain("syncCursorContext");
+    expect(syncSweep).not.toContain("syncCursorContext");
     expect(syncSweepResults).toContain("interface SyncSummary");
     expect(syncSweepResults).toContain("syncSkippedSummary");
   });
