@@ -1,9 +1,9 @@
 import { join } from "node:path";
 
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
-import { openIndex } from "../../wiki/indexer/schema.js";
-import * as query from "../../wiki/query/index.js";
+import { ensureFreshIndex } from "../../stores/wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../stores/wiki/indexer/schema.js";
+import * as query from "../../stores/wiki/query/index.js";
 
 export interface SearchWikiPagesRequest {
   cwd: string;

@@ -1,5 +1,5 @@
 import { formatDuration } from "../../shared/duration.js";
-import type { WikiIndexDiagnostics } from "../../wiki/indexer/diagnostics.js";
+import type { WikiIndexDiagnostics } from "../../stores/wiki/indexer/diagnostics.js";
 import type { WikiDoctorCheck } from "./doctor-types.js";
 
 export function describeWikiIndexCounts(

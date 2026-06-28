@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import type Database from "better-sqlite3";
 
-import { findEntry } from "../../stores/wiki-registry/index.js";
+import { findEntry } from "../../wiki-registry/index.js";
 import { inPageScope, type HealthScope } from "./scope.js";
 
 /**

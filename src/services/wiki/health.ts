@@ -1,9 +1,9 @@
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
 import {
   collectHealthReport as collectIndexerHealthReport,
   DEFAULT_STALE_SECONDS,
   type HealthReport,
-} from "../../wiki/health/index.js";
+} from "../../stores/wiki/health/index.js";
 
 export interface CheckWikiHealthRequest {
   cwd: string;

@@ -9,23 +9,23 @@ topics:
 sources:
   - id: yaml
     type: file
-    path: src/wiki/topics/yaml.ts
+    path: src/stores/wiki/topics/yaml.ts
     note: Migrated from legacy files.
   - id: dag
     type: file
-    path: src/wiki/topics/dag.ts
+    path: src/stores/wiki/topics/dag.ts
     note: Migrated from legacy files.
   - id: frontmatter-rewrite
     type: file
-    path: src/wiki/topics/frontmatter-rewrite.ts
+    path: src/stores/wiki/topics/frontmatter-rewrite.ts
     note: Migrated from legacy files.
   - id: paths
     type: file
-    path: src/wiki/topics/paths.ts
+    path: src/stores/wiki/topics/paths.ts
     note: Migrated from legacy files.
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Migrated from legacy files.
   - id: index
     type: file
@@ -92,12 +92,12 @@ Topic metadata (slug, title, description, parents) lives in `topics.yaml`. Which
 
 Three layers:
 1. `CHECK (child_slug != parent_slug)` constraint in `topic_parents`
-2. Pre-insert cycle check in `src/wiki/topics/dag.ts` before `almanac topics link` runs
+2. Pre-insert cycle check in `src/stores/wiki/topics/dag.ts` before `almanac topics link` runs
 3. Depth cap of 32 on any recursive CTE that traverses the DAG
 
 ## Frontmatter rewrite
 
-`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/wiki/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose. `src/services/wiki/topic-page-mutations.ts` owns the topic rename/delete workflows that coordinate topic metadata with page-frontmatter rewrites. `src/services/wiki/page-topic-mutations.ts` owns the `tag`/`untag` product workflow, while `src/services/wiki/page-topic-pages.ts` owns input parsing and page slug-to-file resolution through the query layer.
+`almanac topics rename <old> <new>` and `almanac untag <page> <topic>` rewrite affected pages' frontmatter in place. `src/stores/wiki/topics/frontmatter-rewrite.ts` handles this — it parses only the YAML block, patches the `topics:` array, and rewrites the file atomically to avoid corrupting prose. `src/services/wiki/topic-page-mutations.ts` owns the topic rename/delete workflows that coordinate topic metadata with page-frontmatter rewrites. `src/services/wiki/page-topic-mutations.ts` owns the `tag`/`untag` product workflow, while `src/services/wiki/page-topic-pages.ts` owns input parsing and page slug-to-file resolution through the query layer.
 
 ## CLI surface
 

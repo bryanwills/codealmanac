@@ -4,8 +4,8 @@ import { dirname } from "node:path";
 
 import yaml from "js-yaml";
 
-import { UserFacingError } from "../../errors.js";
-import { toKebabCase } from "../../slug.js";
+import { UserFacingError } from "../../../errors.js";
+import { toKebabCase } from "../../../slug.js";
 import { topicTitleFromSlug } from "./title.js";
 
 /**

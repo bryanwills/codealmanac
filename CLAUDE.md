@@ -42,7 +42,8 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/platform/` | Local machine integration for install, self-update, scheduler automation, diagnostics probes, local transcript discovery, external source mechanics, and child-process spawning | `install/`, `update/`, `automation/`, `diagnostics/`, `transcripts/`, `github/`, `jobs/` |
 | `src/agent/` | Agent provider identity, readiness, auth, instructions, and runtime support | `provider-id.ts`, `readiness/`, `auth/`, `runtime/` |
 | `src/agent/runtime/` | Provider-neutral lifecycle execution contract and provider runtime adapters | `types.ts`, `events.ts`, `providers/claude.ts`, `providers/claude/`, `providers/codex.ts`, `providers/codex/` |
-| `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
+| `src/stores/wiki/` | Local wiki index, query, topic-file, source-frontmatter, and health-check mechanics | `indexer/`, `query/`, `topics/`, `sources/`, `health/` |
+| `src/stores/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts` |
 | `src/shared/` | Small cross-cutting helpers with no product ownership | `duration.ts` |
 | `src/services/agents/` | Agent-facing provider view and provider/model config workflows over readiness and config services | `agents.ts`, `index.ts` |
 | `src/services/automation/` | Automation product workflows, task catalog/parsing, scheduled-task planning, legacy hook cleanup, and legacy automation migration over platform scheduler mechanics | `automation.ts`, `catalog.ts`, `legacy-hooks.ts`, `migration.ts`, `planning.ts`, `types.ts`, `index.ts` |
@@ -61,7 +62,7 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `src/stores/jobs/` | Job record, spec, log, lock, and persisted job/log schema mechanics under `.almanac/jobs/` | `records.ts`, `specs.ts`, `logs.ts`, `worker-lock.ts`, `types.ts`, `record-schema.ts`, `log-entry.ts` |
 | `src/stores/wiki-files/` | Mechanical `.almanac/` scaffolding and repo file writes used by wiki initialization | `scaffold.ts` |
 | `src/stores/wiki-review/` | Review queue persistence at `.almanac/review.yaml` — validation, ID generation, atomic writes | `store.ts` |
-| `src/wiki/topics/` | Topic DAG serialized to `.almanac/topics.yaml` + page frontmatter rewrites (slice 3) | `yaml.ts`, `frontmatter-rewrite.ts` |
+| `src/stores/wiki/topics/` | Topic DAG serialized to `.almanac/topics.yaml` + page frontmatter rewrites | `yaml.ts`, `frontmatter-rewrite.ts` |
 | `test/` | Vitest suites, one per feature area | `helpers.ts` (`withTempHome`, `makeRepo`, `writePage`), `*.test.ts` |
 | `prompts/` | Agent prompts bundled in the npm package | `bootstrap.md`, `writer.md`, `reviewer.md` |
 | `docs/plans/` | Slice-by-slice implementation plans + review-fix plans | `slice-N-*.md`, `fixes-slice-N-review.md` |
@@ -143,7 +144,7 @@ Things we do not do. If a plan proposes one, push back.
 - **Slice plans:** `docs/plans/slice-N-*.md`, `docs/plans/fixes-slice-N-review.md`
 - **Agent SDK reference:** `docs/research/agent-sdk.md` — version pin, auth, message types, streaming, subagent routing, pitfalls. Read before slice 4 or 5 work.
 - **Prompts:** `prompts/bootstrap.md`, `prompts/writer.md`, `prompts/reviewer.md`
-- **SQLite schema DDL:** `src/wiki/indexer/schema.ts` (single-source, applied idempotently on open)
+- **SQLite schema DDL:** `src/stores/wiki/indexer/schema.ts` (single-source, applied idempotently on open)
 - **Init scaffolding:** `src/services/wiki/initialization.ts` (creates `.almanac/`, starter README, runtime `.gitignore` entries, and registry entry)
 - **Registry I/O:** `src/stores/wiki-registry/store.ts` (atomic read/write) and `src/services/wiki/autoregistration.ts` (silent-on-command policy)
 - **Walk-up resolver:** `src/paths.ts` — nearest `.almanac/` from a `cwd`, like git's nearest `.git/`

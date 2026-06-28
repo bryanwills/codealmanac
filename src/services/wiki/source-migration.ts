@@ -1,8 +1,8 @@
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
 import {
   migrateLegacySourceFrontmatter,
   type LegacySourceMigrationResult,
-} from "../../wiki/sources/index.js";
+} from "../../stores/wiki/sources/index.js";
 
 export interface MigrateLegacySourcesRequest {
   cwd: string;

@@ -1,11 +1,11 @@
 import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../slug.js";
-import { runIndexer } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
-import { ancestorsInFile } from "../../wiki/topics/dag.js";
-import { topicsYamlPath } from "../../wiki/topics/paths.js";
-import { topicTitleFromSlug } from "../../wiki/topics/title.js";
+import { runIndexer } from "../../stores/wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { ancestorsInFile } from "../../stores/wiki/topics/dag.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
+import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";
 import {
   ensureTopic,
   findTopic,
@@ -13,7 +13,7 @@ import {
   type TopicEntry,
   type TopicsFile,
   writeTopicsFile,
-} from "../../wiki/topics/yaml.js";
+} from "../../stores/wiki/topics/yaml.js";
 import type {
   CreateWikiTopicRequest,
   CreateWikiTopicResult,

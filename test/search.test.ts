@@ -177,7 +177,7 @@ topics: [x]
 sources:
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Defines index tables.
 ---
 
@@ -188,7 +188,7 @@ body
       const r = await runSearch({
         cwd: repo,
         topics: [],
-        mentions: "src/wiki/indexer/schema.ts",
+        mentions: "src/stores/wiki/indexer/schema.ts",
       });
       expect(r.stdout.trim().split("\n")).toEqual(["source-backed"]);
     });

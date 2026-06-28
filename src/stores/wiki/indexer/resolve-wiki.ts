@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { UserFacingError } from "../../errors.js";
-import { findNearestAlmanacDir } from "../../paths.js";
-import { findEntry } from "../../stores/wiki-registry/index.js";
+import { UserFacingError } from "../../../errors.js";
+import { findNearestAlmanacDir } from "../../../paths.js";
+import { findEntry } from "../../wiki-registry/index.js";
 
 /**
  * Figure out which repo root a query command should run against.

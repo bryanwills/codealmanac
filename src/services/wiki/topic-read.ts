@@ -1,9 +1,9 @@
 import type Database from "better-sqlite3";
 
 import { toKebabCase } from "../../slug.js";
-import * as query from "../../wiki/query/index.js";
-import { descendantsInDb } from "../../wiki/topics/dag.js";
-import { topicTitleFromSlug } from "../../wiki/topics/title.js";
+import * as query from "../../stores/wiki/query/index.js";
+import { descendantsInDb } from "../../stores/wiki/topics/dag.js";
+import { topicTitleFromSlug } from "../../stores/wiki/topics/title.js";
 import type {
   WikiTopicRecord,
   WikiTopicRequest,

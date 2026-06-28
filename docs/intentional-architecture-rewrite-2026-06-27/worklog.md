@@ -1094,3 +1094,11 @@ One-hundred-sixty-second production slice:
 - Moved agent provider enablement policy into `src/agent/provider-enablement.ts` so Cursor enablement and enabled-provider lists live with agent/provider identity instead of config storage.
 - Updated services, platform update checks, lifecycle provider selection, setup, tests, and command surfaces to use the new store and agent/provider boundaries.
 - Added boundary coverage that `src/config/` stays deleted and that config stores do not export provider-enable policy.
+
+One-hundred-sixty-third production slice:
+
+- Removed the old top-level `src/wiki/` source bucket.
+- Moved local wiki SQLite indexing, query plans, health checks, topic YAML/frontmatter rewrites, and source-frontmatter maintenance into `src/stores/wiki/`.
+- Kept `src/services/wiki/` as the product workflow layer that resolves requests, shapes user-facing results, coordinates store mechanics, and owns wiki verbs.
+- Updated viewer, job runtime wiki effects, lifecycle tests, wiki services, and direct store tests to import wiki mechanics from `src/stores/wiki/`.
+- Added boundary coverage that `src/wiki/` stays deleted and command adapters do not import wiki store mechanics directly.

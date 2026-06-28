@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyWikilink,
   extractWikilinks,
-} from "../src/wiki/indexer/wikilinks.js";
+} from "../src/stores/wiki/indexer/wikilinks.js";
 
 describe("classifyWikilink", () => {
   it("classifies a bare word as a page slug", () => {

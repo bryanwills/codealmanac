@@ -9,15 +9,15 @@ topics:
 sources:
   - id: wikilinks
     type: file
-    path: src/wiki/indexer/wikilinks.ts
+    path: src/stores/wiki/indexer/wikilinks.ts
     note: Migrated from legacy files.
   - id: index
     type: file
-    path: src/wiki/indexer/index.ts
+    path: src/stores/wiki/indexer/index.ts
     note: Migrated from legacy files.
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Migrated from legacy files.
 
 ---
@@ -28,7 +28,7 @@ Almanac uses a single double-bracket syntax for all intra-page references, disam
 
 ## Classification rules
 
-The indexer in `src/wiki/indexer/wikilinks.ts` classifies each double-bracket link into one of four categories:
+The indexer in `src/stores/wiki/indexer/wikilinks.ts` classifies each double-bracket link into one of four categories:
 
 | Pattern | Category | Example |
 |---------|----------|---------|

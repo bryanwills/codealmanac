@@ -69,11 +69,11 @@ sources:
     note: Migrated from legacy files.
   - id: page-view
     type: file
-    path: src/wiki/query/page-view.ts
+    path: src/stores/wiki/query/page-view.ts
     note: Migrated from legacy files.
   - id: search
     type: file
-    path: src/wiki/query/search.ts
+    path: src/stores/wiki/query/search.ts
     note: Migrated from legacy files.
   - id: index
     type: file
@@ -143,7 +143,7 @@ sources:
 
 `almanac serve` is a lightweight local read-only web viewer for browsing a repo's Almanac wiki. It is the preferred "read the wiki" experience for humans; filesystem browsing is the fallback and editor interface, not the primary UX. Designed and implemented 2026-05-10.
 
-The viewer is mostly a read-only client over existing wiki/index/job-record primitives. `[[src/wiki/query/search.ts]]` owns shared FTS query builders and file-reference matching primitives used by both `[[src/cli/commands/search.ts]]` and `[[src/viewer/api.ts]]`, including parent-folder prefix calculation and SQLite GLOB escaping for literal path queries.
+The viewer is mostly a read-only client over existing wiki/index/job-record primitives. `[[src/stores/wiki/query/search.ts]]` owns shared FTS query builders and file-reference matching primitives used by both `[[src/cli/commands/search.ts]]` and `[[src/viewer/api.ts]]`, including parent-folder prefix calculation and SQLite GLOB escaping for literal path queries.
 
 ## Rationale
 
@@ -247,7 +247,7 @@ Next.js was explicitly rejected as too heavy. Express was not added; Node's `htt
 
 ## Source module structure
 
-The viewer is a read-only client over the same persisted index and page/job-record source files that the CLI uses. It should not introduce a separate database model or forked parser. Shared query mechanics live under `[[src/wiki/query/]]` rather than in viewer-specific helpers.
+The viewer is a read-only client over the same persisted index and page/job-record source files that the CLI uses. It should not introduce a separate database model or forked parser. Shared query mechanics live under `[[src/stores/wiki/query/]]` rather than in viewer-specific helpers.
 
 Actual source layout:
 
@@ -290,9 +290,9 @@ viewer/               # bundled static frontend (no build step required at runti
 
 `ViewerApi` exposes eight methods: `overview()` (wiki stats + recent pages + root topics), `page(slug)` (full `PageView` including body markdown, backlinks, topics, file refs, source records, and a `related_pages` array), `topic(slug)` (topic metadata + children + pages), `search(query)` (FTS results or recent pages when query is empty), `suggest(query)` (top eight FTS page hits for instant suggestions), `file(path)` (pages from `file_refs` matching path semantics), `jobs()` (list of all job records as `ViewerJobRun[]`), and `job(jobId)` (one `ViewerJobRun` plus its JSONL event log).
 
-`search()` and `suggest()` use different FTS query builders from `[[src/wiki/query/search.ts]]`. `search()` calls `buildQuotedTermFtsQuery()`, which wraps each whitespace-split term in exact-phrase quotes (`"term"`) and ANDs them — suitable for complete submitted queries. `suggest()` calls `buildQuotedPrefixFtsQuery()`, which appends `*` to each quoted term (`"term"*`) — FTS5 prefix matching that returns results while the user is still typing. Using the submitted-query builder for suggest would break as-you-type completion because incomplete words would not match their eventual full form.
+`search()` and `suggest()` use different FTS query builders from `[[src/stores/wiki/query/search.ts]]`. `search()` calls `buildQuotedTermFtsQuery()`, which wraps each whitespace-split term in exact-phrase quotes (`"term"`) and ANDs them — suitable for complete submitted queries. `suggest()` calls `buildQuotedPrefixFtsQuery()`, which appends `*` to each quoted term (`"term"*`) — FTS5 prefix matching that returns results while the user is still typing. Using the submitted-query builder for suggest would break as-you-type completion because incomplete words would not match their eventual full form.
 
-`PageView` is defined in `src/wiki/query/page-view.ts` and includes: slug, title, summary, file\_path, updated\_at, archived\_at, superseded\_by, supersedes, topics, file\_refs, source records, wikilinks\_out, wikilinks\_in, cross\_wiki\_links, and body (raw markdown). When returned by the viewer API `page()` method, a `related_pages` field is appended — page summaries for all wikilinks\_in, wikilinks\_out, and supersedes/superseded\_by targets, deduplicated, for the frontend to render titles without extra fetches.
+`PageView` is defined in `src/stores/wiki/query/page-view.ts` and includes: slug, title, summary, file\_path, updated\_at, archived\_at, superseded\_by, supersedes, topics, file\_refs, source records, wikilinks\_out, wikilinks\_in, cross\_wiki\_links, and body (raw markdown). When returned by the viewer API `page()` method, a `related_pages` field is appended — page summaries for all wikilinks\_in, wikilinks\_out, and supersedes/superseded\_by targets, deduplicated, for the frontend to render titles without extra fetches.
 
 `overview()` returns `featuredPages.gettingStarted` when the wiki contains `getting-started.md`. It does not return `featuredPages.projectOverview`; the 2026-05-28 front-door cleanup made `getting-started.md` the only special homepage convention.
 

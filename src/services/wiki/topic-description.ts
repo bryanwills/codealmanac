@@ -1,12 +1,12 @@
 import { toKebabCase } from "../../slug.js";
-import { runIndexer } from "../../wiki/indexer/index.js";
-import * as query from "../../wiki/query/index.js";
-import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import { runIndexer } from "../../stores/wiki/indexer/index.js";
+import * as query from "../../stores/wiki/query/index.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {
   ensureTopic,
   loadTopicsFile,
   writeTopicsFile,
-} from "../../wiki/topics/yaml.js";
+} from "../../stores/wiki/topics/yaml.js";
 import type {
   DescribeWikiTopicRequest,
   DescribeWikiTopicResult,

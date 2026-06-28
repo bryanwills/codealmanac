@@ -161,7 +161,7 @@ describe("architecture boundaries", () => {
     );
     expect(searchCommand).toContain("services/wiki/search.js");
     expect(searchCommand).toContain("./search-render.js");
-    expect(searchCommand).not.toContain("wiki/indexer");
+    expect(searchCommand).not.toContain("stores/wiki/indexer");
     expect(searchCommand).not.toContain("openIndex");
     expect(searchCommand).not.toContain("resolveWikiRoot");
     expect(searchCommand).not.toContain(
@@ -194,7 +194,7 @@ describe("architecture boundaries", () => {
     );
     expect(showCommand).toContain("services/wiki/page-view.js");
     expect(showCommand).toContain("./render.js");
-    expect(showCommand).not.toContain("wiki/indexer");
+    expect(showCommand).not.toContain("stores/wiki/indexer");
     expect(showCommand).not.toContain("openIndex");
     expect(showCommand).not.toContain("resolveWikiRoot");
     expect(showCommand).not.toContain("show requires a slug");
@@ -223,8 +223,8 @@ describe("architecture boundaries", () => {
     );
     expect(healthCommand).toContain("services/wiki/health.js");
     expect(healthCommand).toContain("./render.js");
-    expect(healthCommand).not.toContain("wiki/indexer");
-    expect(healthCommand).not.toContain("../../../wiki/health");
+    expect(healthCommand).not.toContain("stores/wiki/indexer");
+    expect(healthCommand).not.toContain("../../../stores/wiki/health");
     expect(healthCommand).not.toContain("collectHealthReport");
     expect(healthCommand).not.toContain("resolveWikiRoot");
     expect(healthCommand).not.toContain("JSON.stringify");
@@ -241,10 +241,12 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps wiki health report composition separate from individual checks", async () => {
-    const healthIndex = await readSource("src/wiki/health/index.ts");
+    const healthIndex = await readSource("src/stores/wiki/health/index.ts");
 
-    expect(existsSync(join(ROOT, "src/wiki/health/page-checks.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/health/link-checks.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/wiki"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/stores/wiki"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/health/page-checks.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/health/link-checks.ts"))).toBe(true);
     expect(healthIndex).toContain("page-checks.js");
     expect(healthIndex).toContain("link-checks.js");
     expect(healthIndex).not.toContain("SELECT p.slug FROM pages p");
@@ -263,7 +265,7 @@ describe("architecture boundaries", () => {
     );
     expect(reindexCommand).toContain("services/wiki/reindex.js");
     expect(reindexCommand).toContain("./reindex-render.js");
-    expect(reindexCommand).not.toContain("wiki/indexer");
+    expect(reindexCommand).not.toContain("stores/wiki/indexer");
     expect(reindexCommand).not.toContain("runIndexer");
     expect(reindexCommand).not.toContain("resolveWikiRoot");
     expect(reindexCommand).not.toContain("reindexed:");
@@ -274,7 +276,7 @@ describe("architecture boundaries", () => {
     expect(reindexCommand).not.toContain("result: ReindexWikiResult;");
     expect(reindexRender).toContain("reindexed:");
     expect(reindexRender).not.toContain("services/wiki/reindex.js");
-    expect(reindexRender).not.toContain("wiki/indexer");
+    expect(reindexRender).not.toContain("stores/wiki/indexer");
     expect(reindexService).not.toContain("export type ReindexWikiResult = IndexResult");
   });
 
@@ -333,7 +335,7 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/cli/commands/list-render.ts"))).toBe(true);
     expect(listCommand).toContain("services/wiki/registry.js");
     expect(listCommand).toContain("./list-render.js");
-    expect(listCommand).not.toContain("../../wiki/registry");
+    expect(listCommand).not.toContain("../../stores/wiki/registry");
     expect(listCommand).not.toContain("readRegistry");
     expect(listCommand).not.toContain("dropEntry");
     expect(listCommand).not.toContain("existsSync");
@@ -377,11 +379,11 @@ describe("architecture boundaries", () => {
       topicsReadRender,
     ]) {
       expect(source).toContain("services/wiki/topics.js");
-      expect(source).not.toContain("wiki/indexer");
+      expect(source).not.toContain("stores/wiki/indexer");
       expect(source).not.toContain("openIndex");
       expect(source).not.toContain("resolveWikiRoot");
     }
-    expect(topicsReadRender).not.toContain("wiki/topics/yaml");
+    expect(topicsReadRender).not.toContain("stores/wiki/topics/yaml");
     expect(topicsReadRender).not.toContain("titleCase");
     expect(topicsReadRender).toContain("../../../ansi-theme.js");
     expect(topicsReadRender).not.toContain("../../../ansi.js");
@@ -389,7 +391,7 @@ describe("architecture boundaries", () => {
     expect(registerTopics).toContain("shouldUseStdoutColor()");
     expect(registerTopics).not.toContain("process.stdout.isTTY");
     expect(topicsCommandTypes).toContain("color?: boolean");
-    expect(topicTypes).not.toContain("wiki/query");
+    expect(topicTypes).not.toContain("stores/wiki/query");
     expect(topicTypes).not.toContain("query.");
     expect(topicTypes).not.toContain("WikiTopicRequest extends WikiTopicsRequest");
     expect(topicTypes).not.toContain(
@@ -451,8 +453,8 @@ describe("architecture boundaries", () => {
       unlinkCommand,
     ]) {
       expect(source).toContain("services/wiki/topics.js");
-      expect(source).not.toContain("wiki/indexer");
-      expect(source).not.toContain("wiki/topics/yaml");
+      expect(source).not.toContain("stores/wiki/indexer");
+      expect(source).not.toContain("stores/wiki/topics/yaml");
       expect(source).not.toContain("runIndexer");
       expect(source).not.toContain("openFreshTopicsWorkspace");
     }
@@ -486,17 +488,17 @@ describe("architecture boundaries", () => {
 
   it("keeps topic frontmatter block splitting separate from topic rewrites", async () => {
     const frontmatterRewrite = await readSource(
-      "src/wiki/topics/frontmatter-rewrite.ts",
+      "src/stores/wiki/topics/frontmatter-rewrite.ts",
     );
     const frontmatterBlock = await readSource(
-      "src/wiki/topics/frontmatter-block.ts",
+      "src/stores/wiki/topics/frontmatter-block.ts",
     );
     const frontmatterTopicList = await readSource(
-      "src/wiki/topics/frontmatter-topic-list.ts",
+      "src/stores/wiki/topics/frontmatter-topic-list.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/wiki/topics/frontmatter-block.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/topics/frontmatter-topic-list.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/frontmatter-block.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/topics/frontmatter-topic-list.ts"))).toBe(true);
     expect(frontmatterRewrite).toContain("frontmatter-block.js");
     expect(frontmatterRewrite).toContain("frontmatter-topic-list.js");
     expect(frontmatterRewrite).not.toContain("function splitFrontmatter");
@@ -516,8 +518,8 @@ describe("architecture boundaries", () => {
 
     expect(existsSync(join(ROOT, "src/cli/commands/tag-render.ts"))).toBe(true);
     expect(tagCommand).toContain("services/wiki/page-topic-mutations.js");
-    expect(tagCommand).not.toContain("wiki/indexer");
-    expect(tagCommand).not.toContain("wiki/topics");
+    expect(tagCommand).not.toContain("stores/wiki/indexer");
+    expect(tagCommand).not.toContain("stores/wiki/topics");
     expect(tagCommand).not.toContain("resolveWikiRoot");
     expect(tagCommand).not.toContain("openIndex");
     expect(tagCommand).not.toContain("runIndexer");
@@ -1560,15 +1562,15 @@ describe("architecture boundaries", () => {
     const sourceMigrationService = await readSource(
       "src/services/wiki/source-migration.ts",
     );
-    const wikiSources = await readSource("src/wiki/sources/index.ts");
+    const wikiSources = await readSource("src/stores/wiki/sources/index.ts");
     const wikiSourcesFrontmatterFix = await readSource(
-      "src/wiki/sources/frontmatter-fix.ts",
+      "src/stores/wiki/sources/frontmatter-fix.ts",
     );
     const wikiSourcesMaintenance = await readSource(
-      "src/wiki/sources/maintenance.ts",
+      "src/stores/wiki/sources/maintenance.ts",
     );
 
-    expect(existsSync(join(ROOT, "src/wiki/sources/frontmatter-fix.ts")))
+    expect(existsSync(join(ROOT, "src/stores/wiki/sources/frontmatter-fix.ts")))
       .toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/migrate-render.ts"))).toBe(
       true,
@@ -1576,8 +1578,8 @@ describe("architecture boundaries", () => {
     expect(migrateCommand).toContain("services/wiki/source-migration.js");
     expect(migrateCommand).toContain("services/automation/index.js");
     expect(migrateCommand).toContain("./migrate-render.js");
-    expect(migrateCommand).not.toContain("wiki/indexer");
-    expect(migrateCommand).not.toContain("wiki/sources");
+    expect(migrateCommand).not.toContain("stores/wiki/indexer");
+    expect(migrateCommand).not.toContain("stores/wiki/sources");
     expect(migrateCommand).not.toContain("platform/automation");
     expect(migrateCommand).not.toContain("./automation.js");
     expect(migrateCommand).not.toContain("resolveWikiRoot");
@@ -1619,15 +1621,15 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps indexer page planning out of SQLite write orchestration", async () => {
-    const indexer = await readSource("src/wiki/indexer/index.ts");
-    const pagePlan = await readSource("src/wiki/indexer/page-plan.ts");
-    const pageWriter = await readSource("src/wiki/indexer/page-writer.ts");
-    const frontmatter = await readSource("src/wiki/indexer/frontmatter.ts");
-    const topicsYaml = await readSource("src/wiki/indexer/topics-yaml.ts");
+    const indexer = await readSource("src/stores/wiki/indexer/index.ts");
+    const pagePlan = await readSource("src/stores/wiki/indexer/page-plan.ts");
+    const pageWriter = await readSource("src/stores/wiki/indexer/page-writer.ts");
+    const frontmatter = await readSource("src/stores/wiki/indexer/frontmatter.ts");
+    const topicsYaml = await readSource("src/stores/wiki/indexer/topics-yaml.ts");
 
-    expect(existsSync(join(ROOT, "src/wiki/indexer/page-plan.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/indexer/page-writer.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/indexer/warnings.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/page-plan.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/page-writer.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/warnings.ts"))).toBe(true);
     expect(indexer).toContain("buildIndexedPagesPlan");
     expect(indexer).toContain("applyIndexedPagesPlan");
     expect(indexer).not.toContain("fast-glob");
@@ -1653,13 +1655,13 @@ describe("architecture boundaries", () => {
   });
 
   it("keeps frontmatter source coercion separate from document parsing", async () => {
-    const frontmatter = await readSource("src/wiki/indexer/frontmatter.ts");
+    const frontmatter = await readSource("src/stores/wiki/indexer/frontmatter.ts");
     const frontmatterSources = await readSource(
-      "src/wiki/indexer/frontmatter-sources.ts",
+      "src/stores/wiki/indexer/frontmatter-sources.ts",
     );
-    const pageSources = await readSource("src/wiki/indexer/page-sources.ts");
+    const pageSources = await readSource("src/stores/wiki/indexer/page-sources.ts");
 
-    expect(existsSync(join(ROOT, "src/wiki/indexer/frontmatter-sources.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/frontmatter-sources.ts"))).toBe(true);
     expect(frontmatter).toContain("frontmatter-sources.js");
     expect(frontmatter).not.toContain("function coerceSource");
     expect(frontmatter).not.toContain("case \"conversation\"");
@@ -1703,7 +1705,7 @@ describe("architecture boundaries", () => {
       "src/services/wiki/doctor-index.ts",
     );
     const indexDiagnostics = await readSource(
-      "src/wiki/indexer/diagnostics.ts",
+      "src/stores/wiki/indexer/diagnostics.ts",
     );
 
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/render.ts"))).toBe(
@@ -1807,12 +1809,12 @@ describe("architecture boundaries", () => {
     expect(diagnosticsIndex).not.toContain("../../agent/");
     expect(diagnosticsIndex).not.toContain("../../config/");
     expect(doctorTypes).not.toContain("typeof collectHealthReport");
-    expect(doctorHealth).not.toContain("../../wiki/health/index");
+    expect(doctorHealth).not.toContain("../../stores/wiki/health/index");
     expect(doctorHealth).toContain("collectWikiHealthReport");
     expect(doctorService).toContain("readWikiIndexDiagnostics");
     expect(doctorDiagnostics).toContain("../wiki/doctor.js");
     expect(existsSync(join(ROOT, "src/services/diagnostics/doctor.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/indexer/diagnostics.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/stores/wiki/indexer/diagnostics.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/install.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/agents.ts"))).toBe(false);
     expect(existsSync(join(ROOT, "src/cli/commands/doctor/updates.ts"))).toBe(false);
@@ -1843,9 +1845,9 @@ describe("architecture boundaries", () => {
     );
 
     expect(existsSync(join(ROOT, "src/stores/wiki-registry/store.ts"))).toBe(true);
-    expect(existsSync(join(ROOT, "src/wiki/registry/store.ts"))).toBe(false);
-    expect(existsSync(join(ROOT, "src/wiki/registry/index.ts"))).toBe(false);
-    expect(existsSync(join(ROOT, "src/wiki/registry"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/stores/wiki/registry/store.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/stores/wiki/registry/index.ts"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/stores/wiki/registry"))).toBe(false);
     expect(autoRegistration).toContain("findRegistryEntry");
     expect(autoRegistration).not.toContain("process.platform");
     expect(autoRegistration).not.toContain("function samePath");

@@ -47,7 +47,7 @@ sources:
     note: Defines Garden's graph-maintenance workflow, including decided review items, source cleanup, merge/split/archive decisions, and topic repair.
   - id: index
     type: file
-    path: src/wiki/indexer/index.ts
+    path: src/stores/wiki/indexer/index.ts
     note: Implements the derived SQLite projection over page frontmatter, links, file references, topics, sources, and summary fields.
   - id: diataxis-fr
     type: web

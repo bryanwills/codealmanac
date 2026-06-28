@@ -1,13 +1,13 @@
-import { runIndexer } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
+import { runIndexer } from "../../stores/wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
 import { toKebabCase } from "../../slug.js";
-import { rewritePageTopics } from "../../wiki/topics/frontmatter-rewrite.js";
-import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import { rewritePageTopics } from "../../stores/wiki/topics/frontmatter-rewrite.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {
   ensureTopic,
   loadTopicsFile,
   writeTopicsFile,
-} from "../../wiki/topics/yaml.js";
+} from "../../stores/wiki/topics/yaml.js";
 import {
   parsePageTopicInput,
   resolvePageTopicPages,

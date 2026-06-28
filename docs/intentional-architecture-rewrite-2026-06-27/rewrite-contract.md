@@ -21,7 +21,7 @@ The current codebase has real product value, but ownership is not obvious enough
 
 - `cli/commands/*` contains edge parsing/rendering plus workflow decisions.
 - `operations/`, `jobs/`, and `agent/runtime/` still need continued audit for lifecycle vocabulary, but the old top-level `harness/` bucket has been removed.
-- `wiki/indexer/`, `wiki/query/`, `wiki/health/`, `wiki/topics/`, and `wiki/registry/` are useful but not yet presented as one coherent wiki service boundary.
+- Local wiki index/query/topic/source/health mechanics now live under `stores/wiki/`; remaining wiki audit should focus on service product verbs rather than a top-level store bucket.
 - Sync transcript discovery has moved to platform-owned transcript adapters and quiet-session workflow lives under `services/sync`; remaining sync/automation audit should focus on scheduling policy overlap, not a top-level sync bucket.
 - Viewer API modules are server/read-model edges but sit beside product services rather than behind an explicit edge boundary.
 

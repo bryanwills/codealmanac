@@ -7,9 +7,9 @@ import { describe, expect, it } from "vitest";
 import {
   ensureFreshIndex,
   runIndexer,
-} from "../src/wiki/indexer/index.js";
-import { openIndex } from "../src/wiki/indexer/schema.js";
-import type { IndexerWarningSink } from "../src/wiki/indexer/warnings.js";
+} from "../src/stores/wiki/indexer/index.js";
+import { openIndex } from "../src/stores/wiki/indexer/schema.js";
+import type { IndexerWarningSink } from "../src/stores/wiki/indexer/warnings.js";
 import { makeRepo, scaffoldWiki, withTempHome, writePage } from "./helpers.js";
 
 /**
@@ -213,7 +213,7 @@ topics: [x]
 sources:
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Defines index tables.
   - id: docs
     type: web
@@ -242,8 +242,8 @@ Body.
           .all("source-backed");
         expect(refs).toEqual([
           {
-            path: "src/wiki/indexer/schema.ts",
-            original_path: "src/wiki/indexer/schema.ts",
+            path: "src/stores/wiki/indexer/schema.ts",
+            original_path: "src/stores/wiki/indexer/schema.ts",
             is_dir: 0,
           },
         ]);
@@ -276,7 +276,7 @@ Body.
             {
             source_id: "schema",
             source_type: "file",
-            target: "src/wiki/indexer/schema.ts",
+            target: "src/stores/wiki/indexer/schema.ts",
             title: null,
             retrieved_at: null,
             note: "Defines index tables.",
@@ -503,7 +503,7 @@ topics: [x]
 sources:
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Defines index tables.
 ---
 
@@ -562,7 +562,7 @@ Body.
           | undefined;
         expect(source).toEqual({
           source_id: "schema",
-          target: "src/wiki/indexer/schema.ts",
+          target: "src/stores/wiki/indexer/schema.ts",
         });
       } finally {
         db.close();

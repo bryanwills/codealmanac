@@ -129,7 +129,7 @@ The remaining quality gap is help shape. Commander help is grouped and clean, bu
 
 The 2026-05-30 command-folder refactor set a concrete source-layout rule for `src/cli/commands/`. Small single-file commands stay as `src/cli/commands/<command>.ts`. Multi-file commands use `src/cli/commands/<command>/index.ts` as the public command entrypoint, with command-private helpers beside it. The current examples are `[[src/cli/commands/doctor/index.ts]]`, `[[src/cli/commands/health/index.ts]]`, `[[src/cli/commands/setup/index.ts]]`, and `[[src/cli/commands/topics/index.ts]]`.
 
-`src/cli/commands/` is the terminal CLI surface, not the owner of every user-facing surface. `[[src/cli/commands/serve.ts]]` stays a thin command wrapper that starts the viewer, while the local browser surface remains under `[[src/viewer/]]`. Shared read models should move to shared query modules when both CLI commands and the viewer need them, as `[[src/wiki/query/page-view.ts]]` already does for page views.
+`src/cli/commands/` is the terminal CLI surface, not the owner of every user-facing surface. `[[src/cli/commands/serve.ts]]` stays a thin command wrapper that starts the viewer, while the local browser surface remains under `[[src/viewer/]]`. Shared read models should move to shared query modules when both CLI commands and the viewer need them, as `[[src/stores/wiki/query/page-view.ts]]` already does for page views.
 
 ## Shared flags
 

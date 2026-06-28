@@ -1,8 +1,8 @@
 import { toKebabCase } from "../../slug.js";
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
-import { openIndex } from "../../wiki/indexer/schema.js";
-import * as query from "../../wiki/query/index.js";
-import { indexDbPath } from "../../wiki/topics/paths.js";
+import { ensureFreshIndex } from "../../stores/wiki/indexer/index.js";
+import { openIndex } from "../../stores/wiki/indexer/schema.js";
+import * as query from "../../stores/wiki/query/index.js";
+import { indexDbPath } from "../../stores/wiki/topics/paths.js";
 import type {
   ResolvedPageTopicPage,
   TagWikiPagesRequest,

@@ -1,15 +1,15 @@
 import type Database from "better-sqlite3";
 import { join } from "node:path";
 
-import { ensureFreshIndex } from "../../wiki/indexer/index.js";
-import { resolveWikiRoot } from "../../wiki/indexer/resolve-wiki.js";
-import { openIndex } from "../../wiki/indexer/schema.js";
-import { topicsYamlPath } from "../../wiki/topics/paths.js";
+import { ensureFreshIndex } from "../../stores/wiki/indexer/index.js";
+import { resolveWikiRoot } from "../../stores/wiki/indexer/resolve-wiki.js";
+import { openIndex } from "../../stores/wiki/indexer/schema.js";
+import { topicsYamlPath } from "../../stores/wiki/topics/paths.js";
 import {
   findTopic,
   loadTopicsFile,
   type TopicsFile,
-} from "../../wiki/topics/yaml.js";
+} from "../../stores/wiki/topics/yaml.js";
 import type { WikiTopicsRequest } from "./topic-types.js";
 
 export interface FreshTopicIndex {

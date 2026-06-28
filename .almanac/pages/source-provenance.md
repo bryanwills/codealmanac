@@ -9,27 +9,27 @@ sources:
     note: Defines the source-provenance feature scope, compatibility boundary, migration surface, and implementation tasks.
   - id: frontmatter-parser
     type: file
-    path: src/wiki/indexer/frontmatter.ts
+    path: src/stores/wiki/indexer/frontmatter.ts
     note: Parses structured source frontmatter and legacy source strings.
   - id: source-normalizer
     type: file
-    path: src/wiki/indexer/page-sources.ts
+    path: src/stores/wiki/indexer/page-sources.ts
     note: Normalizes structured sources, legacy files, legacy URL strings, and derived file references.
   - id: indexer-integration
     type: file
-    path: src/wiki/indexer/index.ts
+    path: src/stores/wiki/indexer/index.ts
     note: Inserts normalized sources into page_sources and derived file references into file_refs.
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Defines the page_sources table and schema-version migration.
   - id: health-command
     type: file
-    path: src/wiki/health/index.ts
+    path: src/stores/wiki/health/index.ts
     note: Reports source-health categories and runs deterministic source frontmatter fixes.
   - id: source-rewriter
     type: file
-    path: src/wiki/sources/maintenance.ts
+    path: src/stores/wiki/sources/maintenance.ts
     note: Rewrites safe legacy frontmatter into structured sources for `almanac migrate legacy-sources`.
   - id: show-command
     type: file
@@ -37,7 +37,7 @@ sources:
     note: Displays indexed page sources in the show command metadata header.
   - id: page-view-query
     type: file
-    path: src/wiki/query/page-view.ts
+    path: src/stores/wiki/query/page-view.ts
     note: Exposes indexed page sources to shared page-view consumers.
   - id: viewer-api
     type: file
@@ -138,7 +138,7 @@ GitHub pull requests fit the current `pr` source type because a PR is a durable 
 
 The 2026-05-29 GitHub connector research made this boundary sharper: `sources:` and `page_sources` are page-provenance machinery, not the ingestion model for webhooks, linked issues, review comments, branch-scoped source handles, or duplicate delivery handling. Connector ingestion should use source adapters and [[evidence-bundles|evidence bundles]] that carry trigger identity, addressable source refs, branch context, provenance metadata, and dedupe keys as run input or run sidecar data. PR-time review notes should also be separate output objects rather than page edits, so page frontmatter remains the durable citation layer for claims that actually land in the wiki. [@lifecycle-provenance-session]
 
-The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/absorb/source-ref.ts` and `src/absorb/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps source-health checks and deterministic source-frontmatter migration in `[[src/wiki/sources/]]`, puts the `almanac migrate legacy-sources` product workflow in `[[src/services/wiki/source-migration.ts]]`, and leaves `[[src/cli/commands/migrate.ts]]` as terminal rendering. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
+The implemented local GitHub source-ref path made the naming risk concrete. The removed source-frontmatter rewriter module name confused page-source migration with operation source input, while `src/absorb/source-ref.ts` and `src/absorb/github.ts` mean user-supplied source addresses for Absorb. The corrected boundary keeps provenance as the page-evidence concept, keeps frontmatter parsing and source normalization in the markdown-to-SQLite projection path, keeps source-health checks and deterministic source-frontmatter migration in `[[src/stores/wiki/sources/]]`, puts the `almanac migrate legacy-sources` product workflow in `[[src/services/wiki/source-migration.ts]]`, and leaves `[[src/cli/commands/migrate.ts]]` as terminal rendering. Future source-connector work should not confuse page citations with source access. [@source-architecture-session]
 
 The same source can support current truth, historical context, rejected alternatives, or unresolved questions depending on the claim that cites it. The first implementation does not add source status fields because the underlying problem is simpler: each `note` must state what the source supports. A fixed issue should be cited as the original report plus the current fix source; a brainstorming conversation should be cited as brainstorming unless code, tests, or prompts implemented the idea; and a PR discussion that changed before merge should not be cited as current behavior without a current code or prompt source. [@implementation-session]
 
@@ -174,11 +174,11 @@ Unresolved source conflicts should not automatically become page state. [[wiki-c
 
 The transition from `files:` to `sources[type=file]` is deterministic because agents cannot be expected to remember old wiki conventions. The indexer must accept legacy `files:` and structured `sources:` at the same time, and both forms must populate `file_refs` so `almanac search --mentions` remains stable for existing wikis.
 
-Legacy compatibility is a temporary parsing and rewrite concern, not the conceptual source model. `[[src/wiki/indexer/page-sources.ts]]` isolates legacy handling so `[[src/wiki/indexer/index.ts]]` consumes one normalized `pageSources` and `fileRefs` model instead of looping over `files:` and `sources:` in multiple places. [@source-normalizer] [@indexer-integration]
+Legacy compatibility is a temporary parsing and rewrite concern, not the conceptual source model. `[[src/stores/wiki/indexer/page-sources.ts]]` isolates legacy handling so `[[src/stores/wiki/indexer/index.ts]]` consumes one normalized `pageSources` and `fileRefs` model instead of looping over `files:` and `sources:` in multiple places. [@source-normalizer] [@indexer-integration]
 
 The deterministic migration surface is `almanac migrate legacy-sources`, not Garden-owned cleanup, package-update side effects, or a mutating `health --fix` mode. The migration may rewrite wiki pages only for safe mechanical source-frontmatter fixes, must not invoke AI, and must not alter page body prose.
 
-The rewriter in `[[src/wiki/sources/maintenance.ts]]` preserves unrelated frontmatter fields, preserves body bytes, converts legacy `files:` entries into `sources` entries with `type: file`, converts legacy string URL entries in `sources:` into `type: web` entries, and removes `files:` only after conversion. Ambiguous non-URL legacy source strings remain unchanged and are reported as not fixable. [@source-rewriter]
+The rewriter in `[[src/stores/wiki/sources/maintenance.ts]]` preserves unrelated frontmatter fields, preserves body bytes, converts legacy `files:` entries into `sources` entries with `type: file`, converts legacy string URL entries in `sources:` into `type: web` entries, and removes `files:` only after conversion. Ambiguous non-URL legacy source strings remain unchanged and are reported as not fixable. [@source-rewriter]
 
 The source-maintenance placement is not a general rule that migrations belong under the indexer. If Almanac later gets ordered, versioned migrations with durable migration state, those should have their own migration infrastructure. This frontmatter rewriter is a deterministic wiki-source maintenance command, not a schema migration system. [@source-architecture-session]
 
@@ -186,9 +186,9 @@ The migration must not invent citation markers in prose. Generated source IDs co
 
 ## Implementation Surfaces
 
-The parser in `[[src/wiki/indexer/frontmatter.ts]]` exposes structured sources while continuing to parse legacy `files:`. The normalization module in `[[src/wiki/indexer/page-sources.ts]]` preserves structured sources with `legacy: false`, converts legacy `files:` into temporary file sources with `legacy: true`, derives file refs from both forms, generates deterministic legacy source IDs, and exposes whether a page still has legacy frontmatter. [@frontmatter-parser] [@source-normalizer]
+The parser in `[[src/stores/wiki/indexer/frontmatter.ts]]` exposes structured sources while continuing to parse legacy `files:`. The normalization module in `[[src/stores/wiki/indexer/page-sources.ts]]` preserves structured sources with `legacy: false`, converts legacy `files:` into temporary file sources with `legacy: true`, derives file refs from both forms, generates deterministic legacy source IDs, and exposes whether a page still has legacy frontmatter. [@frontmatter-parser] [@source-normalizer]
 
-The indexer in `[[src/wiki/indexer/index.ts]]` is the integration point that inserts derived file references into `file_refs` and source metadata into the `page_sources` table defined by `[[src/wiki/indexer/schema.ts]]`. Keeping legacy conversion out of the indexer makes the compatibility branch easier to delete after the migration window closes. [@indexer-integration] [@schema]
+The indexer in `[[src/stores/wiki/indexer/index.ts]]` is the integration point that inserts derived file references into `file_refs` and source metadata into the `page_sources` table defined by `[[src/stores/wiki/indexer/schema.ts]]`. Keeping legacy conversion out of the indexer makes the compatibility branch easier to delete after the migration window closes. [@indexer-integration] [@schema]
 
 The `page_sources` table stores `page_slug`, `source_id`, `source_type`, `target`, `title`, `retrieved_at`, `note`, and `legacy`. File sources store a normalized path as `target`; web sources store the URL. The schema version bump forces pages to reindex so existing markdown can populate the new table once the indexer consumes the normalized source model. [@schema] [@indexer-integration]
 
@@ -196,9 +196,9 @@ The `page_sources` table stores `page_slug`, `source_id`, `source_type`, `target
 
 A future `almanac sources` command should behave like source-aware `--mentions`, not like a raw inventory dump. The useful questions are "which pages cite this PR, issue, URL, commit, file, or conversation?", "which pages rely on sources from this type or domain?", and "which current wiki claims still depend only on unresolved or historical context?" Candidate query shapes are `almanac sources --mentions <target>`, `almanac sources --type pr`, `almanac sources --type issue`, and `almanac sources --domain github.com`. [@implementation-session]
 
-The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show/index.ts]]` renders a compact source summary in the metadata header, `[[src/wiki/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
+The query surface exposes sources without replacing existing file-reference behavior. `[[src/cli/commands/show/index.ts]]` renders a compact source summary in the metadata header, `[[src/stores/wiki/query/page-view.ts]]` returns source records on shared page views, `[[src/viewer/api.ts]]` includes source records in page API responses, and `[[viewer/app.js]]` renders file sources as file-route links, web sources as external links, and other source types as non-navigating source rows in [[almanac-serve|the viewer]] right rail. [@show-command] [@page-view-query] [@viewer-api] [@viewer-frontend]
 
-The health implementation in `[[src/wiki/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, and `unfixable_sources` records ambiguous legacy source strings. `almanac health` is report-only for source migration and warns users to run `almanac migrate legacy-sources` when legacy frontmatter is present. [@health-command]
+The health implementation in `[[src/stores/wiki/health/index.ts]]` adds source-specific categories beside the existing graph checks, while `[[src/cli/commands/health/index.ts]]` stays the CLI entrypoint and owns output rendering. Missing source citations and unused source entries belong in `health` because the project chose warnings over hard validation for the first source-provenance slice. `legacy_frontmatter` records pages still using `files:` or legacy string sources, `duplicate_sources` records repeated source IDs, and `unfixable_sources` records ambiguous legacy source strings. `almanac health` is report-only for source migration and warns users to run `almanac migrate legacy-sources` when legacy frontmatter is present. [@health-command]
 
 ## Prompt And Manual Guidance
 

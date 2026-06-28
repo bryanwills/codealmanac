@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { AgentRuntimeResult } from "../../../agent/runtime/events.js";
 import type { FinalOutputResult } from "../../../agent/runtime/final-output.js";
 import { summarizeOperationOutput } from "../../lifecycle/operations/output.js";
-import { runIndexer } from "../../../wiki/indexer/index.js";
+import { runIndexer } from "../../../stores/wiki/indexer/index.js";
 import { diffPageSnapshots, snapshotPages } from "./snapshots.js";
 import type {
   JobOperationOutput,

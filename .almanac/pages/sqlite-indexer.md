@@ -27,7 +27,7 @@ sources:
     note: Shows that explicit `almanac reindex` calls `runIndexer()` and reports its result.
   - id: indexer-fast-path
     type: file
-    path: src/wiki/indexer/index.ts
+    path: src/stores/wiki/indexer/index.ts
     note: Shows that `runIndexer()` skips rows whose `content_hash` and `file_path` already match.
   - id: register-query-commands
     type: file
@@ -47,31 +47,31 @@ sources:
     note: Migrated from legacy files.
   - id: schema
     type: file
-    path: src/wiki/indexer/schema.ts
+    path: src/stores/wiki/indexer/schema.ts
     note: Migrated from legacy files.
   - id: index-2
     type: file
-    path: src/wiki/indexer/index.ts
+    path: src/stores/wiki/indexer/index.ts
     note: Migrated from legacy files.
   - id: frontmatter
     type: file
-    path: src/wiki/indexer/frontmatter.ts
+    path: src/stores/wiki/indexer/frontmatter.ts
     note: Migrated from legacy files.
   - id: page-sources
     type: file
-    path: src/wiki/indexer/page-sources.ts
+    path: src/stores/wiki/indexer/page-sources.ts
     note: Migrated from legacy files.
   - id: wikilinks
     type: file
-    path: src/wiki/indexer/wikilinks.ts
+    path: src/stores/wiki/indexer/wikilinks.ts
     note: Migrated from legacy files.
   - id: paths
     type: file
-    path: src/wiki/indexer/paths.ts
+    path: src/stores/wiki/indexer/paths.ts
     note: Migrated from legacy files.
   - id: resolve-wiki
     type: file
-    path: src/wiki/indexer/resolve-wiki.ts
+    path: src/stores/wiki/indexer/resolve-wiki.ts
     note: Migrated from legacy files.
   - id: duration
     type: file
@@ -79,23 +79,23 @@ sources:
     note: Migrated from legacy files.
   - id: query-search
     type: file
-    path: src/wiki/query/search.ts
+    path: src/stores/wiki/query/search.ts
     note: Executes the search SQL plan and hydrates result topics.
   - id: query-search-plan
     type: file
-    path: src/wiki/query/search-plan.ts
+    path: src/stores/wiki/query/search-plan.ts
     note: Builds the current FTS/list SQL plan and shared search filters.
   - id: query-file-mentions
     type: file
-    path: src/wiki/query/file-mentions.ts
+    path: src/stores/wiki/query/file-mentions.ts
     note: Builds file and folder mention filters for search.
   - id: index-3
     type: file
-    path: src/wiki/health/index.ts
+    path: src/stores/wiki/health/index.ts
     note: Migrated from legacy files.
   - id: maintenance
     type: file
-    path: src/wiki/sources/maintenance.ts
+    path: src/stores/wiki/sources/maintenance.ts
     note: Migrated from legacy files.
   - id: abi-guard
     type: file
@@ -115,7 +115,7 @@ verified: 2026-05-15T00:00:00.000Z
 
 # SQLite Indexer
 
-The indexer (`src/wiki/indexer/`) builds and maintains `.almanac/index.db` — a SQLite database that powers all query commands (`search`, `show`, `health`, `topics show`). It runs silently before every query command. Freshness checks compare page and topic-file mtimes against the database mtime; once a reindex starts, unchanged page rows are skipped by `content_hash` and `file_path`.
+The indexer (`src/stores/wiki/indexer/`) builds and maintains `.almanac/index.db` — a SQLite database that powers all query commands (`search`, `show`, `health`, `topics show`). It runs silently before every query command. Freshness checks compare page and topic-file mtimes against the database mtime; once a reindex starts, unchanged page rows are skipped by `content_hash` and `file_path`.
 
 ## Query output contract
 
@@ -123,11 +123,11 @@ Query commands should stay quiet by default and reserve richer context for expli
 
 `almanac search` should remain a wiki-page search by default. A 2026-05-15 product/API discussion rejected mixing real source files into the default result stream because it would blur Almanac's contract with ordinary code search tools such as `rg` and make slug piping less predictable. A future explicit mode such as `almanac search --files "query"` is consistent with the model if it returns file refs attached to matching wiki pages; that mode should mean "show the source files the wiki says matter for this concept," not "grep the repository too." `almanac show <slug> --files` and `almanac search --mentions <path>` remain the direct file-aware surfaces for one page or one source path.
 
-The current search-query architecture is intentionally modest. `[[src/wiki/query/search.ts]]` asks `[[src/wiki/query/search-plan.ts]]` for SQL and params, executes the plan, and hydrates each result with topics. `search-plan.ts` still assembles archive, topic, mention, freshness, orphan, FTS, and list-mode clauses in one builder, while `[[src/wiki/query/file-mentions.ts]]` owns the file/folder mention filter. That shape is acceptable because the current query surface is small; the project should split filter builders and topic hydration only when new behavior such as source filtering, snippets, OR groups, topic descendants, semantic/vector search, more ranking modes, or reusable viewer/API search plans makes the combined builder materially harder to maintain. [@query-search] [@query-search-plan] [@query-file-mentions] [@search-query-session]
+The current search-query architecture is intentionally modest. `[[src/stores/wiki/query/search.ts]]` asks `[[src/stores/wiki/query/search-plan.ts]]` for SQL and params, executes the plan, and hydrates each result with topics. `search-plan.ts` still assembles archive, topic, mention, freshness, orphan, FTS, and list-mode clauses in one builder, while `[[src/stores/wiki/query/file-mentions.ts]]` owns the file/folder mention filter. That shape is acceptable because the current query surface is small; the project should split filter builders and topic hydration only when new behavior such as source filtering, snippets, OR groups, topic descendants, semantic/vector search, more ranking modes, or reusable viewer/API search plans makes the combined builder materially harder to maintain. [@query-search] [@query-search-plan] [@query-file-mentions] [@search-query-session]
 
 ## Schema
 
-Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (`CREATE ... IF NOT EXISTS`). Tables:
+Defined in `src/stores/wiki/indexer/schema.ts` and applied idempotently on every open (`CREATE ... IF NOT EXISTS`). Tables:
 
 - `pages` — one row per `.md` file: `slug`, `title`, `file_path`, `content_hash`, `updated_at`, `archived_at`, `superseded_by`
 - `topics` — topic metadata (slug, title, description); populated from `topics.yaml` at reindex time
@@ -140,9 +140,9 @@ Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (
 
 ## Markdown Projection Boundary
 
-`src/wiki/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/wiki/indexer/frontmatter.ts]]`, source normalization in `[[src/wiki/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/wiki/health/index.ts]]` owns the health checks that query those projections.
+`src/stores/wiki/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/stores/wiki/indexer/frontmatter.ts]]`, source normalization in `[[src/stores/wiki/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/stores/wiki/health/index.ts]]` owns the health checks that query those projections.
 
-The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic source-connector owner for page-source projection code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper now lives in `[[src/wiki/sources/maintenance.ts]]` because `almanac migrate legacy-sources` owns mechanical source-frontmatter migration; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
+The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic source-connector owner for page-source projection code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper now lives in `[[src/stores/wiki/sources/maintenance.ts]]` because `almanac migrate legacy-sources` owns mechanical source-frontmatter migration; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
 
 ## Schema versioning
 
