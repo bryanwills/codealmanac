@@ -1059,3 +1059,12 @@ One-hundred-fifty-eighth production slice:
 - Moved sync sweep coordination, cursor decisions, ledger reconciliation helpers, and summary shaping under `src/services/sync/`.
 - Kept sync ledger and lock persistence in `src/stores/sync/`.
 - Added boundary coverage that transcript discovery stays platform-owned while sync workflow decisions stay service-owned.
+
+One-hundred-fifty-ninth production slice:
+
+- Removed the old top-level `src/operations/` and `src/absorb/` source buckets.
+- Moved Build/Absorb/Garden operation spec and run construction into `src/services/lifecycle/operations/`.
+- Moved Absorb input parsing, source-ref parsing, source input contracts, context rendering, and Absorb run-start shaping into `src/services/lifecycle/absorb/`.
+- Moved GitHub remote/source resolution mechanics into `src/platform/github/source.ts` so platform code returns plain typed source facts without importing lifecycle service types.
+- Added `runPreparedAbsorbOperationWorkflow()` so sync can start prepared transcript Absorb jobs through the public lifecycle service instead of importing operation internals.
+- Updated boundary coverage so the old operation/absorb buckets stay deleted, sync uses lifecycle workflow contracts, and GitHub platform mechanics do not import lifecycle services.

@@ -1,7 +1,7 @@
 import type {
-  JobWorkerProgram,
-  StartBackgroundJob,
-} from "../../operations/index.js";
+  LifecycleJobWorkerProgram,
+  LifecycleOperationBackgroundStarter,
+} from "../lifecycle/index.js";
 
 export interface SyncWorkflowOptions {
   mode?: "sync" | "status";
@@ -11,8 +11,8 @@ export interface SyncWorkflowOptions {
   now?: Date;
   homeDir: string;
   configPath?: string;
-  startBackground?: StartBackgroundJob;
-  workerProgram: JobWorkerProgram;
+  startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
   pid: number;
 }

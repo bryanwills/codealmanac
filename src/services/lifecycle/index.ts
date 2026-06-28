@@ -2,6 +2,7 @@ export {
   runAbsorbOperationWorkflow,
   runGardenOperationWorkflow,
   runInitOperationWorkflow,
+  runPreparedAbsorbOperationWorkflow,
   parseLifecycleProviderSelection,
   type AbsorbOperationWorkflowOptions,
   type GardenOperationWorkflowOptions,
@@ -17,7 +18,8 @@ export {
   type LifecycleForegroundStartResult,
   type LifecycleOperationKind,
   type LifecycleOperationWorkflowResult,
-} from "./operations.js";
+  type PreparedAbsorbOperationWorkflowOptions,
+} from "./workflows.js";
 
 export {
   type LifecycleOperationBackgroundResult,

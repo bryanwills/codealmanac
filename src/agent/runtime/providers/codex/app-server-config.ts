@@ -1,4 +1,4 @@
-import type { OperationSpec } from "../../../../operations/spec.js";
+import type { OperationSpec } from "../../../../services/lifecycle/operations/spec.js";
 
 const CODEX_APP_SERVER_RPC_TIMEOUT_MS = 30_000;
 const CODEX_APP_SERVER_RPC_TIMEOUT_ENV =

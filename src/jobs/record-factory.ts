@@ -1,5 +1,5 @@
 import type { AgentRuntimeFailure } from "../agent/runtime/events.js";
-import type { OperationSpec } from "../operations/spec.js";
+import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
 import { jobLogPath } from "../stores/jobs/records.js";
 import type {
   JobOperationOutput,

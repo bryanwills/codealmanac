@@ -1,6 +1,6 @@
 import type { AgentRuntimeEvent, AgentRuntimeResult } from "../agent/runtime/events.js";
 import type { AgentRuntimeRunHooks } from "../agent/runtime/types.js";
-import type { OperationSpec } from "../operations/spec.js";
+import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
 import { createAgentRuntimeProviderRegistry } from "../agent/runtime/providers/index.js";
 import { createJobEventLogger } from "./events.js";
 import { finishUnlessCancelled } from "./finalization.js";

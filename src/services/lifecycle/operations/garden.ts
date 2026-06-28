@@ -1,5 +1,5 @@
 import type { OperationSpec } from "./spec.js";
-import { findNearestAlmanacDir } from "../paths.js";
+import { findNearestAlmanacDir } from "../../../paths.js";
 import { MissingWikiError } from "./errors.js";
 import type {
   JobWorkerProgram,
@@ -16,7 +16,7 @@ export interface GardenOperationOptions {
   background?: boolean;
   context?: string;
   jobId?: string;
-  onEvent?: (event: import("../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
+  onEvent?: (event: import("../../../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

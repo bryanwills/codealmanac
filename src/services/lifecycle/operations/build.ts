@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { OperationSpec } from "./spec.js";
-import { initWiki } from "../init/scaffold.js";
+import { initWiki } from "../../../init/scaffold.js";
 import type {
   JobWorkerProgram,
   OperationProviderSelection,
@@ -21,7 +21,7 @@ export interface BuildOperationOptions {
   context?: string;
   force?: boolean;
   jobId?: string;
-  onEvent?: (event: import("../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
+  onEvent?: (event: import("../../../agent/runtime/events.js").AgentRuntimeEvent) => void | Promise<void>;
   startForeground?: StartForegroundJob;
   startBackground?: StartBackgroundJob;
   workerProgram: JobWorkerProgram;

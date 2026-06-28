@@ -4,7 +4,7 @@ import type {
   AgentRuntimeRunHooks,
   ProviderStatus,
 } from "../types.js";
-import type { OperationSpec } from "../../../operations/spec.js";
+import type { OperationSpec } from "../../../services/lifecycle/operations/spec.js";
 import { runCodexAppServer } from "./codex/app-server.js";
 import { unsupportedCodexSpecFields } from "./codex/request.js";
 import { defaultCommandExists, defaultJobStatus } from "./codex/status.js";

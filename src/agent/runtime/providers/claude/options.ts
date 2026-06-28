@@ -3,7 +3,7 @@ import type {
   Options as ClaudeOptions,
 } from "@anthropic-ai/claude-agent-sdk";
 
-import type { OperationAgentSpec, OperationSpec } from "../../../../operations/spec.js";
+import type { OperationAgentSpec, OperationSpec } from "../../../../services/lifecycle/operations/spec.js";
 import type { FinalOutputSpec } from "../../final-output.js";
 import { spawnManagedChildProcess } from "../../../../platform/managed-child.js";
 import type { ToolRequest } from "../../tools.js";

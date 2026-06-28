@@ -1,6 +1,6 @@
 import type { AgentRuntimeEvent, AgentRuntimeResult } from "./events.js";
 import type { AgentProviderId } from "../provider-id.js";
-import type { OperationSpec } from "../../operations/spec.js";
+import type { OperationSpec } from "../../services/lifecycle/operations/spec.js";
 
 export type AgentRuntimeProviderId = AgentProviderId;
 

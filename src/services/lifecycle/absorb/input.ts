@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import {
   resolveGitHubSource,
-} from "./github.js";
+} from "../../../platform/github/source.js";
 import type { AbsorbInputSource } from "./input-source.js";
 import { parseSourceRef, type SourceRef } from "./source-ref.js";
 

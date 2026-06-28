@@ -2,7 +2,7 @@ import {
   UserFacingError,
   type UserFacingErrorOptions,
   type UserFacingErrorOutcome,
-} from "../errors.js";
+} from "../../../errors.js";
 
 export type OperationErrorOutcome = UserFacingErrorOutcome;
 

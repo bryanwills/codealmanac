@@ -5,7 +5,7 @@ import {
   createGardenRunSpec,
   runGardenOperation as runGardenOperationCommand,
   type GardenOperationOptions,
-} from "../src/operations/garden.js";
+} from "../src/services/lifecycle/operations/garden.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {

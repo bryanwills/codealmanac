@@ -5,8 +5,8 @@ import {
   parseGitHubRemote,
   resolveGitHubSource,
   type CommandRunner,
-} from "../src/absorb/github.js";
-import type { SourceRef } from "../src/absorb/source-ref.js";
+} from "../src/platform/github/source.js";
+import type { SourceRef } from "../src/services/lifecycle/absorb/source-ref.js";
 
 const ref: SourceRef = {
   raw: "github:pr:123",

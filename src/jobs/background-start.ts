@@ -1,4 +1,4 @@
-import type { OperationSpec } from "../operations/spec.js";
+import type { OperationSpec } from "../services/lifecycle/operations/spec.js";
 import { initializeJobLog } from "../stores/jobs/logs.js";
 import {
   jobRecordPath,

@@ -1,5 +1,5 @@
 import type { AgentRuntimeFailure } from "../../agent/runtime/events.js";
-import * as operations from "../../operations/index.js";
+import * as operations from "./operations/index.js";
 
 export type LifecycleOperationMode = "foreground" | "background";
 export type LifecycleOperationJobStatus =

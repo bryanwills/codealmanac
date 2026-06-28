@@ -1,9 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
-import { OperationError } from "../operations/errors.js";
-import type { GitHubAbsorbInputSource } from "./input-source.js";
-import type { SourceRef } from "./source-ref.js";
+import { UserFacingError } from "../../errors.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -12,23 +10,39 @@ export interface GitHubRepo {
   repo: string;
 }
 
+export interface GitHubSourceRef {
+  raw: string;
+  provider: "github";
+  kind: "pr" | "issue";
+  id: string;
+  repo?: GitHubRepo;
+}
+
+export interface ResolvedGitHubSource {
+  kind: "github.pr" | "github.issue";
+  raw: string;
+  repo: string;
+  url: string;
+  number: string;
+}
+
 export type CommandRunner = (
   command: string,
   args: string[],
   options: { cwd: string },
 ) => Promise<{ stdout: string; stderr: string }>;
 
-export class GitHubSourceError extends OperationError {
+export class GitHubSourceError extends UserFacingError {
   constructor(message: string, fix: string) {
     super(message, { outcome: "needs-action", fix });
   }
 }
 
 export async function resolveGitHubSource(args: {
-  ref: Extract<SourceRef, { provider: "github" }>;
+  ref: GitHubSourceRef;
   cwd: string;
   runCommand?: CommandRunner;
-}): Promise<GitHubAbsorbInputSource> {
+}): Promise<ResolvedGitHubSource> {
   const runCommand = args.runCommand ?? defaultCommandRunner;
   const repo = args.ref.repo ?? await resolveRepoFromRemote(runCommand, args.cwd);
   if (repo === null) throw githubRemoteError();

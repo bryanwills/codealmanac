@@ -6,7 +6,7 @@ import {
   createBuildRunSpec,
   runBuildOperation as runBuildOperationCommand,
   type BuildOperationOptions,
-} from "../src/operations/build.js";
+} from "../src/services/lifecycle/operations/build.js";
 import { runConfigSet } from "../src/cli/commands/config.js";
 import { makeRepo, withTempHome } from "./helpers.js";
 

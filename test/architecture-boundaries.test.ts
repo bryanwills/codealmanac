@@ -1323,41 +1323,54 @@ describe("architecture boundaries", () => {
 
   it("keeps lifecycle operation command adapters out of run-start mechanics", async () => {
     const lifecycleServiceIndex = await readSource("src/services/lifecycle/index.ts");
-    const lifecycleService = await readSource("src/services/lifecycle/operations.ts");
+    const lifecycleWorkflows = await readSource("src/services/lifecycle/workflows.ts");
     const lifecycleResults = await readSource(
       "src/services/lifecycle/operation-results.ts",
     );
+    const platformGithubSource = await readSource("src/platform/github/source.ts");
+    const syncService = await readSource("src/services/sync/sync.ts");
     const operationsCommand = await readSource("src/cli/commands/operations.ts");
 
     expect(existsSync(join(ROOT, "src/services/lifecycle/operation-results.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/workflows.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/operations"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/services/lifecycle/absorb"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/platform/github/source.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/operations"))).toBe(false);
+    expect(existsSync(join(ROOT, "src/absorb"))).toBe(false);
     expect(lifecycleServiceIndex).not.toContain("../../operations");
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleServiceIndex).toContain("./workflows.js");
+    expect(lifecycleWorkflows).not.toContain(
       "LifecycleOperationRunResult = operations.OperationRunResult",
     );
-    expect(lifecycleService).not.toContain("interface LifecycleOperationDeps");
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain("interface LifecycleOperationDeps");
+    expect(lifecycleWorkflows).not.toContain(
       "InitOperationWorkflowOptions extends LifecycleOperationDeps",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "AbsorbOperationWorkflowOptions extends LifecycleOperationDeps",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "GardenOperationWorkflowOptions extends LifecycleOperationDeps",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "LifecycleOperationForegroundStarter = operations.StartForegroundJob",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "LifecycleOperationBackgroundStarter = operations.StartBackgroundJob",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "LifecycleAbsorbSourceResolver = absorb.ResolveSourceFn",
     );
-    expect(lifecycleService).not.toContain(
+    expect(lifecycleWorkflows).not.toContain(
       "function lifecycleOperationRunResultFromOperation",
     );
-    expect(lifecycleService).not.toContain("Command context:");
+    expect(lifecycleWorkflows).not.toContain("Command context:");
+    expect(lifecycleWorkflows).toContain("runPreparedAbsorbOperationWorkflow");
     expect(lifecycleResults).toContain("lifecycleOperationRunResultFromOperation");
+    expect(platformGithubSource).not.toContain("services/lifecycle");
+    expect(syncService).toContain("runPreparedAbsorbOperationWorkflow");
+    expect(syncService).not.toContain("services/lifecycle/operations");
     expect(operationsCommand).toContain("services/lifecycle/index.js");
     expect(operationsCommand).not.toContain("import type { CommandResult }");
     expect(operationsCommand).not.toContain("extends InitOperationWorkflowOptions");
@@ -1370,7 +1383,7 @@ describe("architecture boundaries", () => {
     expect(operationsCommand).toContain("toInitOperationWorkflowOptions");
     expect(operationsCommand).toContain("toAbsorbOperationWorkflowOptions");
     expect(operationsCommand).toContain("toGardenOperationWorkflowOptions");
-    expect(operationsCommand).not.toContain("../../operations/index");
+    expect(operationsCommand).not.toContain("../../services/lifecycle/operations/index");
     expect(operationsCommand).not.toContain("../../absorb");
     expect(operationsCommand).not.toContain("resolveProvider");
     expect(operationsCommand).not.toContain("operations.build");

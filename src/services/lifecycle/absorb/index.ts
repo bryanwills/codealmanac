@@ -4,7 +4,7 @@ export {
   resolveGitHubSource,
   type CommandRunner,
   type GitHubRepo,
-} from "./github.js";
+} from "../../../platform/github/source.js";
 export {
   resolveAbsorbInput,
   type AbsorbInputKind,

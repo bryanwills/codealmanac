@@ -5,7 +5,7 @@ import {
   createAbsorbRunSpec,
   runAbsorbOperation as runAbsorbOperationCommand,
   type AbsorbOperationOptions,
-} from "../src/operations/absorb.js";
+} from "../src/services/lifecycle/operations/absorb.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
 const TEST_WORKER_PROGRAM = {

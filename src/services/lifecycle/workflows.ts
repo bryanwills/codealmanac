@@ -4,11 +4,11 @@ import type {
 } from "../../agent/runtime/events.js";
 import type { JobWorkerProgram } from "../../jobs/index.js";
 import type { JobRecord } from "../../jobs/types.js";
-import type { AbsorbInputSource } from "../../absorb/input-source.js";
-import type { SourceRef } from "../../absorb/source-ref.js";
-import type { OperationSpec } from "../../operations/spec.js";
-import * as absorb from "../../absorb/index.js";
-import * as operations from "../../operations/index.js";
+import type { AbsorbInputSource } from "./absorb/input-source.js";
+import type { SourceRef } from "./absorb/source-ref.js";
+import type { OperationSpec } from "./operations/spec.js";
+import * as absorb from "./absorb/index.js";
+import * as operations from "./operations/index.js";
 import {
   type LifecycleOperationRunResult,
   lifecycleOperationRunResultFromOperation,
@@ -107,6 +107,19 @@ export interface GardenOperationWorkflowOptions {
   pid: number;
 }
 
+export interface PreparedAbsorbOperationWorkflowOptions {
+  cwd: string;
+  using?: string;
+  context: string;
+  targetKind: string;
+  targetPaths: string[];
+  networkAccess?: boolean;
+  startBackground?: LifecycleOperationBackgroundStarter;
+  workerProgram: LifecycleJobWorkerProgram;
+  workerEnvironment: NodeJS.ProcessEnv;
+  pid: number;
+}
+
 export type LifecycleOperationWorkflowResult =
   | {
       status: "completed";
@@ -174,6 +187,37 @@ export async function runAbsorbOperationWorkflow(
       status: "completed",
       operation: "absorb",
       result: lifecycleOperationRunResultFromOperation(started.result),
+    };
+  } catch (error: unknown) {
+    return { status: "failed", error };
+  }
+}
+
+export async function runPreparedAbsorbOperationWorkflow(
+  options: PreparedAbsorbOperationWorkflowOptions,
+): Promise<LifecycleOperationWorkflowResult> {
+  const provider = await resolveProvider(options);
+  if (provider.status === "failed") return provider;
+
+  try {
+    return {
+      status: "completed",
+      operation: "absorb",
+      result: lifecycleOperationRunResultFromOperation(
+        await operations.absorb({
+          cwd: options.cwd,
+          provider: provider.value,
+          background: true,
+          context: options.context,
+          targetKind: options.targetKind,
+          targetPaths: options.targetPaths,
+          networkAccess: options.networkAccess,
+          startBackground: options.startBackground,
+          workerProgram: options.workerProgram,
+          workerEnvironment: options.workerEnvironment,
+          pid: options.pid,
+        }),
+      ),
     };
   } catch (error: unknown) {
     return { status: "failed", error };

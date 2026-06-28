@@ -10,7 +10,7 @@ import type {
   AgentRuntimeRunHooks,
   ProviderStatus,
 } from "../types.js";
-import type { OperationSpec } from "../../../operations/spec.js";
+import type { OperationSpec } from "../../../services/lifecycle/operations/spec.js";
 import type { FinalOutputResult } from "../final-output.js";
 import { AGENT_RUNTIME_PROVIDER_METADATA } from "./metadata.js";
 import {

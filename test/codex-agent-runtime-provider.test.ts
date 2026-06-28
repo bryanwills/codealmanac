@@ -17,7 +17,7 @@ import {
   waitForPids,
 } from "./helpers.js";
 import type { AgentRuntimeRunHooks } from "../src/agent/runtime/types.js";
-import type { OperationSpec } from "../src/operations/spec.js";
+import type { OperationSpec } from "../src/services/lifecycle/operations/spec.js";
 
 function runTestCodexAppServer(
   spec: OperationSpec,

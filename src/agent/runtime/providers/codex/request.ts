@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import type { OperationSpec } from "../../../../operations/spec.js";
+import type { OperationSpec } from "../../../../services/lifecycle/operations/spec.js";
 
 export interface CodexAppServerRequest {
   command: "codex";

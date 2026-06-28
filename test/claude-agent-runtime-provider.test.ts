@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { createClaudeAgentRuntimeProvider } from "../src/agent/runtime/providers/claude.js";
-import type { OperationSpec } from "../src/operations/spec.js";
+import type { OperationSpec } from "../src/services/lifecycle/operations/spec.js";
 import {
   createProcessTreeFixture,
   isProcessAlive,

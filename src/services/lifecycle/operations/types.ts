@@ -1,11 +1,11 @@
-import type { AgentRuntimeProviderId } from "../agent/runtime/types.js";
+import type { AgentRuntimeProviderId } from "../../../agent/runtime/types.js";
 import type { OperationSpec } from "./spec.js";
-import type { AgentRuntimeEvent } from "../agent/runtime/events.js";
+import type { AgentRuntimeEvent } from "../../../agent/runtime/events.js";
 import type {
   JobWorkerProgram,
   StartBackgroundJobResult,
   StartJobResult,
-} from "../jobs/index.js";
+} from "../../../jobs/index.js";
 
 export type { JobWorkerProgram };
 

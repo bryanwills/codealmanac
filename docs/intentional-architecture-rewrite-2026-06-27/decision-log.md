@@ -41,6 +41,14 @@ Stores own persistence mechanics. Provider adapters, process spawning, app-serve
 
 Claude and Codex transcript-store scanning reads local provider files and normalizes raw JSONL shapes into typed transcript candidates. That belongs under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over those normalized candidates.
 
+### Lifecycle owns operation construction
+
+Build, Absorb, and Garden operation specs are lifecycle product mechanics, so their provider-neutral construction lives under `src/services/lifecycle/operations/`. CLI commands and peer services call lifecycle workflow contracts instead of importing operation internals.
+
+### Absorb source parsing is lifecycle, GitHub mechanics are platform
+
+Absorb owns product input normalization under `src/services/lifecycle/absorb/`: source refs, source input contracts, context rendering, and Absorb run-start shaping. GitHub remote parsing and URL construction are external mechanics, so they live under `src/platform/github/` and return plain typed facts.
+
 ### Prefer explicit contracts over compatibility facades
 
 Compatibility facades can remain only when callers still need a stable import. New code should depend on typed service, store, integration, or edge contracts with honest names.

@@ -1,9 +1,9 @@
-import * as operations from "../../operations/index.js";
 import { readConfig } from "../../config/index.js";
 import {
   discoverTranscriptCandidates,
   type TranscriptSourceApp,
 } from "../../platform/transcripts/index.js";
+import { runPreparedAbsorbOperationWorkflow } from "../lifecycle/index.js";
 import { parseDuration } from "../../shared/duration.js";
 import { executeSyncSweep } from "./sweep.js";
 import type { SyncSummary } from "./sweep-results.js";
@@ -27,7 +27,6 @@ export async function runSyncWorkflow(
   const quiet = parseQuiet(options.quiet ?? DEFAULT_QUIET);
   if (!quiet.ok) return { status: "invalid", error: quiet.error };
 
-  const providers = new Map<string, operations.OperationProviderSelection>();
   return {
     status: "completed",
     summary: syncWorkflowSummaryFromSweep(
@@ -42,15 +41,9 @@ export async function runSyncWorkflow(
         now: options.now ?? new Date(),
         startAbsorb: async ({ candidate, contextNote }) => {
           try {
-            const provider = await providerForRepo({
-              repoRoot: candidate.repoRoot,
-              using: options.using,
-              cache: providers,
-            });
-            const result = await operations.absorb({
+            const result = await runPreparedAbsorbOperationWorkflow({
               cwd: candidate.repoRoot,
-              provider,
-              background: true,
+              using: options.using,
               context: syncAbsorbContext({
                 app: candidate.app,
                 sessionId: candidate.sessionId,
@@ -64,7 +57,11 @@ export async function runSyncWorkflow(
               workerEnvironment: options.workerEnvironment,
               pid: options.pid,
             });
-            return { ok: true, jobId: result.jobId };
+            if (result.status === "failed") throw result.error;
+            if (result.status !== "completed") {
+              throw new Error(`unexpected sync absorb status: ${result.status}`);
+            }
+            return { ok: true, jobId: result.result.jobId };
           } catch (err: unknown) {
             return {
               ok: false,
@@ -129,23 +126,6 @@ function syncWorkflowSkippedItemFromSweep(
     repoRoot: item.repoRoot,
     reason: item.reason,
   };
-}
-
-async function providerForRepo(args: {
-  repoRoot: string;
-  using?: string;
-  cache: Map<string, operations.OperationProviderSelection>;
-}): Promise<operations.OperationProviderSelection> {
-  const key = `${args.repoRoot}\0${args.using ?? ""}`;
-  const cached = args.cache.get(key);
-  if (cached !== undefined) return cached;
-
-  const provider = await operations.resolveProvider({
-    cwd: args.repoRoot,
-    using: args.using,
-  });
-  args.cache.set(key, provider);
-  return provider;
 }
 
 function parseSources(value: string | undefined):

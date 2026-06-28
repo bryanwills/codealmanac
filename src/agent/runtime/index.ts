@@ -10,7 +10,7 @@ export type {
   OperationSpec,
   OperationAgentSpec,
   OperationKind,
-} from "../../operations/spec.js";
+} from "../../services/lifecycle/operations/spec.js";
 export type {
   AgentUsage,
   AgentRuntimeEvent,

@@ -2,8 +2,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { renderAbsorbInputContext } from "../src/absorb/context.js";
-import { resolveAbsorbInput, type ResolveSourceFn } from "../src/absorb/input.js";
+import { renderAbsorbInputContext } from "../src/services/lifecycle/absorb/context.js";
+import { resolveAbsorbInput, type ResolveSourceFn } from "../src/services/lifecycle/absorb/input.js";
 
 describe("resolveAbsorbInput", () => {
   it("resolves local paths to operation targets", async () => {
