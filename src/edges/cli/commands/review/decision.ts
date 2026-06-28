@@ -11,8 +11,8 @@ import {
   renderReviewApplyResult,
   renderReviewDecideResult,
   renderReviewReopenResult,
-  type ReviewCommandOutput,
-} from "./render.js";
+} from "./render/decision.js";
+import type { ReviewCommandOutput } from "./render/types.js";
 
 export interface ReviewItemOptions extends ReviewMarkdownInput {
   cwd: string;

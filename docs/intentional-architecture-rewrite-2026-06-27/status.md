@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 278 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 279 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -135,6 +135,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Split tag/untag CLI command adapters into apply, remove, and render owner files, deleting the old tag command/render catchalls.
 - Split sync CLI command adapters into run, status, options, and render owner files, deleting the old sync command/render catchalls.
 - Split show CLI output formatting into mode routing, body, fields, metadata, and timestamp owner files, so the largest command renderer no longer mixes output responsibilities.
+- Split review CLI output rendering into add, read, decision, shared error, item, output, and type owner files, deleting the remaining mixed review renderer.
 - Moved the provider-neutral operation spec contract into `src/shared/operation-spec.ts`, so lifecycle services build specs, job stores persist them, and provider adapters execute them without stores or providers importing lifecycle service internals.
 - Moved worker-lock and sync-lock process ownership/liveness facts out of stores; stores now persist lock files over injected owner PID and liveness contracts while CLI/worker edges provide platform process probes.
 - Moved repeated store atomic-write temp-file mechanics into `src/stores/atomic-write.ts`, removing process-PID temp names from job and sync stores.
@@ -153,12 +154,12 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice split show CLI output formatting by rendering responsibility. `show/format.ts` now owns output-mode routing, while `show/body.ts`, `show/fields.ts`, `show/metadata.ts`, and `show/time.ts` own the specific formatting details that were previously mixed into the 275-line formatter.
+The latest slice split review CLI output rendering by review verb and shared helper ownership. Review add, read/show, decision/apply/reopen, error, item, output, and type rendering now live in separate files under `src/edges/cli/commands/review/render/`; the old mixed `review/render.ts` file is gone.
 
 Verification passed:
 
 - `npm run lint`
-- `npx vitest run test/architecture-wiki-command-boundaries.test.ts test/show.test.ts`
+- `npx vitest run test/architecture-wiki-command-boundaries.test.ts test/review-command.test.ts`
 - `npx vitest run test/architecture-*-boundaries.test.ts`
 - `git diff --check`
 - `npm test`
@@ -183,7 +184,7 @@ Previous full-slice verification also passed:
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, automation scheduler app composition, automation command adapter ownership, jobs command adapter ownership, review command adapter ownership, migrate command adapter ownership, agents command adapter ownership, config command adapter ownership, tag command adapter ownership, sync command adapter ownership, show formatter ownership, setup instruction runtime composition, provider setup-view ownership, setup provider-fix runtime composition, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, Absorb source contract ownership, prompt loader mechanics, update runtime composition, update notifier ownership, setup runtime composition, sync transcript runtime composition, sync-to-job session lookup, CLI app composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, operation-output type ownership, path-equality contract ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, lifecycle workflow type ownership, lifecycle workflow verb ownership, lifecycle command adapter verb ownership, path construction ownership, shared helper-contract ownership, wiki command target resolution, cross-wiki health coordination, job service view ownership, and lifecycle/job starter result ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, remaining platform modules that read config/store state directly, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, automation scheduler app composition, automation command adapter ownership, jobs command adapter ownership, review command adapter ownership, review renderer ownership, migrate command adapter ownership, agents command adapter ownership, config command adapter ownership, tag command adapter ownership, sync command adapter ownership, show formatter ownership, setup instruction runtime composition, provider setup-view ownership, setup provider-fix runtime composition, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, Absorb source contract ownership, prompt loader mechanics, update runtime composition, update notifier ownership, setup runtime composition, sync transcript runtime composition, sync-to-job session lookup, CLI app composition, diagnostic fact contracts, provider-neutral agent runtime contracts, lock process-liveness contracts, operation-spec type ownership, operation-output type ownership, path-equality contract ownership, init prompt-context ownership, config command validation ownership, store atomic-write ownership, review command markdown ownership, lifecycle workflow type ownership, lifecycle workflow verb ownership, lifecycle command adapter verb ownership, path construction ownership, shared helper-contract ownership, wiki command target resolution, cross-wiki health coordination, job service view ownership, and lifecycle/job starter result ownership have now been removed or assigned. Remaining candidates include command files that still own workflow decisions, remaining platform modules that read config/store state directly, lifecycle/job boundary duplication that remains after the big moves, and large files whose size may still reflect mixed ownership.
 
 ## Decision Log
 

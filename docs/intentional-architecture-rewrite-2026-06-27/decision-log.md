@@ -85,6 +85,8 @@ Sync command adapters are split by run/status ownership. `src/edges/cli/commands
 
 Show command output formatting is split by rendering responsibility. `src/edges/cli/commands/show/format.ts` owns mode routing, `body.ts` owns body and lead extraction, `fields.ts` owns field-specific output, `metadata.ts` owns header metadata output, and `time.ts` owns timestamp display formatting. New show output behavior should extend the owner file that matches the output surface instead of growing `format.ts` back into a mixed renderer.
 
+Review command output rendering is split by review verb and shared rendering concept. `src/edges/cli/commands/review/render/add.ts` owns add output, `read.ts` owns list/show output, `decision.ts` owns decide/apply/reopen output, `errors.ts` owns review error output, `item.ts` owns item detail text, and `types.ts` owns the command output contract. The deleted `review/render.ts` bucket should not return.
+
 ### Transcript file mechanics are platform, sync eligibility is service
 
 Claude and Codex transcript-store scanning, raw transcript snapshot reads, line counting, and JSONL timestamp extraction belong under `src/platform/transcripts/`. The sync service owns quiet-window eligibility, ledger reconciliation, cursor decisions, and Absorb handoff over typed transcript candidates and snapshots.

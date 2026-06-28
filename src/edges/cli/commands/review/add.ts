@@ -3,10 +3,8 @@ import {
   reviewMarkdownInput,
   type ReviewMarkdownInput,
 } from "./markdown.js";
-import {
-  renderReviewAddResult,
-  type ReviewCommandOutput,
-} from "./render.js";
+import { renderReviewAddResult } from "./render/add.js";
+import type { ReviewCommandOutput } from "./render/types.js";
 
 export interface ReviewAddOptions extends ReviewMarkdownInput {
   cwd: string;

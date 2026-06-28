@@ -606,7 +606,21 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     const reviewDecisionCommand = await readSource(
       "src/edges/cli/commands/review/decision.ts",
     );
-    const reviewRender = await readSource("src/edges/cli/commands/review/render.ts");
+    const reviewAddRender = await readSource(
+      "src/edges/cli/commands/review/render/add.ts",
+    );
+    const reviewReadRender = await readSource(
+      "src/edges/cli/commands/review/render/read.ts",
+    );
+    const reviewDecisionRender = await readSource(
+      "src/edges/cli/commands/review/render/decision.ts",
+    );
+    const reviewErrorRender = await readSource(
+      "src/edges/cli/commands/review/render/errors.ts",
+    );
+    const reviewItemRender = await readSource(
+      "src/edges/cli/commands/review/render/item.ts",
+    );
     const reviewService = await readSource("src/services/wiki/reviews.ts");
     const reviewTypes = await readSource("src/services/wiki/review-types.ts");
     const reviewWorkspace = await readSource(
@@ -635,6 +649,18 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     expect(existsSync(join(ROOT, "src/edges/cli/commands/review/decision.ts")))
       .toBe(true);
     expect(existsSync(join(ROOT, "src/edges/cli/commands/review/render.ts")))
+      .toBe(false);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/review/render/add.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/review/render/read.ts")))
+      .toBe(true);
+    expect(
+      existsSync(join(ROOT, "src/edges/cli/commands/review/render/decision.ts")),
+    )
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/review/render/errors.ts")))
+      .toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/commands/review/render/item.ts")))
       .toBe(true);
     expect(reviewRegistration).toContain("registerReviewAddCommand(review)");
     expect(reviewRegistration).toContain("registerReviewReadCommands(review)");
@@ -659,7 +685,7 @@ describe("architecture boundaries: wiki commands and viewer", () => {
       reviewDecisionCommand,
     ]) {
       expect(reviewCommand).toContain("services/wiki/reviews.js");
-      expect(reviewCommand).toContain("./render.js");
+      expect(reviewCommand).toContain("./render/");
       expect(reviewCommand).not.toContain("review/store");
       expect(reviewCommand).not.toContain("stores/wiki-review");
       expect(reviewCommand).not.toContain("resolveWikiRoot");
@@ -686,11 +712,19 @@ describe("architecture boundaries: wiki commands and viewer", () => {
     }
     expect(reviewReadCommand).toContain("interface ReviewShowOptions");
     expect(reviewAddCommand).toContain("renderReviewAddResult");
-    expect(reviewRender).toContain("renderOutcome");
-    expect(reviewRender).toContain("renderReviewAddResult");
-    expect(reviewRender).toContain("switch (result.status)");
-    expect(reviewRender).toContain("added review item:");
-    expect(reviewRender).toContain("Decision:");
+    expect(reviewAddRender).toContain("renderReviewAddResult");
+    expect(reviewReadRender).toContain("renderReviewListResult");
+    expect(reviewReadRender).toContain("renderReviewShowResult");
+    expect(reviewDecisionRender).toContain("renderReviewDecideResult");
+    expect(reviewDecisionRender).toContain("renderReviewApplyResult");
+    expect(reviewDecisionRender).toContain("renderReviewReopenResult");
+    expect(reviewErrorRender).toContain("renderOutcome");
+    expect(reviewItemRender).toContain("renderReviewItem");
+    expect(reviewAddRender).toContain("switch (result.status)");
+    expect(reviewReadRender).toContain("switch (result.status)");
+    expect(reviewDecisionRender).toContain("switch (result.status)");
+    expect(reviewAddRender).toContain("added review item:");
+    expect(reviewItemRender).toContain("Decision:");
 
     expect(reviewService).not.toContain("resolveWikiRoot");
     expect(reviewService).not.toContain("reviewYamlPath");

@@ -1983,3 +1983,10 @@ Two-hundred-seventy-eighth production slice:
 - Split the large `src/edges/cli/commands/show/format.ts` renderer into mode routing plus owner-named body, field, metadata, and time formatting files.
 - Kept `formatShowRecords()` as the command-output mode router while moving `--lead`, body-only, field flags, lineage, metadata headers, sources, backlinks, cross-wiki links, and timestamp formatting into smaller files.
 - Strengthened wiki command boundary tests so show output responsibilities stay split and `format.ts` does not grow field/body/metadata helpers back.
+
+Two-hundred-seventy-ninth production slice:
+
+- Deleted the mixed `src/edges/cli/commands/review/render.ts` renderer.
+- Added owner-named review render files for add, read/show, decide/apply/reopen, shared errors, item details, output helpers, and output types under `src/edges/cli/commands/review/render/`.
+- Updated review command adapters to import the specific renderer they call.
+- Strengthened wiki command boundary tests so review renderer ownership follows the already-split review command adapters.

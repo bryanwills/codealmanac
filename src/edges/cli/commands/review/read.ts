@@ -6,8 +6,8 @@ import {
 import {
   renderReviewListResult,
   renderReviewShowResult,
-  type ReviewCommandOutput,
-} from "./render.js";
+} from "./render/read.js";
+import type { ReviewCommandOutput } from "./render/types.js";
 
 export interface ReviewShowOptions {
   cwd: string;
