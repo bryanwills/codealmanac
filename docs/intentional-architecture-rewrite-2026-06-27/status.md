@@ -5,9 +5,9 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 230 committed rewrite commits past `dev`. The worklog records 193 production slices so far.
+The branch has more than 230 committed rewrite commits past `dev`. The worklog records 194 production slices so far.
 
-The diff is broad: 491 files changed, with 24,885 insertions and 13,154 deletions.
+The diff is broad: 492 files changed, with 24,962 insertions and 13,155 deletions.
 
 This is no longer a small cleanup branch. It is a real ownership rewrite.
 
@@ -21,6 +21,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Removed the old top-level `src/jobs/` source bucket; job runtime and projections now live under `src/services/jobs/`, durable job schemas live under `src/stores/jobs/`, and detached worker spawning lives under `src/platform/jobs/`.
 - Moved job record lifecycle and display-status read-model helpers out of the job runtime folder, and put public job record/log reads behind the `src/stores/jobs/` store API.
 - Removed raw log-file reads from job projections; stores own job log contents while projections parse contents into viewer/job read models.
+- Moved detached job-worker process startup behind an edge-composed background starter; job services now queue records/specs/logs and consume an injected worker starter.
 - Moved job page snapshot file reads and page hashing into `src/stores/wiki-files/`.
 - Moved registry path reachability checks into `src/stores/wiki-registry/`.
 - Removed the mixed `src/services/jobs/runtime/index.ts` compatibility barrel; callers now import concrete runtime, store, platform, or record-lifecycle modules.
@@ -68,13 +69,13 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved concrete transcript discovery and snapshot reads out of the sync service. `src/services/sync/types.ts` now owns the `SyncTranscriptRuntime` contract, `src/services/sync/sync.ts` consumes the injected runtime, and `src/platform/transcripts/runtime.ts` composes the Claude/Codex transcript mechanics for the CLI sync edge.
+The latest slice moved detached job-worker process startup out of job services. `src/services/jobs/runtime/background-start.ts` now queues records/specs/logs and calls an injected worker starter, `src/platform/jobs/worker-process.ts` owns detached process mechanics, and `src/edges/cli/background-jobs.ts` wires the concrete platform starter for lifecycle and sync commands.
 
-Verification passed so far: `npx tsc --noEmit --pretty false` and focused sync/boundary tests.
+Verification passed so far: `npx tsc --noEmit --pretty false` and focused job-worker, lifecycle operation, sync, and boundary tests.
 
 ## Immediate Next Work
 
-Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, Absorb source resolver composition, setup runtime composition, and sync transcript runtime composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
+Continue top-down subsystem passes before small leak cleanup. The major loose source buckets for jobs, init, config, wiki, viewer read models, worker entrypoints, serve process lifetime, setup/uninstall terminal UI, wiki file mechanics, automation scheduler mechanics, job provider-runner composition, job-worker process spawning, Absorb source resolver composition, setup runtime composition, and sync transcript runtime composition have now been removed or assigned. Remaining candidates include service files that still know platform/provider mechanics, command files that still own workflow decisions, and any lifecycle/job boundary duplication that remains after the big moves.
 
 ## Decision Log
 

@@ -30,6 +30,22 @@ export function startJobWorkerProcess(args: {
   });
 }
 
+export function startDetachedJobWorkerProcess(args: {
+  repoRoot: string;
+  workerProgram: JobWorkerProgram;
+  workerEnvironment: NodeJS.ProcessEnv;
+  spawnBackground?: SpawnBackgroundFn;
+}): { childPid: number } {
+  const child = startJobWorkerProcess({
+    repoRoot: args.repoRoot,
+    workerProgram: args.workerProgram,
+    environment: args.workerEnvironment,
+    spawnBackground: args.spawnBackground,
+  });
+  child.unref?.();
+  return { childPid: child.pid ?? 0 };
+}
+
 function defaultSpawnBackground(args: {
   command: string;
   args: string[];

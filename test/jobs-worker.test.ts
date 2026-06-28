@@ -17,6 +17,10 @@ import {
   startBackgroundJob as startBackgroundJobCommand,
   type StartBackgroundJobOptions,
 } from "../src/services/jobs/runtime/background-start.js";
+import {
+  startDetachedJobWorkerProcess,
+  type SpawnBackgroundFn,
+} from "../src/platform/jobs/worker-process.js";
 import { runJobWorker } from "../src/edges/worker/job-worker.js";
 import { makeRepo, scaffoldWiki, withTempHome } from "./helpers.js";
 
@@ -26,15 +30,29 @@ const TEST_WORKER_PROGRAM = {
 };
 
 function startBackgroundJob(
-  options: Omit<StartBackgroundJobOptions, "workerEnvironment" | "workerProgram"> & {
+  options: Omit<
+    StartBackgroundJobOptions,
+    "workerEnvironment" | "workerProgram" | "startWorker"
+  > & {
     workerEnvironment?: NodeJS.ProcessEnv;
     workerProgram?: StartBackgroundJobOptions["workerProgram"];
+    spawnBackground?: SpawnBackgroundFn;
+    startWorker?: StartBackgroundJobOptions["startWorker"];
   },
 ) {
+  const {
+    spawnBackground,
+    startWorker,
+    workerEnvironment,
+    workerProgram,
+    ...rest
+  } = options;
   return startBackgroundJobCommand({
-    ...options,
-    workerProgram: options.workerProgram ?? TEST_WORKER_PROGRAM,
-    workerEnvironment: options.workerEnvironment ?? process.env,
+    ...rest,
+    workerProgram: workerProgram ?? TEST_WORKER_PROGRAM,
+    workerEnvironment: workerEnvironment ?? process.env,
+    startWorker: startWorker ??
+      ((args) => startDetachedJobWorkerProcess({ ...args, spawnBackground })),
   });
 }
 

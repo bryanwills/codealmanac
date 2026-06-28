@@ -1334,3 +1334,11 @@ One-hundred-ninety-third production slice:
 - Removed direct `src/platform/transcripts/` imports from `src/services/sync/sync.ts`; the sync workflow now consumes the injected runtime.
 - Updated the CLI sync edge to pass the platform transcript runtime into `runSyncCommand`.
 - Strengthened sync boundary coverage so sync services and command adapters cannot reintroduce platform transcript imports.
+
+One-hundred-ninety-fourth production slice:
+
+- Changed `src/services/jobs/runtime/background-start.ts` to accept an injected `JobWorkerStarter` instead of importing platform worker-process mechanics.
+- Added `src/edges/cli/background-jobs.ts` as the CLI composition point that pairs queued job record startup with the platform detached worker process.
+- Added `startDetachedJobWorkerProcess()` to `src/platform/jobs/worker-process.ts` so platform owns child-process spawning, unref, and child PID extraction.
+- Updated lifecycle and sync CLI edges to pass the concrete background starter into operation/sync commands.
+- Strengthened architecture-boundary tests so job services cannot reintroduce platform job-worker process imports.

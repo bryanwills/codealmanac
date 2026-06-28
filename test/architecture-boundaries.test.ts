@@ -803,6 +803,7 @@ describe("architecture boundaries", () => {
       "src/services/jobs/runtime/background-start.ts",
     );
     const backgroundProcess = await readSource("src/platform/jobs/worker-process.ts");
+    const cliBackgroundJobs = await readSource("src/edges/cli/background-jobs.ts");
     const lifecycleOperations = await readSource(
       "src/services/lifecycle/operations/types.ts",
     );
@@ -818,16 +819,22 @@ describe("architecture boundaries", () => {
     expect(existsSync(join(ROOT, "src/services/jobs/record-lifecycle.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/services/jobs/runtime/background-start.ts"))).toBe(true);
     expect(existsSync(join(ROOT, "src/platform/jobs/worker-process.ts"))).toBe(true);
+    expect(existsSync(join(ROOT, "src/edges/cli/background-jobs.ts"))).toBe(true);
     expect(workerProgram).toContain("export interface JobWorkerProgram");
     expect(jobStart).not.toContain("node:child_process");
     expect(jobStart).not.toContain("startJobWorkerProcess");
     expect(jobStart).not.toContain("writeJobSpec");
     expect(jobStart).not.toContain("cannot start background process");
-    expect(backgroundStart).toContain("startJobWorkerProcess");
+    expect(backgroundStart).not.toContain("platform/jobs");
+    expect(backgroundStart).not.toContain("startJobWorkerProcess");
+    expect(backgroundStart).toContain("startWorker");
     expect(backgroundStart).toContain("writeJobSpec");
     expect(jobStart).not.toContain("function defaultSpawnBackground");
     expect(backgroundProcess).toContain("node:child_process");
     expect(backgroundProcess).toContain("export function startJobWorkerProcess");
+    expect(backgroundProcess).toContain("startDetachedJobWorkerProcess");
+    expect(cliBackgroundJobs).toContain("startDetachedJobWorkerProcess");
+    expect(cliBackgroundJobs).toContain("startBackgroundJob");
     expect(backgroundProcess).not.toContain("process.env");
     expect(backgroundProcess).not.toContain("process.execPath");
     expect(jobStart).not.toContain("process.pid");

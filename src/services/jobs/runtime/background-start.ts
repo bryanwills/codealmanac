@@ -5,10 +5,6 @@ import {
   writeJobRecord,
   writeJobSpec,
 } from "../../../stores/jobs/index.js";
-import {
-  startJobWorkerProcess,
-  type SpawnBackgroundFn,
-} from "../../../platform/jobs/worker-process.js";
 import type { JobWorkerProgram } from "../../../shared/worker-program.js";
 import { createJobId } from "./ids.js";
 import {
@@ -17,14 +13,20 @@ import {
 } from "../record-lifecycle.js";
 import type { JobRecord } from "../../../stores/jobs/index.js";
 
+export type JobWorkerStarter = (args: {
+  repoRoot: string;
+  workerProgram: JobWorkerProgram;
+  workerEnvironment: NodeJS.ProcessEnv;
+}) => { childPid: number };
+
 export interface StartBackgroundJobOptions {
   repoRoot: string;
   spec: OperationSpec;
   jobId?: string;
   now?: () => Date;
-  spawnBackground?: SpawnBackgroundFn;
   workerProgram: JobWorkerProgram;
   workerEnvironment: NodeJS.ProcessEnv;
+  startWorker: JobWorkerStarter;
 }
 
 export interface StartBackgroundJobResult {
@@ -55,14 +57,13 @@ export async function startBackgroundJob(
     throw new Error(error);
   }
 
-  let child;
   try {
-    child = startJobWorkerProcess({
+    const started = options.startWorker({
       repoRoot: options.repoRoot,
       workerProgram: options.workerProgram,
-      environment: options.workerEnvironment,
-      spawnBackground: options.spawnBackground,
+      workerEnvironment: options.workerEnvironment,
     });
+    return { jobId, record: queued, childPid: started.childPid };
   } catch (err: unknown) {
     await markQueuedJobFailed({
       recordPath,
@@ -72,9 +73,6 @@ export async function startBackgroundJob(
     });
     throw err;
   }
-  child.unref?.();
-  const childPid = child.pid ?? 0;
-  return { jobId, record: queued, childPid };
 }
 
 async function markQueuedJobFailed(args: {

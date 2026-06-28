@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 
 import { createAgentRuntimeJobRunner } from "../../agent/runtime/job-runner.js";
 import { createPlatformSyncTranscriptRuntime } from "../../platform/transcripts/runtime.js";
+import { startCliBackgroundJob } from "./background-jobs.js";
 import { currentCliNodeProgram } from "./current-cli.js";
 import { emit } from "./helpers.js";
 
@@ -33,6 +34,7 @@ export function registerSyncCommands(program: Command): void {
         pid: process.pid,
         agentRunner: createAgentRuntimeJobRunner({ environment: process.env }),
         transcriptRuntime: createPlatformSyncTranscriptRuntime(),
+        startBackground: startCliBackgroundJob,
       });
       emit(result);
     });
