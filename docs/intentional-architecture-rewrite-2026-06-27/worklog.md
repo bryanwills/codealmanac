@@ -1709,3 +1709,11 @@ Two-hundred-forty-second production slice:
 - Updated Claude readiness, Claude runtime status, diagnostics auth probing, and auth tests to import provider-owned Claude auth directly.
 - Kept diagnostics from routing through readiness just to call the Claude auth probe.
 - Strengthened architecture-boundary tests so Claude auth stays under the Claude provider and the old generic auth bucket stays deleted.
+
+Two-hundred-forty-third production slice:
+
+- Moved generic provider CLI status process mechanics from readiness internals into `src/platform/agent-cli-status.ts`.
+- Updated Codex and Cursor readiness providers to import platform-owned command existence and status helpers.
+- Updated Codex runtime status to reuse the same platform-owned command runner while preserving the runtime's untimed status behavior.
+- Kept provider modules responsible for choosing provider-specific status commands and interpreting results.
+- Strengthened architecture-boundary tests so provider readiness/runtime files do not regain `node:child_process` status execution.

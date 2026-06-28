@@ -2424,10 +2424,27 @@ describe("architecture boundaries", () => {
     const claudeReadiness = await readSource(
       "src/agent/readiness/providers/claude/index.ts",
     );
+    const codexReadiness = await readSource(
+      "src/agent/readiness/providers/codex-cli.ts",
+    );
+    const cursorReadiness = await readSource(
+      "src/agent/readiness/providers/cursor-cli.ts",
+    );
     const claudeAuth = await readSource("src/agent/providers/claude/auth.ts");
+    const platformAgentCliStatus = await readSource(
+      "src/platform/agent-cli-status.ts",
+    );
+    const codexRuntimeStatus = await readSource(
+      "src/agent/runtime/providers/codex/status.ts",
+    );
 
     expect(existsSync(join(ROOT, "src/agent/auth"))).toBe(false);
     expect(existsSync(join(ROOT, "src/agent/providers/claude/auth.ts"))).toBe(
+      true,
+    );
+    expect(existsSync(join(ROOT, "src/agent/readiness/providers/cli-status.ts")))
+      .toBe(false);
+    expect(existsSync(join(ROOT, "src/platform/agent-cli-status.ts"))).toBe(
       true,
     );
     expect(agentTypes).toContain("export interface AgentProviderRuntime");
@@ -2462,6 +2479,23 @@ describe("architecture boundaries", () => {
     expect(claudeAuth).not.toContain("process.env");
     expect(claudeReadiness).toContain("runtime.environment.ANTHROPIC_API_KEY");
     expect(claudeAuth).toContain("environment.ANTHROPIC_API_KEY");
+    expect(codexReadiness).toContain("platform/agent-cli-status.js");
+    expect(cursorReadiness).toContain("platform/agent-cli-status.js");
+    expect(codexRuntimeStatus).toContain("platform/agent-cli-status.js");
+    for (const providerStatusSource of [
+      codexReadiness,
+      cursorReadiness,
+      codexRuntimeStatus,
+    ]) {
+      expect(providerStatusSource).not.toContain("node:child_process");
+      expect(providerStatusSource).not.toContain("spawn(");
+      expect(providerStatusSource).not.toContain("spawnSync");
+    }
+    expect(platformAgentCliStatus).toContain("node:child_process");
+    expect(platformAgentCliStatus).toContain("spawn(");
+    expect(platformAgentCliStatus).toContain("spawnSync");
+    expect(platformAgentCliStatus).toContain("runInjectedStatusCommand");
+    expect(platformAgentCliStatus).toContain("runStatusCommand");
   });
 
   it("keeps Codex app-server policy out of the JSON-RPC run loop", async () => {

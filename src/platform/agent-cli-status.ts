@@ -1,8 +1,24 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
-import type { SpawnCliFn } from "../../types.js";
+export interface CliStatusResult {
+  ok: boolean;
+  detail: string;
+}
 
-const STATUS_TIMEOUT_MS = 3_000;
+export interface CliStatusSpawnedProcess {
+  stdout: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
+  stderr: { on: (event: "data", cb: (data: Buffer | string) => void) => void };
+  on: (event: "close" | "error", cb: (arg: number | null | Error) => void) => void;
+  kill: (signal?: string) => void;
+}
+
+export type CliStatusSpawnFn = (args: string[]) => CliStatusSpawnedProcess;
+
+export interface RunCliStatusOptions {
+  timeoutMs?: number | null;
+}
+
+const DEFAULT_STATUS_TIMEOUT_MS = 3_000;
 
 export function commandExists(command: string): boolean {
   const result = spawnSync("sh", ["-lc", `command -v ${command}`], {
@@ -12,15 +28,15 @@ export function commandExists(command: string): boolean {
 }
 
 export function runInjectedStatusCommand(
-  spawnCli: SpawnCliFn,
+  spawnCli: CliStatusSpawnFn,
   args: string[],
   command: string,
-): Promise<{ ok: boolean; detail: string }> {
+): Promise<CliStatusResult> {
   return new Promise((resolve) => {
     let stdout = "";
     let stderr = "";
     let settled = false;
-    const settle = (value: { ok: boolean; detail: string }): void => {
+    const settle = (value: CliStatusResult): void => {
       if (settled) return;
       settled = true;
       resolve(value);
@@ -62,16 +78,18 @@ export function runInjectedStatusCommand(
 export function runStatusCommand(
   command: string,
   args: string[],
-): Promise<{ ok: boolean; detail: string }> {
+  options: RunCliStatusOptions = {},
+): Promise<CliStatusResult> {
   return new Promise((resolve) => {
     let stdout = "";
     let stderr = "";
     let child: ChildProcess;
     let settled = false;
-    const settle = (value: { ok: boolean; detail: string }): void => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const settle = (value: CliStatusResult): void => {
       if (settled) return;
       settled = true;
-      clearTimeout(timer);
+      if (timer !== null) clearTimeout(timer);
       resolve(value);
     };
     try {
@@ -81,23 +99,28 @@ export function runStatusCommand(
       resolve({ ok: false, detail: msg });
       return;
     }
-    const timer = setTimeout(() => {
-      try {
-        child.kill("SIGTERM");
-        setTimeout(() => {
-          if (child.exitCode === null && child.signalCode === null) {
-            try {
-              child.kill("SIGKILL");
-            } catch {
-              // already exited
+    const timeoutMs = options.timeoutMs === undefined
+      ? DEFAULT_STATUS_TIMEOUT_MS
+      : options.timeoutMs;
+    if (timeoutMs !== null) {
+      timer = setTimeout(() => {
+        try {
+          child.kill("SIGTERM");
+          setTimeout(() => {
+            if (child.exitCode === null && child.signalCode === null) {
+              try {
+                child.kill("SIGKILL");
+              } catch {
+                // already exited
+              }
             }
-          }
-        }, 500).unref();
-      } catch {
-        // already exited
-      }
-      settle({ ok: false, detail: `${command} status timed out` });
-    }, STATUS_TIMEOUT_MS);
+          }, 500).unref();
+        } catch {
+          // already exited
+        }
+        settle({ ok: false, detail: `${command} status timed out` });
+      }, timeoutMs);
+    }
     child.stdout?.on("data", (chunk) => {
       stdout += chunk.toString("utf8");
     });

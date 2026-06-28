@@ -5,7 +5,7 @@ Branch: `codex/intentional-architecture-rewrite`
 
 ## Current State
 
-The branch has more than 280 committed rewrite commits past `dev`. The worklog records 242 production slices so far.
+The branch has more than 280 committed rewrite commits past `dev`. The worklog records 243 production slices so far.
 
 The diff is broad: more than 490 files changed, with tens of thousands of lines reshaped.
 
@@ -79,6 +79,7 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 - Moved provider execution runtime into `src/agent/runtime/`, especially Claude and Codex app-server mechanics, and made provider runtime environment flow through explicit job/registry contracts.
 - Split Claude SDK process mechanics out of the SDK option mapper and runtime coordinator.
 - Moved Claude auth probing from the generic `src/agent/auth/` bucket into provider-owned `src/agent/providers/claude/auth.ts`.
+- Moved generic provider CLI status process mechanics into `src/platform/agent-cli-status.ts`, so Codex/Cursor readiness and Codex runtime status share one platform-owned command runner.
 - Split Codex app-server process mechanics out of the JSON-RPC runtime coordinator.
 - Split Codex app-server agent-message handling out of the generic notification router.
 - Split Codex app-server terminal event handling out of the generic notification router.
@@ -118,9 +119,20 @@ This is no longer a small cleanup branch. It is a real ownership rewrite.
 
 ## Latest Checkpoint
 
-The latest slice moved Claude auth probing into `src/agent/providers/claude/auth.ts` and deleted the old generic `src/agent/auth/` bucket. Claude readiness, Claude runtime status, and diagnostics now consume the provider-owned auth module directly.
+The latest slice moved generic provider CLI status process mechanics into `src/platform/agent-cli-status.ts`. Codex/Cursor readiness and Codex runtime status now import platform-owned status helpers instead of owning child-process execution themselves.
 
 Verification passed:
+
+- `npm run lint`
+- `npx vitest run test/architecture-boundaries.test.ts test/agents-command.test.ts test/provider-view.test.ts test/setup.test.ts test/codex-agent-runtime-provider.test.ts`
+- `git diff --check`
+- `npm test`
+- `npm run build`
+- `node dist/launcher.js doctor --help`
+- `node dist/launcher.js agents --help`
+- `node dist/launcher.js jobs --help`
+
+Previous full-slice verification also passed:
 
 - `git diff --check`
 - `npm run lint`

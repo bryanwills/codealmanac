@@ -11,7 +11,7 @@ import {
   commandExists,
   runInjectedStatusCommand,
   runStatusCommand,
-} from "./cli-status.js";
+} from "../../../platform/agent-cli-status.js";
 
 const metadata: AgentProviderMetadata = {
   id: "codex",
