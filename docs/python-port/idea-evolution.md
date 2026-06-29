@@ -5,6 +5,32 @@ Updated: 2026-06-29
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-06-29 - Public Release Is A Gate, Not A Feeling
+
+Old hypothesis:
+After the local product surface existed, the remaining question was mostly
+whether more architecture polish was worth it.
+
+New hypothesis:
+Architecture-only work is now diminishing returns. Public release should be
+judged by concrete evidence: clean install, accurate README and package
+metadata, real lifecycle dogfood, prompt quality, sync proof, viewer browser
+checks, safety checks, and contract guards.
+
+Evidence that forced the change:
+`README.md` still advertised the old Node/npm `almanac` and hosted-dashboard
+flow after the Python CLI had moved to `codealmanac`, Python 3.12+, local-only
+behavior, and a default `almanac/` root.
+
+Code or product assumption affected:
+The release bar now lives in `docs/python-port/public-release-readiness.md`.
+Public-contract tests check package README/license metadata and reject stale
+README install language.
+
+Follow-up test:
+Keep the README contract test and run a clean wheel install dogfood before any
+public release claim.
+
 ## 2026-06-29 - Transcript Visibility Belongs To Harness Events
 
 Old hypothesis:

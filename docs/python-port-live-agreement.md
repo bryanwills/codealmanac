@@ -29,6 +29,11 @@ It is the constraint document for future agents.
   elsewhere.
 - 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
   models, service-owned verbs, store-owned persistence, thin CLI edges.
+- 2026-06-29: Public-release readiness is now evidence-gated in
+  `docs/python-port/public-release-readiness.md`. Further work should bias
+  toward clean-install proof, real lifecycle dogfood, prompt quality, package
+  metadata, README accuracy, and browser verification instead of adding
+  speculative architecture seams.
 - 2026-06-29: Local automation v1 installs scheduler jobs for foreground
   `sync` and `garden`. Manual `update` is a foreground package-manager command
   and has pip/uv non-editable install dogfood. Do not schedule `update` until

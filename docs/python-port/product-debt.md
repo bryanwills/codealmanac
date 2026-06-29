@@ -15,6 +15,7 @@ alive while rebuilding in Python.
 | CLI shell-out as an internal API | forbidden | Automation and future server wrappers must call Python services/workflows directly. |
 | Hosted-shipping work merged from `origin/dev` | archive/reference only | The branch may contain hosted assumptions that are not v1 product direction. |
 | TypeScript module boundaries | archive/reference only | The old code is behavior evidence, not a shape to preserve. |
+| Node/npm README and `almanac` command docs | rejected, guarded by tests | The Python public surface is `codealmanac`, Python 3.12+, local-only, and defaults to `almanac/`. |
 | Semantic/vector search | out of scope | FTS5 and explicit refs come first. |
 | Hard-coded `.almanac/` root | rejected | Python v1 targets new users and defaults to `almanac/`; `.almanac/` is only valid when explicitly configured. |
 | `<almanac-root>/wiki/` nesting | forbidden | The configured Almanac root remains flat; future files are peers. |
@@ -25,6 +26,7 @@ alive while rebuilding in Python.
 |---|---|
 | `jobs` vs `runs` public noun | resolved: public CLI noun is `jobs`; internal service noun is `runs`. |
 | Local `add` command | Decide only when source-pool behavior is concrete. |
+| Public release bar | resolved as a gate: `docs/python-port/public-release-readiness.md` lists required evidence. Current status is internal local alpha until clean-install and real lifecycle dogfood pass. |
 | Registry cleanup | resolved for local v1: `list --json` reports registry availability, `list --drop <selector>` removes one entry, and `list --drop-missing` explicitly removes unreachable entries. Read commands do not auto-prune. |
 | `serve` slice timing | resolved: read-only local viewer exists; renderer token-safety is covered by tests; UseAlmanac visual language is reference material only. Do not copy the current UseAlmanac wiki page/search UX. Keep the earlier CodeAlmanac sidebar-first reader shape and improve the design layer around it. Slice 51 tightened rail wording, active page/topic state, compact mobile density, and browser-verified desktop/mobile behavior through an isolated Chrome profile. |
 | Agent harness contract | partially resolved: lifecycle workflows record normalized `HarnessEvent` values before validation. Current CLI adapters emit terminal events only. Re-evaluate old Codex app-server and Claude SDK adapters only if local lifecycle dogfood needs complete text/tool/usage/warning transcript events, structured output, subagents, or stronger transcript controls. |

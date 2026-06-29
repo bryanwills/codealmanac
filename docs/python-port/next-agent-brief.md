@@ -7,9 +7,10 @@ Updated: 2026-06-29
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
 - Latest committed implementation slice:
-  `feat(slice-55): normalize harness events`.
+  `feat(slice-56): refresh public README`.
 - Latest committed product-direction slice: `docs: record viewer design correction`.
 - Live contract: `docs/python-port-live-agreement.md`.
+- Public release gate: `docs/python-port/public-release-readiness.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime` before Ingest
@@ -90,7 +91,13 @@ Updated: 2026-06-29
   included files as `changed` or `unchanged`.
 - Public-contract tests guard the local-only CLI/package surface: only the
   `codealmanac` script, no hosted verbs, no compatibility aliases, and no
-  `sdk` or `mcp` package modules.
+  `sdk` or `mcp` package modules. They also guard README/package metadata so
+  old Node/npm, `almanac`, hosted-dashboard, and `absorb` language does not
+  return.
+- `README.md` now documents the Python local product surface: Python 3.12+,
+  `codealmanac`, default `almanac/`, local install, local read commands,
+  lifecycle commands, sync, automation, jobs, providers, configuration, and the
+  no-hosted/no-alias public contract.
 - The manual surface is a support package, not a public command. `ManualLibrary`
   reads `src/codealmanac/manual/*.md`, `build`/`init` copy missing docs into
   the configured root's `manual/`, prompts tell lifecycle agents to read those
@@ -491,10 +498,15 @@ Behavior:
 - Slice 55 focused harness/adapter/workflow tests, focused ruff, full pytest,
   full ruff, diff check, package build, and normalized-harness-event jobs-log
   dogfood
+- Slice 56 focused public-contract tests, focused ruff, full pytest, full ruff,
+  diff check, package build, wheel metadata inspection, and clean wheel install
+  CLI dogfood
 
 ## Next Move
 
 1. Likely next pressure points:
+   - clean-install and real lifecycle dogfood against
+     `docs/python-port/public-release-readiness.md`
    - more lifecycle dogfood for prompt quality and real project behavior; add
      source-runtime ranking/recency only after a failing case proves current
      diversity is insufficient

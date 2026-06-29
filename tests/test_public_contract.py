@@ -21,6 +21,29 @@ FORBIDDEN_TOP_LEVEL_COMMANDS = (
     "use",
 )
 
+README_REQUIRED_FRAGMENTS = (
+    "Public command: `codealmanac`",
+    "Default repo wiki root: `almanac/`",
+    "Python 3.12+",
+    "uv tool install codealmanac",
+    "codealmanac init",
+    "codealmanac search",
+    "codealmanac serve",
+    "No hosted login/connect/upload commands.",
+)
+
+README_FORBIDDEN_FRAGMENTS = (
+    "npx codealmanac",
+    "npm install",
+    "Node 20",
+    "`almanac ",
+    "`alm`",
+    "codealmanac.com/dashboard",
+    "usealmanac.com",
+    "ingest is an alias",
+    "absorb",
+)
+
 
 def test_public_entry_point_is_codealmanac_only():
     pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
@@ -28,6 +51,25 @@ def test_public_entry_point_is_codealmanac_only():
     scripts = pyproject["project"]["scripts"]
 
     assert scripts == {"codealmanac": "codealmanac.cli.main:main"}
+
+
+def test_python_package_metadata_declares_readme_and_license():
+    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
+
+    project = pyproject["project"]
+
+    assert project["readme"] == "README.md"
+    assert project["license"] == {"file": "LICENSE.md"}
+
+
+def test_readme_documents_python_local_public_surface():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+
+    for fragment in README_REQUIRED_FRAGMENTS:
+        assert fragment in readme
+
+    for fragment in README_FORBIDDEN_FRAGMENTS:
+        assert fragment not in readme
 
 
 @pytest.mark.parametrize("command", FORBIDDEN_TOP_LEVEL_COMMANDS)

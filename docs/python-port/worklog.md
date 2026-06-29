@@ -665,17 +665,23 @@ events. Current Codex and Claude CLI adapters emit terminal `done` events, and
 `ingest`/`garden` persist all returned events in order before later validation.
 This keeps `codex exec` acceptable for v1 while leaving a clean Codex
 app-server trigger: port it when actual transcript event completeness matters.
+Slice 56 shifts the work toward public-release proof. The old README still
+advertised the Node/npm `almanac` and hosted-dashboard path, which would
+mislead Python users. `README.md` now documents the Python `codealmanac` local
+surface, `pyproject.toml` declares the README and license file, public-contract
+tests guard the README against stale install language, and
+`docs/python-port/public-release-readiness.md` names the release gate.
 
 ## Next Hypothesis
 
-The next high-pressure product slice is not another root or sync migration.
-Scheduled update checks should wait for real non-editable install dogfood. The
-remaining source-runtime pressure is now lifecycle dogfood, not a missing
-selection mechanism. The remaining serve risk is polish
-and product review of navigation density, especially the compact mobile rail.
-Browser-harness should still verify visual changes, but the current run is
-using an isolated temporary Chrome profile with explicit `BU_CDP_URL` when the
-default Chrome profile requests the remote-debugging Allow prompt.
+The next high-pressure product slice is release proof, not another root or sync
+migration. Scheduled update checks should wait for a notifier policy. The
+remaining source-runtime pressure is lifecycle dogfood, not a missing selection
+mechanism. The remaining serve risk is polish and product review of navigation
+density, especially the compact mobile rail. Browser-harness should still
+verify visual changes, using an isolated temporary Chrome profile with explicit
+`BU_CDP_URL` when the default Chrome profile requests the remote-debugging Allow
+prompt.
 After slice 48, the next update pressure is no longer install detection; it is
 the product policy for notification cadence, dismissal, and release channels
 before any scheduled update automation exists. After slice 49, the next CLI
@@ -687,3 +693,7 @@ After slice 55, the next Codex harness pressure is event completeness, not
 parity for its own sake. `codex exec` remains a one-shot writer transport;
 Codex app-server belongs back on the table when jobs need normalized text,
 tool, usage, actor, or root-turn events from the run itself.
+After slice 56, public release should be measured against
+`docs/python-port/public-release-readiness.md`: clean wheel install, real
+Codex/Claude lifecycle dogfood, sync proof, viewer browser proof, package-data
+inspection, and prompt-quality review.

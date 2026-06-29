@@ -704,3 +704,15 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice55`; wheel inspection | passed; wheel includes harness models, Codex/Claude adapters, lifecycle helpers, and ingest/garden workflows |
 | Normalized harness event dogfood | isolated temp `HOME`; temp Git repo; fake Codex harness returned text/tool/tool/done events; `codealmanac jobs logs <run-id>` | passed; log reported output/tool/tool/output events before `status done` |
+
+## Gates For Slice 56 Public Release README
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused public-contract tests | `uv run pytest tests/test_public_contract.py` | 15 passed |
+| Focused public-contract lint | `uv run ruff check tests/test_public_contract.py` | passed |
+| Full tests | `uv run pytest` | 238 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice56`; wheel metadata/package-data inspection | passed; README metadata, license file, server assets, manual files, and prompts present |
+| Clean wheel install dogfood | isolated temp venv and `HOME`; install built wheel; installed `codealmanac --help`, `init`, `search`, `show`, `health --json`, `jobs`, and `serve` `/api/overview` | passed; temp repo initialized, search found `getting-started`, viewer returned workspace `repo` with one page |
