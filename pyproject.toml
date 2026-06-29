@@ -49,7 +49,12 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-codealmanac = ["server/assets/*.html", "server/assets/*.css", "server/assets/*.js"]
+codealmanac = [
+  "server/assets/*.html",
+  "server/assets/*.css",
+  "server/assets/*.js",
+  "server/assets/viewer/*.js",
+]
 "codealmanac.manual" = ["*.md"]
 "codealmanac.prompts" = ["base/*.md", "operations/*.md"]
 

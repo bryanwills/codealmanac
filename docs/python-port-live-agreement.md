@@ -76,6 +76,12 @@ It is the constraint document for future agents.
   shared UI primitives, direct imports over broad barrels, and browser-level
   tests. A Next.js viewer is allowed only if the static package-data viewer
   becomes harder to maintain than a small built frontend.
+- 2026-06-29: The `serve` frontend can use static ES modules while it remains
+  a small read-only viewer. `app.js` is the entrypoint; nested modules under
+  `server/assets/viewer/` own API calls, hash routes, DOM components, and
+  screen renderers. This is the current Bulletproof-inspired seam. Do not add
+  React, Next.js, Vite, or a frontend build step until real UI complexity makes
+  static package data harder to maintain.
 - 2026-06-29: Filesystem directory source runtime uses Git listing when the
   selected directory is inside a Git worktree, then falls back to the bounded
   Python/pathspec walk when Git cannot answer. This is runtime material
@@ -288,6 +294,17 @@ For frontend structure, read `docs/reference/bulletproof-react/CODEALMANAC.md`.
 If `serve` remains a static asset bundle, mirror the same boundaries in plain
 files: shared visual primitives, wiki-specific rendering, and API helpers
 should stay distinct instead of becoming one unstructured script.
+
+The current static module layout is:
+
+```text
+server/assets/app.js
+server/assets/viewer/api.js
+server/assets/viewer/routes.js
+server/assets/viewer/components.js
+server/assets/viewer/renderers.js
+server/assets/viewer/main.js
+```
 
 ## Workflows
 

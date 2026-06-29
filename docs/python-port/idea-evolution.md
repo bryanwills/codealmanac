@@ -1135,3 +1135,33 @@ Follow-up test:
 Future viewer changes should be checked in browser-harness against desktop and
 mobile viewports, and should preserve page graph navigation before adding
 new hosted-style surfaces.
+
+## 2026-06-29 - Static Viewer Needs Modules, Not React Yet
+
+Old hypothesis:
+The visual port could stay as one packaged `app.js` file until the viewer
+became a React or Next.js app.
+
+New hypothesis:
+Apply the frontend boundary now with static ES modules. API calls, hash routes,
+shared DOM components, and screen renderers should live in separate package
+assets. React, Next.js, Vite, and component libraries remain deferred until
+the viewer has complex client state or UI machinery that static modules cannot
+carry cleanly.
+
+Evidence that forced the change:
+After the UseAlmanac visual port, `app.js` mixed route parsing, HTTP calls,
+state wiring, DOM components, and screen renderers. Bulletproof React's
+project-structure guidance recommends feature boundaries and direct imports,
+and Cosmic Python chapter 3 frames simple abstractions as the way to reduce
+coupling to messy details.
+
+Code or product assumption affected:
+`server/assets/viewer/` now owns the browser feature modules. The FastAPI
+server validates and serves nested package assets through `/assets/{path}`.
+`pyproject.toml` explicitly packages `server/assets/viewer/*.js`.
+
+Follow-up test:
+If future viewer work adds complex client state, accessible popovers, routing
+machinery, or reusable component state, reassess React/Next.js with a failing
+maintenance example rather than adding a build step speculatively.

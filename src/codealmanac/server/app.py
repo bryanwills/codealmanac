@@ -1,9 +1,10 @@
+from enum import StrEnum
 from importlib import resources
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, Response
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.core.errors import CodeAlmanacError, ConflictError, NotFoundError
@@ -21,6 +22,50 @@ from codealmanac.services.viewer.requests import (
     ViewerSearchRequest,
     ViewerTopicRequest,
 )
+
+
+class ServerAssetSuffix(StrEnum):
+    HTML = ".html"
+    CSS = ".css"
+    JAVASCRIPT = ".js"
+
+
+ASSET_MEDIA_TYPES: dict[ServerAssetSuffix, str] = {
+    ServerAssetSuffix.HTML: "text/html",
+    ServerAssetSuffix.CSS: "text/css",
+    ServerAssetSuffix.JAVASCRIPT: "text/javascript",
+}
+
+
+class ServerAssetRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    path: str
+
+    @field_validator("path")
+    @classmethod
+    def validate_path(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("asset path must not contain surrounding whitespace")
+        if not value:
+            raise ValueError("asset path is required")
+        if value.startswith("/") or "\\" in value:
+            raise ValueError("asset path must be relative")
+        parts = value.split("/")
+        if any(part in {"", ".", ".."} for part in parts):
+            raise ValueError("asset path contains an invalid segment")
+        suffix = Path(value).suffix
+        if suffix not in {item.value for item in ServerAssetSuffix}:
+            raise ValueError("asset path has an unsupported extension")
+        return value
+
+    @property
+    def media_type(self) -> str:
+        return ASSET_MEDIA_TYPES[ServerAssetSuffix(Path(self.path).suffix)]
+
+    @property
+    def parts(self) -> list[str]:
+        return self.path.split("/")
 
 
 def create_server_app(
@@ -92,27 +137,49 @@ def create_server_app(
 
     @server.get("/", include_in_schema=False)
     def index() -> HTMLResponse:
-        return HTMLResponse(read_asset("index.html"))
+        return HTMLResponse(read_asset_text(ServerAssetRequest(path="index.html")))
 
     @server.get("/app.js", include_in_schema=False)
     def app_js() -> Response:
-        return Response(read_asset("app.js"), media_type="text/javascript")
+        return asset_response("app.js")
 
     @server.get("/app.css", include_in_schema=False)
     def app_css() -> Response:
-        return Response(read_asset("app.css"), media_type="text/css")
+        return asset_response("app.css")
+
+    @server.get("/assets/{asset_path:path}", include_in_schema=False)
+    def static_asset(asset_path: str) -> Response:
+        return asset_response(asset_path)
 
     @server.get("/{path:path}", include_in_schema=False)
     def fallback(path: str) -> HTMLResponse:
         if path.startswith("api/"):
             raise HTTPException(status_code=404, detail="not found")
-        return HTMLResponse(read_asset("index.html"))
+        return HTMLResponse(read_asset_text(ServerAssetRequest(path="index.html")))
 
     return server
 
 
-def read_asset(name: str) -> str:
-    asset = resources.files("codealmanac.server.assets").joinpath(name)
+def asset_response(asset_path: str) -> Response:
+    try:
+        request = ServerAssetRequest(path=asset_path)
+        return Response(
+            read_asset_text(request),
+            media_type=request.media_type,
+        )
+    except ValidationError as error:
+        raise validation_error(error) from error
+    except FileNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "not_found", "message": f"asset not found: {asset_path}"},
+        ) from error
+
+
+def read_asset_text(request: ServerAssetRequest) -> str:
+    asset = resources.files("codealmanac.server.assets").joinpath(*request.parts)
+    if not asset.is_file():
+        raise FileNotFoundError(request.path)
     return asset.read_text(encoding="utf-8")
 
 

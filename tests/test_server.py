@@ -19,11 +19,20 @@ def test_server_serves_static_assets_and_viewer_api(
     file = client.get("/api/file", params={"path": "src/auth/session.py"})
     topic = client.get("/api/topic/auth")
     javascript = client.get("/app.js")
+    module = client.get("/assets/viewer/main.js")
+    api_module = client.get("/assets/viewer/api.js")
 
     assert index.status_code == 200
     assert "CodeAlmanac" in index.text
+    assert 'type="module"' in index.text
     assert javascript.status_code == 200
-    assert "loadOverview" in javascript.text
+    assert 'import { startViewer } from "/assets/viewer/main.js";' in javascript.text
+    assert javascript.headers["content-type"].startswith("text/javascript")
+    assert module.status_code == 200
+    assert module.headers["content-type"].startswith("text/javascript")
+    assert 'from "./renderers.js"' in module.text
+    assert api_module.status_code == 200
+    assert "/api/file?path=" in api_module.text
     assert overview.json()["workspace"]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
     assert '<a href="#/page/session-store">Session Store</a>' in page.json()["html"]
@@ -34,8 +43,6 @@ def test_server_serves_static_assets_and_viewer_api(
         "auth-flow",
         "session-store",
     ]
-    assert "/api/file?path=" in javascript.text
-    assert "renderFile" in javascript.text
 
 
 def test_server_maps_product_errors_to_http_statuses(
@@ -72,3 +79,21 @@ def test_server_rejects_invalid_file_reference_paths(
 
     assert response.status_code == 422
     assert response.json()["detail"]["code"] == "validation_failed"
+
+
+def test_server_rejects_invalid_static_asset_paths(
+    viewer_repo: tuple[Path, CodeAlmanac],
+):
+    repo, app = viewer_repo
+    client = TestClient(create_server_app(app, repo))
+
+    traversal = client.get("/assets/%2E%2E/app.js")
+    missing = client.get("/assets/viewer/missing.js")
+    unsupported = client.get("/assets/viewer/main.txt")
+
+    assert traversal.status_code == 422
+    assert traversal.json()["detail"]["code"] == "validation_failed"
+    assert missing.status_code == 404
+    assert missing.json()["detail"]["code"] == "not_found"
+    assert unsupported.status_code == 422
+    assert unsupported.json()["detail"]["code"] == "validation_failed"

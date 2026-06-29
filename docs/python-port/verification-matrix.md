@@ -583,3 +583,16 @@ means the goal remains active.
 | Package build | `uv build --out-dir /tmp/codealmanac-build-slice46`; wheel inspection | passed; wheel includes updated viewer assets |
 | Browser desktop dogfood | temp repo, live `codealmanac serve`, browser-harness page/search/file/wikilink navigation checks | passed; no horizontal overflow, no script nodes in rendered page, side panel file refs visible |
 | Browser mobile dogfood | browser-harness at 390px width on page route | passed; page rendered, side panel collapsed, search fit viewport, no horizontal overflow |
+
+## Gates For Slice 47 Viewer Frontend Modules
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused server/viewer tests | `uv run pytest tests/test_server.py tests/test_viewer_service.py tests/test_viewer_renderer.py` | 12 passed |
+| Focused server lint | `uv run ruff check src/codealmanac/server tests/test_server.py` | passed |
+| Full tests | `uv run pytest` | 222 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --out-dir /tmp/codealmanac-build-slice47`; wheel inspection | passed; wheel includes `server/assets/viewer/*.js` |
+| Static asset contract | `tests/test_server.py` | covers nested module serving, missing asset 404, traversal validation, unsupported extension validation, and module script tag |
+| Browser module dogfood | temp repo, live `codealmanac serve`, browser-harness page/search/file/wikilink navigation and module fetch checks | passed; `/app.js`, `/assets/viewer/main.js`, and `/assets/viewer/api.js` loaded as JavaScript |

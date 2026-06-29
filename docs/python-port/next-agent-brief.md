@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-46): port serve visual system`.
+- Latest committed implementation slice: `feat(slice-47): modularize serve frontend`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -44,6 +44,10 @@ Updated: 2026-06-29
   `docs/reference/bulletproof-react/`. Treat it as frontend architecture
   guidance for future viewer growth, not a reason to add React/Next.js while
   the static package-data viewer remains maintainable.
+- The served frontend now uses static ES modules. `app.js` imports
+  `/assets/viewer/main.js`; nested modules split API calls, routes, shared DOM
+  components, and screen renderers. The server validates nested static asset
+  paths before serving them.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -240,6 +244,19 @@ Behavior:
 - browser-harness verified desktop page/search/file/wikilink navigation and
   mobile no-overflow behavior
 
+Slice 47 modularizes the serve frontend.
+
+Behavior:
+
+- `app.js` is a tiny ES module entrypoint
+- `server/assets/viewer/api.js` owns viewer HTTP calls
+- `server/assets/viewer/routes.js` owns hash parsing and href builders
+- `server/assets/viewer/components.js` owns shared DOM pieces
+- `server/assets/viewer/renderers.js` owns page/search/topic/file screens
+- `server/assets/viewer/main.js` wires browser events and state
+- `/assets/{path}` validates and serves nested package assets
+- React/Next.js remains deferred until real viewer complexity requires it
+
 Slice 38 adds the database boundary.
 
 Behavior:
@@ -401,6 +418,8 @@ Behavior:
 - Slice 46 focused viewer/server tests, focused ruff, browser-harness desktop
   page/search/file/wikilink navigation, and browser-harness mobile no-overflow
   checks
+- Slice 47 focused server/viewer tests, focused server ruff, nested asset route
+  tests, and package-data preparation for wheel inspection
 
 ## Next Move
 

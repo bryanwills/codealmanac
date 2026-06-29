@@ -549,6 +549,14 @@
 - Verified slice 46 with focused viewer/server tests, focused ruff, 221
   passing full tests, full ruff, `git diff --check`, `uv build`, wheel asset
   inspection, and browser-harness desktop/mobile checks.
+- Added slice-47 viewer frontend modules. `app.js` is now a small ES module
+  entrypoint, nested package assets under `server/assets/viewer/` split API,
+  routing, shared DOM components, and screen renderers, and the FastAPI server
+  validates nested asset paths before serving them.
+- Verified slice 47 with 12 focused viewer/server tests, focused server ruff,
+  222 passing full tests, full ruff, `git diff --check`, `uv build`, wheel
+  inspection for nested viewer modules, and browser-harness desktop/mobile
+  checks that loaded `/app.js` plus `/assets/viewer/*.js`.
 
 ## Current Hypothesis
 
@@ -601,7 +609,9 @@ adapter-local diversity selection before any future recency machinery. Viewer
 wikilink rendering is now covered as a token-stream rewrite rather than a raw
 HTML/string rewrite. The served viewer now has the intended visual direction:
 UseAlmanac-style shell polish over CodeAlmanac's local sidebar/wiki graph IA,
-not the hosted UseAlmanac page-list/search UX.
+not the hosted UseAlmanac page-list/search UX. The browser shell now has static
+module boundaries that match the current UI size without adding React, Next.js,
+or a build step.
 
 ## Next Hypothesis
 
@@ -610,4 +620,4 @@ Scheduled update checks should wait for real non-editable install dogfood. The
 remaining source-runtime pressure is now real-repo dogfood for the diversity
 policy rather than a missing v1 mechanism. The remaining serve risk is polish
 and product review of navigation density, especially the compact mobile rail,
-not a missing browser-harness verification gate.
+not a missing browser-harness verification gate or frontend architecture seam.
