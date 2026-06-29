@@ -62,6 +62,20 @@ It is the constraint document for future agents.
 - 2026-06-29: The local viewer renders Markdown through `markdown-it-py` token
   streams. Wikilink rewriting touches text inline tokens only; inline code and
   fenced code stay source text, and labels remain escaped by the renderer.
+- 2026-06-29: `serve` should borrow UseAlmanac's visual language, not its
+  hosted wiki information architecture. Keep CodeAlmanac's local wiki-first
+  reading model: sidebar navigation, page/topic/search/file-reference graph
+  movement, and a read-only local viewer over repo-owned pages. UseAlmanac's
+  colors, shell polish, account-picker styling, and dashboard chrome are valid
+  reference material. Its hosted wiki page list/search flow, account routes,
+  billing/settings surfaces, and hosted wording are not the target shape for
+  the local product.
+- 2026-06-29: Bulletproof React is a frontend architecture reference for
+  `serve`, not a mandate to add React or Next.js immediately. Apply its
+  principles as the viewer grows: feature boundaries, colocated API requests,
+  shared UI primitives, direct imports over broad barrels, and browser-level
+  tests. A Next.js viewer is allowed only if the static package-data viewer
+  becomes harder to maintain than a small built frontend.
 - 2026-06-29: Filesystem directory source runtime uses Git listing when the
   selected directory is inside a Git worktree, then falls back to the bounded
   Python/pathspec walk when Git cannot answer. This is runtime material
@@ -264,6 +278,16 @@ not make CLI contain product decisions.
 | `diagnostics` | doctor-style checks and readiness reports | mutation workflows |
 | `updates` | local package update policy, installer detection, update command planning | scheduler state, hosted release management, package-manager subprocess mechanics |
 | `viewer` | read-only local browser payloads, page/topic/search overview assembly, rendered markdown for the viewer | markdown source of truth, SQLite persistence, AI calls, jobs/review lifecycle |
+
+The viewer's product shape is local wiki browsing. It may adopt UseAlmanac's
+alpine visual system and shell styling, but it should not replace the existing
+wiki sidebar/graph-navigation model with the hosted UseAlmanac wiki page-list
+or search flow.
+
+For frontend structure, read `docs/reference/bulletproof-react/CODEALMANAC.md`.
+If `serve` remains a static asset bundle, mirror the same boundaries in plain
+files: shared visual primitives, wiki-specific rendering, and API helpers
+should stay distinct instead of becoming one unstructured script.
 
 ## Workflows
 

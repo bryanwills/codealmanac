@@ -538,6 +538,17 @@
   wikilinks through `markdown-it-py` tokens, touches only inline text tokens,
   leaves inline/fenced code untouched, and relies on renderer escaping for link
   labels.
+- Added slice-46 serve visual port. The local viewer now borrows the
+  UseAlmanac alpine dashboard visual language while keeping CodeAlmanac's
+  existing local wiki model: sidebar navigation, page/topic/search/file-reference
+  routes, page graph context, and repo-owned read-only pages.
+- Downloaded Bulletproof React Markdown reference into
+  `docs/reference/bulletproof-react/` and added a CodeAlmanac note. It is a
+  structure reference for future frontend growth, not a mandate to add
+  React/Next.js to the current static viewer.
+- Verified slice 46 with focused viewer/server tests, focused ruff, 221
+  passing full tests, full ruff, `git diff --check`, `uv build`, wheel asset
+  inspection, and browser-harness desktop/mobile checks.
 
 ## Current Hypothesis
 
@@ -588,12 +599,15 @@ ordinary foreground sync but carries explicit unattended policy from automation
 into the workflow request and durable ledger. Clean directory runtime now uses
 adapter-local diversity selection before any future recency machinery. Viewer
 wikilink rendering is now covered as a token-stream rewrite rather than a raw
-HTML/string rewrite.
+HTML/string rewrite. The served viewer now has the intended visual direction:
+UseAlmanac-style shell polish over CodeAlmanac's local sidebar/wiki graph IA,
+not the hosted UseAlmanac page-list/search UX.
 
 ## Next Hypothesis
 
 The next high-pressure product slice is not another root or sync migration.
 Scheduled update checks should wait for real non-editable install dogfood. The
 remaining source-runtime pressure is now real-repo dogfood for the diversity
-policy rather than a missing v1 mechanism. The remaining serve risk is
-browser-harness verification once Chrome allows remote debugging.
+policy rather than a missing v1 mechanism. The remaining serve risk is polish
+and product review of navigation density, especially the compact mobile rail,
+not a missing browser-harness verification gate.

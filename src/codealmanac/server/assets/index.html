@@ -7,43 +7,70 @@
     <link rel="stylesheet" href="/app.css" />
   </head>
   <body>
-    <div class="shell">
-      <aside class="rail rail-left">
-        <a class="brand" href="#/">
-          <span class="brand-mark">CA</span>
-          <span>
-            <strong>CodeAlmanac</strong>
-            <small id="workspace-name"></small>
-          </span>
-        </a>
-        <form id="search-form" class="search">
-          <input id="search-input" type="search" placeholder="Search wiki" />
-          <button type="submit">Search</button>
-        </form>
-        <nav>
-          <h2>Topics</h2>
-          <div id="topic-list" class="nav-list"></div>
-        </nav>
-        <nav>
-          <h2>Pages</h2>
-          <div id="page-list" class="nav-list"></div>
-        </nav>
+    <a class="skip-link" href="#viewer-main">Skip to wiki</a>
+    <div class="dashboard-shell">
+      <aside class="dashboard-rail">
+        <div class="dashboard-rail-top">
+          <a class="dashboard-account-trigger" href="#/" aria-label="Current wiki">
+            <span class="app-avatar app-avatar--account">
+              <span class="app-avatar-fallback">CA</span>
+            </span>
+            <span>
+              <span class="dashboard-account-name" id="workspace-name">Wiki</span>
+              <span class="dashboard-account-subtitle">local wiki</span>
+            </span>
+            <span class="dashboard-account-caret">v</span>
+          </a>
+        </div>
+
+        <div class="dashboard-rail-nav">
+          <nav class="dashboard-nav" aria-label="Wiki navigation">
+            <a class="dashboard-nav-item is-active" data-nav-kind="home" href="#/">
+              <span class="nav-glyph">W</span>
+              Overview
+            </a>
+            <a class="dashboard-nav-item" data-nav-kind="search" href="#/search/">
+              <span class="nav-glyph">S</span>
+              Search
+            </a>
+          </nav>
+
+          <section class="wiki-rail-section">
+            <h2>Topics</h2>
+            <div id="topic-list" class="wiki-rail-list"></div>
+          </section>
+
+          <section class="wiki-rail-section">
+            <h2>Pages</h2>
+            <div id="page-list" class="wiki-rail-list"></div>
+          </section>
+        </div>
+
+        <div class="dashboard-rail-user-desktop">
+          <div class="local-viewer-note">
+            <strong>Read-only local viewer</strong>
+            <span>Markdown stays in the repository. Use the CLI to change it.</span>
+          </div>
+        </div>
       </aside>
-      <main id="main" class="reader" tabindex="-1"></main>
-      <aside class="rail rail-right">
-        <section>
-          <h2>Backlinks</h2>
-          <div id="backlinks" class="nav-list muted-list"></div>
-        </section>
-        <section>
-          <h2>Files</h2>
-          <div id="file-refs" class="nav-list muted-list"></div>
-        </section>
-        <section>
-          <h2>Related</h2>
-          <div id="related" class="nav-list muted-list"></div>
-        </section>
-      </aside>
+
+      <main id="viewer-main" class="dashboard-main">
+        <header class="dashboard-header">
+          <div class="dashboard-header-inner">
+            <div class="min-w-0">
+              <p class="dashboard-page-eyebrow">CodeAlmanac</p>
+              <h1 class="dashboard-header-title" id="route-title">Wiki</h1>
+            </div>
+            <form id="search-form" class="wiki-search-form">
+              <label class="sr-only" for="search-input">Search wiki</label>
+              <input id="search-input" name="q" type="search" placeholder="Search pages" />
+              <button class="wiki-search-button" type="submit">Search</button>
+            </form>
+          </div>
+        </header>
+
+        <div id="main" class="dashboard-page-body" tabindex="-1"></div>
+      </main>
     </div>
     <script src="/app.js"></script>
   </body>

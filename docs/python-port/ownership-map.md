@@ -178,6 +178,13 @@ file routes are graph-navigation routes. `services/viewer/renderer.py` owns
 Markdown rendering and token-level wikilink rewriting for the local viewer; it
 rewrites text inline tokens and leaves code tokens untouched.
 
+`server/assets/` owns the packaged browser shell for `serve`. It can borrow
+UseAlmanac's visual language, but it must preserve `services/viewer` as the
+product contract and keep local wiki navigation first: sidebar, overview,
+page, topic, search, file-reference graph routes, and read-only page viewing.
+Hosted UseAlmanac account, billing, settings, and hosted wiki-search flows do
+not belong in this local viewer.
+
 `manual/` is a support package rather than a product service. `ManualLibrary`
 loads bundled Markdown resources, installs missing files into
 `<almanac-root>/manual/`, and reports workspace manual completeness. `app.py`

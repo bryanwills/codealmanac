@@ -1106,3 +1106,32 @@ Follow-up test:
 If a second durable SQLite store appears, decide whether migrations need a
 shared migration catalog or whether each store should continue to supply typed
 store-owned migrations to `database.apply_migrations(...)`.
+
+## 2026-06-29 - Serve Visual Port Is Not Hosted Wiki IA
+
+Old hypothesis:
+The local viewer could copy more of UseAlmanac's wiki experience after the
+visual direction looked useful.
+
+New hypothesis:
+Copy the UseAlmanac design language, not the hosted product flow. `serve`
+should keep CodeAlmanac's local wiki browsing model: sidebar navigation,
+page/topic/search/file-reference graph movement, and read-only repo-owned
+pages.
+
+Evidence that forced the change:
+The user clarified that the earlier sidebar-oriented CodeAlmanac viewer was
+closer to the desired wiki shape. The problem was the visual treatment, not
+the local wiki IA. UseAlmanac's hosted search/page flow is not the target for
+this local CLI product.
+
+Code or product assumption affected:
+`src/codealmanac/server/assets/` may borrow UseAlmanac colors, shell polish,
+account-picker styling, and dashboard chrome. It should not add hosted account
+routes, billing/settings surfaces, hosted wording, or the hosted wiki page
+list/search UX.
+
+Follow-up test:
+Future viewer changes should be checked in browser-harness against desktop and
+mobile viewports, and should preserve page graph navigation before adding
+new hosted-style surfaces.

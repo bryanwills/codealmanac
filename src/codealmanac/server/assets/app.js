@@ -4,14 +4,13 @@ const state = {
 
 const el = {
   workspaceName: document.getElementById("workspace-name"),
+  routeTitle: document.getElementById("route-title"),
   searchForm: document.getElementById("search-form"),
   searchInput: document.getElementById("search-input"),
   topicList: document.getElementById("topic-list"),
   pageList: document.getElementById("page-list"),
   main: document.getElementById("main"),
-  backlinks: document.getElementById("backlinks"),
-  fileRefs: document.getElementById("file-refs"),
-  related: document.getElementById("related"),
+  navItems: Array.from(document.querySelectorAll("[data-nav-kind]")),
 };
 
 el.searchForm.addEventListener("submit", (event) => {
@@ -32,7 +31,7 @@ async function loadOverview() {
 async function route() {
   if (!state.overview) return;
   const [kind, value] = parseHash();
-  clearSidebars();
+  setActiveNav(kind);
   try {
     if (kind === "page" && value) {
       await renderPage(value);
@@ -42,7 +41,7 @@ async function route() {
       await renderTopic(value);
       return;
     }
-    if (kind === "search" && value) {
+    if (kind === "search") {
       await renderSearch(value);
       return;
     }
@@ -85,50 +84,101 @@ function renderNav() {
   );
 }
 
+function setActiveNav(kind) {
+  const active = kind === "search" ? "search" : "home";
+  for (const item of el.navItems) {
+    item.classList.toggle("is-active", item.dataset.navKind === active);
+  }
+}
+
+function setRouteTitle(title) {
+  document.title = `${title} | CodeAlmanac`;
+  el.routeTitle.textContent = title;
+}
+
 function renderHome() {
   const title = state.overview.featured_page?.title || "Wiki";
+  setRouteTitle(title);
+  el.searchInput.value = "";
   el.main.innerHTML = "";
   el.main.append(
-    readerHeader(
+    pageIntro(
+      "Local wiki",
       title,
-      `${state.overview.page_count} pages · ${state.overview.topic_count} topics`,
-      [],
+      `${state.overview.page_count} pages across ${state.overview.topic_count} topics.`,
     ),
-    gridList(state.overview.pages),
+    statsGrid(),
+    pageList(state.overview.pages),
   );
   el.main.focus();
 }
 
 async function renderPage(slug) {
   const page = await getJson(`/api/page/${encodeURIComponent(slug)}`);
+  setRouteTitle(page.title || page.slug);
   el.main.innerHTML = "";
-  el.main.append(
-    readerHeader(page.title || page.slug, page.summary || "", page.topics),
-    markdown(page.html),
+
+  const grid = document.createElement("div");
+  grid.className = "wiki-detail-grid";
+
+  const article = document.createElement("article");
+  article.className = "wiki-page-card";
+  article.append(pageTitleBlock(page), markdown(page.html));
+
+  const sidePanel = document.createElement("aside");
+  sidePanel.className = "wiki-side-panel";
+  sidePanel.setAttribute("aria-label", "Page context");
+  sidePanel.append(
+    sideSection("Backlinks", page.backlinks.map((item) => pageSideLink(item, item))),
+    sideSection(
+      "Files",
+      page.file_refs.map((file) =>
+        sideLink(`#/file/${encodeURIComponent(file.path)}`, file.path),
+      ),
+    ),
+    sideSection(
+      "Related",
+      page.related_pages.map((related) =>
+        pageSideLink(related.slug, related.title || related.slug),
+      ),
+    ),
   );
-  renderSidebarLinks(el.backlinks, page.backlinks, "page");
-  renderSidebarFiles(page.file_refs);
-  renderSidebarPages(el.related, page.related_pages);
+
+  grid.append(article, sidePanel);
+  el.main.append(grid);
   el.main.focus();
 }
 
 async function renderTopic(slug) {
   const topic = await getJson(`/api/topic/${encodeURIComponent(slug)}`);
+  setRouteTitle(topic.title || topic.slug);
   el.main.innerHTML = "";
   el.main.append(
-    readerHeader(topic.title || topic.slug, topic.description || "", []),
-    gridList(topic.pages),
+    pageIntro("Topic", topic.title || topic.slug, topic.description || ""),
+    pageList(topic.pages),
   );
   el.main.focus();
 }
 
 async function renderSearch(query) {
   el.searchInput.value = query;
+  setRouteTitle(query ? `Search: ${query}` : "Search");
+  if (!query) {
+    el.main.innerHTML = "";
+    el.main.append(
+      emptyState(
+        "Search the wiki",
+        "Search page titles, summaries, and page bodies in the local SQLite index.",
+      ),
+    );
+    el.main.focus();
+    return;
+  }
   const result = await getJson(`/api/search?q=${encodeURIComponent(query)}`);
   el.main.innerHTML = "";
   el.main.append(
-    readerHeader(`Search: ${query}`, `${result.pages.length} results`, []),
-    gridList(result.pages),
+    pageIntro("Search", query, `${result.pages.length} results`),
+    pageList(result.pages),
   );
   el.main.focus();
 }
@@ -136,69 +186,140 @@ async function renderSearch(query) {
 async function renderFile(path) {
   const result = await getJson(`/api/file?path=${encodeURIComponent(path)}`);
   const noun = result.kind === "directory" ? "folder" : "file";
+  setRouteTitle(result.path);
   el.main.innerHTML = "";
   el.main.append(
-    readerHeader(
+    pageIntro(
+      `Referenced ${noun}`,
       result.path,
-      `${result.pages.length} pages mention this ${noun}`,
-      [],
+      `${result.pages.length} pages mention this ${noun}.`,
     ),
-    gridList(result.pages),
+    pageList(result.pages),
   );
   el.main.focus();
 }
 
-function readerHeader(title, summary, topics) {
-  const header = document.createElement("header");
-  header.className = "reader-header";
+function pageIntro(eyebrow, title, copy) {
+  const section = document.createElement("section");
+  section.className = "dashboard-page-intro";
+  if (eyebrow) {
+    const label = document.createElement("p");
+    label.className = "dashboard-page-eyebrow";
+    label.textContent = eyebrow;
+    section.append(label);
+  }
   const h1 = document.createElement("h1");
+  h1.className = "dashboard-page-title";
   h1.textContent = title;
-  header.append(h1);
-  if (summary) {
+  section.append(h1);
+  if (copy) {
     const p = document.createElement("p");
-    p.className = "summary";
-    p.textContent = summary;
-    header.append(p);
+    p.className = "dashboard-page-copy";
+    p.textContent = copy;
+    section.append(p);
   }
-  if (topics.length > 0) {
-    const row = document.createElement("div");
-    row.className = "meta-row";
-    for (const topic of topics) {
-      const pill = document.createElement("a");
-      pill.className = "pill";
-      pill.href = `#/topic/${encodeURIComponent(topic)}`;
-      pill.textContent = topic;
-      row.append(pill);
-    }
-    header.append(row);
+  return section;
+}
+
+function statsGrid() {
+  const grid = document.createElement("section");
+  grid.className = "wiki-stats";
+  grid.append(
+    statCard(String(state.overview.page_count), "Pages"),
+    statCard(String(state.overview.topic_count), "Topics"),
+    statCard(state.overview.workspace.name, "Current wiki"),
+  );
+  return grid;
+}
+
+function statCard(value, label) {
+  const card = document.createElement("div");
+  card.className = "wiki-stat";
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  const span = document.createElement("span");
+  span.textContent = label;
+  card.append(strong, span);
+  return card;
+}
+
+function pageTitleBlock(page) {
+  const header = document.createElement("header");
+  header.className = "wiki-page-title-block";
+
+  const path = document.createElement("p");
+  path.className = "wiki-page-path";
+  path.textContent = `${page.slug}.md`;
+
+  const title = document.createElement("h1");
+  title.className = "wiki-page-title";
+  title.textContent = page.title || page.slug;
+
+  header.append(path, title);
+  if (page.summary) {
+    const summary = document.createElement("p");
+    summary.className = "wiki-page-summary";
+    summary.textContent = page.summary;
+    header.append(summary);
   }
+  header.append(pageFacts(page));
   return header;
+}
+
+function pageFacts(page) {
+  const row = document.createElement("div");
+  row.className = "wiki-page-facts";
+  const allPages = document.createElement("a");
+  allPages.href = "#/";
+  allPages.textContent = "All pages";
+  row.append(allPages);
+  for (const topic of page.topics) {
+    const link = document.createElement("a");
+    link.href = `#/topic/${encodeURIComponent(topic)}`;
+    link.textContent = topic;
+    row.append(link);
+  }
+  return row;
 }
 
 function markdown(html) {
   const article = document.createElement("article");
-  article.className = "markdown";
+  article.className = "wiki-markdown";
   article.innerHTML = html;
   return article;
 }
 
-function gridList(pages) {
-  const list = document.createElement("div");
-  list.className = "grid-list";
+function pageList(pages) {
   if (pages.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "summary";
-    empty.textContent = "No pages found.";
-    return empty;
+    return emptyState("No pages found", "Try a different search or topic.");
   }
+  const list = document.createElement("nav");
+  list.className = "wiki-page-list";
+  list.setAttribute("aria-label", "Wiki pages");
   for (const page of pages) {
     const item = document.createElement("a");
+    item.className = "wiki-page-row";
     item.href = `#/page/${encodeURIComponent(page.slug)}`;
-    const title = document.createElement("strong");
+
+    const main = document.createElement("span");
+    main.className = "wiki-page-row-main";
+    const title = document.createElement("span");
+    title.className = "wiki-page-row-title";
     title.textContent = page.title || page.slug;
-    const summary = document.createElement("small");
-    summary.textContent = page.summary || page.topics.join(", ");
-    item.append(title, summary);
+    const summary = document.createElement("span");
+    summary.className = "wiki-page-row-summary";
+    summary.textContent = page.summary || "No summary";
+    main.append(title, summary);
+
+    const meta = document.createElement("span");
+    meta.className = "wiki-page-row-meta";
+    const slug = document.createElement("span");
+    slug.textContent = `${page.slug}.md`;
+    const topics = document.createElement("span");
+    topics.textContent = page.topics.slice(0, 3).join(", ") || "untagged";
+    meta.append(slug, topics);
+
+    item.append(main, meta);
     list.append(item);
   }
   return list;
@@ -211,40 +332,31 @@ function navLink(href, label) {
   return link;
 }
 
-function renderSidebarLinks(target, slugs, kind) {
-  target.replaceChildren(
-    ...slugs.map((slug) =>
-      navLink(`#/${kind}/${encodeURIComponent(slug)}`, slug),
-    ),
-  );
-  if (slugs.length === 0) {
-    target.replaceChildren(sidebarEmpty());
+function sideSection(title, children) {
+  const section = document.createElement("section");
+  section.className = "wiki-side-section";
+  const heading = document.createElement("h2");
+  heading.textContent = title;
+  const list = document.createElement("div");
+  list.className = "wiki-link-list";
+  if (children.length === 0) {
+    list.append(sidebarEmpty());
+  } else {
+    list.append(...children);
   }
+  section.append(heading, list);
+  return section;
 }
 
-function renderSidebarFiles(files) {
-  el.fileRefs.replaceChildren(
-    ...files.map((file) => {
-      const row = document.createElement("a");
-      row.href = `#/file/${encodeURIComponent(file.path)}`;
-      row.textContent = file.path;
-      return row;
-    }),
-  );
-  if (files.length === 0) {
-    el.fileRefs.replaceChildren(sidebarEmpty());
-  }
+function sideLink(href, label) {
+  const link = document.createElement("a");
+  link.href = href;
+  link.textContent = label;
+  return link;
 }
 
-function renderSidebarPages(target, pages) {
-  target.replaceChildren(
-    ...pages.map((page) =>
-      navLink(`#/page/${encodeURIComponent(page.slug)}`, page.title || page.slug),
-    ),
-  );
-  if (pages.length === 0) {
-    target.replaceChildren(sidebarEmpty());
-  }
+function pageSideLink(slug, label) {
+  return sideLink(`#/page/${encodeURIComponent(slug)}`, label);
 }
 
 function sidebarEmpty() {
@@ -253,17 +365,24 @@ function sidebarEmpty() {
   return empty;
 }
 
-function clearSidebars() {
-  el.backlinks.replaceChildren(sidebarEmpty());
-  el.fileRefs.replaceChildren(sidebarEmpty());
-  el.related.replaceChildren(sidebarEmpty());
+function emptyState(title, body) {
+  const box = document.createElement("section");
+  box.className = "app-empty";
+  const h2 = document.createElement("h2");
+  h2.className = "app-empty-title";
+  h2.textContent = title;
+  const p = document.createElement("p");
+  p.className = "app-empty-body";
+  p.textContent = body;
+  box.append(h2, p);
+  return box;
 }
 
 function renderError(error) {
+  setRouteTitle("Error");
   el.main.innerHTML = "";
-  const header = readerHeader("Error", "", []);
   const message = document.createElement("p");
   message.className = "error";
   message.textContent = error.message;
-  el.main.append(header, message);
+  el.main.append(pageIntro("Viewer error", "Error", ""), message);
 }

@@ -7,7 +7,7 @@ means the goal remains active.
 
 | Requirement | Implementation evidence | Test/live evidence | Remaining risk |
 |---|---|---|---|
-| Fresh Python codebase | `pyproject.toml`, `src/codealmanac/`, `tests/` | `uv run pytest`, `uv run ruff check .` passed on 2026-06-29 | Remaining risk is visual browser verification. |
+| Fresh Python codebase | `pyproject.toml`, `src/codealmanac/`, `tests/` | `uv run pytest`, `uv run ruff check .` passed on 2026-06-29 | Remaining risk is continued product review, not a missing spine. |
 | Based on live agreement | `docs/python-port-live-agreement.md`, `src/codealmanac/app.py`, service/workflow packages | tests exercise CLI -> app -> services/workflows over configurable local roots, defaulting to `almanac/` | Need future architecture tests as more services appear. |
 | Cosmic Python actively considered | `docs/reference/cosmic-python/`, `docs/python-port/`, composition root, service-layer tests, store boundary, Git snapshot policy for lifecycle writes | tests call workflow/service and CLI surfaces instead of private helpers; Relayforge Discord checkpoints sent | Need continued review before public lifecycle CLI. |
 | CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `build`, `ingest`, `garden`, foreground `sync`, `sync status`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete`, `reindex`, `doctor`, `serve`, `automation status`, and `update --check` passed on 2026-06-29 | Non-editable package-manager update dogfood remains pending. |
@@ -15,7 +15,7 @@ means the goal remains active.
 | Workflows: build, ingest, sync, garden | `workflows/build`; `workflows/ingest`; `workflows/garden`; `workflows/sync`; `services/runs`; `services/sources`; `services/harnesses`; `LifecycleMutationPolicy`; public `codealmanac ingest`, `codealmanac garden`, foreground `codealmanac sync`, and read-only `codealmanac sync status` | build tests; runs service/jobs CLI tests; sources service tests; transcript discovery tests; source-resolution dogfood; harness service tests; sync status and foreground sync tests; ingest/garden workflow safety tests; harness transcript feedback tests; sync internal-exclusion tests; sync pending-claim tests; run lifecycle state tests; pending run-linkage tests; retry-budget tests; real Claude and Codex CLI ingest dogfood; real Codex Garden dogfood; synthetic transcript sync dogfood; retry-budget CLI dogfood | Workflow MVP is covered; remaining risk is lifecycle prompt quality under more real projects. |
 | Integrations behind service ports | ownership map drafted; filesystem, Git, GitHub, transcript, and web runtime adapters implement `SourceRuntimeAdapter`; transcript discovery adapters implement `TranscriptDiscoveryAdapter`; Claude and Codex CLI implement `HarnessAdapter`; Git workspace change probe implements `WorkspaceChangeProbe`; architecture test guards import direction | sources, source runtime, transcript discovery, harness, Claude/Codex adapter, Git probe, ingest safety, sync status, sync run, filesystem diversity tests, and architecture tests; real Claude and Codex ingest dogfood; real filesystem/Git/GitHub/transcript/web runtime dogfood; source-runtime diversity dogfood | Source runtime MVP is covered; remaining risk is more real-repo lifecycle dogfood. |
 | Prompts/manual surfaces | `src/codealmanac/prompts/` package resources, `PromptRenderer`, `src/codealmanac/manual/` package resources, `<almanac-root>/manual/` build materialization, and doctor manual checks | prompt/manual tests; build and diagnostics tests; ingest and garden workflow prompt assertions; wheel inspection confirmed prompt and manual Markdown packaged; isolated live build/doctor dogfood passed | Prompt and manual quality need continued lifecycle dogfood review. |
-| Tests and live verification | pytest/ruff configured in `pyproject.toml` | `uv run pytest`, `uv run ruff check .`, `uv run codealmanac --help`, live temp `init`/`list`/`search`/`show`, dogfood search, dogfood serve API, and viewer renderer token-safety tests passed | Browser-harness visual verification is still blocked: `browser-harness --doctor` on 2026-06-29 reported Chrome running but daemon/browser connections unavailable until Chrome remote debugging is allowed. |
+| Tests and live verification | pytest/ruff configured in `pyproject.toml` | `uv run pytest`, `uv run ruff check .`, `uv run codealmanac --help`, live temp `init`/`list`/`search`/`show`, dogfood search, dogfood serve API, viewer renderer token-safety tests, and browser-harness desktop/mobile serve verification passed | Keep using browser-harness for future visual changes. |
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, and package module names | `uv run pytest tests/test_public_contract.py` passed on 2026-06-29; full `uv run pytest` and `uv run ruff check .` passed on 2026-06-29 | Future CLI expansion must keep the public-contract guard current. |
 
@@ -570,3 +570,16 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --out-dir /tmp/codealmanac-build-slice45`; wheel inspection | passed; wheel includes viewer modules and server adapter |
 | Renderer dogfood | `MarkdownRenderer().render(...)` with text, inline-code, fenced-code, and HTML label cases | passed; only text wikilink became an anchor and HTML label was escaped |
+
+## Gates For Slice 46 Serve Visual Port
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused viewer/server tests | `uv run pytest tests/test_server.py tests/test_viewer_service.py tests/test_viewer_renderer.py` | 11 passed |
+| Focused lint | `uv run ruff check src/codealmanac/services/viewer src/codealmanac/server tests/test_server.py tests/test_viewer_service.py tests/test_viewer_renderer.py` | passed |
+| Full tests | `uv run pytest` | 221 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --out-dir /tmp/codealmanac-build-slice46`; wheel inspection | passed; wheel includes updated viewer assets |
+| Browser desktop dogfood | temp repo, live `codealmanac serve`, browser-harness page/search/file/wikilink navigation checks | passed; no horizontal overflow, no script nodes in rendered page, side panel file refs visible |
+| Browser mobile dogfood | browser-harness at 390px width on page route | passed; page rendered, side panel collapsed, search fit viewport, no horizontal overflow |

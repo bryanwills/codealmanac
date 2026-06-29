@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-45): lock viewer wikilink token safety`.
+- Latest committed implementation slice: `feat(slice-46): port serve visual system`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -36,6 +36,14 @@ Updated: 2026-06-29
 - Viewer Markdown rendering uses `markdown-it-py` token streams. Wikilink
   rewriting touches inline text tokens only; inline code and fenced code remain
   source text, and link labels are escaped by the renderer.
+- `serve` now borrows UseAlmanac's alpine dashboard visual language but keeps
+  CodeAlmanac's local wiki IA. Preserve the sidebar/page graph/search/topic/file
+  navigation model; do not copy UseAlmanac's hosted wiki page-list/search flow,
+  hosted account routes, billing/settings surfaces, or hosted wording.
+- Bulletproof React Markdown reference lives under
+  `docs/reference/bulletproof-react/`. Treat it as frontend architecture
+  guidance for future viewer growth, not a reason to add React/Next.js while
+  the static package-data viewer remains maintainable.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -219,6 +227,19 @@ Behavior:
   from the last successful cursor when the transcript prefix still matches
 - unlinked pending entries keep the existing active/stale timeout behavior
 
+Slice 46 ports the serve visual system.
+
+Behavior:
+
+- local viewer uses UseAlmanac-inspired dashboard shell, left rail, account
+  picker styling, search header, page list rows, wiki page surface, and side
+  panel styling
+- product IA stays local: overview, page, topic, search, and file-reference
+  routes over repo-owned wiki pages
+- no hosted account, billing, settings, or UseAlmanac hosted wiki routes
+- browser-harness verified desktop page/search/file/wikilink navigation and
+  mobile no-overflow behavior
+
 Slice 38 adds the database boundary.
 
 Behavior:
@@ -377,6 +398,9 @@ Behavior:
   `src/codealmanac/`
 - Slice 45 focused viewer renderer/service/server tests, full pytest, full
   ruff, diff check, package build, and renderer dogfood snippet
+- Slice 46 focused viewer/server tests, focused ruff, browser-harness desktop
+  page/search/file/wikilink navigation, and browser-harness mobile no-overflow
+  checks
 
 ## Next Move
 
@@ -384,8 +408,8 @@ Behavior:
    - more real-repo dogfood for source-runtime diversity; add recency only
      after a failing case proves diversity is insufficient
    - scheduled update automation only after non-editable update dogfood
-   - browser-harness visual verification for `serve` once Chrome remote
-     debugging permission is available
+   - serve polish only after product review; current known polish risk is
+     compact mobile navigation density, not missing browser verification
    - manual update/sync policy only if bundled doctrine must update existing
      workspace manual files; ordinary build/init currently copies missing files
      only
@@ -393,8 +417,6 @@ Behavior:
    public `absorb`, or public `almanac`/`alm` aliases.
 3. Keep future source material additions inside `SourceAddress -> SourceRef ->
    SourceBrief -> SourceRuntime` unless the live agreement changes.
-4. Browser-harness note from 2026-06-29: `codealmanac serve` started on
-   `127.0.0.1`, but `browser-harness` could not connect to local Chrome.
-   `browser-harness --doctor` reported Chrome running, no daemon, no active
-   browser connections, and optional Browser Use cloud auth missing. Retry
-   visual verification after Chrome remote debugging is explicitly allowed.
+4. Browser-harness note from 2026-06-29: Chrome remote debugging is available
+   in this workspace. Slice 46 verified `serve` with browser-harness on
+   desktop and mobile. Keep using browser-harness for future visual changes.
