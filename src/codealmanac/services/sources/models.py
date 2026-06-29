@@ -31,6 +31,12 @@ class SourceProvenanceKind(StrEnum):
     TRANSCRIPT = "transcript"
 
 
+class SourceRuntimeStatus(StrEnum):
+    AVAILABLE = "available"
+    SKIPPED = "skipped"
+    UNAVAILABLE = "unavailable"
+
+
 class TranscriptApp(StrEnum):
     CLAUDE = "claude"
     CODEX = "codex"
@@ -81,6 +87,20 @@ class SourceBrief(CodeAlmanacModel):
     @classmethod
     def require_brief_text(cls, value: str) -> str:
         return required_text(value, "source brief")
+
+
+class SourceRuntime(CodeAlmanacModel):
+    ref: SourceRef
+    status: SourceRuntimeStatus
+    title: str
+    content: str | None = None
+    diagnostics: tuple[str, ...] = ()
+    truncated: bool = False
+
+    @field_validator("title")
+    @classmethod
+    def require_title(cls, value: str) -> str:
+        return required_text(value, "source runtime title")
 
 
 class TranscriptCandidate(CodeAlmanacModel):

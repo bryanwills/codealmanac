@@ -29,7 +29,7 @@ that root instead of constructing stores or adapters themselves.
 | `workspaces` | repo root detection, `.almanac/` root, registry, path containment, local wiki selection | `init`, current-repo queries, `--wiki` lookup |
 | `wiki` | page files, frontmatter, topics, wikilinks, page writes, health inputs | `init`, `show`, page parsing for index |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | `search`, `show --links`, `health` |
-| `sources` | source observations, source refs, fingerprints, local source state, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, later ingest and sync inputs |
+| `sources` | source observations, source refs, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
 | `runs` | run ledger, events, outputs, lifecycle state, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
@@ -102,6 +102,12 @@ sync to observe local transcript stores. Concrete Codex and Claude JSONL
 scanners live in `integrations/sources/transcripts/`. Those integrations parse
 raw provider JSON and return typed `TranscriptCandidate` values; they do not
 decide quiet windows, cursor state, or whether ingest should run.
+
+The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
+turn selected source refs into bounded readable material before harness
+execution. The first implementation is `integrations/sources/git/`, which uses
+Git CLI commands for local `git:diff` and `git:range` refs. GitHub PR/issue
+runtime should plug into this port later instead of branching inside Ingest.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
 automation install/status/uninstall. The launchd implementation lives in

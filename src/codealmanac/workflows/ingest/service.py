@@ -14,8 +14,11 @@ from codealmanac.services.runs.requests import (
     StartRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
-from codealmanac.services.sources.models import SourceBrief
-from codealmanac.services.sources.requests import ResolveSourcesRequest
+from codealmanac.services.sources.models import SourceBrief, SourceRuntime
+from codealmanac.services.sources.requests import (
+    InspectSourceRuntimeRequest,
+    ResolveSourcesRequest,
+)
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
@@ -82,6 +85,14 @@ class IngestWorkflow:
                 RunEventKind.MESSAGE,
                 f"resolved {len(sources)} {source_word(len(sources))}",
             )
+            source_runtime = self.inspect_source_runtime(workspace, sources)
+            self.record(
+                request,
+                started.run_id,
+                RunEventKind.MESSAGE,
+                f"loaded {len(source_runtime)} source runtime snapshot"
+                f"{'' if len(source_runtime) == 1 else 's'}",
+            )
             harness = self.harnesses.run(
                 RunHarnessRequest(
                     kind=request.harness,
@@ -90,6 +101,7 @@ class IngestWorkflow:
                         self.prompts,
                         workspace,
                         sources,
+                        source_runtime,
                         request.guidance,
                     ),
                     title=request.title,
@@ -121,6 +133,7 @@ class IngestWorkflow:
             return IngestResult(
                 run=finished,
                 sources=sources,
+                source_runtime=source_runtime,
                 harness=harness,
                 safety=safety,
                 index=index,
@@ -170,6 +183,21 @@ class IngestWorkflow:
             )
         )
 
+    def inspect_source_runtime(
+        self,
+        workspace: Workspace,
+        sources: tuple[SourceBrief, ...],
+    ) -> tuple[SourceRuntime, ...]:
+        return tuple(
+            self.sources.inspect_runtime(
+                InspectSourceRuntimeRequest(
+                    cwd=workspace.root_path,
+                    ref=source.ref,
+                )
+            )
+            for source in sources
+        )
+
     def fail_run(
         self,
         request: RunIngestRequest,
@@ -194,6 +222,7 @@ def render_ingest_prompt(
     prompts: PromptRenderer,
     workspace: Workspace,
     sources: tuple[SourceBrief, ...],
+    source_runtime: tuple[SourceRuntime, ...],
     guidance: str | None,
 ) -> str:
     payload = IngestPromptPayload(
@@ -201,6 +230,7 @@ def render_ingest_prompt(
         workspace_root=workspace.root_path,
         almanac_root=workspace.almanac_path,
         sources=sources,
+        source_runtime=source_runtime,
         guidance=guidance,
     )
     return prompts.render(

@@ -5,7 +5,10 @@ from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
-from codealmanac.integrations.sources import default_transcript_discovery_adapters
+from codealmanac.integrations.sources import (
+    default_source_runtime_adapters,
+    default_transcript_discovery_adapters,
+)
 from codealmanac.integrations.workspaces.git import GitWorkspaceChangeProbe
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
@@ -20,7 +23,10 @@ from codealmanac.services.pages.service import PagesService
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.search.service import SearchService
-from codealmanac.services.sources.ports import TranscriptDiscoveryAdapter
+from codealmanac.services.sources.ports import (
+    SourceRuntimeAdapter,
+    TranscriptDiscoveryAdapter,
+)
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.tagging.service import TaggingService
 from codealmanac.services.topics.service import TopicsService
@@ -69,6 +75,7 @@ def create_app(
     config: AppConfig | None = None,
     harness_adapters: Sequence[HarnessAdapter] | None = None,
     transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None = None,
+    source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None,
     scheduler: SchedulerAdapter | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
@@ -87,7 +94,10 @@ def create_app(
     sources = SourcesService(
         default_transcript_discovery_adapters()
         if transcript_discovery_adapters is None
-        else transcript_discovery_adapters
+        else transcript_discovery_adapters,
+        default_source_runtime_adapters()
+        if source_runtime_adapters is None
+        else source_runtime_adapters,
     )
     prompts = PromptRenderer()
     harnesses = HarnessesService(

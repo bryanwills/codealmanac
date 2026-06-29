@@ -343,6 +343,20 @@
   and a safe `automation status --json` smoke under a temporary `HOME`.
   The smoke showed plist state and launchd loaded state are independent: a
   same-label job may be loaded even when the temp HOME has no plist.
+- Added slice-24 Git source runtime. `SourceRuntime` snapshots now sit after
+  `SourceBrief`, and `IngestWorkflow` includes both source briefs and runtime
+  snapshots in the agent prompt.
+- Added `SourceRuntimeAdapter` under `services/sources/ports.py` and a concrete
+  Git CLI adapter under `integrations/sources/git/`. The adapter captures
+  status, stats, diffs, and commit lists for `git:diff`, `git:diff:<target>`,
+  and `git:range:<range>`.
+- Deliberately did not add GitHub PR/issue fetching in this slice. GitHub
+  should reuse the same source-runtime port through `gh` or another local
+  source-access adapter.
+- Verified slice 24 with focused source, ingest, CLI ingest, and architecture
+  tests, 120 passing full tests, full ruff, `git diff --check`, and a temp-repo
+  dogfood where real Git runtime carried a dirty `git:diff` into the Ingest
+  prompt before a fake harness wrote `git-runtime-dogfood.md`.
 
 ## Current Hypothesis
 
@@ -360,13 +374,15 @@ that came from CodeAlmanac lifecycle runs. Lifecycle runs retain optional
 provider transcript identity for that exclusion. Foreground `sync` now runs
 ordinary Ingest work for ready transcripts and advances the sync ledger after
 success. Local automation now installs scheduler entries for foreground sync
-and Garden through a service-owned task plan and a launchd adapter.
+and Garden through a service-owned task plan and a launchd adapter. Git source
+refs now produce bounded runtime snapshots before Ingest starts the harness.
 
 ## Next Hypothesis
 
 The next automation or sync slice should add background/pending semantics only
 if it first adds a durable background owner and reconciliation loop. Scheduled
-update checks should wait until the Python `update` command exists. The
-remaining serve risks are markdown wikilink rewriting inside code spans,
-browser-harness verification once Chrome allows remote debugging, and whether
-a source/file route belongs in the first viewer shape.
+update checks should wait until the Python `update` command exists. The next
+source-runtime slice should add GitHub PR/issue runtime access on the existing
+adapter port. The remaining serve risks are markdown wikilink rewriting inside
+code spans, browser-harness verification once Chrome allows remote debugging,
+and whether a source/file route belongs in the first viewer shape.

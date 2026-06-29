@@ -304,3 +304,14 @@ means the goal remains active.
 | Formatting/lint | `uv run ruff check src tests` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Automation status smoke | temp `HOME`; `uv run codealmanac automation status --json` | passed; no plist installed in temp HOME, launchd loaded state reported independently by label |
+
+## Gates For Slice 24 Git Source Runtime
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused source/runtime tests | `uv run pytest tests/test_sources_service.py tests/test_ingest_workflow.py tests/test_cli.py::test_cli_ingest_runs_workflow_with_selected_harness tests/test_architecture.py` | 19 passed |
+| Focused lint | `uv run ruff check src/codealmanac/services/sources src/codealmanac/integrations/sources src/codealmanac/workflows/ingest src/codealmanac/app.py tests/test_sources_service.py tests/test_ingest_workflow.py` | passed |
+| Full tests | `uv run pytest` | 120 passed |
+| Full lint | `uv run ruff check src tests` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Git source runtime dogfood | temp Git repo, dirty `src/auth.py`, real Git runtime adapter, fake harness, `app.workflows.ingest.run(inputs=("git:diff",))`, search readback | passed; prompt contained `diff --git` and changed text, run `done`, search found `git-runtime-dogfood` |

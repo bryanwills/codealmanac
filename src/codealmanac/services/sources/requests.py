@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.sources.models import TranscriptApp
+from codealmanac.services.sources.models import SourceRef, TranscriptApp
 
 
 class ResolveSourcesRequest(CodeAlmanacModel):
@@ -31,3 +31,8 @@ class DiscoverTranscriptsRequest(CodeAlmanacModel):
         if len(value) == 0:
             raise ValueError("at least one transcript app is required")
         return value
+
+
+class InspectSourceRuntimeRequest(CodeAlmanacModel):
+    cwd: Path
+    ref: SourceRef

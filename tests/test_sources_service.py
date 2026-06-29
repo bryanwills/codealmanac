@@ -5,11 +5,47 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ValidationFailed
+from codealmanac.integrations.harnesses.command import CommandResult
+from codealmanac.integrations.sources.git import GitSourceRuntimeAdapter
 from codealmanac.services.sources.models import (
     SourceKind,
     SourceProvenanceKind,
+    SourceRuntimeStatus,
 )
-from codealmanac.services.sources.requests import ResolveSourcesRequest
+from codealmanac.services.sources.requests import (
+    InspectSourceRuntimeRequest,
+    ResolveSourcesRequest,
+)
+
+
+class FakeGitRunner:
+    def __init__(self):
+        self.calls: list[tuple[str, tuple[str, ...], Path]] = []
+
+    def run(
+        self,
+        command: str,
+        args: tuple[str, ...],
+        cwd: Path,
+        timeout_seconds: int,
+        stdin: str | None = None,
+    ) -> CommandResult:
+        self.calls.append((command, args, cwd))
+        output = {
+            ("status", "--short"): " M src/auth.py\n",
+            ("diff", "--stat"): " src/auth.py | 2 +-\n",
+            ("diff", "--no-ext-diff"): "diff --git a/src/auth.py b/src/auth.py\n",
+            ("diff", "--cached", "--stat"): "",
+            ("diff", "--cached", "--no-ext-diff"): "",
+            ("log", "--oneline", "--decorate", "main..feature"): (
+                "abc123 change auth\n"
+            ),
+            ("diff", "--stat", "main..feature"): " src/auth.py | 2 +-\n",
+            ("diff", "--no-ext-diff", "main..feature"): (
+                "diff --git a/src/auth.py b/src/auth.py\n"
+            ),
+        }.get(args, "")
+        return CommandResult(returncode=0, stdout=output, stderr="")
 
 
 def test_sources_resolve_local_files_directories_and_missing_paths(tmp_path: Path):
@@ -100,6 +136,31 @@ def test_sources_resolve_git_and_transcript_refs(tmp_path: Path):
     assert briefs[1].ref.revision_range == "working-tree"
     assert briefs[2].ref.revision_range == "HEAD~1"
     assert briefs[3].ref.transcript == "codex-session-123"
+
+
+def test_sources_runtime_uses_git_adapter_for_diff_and_range(tmp_path: Path):
+    runner = FakeGitRunner()
+    app = create_app(source_runtime_adapters=(GitSourceRuntimeAdapter(runner),))
+    diff, revision_range = app.sources.resolve(
+        ResolveSourcesRequest(
+            cwd=tmp_path,
+            inputs=("git:diff", "git:range:main..feature"),
+        )
+    )
+
+    diff_runtime = app.sources.inspect_runtime(
+        InspectSourceRuntimeRequest(cwd=tmp_path, ref=diff.ref)
+    )
+    range_runtime = app.sources.inspect_runtime(
+        InspectSourceRuntimeRequest(cwd=tmp_path, ref=revision_range.ref)
+    )
+
+    assert diff_runtime.status == SourceRuntimeStatus.AVAILABLE
+    assert "## status" in (diff_runtime.content or "")
+    assert "diff --git a/src/auth.py b/src/auth.py" in (diff_runtime.content or "")
+    assert range_runtime.status == SourceRuntimeStatus.AVAILABLE
+    assert "abc123 change auth" in (range_runtime.content or "")
+    assert ("git", ("status", "--short"), tmp_path) in runner.calls
 
 
 def test_sources_reject_malformed_source_refs(tmp_path: Path):

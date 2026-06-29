@@ -479,3 +479,30 @@ adapter; tests inject fake schedulers.
 Follow-up test:
 If scheduled sync needs pending state, add a background owner and reconciliation
 tests before changing the sync ledger model.
+
+## 2026-06-29 - Source Runtime Comes After Source Briefs
+
+Old hypothesis:
+`SourceBrief` metadata and prompt hints might be enough for Git and GitHub
+source-aware Ingest because the agent can inspect the repository itself.
+
+New hypothesis:
+Source-aware Ingest needs an explicit `SourceRuntime` layer. The brief names
+the selected source and provenance hint; runtime snapshots carry bounded
+readable material gathered before model execution.
+
+Evidence that forced the change:
+The `evidence-bundles` wiki page records the intended local path as
+`SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime -> AbsorbRequest`.
+The Python port had the first three layers, but `git:diff` and `git:range`
+only reached the prompt as identifiers. Cosmic Python chapter 13 supports a
+proper adapter boundary for multi-operation external dependencies.
+
+Code or product assumption affected:
+`services/sources` now owns `SourceRuntime` and `SourceRuntimeAdapter`.
+`integrations/sources/git` implements local Git runtime snapshots through the
+Git CLI. `IngestWorkflow` renders source runtime alongside source briefs.
+
+Follow-up test:
+Add GitHub PR/issue source runtime through the same port and test that a PR ref
+does not become a one-off Ingest prompt branch.

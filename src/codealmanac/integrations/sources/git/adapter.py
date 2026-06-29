@@ -1,0 +1,150 @@
+import subprocess
+from pathlib import Path
+
+from codealmanac.core.errors import ExecutionFailed
+from codealmanac.integrations.harnesses.command import (
+    CommandResult,
+    CommandRunner,
+    SubprocessCommandRunner,
+    first_line,
+)
+from codealmanac.services.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
+
+GIT_RUNTIME_TIMEOUT_SECONDS = 30
+DEFAULT_MAX_CHARS = 60_000
+
+
+class GitSourceRuntimeAdapter:
+    def __init__(
+        self,
+        runner: CommandRunner | None = None,
+        max_chars: int = DEFAULT_MAX_CHARS,
+        timeout_seconds: int = GIT_RUNTIME_TIMEOUT_SECONDS,
+    ):
+        self.runner = runner or SubprocessCommandRunner()
+        self.max_chars = max_chars
+        self.timeout_seconds = timeout_seconds
+
+    def supports(self, ref: SourceRef) -> bool:
+        return ref.kind in {SourceKind.GIT_DIFF, SourceKind.GIT_RANGE}
+
+    def inspect(self, request: InspectSourceRuntimeRequest) -> SourceRuntime:
+        if request.ref.kind == SourceKind.GIT_RANGE:
+            return self._inspect_range(request.cwd, request.ref)
+        if request.ref.kind == SourceKind.GIT_DIFF:
+            return self._inspect_diff(request.cwd, request.ref)
+        return SourceRuntime(
+            ref=request.ref,
+            status=SourceRuntimeStatus.SKIPPED,
+            title=f"Unsupported Git source {request.ref.identity}",
+        )
+
+    def _inspect_range(self, cwd: Path, ref: SourceRef) -> SourceRuntime:
+        revision_range = require_revision_range(ref)
+        sections = (
+            git_section(
+                "commits",
+                self._git(cwd, ("log", "--oneline", "--decorate", revision_range)),
+            ),
+            git_section(
+                "stat",
+                self._git(cwd, ("diff", "--stat", revision_range)),
+            ),
+            git_section(
+                "diff",
+                self._git(cwd, ("diff", "--no-ext-diff", revision_range)),
+            ),
+        )
+        content, truncated = bounded_text("\n\n".join(sections), self.max_chars)
+        return SourceRuntime(
+            ref=ref,
+            status=SourceRuntimeStatus.AVAILABLE,
+            title=f"Git range {revision_range}",
+            content=content,
+            truncated=truncated,
+        )
+
+    def _inspect_diff(self, cwd: Path, ref: SourceRef) -> SourceRuntime:
+        target = require_revision_range(ref)
+        if target == "working-tree":
+            sections = (
+                git_section("status", self._git(cwd, ("status", "--short"))),
+                git_section("unstaged stat", self._git(cwd, ("diff", "--stat"))),
+                git_section(
+                    "unstaged diff",
+                    self._git(cwd, ("diff", "--no-ext-diff")),
+                ),
+                git_section(
+                    "staged stat",
+                    self._git(cwd, ("diff", "--cached", "--stat")),
+                ),
+                git_section(
+                    "staged diff",
+                    self._git(cwd, ("diff", "--cached", "--no-ext-diff")),
+                ),
+            )
+        else:
+            sections = (
+                git_section(
+                    "stat",
+                    self._git(cwd, ("diff", "--stat", target)),
+                ),
+                git_section(
+                    "diff",
+                    self._git(cwd, ("diff", "--no-ext-diff", target)),
+                ),
+            )
+        content, truncated = bounded_text("\n\n".join(sections), self.max_chars)
+        return SourceRuntime(
+            ref=ref,
+            status=SourceRuntimeStatus.AVAILABLE,
+            title=f"Git diff {target}",
+            content=content,
+            truncated=truncated,
+        )
+
+    def _git(self, cwd: Path, args: tuple[str, ...]) -> str:
+        try:
+            result = self.runner.run("git", args, cwd, self.timeout_seconds)
+        except FileNotFoundError as error:
+            raise ExecutionFailed("git not found on PATH") from error
+        except subprocess.TimeoutExpired as error:
+            raise ExecutionFailed(f"git {' '.join(args)} timed out") from error
+        if result.returncode != 0:
+            raise ExecutionFailed(
+                f"git {' '.join(args)} failed: {surface_process_error(result)}"
+            )
+        return result.stdout.strip()
+
+
+def require_revision_range(ref: SourceRef) -> str:
+    if ref.revision_range is None or ref.revision_range.strip() == "":
+        raise ExecutionFailed(f"Git source missing revision range: {ref.identity}")
+    return ref.revision_range
+
+
+def git_section(name: str, body: str) -> str:
+    if body.strip() == "":
+        return f"## {name}\n\n(no output)"
+    return f"## {name}\n\n{body.strip()}"
+
+
+def bounded_text(value: str, max_chars: int) -> tuple[str, bool]:
+    if len(value) <= max_chars:
+        return value, False
+    return value[:max_chars].rstrip() + "\n\n[truncated]", True
+
+
+def surface_process_error(result: CommandResult) -> str:
+    message = first_line(result.stderr, result.stdout)
+    if message == "":
+        return f"exit {result.returncode}"
+    if len(message) > 500:
+        return f"{message[:500]}..."
+    return message

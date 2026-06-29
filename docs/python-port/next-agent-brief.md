@@ -262,33 +262,40 @@ Updated: 2026-06-29
   - full ruff
   - diff hygiene
   - safe temp-HOME `automation status --json` smoke
+- Slice-24 Git source runtime checks passed so far:
+  - focused source, ingest, CLI ingest, and architecture tests
+  - focused ruff over source/runtime and ingest files
+  - 120 full tests
+  - full ruff
+  - diff hygiene
+  - temp-repo real Git runtime dogfood with dirty `git:diff` and fake harness
 
 ## Dirty/Staged Files
 
-Slice 23 is ready to commit if the current worktree still only contains:
+Slice 24 is ready to commit if the current worktree still only contains:
 
-- `src/codealmanac/services/automation/`
-- `src/codealmanac/integrations/automation/`
+- `src/codealmanac/services/sources/`
+- `src/codealmanac/integrations/sources/`
+- `src/codealmanac/workflows/ingest/`
 - `src/codealmanac/app.py`
-- `src/codealmanac/cli/main.py`
-- `tests/test_automation_service.py`
-- `tests/test_cli.py`
-- `docs/python-port/slice-23-automation.md`
+- `src/codealmanac/prompts/operations/ingest.md`
+- `tests/test_sources_service.py`
+- `tests/test_ingest_workflow.py`
+- `docs/python-port/slice-24-git-source-runtime.md`
 - steering docs under `docs/python-port/`
 
-Before committing slice 23, re-run if any code changes:
+Before committing slice 24, re-run if any code changes:
 
-- focused automation service, CLI, and architecture tests
+- focused source/runtime, ingest, CLI ingest, and architecture tests
 - full pytest
 - ruff
 - `git diff --check`
-- a safe automation status smoke; do not install real launchd jobs during
-  dogfood
+- a Git source runtime dogfood in a temp repo
 
 ## Next Move
 
-1. Commit slice 23 after a final `git status` check.
-2. Decide whether `codealmanac update` or Git/GitHub source adapters are the
+1. Commit slice 24 after a final `git status` check.
+2. Decide whether GitHub PR/issue source runtime or `codealmanac update` is the
    next highest-pressure local product gap.
 3. If background sync pending state becomes necessary, add the durable owner
    and reconciliation loop before changing sync cursor semantics.

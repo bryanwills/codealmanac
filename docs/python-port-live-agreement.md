@@ -20,6 +20,10 @@ It is the constraint document for future agents.
 - 2026-06-29: Local automation v1 installs scheduler jobs for foreground
   `sync` and `garden`. Do not schedule `update` until the Python `update`
   command and packaging policy exist.
+- 2026-06-29: Source input has four local layers:
+  `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
+  runtime uses the Git CLI through a source-runtime adapter; GitHub source
+  runtime should reuse the same port later.
 
 ## Product Frame
 

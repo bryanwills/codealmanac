@@ -18,6 +18,13 @@ from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.services.search.requests import SearchPagesRequest
+from codealmanac.services.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 
@@ -130,6 +137,19 @@ class FailedDirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
         )
 
 
+class FakeSourceRuntimeAdapter:
+    def supports(self, ref: SourceRef) -> bool:
+        return ref.kind == SourceKind.GIT_DIFF
+
+    def inspect(self, request: InspectSourceRuntimeRequest) -> SourceRuntime:
+        return SourceRuntime(
+            ref=request.ref,
+            status=SourceRuntimeStatus.AVAILABLE,
+            title="Fake Git diff",
+            content="diff --git a/src/auth.py b/src/auth.py\n+new auth invariant",
+        )
+
+
 def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     tmp_path: Path,
     isolated_home: Path,
@@ -164,6 +184,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript is not None
     assert result.run.harness_transcript.session_id == "codex-ingest-session"
     assert result.sources[0].ref.fingerprint is not None
+    assert result.source_runtime[0].status == SourceRuntimeStatus.SKIPPED
     assert result.harness.changed_files == (
         repo / ".almanac/pages/ingested-note.md",
     )
@@ -173,15 +194,47 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert result.index.pages_indexed == 2
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
+    assert '"source_runtime": [' in adapter.requests[0].prompt
+    assert '"status": "skipped"' in adapter.requests[0].prompt
     assert "Prefer short pages." in adapter.requests[0].prompt
     assert "public CLI name is codealmanac" in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.MESSAGE,
         RunEventKind.MESSAGE,
+        RunEventKind.MESSAGE,
         RunEventKind.OUTPUT,
         RunEventKind.STATUS,
     )
+
+
+def test_ingest_prompt_includes_git_source_runtime(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = WritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(adapter,),
+        source_runtime_adapters=(FakeSourceRuntimeAdapter(),),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    result = app.workflows.ingest.run(
+        RunIngestRequest(
+            cwd=repo,
+            inputs=("git:diff",),
+            harness=HarnessKind.CODEX,
+        )
+    )
+
+    assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
+    assert "Fake Git diff" in adapter.requests[0].prompt
+    assert "new auth invariant" in adapter.requests[0].prompt
 
 
 def test_ingest_workflow_fails_run_when_harness_is_missing(

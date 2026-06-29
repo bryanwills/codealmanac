@@ -13,11 +13,17 @@ from codealmanac.services.sources.models import (
     SourceKind,
     SourceProvenanceKind,
     SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
     TranscriptCandidate,
 )
-from codealmanac.services.sources.ports import TranscriptDiscoveryAdapter
+from codealmanac.services.sources.ports import (
+    SourceRuntimeAdapter,
+    TranscriptDiscoveryAdapter,
+)
 from codealmanac.services.sources.requests import (
     DiscoverTranscriptsRequest,
+    InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
 
@@ -61,8 +67,10 @@ class SourcesService:
     def __init__(
         self,
         transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] = (),
+        runtime_adapters: Sequence[SourceRuntimeAdapter] = (),
     ):
         self.transcript_discovery_adapters = tuple(transcript_discovery_adapters)
+        self.runtime_adapters = tuple(runtime_adapters)
 
     def resolve(self, request: ResolveSourcesRequest) -> tuple[SourceBrief, ...]:
         return tuple(
@@ -80,6 +88,19 @@ class SourcesService:
             if adapter.app in selected:
                 candidates.extend(adapter.discover(request))
         return tuple(sorted(candidates, key=transcript_sort_key))
+
+    def inspect_runtime(
+        self,
+        request: InspectSourceRuntimeRequest,
+    ) -> SourceRuntime:
+        for adapter in self.runtime_adapters:
+            if adapter.supports(request.ref):
+                return adapter.inspect(request)
+        return SourceRuntime(
+            ref=request.ref,
+            status=SourceRuntimeStatus.SKIPPED,
+            title=f"No runtime adapter for {request.ref.identity}",
+        )
 
 
 def transcript_sort_key(candidate: TranscriptCandidate) -> tuple[str, str, str]:
