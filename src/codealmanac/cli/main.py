@@ -59,8 +59,8 @@ from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.garden.requests import RunGardenRequest
 from codealmanac.workflows.ingest.models import IngestResult
 from codealmanac.workflows.ingest.requests import RunIngestRequest
-from codealmanac.workflows.sync.models import SyncSummary
-from codealmanac.workflows.sync.requests import RunSyncStatusRequest
+from codealmanac.workflows.sync.models import SyncMode, SyncSummary
+from codealmanac.workflows.sync.requests import RunSyncRequest, RunSyncStatusRequest
 
 DEFAULT_VIEWER_HOST = "127.0.0.1"
 DEFAULT_VIEWER_PORT = 3927
@@ -115,8 +115,17 @@ def build_parser() -> argparse.ArgumentParser:
     garden.add_argument("--title")
     garden.add_argument("--guidance")
 
-    sync = subcommands.add_parser("sync", help="inspect local transcript sync")
-    sync_subcommands = sync.add_subparsers(dest="sync_command", required=True)
+    sync = subcommands.add_parser("sync", help="sync quiet local transcripts")
+    sync.add_argument("--wiki")
+    sync.add_argument("--from", dest="source_apps")
+    sync.add_argument("--quiet", default="45m")
+    sync.add_argument(
+        "--using",
+        choices=tuple(kind.value for kind in HarnessKind),
+        default=HarnessKind.CLAUDE.value,
+    )
+    sync.add_argument("--json", action="store_true")
+    sync_subcommands = sync.add_subparsers(dest="sync_command")
     sync_status = sync_subcommands.add_parser("status", help="show sync readiness")
     sync_status.add_argument("--wiki")
     sync_status.add_argument("--from", dest="source_apps")
@@ -277,6 +286,18 @@ def dispatch(args: argparse.Namespace) -> int:
                 wiki=args.wiki,
                 apps=parse_sync_apps(args.source_apps),
                 quiet=parse_quiet(args.quiet),
+            )
+        )
+        render_sync_status(result, json_output=args.json)
+        return 0
+    if args.command == "sync":
+        result = app.workflows.sync.run(
+            RunSyncRequest(
+                cwd=Path.cwd(),
+                wiki=args.wiki,
+                apps=parse_sync_apps(args.source_apps),
+                quiet=parse_quiet(args.quiet),
+                harness=HarnessKind(args.using),
             )
         )
         render_sync_status(result, json_output=args.json)
@@ -479,16 +500,25 @@ def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
     if json_output:
         print(json.dumps(summary.model_dump(mode="json"), indent=2))
         return
-    print("sync status:")
+    status_mode = summary.mode == SyncMode.STATUS
+    print("sync status:" if status_mode else "sync:")
     print(f"  scanned: {summary.scanned}")
     print(f"  eligible: {summary.eligible}")
-    print(f"  ready: {len(summary.ready)}")
+    if status_mode:
+        print(f"  ready: {len(summary.ready)}")
+    else:
+        print(f"  started: {len(summary.started)}")
     print(f"  skipped: {len(summary.skipped)}")
     print(f"  needs_attention: {len(summary.needs_attention)}")
     for ready in summary.ready:
         print(
             f"  - ready {ready.app.value} {ready.session_id}: "
             f"lines {ready.from_line}-{ready.to_line}"
+        )
+    for started in summary.started:
+        print(
+            f"  - started {started.app.value} {started.session_id}: "
+            f"{started.run_id} (lines {started.from_line}-{started.to_line})"
         )
     for item in summary.needs_attention:
         print(f"  - needs attention {item.transcript_path}: {item.reason}")

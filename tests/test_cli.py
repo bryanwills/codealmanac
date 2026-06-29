@@ -386,6 +386,51 @@ def test_cli_sync_status_reports_ready_transcripts(
     assert adapter.requests[0].apps == (TranscriptApp.CODEX,)
 
 
+def test_cli_sync_runs_ingest_for_ready_transcripts(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = tmp_path / "codex.jsonl"
+    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
+    candidate = TranscriptCandidate(
+        app=TranscriptApp.CODEX,
+        session_id="codex-session",
+        transcript_path=transcript,
+        cwd=repo,
+        repo_root=repo,
+        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
+        size_bytes=transcript.stat().st_size,
+    )
+    transcript_adapter = CliTranscriptDiscoveryAdapter((candidate,))
+    harness = CliWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(harness,),
+        transcript_discovery_adapters=(transcript_adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["sync", "--from", "codex", "--quiet", "0s", "--using", "codex"]) == 0
+
+    output = capsys.readouterr()
+    assert "sync:\n" in output.out
+    assert "scanned: 1\n" in output.out
+    assert "eligible: 1\n" in output.out
+    assert "started: 1\n" in output.out
+    assert "started codex codex-session: ingest-" in output.out
+    assert "Scheduled sync cursor:" in harness.requests[0].prompt
+    assert f"transcript:{transcript}" in harness.requests[0].prompt
+    assert (repo / ".almanac/jobs/sync-ledger.json").is_file()
+
+
 def test_cli_jobs_inspects_local_run_records(
     tmp_path: Path,
     isolated_home: Path,

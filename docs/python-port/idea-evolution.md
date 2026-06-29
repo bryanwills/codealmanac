@@ -423,3 +423,32 @@ matches a stored `RunRecord.harness_transcript`.
 Follow-up test:
 When live `codealmanac sync` lands, assert that it uses the same internal skip
 rule before it queues Ingest and records pending cursor state.
+
+## 2026-06-29 - Foreground Sync Commits Cursor After Ingest
+
+Old hypothesis:
+The first write-capable sync slice should record pending cursor state before
+invoking Ingest, mirroring the archived TypeScript background sweep.
+
+New hypothesis:
+For the Python port's current foreground lifecycle shape, `sync` should advance
+the ledger only after `IngestWorkflow.run(...)` succeeds. Pending cursor state
+belongs with a background runner and a reconciliation loop, neither of which
+exists yet.
+
+Evidence that forced the change:
+Cosmic Python chapter 6 frames Unit of Work as the boundary for atomic
+operations and recommends explicit commits after success. A foreground sync
+command already knows whether Ingest succeeded, so writing a pending cursor
+beforehand would create stale state on process death without a real pending
+owner to reconcile.
+
+Code or product assumption affected:
+`SyncWorkflow.run(...)` reuses the same evaluation gates as `status(...)`, calls
+Ingest with a `transcript:<path>` source and cursor guidance, then writes the
+sync ledger after each successful Ingest. Failed Ingest attempts mark the
+ledger entry `failed` and appear in `needs_attention`.
+
+Follow-up test:
+When background jobs land, introduce pending cursor fields and reconcile them
+against durable run records before scheduled automation uses sync unattended.

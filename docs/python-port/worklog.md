@@ -314,6 +314,19 @@
 - Verified slice 21 with focused sync workflow tests, 109 passing full tests,
   ruff, `git diff --check`, and an isolated `sync status` dogfood where
   `internal-session` was skipped and `ordinary-session` was ready.
+- Added slice-22 foreground `codealmanac sync`. `SyncWorkflow.run(...)` reuses
+  the status evaluator, calls `IngestWorkflow.run(...)` for each ready
+  transcript, and advances `.almanac/jobs/sync-ledger.json` only after Ingest
+  succeeds.
+- Sync passes transcript source material as `transcript:<absolute path>` and
+  adds cursor guidance telling Ingest which transcript line range is new.
+- Deliberately kept pending cursor state out of this foreground slice. The
+  archived TypeScript pending model requires a real background owner and
+  reconciliation loop; without those, commit-after-success is the safer Unit of
+  Work boundary.
+- Verified slice 22 with focused sync workflow and CLI tests, 111 passing full
+  tests, ruff, `git diff --check`, and an isolated foreground sync dogfood that
+  wrote `foreground-sync-dogfood.md` and advanced the sync ledger.
 
 ## Current Hypothesis
 
@@ -328,13 +341,15 @@ and `garden` commands reach their workflows without making the CLI an internal
 API. `sync status` now exposes read-only local transcript readiness behind the
 same service/workflow/adapter boundaries, and it skips provider transcripts
 that came from CodeAlmanac lifecycle runs. Lifecycle runs retain optional
-provider transcript identity for that exclusion.
+provider transcript identity for that exclusion. Foreground `sync` now runs
+ordinary Ingest work for ready transcripts and advances the sync ledger after
+success.
 
 ## Next Hypothesis
 
-The next slice should wire write-capable `codealmanac sync` to queue ordinary
-local ingest work through the existing sync eligibility gate.
-Automation install/status/uninstall remains separate from sync execution. The
-remaining serve risks are markdown wikilink rewriting inside code spans,
-browser-harness verification once Chrome allows remote debugging, and whether a
-source/file route belongs in the first viewer shape.
+The next sync slice should add background/pending semantics only if it first
+adds a durable background owner and reconciliation loop. Automation
+install/status/uninstall remains separate from sync execution. The remaining
+serve risks are markdown wikilink rewriting inside code spans, browser-harness
+verification once Chrome allows remote debugging, and whether a source/file
+route belongs in the first viewer shape.

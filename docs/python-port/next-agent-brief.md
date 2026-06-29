@@ -30,8 +30,10 @@ Updated: 2026-06-29
   safety, and index refresh.
 - `workflows/sync` currently supports read-only status. It discovers local
   Codex and Claude transcripts through `SourcesService`, applies quiet-window
-  and cursor checks, skips recorded internal lifecycle transcripts, and reports
-  readiness without invoking AI or writing wiki content.
+  and cursor checks, skips recorded internal lifecycle transcripts, runs
+  foreground Ingest for ready transcripts, commits successful cursors to
+  `.almanac/jobs/sync-ledger.json`, and reports readiness without duplicating
+  wiki-writing logic.
 - Ingest and Garden now attach optional `HarnessTranscriptRef` values to run
   records as soon as a harness returns. Claude uses its structured
   `session_id`; Codex uses best-effort local transcript lookup.
@@ -246,30 +248,36 @@ Updated: 2026-06-29
   - diff hygiene
   - isolated status dogfood skipped `internal-session` and reported
     `ordinary-session` ready
+- Slice-22 foreground sync checks passed so far:
+  - focused sync workflow and CLI tests
+  - full pytest
+  - ruff
+  - diff hygiene
+  - isolated foreground sync dogfood wrote `foreground-sync-dogfood.md` and
+    advanced the sync ledger
 
 ## Dirty/Staged Files
 
-If slice 21 is committed, the worktree should be clean. If slice-21 files are
+If slice 22 is committed, the worktree should be clean. If slice-22 files are
 dirty, re-run:
 
-- focused sync workflow tests
+- focused sync workflow and CLI tests
 - full pytest
 - ruff
 - `git diff --check`
-- isolated `sync status` dogfood that skips an internal transcript while
-  reporting an ordinary transcript ready
+- isolated foreground `sync` dogfood with a fake Codex transcript and fake
+  Codex harness
 
 ## Next Move
 
-1. Wire full `codealmanac sync` to queue ordinary local ingest work through the
-   existing sync eligibility gate.
-2. Record pending cursor state before invoking Ingest, then add later
-   reconciliation from run records to durable cursor advancement.
-3. Keep automation install/status/uninstall separate from sync execution.
-4. Decide whether the viewer needs source/file route hardening before more
+1. Decide whether background job ownership is needed before automation. If yes,
+   add pending cursor fields and reconciliation together.
+2. Add automation install/status/uninstall without making the scheduler own sync
+   eligibility or ledger semantics.
+3. Decide whether the viewer needs source/file route hardening before more
    lifecycle commands.
-5. Keep AI execution behind workflow and harness seams; do not put it in CLI.
-6. If provider runtime requirements expand to streaming, usage accounting,
+4. Keep AI execution behind workflow and harness seams; do not put it in CLI.
+5. If provider runtime requirements expand to streaming, usage accounting,
    structured output, or subagents, revisit the archived Codex app-server
    adapter as reference instead of stretching the `codex exec` adapter.
 

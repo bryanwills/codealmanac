@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 from pydantic import ValidationError
 
@@ -15,6 +16,27 @@ class SyncLedgerStore:
             return SyncLedger.model_validate_json(path.read_text(encoding="utf-8"))
         except (OSError, ValidationError, ValueError):
             return empty_ledger()
+
+    def save(
+        self,
+        almanac_path: Path,
+        ledger: SyncLedger,
+        now: datetime,
+    ) -> SyncLedger:
+        updated = ledger.model_copy(update={"updated_at": now})
+        path = sync_ledger_path(almanac_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+        try:
+            temporary.write_text(
+                updated.model_dump_json(indent=2),
+                encoding="utf-8",
+            )
+            temporary.replace(path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return updated
 
 
 def sync_ledger_path(almanac_path: Path) -> Path:

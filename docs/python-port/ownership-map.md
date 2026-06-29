@@ -49,7 +49,7 @@ that root instead of constructing stores or adapters themselves.
 |---|---|---|
 | `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
 | `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index`, `prompts`, `lifecycle` |
-| `sync` | discover quiet local transcripts, skip internal lifecycle transcripts, evaluate cursor readiness, and later queue ingest work | `sources`, `runs`, sync ledger, later `automation`, `ingest` |
+| `sync` | discover quiet local transcripts, skip internal lifecycle transcripts, evaluate cursor readiness, run foreground ingest, and update sync cursor ledger | `sources`, `runs`, `ingest`, sync ledger, later `automation` |
 | `garden` | maintain wiki shape, links, topics, staleness, quality | `health`, `index`, `runs`, `harnesses`, `prompts`, `lifecycle` |
 
 Workflows coordinate. They do not own durable schema unless a missing service is

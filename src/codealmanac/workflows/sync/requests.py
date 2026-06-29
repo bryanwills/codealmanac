@@ -4,10 +4,11 @@ from pathlib import Path
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.sources.models import TranscriptApp
 
 
-class RunSyncStatusRequest(CodeAlmanacModel):
+class SyncSelectionRequest(CodeAlmanacModel):
     cwd: Path
     apps: tuple[TranscriptApp, ...]
     quiet: timedelta
@@ -31,3 +32,11 @@ class RunSyncStatusRequest(CodeAlmanacModel):
         if value.total_seconds() < 0:
             raise ValueError("quiet duration must be non-negative")
         return value
+
+
+class RunSyncStatusRequest(SyncSelectionRequest):
+    pass
+
+
+class RunSyncRequest(SyncSelectionRequest):
+    harness: HarnessKind

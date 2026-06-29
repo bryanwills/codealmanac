@@ -6,11 +6,12 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.sources.models import TranscriptApp
+from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
 
 
 class SyncMode(StrEnum):
     STATUS = "status"
+    SYNC = "sync"
 
 
 class SyncLedgerStatus(StrEnum):
@@ -66,6 +67,16 @@ class SyncReady(CodeAlmanacModel):
     to_line: int
 
 
+class SyncStarted(CodeAlmanacModel):
+    app: TranscriptApp
+    session_id: str
+    transcript_path: Path
+    repo_root: Path
+    run_id: str
+    from_line: int
+    to_line: int
+
+
 class SyncSkipped(CodeAlmanacModel):
     transcript_path: Path
     reason: str
@@ -84,6 +95,7 @@ class SyncSummary(CodeAlmanacModel):
     scanned: int
     eligible: int
     ready: tuple[SyncReady, ...] = ()
+    started: tuple[SyncStarted, ...] = ()
     skipped: tuple[SyncSkipped, ...] = ()
     needs_attention: tuple[SyncSkipped, ...] = ()
 
@@ -99,3 +111,18 @@ class SyncCursorDecision(CodeAlmanacModel):
     reason: str = ""
     from_line: int = 0
     to_line: int = 0
+
+
+class SyncWorkItem(CodeAlmanacModel):
+    candidate: TranscriptCandidate
+    ledger_key: str
+    entry: SyncLedgerEntry
+    snapshot: TranscriptSnapshot
+    from_line: int
+    to_line: int
+
+
+class SyncEvaluation(CodeAlmanacModel):
+    summary: SyncSummary
+    work_items: tuple[SyncWorkItem, ...]
+    ledgers: dict[Path, SyncLedger]

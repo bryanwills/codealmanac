@@ -1,10 +1,18 @@
+import subprocess
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
-from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
+from codealmanac.services.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+    HarnessRunStatus,
+    HarnessTranscriptRef,
+)
+from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunOperation
 from codealmanac.services.runs.requests import (
     RecordRunHarnessTranscriptRequest,
@@ -17,8 +25,9 @@ from codealmanac.workflows.sync.models import (
     SyncLedger,
     SyncLedgerEntry,
     SyncLedgerStatus,
+    SyncMode,
 )
-from codealmanac.workflows.sync.requests import RunSyncStatusRequest
+from codealmanac.workflows.sync.requests import RunSyncRequest, RunSyncStatusRequest
 
 
 class FakeTranscriptDiscoveryAdapter:
@@ -34,6 +43,43 @@ class FakeTranscriptDiscoveryAdapter:
     ) -> tuple[TranscriptCandidate, ...]:
         self.requests.append(request)
         return self.candidates
+
+
+class SyncWritingHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        page = request.cwd / ".almanac/pages/synced-transcript.md"
+        page.write_text(
+            """---
+title: Synced Transcript
+topics: [getting-started]
+sources: []
+---
+# Synced Transcript
+
+Sync ingested a quiet transcript.
+""",
+            encoding="utf-8",
+        )
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="synced transcript",
+            summary="synced transcript",
+            changed_files=(page,),
+        )
 
 
 def test_sync_status_reports_ready_transcript_ranges(
@@ -63,6 +109,57 @@ def test_sync_status_reports_ready_transcript_ranges(
     assert summary.ready[0].to_line == 2
     assert summary.skipped == ()
     assert summary.needs_attention == ()
+
+
+def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    harness = SyncWritingHarnessAdapter()
+    app = app_with_candidates(isolated_home, (candidate,), harness=harness)
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    summary = app.workflows.sync.run(
+        RunSyncRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            harness=HarnessKind.CODEX,
+            now=current_time(),
+        )
+    )
+
+    ledger = SyncLedger.model_validate_json(
+        (repo / ".almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
+    )
+    entry = ledger.sessions[f"{candidate.app.value}:{candidate.transcript_path}"]
+    assert summary.mode == SyncMode.SYNC
+    assert summary.eligible == 1
+    assert summary.ready == ()
+    assert summary.started[0].session_id == "session-1"
+    assert entry.status == SyncLedgerStatus.DONE
+    assert entry.last_absorbed_size == transcript.stat().st_size
+    assert entry.last_absorbed_line == 2
+    assert entry.last_job_id == summary.started[0].run_id
+    assert "Scheduled sync cursor:" in harness.requests[0].prompt
+    assert "Focus on line 1 onward." in harness.requests[0].prompt
+
+    status = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+        )
+    )
+    assert status.eligible == 0
+    assert status.skipped[0].reason == "unchanged"
 
 
 def test_sync_status_skips_internal_lifecycle_transcripts_by_session(
@@ -208,9 +305,11 @@ def test_sync_status_reports_prefix_mismatch_from_ledger(
 def app_with_candidates(
     isolated_home: Path,
     candidates: tuple[TranscriptCandidate, ...],
+    harness: SyncWritingHarnessAdapter | None = None,
 ):
     return create_app(
         AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=() if harness is None else (harness,),
         transcript_discovery_adapters=(FakeTranscriptDiscoveryAdapter(candidates),),
     )
 
@@ -274,3 +373,18 @@ def write_sync_ledger(
 
 def sha256_text(value: str) -> str:
     return f"sha256:{sha256(value.encode('utf-8')).hexdigest()}"
+
+
+def initialize_git(repo: Path) -> None:
+    subprocess_run(("git", "init", "-q"), repo)
+    subprocess_run(("git", "config", "user.email", "test@example.com"), repo)
+    subprocess_run(("git", "config", "user.name", "Test User"), repo)
+
+
+def commit_all(repo: Path, message: str) -> None:
+    subprocess_run(("git", "add", "."), repo)
+    subprocess_run(("git", "commit", "-q", "-m", message), repo)
+
+
+def subprocess_run(command: tuple[str, ...], cwd: Path) -> None:
+    subprocess.run(command, cwd=cwd, check=True)
