@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from codealmanac.cli.main import main
+import pytest
+
+from codealmanac.cli.main import build_parser, main
 
 
 def test_cli_init_creates_wiki_and_prints_name(
@@ -129,6 +131,17 @@ def test_cli_doctor_json_reports_no_wiki(
     output = capsys.readouterr()
     assert '"key": "wiki.none"' in output.out
     assert '"fix": "run: codealmanac init"' in output.out
+
+
+def test_cli_help_includes_serve(capsys):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit) as exit_info:
+        parser.parse_args(["--help"])
+
+    output = capsys.readouterr()
+    assert exit_info.value.code == 0
+    assert "serve" in output.out
 
 
 def test_cli_search_and_show_read_current_repo_wiki(

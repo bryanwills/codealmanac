@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeAlmanac</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="rail rail-left">
+        <a class="brand" href="#/">
+          <span class="brand-mark">CA</span>
+          <span>
+            <strong>CodeAlmanac</strong>
+            <small id="workspace-name"></small>
+          </span>
+        </a>
+        <form id="search-form" class="search">
+          <input id="search-input" type="search" placeholder="Search wiki" />
+          <button type="submit">Search</button>
+        </form>
+        <nav>
+          <h2>Topics</h2>
+          <div id="topic-list" class="nav-list"></div>
+        </nav>
+        <nav>
+          <h2>Pages</h2>
+          <div id="page-list" class="nav-list"></div>
+        </nav>
+      </aside>
+      <main id="main" class="reader" tabindex="-1"></main>
+      <aside class="rail rail-right">
+        <section>
+          <h2>Backlinks</h2>
+          <div id="backlinks" class="nav-list muted-list"></div>
+        </section>
+        <section>
+          <h2>Files</h2>
+          <div id="file-refs" class="nav-list muted-list"></div>
+        </section>
+        <section>
+          <h2>Related</h2>
+          <div id="related" class="nav-list muted-list"></div>
+        </section>
+      </aside>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -46,6 +46,9 @@ from codealmanac.services.topics.requests import (
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
+DEFAULT_VIEWER_HOST = "127.0.0.1"
+DEFAULT_VIEWER_PORT = 3927
+
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
@@ -140,6 +143,11 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = subcommands.add_parser("doctor", help="check local install and wiki")
     doctor.add_argument("--wiki")
     doctor.add_argument("--json", action="store_true")
+
+    serve = subcommands.add_parser("serve", help="serve the local wiki viewer")
+    serve.add_argument("--wiki")
+    serve.add_argument("--host", default=DEFAULT_VIEWER_HOST)
+    serve.add_argument("--port", type=int, default=DEFAULT_VIEWER_PORT)
 
     tag = subcommands.add_parser("tag", help="add topics to a page")
     tag.add_argument("slug")
@@ -297,6 +305,8 @@ def dispatch(args: argparse.Namespace) -> int:
         report = app.diagnostics.check(DoctorRequest(cwd=Path.cwd(), wiki=args.wiki))
         render_doctor(report, json_output=args.json)
         return 0
+    if args.command == "serve":
+        return run_serve(app, args)
     if args.command == "tag":
         result = app.tagging.tag(
             TagPageRequest(
@@ -540,6 +550,17 @@ def render_tagging(changed_label: str, unchanged_label: str, result: TaggingResu
         return
     unchanged = ", ".join(result.requested_topics)
     print(f"{result.slug}: {unchanged_label} {unchanged}")
+
+
+def run_serve(app, args: argparse.Namespace) -> int:
+    import uvicorn
+
+    from codealmanac.server.app import create_server_app
+
+    server = create_server_app(app, Path.cwd(), args.wiki)
+    print(f"codealmanac viewer: http://{args.host}:{args.port}")
+    uvicorn.run(server, host=args.host, port=args.port, log_level="warning")
+    return 0
 
 
 if __name__ == "__main__":

@@ -111,17 +111,29 @@
 - Verified slice 8 with 46 passing tests, ruff, `git diff --check`, dogfood
   `doctor` text/JSON in this repo, and isolated live no-wiki plus built-wiki
   doctor checks.
+- Read Cosmic Python chapter 4 on service layers and sent a Relayforge Discord
+  checkpoint. The applied lesson: `serve` is an HTTP entrypoint over a viewer
+  service, not a second parser, SQLite client, or CLI shell-out.
+- Added slice-9 local `serve`: FastAPI server adapter, Uvicorn CLI runtime,
+  `ViewerService`, explicit Pydantic viewer DTOs, markdown-it-py rendering with
+  HTML disabled, and bundled static assets.
+- Verified slice 9 with 53 passing tests, ruff, `git diff --check`, live
+  `codealmanac serve --port 49217`, API dogfood for overview/search/page,
+  CLI help, serve help, and `uv build` wheel inspection confirming viewer
+  assets are packaged. Browser-harness could not attach because Chrome requires
+  the manual remote-debugging permission click.
 
 ## Current Hypothesis
 
 The read and organization paths now cover the main local wiki management loop:
-search/show, topic reads, health, tag/untag, and topic DAG mutation including
-rename/delete, plus explicit `build`, `reindex`, and `doctor`. The next pressure
-should move toward `serve` before AI lifecycle commands.
+search/show, topic reads, health, tag/untag, topic DAG mutation including
+rename/delete, explicit `build`, `reindex`, `doctor`, and a first read-only
+local `serve` viewer. The next pressure should review slice 9, then choose
+whether to harden the viewer or start the first lifecycle/runs spine.
 
 ## Next Hypothesis
 
-The next slice should probably add `serve`. It adds a human reader and will
-require a careful framework/library choice plus browser verification. If `serve`
-feels too large, add only the read-only HTTP/API spine first and defer visual
-polish.
+The next slice should probably be a slice-9 review fix. The highest-risk areas
+are markdown wikilink rewriting inside code spans, browser-harness verification
+once Chrome allows remote debugging, and whether a source/file route belongs in
+the first viewer shape before lifecycle commands.

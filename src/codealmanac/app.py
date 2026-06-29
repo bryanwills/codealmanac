@@ -10,6 +10,8 @@ from codealmanac.services.pages.service import PagesService
 from codealmanac.services.search.service import SearchService
 from codealmanac.services.tagging.service import TaggingService
 from codealmanac.services.topics.service import TopicsService
+from codealmanac.services.viewer.renderer import MarkdownRenderer
+from codealmanac.services.viewer.service import ViewerService
 from codealmanac.services.wiki.service import WikiService
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
@@ -27,6 +29,7 @@ class CodeAlmanac:
     health: HealthService
     diagnostics: DiagnosticsService
     tagging: TaggingService
+    viewer: ViewerService
     build: BuildWorkflow
 
 
@@ -41,6 +44,7 @@ def create_app(config: AppConfig | None = None) -> CodeAlmanac:
     health = HealthService(workspaces, index)
     diagnostics = DiagnosticsService(workspaces, index, __version__)
     tagging = TaggingService(pages)
+    viewer = ViewerService(workspaces, index, MarkdownRenderer())
     build = BuildWorkflow(workspaces, wiki, index)
     return CodeAlmanac(
         workspaces=workspaces,
@@ -52,5 +56,6 @@ def create_app(config: AppConfig | None = None) -> CodeAlmanac:
         health=health,
         diagnostics=diagnostics,
         tagging=tagging,
+        viewer=viewer,
         build=build,
     )

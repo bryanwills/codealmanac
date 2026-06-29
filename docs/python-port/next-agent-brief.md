@@ -13,9 +13,11 @@ Updated: 2026-06-29
 - Steering docs live in `docs/python-port/`.
 - Python code exists under `src/codealmanac/` with CLI, app composition,
   workspaces, wiki scaffold/build workflow, SQLite FTS5 read model, search,
-  show, topics, health, tag/untag, topic mutation, build, reindex, and doctor.
+  show, topics, health, tag/untag, topic mutation, build, reindex, doctor, and
+  the first local `serve` viewer.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
-  `show`, `topics`, `health`, `reindex`, `doctor`, `tag`, and `untag`.
+  `show`, `topics`, `health`, `reindex`, `doctor`, `serve`, `tag`, and
+  `untag`.
 - Topic metadata mutation now covers `topics create`, `topics describe`,
   `topics link`, `topics unlink`, `topics rename`, and `topics delete`.
 
@@ -96,17 +98,27 @@ Updated: 2026-06-29
   - dogfood `codealmanac doctor`
   - dogfood `codealmanac doctor --json`
   - top-level CLI `--help` includes `doctor`
+- Slice-9 serve passed:
+  - 53 tests
+  - ruff
+  - `git diff --check`
+  - live `codealmanac serve --port 49217`
+  - live API overview/search/page checks in this repo
+  - top-level CLI `--help` and `serve --help`
+  - `uv build --out-dir /tmp/codealmanac-build` and wheel asset inspection
+  - Browser-harness did not attach because Chrome requires the manual
+    remote-debugging permission click.
 
 ## Dirty/Staged Files
 
-After slice 8 is committed, the worktree should be clean. If any slice-8 files
-are dirty, re-run `git diff --check`, pytest, ruff, and an isolated
-doctor live smoke before committing further work.
+After slice 9 is committed, the worktree should be clean. If any slice-9 files
+are dirty, re-run `git diff --check`, pytest, ruff, live serve API checks, and
+browser-harness if Chrome remote debugging has been allowed.
 
 ## Next Move
 
-1. Review slice-8 doctor before broader lifecycle work.
-2. Decide the first `serve` slice shape and framework/library choice.
+1. Review slice-9 serve before broader lifecycle work.
+2. Decide whether the viewer needs source/file route hardening before jobs.
 3. Keep lifecycle/AI commands out until local maintenance surfaces hold.
 4. Add an architecture test that CLI imports do not import concrete integration
    modules once integrations exist.

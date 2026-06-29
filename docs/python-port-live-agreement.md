@@ -46,6 +46,7 @@ src/codealmanac/
   services/
   workflows/
   integrations/
+  server/
   cli/
   prompts/
   manual/
@@ -72,6 +73,7 @@ services/
   automation/
   config/
   diagnostics/
+  viewer/
 ```
 
 `workflows/` holds multi-service product verbs:
@@ -150,7 +152,7 @@ service-owned ports. CLI and future hosted/server edges adapt.
 Allowed dependency direction:
 
 ```text
-cli
+cli/server
   -> app
     -> workflows
       -> services
@@ -175,6 +177,7 @@ not make CLI contain product decisions.
 | `automation` | local trigger decisions, quiet windows, scheduler state | run internals, source parsing, provider transports |
 | `config` | user/project config parsing and precedence | product workflows |
 | `diagnostics` | doctor-style checks and readiness reports | mutation workflows |
+| `viewer` | read-only local browser payloads, page/topic/search overview assembly, rendered markdown for the viewer | markdown source of truth, SQLite persistence, AI calls, jobs/review lifecycle |
 
 ## Workflows
 
@@ -259,8 +262,8 @@ There is no public `absorb` command. The public lifecycle word is `ingest`.
 `codealmanac reindex` is the explicit escape hatch for rebuilding the derived
 SQLite read model. Query commands may refresh the index implicitly and silently.
 
-CLI commands are not internal APIs. Automation, workers, tests, and future
-server wrappers must call the same Python services/workflows that CLI dispatch
+CLI commands are not internal APIs. Automation, workers, tests, and server
+wrappers must call the same Python services/workflows that CLI dispatch
 calls. They must not shell out to `codealmanac`.
 
 Correct shape:
@@ -269,6 +272,7 @@ Correct shape:
 app.workflows.sync.run(workspace_id, request)
 app.workflows.ingest.run(workspace_id, request)
 app.runs.record_event(workspace_id, request)
+app.viewer.page(request)
 ```
 
 Incorrect shape:
@@ -276,6 +280,7 @@ Incorrect shape:
 ```python
 subprocess.run(["codealmanac", "sync"])
 subprocess.run(["codealmanac", "ingest", "..."])
+subprocess.run(["codealmanac", "show", "..."])
 ```
 
 ## Feature Map
@@ -330,5 +335,6 @@ subprocess.run(["codealmanac", "ingest", "..."])
    behavior is concrete.
 2. Whether `jobs` should remain the public noun or become `runs` in the Python
    rewrite.
-3. Whether `serve` ships in the first Python slice or is restored after the core
-   CLI/read model works.
+3. Resolved 2026-06-29: `serve` is restored after the core CLI/read model,
+   because the Python index can now support a read-only viewer without a second
+   content model.
