@@ -1123,7 +1123,9 @@ Evidence that forced the change:
 The user clarified that the earlier sidebar-oriented CodeAlmanac viewer was
 closer to the desired wiki shape. The problem was the visual treatment, not
 the local wiki IA. UseAlmanac's hosted search/page flow is not the target for
-this local CLI product.
+this local CLI product. The current UseAlmanac page/search presentation should
+not be copied back into CodeAlmanac; use the previous sidebar-first local
+viewer as the shape reference and apply better design over it.
 
 Code or product assumption affected:
 `src/codealmanac/server/assets/` may borrow UseAlmanac colors, shell polish,
@@ -1133,8 +1135,9 @@ list/search UX.
 
 Follow-up test:
 Future viewer changes should be checked in browser-harness against desktop and
-mobile viewports, and should preserve page graph navigation before adding
-new hosted-style surfaces.
+mobile viewports. A review should explicitly check that search, page reading,
+and navigation still feel like the local sidebar wiki, not the current hosted
+UseAlmanac wiki surface.
 
 ## 2026-06-29 - Static Viewer Needs Modules, Not React Yet
 
@@ -1193,3 +1196,33 @@ Follow-up test:
 Add scheduled update automation only after update-notification cadence,
 dismissal behavior, and release-channel policy are agreed. Do not infer those
 from the manual update command.
+
+## 2026-06-29 - Admin CLI Is The First Dispatch/Render Domain Split
+
+Old hypothesis:
+`cli/dispatch/root.py` and `cli/render/root.py` could stay broad after the
+slice-40 CLI edge split until a larger CLI rewrite happened.
+
+New hypothesis:
+Split only the admin edge now. `doctor`, `update`, `jobs`, and `automation`
+change for install/status/runtime-administration reasons, while wiki and
+lifecycle commands still have enough cohesion to remain in the root modules
+until their next concrete pressure.
+
+Evidence that forced the change:
+Slice 48 added update install dogfood on top of existing doctor, automation,
+and jobs behavior. The root dispatch/render modules had become a mixed admin,
+wiki, lifecycle, and viewer adapter. Cosmic Python chapter 4 separates
+entrypoint code from use-case orchestration, so this split keeps admin
+entrypoint code separate without moving product logic out of services.
+
+Code or product assumption affected:
+`cli/dispatch/admin.py` owns admin command request construction.
+`cli/render/admin.py` owns admin output. `cli/dispatch/config.py` owns shared
+CLI config and duration parsing helpers. Services, workflows, and the app
+composition root remain the stable internal API.
+
+Follow-up test:
+Architecture tests should keep admin request/result types out of
+`dispatch/root.py` and `render/root.py`. Split wiki or lifecycle dispatch only
+when a future command change provides a concrete reason-to-change.

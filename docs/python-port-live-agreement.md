@@ -76,7 +76,9 @@ It is the constraint document for future agents.
   viewer already explored here: persistent sidebar, direct page reading,
   topic/file/search movement, and wiki navigation that feels like a repo-local
   knowledge browser. The design layer can borrow UseAlmanac polish; the page
-  and search interaction model should not be copied from UseAlmanac.
+  and search interaction model should not be copied from UseAlmanac. The issue
+  is not the wiki content model; it is the visual/product treatment around the
+  wiki reader.
 - 2026-06-29: Bulletproof React is a frontend architecture reference for
   `serve`, not a mandate to add React or Next.js immediately. Apply its
   principles as the viewer grows: feature boundaries, colocated API requests,
@@ -118,6 +120,10 @@ It is the constraint document for future agents.
   lifecycle harness and sync quiet window. CLI flags still win over config. Do
   not add a public `config` command, environment override system, secrets
   system, or hosted/account config surface until a later agreement requires it.
+- 2026-06-29: The CLI edge is allowed to split by command domain as pressure
+  appears. `doctor`, `update`, `jobs`, and `automation` now live under the
+  admin dispatch/render edge; the root dispatcher delegates to that edge and
+  keeps services/workflows as the product boundary.
 
 ## Product Frame
 

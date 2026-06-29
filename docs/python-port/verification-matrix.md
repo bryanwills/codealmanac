@@ -619,3 +619,15 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice48-final` | passed; wheel built as `codealmanac-0.1.0-py3-none-any.whl` |
+
+## Gates For Slice 49 CLI Admin Edge Split
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused architecture/admin CLI tests | `uv run pytest tests/test_architecture.py tests/test_cli.py::test_cli_help_includes_update tests/test_cli.py::test_cli_update_check_json_reports_plan tests/test_cli.py::test_cli_update_refuses_editable_install tests/test_cli.py::test_cli_automation_install_status_and_uninstall tests/test_cli.py::test_cli_jobs_inspects_local_run_records tests/test_cli.py::test_cli_doctor_json_reports_no_wiki` | 15 passed |
+| Focused CLI lint | `uv run ruff check src/codealmanac/cli tests/test_architecture.py tests/test_cli.py` | passed |
+| Admin CLI dogfood | `uv run codealmanac update --check --json`; `uv run codealmanac doctor --json`; `uv run codealmanac automation status --json`; `uv run codealmanac jobs --json --limit 1`; `uv run codealmanac --help` | passed; editable update reported unsupported as expected, doctor reached diagnostics, automation returned launchd status, jobs returned `[]`, and help listed admin commands |
+| Full tests | `uv run pytest` | 224 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice49-final`; wheel inspection | passed; wheel includes `cli/dispatch/admin.py`, `cli/dispatch/config.py`, and `cli/render/admin.py` |

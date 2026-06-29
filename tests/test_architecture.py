@@ -90,7 +90,24 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
 
     assert (cli_root / "parser/root.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
+    assert (cli_root / "dispatch/admin.py").is_file()
+    assert (cli_root / "dispatch/config.py").is_file()
     assert (cli_root / "render/root.py").is_file()
+    assert (cli_root / "render/admin.py").is_file()
+
+
+def test_cli_admin_edge_is_split_by_command_domain():
+    dispatch_root = (SRC_ROOT / "cli/dispatch/root.py").read_text(encoding="utf-8")
+    render_root = (SRC_ROOT / "cli/render/root.py").read_text(encoding="utf-8")
+
+    assert "dispatch_admin(args, app)" in dispatch_root
+    assert "AutomationStatusRequest" not in dispatch_root
+    assert "DoctorRequest" not in dispatch_root
+    assert "UpdateStatus" not in dispatch_root
+    assert "RunUpdateRequest" not in dispatch_root
+    assert "DoctorReport" not in render_root
+    assert "UpdatePlan" not in render_root
+    assert "RunRecord" not in render_root
 
 
 def test_repo_almanac_root_is_workspace_owned():

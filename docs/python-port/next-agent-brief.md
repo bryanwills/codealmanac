@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-48): dogfood update installs`.
+- Latest committed implementation slice: `feat(slice-49): split admin cli edge`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -43,7 +43,9 @@ Updated: 2026-06-29
 - `serve` now borrows UseAlmanac's alpine dashboard visual language but keeps
   CodeAlmanac's local wiki IA. Preserve the sidebar/page graph/search/topic/file
   navigation model; do not copy UseAlmanac's hosted wiki page-list/search flow,
-  hosted account routes, billing/settings surfaces, or hosted wording.
+  hosted account routes, billing/settings surfaces, or hosted wording. The
+  current UseAlmanac wiki page/search UX is a non-target reference; the desired
+  shape is the sidebar-first local viewer with better visual treatment.
 - Bulletproof React Markdown reference lives under
   `docs/reference/bulletproof-react/`. Treat it as frontend architecture
   guidance for future viewer growth, not a reason to add React/Next.js while
@@ -65,8 +67,12 @@ Updated: 2026-06-29
   The first supported fields are `[harness].default` and `[sync].quiet`.
 - Slice 40 splits the CLI edge: `main.py` is thin, parser construction is under
   `cli/parser/` by command domain, and dispatch/render moved to
-  `cli/dispatch/root.py` and `cli/render/root.py`. Dispatch/render are still
-  broad and can be split later when a concrete CLI change creates pressure.
+  `cli/dispatch/root.py` and `cli/render/root.py`.
+- Slice 49 splits the admin CLI edge. `doctor`, `update`, `jobs`, and
+  `automation` live under `cli/dispatch/admin.py` and `cli/render/admin.py`;
+  shared CLI config/duration resolution lives in `cli/dispatch/config.py`.
+  Wiki/lifecycle dispatch remains in root until a concrete command change
+  creates pressure.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -258,6 +264,8 @@ Behavior:
 - product IA stays local: overview, page, topic, search, and file-reference
   routes over repo-owned wiki pages
 - no hosted account, billing, settings, or UseAlmanac hosted wiki routes
+- do not copy the current UseAlmanac wiki page/search UX; preserve the
+  sidebar-first local reader shape and improve the design layer around it
 - browser-harness verified desktop page/search/file/wikilink navigation and
   mobile no-overflow behavior
 
@@ -439,6 +447,9 @@ Behavior:
   tests, and package-data preparation for wheel inspection
 - Slice-47 review fix focused server/viewer tests, focused server ruff, diff
   check, and browser-harness malformed-hash dogfood
+- Slice 49 focused architecture/admin CLI tests, focused CLI ruff, full pytest,
+  full ruff, diff check, package build, wheel inspection, and live admin CLI
+  dogfood for update, doctor, automation, jobs, and help
 
 ## Next Move
 

@@ -566,6 +566,12 @@
   plan the expected package-manager commands. Dogfood showed a successful uv
   upgrade can say `Nothing to upgrade`, so update run status now reports
   `completed` for exit code 0 instead of over-claiming `updated`.
+- Added slice-49 CLI admin edge split. `doctor`, `update`, `jobs`, and
+  `automation` now dispatch through `cli/dispatch/admin.py`; admin rendering
+  lives in `cli/render/admin.py`; shared CLI config/duration helpers live in
+  `cli/dispatch/config.py`. Architecture tests keep admin request/result types
+  out of root dispatch/render, matching the Cosmic Python entrypoint-adapter
+  reading from chapters 4 and 13.
 
 ## Current Hypothesis
 
@@ -607,7 +613,10 @@ should default to `almanac/` and all wiki docs plus local runtime artifacts
 should resolve through the configured Almanac root.
 The CLI edge now follows the same parser/dispatch/render package shape as the
 sibling Almanac CLI, with architecture tests preventing `main.py` and parser
-root from growing back into all-purpose modules. The configured-root slice now
+root from growing back into all-purpose modules. Admin dispatch/render is now
+split by command domain for `doctor`, `update`, `jobs`, and `automation`, while
+wiki/lifecycle dispatch stays in root until a concrete command change creates
+pressure. The configured-root slice now
 implements the new default `almanac/` root across setup, registry, index,
 manual, runs, sync ledger, config, prompts, and lifecycle safety. Source
 runtime now receives configured wiki-root ignore policy from Ingest rather than
@@ -632,4 +641,6 @@ and product review of navigation density, especially the compact mobile rail,
 not a missing browser-harness verification gate or frontend architecture seam.
 After slice 48, the next update pressure is no longer install detection; it is
 the product policy for notification cadence, dismissal, and release channels
-before any scheduled update automation exists.
+before any scheduled update automation exists. After slice 49, the next CLI
+pressure is not "split every file"; it is to wait for wiki or lifecycle command
+changes that justify their own dispatch/render domains.

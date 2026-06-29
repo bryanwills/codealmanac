@@ -25,7 +25,7 @@ alive while rebuilding in Python.
 |---|---|
 | `jobs` vs `runs` public noun | resolved: public CLI noun is `jobs`; internal service noun is `runs`. |
 | Local `add` command | Decide only when source-pool behavior is concrete. |
-| `serve` slice timing | resolved: read-only local viewer exists; renderer token-safety is covered by tests; UseAlmanac visual language is ported without adopting hosted wiki IA. Remaining polish is navigation density, especially mobile. |
+| `serve` slice timing | resolved: read-only local viewer exists; renderer token-safety is covered by tests; UseAlmanac visual language is ported without adopting hosted wiki IA. Do not copy the current UseAlmanac wiki page/search UX; keep the sidebar-first local reader shape and improve the design layer around it. Remaining polish is navigation density, especially mobile. |
 | Agent harness contract | Re-evaluate old Codex app-server and Claude SDK adapters before implementing lifecycle workflows. |
 | Codex app-server parity | The Python v1 Codex adapter uses `codex exec`; port app-server only if the harness contract needs streaming, usage, structured tool display, structured output, or subagents. |
 | Background sync reconciliation | resolved for local v1: scheduled sync runs foreground `sync` with an explicit automation claim owner, pending timeout, and failed-attempt budget. A separate queue/worker remains out of scope unless a later agreement adds it. |
@@ -37,4 +37,4 @@ alive while rebuilding in Python.
 | Filesystem directory ranking | resolved for local v1: directory runtime uses Git listing, respects nested ignore semantics, ranks changed/untracked files before unchanged files, and interleaves clean directory groups with role-bearing files first. Add recency only after new dogfood proves diversity is insufficient. |
 | Arbitrary custom root source-runtime ignores | resolved: Ingest passes `workspace.almanac_root` through `SourceRuntimeContext`; filesystem runtime no longer hard-codes Almanac root names. |
 | Manual package updates | `<almanac-root>/manual/` is copied missing-only during build/init. If bundled doctrine needs to update existing workspace manual files, add an explicit maintenance policy rather than overwriting local edits silently. |
-| CLI dispatch/render domain split | `src/codealmanac/cli/main.py` is now thin and parser construction is split by command domain. `dispatch/root.py` and `render/root.py` are separated from main but still broad; split them by command domain when the next CLI change creates pressure. |
+| CLI dispatch/render domain split | Admin dispatch/render is now split for `doctor`, `update`, `jobs`, and `automation`. `dispatch/root.py` and `render/root.py` still own wiki/lifecycle commands; split those only when a concrete command change creates pressure. |
