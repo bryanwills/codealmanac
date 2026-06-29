@@ -96,19 +96,20 @@ describe("provider setup view", () => {
         label: "Codex",
         recommended: true,
         readiness: "ready",
-        effectiveModel: null,
+        effectiveModel: "gpt-5.5",
+        providerDefaultModel: "gpt-5.5",
         account: "ChatGPT account: rohan@example.com",
         modelChoices: [
           {
             value: "gpt-5.5",
             label: "GPT-5.5",
             source: "catalog",
+            recommended: true,
           },
           {
             value: "gpt-5.4",
             label: "GPT-5.4",
             source: "catalog",
-            recommended: true,
           },
           {
             value: "gpt-5.4-mini",
@@ -140,6 +141,34 @@ describe("provider setup view", () => {
       statuses[1]!,
       statuses[2]!,
     ])).toBe("codex");
+  });
+
+  it("still recommends Codex when Claude is ready but Codex needs sign-in", () => {
+    expect(chooseRecommendedProvider([
+      statuses[0]!,
+      {
+        id: "codex",
+        installed: true,
+        authenticated: false,
+        readiness: "not_authenticated",
+        detail: "not logged in",
+        loginFix: "run: codex login",
+      },
+    ])).toBe("codex");
+  });
+
+  it("falls back to a ready agent when Codex is missing", () => {
+    expect(chooseRecommendedProvider([
+      statuses[0]!,
+      {
+        id: "codex",
+        installed: false,
+        authenticated: false,
+        readiness: "missing_executable",
+        detail: "codex not found",
+        installFix: "install codex",
+      },
+    ])).toBe("claude");
   });
 
   it("parses provider/model shorthand without making it primary UX", () => {

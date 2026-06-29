@@ -30,6 +30,12 @@ export interface DoctorOptions {
   claudeDir?: string;
   /** Override `~/.codex/` directory. */
   codexDir?: string;
+  /** Override `~/.cursor/` directory. */
+  cursorDir?: string;
+  /** Override `~/.codeium/windsurf/` directory. */
+  windsurfDir?: string;
+  /** Override `~/.config/opencode/` directory. */
+  opencodeDir?: string;
   /** Override the bundled hooks directory lookup. */
   hookScriptPath?: string;
   /** Override the `codealmanac` install path detector. */

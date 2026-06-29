@@ -872,6 +872,83 @@ rl.on("line", (line) => {
     }
   });
 
+  it("can disable the Codex inner sandbox for externally sandboxed runtimes", async () => {
+    const binDir = await mkdtemp(join(tmpdir(), "codealmanac-codex-danger-bin-"));
+    const codexPath = join(binDir, "codex");
+    await writeFile(
+      codexPath,
+      `#!/usr/bin/env node
+const readline = require("node:readline");
+const rl = readline.createInterface({ input: process.stdin });
+function send(msg) { process.stdout.write(JSON.stringify(msg) + "\\n"); }
+function fail(message) {
+  send({ method: "error", params: { error: { message } } });
+}
+rl.on("line", (line) => {
+  const msg = JSON.parse(line);
+  if (msg.method === "initialize") {
+    send({ id: msg.id, result: { userAgent: "fake-codex" } });
+    return;
+  }
+  if (msg.method === "thread/start") {
+    if (msg.params.sandbox !== "danger-full-access") {
+      fail("thread sandbox should be danger-full-access");
+      return;
+    }
+    send({ id: msg.id, result: { thread: { id: "thread-1" } } });
+    return;
+  }
+  if (msg.method === "turn/start") {
+    if (msg.params.sandboxPolicy?.type !== "dangerFullAccess") {
+      fail("turn sandbox policy should be dangerFullAccess");
+      return;
+    }
+    send({ id: msg.id, result: { turn: { id: "turn-1" } } });
+    send({
+      method: "item/completed",
+      params: {
+        threadId: "thread-1",
+        turnId: "turn-1",
+        item: { type: "agentMessage", id: "msg-1", text: "ok" }
+      }
+    });
+    send({
+      method: "turn/completed",
+      params: { threadId: "thread-1", turnId: "turn-1", turn: { id: "turn-1", status: "completed" } }
+    });
+  }
+});
+`,
+    );
+    await chmod(codexPath, 0o755);
+    const oldPath = process.env.PATH;
+    const oldSandboxMode =
+      process.env.CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE;
+    process.env.PATH = `${binDir}:${oldPath ?? ""}`;
+    process.env.CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE =
+      "danger-full-access";
+    try {
+      await expect(
+        runCodexAppServer({
+          provider: { id: "codex" },
+          cwd: binDir,
+          prompt: "run",
+          metadata: { operation: "build" },
+        }),
+      ).resolves.toMatchObject({
+        success: true,
+        result: "ok",
+      });
+    } finally {
+      process.env.PATH = oldPath;
+      if (oldSandboxMode === undefined) {
+        delete process.env.CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE;
+      } else {
+        process.env.CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE = oldSandboxMode;
+      }
+    }
+  });
+
   it("checks Codex CLI readiness", async () => {
     const ready = createCodexHarnessProvider({
       commandExists: () => true,

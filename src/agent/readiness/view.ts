@@ -150,10 +150,20 @@ export function buildProviderModelChoices(
 export function chooseRecommendedProvider(
   statuses: ProviderStatus[],
 ): AgentProviderId {
+  const codexStatus = statuses.find((status) => status.id === "codex");
+  if (
+    codexStatus !== undefined &&
+    (
+      codexStatus.readiness === "ready" ||
+      codexStatus.readiness === "not_authenticated"
+    )
+  ) {
+    return "codex";
+  }
+
   const ready = statuses
     .filter((status) => getReadiness(status) === "ready")
     .map((status) => status.id);
-  if (ready.includes("codex")) return "codex";
   for (const id of getEnabledAgentProviderIds()) {
     if (ready.includes(id)) return id;
   }
