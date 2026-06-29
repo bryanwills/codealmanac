@@ -9,9 +9,9 @@ alive while rebuilding in Python.
 
 | Assumption | Status | Reason |
 |---|---|---|
-| Hosted CLI verbs such as `login`, `connect`, `upload` | out of scope | Python v1 is local-only. Hosted control plane work belongs to a later agreement. |
-| Public `almanac`, `alm`, or `absorb` aliases | out of scope | Public naming is `codealmanac`; compatibility aliases were explicitly rejected. |
-| `capture` as a public command | out of scope | Conversation collection belongs under `sync` or a future explicit local source workflow. |
+| Hosted CLI verbs such as `login`, `connect`, `upload` | out of scope, guarded by tests | Python v1 is local-only. Hosted control plane work belongs to a later agreement. |
+| Public `almanac`, `alm`, or `absorb` aliases | out of scope, guarded by tests | Public naming is `codealmanac`; compatibility aliases were explicitly rejected. |
+| `capture` as a public command | out of scope, guarded by tests | Conversation collection belongs under `sync` or a future explicit local source workflow. |
 | CLI shell-out as an internal API | forbidden | Automation and future server wrappers must call Python services/workflows directly. |
 | Hosted-shipping work merged from `origin/dev` | archive/reference only | The branch may contain hosted assumptions that are not v1 product direction. |
 | TypeScript module boundaries | archive/reference only | The old code is behavior evidence, not a shape to preserve. |

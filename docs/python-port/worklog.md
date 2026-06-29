@@ -429,6 +429,13 @@
 - Sent a Relayforge Discord checkpoint for the Cosmic Python chapter 5 pattern
   applied in slice 32: high-gear tests drive the source service runtime
   contract instead of freezing private selector helper details.
+- Added slice-33 public contract guards. `tests/test_public_contract.py`
+  verifies the only script entry point is `codealmanac`, hosted and alias
+  commands are rejected by the parser, and the Python package does not expose
+  `sdk` or `mcp` modules.
+- Sent a Relayforge Discord checkpoint for the Cosmic Python chapter 4 pattern
+  applied in slice 33: the CLI stays an outer adapter over local service-layer
+  use cases rather than growing hosted product modes.
 
 ## Current Hypothesis
 
@@ -453,7 +460,9 @@ as a conservative package-manager command and does not install scheduled update
 automation. The viewer file route is now graph navigation over indexed file
 references, not source-code preview. Filesystem directory runtime now uses Git
 listing inside worktrees before falling back to Python/pathspec traversal, and
-Git-listed directories rank changed material before unchanged files.
+Git-listed directories rank changed material before unchanged files. The
+local-only public surface now has executable guards for hosted verbs,
+compatibility aliases, SDK modules, and MCP modules.
 
 ## Next Hypothesis
 

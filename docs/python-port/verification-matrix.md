@@ -17,7 +17,7 @@ means the goal remains active.
 | Prompts/manual surfaces | `src/codealmanac/prompts/` package resources and `PromptRenderer` | prompt tests; ingest and garden workflow prompt assertions; wheel inspection confirmed prompt Markdown packaged | Prompt quality needs continued dogfood review. |
 | Tests and live verification | pytest/ruff configured in `pyproject.toml` | `uv run pytest`, `uv run ruff check .`, `uv run codealmanac --help`, live temp `init`/`list`/`search`/`show`, dogfood search, dogfood serve API passed | Browser-harness needs Chrome remote-debugging permission before visual UI verification can pass. |
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
-| No hosted CLI/MCP/SDK/aliases | live agreement records exclusion | pending | Need tests/rg checks once CLI exists. |
+| No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, and package module names | `uv run pytest tests/test_public_contract.py` passed on 2026-06-29; full `uv run pytest` and `uv run ruff check .` passed on 2026-06-29 | Future CLI expansion must keep the public-contract guard current. |
 
 ## Gates For First Slice
 
@@ -416,3 +416,16 @@ means the goal remains active.
 | Package build | `uv build --out-dir /tmp/codealmanac-build-slice32`; wheel inspection | passed; wheel includes `integrations/sources/filesystem/adapter.py` and `integrations/sources/filesystem/selection.py` |
 | Dirty-checkout dogfood | default `create_app()` source runtime inspecting `src/codealmanac/` while slice files were dirty | passed; changed filesystem adapter and selector files ranked before unchanged files |
 | Truncation dogfood | temp Git repo with modified tracked file, untracked file, unchanged file, and `max_directory_files=2` | passed; changed files included and unchanged file excluded under the bound |
+
+## Gates For Slice 33 Public Contract Guards
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused public contract tests | `uv run pytest tests/test_public_contract.py` | 13 passed |
+| Focused CLI/architecture tests | `uv run pytest tests/test_public_contract.py tests/test_cli.py tests/test_architecture.py` | 34 passed |
+| Focused lint | `uv run ruff check tests/test_public_contract.py tests/test_cli.py tests/test_architecture.py` | passed |
+| Full tests | `uv run pytest` | 165 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --out-dir /tmp/codealmanac-build-slice33`; parsed wheel entry points and package modules | passed; wheel has only the `codealmanac` console script and no `sdk`/`mcp` package modules |
+| Live CLI help and forbidden command smoke | `uv run codealmanac --help`; `uv run codealmanac login` | passed; help used `codealmanac`, and `login` failed as an invalid choice |

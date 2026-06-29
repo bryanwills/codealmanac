@@ -733,3 +733,29 @@ Follow-up test:
 If clean large directories remain noisy after changed-first selection, add a
 separate semantic-diversity or recency policy with dogfood proving the wrong
 unchanged files.
+
+## 2026-06-29 - Local-Only Public Surface Needs Executable Guards
+
+Old hypothesis:
+The live agreement and CLI implementation were enough evidence that v1 has no
+hosted commands, aliases, SDK, or MCP surface.
+
+New hypothesis:
+The local-only public surface should have a small executable guard because
+future agents may add hosted-looking verbs or aliases while porting old
+TypeScript behavior.
+
+Evidence that forced the change:
+The verification matrix still marked "No hosted CLI/MCP/SDK/aliases" as
+pending even after the CLI existed. The old TypeScript and hosted discussions
+contain enough `capture`, `absorb`, hosted worker, SDK, and MCP vocabulary that
+a text-only agreement is too easy to miss.
+
+Code or product assumption affected:
+`tests/test_public_contract.py` now guards `pyproject.toml` scripts, parser
+rejection for hosted/alias top-level commands, and absence of `sdk`/`mcp`
+Python modules. No production code changed.
+
+Follow-up test:
+When a new public command is intentionally added, update the public-contract
+test in the same slice so the local-only boundary remains deliberate.

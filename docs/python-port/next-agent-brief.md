@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed slice: `feat(slice-32): rank changed directory sources first`.
+- Latest committed slice: `feat(slice-33): guard local public contract`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
@@ -27,6 +27,9 @@ Updated: 2026-06-29
   back to the bounded Python/pathspec walk outside Git.
 - Git-listed directory runtime ranks changed and untracked files before
   unchanged files and labels included files as `changed` or `unchanged`.
+- Public-contract tests guard the local-only CLI/package surface: only the
+  `codealmanac` script, no hosted verbs, no compatibility aliases, and no
+  `sdk` or `mcp` package modules.
 - Ingest remains source-kind agnostic. It resolves `SourceBrief` values, asks
   `SourcesService.inspect_runtime(...)` for snapshots, renders typed runtime
   JSON into the prompt, calls the selected harness, validates `.almanac/`
@@ -104,6 +107,16 @@ Behavior:
 - runtime metadata includes `selection_policy: changed_first`
 - the rendered tree annotates included files as `changed` or `unchanged`
 
+Slice 33 adds public contract guards.
+
+Behavior:
+
+- `tests/test_public_contract.py` asserts the only project script is
+  `codealmanac`
+- parser tests reject hosted or alias commands such as `login`, `connect`,
+  `upload`, `capture`, `absorb`, `use`, `sources`, `mcp`, and `sdk`
+- package tree tests reject `sdk` and `mcp` Python modules
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -126,6 +139,8 @@ Behavior:
 - Slice 31 focused filesystem/source/ingest/architecture tests and focused ruff
 - Slice 32 focused filesystem tests, source/ingest/architecture tests, focused
   ruff, and dirty-checkout dogfood against `src/codealmanac/`
+- Slice 33 public-contract tests, focused CLI/architecture tests, full pytest,
+  full ruff, diff check, package build, and live CLI help smoke
 
 ## Next Move
 
