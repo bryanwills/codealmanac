@@ -24,7 +24,8 @@ It is the constraint document for future agents.
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue
   runtime uses GitHub CLI through the same port. Transcript runtime uses
-  local JSONL parsing through the same port.
+  local JSONL parsing through the same port. Web URL runtime uses a local HTTP
+  and HTML/text adapter through the same port.
 
 ## Product Frame
 

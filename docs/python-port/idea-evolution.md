@@ -143,6 +143,36 @@ When `workflows/ingest` lands, test that it consumes `SourceBrief` values from
 `SourcesService` and records the selected source refs in the run ledger without
 letting CLI parsing become the workflow boundary.
 
+## 2026-06-29 - Web URLs Are Runtime Material, Not A Source Library
+
+Old hypothesis:
+Generic web URLs might require a separate discovery or source-library shape
+because they can represent external documents outside the repo.
+
+New hypothesis:
+For Python v1, web URLs are selected run input that fit the existing
+`SourceRuntimeAdapter` seam. The adapter fetches and normalizes readable
+material; Ingest still decides nothing about notability until the harness sees
+the prompt.
+
+Evidence that forced the change:
+The live agreement says source input has the same
+`SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime` layers for Git,
+GitHub, transcripts, and web. The existing Ingest workflow already consumes
+source runtime snapshots without knowing source kinds. Cosmic Python chapter 11
+keeps outside messages at the edge, and chapter 13 keeps concrete external
+dependencies wired through the composition root.
+
+Code or product assumption affected:
+`integrations/sources/web/` owns HTTP and HTML/text parsing. `services/sources`
+keeps only the product-owned ref/runtime contract. No `collect`, `capture`,
+hosted upload, durable candidate, crawler, or web source catalog is introduced.
+
+Follow-up test:
+Keep an ingest workflow test where a real `WebSourceRuntimeAdapter` with
+`httpx.MockTransport` feeds web runtime text into the prompt, and dogfood a real
+public URL with a fake harness before committing the slice.
+
 ## 2026-06-29 - Harnesses Are Ports Before Adapters
 
 Old hypothesis:

@@ -375,6 +375,17 @@
 - Foreground sync now benefits from source runtime directly: it still passes
   `transcript:<absolute path>` and cursor guidance to Ingest, but the Ingest
   prompt also includes readable transcript content before the harness runs.
+- Added slice-27 web source runtime. `WebSourceRuntimeAdapter` fetches generic
+  `SourceKind.WEB_URL` refs with `httpx`, parses HTML/text material at the
+  integration edge, validates the normalized response with Pydantic models,
+  strips non-readable HTML nodes with Beautiful Soup, and returns bounded
+  `SourceRuntime` snapshots or `unavailable` diagnostics for HTTP/binary
+  failures.
+- Verified slice 27 with focused web/source/ingest/architecture tests, 134
+  passing full tests, full ruff, diff hygiene, package build, wheel dependency
+  inspection, and a temp-repo dogfood where real `https://example.com/` content
+  reached the Ingest prompt before a fake harness wrote
+  `web-runtime-dogfood.md`.
 
 ## Current Hypothesis
 
@@ -393,16 +404,17 @@ provider transcript identity for that exclusion. Foreground `sync` now runs
 ordinary Ingest work for ready transcripts and advances the sync ledger after
 success. Local automation now installs scheduler entries for foreground sync
 and Garden through a service-owned task plan and a launchd adapter. Git,
-GitHub, and transcript source refs now produce bounded runtime snapshots before
-Ingest starts the harness.
+GitHub, transcript, and web URL source refs now produce bounded runtime
+snapshots before Ingest starts the harness.
 
 ## Next Hypothesis
 
 The next automation or sync slice should add background/pending semantics only
 if it first adds a durable background owner and reconciliation loop. Scheduled
 update checks should wait until the Python `update` command exists. The
-remaining source-runtime pressure is web URL readable material and should use
-the existing source-runtime port. The remaining serve risks are markdown
-wikilink rewriting inside code spans, browser-harness verification once Chrome
-allows remote debugging, and whether a source/file route belongs in the first
-viewer shape.
+remaining source-runtime pressure is local path file/directory readable
+material, which should use the same source-runtime port if product pressure
+shows that file fingerprints and prompt hints are not enough. The remaining
+serve risks are markdown wikilink rewriting inside code spans, browser-harness
+verification once Chrome allows remote debugging, and whether a source/file
+route belongs in the first viewer shape.

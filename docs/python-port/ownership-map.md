@@ -74,6 +74,7 @@ integrations/
     git/
     github/
     transcripts/
+    web/
   automation/
     scheduler/
 ```
@@ -111,7 +112,9 @@ execution. `integrations/sources/git/` uses Git CLI commands for local
 for PR and issue refs. `integrations/sources/transcripts/` reads provider JSONL
 transcripts with `jsonlines`, validates known Codex and Claude shapes with
 Pydantic, and renders bounded transcript snapshots. Ingest does not branch on
-source kind.
+source kind. `integrations/sources/web/` uses `httpx` plus Beautiful Soup to
+fetch generic web URLs, remove non-readable HTML nodes, and render bounded
+HTML/text snapshots through the same source-runtime port.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
 automation install/status/uninstall. The launchd implementation lives in

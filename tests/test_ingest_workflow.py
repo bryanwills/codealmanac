@@ -1,12 +1,14 @@
 import subprocess
 from pathlib import Path
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFailed
 from codealmanac.core.models import AppConfig
+from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -274,6 +276,50 @@ def test_ingest_prompt_includes_github_source_runtime(
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
     assert "Fake GitHub PR" in adapter.requests[0].prompt
     assert "preserve the auth decision history" in adapter.requests[0].prompt
+
+
+def test_ingest_prompt_includes_web_source_runtime(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = WritingHarnessAdapter()
+    web = WebSourceRuntimeAdapter(
+        client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    headers={"content-type": "text/html; charset=utf-8"},
+                    text=(
+                        "<html><head><title>Retention Decisions</title></head>"
+                        "<body><p>Keep pricing context in the wiki.</p></body></html>"
+                    ),
+                    request=request,
+                )
+            )
+        )
+    )
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(adapter,),
+        source_runtime_adapters=(web,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    result = app.workflows.ingest.run(
+        RunIngestRequest(
+            cwd=repo,
+            inputs=("https://example.test/retention",),
+            harness=HarnessKind.CODEX,
+        )
+    )
+
+    assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
+    assert "Retention Decisions" in adapter.requests[0].prompt
+    assert "Keep pricing context in the wiki." in adapter.requests[0].prompt
 
 
 def test_ingest_workflow_fails_run_when_harness_is_missing(
