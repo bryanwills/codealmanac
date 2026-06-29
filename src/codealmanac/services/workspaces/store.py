@@ -1,7 +1,9 @@
 import json
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from pydantic import TypeAdapter, ValidationError
 
@@ -57,18 +59,20 @@ def same_workspace(entry: WorkspaceRegistryEntry, workspace: Workspace) -> bool:
     return (
         entry.workspace_id == workspace.workspace_id
         or same_path(entry.path, workspace.root_path)
-        or entry.name == workspace.name
+        or entry.name.casefold() == workspace.name.casefold()
     )
 
 
 def write_entries(path: Path, entries: list[WorkspaceRegistryEntry]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     data = entries_adapter().dump_python(entries, mode="json")
-    temporary = path.with_name(
-        f"{path.name}.tmp-{int(datetime.now(UTC).timestamp())}"
-    )
+    temporary = temporary_registry_path(path)
     temporary.write_text(f"{json.dumps(data, indent=2)}\n", encoding="utf-8")
     temporary.replace(path)
+
+
+def temporary_registry_path(path: Path) -> Path:
+    return path.with_name(f".{path.name}.{uuid4().hex}.tmp")
 
 
 def parse_entries(text: str) -> list[WorkspaceRegistryEntry]:
@@ -103,8 +107,8 @@ def parse_entry(raw_entry: Any) -> WorkspaceRegistryEntry:
         raise ValidationFailed(message) from error
 
 
-def entries_adapter() -> TypeAdapter[list[WorkspaceRegistryEntry]]:
-    return TypeAdapter(list[WorkspaceRegistryEntry])
+def entries_adapter() -> TypeAdapter[Sequence[WorkspaceRegistryEntry]]:
+    return TypeAdapter(Sequence[WorkspaceRegistryEntry])
 
 
 def workspace_id_for_path(path: Path) -> str:

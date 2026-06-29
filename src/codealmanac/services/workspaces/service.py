@@ -5,7 +5,7 @@ from pathlib import Path
 from codealmanac.core.errors import ConflictError, NotFoundError, ValidationFailed
 from codealmanac.core.paths import nearest_almanac_root, normalize_path
 from codealmanac.core.slug import to_kebab_case
-from codealmanac.services.workspaces.models import Workspace
+from codealmanac.services.workspaces.models import Workspace, WorkspaceRegistryEntry
 from codealmanac.services.workspaces.requests import (
     RegisterWorkspaceRequest,
     SelectWorkspaceRequest,
@@ -88,14 +88,20 @@ def workspace_id_for(root_path: Path) -> str:
     return f"w_{digest}"
 
 
-def entry_by_workspace_id(selector: str, entries):
+def entry_by_workspace_id(
+    selector: str,
+    entries: list[WorkspaceRegistryEntry],
+) -> WorkspaceRegistryEntry | None:
     for entry in entries:
         if entry.workspace_id == selector:
             return entry
     return None
 
 
-def entry_by_name(selector: str, entries):
+def entry_by_name(
+    selector: str,
+    entries: list[WorkspaceRegistryEntry],
+) -> WorkspaceRegistryEntry | None:
     matches = [
         entry
         for entry in entries
@@ -108,7 +114,10 @@ def entry_by_name(selector: str, entries):
     return None
 
 
-def entry_by_path(request: SelectWorkspaceRequest, entries):
+def entry_by_path(
+    request: SelectWorkspaceRequest,
+    entries: list[WorkspaceRegistryEntry],
+) -> WorkspaceRegistryEntry | None:
     selector_path = explicit_selector_path(request)
     if selector_path is None:
         return None

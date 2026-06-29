@@ -22,6 +22,12 @@
 - Verified first scaffold with `uv run pytest`, `uv run ruff check .`,
   `uv run codealmanac --help`, and an isolated live `codealmanac init` plus
   `codealmanac list` smoke run.
+- Committed the first Python scaffold as `a803f63`.
+- Review pass tightened the workspace registry write path: temp files now use
+  unique same-directory names, duplicate workspace names compare
+  case-insensitively, and selector helpers have explicit registry-entry types.
+- Re-verified the review fix with `uv run pytest`, `uv run ruff check .`, and
+  an isolated live `codealmanac init` plus `codealmanac list` smoke run.
 
 ## Current Hypothesis
 

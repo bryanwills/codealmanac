@@ -16,7 +16,7 @@ means the goal remains active.
 | Integrations behind service ports | ownership map drafted | pending | Ports/adapters not implemented yet. |
 | Prompts/manual surfaces | pending | pending | Must avoid old npm prompt layout assumptions. |
 | Tests and live verification | pytest/ruff configured in `pyproject.toml` | `uv run pytest`, `uv run ruff check .`, `uv run codealmanac --help`, live temp `init`/`list` passed | Need broader live checks as commands land. |
-| Frequent review | pending | pending | Need code review checkpoints after meaningful slices. |
+| Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion | pending | Need tests/rg checks once CLI exists. |
 
 ## Gates For First Slice
@@ -24,6 +24,14 @@ means the goal remains active.
 | Gate | Command | 2026-06-29 result |
 |---|---|
 | Formatting/lint | `uv run ruff check .` | passed |
-| Tests | `uv run pytest` | 5 passed |
+| Tests | `uv run pytest` | 6 passed |
 | CLI import | `uv run codealmanac --help` | passed |
 | Live init smoke | `HOME=<tmp>/home uv run codealmanac init <temp repo>` | passed |
+
+## Gates For Slice-1 Review Fix
+
+| Gate | Command | 2026-06-29 result |
+|---|---|
+| Formatting/lint | `uv run ruff check .` | passed |
+| Tests | `uv run pytest` | 6 passed |
+| Live init/list smoke | isolated temp `codealmanac init` then `codealmanac list` | passed |

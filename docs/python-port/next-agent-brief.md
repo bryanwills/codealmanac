@@ -7,6 +7,7 @@ Updated: 2026-06-29
 - Goal is active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
 - Archive/docs baseline committed as `4520812`.
+- First Python scaffold committed as `a803f63`.
 - `docs/python-port-live-agreement.md` is the live contract.
 - `docs/reference/cosmic-python/` contains Markdown-only reference chapters.
 - Steering docs live in `docs/python-port/`.
@@ -27,16 +28,20 @@ Updated: 2026-06-29
   - `uv run ruff check .`
   - `uv run codealmanac --help`
   - isolated live `codealmanac init` and `codealmanac list`
+- Slice-1 review fix hardened workspace registry temp writes and passed:
+  - `uv run pytest`
+  - `uv run ruff check .`
+  - isolated live `codealmanac init` and `codealmanac list`
 
 ## Dirty/Staged Files
 
-At this checkpoint, the first Python scaffold files should be committed after
-`git diff --check`, `uv run pytest`, `uv run ruff check .`, and the live CLI
-smoke remain green.
+At this checkpoint, only the slice-1 review fix should be dirty until it is
+committed. Re-run `git diff --check`, `uv run pytest`, `uv run ruff check .`,
+and the live CLI smoke before committing.
 
 ## Next Move
 
-1. Commit the first Python scaffold if it is still unstaged/uncommitted.
+1. Commit the slice-1 review fix if it is still unstaged/uncommitted.
 2. Start the SQLite read-model slice: `database/`, `wiki` page parsing,
    `index` service, and `search`/`show` commands.
 3. Add focused service/store tests before broad CLI tests.
