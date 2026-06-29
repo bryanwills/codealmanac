@@ -534,6 +534,10 @@
   and prefers role-bearing files. Dogfood against `src/codealmanac/` now keeps
   the changed filesystem files first and then includes service/workflow groups
   instead of spending the bound on shallow package files.
+- Added slice-45 viewer renderer token-safety tests. The local viewer rewrites
+  wikilinks through `markdown-it-py` tokens, touches only inline text tokens,
+  leaves inline/fenced code untouched, and relies on renderer escaping for link
+  labels.
 
 ## Current Hypothesis
 
@@ -582,13 +586,14 @@ runtime now receives configured wiki-root ignore policy from Ingest rather than
 guessing root names inside the filesystem adapter. Scheduled sync now remains
 ordinary foreground sync but carries explicit unattended policy from automation
 into the workflow request and durable ledger. Clean directory runtime now uses
-adapter-local diversity selection before any future recency machinery.
+adapter-local diversity selection before any future recency machinery. Viewer
+wikilink rendering is now covered as a token-stream rewrite rather than a raw
+HTML/string rewrite.
 
 ## Next Hypothesis
 
 The next high-pressure product slice is not another root or sync migration.
 Scheduled update checks should wait for real non-editable install dogfood. The
 remaining source-runtime pressure is now real-repo dogfood for the diversity
-policy rather than a missing v1 mechanism. The remaining serve risks are
-markdown wikilink rewriting inside code spans and browser-harness verification
-once Chrome allows remote debugging.
+policy rather than a missing v1 mechanism. The remaining serve risk is
+browser-harness verification once Chrome allows remote debugging.

@@ -174,7 +174,9 @@ executes the chosen command.
 `file` verb delegates to the index's mentions query and returns matching wiki
 pages. It must not read repo source contents directly or reuse source runtime
 adapters; selected source material belongs to lifecycle workflows, while viewer
-file routes are graph-navigation routes.
+file routes are graph-navigation routes. `services/viewer/renderer.py` owns
+Markdown rendering and token-level wikilink rewriting for the local viewer; it
+rewrites text inline tokens and leaves code tokens untouched.
 
 `manual/` is a support package rather than a product service. `ManualLibrary`
 loads bundled Markdown resources, installs missing files into

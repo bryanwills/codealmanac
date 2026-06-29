@@ -1051,6 +1051,33 @@ Follow-up test:
 If a real clean repo still misses the right files, add a failing source-runtime
 dogfood case before adding recency or repository-specific ranking.
 
+## 2026-06-29 - Viewer Wikilinks Are Token Rewrites
+
+Old hypothesis:
+The local viewer still had a risk that wikilink rewriting might affect code
+spans or fenced code blocks.
+
+New hypothesis:
+The renderer should treat Markdown parsing as the boundary. `markdown-it-py`
+parses the page into tokens, and CodeAlmanac rewrites only inline `text`
+tokens. Inline code and fenced code remain raw wiki source text, while link
+labels are rendered as escaped text.
+
+Evidence that forced the change:
+The current `MarkdownRenderer` already used `MarkdownIt("commonmark")` and
+rewrote child tokens only when `token.type == "inline"`. Focused renderer
+tests now prove `[[inline-code]]` and fenced `[[fenced-code]]` do not become
+links, while a normal text `[[page-link]]` does.
+
+Code or product assumption affected:
+`services/viewer/renderer.py` is the sole owner of local viewer Markdown
+rendering and wikilink token rewriting. The server adapter and viewer service
+do not perform string-level HTML rewrites.
+
+Follow-up test:
+If future Markdown extensions add new inline token types, extend renderer tests
+before changing the rewrite logic.
+
 ## 2026-06-29 - SQLite Mechanics Belong In Database Package
 
 Old hypothesis:

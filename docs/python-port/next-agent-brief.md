@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-43): add scheduled sync retry policy`.
+- Latest committed implementation slice: `feat(slice-45): lock viewer wikilink token safety`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -33,6 +33,9 @@ Updated: 2026-06-29
 - The local viewer now exposes `/api/file?path=...` and frontend
   `#/file/<path>` for wiki file/folder reference navigation. It lists pages
   mentioning the reference and does not read repo source contents.
+- Viewer Markdown rendering uses `markdown-it-py` token streams. Wikilink
+  rewriting touches inline text tokens only; inline code and fenced code remain
+  source text, and link labels are escaped by the renderer.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -311,6 +314,16 @@ Behavior:
   `main.py` rank ahead of generic source files inside a group
 - Git directory metadata now reports `selection_policy: changed_then_diverse`
 
+Slice 45 locks viewer wikilink token safety.
+
+Behavior:
+
+- `MarkdownRenderer` parses CommonMark with `markdown-it-py`
+- wikilink rewriting only rewrites inline child tokens with type `text`
+- inline code and fenced code containing `[[...]]` remain code text
+- wikilink labels render through text tokens, so HTML in labels is escaped
+- server and viewer service layers do not perform raw HTML string rewrites
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -362,6 +375,8 @@ Behavior:
 - Slice 44 focused filesystem selection/runtime tests, full pytest, full ruff,
   diff check, package build, and source-runtime dogfood against
   `src/codealmanac/`
+- Slice 45 focused viewer renderer/service/server tests, full pytest, full
+  ruff, diff check, package build, and renderer dogfood snippet
 
 ## Next Move
 
