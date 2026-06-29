@@ -10,7 +10,7 @@ means the goal remains active.
 | Fresh Python codebase | `pyproject.toml`, `src/codealmanac/`, `tests/` | `uv run pytest`, `uv run ruff check .` passed on 2026-06-29 | Lifecycle services remain pending. |
 | Based on live agreement | `docs/python-port-live-agreement.md`, `src/codealmanac/app.py`, service/workflow packages | tests exercise CLI -> app -> services/workflows over local `.almanac/` | Need future architecture tests as more services appear. |
 | Cosmic Python actively considered | `docs/reference/cosmic-python/`, `docs/python-port/`, composition root, service-layer tests, store boundary | tests call workflow/service and CLI surfaces instead of private helpers; Relayforge Discord checkpoint sent | Need deeper transaction/freshness review before lifecycle writes. |
-| CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete` passed on 2026-06-29 | Many planned commands remain pending. |
+| CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `build`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete`, `reindex` passed on 2026-06-29 | Many planned commands remain pending. |
 | SQLite-backed wiki/index behavior | `services/index`, `services/wiki`, `services/search`, `services/pages` | parser/index/search/show tests, stale-schema regression, isolated live smoke, dogfood search | Index currently rebuilds on every read command; optimize after review or real perf pressure. |
 | Workflows: build, ingest, sync, garden | pending | pending | Not scaffolded. |
 | Integrations behind service ports | ownership map drafted | pending | Ports/adapters not implemented yet. |
@@ -112,3 +112,13 @@ means the goal remains active.
 | Isolated live topic rewrite | temp repo `topics rename`, `topics show`, `topics delete`, `topics show`, `cat page` | passed |
 | CLI help | `uv run codealmanac topics --help` | passed with `rename` and `delete` |
 | Dogfood topics read | `uv run codealmanac topics show cli --descendants` | passed |
+
+## Gates For Slice 7 Build And Reindex
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Formatting/lint | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run ruff check .` | passed |
+| Tests | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest` | 42 passed |
+| Diff hygiene | `git diff --check` | passed |
+| Isolated live maintenance | temp repo `build`, write page, `reindex`, `search`, `--help` via `uv --project /Users/rohan/Desktop/Projects/codealmanac run ...` | passed |
+| CLI help | `uv run codealmanac --help` | passed with `build` and `reindex` |

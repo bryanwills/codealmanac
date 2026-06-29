@@ -231,6 +231,7 @@ codealmanac topics
 codealmanac health
 codealmanac serve
 codealmanac build
+codealmanac reindex
 codealmanac ingest <inputs...>
 codealmanac sync
 codealmanac sync status
@@ -254,6 +255,9 @@ There is no public `capture` verb. Conversation collection is part of `sync` or
 a future explicit local source workflow.
 
 There is no public `absorb` command. The public lifecycle word is `ingest`.
+
+`codealmanac reindex` is the explicit escape hatch for rebuilding the derived
+SQLite read model. Query commands may refresh the index implicitly and silently.
 
 CLI commands are not internal APIs. Automation, workers, tests, and future
 server wrappers must call the same Python services/workflows that CLI dispatch

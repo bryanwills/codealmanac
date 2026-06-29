@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
@@ -17,3 +19,8 @@ class SearchIndexRequest(CodeAlmanacModel):
         if value is not None and value < 0:
             raise ValueError("limit must be non-negative")
         return value
+
+
+class ReindexRequest(CodeAlmanacModel):
+    cwd: Path
+    wiki: str | None = None

@@ -6,8 +6,9 @@ from codealmanac.services.index.models import (
     TopicDetail,
     TopicSummary,
 )
-from codealmanac.services.index.requests import SearchIndexRequest
+from codealmanac.services.index.requests import ReindexRequest, SearchIndexRequest
 from codealmanac.services.index.store import IndexStore
+from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
 
 
@@ -19,6 +20,15 @@ class IndexService:
     def ensure_fresh(self, workspace_id: str) -> IndexRefreshResult:
         workspace = self.workspaces.get(workspace_id)
         return self.store.rebuild(workspace.almanac_path)
+
+    def reindex(self, request: ReindexRequest) -> IndexRefreshResult:
+        if request.wiki is None:
+            workspace = self.workspaces.resolve(request.cwd)
+        else:
+            workspace = self.workspaces.select(
+                SelectWorkspaceRequest(selector=request.wiki, base_path=request.cwd)
+            )
+        return self.ensure_fresh(workspace.workspace_id)
 
     def search(
         self,

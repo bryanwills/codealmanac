@@ -39,6 +39,62 @@ def test_cli_list_outputs_registered_wikis(
     assert captured.out == f"repo\t{repo}\n"
 
 
+def test_cli_build_and_reindex_commands(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    assert main(["build", str(repo)]) == 0
+    build_output = capsys.readouterr()
+    assert build_output.out == "built repo: 1 page (1 updated, 0 removed)\n"
+    assert (repo / ".almanac/index.db").is_file()
+
+    (repo / ".almanac/pages/note.md").write_text(
+        "# Note\n\nReindexNeedle.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(repo)
+
+    assert main(["reindex"]) == 0
+    reindex_output = capsys.readouterr()
+    assert reindex_output.out == "reindexed: 2 pages (2 updated, 0 removed)\n"
+
+    assert main(["reindex", "--json"]) == 0
+    json_output = capsys.readouterr()
+    assert '"pages_indexed": 2' in json_output.out
+
+
+def test_cli_reindex_can_target_registered_wiki(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+
+    assert main(["build", str(first), "--name", "first"]) == 0
+    capsys.readouterr()
+    assert main(["build", str(second), "--name", "second"]) == 0
+    capsys.readouterr()
+    (first / ".almanac/pages/remote.md").write_text(
+        "# Remote\n\nTargeted reindex.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(second)
+
+    assert main(["reindex", "--wiki", "first"]) == 0
+
+    output = capsys.readouterr()
+    assert output.out == "reindexed: 2 pages (2 updated, 0 removed)\n"
+
+
 def test_cli_search_and_show_read_current_repo_wiki(
     tmp_path: Path,
     isolated_home: Path,

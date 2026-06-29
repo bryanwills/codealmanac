@@ -49,6 +49,22 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     assert readme.read_text(encoding="utf-8") == "user edit\n"
 
 
+def test_build_refreshes_wiki_and_rebuilds_index(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+
+    result = app.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+
+    assert result.workspace.name == "repo"
+    assert result.index.pages_indexed == 1
+    assert result.index.files_seen == 1
+    assert (repo / ".almanac/index.db").is_file()
+
+
 def test_workspace_selection_supports_name_id_and_path(
     tmp_path: Path,
     isolated_home: Path,

@@ -90,18 +90,27 @@
 - Verified slice 6 with 39 passing tests, ruff, `git diff --check`, isolated
   live topic rename/delete/show, CLI help, and dogfood
   `codealmanac topics show cli --descendants` in this repo.
+- Read Cosmic Python chapter 12 on CQRS and sent a Relayforge Discord
+  checkpoint. The applied lesson: committed markdown is the write-side truth,
+  `.almanac/index.db` is a derived read model, and `reindex` is an explicit
+  command that mutates only that projection.
+- Added slice-7 local maintenance commands: `build` and `reindex`. `build`
+  refreshes deterministic wiki scaffold files, registers the workspace, and
+  rebuilds the SQLite projection. `reindex` forces a full projection rebuild
+  and supports JSON output.
+- Verified slice 7 with 42 passing tests, ruff, `git diff --check`, isolated
+  live build/reindex/search/help, and top-level `codealmanac --help` in this
+  repo.
 
 ## Current Hypothesis
 
 The read and organization paths now cover the main local wiki management loop:
 search/show, topic reads, health, tag/untag, and topic DAG mutation including
-rename/delete. The next pressure should move toward explicit public lifecycle
-surface (`build`, `reindex`, then `serve` or `doctor`) before AI lifecycle
-commands.
+rename/delete, plus explicit `build` and `reindex`. The next pressure should
+move toward `serve` or `doctor` before AI lifecycle commands.
 
 ## Next Hypothesis
 
-The next slice should restore an explicit local `build` or `reindex` command.
-`build` already exists as a workflow behind `init`, but the public CLI contract
-still lists it as a first-class command. Lifecycle AI commands should wait until
-the public local maintenance surface is coherent.
+The next slice should probably add `doctor` or `serve`. `doctor` is a smaller
+local diagnostic surface over the same services; `serve` adds a human reader and
+will require a careful framework/library choice plus browser verification.

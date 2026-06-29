@@ -37,7 +37,7 @@ def create_app(config: AppConfig | None = None) -> CodeAlmanac:
     topics = TopicsService(workspaces, index)
     health = HealthService(workspaces, index)
     tagging = TaggingService(pages)
-    build = BuildWorkflow(workspaces, wiki)
+    build = BuildWorkflow(workspaces, wiki, index)
     return CodeAlmanac(
         workspaces=workspaces,
         wiki=wiki,

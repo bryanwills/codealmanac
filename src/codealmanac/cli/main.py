@@ -12,11 +12,13 @@ from codealmanac.core.errors import CodeAlmanacError
 from codealmanac.services.health.requests import HealthCheckRequest
 from codealmanac.services.index.models import (
     HealthReport,
+    IndexRefreshResult,
     PageView,
     SearchPageResult,
     TopicDetail,
     TopicSummary,
 )
+from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.search.requests import SearchPagesRequest
 from codealmanac.services.tagging.models import TaggingResult
@@ -62,6 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("path", nargs="?", default=".")
     init.add_argument("--name")
     init.add_argument("--description", default="")
+
+    build = subcommands.add_parser("build", help="build or refresh a local wiki")
+    build.add_argument("path", nargs="?", default=".")
+    build.add_argument("--name")
+    build.add_argument("--description", default="")
 
     subcommands.add_parser("list", help="list registered local wikis")
 
@@ -121,6 +128,10 @@ def build_parser() -> argparse.ArgumentParser:
     health.add_argument("--wiki")
     health.add_argument("--json", action="store_true")
 
+    reindex = subcommands.add_parser("reindex", help="force a full index rebuild")
+    reindex.add_argument("--wiki")
+    reindex.add_argument("--json", action="store_true")
+
     tag = subcommands.add_parser("tag", help="add topics to a page")
     tag.add_argument("slug")
     tag.add_argument("topics", nargs="+")
@@ -149,6 +160,16 @@ def dispatch(args: argparse.Namespace) -> int:
             f"(registry: {app.workspaces.store.path})",
             file=sys.stderr,
         )
+        return 0
+    if args.command == "build":
+        result = app.build.build(
+            InitializeWorkspaceRequest(
+                path=Path(args.path),
+                name=args.name,
+                description=args.description,
+            )
+        )
+        render_build(result.workspace.name, result.index)
         return 0
     if args.command == "list":
         for workspace in app.workspaces.list():
@@ -259,6 +280,10 @@ def dispatch(args: argparse.Namespace) -> int:
         report = app.health.check(HealthCheckRequest(cwd=Path.cwd(), wiki=args.wiki))
         render_health(report, json_output=args.json)
         return 0
+    if args.command == "reindex":
+        result = app.index.reindex(ReindexRequest(cwd=Path.cwd(), wiki=args.wiki))
+        render_reindex(result, json_output=args.json)
+        return 0
     if args.command == "tag":
         result = app.tagging.tag(
             TagPageRequest(
@@ -294,6 +319,27 @@ def render_search(rows: tuple[SearchPageResult, ...], json_output: bool) -> None
         return
     for row in rows:
         print(row.slug)
+
+
+def render_build(workspace_name: str, result: IndexRefreshResult) -> None:
+    print(f"built {workspace_name}: {index_summary(result)}")
+
+
+def render_reindex(result: IndexRefreshResult, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+        return
+    print(f"reindexed: {index_summary(result)}")
+
+
+def index_summary(result: IndexRefreshResult) -> str:
+    skip_suffix = (
+        f"; {result.files_skipped} skipped" if result.files_skipped > 0 else ""
+    )
+    return (
+        f"{result.pages_indexed} {page_word(result.pages_indexed)} "
+        f"({result.changed} updated, {result.removed} removed{skip_suffix})"
+    )
 
 
 def render_page(page: PageView, args: argparse.Namespace) -> None:
