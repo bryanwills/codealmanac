@@ -6,8 +6,8 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice:
-  `feat(slice-56): refresh public README`.
+- Latest implementation slice:
+  slice 57 real Codex ingest dogfood and prompt/manual link-contract fix.
 - Latest committed product-direction slice: `docs: record viewer design correction`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
@@ -98,6 +98,12 @@ Updated: 2026-06-29
   `codealmanac`, default `almanac/`, local install, local read commands,
   lifecycle commands, sync, automation, jobs, providers, configuration, and the
   no-hosted/no-alias public contract.
+- Slice 57 real Codex ingest dogfood passed through `IngestWorkflow` and
+  `CodexCliHarnessAdapter` in isolated temp repos. The first run exposed broken
+  page links from over-eager entity wikilinking; prompt/manual guidance now
+  says page links must resolve. A second real Codex run on the same source
+  shape produced a page with no broken links. Starter scaffold topics were
+  narrowed so fresh init no longer creates empty-topic health noise.
 - The manual surface is a support package, not a public command. `ManualLibrary`
   reads `src/codealmanac/manual/*.md`, `build`/`init` copy missing docs into
   the configured root's `manual/`, prompts tell lifecycle agents to read those
@@ -501,12 +507,15 @@ Behavior:
 - Slice 56 focused public-contract tests, focused ruff, full pytest, full ruff,
   diff check, package build, wheel metadata inspection, and clean wheel install
   CLI dogfood
+- Slice 57 focused prompt/manual/build tests, two real Codex ingest dogfood
+  runs, and health checks showing the prompt fix removed broken page links
 
 ## Next Move
 
 1. Likely next pressure points:
-   - clean-install and real lifecycle dogfood against
+   - real Claude lifecycle dogfood against
      `docs/python-port/public-release-readiness.md`
+   - real sync proof against a local transcript, including second-run skip
    - more lifecycle dogfood for prompt quality and real project behavior; add
      source-runtime ranking/recency only after a failing case proves current
      diversity is insufficient

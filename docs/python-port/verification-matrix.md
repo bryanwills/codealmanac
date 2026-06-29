@@ -716,3 +716,15 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice56`; wheel metadata/package-data inspection | passed; README metadata, license file, server assets, manual files, and prompts present |
 | Clean wheel install dogfood | isolated temp venv and `HOME`; install built wheel; installed `codealmanac --help`, `init`, `search`, `show`, `health --json`, `jobs`, and `serve` `/api/overview` | passed; temp repo initialized, search found `getting-started`, viewer returned workspace `repo` with one page |
+
+## Gates For Slice 57 Real Codex Ingest Dogfood
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| First real Codex ingest dogfood | service-level temp repo, temp registry, real `CodexCliHarnessAdapter`, source `notes/auth-boundary.md` | passed mechanically; created `almanac/pages/auth-billing-boundary.md`, preserved non-wiki files, and recorded jobs log output, but health reported broken `workos` and `autumn` page links |
+| Prompt/manual link contract tests | `uv run pytest tests/test_prompts.py tests/test_manual.py tests/test_ingest_workflow.py::test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index` | 8 passed |
+| Second real Codex ingest dogfood | service-level temp repo after prompt/manual fix, real `CodexCliHarnessAdapter`, same source shape | passed; created `almanac/pages/auth-membership-boundary.md`, `search auth` returned the page, jobs log recorded provider output, and health had no broken links |
+| Starter health guard | `uv run pytest tests/test_build_workflow.py::test_initialize_starter_wiki_has_no_health_noise tests/test_build_workflow.py::test_initialize_creates_almanac_wiki_and_registry tests/test_prompts.py tests/test_manual.py tests/test_ingest_workflow.py::test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index` | 10 passed |
+| Full tests | `uv run pytest` | 239 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

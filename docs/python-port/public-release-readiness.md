@@ -4,9 +4,10 @@ Date: 2026-06-29
 
 ## Current Read
 
-CodeAlmanac is usable as an internal local alpha. It is not public-release
-ready until the gates below pass from a clean install and at least one real
-repo dogfood run.
+CodeAlmanac is usable as an internal local alpha. Clean wheel install and real
+Codex ingest now have dogfood evidence. It is not public-release ready until
+real sync, real Claude ingest, final viewer browser proof, and release-package
+rehearsal also pass.
 
 The main remaining work is release proof, prompt quality, and real-world
 dogfood. More generic architecture seams are diminishing returns unless a gate
@@ -37,10 +38,22 @@ below exposes a boundary problem.
 - Do not add a source pool or candidate object without a concrete product
   workflow that needs it.
 
+## Evidence So Far
+
+- Slice 56 passed clean wheel install from a built wheel, package metadata and
+  package-data inspection, public README contract tests, and local read/viewer
+  smoke checks.
+- Slice 57 passed real Codex ingest through `IngestWorkflow` and
+  `CodexCliHarnessAdapter` in an isolated temp repo. The first run exposed
+  broken page links from over-eager entity wikilinking. Prompt/manual guidance
+  now forbids unresolved page links, and the second real Codex run produced a
+  health-clean page for the same source shape.
+- Slice 57 also removed default empty-topic health noise from newly initialized
+  starter wikis.
+
 ## Next Useful Pressure Tests
 
-1. Clean install dogfood from a built wheel.
-2. Real Codex ingest on this repo or another messy repo.
-3. Real Claude ingest on a small repo.
-4. Browser-harness pass over `serve` after any viewer copy or layout changes.
-5. Wheel metadata/package-data inspection before any publish attempt.
+1. Real Claude ingest on a small repo.
+2. Real sync against a local transcript, then second-run skip proof.
+3. Browser-harness pass over `serve` after the latest viewer/static package.
+4. Final wheel/sdist install rehearsal before any publish attempt.

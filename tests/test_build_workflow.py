@@ -5,6 +5,7 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.services.health.requests import HealthCheckRequest
 from codealmanac.services.workspaces.models import WorkspaceRegistryStatus
 from codealmanac.services.workspaces.requests import (
     DropWorkspaceRequest,
@@ -34,6 +35,22 @@ def test_initialize_creates_almanac_wiki_and_registry(
     gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert gitignore_lines.count("almanac/index.db") == 1
     assert app.workspaces.list()[0].description == "test wiki"
+
+
+def test_initialize_starter_wiki_has_no_health_noise(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+
+    report = app.health.check(HealthCheckRequest(cwd=repo))
+
+    assert report.empty_topics == ()
+    assert report.broken_links == ()
+    assert report.dead_refs == ()
 
 
 def test_initialize_supports_configured_almanac_root(

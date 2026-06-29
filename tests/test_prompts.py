@@ -9,6 +9,7 @@ def test_prompt_renderer_composes_packaged_sections_with_context():
         RenderPromptRequest(
             sections=(
                 PromptName.BASE_PURPOSE,
+                PromptName.BASE_SYNTAX,
                 PromptName.OPERATION_GARDEN,
             ),
             context=("Runtime context:\n{}",),
@@ -20,6 +21,8 @@ def test_prompt_renderer_composes_packaged_sections_with_context():
     assert "Runtime context:" in prompt
     assert "\n\n---\n\n" in prompt
     assert "public command and product name is `codealmanac`" in prompt
+    assert "Page wikilinks must resolve" in prompt
+    assert "broken `[[...]]` link" in prompt
 
 
 def test_prompt_renderer_requires_sections():

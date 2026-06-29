@@ -671,6 +671,14 @@ mislead Python users. `README.md` now documents the Python `codealmanac` local
 surface, `pyproject.toml` declares the README and license file, public-contract
 tests guard the README against stale install language, and
 `docs/python-port/public-release-readiness.md` names the release gate.
+Slice 57 runs real Codex ingest dogfood through the Python service layer. The
+first run proved the workflow, mutation safety, search/show, and jobs log path
+with `CodexCliHarnessAdapter`, but `health` caught broken `[[workos]]` and
+`[[autumn]]` page links. The fix stayed at the prompt/manual contract: page
+wikilinks must resolve, and entity names stay plain text unless a real page
+exists or is created in the same run. A second real Codex run on the same
+source shape produced a health-clean page. The slice also removes predefined
+empty scaffold topics so fresh init does not start with health noise.
 
 ## Next Hypothesis
 
@@ -693,7 +701,7 @@ After slice 55, the next Codex harness pressure is event completeness, not
 parity for its own sake. `codex exec` remains a one-shot writer transport;
 Codex app-server belongs back on the table when jobs need normalized text,
 tool, usage, actor, or root-turn events from the run itself.
-After slice 56, public release should be measured against
-`docs/python-port/public-release-readiness.md`: clean wheel install, real
-Codex/Claude lifecycle dogfood, sync proof, viewer browser proof, package-data
-inspection, and prompt-quality review.
+After slice 57, public release should be measured against
+`docs/python-port/public-release-readiness.md`: real Claude lifecycle dogfood,
+sync proof, viewer browser proof, final package rehearsal, and prompt-quality
+review from more than one real source shape.

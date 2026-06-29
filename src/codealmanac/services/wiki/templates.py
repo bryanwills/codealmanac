@@ -45,18 +45,6 @@ def starter_topics_yaml() -> str:
     title: Concepts
     description: Core vocabulary and mental models for this codebase
     parents: []
-  - slug: architecture
-    title: Architecture
-    description: System structure, boundaries, and runtime flows
-    parents: []
-  - slug: decisions
-    title: Decisions
-    description: Accepted choices and the reasoning behind them
-    parents: []
-  - slug: operations
-    title: Operations
-    description: Commands, maintenance, deployment, and recurring workflows
-    parents: []
 """
 
 

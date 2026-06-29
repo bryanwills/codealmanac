@@ -22,3 +22,7 @@ buried.
 Use `[[page-slug]]` links for subjects a reader may follow. Use
 `[[src/path.py]]` and `[[src/path/]]` references when a page should be found by
 file-aware search.
+
+Page links are for real wiki nodes, not automatic entity markup. Link only to
+an existing page or a page created in the same run. If the subject is useful
+but does not yet deserve a page, mention it as plain text.

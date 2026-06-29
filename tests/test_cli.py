@@ -369,7 +369,7 @@ def test_cli_doctor_reports_local_state(
     assert "manual: 8 bundled docs" in output.out
     assert "manual: 8 docs" in output.out
     assert f"repo: {repo}\n" in output.out
-    assert "index: 1 page, 4 topics" in output.out
+    assert "index: 1 page, 1 topic" in output.out
 
 
 def test_cli_doctor_reports_manual_drift(

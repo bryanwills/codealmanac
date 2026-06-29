@@ -1426,3 +1426,31 @@ Follow-up test:
 Do not add automatic pruning to `search`, `show`, `serve`, `doctor`, or plain
 `list`. Add richer registry filtering only if real local wiki management
 requires it.
+
+## 2026-06-29 - Real Dogfood Tests Writing Contracts
+
+Old hypothesis:
+The next public-release pressure might expose a missing workflow seam or a
+need to port Codex app-server sooner.
+
+New hypothesis:
+The current service-layer seam is holding. Real lifecycle dogfood is more
+likely to expose prompt/manual writing-contract gaps than missing orchestration
+machinery.
+
+Evidence that forced the change:
+A real `CodexCliHarnessAdapter` ingest run created a useful page under
+`almanac/pages/`, preserved non-wiki files, produced readable `jobs logs`, and
+was queryable through search/show. The concrete failure was that the writer
+used `[[workos]]` and `[[autumn]]` as page links for entities that had no
+pages. Health caught this as broken links.
+
+Code or product assumption affected:
+The fix belongs in packaged prompts and manual doctrine, not in workflow code.
+Page wikilinks are real graph edges. They must target existing pages or pages
+created in the same run. Entity names without pages stay plain text.
+
+Follow-up test:
+Keep real provider dogfood in the release gate. Add orchestration only when a
+real run fails because the service boundary cannot express the needed product
+operation.

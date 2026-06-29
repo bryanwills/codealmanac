@@ -21,6 +21,9 @@ def test_manual_library_reads_all_bundled_documents():
     assert "configured Almanac root" in ManualLibrary().read(
         ManualReadRequest(document=ManualDocumentName.README)
     ).body
+    assert "Page links are for real wiki nodes" in ManualLibrary().read(
+        ManualReadRequest(document=ManualDocumentName.PAGES)
+    ).body
 
 
 def test_manual_read_request_requires_known_document():
