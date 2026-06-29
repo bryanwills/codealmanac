@@ -1288,3 +1288,30 @@ Use an isolated temporary Chrome profile with explicit `BU_CDP_URL` for future
 browser-harness checks if the default Chrome profile requests the manual
 remote-debugging Allow click. Do not add React, Next.js, or Vite unless the
 static viewer stops fitting real UI complexity.
+
+## 2026-06-29 - Manual Drift Is Diagnostic, Not Self-Healing
+
+Old hypothesis:
+The manual package update debt might need a command or build-time overwrite
+policy once bundled doctrine changes.
+
+New hypothesis:
+Report drift through `doctor` first. A complete workspace manual that differs
+from bundled package docs is review work, not an automatic mutation target.
+
+Evidence that forced the change:
+`<almanac-root>/manual/` is repo-owned text that agents read before changing
+wiki pages. The tool cannot distinguish an intentional local edit from an older
+bundled copy without adding a baseline store, and slice 34 explicitly preserved
+local manual edits during build/init.
+
+Code or product assumption affected:
+`ManualLibrary.workspace_status(...)` now reports changed files alongside
+missing files. `DiagnosticsService` treats missing manual files as a problem
+fixed by `codealmanac build`, but changed files as informational drift with an
+explicit review message. There is still no public `manual` command.
+
+Follow-up test:
+Only add replacement machinery if users need a real workflow for accepting
+package manual updates. That workflow must preserve local edits explicitly
+instead of making `build` destructive.

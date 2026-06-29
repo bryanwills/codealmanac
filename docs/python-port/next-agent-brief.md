@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-51): polish serve shell`.
+- Latest committed implementation slice: `feat(slice-52): report manual drift`.
 - Latest committed product-direction slice: `docs: record viewer design correction`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -93,7 +93,9 @@ Updated: 2026-06-29
 - The manual surface is a support package, not a public command. `ManualLibrary`
   reads `src/codealmanac/manual/*.md`, `build`/`init` copy missing docs into
   the configured root's `manual/`, prompts tell lifecycle agents to read those
-  docs, and `doctor` checks package/workspace manual readiness.
+  docs, and `doctor` checks package/workspace manual readiness. Slice 52 adds
+  drift diagnostics: complete manual files that differ from bundled docs are
+  reported as informational review work, not overwritten by build/init.
 - Foreground `sync` writes a durable pending ledger claim before invoking
   Ingest, skips active pending transcript ranges, reports stale pending ranges
   as needs-attention, stores linked run ids plus cursor snapshots, reconciles
@@ -462,6 +464,11 @@ Behavior:
 - Slice 50 focused read-view tests, focused index lint, temp-repo CLI read
   dogfood, full pytest, full ruff, diff check, package build, and wheel
   inspection
+- Slice 51 focused serve/static tests, full pytest, full ruff, diff check,
+  package build, static/API serve dogfood, and browser-harness desktop/mobile
+  verification through an isolated Chrome profile
+- Slice 52 focused manual/diagnostics/CLI tests, focused ruff, full pytest,
+  full ruff, diff check, package build, and manual-drift doctor dogfood
 
 ## Next Move
 
@@ -472,9 +479,9 @@ Behavior:
    - serve polish after product review; slice 51 browser-verified the sidebar
      shell through an isolated temporary Chrome profile, while default-profile
      Chrome remote debugging still needs the manual Allow click
-   - manual update/sync policy only if bundled doctrine must update existing
-     workspace manual files; ordinary build/init currently copies missing files
-     only
+   - manual replacement policy only if users need a workflow for accepting
+     bundled doctrine changes; doctor now reports drift, while build/init still
+     copy missing files only
    - index refresh cost only after large-repo dogfood proves source-signature
      parsing is too slow; slice 50 split read views but did not optimize refresh
 2. Do not add hosted CLI, login/connect/upload, MCP, SDK, public `capture`,

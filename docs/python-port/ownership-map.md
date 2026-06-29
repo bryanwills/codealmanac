@@ -195,9 +195,11 @@ validation and delivery of nested package assets through `/assets/{path}`.
 
 `manual/` is a support package rather than a product service. `ManualLibrary`
 loads bundled Markdown resources, installs missing files into
-`<almanac-root>/manual/`, and reports workspace manual completeness. `app.py`
-constructs it once and injects it into `WikiService` and `DiagnosticsService`.
-There is no public `manual` command in v1.
+`<almanac-root>/manual/`, and reports workspace manual completeness plus exact
+differences from bundled docs. `app.py` constructs it once and injects it into
+`WikiService` and `DiagnosticsService`. There is no public `manual` command in
+v1. Manual drift is diagnostic: `doctor` can ask the user to review changed
+files, but build/init do not overwrite local manual edits.
 
 ## First Slice Boundary
 

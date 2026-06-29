@@ -110,8 +110,27 @@ class DiagnosticsService:
         )
 
     def _manual_workspace_check(self, workspace: Workspace) -> DoctorCheck:
-        status = self.manual.workspace_status(workspace.almanac_path / "manual")
+        try:
+            status = self.manual.workspace_status(workspace.almanac_path / "manual")
+        except CodeAlmanacError as error:
+            return DoctorCheck(
+                key="wiki.manual",
+                status=DoctorStatus.PROBLEM,
+                message=f"manual unavailable: {first_line(str(error))}",
+                fix="run: codealmanac build",
+            )
         if status.complete:
+            if len(status.changed) > 0:
+                changed = ", ".join(status.changed)
+                return DoctorCheck(
+                    key="wiki.manual",
+                    status=DoctorStatus.INFO,
+                    message=f"manual differs: {changed}",
+                    fix=(
+                        "review local manual files; "
+                        "codealmanac build preserves existing files"
+                    ),
+                )
             return DoctorCheck(
                 key="wiki.manual",
                 status=DoctorStatus.OK,

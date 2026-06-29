@@ -61,15 +61,24 @@ class ManualLibrary:
 
     def workspace_status(self, target_path: Path) -> ManualWorkspaceStatus:
         expected = tuple(document.value for document in MANUAL_DOCUMENTS)
-        present = tuple(
-            document.value
-            for document in MANUAL_DOCUMENTS
-            if (target_path / document.value).is_file()
-        )
+        present: list[str] = []
+        changed: list[str] = []
+        try:
+            for document in MANUAL_DOCUMENTS:
+                workspace_file = target_path / document.value
+                if not workspace_file.is_file():
+                    continue
+                present.append(document.value)
+                bundled = files(MANUAL_PACKAGE).joinpath(document.value).read_bytes()
+                if workspace_file.read_bytes() != bundled:
+                    changed.append(document.value)
+        except OSError as error:
+            raise ValidationFailed(f"cannot inspect manual files: {error}") from error
         missing = tuple(document for document in expected if document not in present)
         return ManualWorkspaceStatus(
             target_path=target_path,
             expected=expected,
-            present=present,
+            present=tuple(present),
             missing=missing,
+            changed=tuple(changed),
         )

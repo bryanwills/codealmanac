@@ -655,3 +655,15 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice51-final`; wheel inspection | passed; wheel includes updated viewer assets, no `clamp(` or `vw`, `repo-owned wiki`, and `dataset.railKind` |
 | Browser-harness visual dogfood | isolated temporary Chrome profile with explicit `BU_CDP_URL`; live temp `serve`; overview/page/topic/search route checks; 390px mobile page route check | passed; sidebar-first shell rendered, page/topic/search active states were correct, file refs were visible, dense mobile rail and side panel collapsed, search fit viewport, and no horizontal overflow appeared |
+
+## Gates For Slice 52 Manual Drift Diagnostics
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused manual/doctor/CLI tests | `uv run pytest tests/test_manual.py tests/test_diagnostics.py tests/test_cli.py::test_cli_doctor_reports_manual_drift -q` | 9 passed |
+| Focused manual/doctor lint | `uv run ruff check src/codealmanac/manual src/codealmanac/services/diagnostics tests/test_manual.py tests/test_diagnostics.py tests/test_cli.py` | passed |
+| Full tests | `uv run pytest` | 229 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice52`; wheel inspection | passed; wheel includes manual library/model modules and bundled manual Markdown |
+| Manual drift dogfood | isolated temp `HOME`; temp repo; `codealmanac build`; edit `almanac/manual/README.md`; `codealmanac doctor --wiki manual-drift-dogfood --json` | passed; `wiki.manual` reported `status: "info"`, `manual differs: README.md`, and a review-only fix message |

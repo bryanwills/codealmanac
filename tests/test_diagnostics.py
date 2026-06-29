@@ -60,3 +60,27 @@ def test_doctor_reports_missing_workspace_manual(
     assert checks["wiki.manual"].status == DoctorStatus.PROBLEM
     assert checks["wiki.manual"].message == "manual missing: pages.md"
     assert checks["wiki.manual"].fix == "run: codealmanac build"
+
+
+def test_doctor_reports_changed_workspace_manual(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    (repo / "almanac/manual/README.md").write_text(
+        "local manual edit\n",
+        encoding="utf-8",
+    )
+
+    report = app.diagnostics.check(DoctorRequest(cwd=repo))
+
+    checks = {check.key: check for check in report.wiki}
+    assert checks["wiki.manual"].status == DoctorStatus.INFO
+    assert checks["wiki.manual"].message == "manual differs: README.md"
+    assert (
+        checks["wiki.manual"].fix
+        == "review local manual files; codealmanac build preserves existing files"
+    )

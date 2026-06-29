@@ -71,12 +71,13 @@ class ManualWorkspaceStatus(CodeAlmanacModel):
     expected: tuple[str, ...] = Field(min_length=1)
     present: tuple[str, ...]
     missing: tuple[str, ...]
+    changed: tuple[str, ...] = ()
 
     @property
     def complete(self) -> bool:
         return len(self.missing) == 0
 
-    @field_validator("expected", "present", "missing")
+    @field_validator("expected", "present", "missing", "changed")
     @classmethod
     def require_paths(cls, value: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(required_text(path, "manual path") for path in value)

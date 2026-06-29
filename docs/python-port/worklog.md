@@ -640,6 +640,12 @@ or a build step. Slice 51 tightens that shell toward the earlier CodeAlmanac
 sidebar interaction: repo-owned wiki rail wording, local knowledge graph scope,
 active page/topic rail state, compact mobile rail density, and no
 viewport-scaled type in served CSS.
+Slice 52 adds manual drift diagnostics without changing the manual mutation
+policy. `ManualLibrary.workspace_status(...)` now reports files that differ
+from bundled package resources; `doctor` reports those differences as
+informational review work while keeping missing manual files as build-fixable
+problems. Build/init still copy missing manual files only and preserve existing
+workspace manual text.
 
 ## Next Hypothesis
 

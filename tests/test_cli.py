@@ -310,6 +310,29 @@ def test_cli_doctor_reports_local_state(
     assert "index: 1 page, 4 topics" in output.out
 
 
+def test_cli_doctor_reports_manual_drift(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    assert main(["build", str(repo)]) == 0
+    capsys.readouterr()
+    (repo / "almanac/manual/README.md").write_text(
+        "local manual edit\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(repo)
+
+    assert main(["doctor"]) == 0
+
+    output = capsys.readouterr()
+    assert "info manual differs: README.md" in output.out
+    assert "codealmanac build preserves existing files" in output.out
+
+
 def test_cli_help_includes_update():
     parser = build_parser()
 
