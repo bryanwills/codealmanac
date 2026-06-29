@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from codealmanac import __version__
 from codealmanac.core.models import AppConfig
+from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.services.diagnostics.service import DiagnosticsService
 from codealmanac.services.harnesses.ports import HarnessAdapter
 from codealmanac.services.harnesses.service import HarnessesService
@@ -51,7 +52,7 @@ class CodeAlmanac:
 
 def create_app(
     config: AppConfig | None = None,
-    harness_adapters: Sequence[HarnessAdapter] = (),
+    harness_adapters: Sequence[HarnessAdapter] | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -66,7 +67,9 @@ def create_app(
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService()
-    harnesses = HarnessesService(harness_adapters)
+    harnesses = HarnessesService(
+        default_harness_adapters() if harness_adapters is None else harness_adapters
+    )
     build = BuildWorkflow(workspaces, wiki, index)
     ingest = IngestWorkflow(workspaces, sources, harnesses, runs, index)
     workflows = CodeAlmanacWorkflows(build=build, ingest=ingest)

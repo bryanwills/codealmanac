@@ -21,12 +21,12 @@ Updated: 2026-06-29
   source briefs, local path observations, file fingerprints, and Pydantic URL
   validation.
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
-  contracts plus the adapter port. There are no concrete Codex or Claude
-  adapters yet.
+  contracts plus the adapter port. Claude CLI is the first concrete adapter;
+  Codex remains pending.
 - `workflows/ingest` now coordinates source resolution, harness execution, run
   ledger updates, `.almanac/` changed-file validation, and index refresh.
 - App workflow entrypoints now live under `app.workflows.build` and
-  `app.workflows.ingest`.
+  `app.workflows.ingest`. `create_app()` wires the default Claude adapter.
 - The index read model now uses stale-aware source signatures for ordinary
   `ensure_fresh`; `reindex` remains the explicit forced rebuild command.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
@@ -153,17 +153,24 @@ Updated: 2026-06-29
   - 73 full tests
   - `git diff --check`
   - internal fake-harness ingest dogfood through `app.workflows.ingest.run(...)`
+- Slice-14 Claude CLI adapter focused checks passed:
+  - focused architecture, Claude adapter, and ingest tests
+  - 81 full tests
+  - ruff
+  - `git diff --check`
+  - default Claude readiness dogfood
+  - real Claude ingest dogfood in a temp Git repo
 
 ## Dirty/Staged Files
 
-After slice 13 is committed, the worktree should be clean. If any slice-13 files
-are dirty, re-run focused ingest tests, `git diff --check`, pytest, ruff, and
-internal ingest dogfood with a fake harness.
+After slice 14 is committed, the worktree should be clean. If any slice-14 files
+are dirty, re-run focused architecture/Claude/ingest tests, `git diff --check`,
+pytest, ruff, default adapter readiness, and real or fake ingest dogfood.
 
 ## Next Move
 
-1. Add the first concrete harness adapter or adapter-side execution shim so
-   internal `ingest` can run without a fake harness.
+1. Harden real-provider lifecycle preflight before public `codealmanac ingest`:
+   dirty-worktree policy, changed-file guarantees, and unsafe execution errors.
 2. Decide whether the viewer needs source/file route hardening before AI-backed
    lifecycle commands.
 3. Keep AI execution behind workflow and harness seams; do not put it in CLI.

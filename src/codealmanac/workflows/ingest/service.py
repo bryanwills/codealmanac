@@ -154,8 +154,8 @@ def render_ingest_prompt(
         "Use the source briefs below as operation input. Update only files under "
         "the almanac_root path. Do not edit application code. Preserve durable "
         "wiki knowledge: decisions, flows, invariants, incidents, conventions, "
-        "and gotchas. Skip changes when the material does not justify a durable "
-        "wiki update.\n\n"
+        "and gotchas. The public CLI name is codealmanac, never almanac or alm. "
+        "Skip changes when the material does not justify a durable wiki update.\n\n"
         f"{payload.model_dump_json(indent=2)}\n"
     )
 

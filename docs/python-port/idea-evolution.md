@@ -195,3 +195,30 @@ Follow-up test:
 When `codealmanac ingest` becomes public, test that the CLI only adapts argv
 into `RunIngestRequest` and does not own source parsing, prompt rendering,
 harness selection, run finishing, or index refresh.
+
+## 2026-06-29 - Claude Is The First Concrete Harness Adapter
+
+Old hypothesis:
+The first concrete harness might need to start with Codex because CodeAlmanac is
+used from Codex sessions.
+
+New hypothesis:
+Start with Claude CLI because it has a simple non-interactive `--print` JSON
+contract. Codex remains important, but the archived implementation shows Codex
+needs the app-server path for the richer lifecycle semantics.
+
+Evidence that forced the change:
+Local `claude -p --output-format json` returned a structured result, while the
+archived Codex provider delegates to the Codex app-server adapter. Cosmic
+Python chapter 3 says a useful abstraction hides messy external details; the
+Claude adapter can exercise the `HarnessAdapter` port without importing
+provider details into workflows.
+
+Code or product assumption affected:
+`create_app()` now wires `ClaudeCliHarnessAdapter` by default. CLI, services,
+and workflows are guarded by an architecture test that forbids direct imports
+from `codealmanac.integrations`.
+
+Follow-up test:
+Before public `codealmanac ingest`, add stronger dirty-worktree or sandbox
+preflight so a real provider run cannot silently change application code.

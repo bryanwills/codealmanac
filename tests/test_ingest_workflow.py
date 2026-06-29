@@ -119,6 +119,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
     assert "Prefer short pages." in adapter.requests[0].prompt
+    assert "public CLI name is codealmanac" in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.MESSAGE,

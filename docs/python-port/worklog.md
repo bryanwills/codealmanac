@@ -172,6 +172,20 @@
 - Verified slice 13 with focused ingest/harness tests, 73 passing full tests,
   ruff, `git diff --check`, and an isolated fake-harness dogfood run that wrote
   a wiki page, refreshed the index, and read back search plus run-log state.
+- Read Cosmic Python chapter 3 before the first concrete harness adapter and
+  sent a Relayforge Discord checkpoint. The applied lesson: workflows depend on
+  the `HarnessAdapter` abstraction while Claude subprocess details stay in
+  `integrations/harnesses/claude`.
+- Added slice-14 Claude CLI adapter. It uses `claude auth status` for readiness,
+  `claude -p --output-format json` for runs, Pydantic models for external JSON,
+  and git porcelain status snapshots to report changed files.
+- Added an architecture test that prevents `cli/`, `workflows/`, and
+  `services/` from importing concrete integrations.
+- Dogfooded real Claude ingest in a temp Git repo. Claude wrote one
+  `.almanac/pages` page, ingest finished successfully, the index refreshed to
+  two pages, and search found the new page. The run exposed a naming prompt bug
+  (`almanac CLI`), so the ingest prompt now states the public CLI name is
+  `codealmanac`, never `almanac` or `alm`.
 
 ## Current Hypothesis
 
@@ -182,14 +196,14 @@ local `serve` viewer. The highest-risk serve/index review issue found so far is
 fixed: read traffic no longer forces projection rewrites when the source wiki
 is unchanged. The first lifecycle/runs spine now exists as a ledger and read
 surface. Source inputs and harness execution now have typed service contracts,
-and the first internal ingest workflow coordinates them with the run ledger and
-index. No concrete AI harness adapter is wired yet.
+the first internal ingest workflow coordinates them with the run ledger and
+index, and the Claude CLI adapter is wired through the app composition root.
 
 ## Next Hypothesis
 
-The next slice should add the first concrete harness adapter or adapter-side
-execution shim so internal `ingest` can run without a fake harness. Public
-`codealmanac ingest` should wait until that is real. The remaining serve risks
-are markdown wikilink rewriting inside code spans, browser-harness verification
-once Chrome allows remote debugging, and whether a source/file route belongs in
-the first viewer shape before lifecycle commands.
+The next slice should harden real-provider lifecycle preflight before public
+`codealmanac ingest`: dirty-worktree policy, safer changed-file guarantees, and
+clear failure messages when provider execution is unsafe. The remaining serve
+risks are markdown wikilink rewriting inside code spans, browser-harness
+verification once Chrome allows remote debugging, and whether a source/file
+route belongs in the first viewer shape before lifecycle commands.

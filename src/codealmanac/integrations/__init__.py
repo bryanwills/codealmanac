@@ -1,0 +1,1 @@
+"""Concrete outside-world adapters."""

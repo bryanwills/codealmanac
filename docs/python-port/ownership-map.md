@@ -57,7 +57,7 @@ Concrete adapters live under `integrations/` by the service port they implement:
 integrations/
   harnesses/
     codex/
-    claude/
+    claude/   # first concrete adapter, Claude Code CLI
   sources/
     filesystem/
     git/
@@ -69,6 +69,10 @@ integrations/
 
 An integration translates outside-world behavior into service-owned models and
 errors. It does not decide product policy.
+
+`src/codealmanac/app.py` is the only production module that wires concrete
+integrations. Tests enforce that `cli/`, `workflows/`, and `services/` do not
+import `codealmanac.integrations`.
 
 ## First Slice Boundary
 
