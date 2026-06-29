@@ -5,13 +5,17 @@ import { confirm } from "./output.js";
 
 export const SETUP_DEFAULTS = {
   cliAutoUpdate: true,
+  cloudCapture: false,
   selfManagedAutomation: false,
   autoCommit: false,
 } as const;
 
+const INTERACTIVE_AUTO_COMMIT_DEFAULT = true;
+
 export interface SetupPlan {
   instructionTargets: InstructionTargetId[];
   cliAutoUpdate: boolean;
+  cloudCapture: boolean;
   selfManagedAutomation: boolean;
   autoCommit: boolean;
 }
@@ -28,6 +32,7 @@ export async function buildSetupPlan(
   const instructionTargets = await resolveInstructionTargets(args);
   const cliAutoUpdate = await resolveCliAutoUpdate(args);
   const selfManagedAutomation = await resolveSelfManagedAutomation(args);
+  const cloudCapture = resolveCloudCapture(args, selfManagedAutomation);
   const autoCommit = selfManagedAutomation
     ? await resolveAutoCommit(args)
     : resolveExplicitAutoCommit(args.options);
@@ -35,6 +40,7 @@ export async function buildSetupPlan(
   return {
     instructionTargets,
     cliAutoUpdate,
+    cloudCapture,
     selfManagedAutomation,
     autoCommit,
   };
@@ -60,9 +66,9 @@ async function resolveSelfManagedAutomation(
   if (!args.interactive) return SETUP_DEFAULTS.selfManagedAutomation;
   return await confirmBoolean(
     args.out,
-    "Do you want to handle automations yourself?",
-    SETUP_DEFAULTS.selfManagedAutomation,
-  );
+    "Handle Almanac automations on the cloud?",
+    true,
+  ) === false;
 }
 
 function hasExplicitLocalAutomationOptions(options: SetupOptions): boolean {
@@ -71,6 +77,17 @@ function hasExplicitLocalAutomationOptions(options: SetupOptions): boolean {
   if (options.gardenEvery !== undefined) return true;
   if (options.gardenOff === true) return true;
   return false;
+}
+
+function resolveCloudCapture(
+  args: SetupPlanOptions,
+  selfManagedAutomation: boolean,
+): boolean {
+  if (args.options.cloudCapture !== undefined) return args.options.cloudCapture;
+  if (args.options.skipAutomation === true) return false;
+  if (selfManagedAutomation) return false;
+  if (!args.interactive) return SETUP_DEFAULTS.cloudCapture;
+  return true;
 }
 
 async function resolveAutoCommit(
@@ -82,7 +99,7 @@ async function resolveAutoCommit(
   return await confirmBoolean(
     args.out,
     "Commit Almanac wiki updates automatically?",
-    SETUP_DEFAULTS.autoCommit,
+    INTERACTIVE_AUTO_COMMIT_DEFAULT,
   );
 }
 
