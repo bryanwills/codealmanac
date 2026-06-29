@@ -65,6 +65,11 @@ without running a command, with a fix message such as `git pull && uv sync`.
 Unknown installers are also unsupported. The result should show the detected
 installer and the manual commands a user can run.
 
+Update run status reports whether the foreground package-manager command
+completed, not whether package files definitely changed. Dogfood showed
+`uv tool upgrade codealmanac` can exit 0 with `Nothing to upgrade`; the service
+must not scrape package-manager prose to infer a stronger state.
+
 ## Tests
 
 - service tests:

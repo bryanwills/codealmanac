@@ -29,7 +29,7 @@ alive while rebuilding in Python.
 | Agent harness contract | Re-evaluate old Codex app-server and Claude SDK adapters before implementing lifecycle workflows. |
 | Codex app-server parity | The Python v1 Codex adapter uses `codex exec`; port app-server only if the harness contract needs streaming, usage, structured tool display, structured output, or subagents. |
 | Background sync reconciliation | resolved for local v1: scheduled sync runs foreground `sync` with an explicit automation claim owner, pending timeout, and failed-attempt budget. A separate queue/worker remains out of scope unless a later agreement adds it. |
-| Scheduled update automation | Manual `codealmanac update` now exists. Do not schedule update automation until package-manager behavior has more real install dogfood. |
+| Scheduled update automation | Manual `codealmanac update` exists and has pip/uv non-editable install dogfood. Do not schedule update automation until a notifier/check cadence, dismissal policy, and release-channel policy are agreed. |
 | Legacy automation migration | The Python rewrite does not port TypeScript capture-sweep migration in the first automation slice. Add only if real installed legacy jobs must be migrated. |
 | Index refresh cost | `ensure_fresh` skips unchanged projection writes using source signatures, but still parses page markdown to compute them. Optimize only after real large-repo dogfood shows this is too slow. |
 | Viewer source-code preview | Not a v1 viewer feature. The restored file route lists wiki pages mentioning a file/folder reference; source-content reading belongs to source runtime snapshots used by lifecycle workflows. |

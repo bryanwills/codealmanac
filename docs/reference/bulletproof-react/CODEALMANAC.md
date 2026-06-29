@@ -37,3 +37,8 @@ spacing.
 Do not copy UseAlmanac's hosted wiki information architecture wholesale. The
 CodeAlmanac local viewer remains wiki-first: sidebar navigation, page/topic/search
 views, backlinks, related pages, and file-reference graph navigation.
+
+Rohan clarified on 2026-06-29 that the current UseAlmanac wiki page and search
+experience is not the desired CodeAlmanac shape. Keep the sidebar-led local
+viewer direction from CodeAlmanac; borrow design polish around it, not the
+UseAlmanac page/search interaction model.

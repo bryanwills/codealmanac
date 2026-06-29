@@ -103,9 +103,25 @@ def test_update_service_returns_failed_result_from_executor():
     assert runner.commands == [("uv", "tool", "upgrade", "codealmanac")]
 
 
+def test_update_service_returns_completed_result_from_executor_success():
+    runner = FakeCommandRunner(
+        PackageCommandResult(exit_code=0, stderr="Nothing to upgrade\n")
+    )
+    service = UpdatesService(
+        FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
+        runner,
+    )
+
+    result = service.run(RunUpdateRequest())
+
+    assert result.status == UpdateStatus.COMPLETED
+    assert result.exit_code == 0
+    assert result.stderr == "Nothing to upgrade\n"
+    assert runner.commands == [("uv", "tool", "upgrade", "codealmanac")]
+
+
 def update_service(metadata: PackageInstallMetadata) -> UpdatesService:
     return UpdatesService(
         FakeMetadataProvider(metadata),
         FakeCommandRunner(PackageCommandResult(exit_code=0)),
     )
-

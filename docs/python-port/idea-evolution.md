@@ -1165,3 +1165,31 @@ Follow-up test:
 If future viewer work adds complex client state, accessible popovers, routing
 machinery, or reusable component state, reassess React/Next.js with a failing
 maintenance example rather than adding a build step speculatively.
+
+## 2026-06-29 - Update Success Means Completed, Not Definitely Changed
+
+Old hypothesis:
+`codealmanac update` could report `updated` whenever the package-manager
+command exited 0.
+
+New hypothesis:
+The service should report `completed` for exit code 0. It knows the
+package-manager command completed, but it does not know from structured data
+whether installed files changed.
+
+Evidence that forced the change:
+Uv-tool dogfood installed CodeAlmanac from a local wheel, then ran
+`uv tool upgrade codealmanac` through the actual `codealmanac update` command.
+The command exited 0 and emitted `Nothing to upgrade`. Cosmic Python's
+service-layer boundary and this repo's structured-contract rule both push
+against scraping package-manager prose to infer a stronger domain fact.
+
+Code or product assumption affected:
+`UpdateStatus.UPDATED` became `UpdateStatus.COMPLETED`. The CLI still exits 0
+when the foreground package-manager command succeeds and exits non-zero for
+unsupported or failed runs.
+
+Follow-up test:
+Add scheduled update automation only after update-notification cadence,
+dismissal behavior, and release-channel policy are agreed. Do not infer those
+from the manual update command.

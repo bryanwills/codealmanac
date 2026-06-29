@@ -293,7 +293,7 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
             return 0
         result = app.updates.run(RunUpdateRequest())
         render_update_result(result, json_output=args.json)
-        return 0 if result.status == UpdateStatus.UPDATED else 1
+        return 0 if result.status == UpdateStatus.COMPLETED else 1
     if args.command == "jobs":
         if args.jobs_command == "show":
             record = app.runs.show(

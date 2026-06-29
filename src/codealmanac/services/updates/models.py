@@ -19,7 +19,7 @@ class UpdateInstallMethod(StrEnum):
 
 class UpdateStatus(StrEnum):
     READY = "ready"
-    UPDATED = "updated"
+    COMPLETED = "completed"
     UNSUPPORTED = "unsupported"
     FAILED = "failed"
 

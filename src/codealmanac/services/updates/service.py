@@ -30,7 +30,11 @@ class UpdatesService:
         if plan.status != UpdateStatus.READY:
             return UpdateResult(status=plan.status, plan=plan)
         output = self.runner.run(plan.command)
-        status = UpdateStatus.UPDATED if output.exit_code == 0 else UpdateStatus.FAILED
+        status = (
+            UpdateStatus.COMPLETED
+            if output.exit_code == 0
+            else UpdateStatus.FAILED
+        )
         return UpdateResult(
             status=status,
             plan=plan,
@@ -107,4 +111,3 @@ def update_method(metadata: PackageInstallMetadata) -> UpdateInstallMethod:
     if installer == "pip":
         return UpdateInstallMethod.PIP
     return UpdateInstallMethod.UNKNOWN
-

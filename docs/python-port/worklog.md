@@ -561,6 +561,11 @@
   the viewer error boundary, and title updates use cached DOM elements instead
   of re-querying the document. The branch-head package build still includes all
   nested viewer modules.
+- Added slice-48 update install dogfood. A wheel-installed pip venv and a
+  throwaway uv tool install both report non-editable metadata correctly and
+  plan the expected package-manager commands. Dogfood showed a successful uv
+  upgrade can say `Nothing to upgrade`, so update run status now reports
+  `completed` for exit code 0 instead of over-claiming `updated`.
 
 ## Current Hypothesis
 
@@ -625,3 +630,6 @@ remaining source-runtime pressure is now real-repo dogfood for the diversity
 policy rather than a missing v1 mechanism. The remaining serve risk is polish
 and product review of navigation density, especially the compact mobile rail,
 not a missing browser-harness verification gate or frontend architecture seam.
+After slice 48, the next update pressure is no longer install detection; it is
+the product policy for notification cadence, dismissal, and release channels
+before any scheduled update automation exists.

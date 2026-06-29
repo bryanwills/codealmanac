@@ -30,8 +30,9 @@ It is the constraint document for future agents.
 - 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
   models, service-owned verbs, store-owned persistence, thin CLI edges.
 - 2026-06-29: Local automation v1 installs scheduler jobs for foreground
-  `sync` and `garden`. Do not schedule `update` until the Python `update`
-  command and packaging policy exist.
+  `sync` and `garden`. Manual `update` is a foreground package-manager command
+  and has pip/uv non-editable install dogfood. Do not schedule `update` until
+  an explicit update-notification policy exists.
 - 2026-06-29: `sync` writes a durable pending ledger claim before it invokes
   Ingest. Active pending claims skip that transcript; stale pending claims
   surface as needs-attention; terminal success or failure clears the pending
@@ -70,6 +71,12 @@ It is the constraint document for future agents.
   reference material. Its hosted wiki page list/search flow, account routes,
   billing/settings surfaces, and hosted wording are not the target shape for
   the local product.
+- 2026-06-29: Treat the current UseAlmanac wiki page and search experience as
+  a non-target reference for CodeAlmanac. The desired direction is the local
+  viewer already explored here: persistent sidebar, direct page reading,
+  topic/file/search movement, and wiki navigation that feels like a repo-local
+  knowledge browser. The design layer can borrow UseAlmanac polish; the page
+  and search interaction model should not be copied from UseAlmanac.
 - 2026-06-29: Bulletproof React is a frontend architecture reference for
   `serve`, not a mandate to add React or Next.js immediately. Apply its
   principles as the viewer grows: feature boundaries, colocated API requests,

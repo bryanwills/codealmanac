@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-47): modularize serve frontend`.
+- Latest committed implementation slice: `feat(slice-48): dogfood update installs`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -20,6 +20,10 @@ Updated: 2026-06-29
   transcript discovery, source runtime adapters, bundled manual resources
   materialized into `<almanac-root>/manual/`, and a conservative package update
   command.
+- `codealmanac update` is dogfooded from non-editable pip and uv-tool installs.
+  Successful package-manager execution reports status `completed`, not
+  `updated`, because package-manager output may say no files changed and the
+  service does not scrape prose for stronger semantics.
 - Slice 41 implements the configured-root decision: new repos default to
   `almanac/`; users may configure `docs/almanac/` or explicit `.almanac/`.
   The registry stores `almanac_root`, `Workspace` exposes `almanac_path`,
@@ -127,6 +131,19 @@ Behavior:
 - supports pip installs with `python -m pip install --upgrade codealmanac`
 - refuses editable/source installs with `run: git pull && uv sync`
 - keeps update automation unscheduled until non-editable install dogfood exists
+
+Slice 48 dogfooded non-editable update installs.
+
+Behavior:
+
+- pip-installed wheel metadata reports `installer: pip`
+- pip update plans the throwaway venv Python command
+- uv-tool-installed wheel metadata reports `installer: uv`
+- uv-tool update plans `uv tool upgrade codealmanac`
+- successful foreground package-manager execution returns status `completed`
+  instead of over-claiming installed files changed
+- scheduled update automation remains deferred until notifier cadence,
+  dismissal behavior, and release-channel policy are agreed
 
 Slice 30 added the viewer file route.
 
