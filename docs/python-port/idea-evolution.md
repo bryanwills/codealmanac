@@ -203,6 +203,35 @@ Keep the ingest workflow test that proves a selected `note.md` reaches the
 prompt as available runtime content, and dogfood local file plus directory
 inputs through a temp repo before committing the slice.
 
+## 2026-06-29 - Update Is Package-Manager Policy, Not NPM Plumbing
+
+Old hypothesis:
+The Python port could leave `codealmanac update` pending until the rest of the
+local product surface was complete.
+
+New hypothesis:
+`update` should land as a conservative service-owned command now because the
+live CLI contract includes it, but it should not inherit the npm-era notifier
+or installer assumptions from the archived TypeScript code.
+
+Evidence that forced the change:
+`uv run codealmanac --help` did not list `update` even though the live agreement
+does. The current development install reports `INSTALLER=uv` and an editable
+`direct_url.json`, which proves that a naive self-update would mutate the wrong
+thing. uv and pip expose different update commands, so package-manager choice
+must be explicit metadata-driven policy.
+
+Code or product assumption affected:
+`services/updates` owns the update plan and supported methods. The concrete
+adapter under `integrations/updates/` reads package metadata and runs the chosen
+foreground command. Editable/source installs are unsupported for mutation and
+report `git pull && uv sync`.
+
+Follow-up test:
+Dogfood `codealmanac update --check` and default `codealmanac update` in the
+editable repo. Add real non-editable `uv tool` and pip install dogfood before
+scheduling update automation.
+
 ## 2026-06-29 - Harnesses Are Ports Before Adapters
 
 Old hypothesis:

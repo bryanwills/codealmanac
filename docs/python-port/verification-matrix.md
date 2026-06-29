@@ -7,10 +7,10 @@ means the goal remains active.
 
 | Requirement | Implementation evidence | Test/live evidence | Remaining risk |
 |---|---|---|---|
-| Fresh Python codebase | `pyproject.toml`, `src/codealmanac/`, `tests/` | `uv run pytest`, `uv run ruff check .` passed on 2026-06-29 | `update` remains pending. |
+| Fresh Python codebase | `pyproject.toml`, `src/codealmanac/`, `tests/` | `uv run pytest`, `uv run ruff check .` passed on 2026-06-29 | Remaining risks are background sync reconciliation, large-repo directory tuning, and viewer hardening. |
 | Based on live agreement | `docs/python-port-live-agreement.md`, `src/codealmanac/app.py`, service/workflow packages | tests exercise CLI -> app -> services/workflows over local `.almanac/` | Need future architecture tests as more services appear. |
 | Cosmic Python actively considered | `docs/reference/cosmic-python/`, `docs/python-port/`, composition root, service-layer tests, store boundary, Git snapshot policy for lifecycle writes | tests call workflow/service and CLI surfaces instead of private helpers; Relayforge Discord checkpoints sent | Need continued review before public lifecycle CLI. |
-| CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `build`, `ingest`, `garden`, foreground `sync`, `sync status`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete`, `reindex`, `doctor`, `serve`, and automation status passed on 2026-06-29 | `update` remains pending. |
+| CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `build`, `ingest`, `garden`, foreground `sync`, `sync status`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete`, `reindex`, `doctor`, `serve`, `automation status`, and `update --check` passed on 2026-06-29 | Non-editable package-manager update dogfood remains pending. |
 | SQLite-backed wiki/index behavior | `services/index`, `services/wiki`, `services/search`, `services/pages` | parser/index/search/show tests, stale-schema regression, stale-aware refresh regression, isolated live smoke, dogfood search | `refresh` still parses source markdown to compute signatures; optimize only after real large-repo pressure. |
 | Workflows: build, ingest, sync, garden | `workflows/build`; `workflows/ingest`; `workflows/garden`; `workflows/sync`; `services/runs`; `services/sources`; `services/harnesses`; `LifecycleMutationPolicy`; public `codealmanac ingest`, `codealmanac garden`, foreground `codealmanac sync`, and read-only `codealmanac sync status` | build tests; runs service/jobs CLI tests; sources service tests; transcript discovery tests; source-resolution dogfood; harness service tests; sync status and foreground sync tests; ingest/garden workflow safety tests; harness transcript feedback tests; sync internal-exclusion tests; real Claude and Codex CLI ingest dogfood; real Codex Garden dogfood; synthetic transcript sync dogfood | Background sync execution remains pending: pending cursor ownership, stale recovery, and reconciliation. |
 | Integrations behind service ports | ownership map drafted; filesystem, Git, GitHub, transcript, and web runtime adapters implement `SourceRuntimeAdapter`; transcript discovery adapters implement `TranscriptDiscoveryAdapter`; Claude and Codex CLI implement `HarnessAdapter`; Git workspace change probe implements `WorkspaceChangeProbe`; architecture test guards import direction | sources, source runtime, transcript discovery, harness, Claude/Codex adapter, Git probe, ingest safety, sync status, sync run, and architecture tests; real Claude and Codex ingest dogfood; real filesystem/Git/GitHub/transcript/web runtime dogfood | Source runtime MVP is covered; remaining risk is large-repo tuning. |
@@ -363,3 +363,17 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --out-dir /tmp/codealmanac-build-slice28`; wheel inspection | passed; wheel includes `integrations/sources/filesystem/adapter.py` and metadata dependencies for `pathspec` and `charset-normalizer` |
 | Filesystem runtime dogfood | temp Git repo, real default filesystem runtime adapter, local `notes.md` and `src/` inputs, fake Codex harness, `app.workflows.ingest.run(...)`, search readback | passed; two available runtime snapshots, prompt contained file and directory text, `.gitignore`d text was absent, search found `filesystem-runtime-dogfood` |
+
+## Gates For Slice 29 Update Command
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused update/CLI/architecture tests | `uv run pytest tests/test_update_service.py tests/test_cli.py::test_cli_update_check_json_reports_plan tests/test_cli.py::test_cli_update_refuses_editable_install tests/test_cli.py::test_cli_help_includes_update tests/test_cli.py::test_cli_doctor_reports_local_state tests/test_architecture.py` | 9 passed |
+| Focused lint | `uv run ruff check src/codealmanac/services/updates src/codealmanac/integrations/updates src/codealmanac/app.py src/codealmanac/cli/main.py tests/test_update_service.py tests/test_cli.py` | passed |
+| Full tests | `uv run pytest` | 147 passed |
+| Full lint | `uv run ruff check src tests` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --out-dir /tmp/codealmanac-build-slice29`; wheel inspection | passed; wheel includes `services/updates/` and `integrations/updates/` modules |
+| Live check | `uv run codealmanac update --check` | passed; editable install reported unsupported with `run: git pull && uv sync` |
+| Live JSON check | `uv run codealmanac update --check --json` | passed; reported `method: editable`, `installer: uv`, and source URL for this checkout |
+| Live default update refusal | `uv run codealmanac update` | passed; exited 1 and refused editable source mutation |

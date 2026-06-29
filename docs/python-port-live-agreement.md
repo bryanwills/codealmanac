@@ -83,6 +83,7 @@ services/
   automation/
   config/
   diagnostics/
+  updates/
   viewer/
 ```
 
@@ -114,6 +115,8 @@ integrations/
     web/
   automation/
     scheduler/
+  updates/
+    package.py
 ```
 
 Ports live near the service that owns the product contract:
@@ -191,6 +194,7 @@ not make CLI contain product decisions.
 | `automation` | local trigger decisions, quiet windows, scheduler state | run internals, source parsing, provider transports |
 | `config` | user/project config parsing and precedence | product workflows |
 | `diagnostics` | doctor-style checks and readiness reports | mutation workflows |
+| `updates` | local package update policy, installer detection, update command planning | scheduler state, hosted release management, package-manager subprocess mechanics |
 | `viewer` | read-only local browser payloads, page/topic/search overview assembly, rendered markdown for the viewer | markdown source of truth, SQLite persistence, AI calls, jobs/review lifecycle |
 
 ## Workflows
@@ -320,6 +324,7 @@ subprocess.run(["codealmanac", "show", "..."])
 | Automation | local scheduled sync/garden |
 | CLI | thin local command surface |
 | Serve | local read-only wiki viewer |
+| Update | foreground local package-manager update with conservative source-install refusal |
 
 ### Explicitly Out Of Scope For V1
 

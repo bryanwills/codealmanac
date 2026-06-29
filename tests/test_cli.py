@@ -27,6 +27,10 @@ from codealmanac.services.runs.requests import (
 )
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
+from codealmanac.services.updates.models import (
+    PackageCommandResult,
+    PackageInstallMetadata,
+)
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
@@ -149,6 +153,24 @@ class CliSchedulerAdapter:
         )
 
 
+class CliUpdateMetadataProvider:
+    def __init__(self, metadata: PackageInstallMetadata):
+        self.metadata = metadata
+
+    def read(self) -> PackageInstallMetadata:
+        return self.metadata
+
+
+class CliUpdateRunner:
+    def __init__(self, result: PackageCommandResult):
+        self.result = result
+        self.commands: list[tuple[str, ...]] = []
+
+    def run(self, command: tuple[str, ...]) -> PackageCommandResult:
+        self.commands.append(command)
+        return self.result
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -260,6 +282,57 @@ def test_cli_doctor_reports_local_state(
     assert "## Install\n" in output.out
     assert f"repo: {repo}\n" in output.out
     assert "index: 1 page, 4 topics" in output.out
+
+
+def test_cli_help_includes_update():
+    parser = build_parser()
+
+    help_text = parser.format_help()
+
+    assert "update" in help_text
+
+
+def test_cli_update_check_json_reports_plan(monkeypatch, capsys):
+    app = create_app(
+        update_metadata=CliUpdateMetadataProvider(
+            PackageInstallMetadata(version="0.1.0", installer="uv")
+        ),
+        update_runner=CliUpdateRunner(PackageCommandResult(exit_code=0)),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["update", "--check", "--json"]) == 0
+
+    output = capsys.readouterr()
+    assert '"status": "ready"' in output.out
+    assert '"method": "uv-tool"' in output.out
+    assert '"uv",' in output.out
+    assert '"tool",' in output.out
+    assert '"upgrade",' in output.out
+
+
+def test_cli_update_refuses_editable_install(monkeypatch, capsys):
+    runner = CliUpdateRunner(PackageCommandResult(exit_code=0))
+    app = create_app(
+        update_metadata=CliUpdateMetadataProvider(
+            PackageInstallMetadata(
+                version="0.1.0",
+                installer="uv",
+                editable=True,
+                source_url="file:///repo",
+            )
+        ),
+        update_runner=runner,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["update"]) == 1
+
+    output = capsys.readouterr()
+    assert "update status: unsupported" in output.out
+    assert "editable source install cannot be self-updated" in output.out
+    assert "run: git pull && uv sync" in output.out
+    assert runner.commands == []
 
 
 def test_cli_doctor_json_reports_no_wiki(

@@ -1,5 +1,6 @@
 import argparse
 import json
+import shlex
 import sys
 from collections.abc import Sequence
 from datetime import timedelta
@@ -67,6 +68,8 @@ from codealmanac.services.topics.requests import (
     ShowTopicRequest,
     UnlinkTopicRequest,
 )
+from codealmanac.services.updates.models import UpdatePlan, UpdateResult, UpdateStatus
+from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.garden.requests import RunGardenRequest
@@ -210,6 +213,10 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = subcommands.add_parser("doctor", help="check local install and wiki")
     doctor.add_argument("--wiki")
     doctor.add_argument("--json", action="store_true")
+
+    update = subcommands.add_parser("update", help="update the local CLI")
+    update.add_argument("--check", action="store_true")
+    update.add_argument("--json", action="store_true")
 
     jobs = subcommands.add_parser("jobs", help="inspect local lifecycle jobs")
     jobs.add_argument("--wiki")
@@ -488,6 +495,14 @@ def dispatch(args: argparse.Namespace) -> int:
         report = app.diagnostics.check(DoctorRequest(cwd=Path.cwd(), wiki=args.wiki))
         render_doctor(report, json_output=args.json)
         return 0
+    if args.command == "update":
+        if args.check:
+            plan = app.updates.check(CheckUpdateRequest())
+            render_update_plan(plan, json_output=args.json)
+            return 0
+        result = app.updates.run(RunUpdateRequest())
+        render_update_result(result, json_output=args.json)
+        return 0 if result.status == UpdateStatus.UPDATED else 1
     if args.command == "jobs":
         if args.jobs_command == "show":
             record = app.runs.show(
@@ -785,6 +800,37 @@ def render_doctor_section(title: str, checks: tuple[DoctorCheck, ...]) -> None:
         if check.fix is not None:
             print(f"    {check.fix}")
     print("")
+
+
+def render_update_plan(plan: UpdatePlan, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(plan.model_dump(mode="json"), indent=2))
+        return
+    print(f"codealmanac {plan.installed_version}")
+    print(f"update status: {plan.status.value}")
+    print(f"install method: {plan.method.value}")
+    print(f"message: {plan.message}")
+    if plan.command:
+        print(f"command: {shell_command(plan.command)}")
+    if plan.fix is not None:
+        print(plan.fix)
+
+
+def render_update_result(result: UpdateResult, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+        return
+    render_update_plan(result.plan, json_output=False)
+    if result.exit_code is not None:
+        print(f"exit_code: {result.exit_code}")
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr:
+        print(result.stderr, end="" if result.stderr.endswith("\n") else "\n")
+
+
+def shell_command(command: tuple[str, ...]) -> str:
+    return shlex.join(command)
 
 
 def render_runs(records: tuple[RunRecord, ...], json_output: bool) -> None:

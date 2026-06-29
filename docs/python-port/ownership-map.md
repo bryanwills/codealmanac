@@ -35,6 +35,7 @@ that root instead of constructing stores or adapters themselves.
 | `automation` | local scheduler decisions, quiet windows, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
 | `config` | user/project config parsing and precedence | first slice only if pyproject/config needs it |
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
+| `updates` | package update planning, installer metadata, supported foreground update methods | `codealmanac update`, `PackageInstallMetadataProvider`, `PackageCommandRunner` |
 | `viewer` | read-only browser payloads, page/topic/search overview assembly, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
 
 ## Support Packages
@@ -77,6 +78,7 @@ integrations/
     web/
   automation/
     scheduler/
+  updates/
 ```
 
 An integration translates outside-world behavior into service-owned models and
@@ -124,6 +126,12 @@ automation install/status/uninstall. The launchd implementation lives in
 `integrations/automation/scheduler/` and only translates `ScheduledJob` models
 into plist files plus launchctl calls. It does not decide which jobs should
 exist or what `sync` and `garden` mean.
+
+`services/updates/ports.py` owns package install metadata and package command
+execution ports. `integrations/updates/` reads `importlib.metadata` install
+metadata and runs foreground package-manager commands. The service decides
+whether an install is safe to update; the integration only reports metadata and
+executes the chosen command.
 
 ## First Slice Boundary
 

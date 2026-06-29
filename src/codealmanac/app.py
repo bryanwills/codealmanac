@@ -9,6 +9,10 @@ from codealmanac.integrations.sources import (
     default_source_runtime_adapters,
     default_transcript_discovery_adapters,
 )
+from codealmanac.integrations.updates import (
+    InstalledPackageMetadataProvider,
+    SubprocessPackageCommandRunner,
+)
 from codealmanac.integrations.workspaces.git import GitWorkspaceChangeProbe
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
@@ -30,6 +34,11 @@ from codealmanac.services.sources.ports import (
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.tagging.service import TaggingService
 from codealmanac.services.topics.service import TopicsService
+from codealmanac.services.updates.ports import (
+    PackageCommandRunner,
+    PackageInstallMetadataProvider,
+)
+from codealmanac.services.updates.service import UpdatesService
 from codealmanac.services.viewer.renderer import MarkdownRenderer
 from codealmanac.services.viewer.service import ViewerService
 from codealmanac.services.wiki.service import WikiService
@@ -63,6 +72,7 @@ class CodeAlmanac:
     health: HealthService
     diagnostics: DiagnosticsService
     tagging: TaggingService
+    updates: UpdatesService
     viewer: ViewerService
     runs: RunsService
     sources: SourcesService
@@ -77,6 +87,8 @@ def create_app(
     transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None = None,
     source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None,
     scheduler: SchedulerAdapter | None = None,
+    update_metadata: PackageInstallMetadataProvider | None = None,
+    update_runner: PackageCommandRunner | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -89,6 +101,10 @@ def create_app(
     health = HealthService(workspaces, index)
     diagnostics = DiagnosticsService(workspaces, index, __version__)
     tagging = TaggingService(pages)
+    updates = UpdatesService(
+        update_metadata or InstalledPackageMetadataProvider(),
+        update_runner or SubprocessPackageCommandRunner(),
+    )
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService(
@@ -140,6 +156,7 @@ def create_app(
         health=health,
         diagnostics=diagnostics,
         tagging=tagging,
+        updates=updates,
         viewer=viewer,
         runs=runs,
         sources=sources,

@@ -396,6 +396,14 @@
   140 passing full tests, full ruff, diff hygiene, package build plus wheel
   dependency inspection, and a temp-repo dogfood where local `notes.md` and
   `src/` inputs reached the Ingest prompt while `.gitignore`d text stayed out.
+- Added slice-29 manual update command. `services/updates` now plans foreground
+  package-manager updates from install metadata, supports uv tool and pip
+  installs, refuses editable/source installs, and delegates metadata reads plus
+  command execution to `integrations/updates/`.
+- Verified slice 29 focused behavior with update service, CLI update, doctor,
+  and architecture tests, focused ruff, and live editable-install checks:
+  `update --check`, `update --check --json`, and default `update` which
+  refused mutation with `run: git pull && uv sync`.
 
 ## Current Hypothesis
 
@@ -415,16 +423,18 @@ ordinary Ingest work for ready transcripts and advances the sync ledger after
 success. Local automation now installs scheduler entries for foreground sync
 and Garden through a service-owned task plan and a launchd adapter. Git,
 GitHub, transcript, web URL, and local path source refs now produce bounded
-runtime snapshots before Ingest starts the harness.
+runtime snapshots before Ingest starts the harness. Manual `update` now exists
+as a conservative package-manager command and does not install scheduled update
+automation.
 
 ## Next Hypothesis
 
 The next automation or sync slice should add background/pending semantics only
 if it first adds a durable background owner and reconciliation loop. Scheduled
-update checks should wait until the Python `update` command exists. The
-remaining source-runtime pressure is large-repo tuning for directory inputs:
-more exact `.gitignore` semantics, nested ignore files, and smarter file
-selection if dogfood shows the current bounded traversal is too noisy. The
-remaining serve risks are markdown wikilink rewriting inside code spans,
-browser-harness verification once Chrome allows remote debugging, and whether a
-source/file route belongs in the first viewer shape.
+update checks should wait for real non-editable install dogfood. The remaining
+source-runtime pressure is large-repo tuning for directory inputs: more exact
+`.gitignore` semantics, nested ignore files, and smarter file selection if
+dogfood shows the current bounded traversal is too noisy. The remaining serve
+risks are markdown wikilink rewriting inside code spans, browser-harness
+verification once Chrome allows remote debugging, and whether a source/file
+route belongs in the first viewer shape.
