@@ -338,3 +338,33 @@ Follow-up test:
 If `sync` lands next, keep discovery separate from both operations: Sync may
 select material and call Ingest, but it should not become another prompt-writing
 workflow unless product behavior requires it.
+
+## 2026-06-29 - Sync Status Before Sync Execution
+
+Old hypothesis:
+The next sync slice could discover quiet local transcripts and immediately run
+ordinary local ingest for ready material.
+
+New hypothesis:
+Expose `codealmanac sync status` first. It should discover transcripts, map
+them to `.almanac/` repos, apply quiet-window and cursor checks, and report
+readiness without writing the wiki or starting ingest.
+
+Evidence that forced the change:
+Ingest and Garden now create provider transcripts through Claude and Codex
+harness runs. The current `HarnessRunResult` and `RunRecord` do not store the
+provider session id or transcript path, so sync execution cannot yet exclude
+CodeAlmanac's own lifecycle transcripts reliably. Cosmic Python chapter 13 also
+keeps the concrete transcript scanners behind `app.py` composition instead of
+letting CLI import them directly.
+
+Code or product assumption affected:
+`workflows/sync` owns cursor evaluation and quiet-window status. `sources`
+owns transcript discovery ports and typed candidates. Full `codealmanac sync`
+execution remains gated until harness runs feed provider transcript identity
+back into the run ledger.
+
+Follow-up test:
+When sync execution lands, add a regression where an Ingest or Garden provider
+run creates a transcript and `codealmanac sync` skips that internal transcript
+while still reporting a separate user transcript from the same repo as ready.

@@ -2,13 +2,15 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
+from datetime import timedelta
 from pathlib import Path
 
+from humanfriendly import InvalidTimespan, parse_timespan
 from pydantic import ValidationError
 
 from codealmanac import __version__
 from codealmanac.app import create_app
-from codealmanac.core.errors import CodeAlmanacError
+from codealmanac.core.errors import CodeAlmanacError, ValidationFailed
 from codealmanac.services.diagnostics.models import (
     DoctorCheck,
     DoctorReport,
@@ -33,6 +35,7 @@ from codealmanac.services.runs.requests import (
     ShowRunRequest,
 )
 from codealmanac.services.search.requests import SearchPagesRequest
+from codealmanac.services.sources.models import TranscriptApp
 from codealmanac.services.tagging.models import TaggingResult
 from codealmanac.services.tagging.requests import TagPageRequest, UntagPageRequest
 from codealmanac.services.topics.models import (
@@ -56,6 +59,8 @@ from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.garden.requests import RunGardenRequest
 from codealmanac.workflows.ingest.models import IngestResult
 from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.workflows.sync.models import SyncSummary
+from codealmanac.workflows.sync.requests import RunSyncStatusRequest
 
 DEFAULT_VIEWER_HOST = "127.0.0.1"
 DEFAULT_VIEWER_PORT = 3927
@@ -109,6 +114,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     garden.add_argument("--title")
     garden.add_argument("--guidance")
+
+    sync = subcommands.add_parser("sync", help="inspect local transcript sync")
+    sync_subcommands = sync.add_subparsers(dest="sync_command", required=True)
+    sync_status = sync_subcommands.add_parser("status", help="show sync readiness")
+    sync_status.add_argument("--wiki")
+    sync_status.add_argument("--from", dest="source_apps")
+    sync_status.add_argument("--quiet", default="45m")
+    sync_status.add_argument("--json", action="store_true")
 
     subcommands.add_parser("list", help="list registered local wikis")
 
@@ -256,6 +269,17 @@ def dispatch(args: argparse.Namespace) -> int:
             )
         )
         render_garden(result)
+        return 0
+    if args.command == "sync" and args.sync_command == "status":
+        result = app.workflows.sync.status(
+            RunSyncStatusRequest(
+                cwd=Path.cwd(),
+                wiki=args.wiki,
+                apps=parse_sync_apps(args.source_apps),
+                quiet=parse_quiet(args.quiet),
+            )
+        )
+        render_sync_status(result, json_output=args.json)
         return 0
     if args.command == "list":
         for workspace in app.workspaces.list():
@@ -449,6 +473,52 @@ def render_garden(result: GardenResult) -> None:
     print(f"health_before: {health_issue_count(result.health_before)}")
     if result.run.summary is not None:
         print(f"summary: {result.run.summary}")
+
+
+def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(summary.model_dump(mode="json"), indent=2))
+        return
+    print("sync status:")
+    print(f"  scanned: {summary.scanned}")
+    print(f"  eligible: {summary.eligible}")
+    print(f"  ready: {len(summary.ready)}")
+    print(f"  skipped: {len(summary.skipped)}")
+    print(f"  needs_attention: {len(summary.needs_attention)}")
+    for ready in summary.ready:
+        print(
+            f"  - ready {ready.app.value} {ready.session_id}: "
+            f"lines {ready.from_line}-{ready.to_line}"
+        )
+    for item in summary.needs_attention:
+        print(f"  - needs attention {item.transcript_path}: {item.reason}")
+
+
+def parse_sync_apps(value: str | None) -> tuple[TranscriptApp, ...]:
+    if value is None or value.strip() == "":
+        return (TranscriptApp.CLAUDE, TranscriptApp.CODEX)
+    apps: list[TranscriptApp] = []
+    for raw in value.split(","):
+        item = raw.strip()
+        try:
+            app = TranscriptApp(item)
+        except ValueError as error:
+            raise ValidationFailed(
+                f'invalid --from "{value}" (expected claude,codex)'
+            ) from error
+        if app not in apps:
+            apps.append(app)
+    if len(apps) == 0:
+        raise ValidationFailed("at least one sync source is required")
+    return tuple(apps)
+
+
+def parse_quiet(value: str) -> timedelta:
+    try:
+        seconds = parse_timespan(value)
+    except InvalidTimespan as error:
+        raise ValidationFailed(f"invalid --quiet value: {value}") from error
+    return timedelta(seconds=seconds)
 
 
 def health_issue_count(report: HealthReport) -> int:

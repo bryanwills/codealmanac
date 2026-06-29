@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.harnesses import default_harness_adapters
+from codealmanac.integrations.sources import default_transcript_discovery_adapters
 from codealmanac.integrations.workspaces.git import GitWorkspaceChangeProbe
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.diagnostics.service import DiagnosticsService
@@ -16,6 +17,7 @@ from codealmanac.services.pages.service import PagesService
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.search.service import SearchService
+from codealmanac.services.sources.ports import TranscriptDiscoveryAdapter
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.tagging.service import TaggingService
 from codealmanac.services.topics.service import TopicsService
@@ -28,6 +30,8 @@ from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
+from codealmanac.workflows.sync.service import SyncWorkflow
+from codealmanac.workflows.sync.store import SyncLedgerStore
 
 
 @dataclass(frozen=True)
@@ -35,6 +39,7 @@ class CodeAlmanacWorkflows:
     build: BuildWorkflow
     ingest: IngestWorkflow
     garden: GardenWorkflow
+    sync: SyncWorkflow
 
 
 @dataclass(frozen=True)
@@ -59,6 +64,7 @@ class CodeAlmanac:
 def create_app(
     config: AppConfig | None = None,
     harness_adapters: Sequence[HarnessAdapter] | None = None,
+    transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -72,7 +78,11 @@ def create_app(
     tagging = TaggingService(pages)
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
-    sources = SourcesService()
+    sources = SourcesService(
+        default_transcript_discovery_adapters()
+        if transcript_discovery_adapters is None
+        else transcript_discovery_adapters
+    )
     prompts = PromptRenderer()
     harnesses = HarnessesService(
         default_harness_adapters() if harness_adapters is None else harness_adapters
@@ -96,7 +106,13 @@ def create_app(
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
         prompts,
     )
-    workflows = CodeAlmanacWorkflows(build=build, ingest=ingest, garden=garden)
+    sync = SyncWorkflow(workspaces, sources, SyncLedgerStore())
+    workflows = CodeAlmanacWorkflows(
+        build=build,
+        ingest=ingest,
+        garden=garden,
+        sync=sync,
+    )
     return CodeAlmanac(
         workspaces=workspaces,
         wiki=wiki,

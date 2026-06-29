@@ -266,6 +266,28 @@
   wheel, and real temp-repo `codealmanac garden --using codex` dogfood. The
   dogfood run added the existing `concepts` topic to
   `.almanac/pages/thin-dogfood-note.md` and changed no application files.
+- Read the live agreement, current sync/product notes, and Cosmic Python
+  chapter 13 before slice 19. The applied lesson: `app.py` wires transcript
+  discovery adapters into the source service, while CLI only adapts flags into
+  `RunSyncStatusRequest`.
+- Added slice-19 read-only `codealmanac sync status`. It discovers local Codex
+  and Claude transcript JSONL files, maps sessions back to repos with
+  `.almanac/`, applies a quiet window, reads the per-repo sync cursor ledger,
+  and reports ready/skipped/needs-attention status without invoking AI or
+  writing wiki content.
+- Added `services/sources/ports.py` and transcript discovery adapters under
+  `integrations/sources/transcripts/`. Raw provider JSON stays at the
+  integration edge and becomes typed `TranscriptCandidate` models before the
+  sync workflow sees it.
+- Added `humanfriendly` for `--quiet` duration parsing instead of hand-rolling
+  a duration grammar.
+- Deliberately did not expose full `codealmanac sync` execution in this slice.
+  Safe execution needs provider transcript identity feedback from harness runs
+  so sync can skip CodeAlmanac's own Ingest/Garden transcripts.
+- Verified slice 19 with focused transcript discovery, sync workflow, CLI, and
+  architecture tests, 107 passing full tests, ruff, `git diff --check`, CLI
+  help/status smoke, package build, and an isolated synthetic Codex transcript
+  dogfood.
 
 ## Current Hypothesis
 
@@ -277,13 +299,14 @@ read surface. Source inputs, prompt rendering, harness execution, mutation
 safety, and run logging now have typed service/workflow boundaries. Claude and
 Codex CLI adapters are wired through the app composition root. Public `ingest`
 and `garden` commands reach their workflows without making the CLI an internal
-API.
+API. `sync status` now exposes read-only local transcript readiness behind the
+same service/workflow/adapter boundaries.
 
 ## Next Hypothesis
 
-The next slice should either add `sync` discovery/automation, review lifecycle
-prompt quality now that prompt Markdown is packaged, or harden provider runtime
-behavior if real Garden/Ingest dogfood exposes long-run issues. The remaining
-serve risks are markdown wikilink rewriting inside code spans,
+The next slice should add the provider transcript feedback needed for safe sync
+execution, then wire `codealmanac sync` to queue ordinary local ingest work.
+Automation install/status/uninstall remains separate from sync execution. The
+remaining serve risks are markdown wikilink rewriting inside code spans,
 browser-harness verification once Chrome allows remote debugging, and whether a
 source/file route belongs in the first viewer shape.

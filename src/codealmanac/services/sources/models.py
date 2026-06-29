@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
 
@@ -28,6 +29,11 @@ class SourceProvenanceKind(StrEnum):
     URL = "url"
     GIT = "git"
     TRANSCRIPT = "transcript"
+
+
+class TranscriptApp(StrEnum):
+    CLAUDE = "claude"
+    CODEX = "codex"
 
 
 class SourceAddress(CodeAlmanacModel):
@@ -75,3 +81,25 @@ class SourceBrief(CodeAlmanacModel):
     @classmethod
     def require_brief_text(cls, value: str) -> str:
         return required_text(value, "source brief")
+
+
+class TranscriptCandidate(CodeAlmanacModel):
+    app: TranscriptApp
+    session_id: str
+    transcript_path: Path
+    cwd: Path
+    repo_root: Path
+    modified_at: datetime
+    size_bytes: int
+
+    @field_validator("session_id")
+    @classmethod
+    def require_session_id(cls, value: str) -> str:
+        return required_text(value, "transcript session id")
+
+    @field_validator("size_bytes")
+    @classmethod
+    def non_negative_size(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("transcript size must be non-negative")
+        return value

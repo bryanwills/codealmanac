@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -12,8 +13,13 @@ from codealmanac.services.sources.models import (
     SourceKind,
     SourceProvenanceKind,
     SourceRef,
+    TranscriptCandidate,
 )
-from codealmanac.services.sources.requests import ResolveSourcesRequest
+from codealmanac.services.sources.ports import TranscriptDiscoveryAdapter
+from codealmanac.services.sources.requests import (
+    DiscoverTranscriptsRequest,
+    ResolveSourcesRequest,
+)
 
 PULL_REQUEST_PROMPT_HINT = (
     "Inspect the pull request, diff, commits, reviews, and linked issues before "
@@ -52,11 +58,36 @@ HTTP_URL_ADAPTER = TypeAdapter(AnyHttpUrl)
 
 
 class SourcesService:
+    def __init__(
+        self,
+        transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] = (),
+    ):
+        self.transcript_discovery_adapters = tuple(transcript_discovery_adapters)
+
     def resolve(self, request: ResolveSourcesRequest) -> tuple[SourceBrief, ...]:
         return tuple(
             resolve_address(SourceAddress(raw=raw), request.cwd)
             for raw in request.inputs
         )
+
+    def discover_transcripts(
+        self,
+        request: DiscoverTranscriptsRequest,
+    ) -> tuple[TranscriptCandidate, ...]:
+        selected = set(request.apps)
+        candidates: list[TranscriptCandidate] = []
+        for adapter in self.transcript_discovery_adapters:
+            if adapter.app in selected:
+                candidates.extend(adapter.discover(request))
+        return tuple(sorted(candidates, key=transcript_sort_key))
+
+
+def transcript_sort_key(candidate: TranscriptCandidate) -> tuple[str, str, str]:
+    return (
+        candidate.app.value,
+        str(candidate.transcript_path),
+        candidate.session_id,
+    )
 
 
 def resolve_address(address: SourceAddress, cwd: Path) -> SourceBrief:

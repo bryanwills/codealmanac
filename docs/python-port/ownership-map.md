@@ -29,7 +29,7 @@ that root instead of constructing stores or adapters themselves.
 | `workspaces` | repo root detection, `.almanac/` root, registry, path containment, local wiki selection | `init`, current-repo queries, `--wiki` lookup |
 | `wiki` | page files, frontmatter, topics, wikilinks, page writes, health inputs | `init`, `show`, page parsing for index |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | `search`, `show --links`, `health` |
-| `sources` | source observations, source refs, fingerprints, local source state | `SourceAddress`/`SourceRef`/`SourceBrief`, later `ingest` and `sync` inputs |
+| `sources` | source observations, source refs, fingerprints, local source state, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, later ingest and sync inputs |
 | `runs` | run ledger, events, outputs, lifecycle state | `jobs` read surface, later lifecycle workflows |
 | `harnesses` | normalized Codex/Claude run contracts and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, installed task state | later `sync`/`garden` scheduling |
@@ -49,7 +49,7 @@ that root instead of constructing stores or adapters themselves.
 |---|---|---|
 | `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
 | `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index`, `prompts`, `lifecycle` |
-| `sync` | discover quiet local transcripts and queue ingest work | `automation`, `sources`, `runs`, `ingest` |
+| `sync` | discover quiet local transcripts, evaluate cursor readiness, and later queue ingest work | `sources`, sync ledger, later `automation`, `runs`, `ingest` |
 | `garden` | maintain wiki shape, links, topics, staleness, quality | `health`, `index`, `runs`, `harnesses`, `prompts`, `lifecycle` |
 
 Workflows coordinate. They do not own durable schema unless a missing service is
@@ -96,6 +96,12 @@ state.
 captured subprocess execution and Git porcelain changed-file snapshots. They
 are integration helpers, not service ports, because they describe local
 provider-process mechanics shared by Claude and Codex adapters.
+
+`services/sources/ports.py` owns `TranscriptDiscoveryAdapter`, the port used by
+sync to observe local transcript stores. Concrete Codex and Claude JSONL
+scanners live in `integrations/sources/transcripts/`. Those integrations parse
+raw provider JSON and return typed `TranscriptCandidate` values; they do not
+decide quiet windows, cursor state, or whether ingest should run.
 
 ## First Slice Boundary
 

@@ -18,8 +18,8 @@ Updated: 2026-06-29
 - `services/runs` owns the local run ledger under `.almanac/jobs/`; public
   inspection stays under `codealmanac jobs`.
 - `services/sources` owns source input contracts: raw addresses, parsed refs,
-  source briefs, local path observations, file fingerprints, and Pydantic URL
-  validation.
+  source briefs, local path observations, file fingerprints, transcript
+  discovery ports, typed transcript candidates, and Pydantic URL validation.
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
   contracts plus the adapter port. Claude CLI and Codex CLI are both concrete
   adapters wired by default.
@@ -28,12 +28,17 @@ Updated: 2026-06-29
 - `workflows/garden` now coordinates whole-wiki maintenance from index and
   health context, harness execution, run ledger updates, `.almanac/` mutation
   safety, and index refresh.
+- `workflows/sync` currently supports read-only status. It discovers local
+  Codex and Claude transcripts through `SourcesService`, applies quiet-window
+  and cursor checks, and reports readiness without invoking AI or writing wiki
+  content.
 - `src/codealmanac/prompts/` contains packaged Markdown prompt doctrine and
   operation prompts. `PromptRenderer` composes those resources with typed
   runtime JSON for Ingest and Garden.
 - App workflow entrypoints now live under `app.workflows.build`,
-  `app.workflows.ingest`, and `app.workflows.garden`. `create_app()` wires the
-  default Claude and Codex adapters.
+  `app.workflows.ingest`, `app.workflows.garden`, and
+  `app.workflows.sync`. `create_app()` wires the default Claude and Codex
+  harness adapters plus transcript discovery adapters.
 - Lifecycle writes now require Git change tracking, clean `.almanac/`
   preflight, and no non-wiki mutation during harness execution. Dirty app files
   are allowed as source material if they remain unchanged.
@@ -41,7 +46,7 @@ Updated: 2026-06-29
   `ensure_fresh`; `reindex` remains the explicit forced rebuild command.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
   `show`, `topics`, `health`, `reindex`, `doctor`, `jobs`, `serve`, `tag`,
-  `untag`, `ingest`, and `garden`.
+  `untag`, `ingest`, `garden`, and `sync status`.
 - Public `codealmanac ingest` is a thin CLI adapter over
   `app.workflows.ingest.run(...)`. It supports `--using claude|codex`, `--wiki`,
   `--title`, and `--guidance`.
@@ -215,22 +220,37 @@ Updated: 2026-06-29
     existing `concepts` topic to `.almanac/pages/thin-dogfood-note.md`; Git
     status showed only that wiki page changed; job log showed queued,
     prepared context, clean preflight, `codex succeeded`, and done
+- Slice-19 sync status checks passed:
+  - focused transcript discovery, sync workflow, CLI sync status, and
+    architecture tests
+  - 107 full tests
+  - ruff
+  - `git diff --check`
+  - top-level and `sync status` help smoke
+  - real-home JSON status smoke for Codex transcripts
+  - `uv build` package build
+  - isolated temp-repo dogfood with a synthetic Codex transcript reported
+    ready lines 1-2
 
 ## Dirty/Staged Files
 
-After slice 18 is committed, the worktree should be clean. If any slice-18 files
-are dirty, re-run focused Garden/prompt/CLI/ingest/architecture tests,
-`git diff --check`, pytest, ruff, CLI help, package build inspection, and a real
-temp-repo `codealmanac garden --using codex` dogfood run.
+After slice 19 is committed, the worktree should be clean. If any slice-19 files
+are dirty, re-run focused transcript discovery/sync/CLI/architecture tests,
+`git diff --check`, pytest, ruff, CLI help/status smoke, package build
+inspection, and an isolated transcript sync-status dogfood run.
 
 ## Next Move
 
-1. Add `sync` discovery/automation behind the existing run/safety/harness seams,
-   or review prompt quality now that prompt Markdown is packaged.
-2. Decide whether the viewer needs source/file route hardening before more
+1. Add provider session/transcript feedback to harness run results and run
+   records so full sync execution can skip internal CodeAlmanac lifecycle
+   transcripts.
+2. Wire full `codealmanac sync` to queue ordinary local ingest work only after
+   that internal-session exclusion is tested.
+3. Keep automation install/status/uninstall separate from sync execution.
+4. Decide whether the viewer needs source/file route hardening before more
    lifecycle commands.
-3. Keep AI execution behind workflow and harness seams; do not put it in CLI.
-4. If provider runtime requirements expand to streaming, usage accounting,
+5. Keep AI execution behind workflow and harness seams; do not put it in CLI.
+6. If provider runtime requirements expand to streaming, usage accounting,
    structured output, or subagents, revisit the archived Codex app-server
    adapter as reference instead of stretching the `codex exec` adapter.
 
