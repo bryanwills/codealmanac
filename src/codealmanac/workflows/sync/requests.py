@@ -8,6 +8,9 @@ from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.sources.models import TranscriptApp
 
+DEFAULT_SYNC_PENDING_TIMEOUT = timedelta(hours=24)
+DEFAULT_SYNC_MAX_FAILED_ATTEMPTS = 3
+
 
 class SyncSelectionRequest(CodeAlmanacModel):
     cwd: Path
@@ -16,7 +19,8 @@ class SyncSelectionRequest(CodeAlmanacModel):
     wiki: str | None = None
     home: Path | None = None
     now: datetime | None = None
-    pending_timeout: timedelta = timedelta(hours=24)
+    pending_timeout: timedelta = DEFAULT_SYNC_PENDING_TIMEOUT
+    max_failed_attempts: int = DEFAULT_SYNC_MAX_FAILED_ATTEMPTS
 
     @field_validator("apps")
     @classmethod
@@ -33,6 +37,13 @@ class SyncSelectionRequest(CodeAlmanacModel):
     def non_negative_duration(cls, value: timedelta) -> timedelta:
         if value.total_seconds() < 0:
             raise ValueError("sync duration must be non-negative")
+        return value
+
+    @field_validator("max_failed_attempts")
+    @classmethod
+    def non_negative_max_failed_attempts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("sync max failed attempts must be non-negative")
         return value
 
 

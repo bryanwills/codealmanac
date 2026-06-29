@@ -85,6 +85,16 @@ Sync ingested a quiet transcript.
         )
 
 
+class FailedSyncHarnessAdapter(SyncWritingHarnessAdapter):
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.FAILED,
+            output_text="agent failed",
+        )
+
+
 class LedgerObservingHarnessAdapter(SyncWritingHarnessAdapter):
     def __init__(self, candidate: TranscriptCandidate):
         super().__init__()
@@ -275,6 +285,46 @@ def test_sync_run_writes_pending_claim_before_ingest(
     assert entry.pending_prefix_hash is None
     assert entry.pending_from_line is None
     assert entry.pending_to_line is None
+
+
+def test_sync_run_records_failed_attempt_after_ingest_failure(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    harness = FailedSyncHarnessAdapter()
+    app = app_with_candidates(isolated_home, (candidate,), harness=harness)
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    summary = app.workflows.sync.run(
+        RunSyncRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            harness=HarnessKind.CODEX,
+            now=current_time(),
+            claim_owner="automation-owner",
+        )
+    )
+
+    ledger = SyncLedger.model_validate_json(
+        (workspace.almanac_path / "jobs/sync-ledger.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    entry = ledger.sessions[sync_ledger_key(candidate)]
+    assert summary.started == ()
+    assert summary.needs_attention[0].reason == "ingest-failed"
+    assert entry.status == SyncLedgerStatus.FAILED
+    assert entry.failed_attempts == 1
+    assert entry.last_job_id is not None
+    assert entry.last_error is not None
+    assert entry.pending_owner is None
 
 
 def test_sync_status_skips_active_pending_ledger_entry(
@@ -574,6 +624,41 @@ def test_sync_run_reconciles_failed_pending_run_and_retries(
     assert "Focus on line 1 onward." in harness.requests[0].prompt
 
 
+def test_sync_status_reports_exhausted_retry_budget(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_sync_ledger(
+        workspace.almanac_path,
+        candidate,
+        last_absorbed_size=0,
+        last_absorbed_line=0,
+        prefix_hash=sha256_text(""),
+        status=SyncLedgerStatus.FAILED,
+        failed_attempts=3,
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+            max_failed_attempts=3,
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.ready == ()
+    assert summary.needs_attention[0].reason == "sync-retry-budget-exhausted"
+
+
 def test_sync_status_matches_normalized_transcript_ledger_key(
     tmp_path: Path,
     isolated_home: Path,
@@ -859,6 +944,7 @@ def write_sync_ledger(
     pending_prefix_hash: str | None = None,
     pending_from_line: int | None = None,
     pending_to_line: int | None = None,
+    failed_attempts: int = 0,
     session_key: str | None = None,
     entry_transcript_path: Path | None = None,
 ) -> None:
@@ -876,6 +962,7 @@ def write_sync_ledger(
                 last_absorbed_size=last_absorbed_size,
                 last_absorbed_line=last_absorbed_line,
                 last_absorbed_prefix_hash=prefix_hash,
+                failed_attempts=failed_attempts,
                 pending_started_at=pending_started_at,
                 pending_owner=pending_owner,
                 pending_run_id=pending_run_id,

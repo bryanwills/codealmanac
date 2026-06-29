@@ -45,6 +45,10 @@ It is the constraint document for future agents.
   linked runs that need reconciliation. Foreground `sync` reconciles terminal
   linked runs against the run ledger before deciding whether newer transcript
   bytes still need Ingest.
+- 2026-06-29: Scheduled sync is ordinary foreground `sync` launched by local
+  automation with explicit unattended policy: a stable claim owner, pending
+  timeout, and failed-attempt budget. Repeated failed transcript ingests stop
+  at needs-attention instead of retrying forever.
 - 2026-06-29: Source input has four local layers:
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue
@@ -350,6 +354,10 @@ There is no public `absorb` command. The public lifecycle word is `ingest`.
 
 `codealmanac reindex` is the explicit escape hatch for rebuilding the derived
 SQLite read model. Query commands may refresh the index implicitly and silently.
+
+`codealmanac sync` accepts local execution controls such as
+`--claim-owner`, `--pending-timeout`, and `--max-failed-attempts`. Automation
+uses them to make scheduled sync ownership and retry policy explicit.
 
 CLI commands are not internal APIs. Automation, workers, tests, and server
 wrappers must call the same Python services/workflows that CLI dispatch

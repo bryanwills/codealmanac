@@ -69,7 +69,12 @@ from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateR
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.garden.requests import RunGardenRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
-from codealmanac.workflows.sync.requests import RunSyncRequest, RunSyncStatusRequest
+from codealmanac.workflows.sync.requests import (
+    DEFAULT_SYNC_MAX_FAILED_ATTEMPTS,
+    DEFAULT_SYNC_PENDING_TIMEOUT,
+    RunSyncRequest,
+    RunSyncStatusRequest,
+)
 
 
 def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
@@ -135,6 +140,10 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
                 wiki=args.wiki,
                 apps=parse_sync_apps(args.source_apps),
                 quiet=resolve_quiet(args.quiet, cli_config),
+                pending_timeout=resolve_pending_timeout(args.pending_timeout),
+                max_failed_attempts=args.max_failed_attempts
+                if args.max_failed_attempts is not None
+                else DEFAULT_SYNC_MAX_FAILED_ATTEMPTS,
             )
         )
         render_sync_status(result, json_output=args.json)
@@ -147,7 +156,12 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
                 wiki=args.wiki,
                 apps=parse_sync_apps(args.source_apps),
                 quiet=resolve_quiet(args.quiet, cli_config),
+                pending_timeout=resolve_pending_timeout(args.pending_timeout),
+                max_failed_attempts=args.max_failed_attempts
+                if args.max_failed_attempts is not None
+                else DEFAULT_SYNC_MAX_FAILED_ATTEMPTS,
                 harness=resolve_harness(args.using, cli_config),
+                claim_owner=args.claim_owner,
             )
         )
         render_sync_status(result, json_output=args.json)
@@ -363,6 +377,10 @@ def resolve_quiet(value: str | None, config: CodeAlmanacConfig) -> timedelta:
     if value is None:
         return config.sync.quiet
     return parse_quiet(value)
+
+def resolve_pending_timeout(value: str | None) -> timedelta:
+    parsed = parse_optional_duration(value, "--pending-timeout")
+    return parsed or DEFAULT_SYNC_PENDING_TIMEOUT
 
 def resolve_automation_quiet(
     value: str | None,

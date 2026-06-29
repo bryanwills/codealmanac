@@ -29,6 +29,9 @@ from codealmanac.services.workspaces.service import WorkspacesService
 
 DEFAULT_SYNC_INTERVAL = timedelta(hours=5)
 DEFAULT_GARDEN_INTERVAL = timedelta(hours=4)
+AUTOMATION_SYNC_CLAIM_OWNER = "codealmanac.automation.sync"
+AUTOMATION_SYNC_PENDING_TIMEOUT = timedelta(hours=24)
+AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS = 3
 
 SYNC_LABEL = "com.codealmanac.sync"
 GARDEN_LABEL = "com.codealmanac.garden"
@@ -243,7 +246,18 @@ def program_arguments_for(
     base = (str(executable), "-m", "codealmanac.cli.main")
     if task == AutomationTask.SYNC:
         quiet = request.quiet or DEFAULT_SYNC_QUIET
-        return (*base, "sync", "--quiet", duration_text(quiet))
+        return (
+            *base,
+            "sync",
+            "--quiet",
+            duration_text(quiet),
+            "--claim-owner",
+            AUTOMATION_SYNC_CLAIM_OWNER,
+            "--pending-timeout",
+            duration_text(AUTOMATION_SYNC_PENDING_TIMEOUT),
+            "--max-failed-attempts",
+            str(AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS),
+        )
     return (*base, "garden")
 
 

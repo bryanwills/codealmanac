@@ -1,5 +1,6 @@
 import subprocess
 from datetime import UTC, datetime
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,7 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
 from codealmanac.core.models import AppConfig
+from codealmanac.core.paths import normalize_path
 from codealmanac.services.automation.models import (
     ScheduledJob,
     ScheduledJobStatus,
@@ -32,6 +34,11 @@ from codealmanac.services.updates.models import (
     PackageInstallMetadata,
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.workflows.sync.models import (
+    SyncLedger,
+    SyncLedgerEntry,
+    SyncLedgerStatus,
+)
 
 
 class CliWritingHarnessAdapter:
@@ -590,6 +597,77 @@ quiet = "0s"
     output = capsys.readouterr()
     assert "eligible: 1\n" in output.out
     assert "ready codex codex-session: lines 1-1\n" in output.out
+
+
+def test_cli_sync_status_uses_retry_budget_flags(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = tmp_path / "codex.jsonl"
+    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
+    candidate = TranscriptCandidate(
+        app=TranscriptApp.CODEX,
+        session_id="codex-session",
+        transcript_path=transcript,
+        cwd=repo,
+        repo_root=repo,
+        almanac_path=repo / "almanac",
+        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
+        size_bytes=transcript.stat().st_size,
+    )
+    adapter = CliTranscriptDiscoveryAdapter((candidate,))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        transcript_discovery_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    ledger_path = repo / "almanac/jobs/sync-ledger.json"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    ledger = SyncLedger(
+        version=1,
+        updated_at=datetime(2026, 1, 1, tzinfo=UTC),
+        sessions={
+            f"{candidate.app.value}:{normalize_path(candidate.transcript_path)}": (
+                SyncLedgerEntry(
+                    app=candidate.app,
+                    session_id=candidate.session_id,
+                    transcript_path=candidate.transcript_path,
+                    status=SyncLedgerStatus.FAILED,
+                    last_absorbed_size=0,
+                    last_absorbed_line=0,
+                    last_absorbed_prefix_hash=f"sha256:{sha256(b'').hexdigest()}",
+                    failed_attempts=1,
+                )
+            )
+        },
+    )
+    ledger_path.write_text(ledger.model_dump_json(indent=2), encoding="utf-8")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "sync",
+                "status",
+                "--from",
+                "codex",
+                "--quiet",
+                "0s",
+                "--max-failed-attempts",
+                "1",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr()
+    assert "needs_attention: 1\n" in output.out
+    assert "sync-retry-budget-exhausted" in output.out
 
 
 def test_cli_sync_runs_ingest_for_ready_transcripts(

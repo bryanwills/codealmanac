@@ -39,6 +39,9 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     sync.add_argument("--wiki")
     sync.add_argument("--from", dest="source_apps")
     sync.add_argument("--quiet")
+    sync.add_argument("--pending-timeout")
+    sync.add_argument("--max-failed-attempts", type=int)
+    sync.add_argument("--claim-owner")
     sync.add_argument(
         "--using",
         choices=tuple(kind.value for kind in HarnessKind),
@@ -49,4 +52,6 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     sync_status.add_argument("--wiki")
     sync_status.add_argument("--from", dest="source_apps")
     sync_status.add_argument("--quiet")
+    sync_status.add_argument("--pending-timeout")
+    sync_status.add_argument("--max-failed-attempts", type=int)
     sync_status.add_argument("--json", action="store_true")

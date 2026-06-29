@@ -5,6 +5,33 @@ Updated: 2026-06-29
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-06-29 - Scheduled Sync Is A Command Source
+
+Old hypothesis:
+Background sync might need a separate local queue owner or background worker
+before automation could be considered safe.
+
+New hypothesis:
+For local v1, scheduled sync is a source of foreground `sync` commands. Launchd
+starts the CLI, and automation translates its unattended policy into explicit
+command fields: `claim_owner`, `pending_timeout`, and `max_failed_attempts`.
+
+Evidence that forced the change:
+Foreground sync already writes a pending claim before Ingest and reconciles
+terminal linked runs. Adding another queue would duplicate the ledger. The
+missing safety was not a worker; it was durable retry policy for repeated
+failed attempts.
+
+Code or product assumption affected:
+`SyncLedgerEntry.failed_attempts` records failed transcript ingest attempts.
+`SyncSelectionRequest.max_failed_attempts` controls exhaustion. Automation
+installs scheduled sync with a stable claim owner and explicit retry flags.
+
+Follow-up test:
+Keep tests that failed attempts increment, exhausted failed attempts report
+`sync-retry-budget-exhausted`, and automation sync argv includes the owner and
+retry flags.
+
 ## 2026-06-29 - Source Runtime Context Carries Workspace Ignores
 
 Old hypothesis:

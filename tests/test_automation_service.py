@@ -20,6 +20,12 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
+from codealmanac.services.automation.service import (
+    AUTOMATION_SYNC_CLAIM_OWNER,
+    AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS,
+    AUTOMATION_SYNC_PENDING_TIMEOUT,
+    duration_text,
+)
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
@@ -96,6 +102,12 @@ def test_automation_install_plans_sync_and_garden(
         "sync",
         "--quiet",
         "1s",
+        "--claim-owner",
+        AUTOMATION_SYNC_CLAIM_OWNER,
+        "--pending-timeout",
+        duration_text(AUTOMATION_SYNC_PENDING_TIMEOUT),
+        "--max-failed-attempts",
+        str(AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS),
     )
     assert sync.interval == timedelta(minutes=1)
     assert sync.working_directory is None

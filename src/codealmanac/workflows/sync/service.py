@@ -210,6 +210,7 @@ class SyncWorkflow:
                 snapshot,
                 current_time,
                 request.pending_timeout,
+                request.max_failed_attempts,
             )
             if decision.kind == SyncDecisionKind.SKIP:
                 skipped.append(skip(candidate, decision.reason))
@@ -340,6 +341,7 @@ def absorbed_entry(
             "last_absorbed_at": now,
             "last_job_id": run_id,
             "last_error": None,
+            "failed_attempts": 0,
             "pending_started_at": None,
             "pending_owner": None,
             "pending_run_id": None,
@@ -361,6 +363,7 @@ def failed_entry(
             "status": SyncLedgerStatus.FAILED,
             "last_error": first_error_line(error),
             "last_job_id": run_id or entry.pending_run_id or entry.last_job_id,
+            "failed_attempts": entry.failed_attempts + 1,
             "pending_started_at": None,
             "pending_owner": None,
             "pending_run_id": None,
@@ -406,11 +409,20 @@ def evaluate_cursor(
     snapshot: TranscriptSnapshot,
     now: datetime,
     pending_timeout: timedelta,
+    max_failed_attempts: int,
 ) -> SyncCursorDecision:
     if entry.status == SyncLedgerStatus.NEEDS_ATTENTION:
         return SyncCursorDecision(
             kind=SyncDecisionKind.NEEDS_ATTENTION,
             reason=entry.last_error or "sync-needs-attention",
+        )
+    if (
+        entry.status == SyncLedgerStatus.FAILED
+        and entry.failed_attempts >= max_failed_attempts
+    ):
+        return SyncCursorDecision(
+            kind=SyncDecisionKind.NEEDS_ATTENTION,
+            reason="sync-retry-budget-exhausted",
         )
     if entry.status == SyncLedgerStatus.PENDING:
         if pending_is_stale(entry, now, pending_timeout):
@@ -506,6 +518,7 @@ def reconcile_pending_entry(
             "status": SyncLedgerStatus.FAILED,
             "last_job_id": record.run_id,
             "last_error": record.error or f"sync-pending-run-{record.status.value}",
+            "failed_attempts": entry.failed_attempts + 1,
             **cleared_pending_fields(),
         }
     )

@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-42): pass source runtime context`.
+- Latest committed implementation slice: `feat(slice-43): add scheduled sync retry policy`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -64,6 +64,10 @@ Updated: 2026-06-29
   as needs-attention, stores linked run ids plus cursor snapshots, reconciles
   terminal linked runs before cursor evaluation, and clears pending fields on
   terminal success/failure.
+- Scheduled sync is still foreground `sync` launched by automation. Automation
+  passes a stable claim owner, pending timeout, and failed-attempt budget.
+  `SyncLedgerEntry.failed_attempts` stops repeated failures at
+  `sync-retry-budget-exhausted`.
 - Run records now have an explicit lifecycle transition: queued at creation,
   running before Ingest/Garden side effects, then terminal done/failed/cancelled.
 - Ingest remains source-kind agnostic. It resolves `SourceBrief` values, asks
@@ -280,6 +284,19 @@ Behavior:
 - filesystem runtime no longer treats `almanac/`, `docs/almanac/`, or
   `.almanac/` as universal ignore names
 
+Slice 43 adds scheduled sync retry policy.
+
+Behavior:
+
+- automation installs scheduled sync with `--claim-owner
+  codealmanac.automation.sync`, `--pending-timeout 24h`, and
+  `--max-failed-attempts 3`
+- sync ledger entries record `failed_attempts`
+- failed Ingest attempts increment the counter
+- successful absorb resets the counter
+- exhausted failed entries report `sync-retry-budget-exhausted` instead of
+  retrying forever
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -326,14 +343,14 @@ Behavior:
   `almanac/`
 - Slice 42 focused filesystem/source/ingest tests, full pytest, full ruff,
   diff check, package build, and custom-root source-runtime dogfood
+- Slice 43 focused sync/automation/CLI tests, full pytest, full ruff, diff
+  check, package build, and retry-budget dogfood
 
 ## Next Move
 
 1. Likely next pressure points:
    - semantic diversity or recency ranking for clean large directories if
      Git-listed unchanged files are still too noisy in dogfood
-   - background sync owner/retry policy now that foreground sync can reconcile
-     pending run ids against local run state
    - scheduled update automation only after non-editable update dogfood
    - browser-harness visual verification for `serve` once Chrome remote
      debugging permission is available

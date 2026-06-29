@@ -32,7 +32,7 @@ that root instead of constructing stores or adapters themselves.
 | `sources` | source observations, source refs, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
 | `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
-| `automation` | local scheduler decisions, quiet windows, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
+| `automation` | local scheduler decisions, quiet windows, unattended sync command policy, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
 | `config` | user/project TOML parsing and precedence for local CLI defaults | lifecycle harness default and sync quiet window |
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
 | `updates` | package update planning, installer metadata, supported foreground update methods | `codealmanac update`, `PackageInstallMetadataProvider`, `PackageCommandRunner` |
@@ -52,7 +52,7 @@ that root instead of constructing stores or adapters themselves.
 |---|---|---|
 | `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
 | `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index`, `prompts`, `lifecycle` |
-| `sync` | discover quiet local transcripts, skip internal lifecycle transcripts, evaluate cursor readiness, claim pending transcript ranges with run linkage, reconcile terminal pending runs, run foreground ingest, clear terminal claims, and update sync cursor ledger | `sources`, `runs`, `ingest`, sync ledger, later `automation` |
+| `sync` | discover quiet local transcripts, skip internal lifecycle transcripts, evaluate cursor readiness, claim pending transcript ranges with run linkage, reconcile terminal pending runs, track failed-attempt retry budget, run foreground ingest, clear terminal claims, and update sync cursor ledger | `sources`, `runs`, `ingest`, sync ledger, automation command policy |
 | `garden` | maintain wiki shape, links, topics, staleness, quality | `health`, `index`, `runs`, `harnesses`, `prompts`, `lifecycle` |
 
 Workflows coordinate. They do not own durable schema unless a missing service is
@@ -129,13 +129,13 @@ decide quiet windows, cursor state, or whether ingest should run.
 `TranscriptCandidate` carries both `repo_root` and `almanac_path` so sync can
 write ledgers under the configured root without guessing.
 
-`workflows/sync` owns sync ledger cursor policy. It writes a durable pending
-claim with the selected run id before calling Ingest, treats active linked runs
-as skipped work, reports terminal linked runs as needs-reconcile during
-read-only status, reconciles terminal linked runs during foreground sync, and
-clears pending fields on success or failure. This is still foreground sync
-ownership; a future background worker may add queue ownership and retry policy
-without changing transcript discovery adapters.
+`workflows/sync` owns sync ledger cursor and retry policy. It writes a durable
+pending claim with the selected run id before calling Ingest, treats active
+linked runs as skipped work, reports terminal linked runs as needs-reconcile
+during read-only status, reconciles terminal linked runs during foreground
+sync, increments failed attempts when transcript ingest fails, and stops
+retrying when the failed-attempt budget is exhausted. Scheduled sync uses this
+same foreground workflow; local v1 does not add a separate queue worker.
 
 The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness
@@ -156,7 +156,9 @@ fetch generic web URLs, remove non-readable HTML nodes, and render bounded
 HTML/text snapshots through the same source-runtime port.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
-automation install/status/uninstall. The launchd implementation lives in
+automation install/status/uninstall. The automation service decides scheduled
+task command policy, including sync's stable claim owner, pending timeout, and
+failed-attempt budget. The launchd implementation lives in
 `integrations/automation/scheduler/` and only translates `ScheduledJob` models
 into plist files plus launchctl calls. It does not decide which jobs should
 exist or what `sync` and `garden` mean.

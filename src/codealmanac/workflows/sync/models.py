@@ -38,6 +38,7 @@ class SyncLedgerEntry(CodeAlmanacModel):
     last_absorbed_at: datetime | None = None
     last_job_id: str | None = None
     last_error: str | None = None
+    failed_attempts: int = 0
     pending_started_at: datetime | None = None
     pending_owner: str | None = None
     pending_run_id: str | None = None
@@ -63,6 +64,13 @@ class SyncLedgerEntry(CodeAlmanacModel):
     def non_negative_cursor(cls, value: int) -> int:
         if value < 0:
             raise ValueError("sync cursor must be non-negative")
+        return value
+
+    @field_validator("failed_attempts")
+    @classmethod
+    def non_negative_failed_attempts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("sync failed attempts must be non-negative")
         return value
 
     @field_validator("pending_to_size", "pending_from_line", "pending_to_line")

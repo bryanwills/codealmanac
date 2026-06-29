@@ -524,6 +524,11 @@
   ignored directories for both Git listing and Python/pathspec traversal. The
   filesystem adapter no longer hard-codes `almanac/`, `docs/almanac/`, or
   `.almanac/` as product roots.
+- Added slice-43 scheduled sync retry policy. Automation now installs scheduled
+  sync with a stable claim owner, a 24h pending timeout, and a failed-attempt
+  budget of 3. `SyncLedgerEntry.failed_attempts` increments after failed
+  transcript Ingest attempts and exhausted failed entries report
+  `sync-retry-budget-exhausted` instead of retrying forever.
 
 ## Current Hypothesis
 
@@ -569,16 +574,15 @@ root from growing back into all-purpose modules. The configured-root slice now
 implements the new default `almanac/` root across setup, registry, index,
 manual, runs, sync ledger, config, prompts, and lifecycle safety. Source
 runtime now receives configured wiki-root ignore policy from Ingest rather than
-guessing root names inside the filesystem adapter.
+guessing root names inside the filesystem adapter. Scheduled sync now remains
+ordinary foreground sync but carries explicit unattended policy from automation
+into the workflow request and durable ledger.
 
 ## Next Hypothesis
 
-The next high-pressure product slice is not another root migration. Automation
-or sync can add a real background owner, retry budget, or unattended failure
-policy only if it builds on the durable pending claim and run lifecycle
-reconciliation already in foreground sync. Scheduled update checks should wait
-for real non-editable install dogfood. The remaining source-runtime pressure is
-semantic diversity or recency ranking for clean large directories if dogfood
-shows unchanged inputs are still too noisy. The remaining serve risks are
-markdown wikilink rewriting inside code spans and browser-harness verification
-once Chrome allows remote debugging.
+The next high-pressure product slice is not another root or sync migration.
+Scheduled update checks should wait for real non-editable install dogfood. The
+remaining source-runtime pressure is semantic diversity or recency ranking for
+clean large directories if dogfood shows unchanged inputs are still too noisy.
+The remaining serve risks are markdown wikilink rewriting inside code spans and
+browser-harness verification once Chrome allows remote debugging.
