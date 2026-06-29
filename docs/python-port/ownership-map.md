@@ -57,7 +57,7 @@ Concrete adapters live under `integrations/` by the service port they implement:
 integrations/
   harnesses/
     codex/
-    claude/   # first concrete adapter, Claude Code CLI
+    claude/
   sources/
     filesystem/
     git/
@@ -79,6 +79,12 @@ by lifecycle workflows to inspect repo/worktree mutation state. The concrete
 Git implementation lives in `integrations/workspaces/git/`. Ingest policy
 decides what mutations are allowed; the Git integration only reports observed
 state.
+
+`integrations/harnesses/command.py` and
+`integrations/harnesses/git_status.py` hold shared harness-adapter machinery:
+captured subprocess execution and Git porcelain changed-file snapshots. They
+are integration helpers, not service ports, because they describe local
+provider-process mechanics shared by Claude and Codex adapters.
 
 ## First Slice Boundary
 

@@ -278,3 +278,34 @@ runs, or index refresh.
 Follow-up test:
 When the Codex adapter lands, add one CLI test that `--using codex` reaches the
 adapter without changing the CLI command shape.
+
+## 2026-06-29 - Codex CLI Adapter Before App-Server
+
+Old hypothesis:
+The Python rewrite might need to port the archived TypeScript Codex app-server
+adapter before `--using codex` could be real.
+
+New hypothesis:
+Use `codex exec` for Python v1 and defer app-server until the harness contract
+needs streaming events, provider usage telemetry, structured tool display,
+programmatic subagents, or richer provider lifecycle control.
+
+Evidence that forced the change:
+Current `codex exec` supports stdin prompts, `--ephemeral`, workspace
+sandboxing, config overrides, and `--output-last-message`. The current
+`HarnessAdapter` contract needs readiness, one prompt run, final text, status,
+and changed files. A real `codex exec` smoke returned `ok`, and real
+`codealmanac ingest note.md --using codex` dogfood created one wiki page in a
+temp repo.
+
+Code or product assumption affected:
+`integrations/harnesses/codex/adapter.py` is a CLI adapter. Shared subprocess
+and Git-status helpers live in `integrations/harnesses/`, not under Claude.
+The archived app-server modules remain behavior reference for future richer
+harness requirements, not a shape to preserve now.
+
+Follow-up test:
+If a later slice adds streaming job attach, usage accounting, structured
+output schemas, or provider-owned subagents to the Python harness contract,
+reopen the app-server path and add fake-protocol tests before changing
+`CodexCliHarnessAdapter`.

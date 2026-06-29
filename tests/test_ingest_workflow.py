@@ -109,6 +109,17 @@ Ingested durable wiki knowledge from the note.
         )
 
 
+class FailedDirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        (request.cwd / "src/app.py").write_text("agent mutation\n", encoding="utf-8")
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.FAILED,
+            output_text="agent failed after mutation",
+        )
+
+
 def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     tmp_path: Path,
     isolated_home: Path,
@@ -168,7 +179,10 @@ def test_ingest_workflow_fails_run_when_harness_is_missing(
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(),
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
@@ -250,6 +264,38 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
 
     assert run.status == RunStatus.FAILED
     assert run.error == "harness codex failed with status failed: agent failed"
+
+
+def test_ingest_workflow_checks_mutations_before_failed_harness_status(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
+    (repo / "src").mkdir()
+    (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(FailedDirtyFileMutatingHarnessAdapter(),),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    with pytest.raises(ValidationFailed):
+        app.workflows.ingest.run(
+            RunIngestRequest(
+                cwd=repo,
+                inputs=("note.md",),
+                harness=HarnessKind.CODEX,
+            )
+        )
+
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+
+    assert run.status == RunStatus.FAILED
+    assert run.error == "ingest changed file outside .almanac: src/app.py"
 
 
 def test_ingest_workflow_allows_preexisting_dirty_app_files_when_unchanged(

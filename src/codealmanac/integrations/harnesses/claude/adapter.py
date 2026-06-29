@@ -1,11 +1,20 @@
 import subprocess
 from pathlib import Path
-from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
+from codealmanac.integrations.harnesses.command import (
+    CommandResult,
+    CommandRunner,
+    SubprocessCommandRunner,
+    first_line,
+)
+from codealmanac.integrations.harnesses.git_status import (
+    changed_paths,
+    git_status_snapshot,
+    parse_git_status_paths,
+)
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -18,49 +27,6 @@ CLAUDE_COMMAND = "claude"
 CLAUDE_RUN_TIMEOUT_SECONDS = 900
 CLAUDE_STATUS_TIMEOUT_SECONDS = 10
 CLAUDE_ALLOWED_TOOLS = "Read,Write,Edit,MultiEdit,Glob,Grep,LS"
-
-
-class CommandResult(CodeAlmanacModel):
-    returncode: int
-    stdout: str = ""
-    stderr: str = ""
-
-
-class CommandRunner(Protocol):
-    def run(
-        self,
-        command: str,
-        args: tuple[str, ...],
-        cwd: Path,
-        timeout_seconds: int,
-        stdin: str | None = None,
-    ) -> CommandResult:
-        """Run a local command and return captured text output."""
-
-
-class SubprocessCommandRunner:
-    def run(
-        self,
-        command: str,
-        args: tuple[str, ...],
-        cwd: Path,
-        timeout_seconds: int,
-        stdin: str | None = None,
-    ) -> CommandResult:
-        completed = subprocess.run(
-            (command, *args),
-            cwd=cwd,
-            text=True,
-            input=stdin,
-            capture_output=True,
-            timeout=timeout_seconds,
-            check=False,
-        )
-        return CommandResult(
-            returncode=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
-        )
 
 
 class ClaudeAuthStatus(BaseModel):
@@ -216,54 +182,10 @@ def failed_result(
     )
 
 
-def git_status_snapshot(
-    runner: CommandRunner,
-    cwd: Path,
-) -> frozenset[Path]:
-    try:
-        result = runner.run(
-            "git",
-            ("-C", str(cwd), "status", "--porcelain=v1", "-z", "--untracked-files=all"),
-            cwd,
-            10,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return frozenset()
-    if result.returncode != 0:
-        return frozenset()
-    return frozenset(parse_git_status_paths(result.stdout))
-
-
-def parse_git_status_paths(value: str) -> tuple[Path, ...]:
-    paths: list[Path] = []
-    fields = [field for field in value.split("\0") if field]
-    skip_next = False
-    for field in fields:
-        if skip_next:
-            skip_next = False
-            continue
-        if len(field) < 4:
-            continue
-        status = field[:2]
-        path_text = field[3:]
-        paths.append(Path(path_text))
-        if status[0] in {"R", "C"} or status[1] in {"R", "C"}:
-            skip_next = True
-    return tuple(paths)
-
-
-def changed_paths(
-    cwd: Path,
-    before: frozenset[Path],
-    after: frozenset[Path],
-) -> tuple[Path, ...]:
-    changed = sorted(after - before, key=lambda item: str(item))
-    return tuple(cwd / path for path in changed)
-
-
-def first_line(*values: str) -> str:
-    for value in values:
-        lines = [line.strip() for line in value.splitlines() if line.strip()]
-        if lines:
-            return lines[0]
-    return ""
+__all__ = [
+    "CLAUDE_ALLOWED_TOOLS",
+    "ClaudeCliHarnessAdapter",
+    "CommandResult",
+    "claude_print_args",
+    "parse_git_status_paths",
+]

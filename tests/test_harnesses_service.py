@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError, NotFoundError
 from codealmanac.services.harnesses.models import (
     HarnessKind,
@@ -72,10 +71,10 @@ def test_harnesses_service_reports_readiness():
 
 
 def test_harnesses_service_rejects_missing_or_duplicate_adapters(tmp_path: Path):
-    app = create_app()
+    service = HarnessesService()
 
     with pytest.raises(NotFoundError):
-        app.harnesses.run(
+        service.run(
             RunHarnessRequest(
                 kind=HarnessKind.CODEX,
                 cwd=tmp_path,

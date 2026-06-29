@@ -21,12 +21,13 @@ Updated: 2026-06-29
   source briefs, local path observations, file fingerprints, and Pydantic URL
   validation.
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
-  contracts plus the adapter port. Claude CLI is the first concrete adapter;
-  Codex remains pending.
+  contracts plus the adapter port. Claude CLI and Codex CLI are both concrete
+  adapters wired by default.
 - `workflows/ingest` now coordinates source resolution, harness execution, run
   ledger updates, `.almanac/` mutation safety, and index refresh.
 - App workflow entrypoints now live under `app.workflows.build` and
-  `app.workflows.ingest`. `create_app()` wires the default Claude adapter.
+  `app.workflows.ingest`. `create_app()` wires the default Claude and Codex
+  adapters.
 - Ingest lifecycle writes now require Git change tracking, clean `.almanac/`
   preflight, and no non-wiki mutation during harness execution. Dirty app files
   are allowed as source material if they remain unchanged.
@@ -37,7 +38,7 @@ Updated: 2026-06-29
   `untag`, and `ingest`.
 - Public `codealmanac ingest` is a thin CLI adapter over
   `app.workflows.ingest.run(...)`. It supports `--using claude|codex`, `--wiki`,
-  `--title`, and `--guidance`; only Claude is wired today.
+  `--title`, and `--guidance`.
 - Topic metadata mutation now covers `topics create`, `topics describe`,
   `topics link`, `topics unlink`, `topics rename`, and `topics delete`.
 
@@ -181,22 +182,37 @@ Updated: 2026-06-29
   - real CLI ingest dogfood in a temp Git repo created
     `.almanac/pages/ingest-cli-thin-adapter.md`; search found it; Git status
     showed only that wiki page changed
+- Slice-17 Codex CLI adapter checks passed:
+  - focused ingest workflow, Codex adapter, Claude adapter, harness service,
+    and architecture tests
+  - 95 full tests
+  - ruff
+  - `git diff --check`
+  - direct `codex exec` final-message smoke returned `ok`
+  - real CLI ingest dogfood in a temp Git repo created
+    `.almanac/pages/codex-adapter.md`; search found `codex-adapter`; Git
+    status showed only that wiki page changed
+  - failed-provider mutation regression passed: a failed harness that mutates
+    `src/app.py` is reported as an ingest mutation-safety failure
 
 ## Dirty/Staged Files
 
-After slice 16 is committed, the worktree should be clean. If any slice-16 files
-are dirty, re-run focused CLI/ingest/Claude/architecture tests,
-`git diff --check`, pytest, ruff, and a real or fake ingest dogfood run.
+After slice 17 is committed, the worktree should be clean. If any slice-17 files
+are dirty, re-run focused Codex/Claude/harness/ingest/architecture tests,
+`git diff --check`, pytest, ruff, a direct `codex exec` smoke, and a real
+temp-repo `codealmanac ingest --using codex` dogfood run.
 
 ## Next Move
 
-1. Add Codex as the second harness adapter, or add the next lifecycle workflow
-   (`garden` or `sync`) behind the same run/safety seams.
+1. Add the next lifecycle workflow (`garden` or `sync`) behind the same
+   run/safety/harness seams, or do a harness review now that both Claude and
+   Codex adapters exist.
 2. Decide whether the viewer needs source/file route hardening before AI-backed
    lifecycle commands.
 3. Keep AI execution behind workflow and harness seams; do not put it in CLI.
-4. If Codex lands next, preserve the public `--using codex` command shape and
-   test that CLI argument adaptation does not change.
+4. If provider runtime requirements expand to streaming, usage accounting,
+   structured output, or subagents, revisit the archived Codex app-server
+   adapter as reference instead of stretching the `codex exec` adapter.
 
 ## Things Not To Do
 

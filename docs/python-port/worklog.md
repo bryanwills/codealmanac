@@ -218,6 +218,35 @@
   after backing up and restoring the local registry. Claude created
   `.almanac/pages/ingest-cli-thin-adapter.md`, search found
   `ingest-cli-thin-adapter`, and Git status showed only that wiki page changed.
+- Read Cosmic Python chapter 2 before Codex adapter work and sent a Relayforge
+  Discord checkpoint. The applied lesson: the port is the application-facing
+  interface, adapters are concrete implementations behind it, and fakes are
+  design feedback when they are hard to write.
+- Added slice-17 Codex CLI adapter. `CodexCliHarnessAdapter` uses
+  `codex login status` for readiness and `codex exec` for runs. It sends the
+  prompt on stdin, requests ephemeral workspace-write execution, disables user
+  MCP servers with `--config mcp_servers={}`, sets noninteractive approval via
+  `--config approval_policy="never"`, and reads the final assistant message
+  from `--output-last-message`.
+- Moved shared command runner and Git-status delta helpers out of the Claude
+  adapter into `integrations/harnesses/command.py` and
+  `integrations/harnesses/git_status.py`, so Claude and Codex are peer adapters
+  behind the same port.
+- Real Codex smoke exposed that this installed `codex exec` rejects
+  `--ask-for-approval` and `-a` even though broader help text advertises an
+  approval option. The adapter uses the accepted config override instead.
+- The first Codex dogfood attempt used `uv run --directory`, which changed the
+  process cwd to the CodeAlmanac checkout instead of the temp repo. The run was
+  interrupted, and its relevant generated page was kept as
+  `.almanac/pages/codex-cli-harness-adapter.md`. Future temp-repo dogfood should
+  call the venv `codealmanac` executable directly or otherwise preserve cwd.
+- Corrected real `codealmanac ingest note.md --using codex` dogfood in a temp
+  Git repo created `.almanac/pages/codex-adapter.md`, search found
+  `codex-adapter`, and Git status showed only that wiki page changed.
+- Review during slice-17 found an ingest safety ordering bug: failed harness
+  results were validated before the after-run Git snapshot. The workflow now
+  checks mutation safety before harness status, so failed providers cannot hide
+  non-wiki file mutations behind an `ExecutionFailed`.
 
 ## Current Hypothesis
 
@@ -228,16 +257,16 @@ local `serve` viewer. The highest-risk serve/index review issue found so far is
 fixed: read traffic no longer forces projection rewrites when the source wiki
 is unchanged. The first lifecycle/runs spine now exists as a ledger and read
 surface. Source inputs and harness execution now have typed service contracts,
-the first internal ingest workflow coordinates them with the run ledger and
-index, the Claude CLI adapter is wired through the app composition root, and
+the internal ingest workflow coordinates them with the run ledger and index,
+Claude and Codex CLI adapters are wired through the app composition root, and
 ingest has provider-neutral Git mutation safety around harness execution. The
 public `codealmanac ingest` command now reaches that workflow without making
 the CLI an internal API.
 
 ## Next Hypothesis
 
-The next slice should either add Codex as the second harness adapter or add the
-next lifecycle workflow (`garden` or `sync`) behind the same run/safety seams.
-The remaining serve risks are markdown wikilink rewriting inside code spans,
-browser-harness verification once Chrome allows remote debugging, and whether a
-source/file route belongs in the first viewer shape.
+The next slice should add the next lifecycle workflow (`garden` or `sync`) or
+review the provider harness now that Claude and Codex both exist. The remaining
+serve risks are markdown wikilink rewriting inside code spans, browser-harness
+verification once Chrome allows remote debugging, and whether a source/file
+route belongs in the first viewer shape.

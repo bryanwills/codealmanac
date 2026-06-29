@@ -76,12 +76,12 @@ class IngestWorkflow:
                     title=request.title,
                 )
             )
-            validate_harness_result(harness)
             safety = self.mutation_policy.validate(
                 preflight,
                 workspace,
                 harness.changed_files,
             )
+            validate_harness_result(harness)
             self.record(
                 request,
                 started.run_id,

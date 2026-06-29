@@ -5,8 +5,10 @@ from codealmanac.app import create_app
 from codealmanac.integrations.harnesses.claude.adapter import (
     CLAUDE_ALLOWED_TOOLS,
     ClaudeCliHarnessAdapter,
-    CommandResult,
     claude_print_args,
+)
+from codealmanac.integrations.harnesses.command import CommandResult
+from codealmanac.integrations.harnesses.git_status import (
     parse_git_status_paths,
 )
 from codealmanac.services.harnesses.models import HarnessKind, HarnessRunStatus
