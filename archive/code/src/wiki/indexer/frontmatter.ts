@@ -1,0 +1,283 @@
+import yaml from "js-yaml";
+
+export interface Frontmatter {
+  page_id?: string;
+  title?: string;
+  summary?: string;
+  topics: string[];
+  files: string[];
+  sources: FrontmatterSource[];
+  legacySourceStrings: string[];
+  archived_at: number | null;
+  superseded_by: string | null;
+  supersedes: string | null;
+  /**
+   * The body of the file with frontmatter removed, for FTS5 and H1 fallback.
+   * Always populated even when the file has no frontmatter.
+   */
+  body: string;
+}
+
+export type FrontmatterSource =
+  | { id: string; type: "file"; path: string; note?: string }
+  | {
+      id: string;
+      type: "web";
+      url: string;
+      title?: string;
+      retrieved_at?: string;
+      note?: string;
+    }
+  | { id: string; type: "commit"; rev: string; note?: string }
+  | { id: string; type: "pr"; url?: string; number?: string; note?: string }
+  | { id: string; type: "issue"; url?: string; number?: string; note?: string }
+  | {
+      id: string;
+      type: "conversation";
+      path?: string;
+      run_id?: string;
+      note?: string;
+    }
+  | { id: string; type: "wiki"; slug: string; note?: string }
+  | { id: string; type: "manual"; note: string };
+
+/**
+ * Pull YAML frontmatter off the top of a markdown file and coerce the
+ * relevant fields. Unknown fields are tolerated silently — the wiki should
+ * accept fields we don't understand yet without spewing warnings at the
+ * user (future slices might consume them).
+ *
+ * Failure modes:
+ *   - No frontmatter at all → `{ topics: [], files: [], ..., body: raw }`.
+ *     This is legal; a heading + prose is a valid page.
+ *   - Malformed YAML → warning to stderr, treated as "no frontmatter". We
+ *     choose not to throw so a single bad file doesn't tank a reindex.
+ *
+ * Note on `archived_at`: authors write this as a YAML date (`2026-04-15`),
+ * which `js-yaml` parses to a JS `Date`. We also tolerate ISO-8601 strings
+ * and raw numbers. Everything else gets dropped (treated as "not
+ * archived"). Storing epoch seconds keeps `--since`/`--stale`/`archived`
+ * arithmetic trivial at query time.
+ */
+export function parseFrontmatter(raw: string): Frontmatter {
+  const empty: Frontmatter = {
+    topics: [],
+    files: [],
+    sources: [],
+    legacySourceStrings: [],
+    archived_at: null,
+    superseded_by: null,
+    supersedes: null,
+    body: raw,
+  };
+
+  // Frontmatter fence MUST start on line 1 — a `---` partway through the
+  // document is just a horizontal rule. Be strict about the opening delim
+  // so we don't accidentally strip section headers.
+  if (!raw.startsWith("---")) {
+    return empty;
+  }
+
+  // Tolerate either Unix or Windows line endings. We read the first line
+  // explicitly to confirm it's only `---` (no trailing content).
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (match === null) {
+    return empty;
+  }
+
+  const yamlBody = match[1] ?? "";
+  const body = match[2] ?? "";
+
+  let parsed: unknown;
+  try {
+    parsed = yaml.load(yamlBody);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`almanac: malformed frontmatter (${message})\n`);
+    return empty;
+  }
+
+  if (parsed === null || parsed === undefined) {
+    return { ...empty, body };
+  }
+  if (typeof parsed !== "object" || Array.isArray(parsed)) {
+    // Someone wrote a YAML scalar or list as the document root — not a
+    // mapping, so no fields for us to extract. Treat as empty but keep the
+    // post-fence body so FTS5 still gets content.
+    return { ...empty, body };
+  }
+
+  const obj = parsed as Record<string, unknown>;
+
+  return {
+    page_id: coerceString(obj.page_id),
+    title: coerceString(obj.title),
+    summary: coerceString(obj.summary),
+    topics: coerceStringArray(obj.topics),
+    files: coerceStringArray(obj.files),
+    ...coerceSources(obj.sources),
+    archived_at: coerceEpochSeconds(obj.archived_at),
+    superseded_by: coerceString(obj.superseded_by) ?? null,
+    supersedes: coerceString(obj.supersedes) ?? null,
+    body,
+  };
+}
+
+/**
+ * H1 fallback for title when frontmatter has none.
+ *
+ * Only considers the first 40 lines of the body — any real wiki page has
+ * its H1 near the top. NOTE: `String.prototype.split(sep, limit)` still
+ * splits the whole string internally and then truncates; it's not an
+ * early-bail iteration. For the multi-megabyte files we might see in
+ * practice this is still cheap (one regex pass, no allocation per-line
+ * beyond the 40 we keep), so we favor the clearer code over hand-rolled
+ * line iteration.
+ */
+export function firstH1(body: string): string | undefined {
+  const lines = body.split(/\r?\n/, 40);
+  for (const line of lines) {
+    const m = line.match(/^#\s+(.+?)\s*#*\s*$/);
+    if (m !== null) {
+      return m[1];
+    }
+  }
+  return undefined;
+}
+
+function coerceString(v: unknown): string | undefined {
+  if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  return undefined;
+}
+
+function coerceStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const item of v) {
+    if (typeof item === "string" && item.trim().length > 0) {
+      out.push(item.trim());
+    }
+  }
+  return out;
+}
+
+function coerceSources(v: unknown): {
+  sources: FrontmatterSource[];
+  legacySourceStrings: string[];
+} {
+  if (!Array.isArray(v)) return { sources: [], legacySourceStrings: [] };
+  const sources: FrontmatterSource[] = [];
+  const legacySourceStrings: string[] = [];
+  for (const item of v) {
+    if (typeof item === "string") {
+      const trimmed = item.trim();
+      if (trimmed.length > 0) legacySourceStrings.push(trimmed);
+      continue;
+    }
+    const source = coerceSource(item);
+    if (source !== null) sources.push(source);
+  }
+  return { sources, legacySourceStrings };
+}
+
+function coerceSource(v: unknown): FrontmatterSource | null {
+  if (v === null || v === undefined || typeof v !== "object" || Array.isArray(v)) {
+    return null;
+  }
+  const obj = v as Record<string, unknown>;
+  const id = coerceString(obj.id);
+  const type = coerceString(obj.type);
+  if (id === undefined || type === undefined) return null;
+  const note = coerceString(obj.note);
+  switch (type) {
+    case "file": {
+      const path = coerceString(obj.path);
+      return path === undefined ? null : optional({ id, type, path, note });
+    }
+    case "web": {
+      const url = coerceString(obj.url);
+      if (url === undefined) return null;
+      return optional({
+        id,
+        type,
+        url,
+        title: coerceString(obj.title),
+        retrieved_at: coerceDateString(obj.retrieved_at),
+        note,
+      });
+    }
+    case "commit": {
+      const rev = coerceString(obj.rev);
+      return rev === undefined ? null : optional({ id, type, rev, note });
+    }
+    case "pr": {
+      const url = coerceString(obj.url);
+      const number = coerceString(obj.number) ?? coerceNumberString(obj.number);
+      if (url === undefined && number === undefined) return null;
+      return optional({ id, type, url, number, note });
+    }
+    case "issue": {
+      const url = coerceString(obj.url);
+      const number = coerceString(obj.number) ?? coerceNumberString(obj.number);
+      if (url === undefined && number === undefined) return null;
+      return optional({ id, type, url, number, note });
+    }
+    case "conversation": {
+      const path = coerceString(obj.path);
+      const run_id = coerceString(obj.run_id);
+      if (path === undefined && run_id === undefined) return null;
+      return optional({ id, type, path, run_id, note });
+    }
+    case "wiki": {
+      const slug = coerceString(obj.slug);
+      return slug === undefined ? null : optional({ id, type, slug, note });
+    }
+    case "manual": {
+      if (note === undefined) return null;
+      return { id, type, note };
+    }
+    default:
+      return null;
+  }
+}
+
+function optional<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) out[key] = value;
+  }
+  return out as T;
+}
+
+function coerceNumberString(v: unknown): string | undefined {
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  return undefined;
+}
+
+function coerceDateString(v: unknown): string | undefined {
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  return undefined;
+}
+
+/**
+ * Coerce a frontmatter `archived_at` value (YAML Date, ISO string, or raw
+ * epoch number) into epoch seconds. Returns `null` for anything we can't
+ * make sense of — pages with an unrecognizable `archived_at` are treated as
+ * active rather than silently marked archived, which is the safer default.
+ */
+function coerceEpochSeconds(v: unknown): number | null {
+  if (v instanceof Date) {
+    return Math.floor(v.getTime() / 1000);
+  }
+  if (typeof v === "number" && Number.isFinite(v)) {
+    return Math.floor(v);
+  }
+  if (typeof v === "string" && v.trim().length > 0) {
+    const t = Date.parse(v.trim());
+    if (!Number.isNaN(t)) {
+      return Math.floor(t / 1000);
+    }
+  }
+  return null;
+}

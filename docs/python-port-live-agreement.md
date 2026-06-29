@@ -1,0 +1,330 @@
+# CodeAlmanac Python Port Live Agreement
+
+This file records the active agreement for the Python rewrite of CodeAlmanac.
+It is the constraint document for future agents.
+
+## Current Decisions
+
+- 2026-06-29: Python v1 is a local product. Do not build hosted shipping,
+  hosted CLI, login/connect/upload, SDK, or MCP in this rewrite.
+- 2026-06-29: The branch may contain merged `dev` / `origin/dev` work that
+  assumes hosted shipping. Treat that work as reference or archive material,
+  not as product direction for this rewrite.
+- 2026-06-29: The old TypeScript/Node implementation is archived under
+  `archive/code/`. Use it as behavior reference, not as code to preserve.
+- 2026-06-29: Public command and package language is `codealmanac`. Do not add
+  public `almanac` or `alm` aliases for compatibility.
+- 2026-06-29: Repo-owned wiki data stays in `.almanac/`.
+- 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
+  models, service-owned verbs, store-owned persistence, thin CLI edges.
+
+## Product Frame
+
+CodeAlmanac maintains a repo-owned wiki for a codebase and the project world
+around that codebase. It is not a code documentation generator.
+
+The wiki can cover code, architecture, decisions, incidents, conversations, PR
+context, team conventions, deployment constraints, product strategy, and other
+durable knowledge that helps future work.
+
+The durable artifact is the repository's `.almanac/` directory. Git remains the
+system of record for wiki changes.
+
+The Python rewrite is a fresh codebase. Use the old CodeAlmanac implementation
+and Almanac's Python engine as references for behavior and structure. Do not
+share Almanac's hosted engine as a dependency in v1.
+
+## Repository Shape
+
+Target root:
+
+```text
+src/codealmanac/
+  app.py
+  core/
+  database/
+  services/
+  workflows/
+  integrations/
+  cli/
+  prompts/
+  manual/
+```
+
+`app.py` is the composition root. It wires services and integrations through
+explicit dependencies.
+
+`core/` holds shared errors, identifiers, path/text helpers, and tiny cross-cutting
+models that do not belong to one service.
+
+`database/` owns SQLite connections and migration application.
+
+`services/` holds product nouns:
+
+```text
+services/
+  workspaces/
+  wiki/
+  index/
+  sources/
+  runs/
+  harnesses/
+  automation/
+  config/
+  diagnostics/
+```
+
+`workflows/` holds multi-service product verbs:
+
+```text
+workflows/
+  build/
+  ingest/
+  garden/
+  sync/
+```
+
+`integrations/` holds concrete outside-world adapters. Organize adapters by
+the service boundary they implement, not as one flat external-tool list.
+
+```text
+integrations/
+  harnesses/
+    codex/
+    claude/
+  sources/
+    filesystem/
+    git/
+    github/
+    transcripts/
+  automation/
+    scheduler/
+```
+
+Ports live near the service that owns the product contract:
+
+```text
+services/harnesses/ports.py
+services/sources/ports.py
+services/automation/ports.py
+```
+
+Concrete integrations implement those ports:
+
+```text
+integrations/harnesses/codex/adapter.py
+integrations/harnesses/claude/adapter.py
+integrations/sources/github/client.py
+integrations/sources/transcripts/codex.py
+integrations/automation/scheduler/launchd.py
+```
+
+Do not put product decisions inside integrations. An integration translates an
+outside tool into service-owned models and errors.
+
+`cli/` owns command parsing, rendering, stdout/stderr, and exit codes. It does
+not own product decisions.
+
+## Python Service Symmetry
+
+Inside a service package, use these names when needed:
+
+```text
+models.py      domain/read models
+requests.py    service input contracts
+ports.py       adapter protocols
+store.py       CRUD/query persistence
+records.py     row/model conversion
+tables.py      migrations only
+service.py     product verbs
+```
+
+Do not create empty files just to satisfy symmetry.
+
+SQL belongs in `store.py`, `*_store.py`, or `tables.py`. `tables.py` defines
+migrations only. Row conversion belongs in `records.py` or a store-owned helper.
+
+Services own product verbs. Stores own CRUD/query. Integrations implement
+service-owned ports. CLI and future hosted/server edges adapt.
+
+Allowed dependency direction:
+
+```text
+cli
+  -> app
+    -> workflows
+      -> services
+        -> stores
+        -> ports
+          -> integrations
+```
+
+Do not make stores call services. Do not make integrations call services. Do
+not make CLI contain product decisions.
+
+## Service Ownership
+
+| Service | Owns | Must Not Own |
+|---|---|---|
+| `workspaces` | repo root, `.almanac/` root, registry, path containment, local wiki selection | page parsing, source discovery, run execution |
+| `wiki` | markdown page truth, frontmatter, topics, wikilinks, page writes, health inputs | trigger timing, harness execution, source discovery |
+| `index` | SQLite read model, FTS, mentions, backlinks, query projections | markdown truth, agent execution |
+| `sources` | source observations, source refs, fingerprints, local source state | deciding when AI runs, page writes |
+| `runs` | run ledger, events, outputs, lifecycle state | source discovery, page parsing, provider transports |
+| `harnesses` | normalized Codex/Claude task/session contracts and ports | run lifecycle, page writes, source catalog |
+| `automation` | local trigger decisions, quiet windows, scheduler state | run internals, source parsing, provider transports |
+| `config` | user/project config parsing and precedence | product workflows |
+| `diagnostics` | doctor-style checks and readiness reports | mutation workflows |
+
+## Workflows
+
+Workflows coordinate services. They do not own durable schema unless a service
+is missing.
+
+`build` creates or refreshes the initial local wiki in `.almanac/`.
+
+`ingest` updates the wiki from selected local material such as paths, PR refs,
+diffs, commit ranges, notes, or transcript refs.
+
+`sync` scans supported local transcript stores, waits for quiet sessions, maps
+material back to repos with `.almanac/`, and queues ordinary local ingest work.
+It does not mean cloud sync.
+
+`garden` maintains existing wiki structure, links, topics, stale pages, and page
+quality. It may run without new source material.
+
+## Source Model
+
+`source` means raw material CodeAlmanac can learn from. It does not mean
+"source of truth."
+
+Authority depends on the claim:
+
+- Code is authoritative for runtime behavior.
+- Transcripts are authoritative for what was discussed.
+- PRs are authoritative for review context.
+- The wiki is the maintained synthesis.
+
+Discovery answers: what material exists or changed?
+
+Use answers: what material should this run use?
+
+There is no durable `candidate` object in v1. Bundling is a run input selection,
+not a discovered product entity.
+
+Adding or discovering material does not imply a wiki update. Updating the wiki
+is a separate `ingest`, `build`, `sync`, or `garden` workflow.
+
+Page file/folder references belong to `wiki` and `index`, not to the source
+catalog. `[[src/foo.py]]` and `[[src/foo/]]` power mentions search and health.
+
+## CLI Contract
+
+The v1 CLI is local-only.
+
+```text
+codealmanac init [path]
+codealmanac list
+codealmanac search [query]
+codealmanac show <slug>
+codealmanac topics
+codealmanac health
+codealmanac serve
+codealmanac build
+codealmanac ingest <inputs...>
+codealmanac sync
+codealmanac sync status
+codealmanac garden
+codealmanac jobs
+codealmanac automation install|status|uninstall
+codealmanac doctor
+codealmanac update
+```
+
+Commands run inside a repo resolve the nearest `.almanac/`, like Git resolves
+`.git/`.
+
+`codealmanac list` reads the local registry of known `.almanac/` repos.
+
+Use `--wiki <name>` to target a different registered local wiki. Do not add
+`codealmanac use <wiki>` in v1; sticky selection is hosted-style state and can
+confuse agents.
+
+There is no public `capture` verb. Conversation collection is part of `sync` or
+a future explicit local source workflow.
+
+There is no public `absorb` command. The public lifecycle word is `ingest`.
+
+CLI commands are not internal APIs. Automation, workers, tests, and future
+server wrappers must call the same Python services/workflows that CLI dispatch
+calls. They must not shell out to `codealmanac`.
+
+Correct shape:
+
+```python
+app.workflows.sync.run(workspace_id, request)
+app.workflows.ingest.run(workspace_id, request)
+app.runs.record_event(workspace_id, request)
+```
+
+Incorrect shape:
+
+```python
+subprocess.run(["codealmanac", "sync"])
+subprocess.run(["codealmanac", "ingest", "..."])
+```
+
+## Feature Map
+
+### MVP
+
+| Area | Features |
+|---|---|
+| Install/name | `codealmanac` package and command only |
+| Workspace | nearest repo resolution, local registry, path containment |
+| Wiki | pages, frontmatter, topics, wikilinks, file/folder refs |
+| Index | SQLite read model, FTS search, mentions, backlinks, health |
+| Sources | transcript/path/PR/diff input contracts and local source observations |
+| Runs | durable ledger, events, outputs, foreground/background jobs |
+| Harnesses | Codex and Claude behind normalized ports |
+| Workflows | `build`, `ingest`, `sync`, `garden` |
+| Automation | local scheduled sync/garden/update checks |
+| CLI | thin local command surface |
+| Serve | local read-only wiki viewer |
+
+### Explicitly Out Of Scope For V1
+
+| Area | Decision |
+|---|---|
+| Hosted product | Do not build hosted shipping now |
+| Hosted CLI | No `login`, `connect`, `upload`, hosted `sources`, hosted `jobs` |
+| SDK | No Python SDK package |
+| MCP | No MCP server |
+| Compatibility aliases | No public `almanac`, `alm`, or `absorb` |
+| Semantic search | FTS and refs first |
+
+## Non-Negotiables
+
+- Public naming is `codealmanac`.
+- `.almanac/` remains the repo-owned wiki artifact.
+- Local v1 must not inherit hosted assumptions from merged `dev` or `origin/dev`.
+- CLI edges stay thin.
+- Services own product verbs.
+- Stores own persistence.
+- Integrations sit behind ports.
+- Structured models beat loose dictionaries.
+- No hidden `getattr` or dynamic attribute contracts for shaped data.
+- No source-kind branches smeared across unrelated services.
+- No CLI-shaped core.
+- No AI-writing path outside explicit lifecycle workflows.
+- SQLite remains the local read model for search, refs, topics, and health.
+- File/folder mention queries use normalized paths and GLOB-safe matching.
+
+## Open Decisions
+
+1. Whether local `add` deserves a v1 command or should wait until source-pool
+   behavior is concrete.
+2. Whether `jobs` should remain the public noun or become `runs` in the Python
+   rewrite.
+3. Whether `serve` ships in the first Python slice or is restored after the core
+   CLI/read model works.

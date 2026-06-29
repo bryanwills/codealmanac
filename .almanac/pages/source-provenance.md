@@ -95,6 +95,11 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/30/rollout-2026-05-30T18-19-49-019e7b2f-c7d8-7640-a485-6de2f5a4a62f.jsonl
     note: Records the architecture analysis that separated page provenance as a document concept from markdown metadata infrastructure, source connectors, health repair logic, and versioned migrations.
+  - id: source-type-merge-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/10/rollout-2026-06-10T15-32-35-019eb3aa-7d76-77a2-a252-db962382b075.jsonl
+    note: >-
+      Records the dev-branch cleanup that found `type: transcript` session sources were ignored by the parser and caused missing-source health warnings until changed to `type: conversation`.
 status: active
 ---
 
@@ -111,6 +116,8 @@ Source provenance is the evidence model for Almanac pages. It makes `sources:` t
 The first source-provenance implementation deliberately excludes team/local portability fields. The 2026-05-28 discussion identified shared-verification policy as a product question for later iterations, but the source schema slice stays focused on provenance IDs, source types, citations, file-reference derivation, and deterministic migration from legacy fields.
 
 Local conversation sources are evidence pointers, not durable shared archives. A Codex transcript cited as `sources[type=conversation]` may be absent from the normal dated `~/.codex/sessions/` tree while an identical JSONL still exists under `~/.codex/archived_sessions/`; restoring the conversation for local inspection can be a byte-preserving copy back into the dated sessions folder. That operational recovery supports the broader portability rule: local transcript paths can explain where a wiki edit came from, but team-facing current claims should still prefer repo, web, or shared-workspace evidence when another collaborator must verify them. [@conversation-restore-session]
+
+Conversation source records are the supported shape for Codex and Claude session JSONL evidence. `type: transcript` is not a supported source type; the frontmatter parser drops that entry, so citations to its `id` appear as `missing_sources` in `almanac health`. The 2026-06-10 dev-branch merge hit this during conflict resolution and fixed the merged pages by changing session evidence records from `transcript` to `conversation`. [@frontmatter-parser] [@health-command] [@source-type-merge-session]
 
 The source shape is:
 
@@ -132,9 +139,9 @@ sources:
     note: Records the discussion that introduced structured sources.
 ```
 
-Supported source types are `file`, `web`, `commit`, `pr`, `conversation`, `wiki`, and `manual`. Web sources are metadata in page frontmatter; Almanac does not fetch, snapshot, or archive web pages in this implementation.
+Supported source types are `file`, `web`, `commit`, `pr`, `issue`, `conversation`, `wiki`, and `manual`. Web sources are metadata in page frontmatter; Almanac does not fetch, snapshot, or archive web pages in this implementation. [@frontmatter-parser]
 
-GitHub pull requests fit the current `pr` source type because a PR is a durable shared object whose title, body, reviews, changed files, linked commits, and closing context can support a wiki claim. GitHub issues are adjacent but not yet first-class: the 2026-05-28 implementation session concluded that issues should become their own `issue` source type instead of being overloaded into `pr` or generic `web` entries. The wiki should still distill the stable decision, invariant, workflow, or failure mode into page prose; GitHub remains provenance, not the wiki itself. [@implementation-session]
+GitHub pull requests fit the current `pr` source type because a PR is a durable shared object whose title, body, reviews, changed files, linked commits, and closing context can support a wiki claim. GitHub issues use the current `issue` source type when a durable issue object supports a page claim; they should not be overloaded into `pr` or generic `web` entries. The wiki should still distill the stable decision, invariant, workflow, or failure mode into page prose; GitHub remains provenance, not the wiki itself. [@implementation-session] [@frontmatter-parser] [@source-normalizer]
 
 The 2026-05-29 GitHub connector research made this boundary sharper: `sources:` and `page_sources` are page-provenance machinery, not the ingestion model for webhooks, linked issues, review comments, branch-scoped source handles, or duplicate delivery handling. Connector ingestion should use source adapters and [[evidence-bundles|evidence bundles]] that carry trigger identity, addressable source refs, branch context, provenance metadata, and dedupe keys as run input or run sidecar data. PR-time review notes should also be separate output objects rather than page edits, so page frontmatter remains the durable citation layer for claims that actually land in the wiki. [@lifecycle-provenance-session]
 
@@ -220,7 +227,7 @@ The feature still leaves product questions unresolved:
 
 - whether `retrieved_at` is required for web sources immediately or only warned by Garden
 - whether web sources eventually need copied snapshots under `.almanac/sources/`
-- whether `issue` and `discussion` should become supported source types for GitHub and other shared collaboration systems
+- whether `discussion` should become a supported source type for GitHub and other shared collaboration systems
 - whether currentness and uncertainty should stay in prose and source notes, become source metadata, or become a health/query concern
 - whether legacy `files:` should appear only in compatibility notes or remain visible in normal syntax docs
 - whether `almanac serve` should render citation markers specially or leave them as normal Markdown text

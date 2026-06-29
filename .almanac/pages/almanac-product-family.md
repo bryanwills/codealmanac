@@ -39,6 +39,14 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/06/07/rollout-2026-06-07T14-10-43-019ea3ec-7755-7d03-b5bb-753ed523503d.jsonl
     note: Records the product conclusion that inner-loop CLI review should check code changes against repo-owned Almanac memory, while hosted compute remains the paid team default.
+  - id: managed-general-almanac-session
+    type: conversation
+    path: /Users/rohan/.claude/projects/-Users-rohan-Desktop-Projects-codealmanac/4070987d-da2f-46ae-b4a9-9e8d48cab851.jsonl
+    note: Records the 2026-06-10 discussion that generalized Almanac should be a managed service whose core components are a source ledger, compile engine, reader, MCP/REST endpoint, and conflict objects.
+  - id: core-primitives-session
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/06/13/rollout-2026-06-13T18-21-51-019ec3b8-877a-7f33-ab6b-d844e81c2bcc.jsonl
+    note: Records the comparison of CodeAlmanac, General Almanac, and usealmanac that framed Almanac as a primitive wiki engine rather than a profile-first abstraction.
 status: active
 verified: 2026-06-01
 ---
@@ -53,7 +61,9 @@ The 2026-06-03 Reddit launch framing described the user problem as architecture 
 
 The 2026-05-28 remote-product discussion tested whether public and team repositories should move canonical shared knowledge to `ALMANAC.md` plus `almanac/pages/`. The follow-up rejected that as the default because it adds repo-root visual clutter, makes the product feel like another docs surface, and is more invasive for open-source maintainers. The later Mintlify comparison produced a better rule: the wiki root should be configurable, `docs/almanac/` is the preferred public/team profile when the repository can carry project memory under `docs/`, and `.almanac/` remains the quiet local/private profile. Current repos use `.almanac/` for both durable knowledge and local state; the product direction is to move generated indexes, runs, extracts, and caches out of the canonical Almanac root by default, using user cache or hosted coordination storage instead of an in-root `.state/` directory. A top-level `almanac/` should remain opt-in because it has the highest repo-root footprint.
 
-The product split should make `almanac` the general engine, but profile names are not the starting primitive. The reusable model should first define objects and operations that keep the CodeAlmanac knowledge model transferable: projects, sources, source adapters, source records, extracts, pages, topics, runs, triggers, indexing, `ask`, `search`, `show`, Absorb, Garden, and `serve`. Code-specific behavior can then be expressed as repo-aware source adapters, file and folder wikilinks, coding-session capture, code-specific README instructions, AGENTS.md installation, and query affordances such as `--mentions src/path`.
+The product split should make `almanac` the general engine, but profile names are not the starting primitive. The reusable model should first define objects and operations that keep the CodeAlmanac knowledge model transferable: wiki instances, sources, source adapters, source records, extracts, pages, namespaces or topics, links, runs, jobs, triggers, indexing, `ask`, `search`, `show`, Absorb, Garden, and `serve`. Code-specific behavior can then be expressed as repo discovery, transcript and GitHub source adapters, file and folder wikilinks, coding-session capture, code-specific README instructions, AGENTS.md installation, and query affordances such as `--mentions src/path`. [@core-primitives-session]
+
+The 2026-06-13 comparison corrected the earlier temptation to make `resolveRepo(process.cwd())` a core Almanac primitive. Core Almanac should open a wiki instance from an explicit root and layout; CodeAlmanac can discover a Git repository or nearest `.almanac/` before it calls the core. The MediaWiki-inspired model is a wiki kernel of pages, namespaces, revisions, links, categories, jobs, and computed views, with product-specific extensions layered on top. In Almanac terms, the kernel is `almanac.open()` plus page, source, link, topic, search, health, job, and operation APIs; CodeAlmanac layers repo discovery, code-source adapters, codebase manuals, codebase prompts, and before-edit retrieval habits onto that kernel. [@core-primitives-session]
 
 The 2026-05-31 product-packaging discussion settled that CodeAlmanac should be one product with one core loop, not separate products for solo developers, OSS maintainers, and teams. The loop is: work happens in a source system, durable project memory is identified, that memory is written as repo-owned Markdown, and future work receives the memory at the right moment. Audience lanes only change the source systems and surfaces: individual developers use local CLI and agent capture, OSS maintainers use GitHub issues and pull requests, and teams add hosted dashboards, policies, and connectors. [@product-packaging-session]
 
@@ -114,6 +124,16 @@ The core project UI should have three surfaces:
 - **Knowledge**: the browse surface for maintained pages, topics, backlinks, citations, open questions, and reviewable knowledge changes.
 
 The answer surface should cite maintained project knowledge first and raw sources second. The user should not have to browse the wiki to benefit from it, but the maintained wiki must remain available for inspection, editing, review, Git diff, and agent-native retrieval.
+
+## Managed Service MVP
+
+The 2026-06-10 general-product discussion settled that the first non-code Almanac should be a managed service from the user's perspective. The user's machine runs a browser. Almanac's infrastructure owns the per-almanac store, compile workers, web app, key-gated MCP endpoint, and REST API. The markdown repository remains the canonical and exportable substrate, but it is not the primary interface for customers such as Elizabeth. [@managed-general-almanac-session]
+
+The core managed architecture has five product components. The **source ledger** preserves originals with provenance, actor, timestamp, origin, and content hash. The **compile engine** runs `bootstrap`, `absorb`, `garden`, and later `resolve` jobs against that ledger and the current page graph. The **reader** renders pages, wikilinks, topics, citations, review comments, and open questions. The **endpoint** exposes per-almanac retrieval through MCP and REST tools such as `search`, `read_page`, and `list_topics`. **Conflict objects** record contradictions between cited claims, attach them to affected pages, and keep human resolutions available to future absorbs. Accounts, ownership, API keys, and job queues are necessary plumbing, but they are not the product's core architecture. [@managed-general-almanac-session]
+
+The simplest useful flow is drag-and-drop plus access. A user creates a private almanac, uploads seed sources, watches a visible job stream, reads the generated wiki, resolves visible conflicts or open questions, and gives an AI system the connector URL plus API key. Later source additions run Absorb against the existing pages instead of regenerating a parallel wiki. Public almanacs use the same artifact and serving code with open reader and endpoint access; private almanacs keep the reader and endpoint behind auth. [@managed-general-almanac-session]
+
+The MVP build order should put the algorithm before infrastructure polish. Source ledger plus compile engine prove whether Almanac can create and maintain the wiki. A small endpoint lets the customer's AI use the result. A minimal reader makes review possible. A formal conflict inbox can follow after the first jobs prove the loop; v0 can surface conflicts through `open-questions` pages and manual corrections. [@managed-general-almanac-session]
 
 ## CLI Product Loop
 
@@ -223,7 +243,7 @@ The generalized navigation model is therefore: folder equals namespace or primar
 
 ## Primitive Model
 
-The generalized engine should be described in terms of objects before it introduces product variants. A project is the root that owns one `.almanac/` wiki. A source is raw material the project can learn from, such as a file, folder, URL, transcript, repo file, or email export. A source adapter discovers or reads one kind of source. A source record stores durable metadata such as id, path or URL, hash, type, status, and last-indexed time. An extract is derived text or metadata rebuilt from a source. A page is maintained markdown synthesis. A topic is a conceptual neighborhood in `topics.yaml`. A run records one deterministic or agentic operation. A trigger is a rule that decides when to run an operation.
+The generalized engine should be described in terms of objects before it introduces product variants. A wiki instance is a root plus layout and runtime state; a code repository, research folder, personal folder, or hosted project is an adapter-level source world that can contain or connect to that instance. A source is raw material the wiki can learn from, such as a file, folder, URL, transcript, repo file, or email export. A source adapter discovers or reads one kind of source. A source record stores durable metadata such as id, path or URL, hash, type, status, and last-indexed time. An extract is derived text or metadata rebuilt from a source. A page is maintained markdown synthesis. A topic is a conceptual neighborhood in `topics.yaml`. A run records one deterministic or agentic operation. A trigger is a rule that decides when to run an operation. [@core-primitives-session]
 
 A source record should be broad enough for code and non-code Almanacs. Supported source types should include repo file, test, migration, config, prompt, web URL, commit, PR, issue, conversation, manual note, wiki page, email export, and external document. Web source records need URL, title when known, retrieved date, and optionally an archived snapshot or content hash. Source IDs should be stable enough for prose citations, and source notes should say what the source supports rather than merely naming it.
 

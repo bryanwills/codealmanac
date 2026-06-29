@@ -11,6 +11,22 @@ sources:
     type: file
     path: prompts/operations/build.md
     note: Requires `.almanac/pages/getting-started.md` as the canonical front door and rejects a second `project-overview.md` front-door page.
+  - id: repo-manual
+    type: file
+    path: MANUAL.md
+    note: Defines the repo's engineering and architecture-building doctrine, which is distinct from wiki-writing doctrine.
+  - id: human-manual-seed
+    type: file
+    path: docs/manual/good-codebase-wikis.md
+    note: Provides the short human-facing manual seed for codebase wiki quality, sources, links, names, and subject neighborhoods.
+  - id: notability-prompt
+    type: file
+    path: prompts/base/notability.md
+    note: Defines the agent-facing rules for what deserves a page, topic, hub, or no-op.
+  - id: syntax-prompt
+    type: file
+    path: prompts/base/syntax.md
+    note: Defines the agent-facing page syntax, frontmatter, citations, wikilinks, grounding, page shape, and source-control rules.
   - id: lifecycle-architecture
     type: wiki
     slug: lifecycle-architecture
@@ -48,6 +64,16 @@ verified: 2026-06-09
 This page is the front door for the CodeAlmanac wiki. It exists because Build treats `.almanac/pages/getting-started.md` as the canonical orientation page and rejects a second front-door page such as `project-overview.md`. [@build-prompt]
 
 Use this page to choose a reading path before changing code. The wiki's job is to preserve project understanding that is not obvious from source files alone, and topics are browse neighborhoods rather than a reliable read order. [@wiki-readme]
+
+## Where guidance lives
+
+CodeAlmanac guidance is intentionally split by audience and job. `[[.almanac/README.md]]` is the repo wiki charter for notability, topic taxonomy, page shapes, linking, and the flat `.almanac/pages/` layout. [@wiki-readme]
+
+`[[docs/manual/good-codebase-wikis.md]]` is the short human-facing manual seed for codebase wiki quality. It defines sources as trust evidence, links as navigation, readable page names, and subject neighborhoods for large areas. [@human-manual-seed]
+
+`[[prompts/base/notability.md]]` and `[[prompts/base/syntax.md]]` are the agent-facing wiki-writing doctrine loaded by lifecycle operations. They define page existence, topic and hub judgment, structured `sources:`, citation markers, wikilink syntax, grounding, page shape, and source-control hygiene. [@notability-prompt] [@syntax-prompt]
+
+`[[./MANUAL.md]]` is the repo engineering manual. Read it before implementing features because it defines how this project evolves architecture, but do not treat it as the wiki-writing manual. [@repo-manual]
 
 ## Start by task
 

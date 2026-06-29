@@ -9,6 +9,32 @@ codealmanac is a living wiki for codebases, maintained by AI coding agents. It d
 
 **Full spec:** `/Users/rohan/Desktop/Projects/openalmanac/docs/ideas/codebase-wiki.md` — source of truth. Read it before making design changes. This file is the working context for implementation.
 
+## Python rewrite architecture references
+
+The active rewrite is a local-only Python codebase. Before non-trivial Python
+implementation, read `docs/python-port-live-agreement.md` and the relevant
+local Architecture Patterns with Python chapters under
+`docs/reference/cosmic-python/`.
+
+Use the book as architecture reference, not as a package template. The main
+transfer is: services own product verbs, stores own persistence, ports live
+near the service that owns the contract, integrations implement those ports,
+and `src/codealmanac/app.py` is the composition root.
+
+Useful chapter map:
+
+- Persistence/store boundaries: `chapter_02_repository.md`
+- CLI/API-to-service boundary: `chapter_04_service_layer.md`
+- Service-level tests: `chapter_05_high_gear_low_gear.md`
+- Transaction boundaries: `chapter_06_uow.md`
+- Command/request objects: `chapter_10_commands.md`
+- Composition root/dependency wiring: `chapter_13_dependency_injection.md`
+
+When a Cosmic Python idea justifies a design choice, quote the relevant line
+briefly in the plan or response and cite the local chapter path. Keep the
+generated Markdown reference files as book text; CodeAlmanac notes belong in
+`docs/reference/cosmic-python/CODEALMANAC.md`, repo docs, or `.almanac` pages.
+
 ## Design philosophy
 
 Intelligence lives in prompts, not pipelines. When judgment is needed — deciding what a session produced, scoring notability, evaluating a proposed page against the graph — we hand a concrete-but-open prompt to an agent. We do not wrap agents in propose/review/apply state machines, intermediate proposal files, or `--dry-run` rehearsals. The writer owns outcomes and calls the reviewer as a subagent when it wants feedback; there is no orchestration JSON schema between them. Everything is **local-only** (`.almanac/` per repo, `~/.almanac/registry.json` globally, no hosted service), the `.almanac/` namespace is **flat** (no `.almanac/wiki/` subdir — future features get peer files), and only lifecycle operations invoke AI or write page prose. Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
@@ -34,20 +60,13 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 
 | Directory | What it is | Key files |
 |-----------|-----------|-----------|
-| `bin/` | npm bin shim — error-formatter around `src/cli.ts` | `codealmanac.ts` |
-| `src/` | TypeScript source | `cli.ts` (commander wiring), `paths.ts` (walk-up to nearest `.almanac/`), `slug.ts` (kebab-case canonicalization) |
-| `src/cli/commands/` | CLI command adapters and command-private helpers | `operations.ts`, `list.ts`, `search.ts`, `show.ts`, `reindex.ts` |
-| `src/platform/` | Local machine integration for install, self-update, and scheduler automation | `install/`, `update/`, `automation/` |
-| `src/init/` | Repo initialization and wiki scaffolding shared by CLI and Build | `scaffold.ts` |
-| `src/agent/` | Agent facade, provider registry, provider adapters, prompt loading | `sdk.ts`, `types.ts`, `providers/` |
-| `src/wiki/indexer/` | SQLite indexer — schema, frontmatter parse, `[[...]]` classifier, freshness | `schema.ts`, `index.ts`, `frontmatter.ts`, `wikilinks.ts`, `paths.ts` (normalization), `resolve-wiki.ts`, `duration.ts` |
-| `src/wiki/registry/` | Global registry at `~/.almanac/registry.json` — atomic read/write + auto-register | `store.ts` (read/write), `index.ts` (facade), `autoregister.ts` |
-| `src/wiki/topics/` | Topic DAG serialized to `.almanac/topics.yaml` + page frontmatter rewrites (slice 3) | `yaml.ts`, `frontmatter-rewrite.ts` |
-| `test/` | Vitest suites, one per feature area | `helpers.ts` (`withTempHome`, `makeRepo`, `writePage`), `*.test.ts` |
-| `prompts/` | Agent prompts bundled in the npm package | `bootstrap.md`, `writer.md`, `reviewer.md` |
-| `docs/plans/` | Slice-by-slice implementation plans + review-fix plans | `slice-N-*.md`, `fixes-slice-N-review.md` |
-| `docs/research/` | Research notes compiled before implementation | `agent-sdk.md` (Claude Agent SDK reference for slices 4-5) |
-| `dist/` | Build output from `tsup` — gitignored | — |
+| `archive/code/` | Archived TypeScript/Node implementation and old viewer | behavior reference only |
+| `docs/python-port-live-agreement.md` | Active Python rewrite agreement | local-only scope, service/workflow/integration structure |
+| `docs/reference/cosmic-python/` | Vendored Architecture Patterns with Python reference | Markdown-only book files plus `CODEALMANAC.md` |
+| `.almanac/` | Repo wiki for design decisions and project memory | `README.md`, `pages/`, `topics.yaml` |
+| `src/codealmanac/` | Target Python implementation root | not scaffolded yet; see live agreement |
+| `tests/` | Target Python test root | not scaffolded yet |
+| `.github/` | GitHub workflow and contribution metadata | CI/publish templates may need rewrite after Python scaffold |
 
 ## How we work
 
@@ -74,11 +93,13 @@ Use code review after meaningful structural changes, especially changes to comma
 - `docs: <summary>` — plans, research, README, this file
 - `refactor(slice-N): <summary>` — structural cleanup within a slice's surface area
 
-Keep commits buildable and test-passing. `npm test` must be green on every commit.
+Keep commits buildable and test-passing. Once the Python scaffold exists, use
+the Python gates defined by the scaffold rather than the archived Node/Vitest
+commands.
 
 ### Testing
 
-Vitest (`npm test` → `vitest run`). Every test that touches `~/.almanac/` or spawns a wiki MUST wrap its body in `withTempHome` from `test/helpers.ts` — it sandboxes `HOME` to a tmpdir so we never touch the real user registry. Use `makeRepo`, `scaffoldWiki`, `writePage` helpers from the same file rather than reinventing fixtures. Structure a slice's test file around the commands/features it adds; extend existing tests rather than rewriting them when a slice layers on top.
+The active Python test harness is not scaffolded yet. When it is, prefer `uv run pytest` and `uv run ruff check` style gates, with helpers that sandbox `HOME` and never touch the real user registry. The archived Vitest suite under `archive/code/test/` is behavior reference only.
 
 ## Design decisions
 

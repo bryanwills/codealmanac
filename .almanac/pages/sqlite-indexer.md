@@ -1,8 +1,8 @@
 ---
 title: SQLite Indexer
 summary: >-
-  The SQLite indexer powers query commands but inherits `better-sqlite3`'s Node-version-sensitive
-  native binding behavior.
+  The SQLite indexer powers query commands but inherits `better-sqlite3` native-binding
+  failures and generated-index schema drift.
 topics:
   - systems
   - storage
@@ -21,6 +21,13 @@ sources:
     note: >-
       Records the 2026-06-08 conclusion that search/query does not need a major rewrite yet, but
       should split filter builders when new query features land.
+  - id: design-studio-branch-session
+    type: conversation
+    path: >-
+      /Users/rohan/.codex/sessions/2026/06/09/rollout-2026-06-09T16-03-59-019eaea0-e2b1-7b93-b4ca-64145266ae12.jsonl
+    note: >-
+      Records a required wiki lookup during a design-studio branch inspection failing because
+      the local `better-sqlite3` binding could not load.
   - id: reindex-command
     type: file
     path: src/cli/commands/reindex.ts
@@ -129,7 +136,7 @@ The current search-query architecture is intentionally modest. `[[src/wiki/query
 
 Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (`CREATE ... IF NOT EXISTS`). Tables:
 
-- `pages` — one row per `.md` file: `slug`, `title`, `file_path`, `content_hash`, `updated_at`, `archived_at`, `superseded_by`
+- `pages` — one row per `.md` file: `slug`, `title`, `summary`, `file_path`, `content_hash`, `updated_at`, `archived_at`, `superseded_by`
 - `topics` — topic metadata (slug, title, description); populated from `topics.yaml` at reindex time
 - `page_topics` — page↔topic many-to-many; FK cascade-deletes on page removal
 - `topic_parents` — DAG edges; has a `CHECK (child_slug != parent_slug)` constraint
@@ -146,7 +153,7 @@ The 2026-05-30 source-architecture discussion rejected a separate `provenance/`,
 
 ## Schema versioning
 
-`SCHEMA_VERSION` constant (currently `2`). On open, if `user_version < SCHEMA_VERSION`, affected tables are dropped and the hash column is cleared to force a full reindex. Avoids `ALTER TABLE` migrations.
+`SCHEMA_VERSION` constant (currently `4`). On open, if `user_version < SCHEMA_VERSION`, affected tables are dropped or altered and the hash column is cleared to force a full reindex. The v3 migration adds `pages.summary` with `ALTER TABLE`; the other current migrations rebuild changed projection tables from markdown.
 
 ## Path handling
 
@@ -157,6 +164,8 @@ All stored paths are lowercase + forward-slashes + no `./` prefix (normalized at
 `better-sqlite3` is the synchronous SQLite driver. WAL journal mode is set on first open and persists in the DB header.
 
 `almanac reindex` runs the indexer even when the freshness check would skip work, but the current command path does not clear `pages.content_hash`. A page whose `content_hash` and `file_path` already match the existing row is skipped inside `runIndexer()`. That means parser, projection, or source-normalization changes can require deleting the generated `.almanac/index.db` or triggering a schema-version rebuild before old derived rows such as `page_sources` are recomputed. [@reindex-command] [@indexer-fast-path]
+
+Schema freshness is version-number based rather than shape-based. `isIndexSchemaStale()` returns true only when `PRAGMA user_version` is lower than `SCHEMA_VERSION`, and `openIndex()` only runs migrations in that same lower-version case. A generated `.almanac/index.db` with an equal or higher `user_version` but missing columns can therefore bypass migration because `CREATE TABLE IF NOT EXISTS pages` does not add columns to an existing table. If query commands fail with a missing-column SQL error such as `pages has no column named archived_at`, delete `.almanac/index.db`; the markdown pages and `topics.yaml` are the source of truth. [@schema]
 
 ## Native binding constraint
 
