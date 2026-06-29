@@ -24,10 +24,10 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
+from codealmanac.services.config.models import DEFAULT_SYNC_QUIET
 from codealmanac.services.workspaces.service import WorkspacesService
 
 DEFAULT_SYNC_INTERVAL = timedelta(hours=5)
-DEFAULT_SYNC_QUIET = timedelta(minutes=45)
 DEFAULT_GARDEN_INTERVAL = timedelta(hours=4)
 
 SYNC_LABEL = "com.codealmanac.sync"

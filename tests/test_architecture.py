@@ -33,6 +33,28 @@ def test_database_package_owns_sqlite_imports():
     assert offenders == []
 
 
+def test_config_service_owns_toml_imports():
+    offenders = [
+        path
+        for path in SRC_ROOT.rglob("*.py")
+        if path.relative_to(SRC_ROOT).parts[:2] != ("services", "config")
+        and imports_module(path, "tomllib")
+    ]
+
+    assert offenders == []
+
+
+def test_config_service_owns_pydantic_settings_imports():
+    offenders = [
+        path
+        for path in SRC_ROOT.rglob("*.py")
+        if path.relative_to(SRC_ROOT).parts[:2] != ("services", "config")
+        and imports_module(path, "pydantic_settings")
+    ]
+
+    assert offenders == []
+
+
 def imports_integration(path: Path) -> bool:
     return imports_module(path, "codealmanac.integrations")
 

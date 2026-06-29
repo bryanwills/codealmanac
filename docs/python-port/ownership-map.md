@@ -33,7 +33,7 @@ that root instead of constructing stores or adapters themselves.
 | `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
-| `config` | user/project config parsing and precedence | first slice only if pyproject/config needs it |
+| `config` | user/project TOML parsing and precedence for local CLI defaults | lifecycle harness default and sync quiet window |
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
 | `updates` | package update planning, installer metadata, supported foreground update methods | `codealmanac update`, `PackageInstallMetadataProvider`, `PackageCommandRunner` |
 | `viewer` | read-only browser payloads, page/topic/search/file overview assembly, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
@@ -105,6 +105,13 @@ creates parent directories, applies row factory and PRAGMA policy, and returns
 the connection. `apply_migrations` applies typed `SQLiteMigration` values in
 version order. Product stores still own SQL schema text, row conversion, and
 query semantics.
+
+`services/config/` owns local config parsing and precedence. `ConfigStore`
+uses `pydantic-settings` TOML sources to build the frozen
+`CodeAlmanacConfig` settings model. `ConfigService` supplies sources in
+precedence order: selected project `.almanac/config.toml`, then
+`~/.almanac/config.toml`, then model defaults. CLI flags remain the final
+override at the command edge. There is no public `config` command in v1.
 
 `integrations/harnesses/git_status.py` holds Git porcelain changed-file
 snapshots shared by Claude and Codex harness adapters.

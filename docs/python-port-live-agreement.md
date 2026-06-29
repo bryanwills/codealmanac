@@ -61,6 +61,13 @@ It is the constraint document for future agents.
   The current `index.db` migration strategy is rebuild-on-version-change
   because the index is a derived read model from `.almanac/pages/` and
   `topics.yaml`.
+- 2026-06-29: `config` owns local user/project TOML parsing and precedence
+  through `pydantic-settings`. The first config surface is intentionally
+  narrow: `~/.almanac/config.toml` and `.almanac/config.toml` can set the
+  default lifecycle harness and sync quiet window. CLI flags still win over
+  config. Do not add a public `config` command, environment override system,
+  secrets system, or hosted/account config surface until a later agreement
+  requires it.
 
 ## Product Frame
 

@@ -18,6 +18,8 @@ from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
 from codealmanac.services.automation.service import AutomationService
+from codealmanac.services.config.service import ConfigService
+from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.diagnostics.service import DiagnosticsService
 from codealmanac.services.harnesses.ports import HarnessAdapter
 from codealmanac.services.harnesses.service import HarnessesService
@@ -64,6 +66,7 @@ class CodeAlmanacWorkflows:
 @dataclass(frozen=True)
 class CodeAlmanac:
     automation: AutomationService
+    config: ConfigService
     workspaces: WorkspacesService
     wiki: WikiService
     index: IndexService
@@ -94,6 +97,7 @@ def create_app(
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
+    config_service = ConfigService(workspaces, ConfigStore(), app_config.config_path)
     automation = AutomationService(workspaces, scheduler or LaunchdSchedulerAdapter())
     manual = ManualLibrary()
     wiki = WikiService(workspaces, manual)
@@ -150,6 +154,7 @@ def create_app(
     )
     return CodeAlmanac(
         automation=automation,
+        config=config_service,
         workspaces=workspaces,
         wiki=wiki,
         index=index,

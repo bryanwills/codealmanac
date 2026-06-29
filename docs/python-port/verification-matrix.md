@@ -486,3 +486,15 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Live build/search dogfood | isolated temp repo, `codealmanac build`, write page, `codealmanac search`, inspect `index.db` `user_version` and WAL mode | passed; search returned `db-boundary-dogfood`, `user_version=20260630`, `journal_mode=wal`, and the indexed slug existed in `pages` |
+
+## Gates For Slice 39 Config Boundary
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused config/CLI/architecture tests | `uv run pytest tests/test_config_service.py tests/test_cli.py::test_cli_ingest_uses_configured_default_harness tests/test_cli.py::test_cli_sync_status_uses_configured_quiet_window tests/test_architecture.py` | 11 passed |
+| Focused lint | `uv run ruff check src/codealmanac/services/config src/codealmanac/core src/codealmanac/app.py src/codealmanac/cli/main.py src/codealmanac/services/automation/service.py tests/test_config_service.py tests/test_cli.py tests/test_architecture.py` | passed |
+| Full tests | `uv run pytest` | 192 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --out-dir /tmp/codealmanac-build-slice39`; wheel inspection | passed; wheel includes `services/config/` and metadata dependency `pydantic-settings` |
+| Live config dogfood | temp repo with `.almanac/config.toml` setting `[sync].quiet = "0s"`, temp `HOME` with one Codex transcript, run `codealmanac sync status --from codex --json` from repo cwd without `--quiet` | passed; scanned 1, eligible 1, ready 1, session `config-dogfood-session` |

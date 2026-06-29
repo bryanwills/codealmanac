@@ -203,6 +203,38 @@ Keep the ingest workflow test that proves a selected `note.md` reaches the
 prompt as available runtime content, and dogfood local file plus directory
 inputs through a temp repo before committing the slice.
 
+## 2026-06-29 - Config Is A Local Defaults Seam, Not A Public Surface
+
+Old hypothesis:
+Config could wait because the current CLI defaults were small hardcoded values:
+`--using claude` and `--quiet 45m`.
+
+New hypothesis:
+Add `services/config` now as a narrow local seam. User and project TOML config
+own lifecycle defaults, while CLI flags still win at the command edge. The
+service must not add a public `config` command, hosted account settings,
+secret management, or environment-source machinery.
+
+Evidence that forced the change:
+The live agreement already names `config` as a service, and the implementation
+had product defaults split between argparse and automation code. Cosmic Python
+chapter 13 points setup and dependency wiring into the composition root rather
+than primary entrypoints. Prior-art checks showed `pydantic-settings` and
+Dynaconf as the mature Python settings libraries. We chose
+`pydantic-settings` because it keeps the existing Pydantic model style while
+providing first-class TOML source handling.
+
+Code or product assumption affected:
+`ConfigStore` builds a `CodeAlmanacConfig` from
+`TomlConfigSettingsSource` values, `ConfigService` chooses project and user
+source order, and `cli/main.py` resolves `flag > config` for lifecycle
+defaults. Automation keeps a service fallback default but shares the config
+constant.
+
+Follow-up test:
+Keep the CLI tests proving `ingest` can use configured default harness without
+`--using`, and `sync status` can use configured quiet time without `--quiet`.
+
 ## 2026-06-29 - Update Is Package-Manager Policy, Not NPM Plumbing
 
 Old hypothesis:

@@ -488,6 +488,15 @@
   chapter 6 patterns applied in slice 38: the store remains the repository for
   product persistence behavior, while database mechanics and migration
   application are infrastructure owned by `database/`.
+- Added slice-39 local config boundary. `services/config` now owns
+  `~/.almanac/config.toml` and `.almanac/config.toml` parsing through
+  `pydantic-settings`, validates values with a frozen settings model, and
+  merges defaults, user config, and selected-project config before CLI flags
+  apply.
+- `ingest`, `garden`, `sync`, `sync status`, and `automation install` now
+  resolve lifecycle defaults through `app.config` instead of embedding product
+  defaults in argparse. The first supported config fields are
+  `[harness].default` and `[sync].quiet`.
 
 ## Current Hypothesis
 
@@ -522,7 +531,9 @@ compatibility aliases, SDK modules, and MCP modules. The manual surface now
 exists as packaged doctrine plus `.almanac/manual/` workspace files without
 adding a public command. The database spine now exists for SQLite connection
 and migration mechanics, with `IndexStore` supplying the first store-owned
-typed migration for the derived read model.
+typed migration for the derived read model. The local config seam now exists
+for typed user/project TOML defaults, with no public `config` command or
+hosted/account configuration surface.
 
 ## Next Hypothesis
 
@@ -534,4 +545,6 @@ install dogfood. The remaining
 source-runtime pressure is semantic diversity or recency ranking for clean
 large directories if dogfood shows unchanged inputs are still too noisy. The
 remaining serve risks are markdown wikilink rewriting inside code spans and
-browser-harness verification once Chrome allows remote debugging.
+browser-harness verification once Chrome allows remote debugging. The remaining
+config pressure should come from concrete use: add more config keys only when a
+second local default needs the same precedence path.

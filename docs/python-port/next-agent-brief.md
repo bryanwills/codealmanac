@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed slice: `feat(slice-38): add database boundary`.
+- Latest committed slice: `feat(slice-39): add config boundary`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
@@ -27,6 +27,15 @@ Updated: 2026-06-29
 - `codealmanac.database` owns SQLite connection setup and migration
   application. `IndexStore` owns the first typed store migration for the
   derived `index.db` read model.
+- `services/config` owns local TOML config parsing and precedence. User config
+  lives at `~/.almanac/config.toml`; project config lives at
+  `.almanac/config.toml`; project config wins over user config; CLI flags still
+  win over both. It uses `pydantic-settings` TOML sources. The first supported
+  fields are `[harness].default` and `[sync].quiet`.
+- `src/codealmanac/cli/main.py` is now the clearest structural debt. Almanac's
+  current CLI in `../almanac/clients/cli/src/almanac_cli/` splits parser,
+  dispatch, and render modules and has architecture tests that keep root files
+  small. Use that as prior art for the next CLI cleanup slice.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Git-listed directory runtime ranks changed and untracked files before
@@ -203,6 +212,20 @@ Behavior:
 - `tests/test_architecture.py` rejects direct `sqlite3` imports outside the
   database package
 
+Slice 39 adds the config boundary.
+
+Behavior:
+
+- `src/codealmanac/services/config/` now exposes Pydantic config models,
+  `LoadConfigRequest`, `ConfigStore`, and `ConfigService`
+- `ConfigStore` reads TOML through `pydantic-settings`
+  `TomlConfigSettingsSource`
+- `ConfigService` merges defaults, user config, and selected-project config
+- `ingest`, `garden`, `sync`, `sync status`, and `automation install` resolve
+  lifecycle defaults through `app.config`
+- `tests/test_architecture.py` rejects `tomllib` imports outside
+  `services/config`
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -239,6 +262,8 @@ Behavior:
 - Slice 38 database helper tests, read-model regression tests, architecture
   boundary test, full pytest, full ruff, diff check, and live build/search
   dogfood
+- Slice 39 config service tests, CLI default-resolution tests, architecture
+  boundary test, full pytest, full ruff, diff check, and live config dogfood
 
 ## Next Move
 

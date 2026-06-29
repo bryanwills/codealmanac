@@ -10,7 +10,7 @@ from humanfriendly import InvalidTimespan, parse_timespan
 from pydantic import ValidationError
 
 from codealmanac import __version__
-from codealmanac.app import create_app
+from codealmanac.app import CodeAlmanac, create_app
 from codealmanac.core.errors import CodeAlmanacError, ValidationFailed
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
@@ -25,6 +25,8 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
+from codealmanac.services.config.models import CodeAlmanacConfig
+from codealmanac.services.config.requests import LoadConfigRequest
 from codealmanac.services.diagnostics.models import (
     DoctorCheck,
     DoctorReport,
@@ -116,7 +118,6 @@ def build_parser() -> argparse.ArgumentParser:
     ingest.add_argument(
         "--using",
         choices=tuple(kind.value for kind in HarnessKind),
-        default=HarnessKind.CLAUDE.value,
     )
     ingest.add_argument("--title")
     ingest.add_argument("--guidance")
@@ -126,7 +127,6 @@ def build_parser() -> argparse.ArgumentParser:
     garden.add_argument(
         "--using",
         choices=tuple(kind.value for kind in HarnessKind),
-        default=HarnessKind.CLAUDE.value,
     )
     garden.add_argument("--title")
     garden.add_argument("--guidance")
@@ -134,18 +134,17 @@ def build_parser() -> argparse.ArgumentParser:
     sync = subcommands.add_parser("sync", help="sync quiet local transcripts")
     sync.add_argument("--wiki")
     sync.add_argument("--from", dest="source_apps")
-    sync.add_argument("--quiet", default="45m")
+    sync.add_argument("--quiet")
     sync.add_argument(
         "--using",
         choices=tuple(kind.value for kind in HarnessKind),
-        default=HarnessKind.CLAUDE.value,
     )
     sync.add_argument("--json", action="store_true")
     sync_subcommands = sync.add_subparsers(dest="sync_command")
     sync_status = sync_subcommands.add_parser("status", help="show sync readiness")
     sync_status.add_argument("--wiki")
     sync_status.add_argument("--from", dest="source_apps")
-    sync_status.add_argument("--quiet", default="45m")
+    sync_status.add_argument("--quiet")
     sync_status.add_argument("--json", action="store_true")
 
     subcommands.add_parser("list", help="list registered local wikis")
@@ -258,7 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     automation_install.add_argument(
         "--quiet",
-        help="minimum quiet time before sync (default: 45m)",
+        help="minimum quiet time before sync",
     )
     automation_install.add_argument(
         "--garden-every",
@@ -331,12 +330,13 @@ def dispatch(args: argparse.Namespace) -> int:
         render_build(result.workspace.name, result.index)
         return 0
     if args.command == "ingest":
+        cli_config = load_cli_config(app, args.wiki)
         result = app.workflows.ingest.run(
             RunIngestRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
                 inputs=tuple(args.inputs),
-                harness=HarnessKind(args.using),
+                harness=resolve_harness(args.using, cli_config),
                 title=args.title,
                 guidance=args.guidance,
             )
@@ -344,11 +344,12 @@ def dispatch(args: argparse.Namespace) -> int:
         render_ingest(result)
         return 0
     if args.command == "garden":
+        cli_config = load_cli_config(app, args.wiki)
         result = app.workflows.garden.run(
             RunGardenRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
-                harness=HarnessKind(args.using),
+                harness=resolve_harness(args.using, cli_config),
                 title=args.title,
                 guidance=args.guidance,
             )
@@ -356,24 +357,26 @@ def dispatch(args: argparse.Namespace) -> int:
         render_garden(result)
         return 0
     if args.command == "sync" and args.sync_command == "status":
+        cli_config = load_cli_config(app, args.wiki)
         result = app.workflows.sync.status(
             RunSyncStatusRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
                 apps=parse_sync_apps(args.source_apps),
-                quiet=parse_quiet(args.quiet),
+                quiet=resolve_quiet(args.quiet, cli_config),
             )
         )
         render_sync_status(result, json_output=args.json)
         return 0
     if args.command == "sync":
+        cli_config = load_cli_config(app, args.wiki)
         result = app.workflows.sync.run(
             RunSyncRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
                 apps=parse_sync_apps(args.source_apps),
-                quiet=parse_quiet(args.quiet),
-                harness=HarnessKind(args.using),
+                quiet=resolve_quiet(args.quiet, cli_config),
+                harness=resolve_harness(args.using, cli_config),
             )
         )
         render_sync_status(result, json_output=args.json)
@@ -526,12 +529,13 @@ def dispatch(args: argparse.Namespace) -> int:
     if args.command == "automation":
         tasks = parse_automation_tasks(args.tasks)
         if args.automation_command == "install":
+            cli_config = load_cli_config(app, None)
             result = app.automation.install(
                 InstallAutomationRequest(
                     cwd=Path.cwd(),
                     tasks=tasks,
                     every=parse_optional_duration(args.every, "--every"),
-                    quiet=parse_optional_duration(args.quiet, "--quiet"),
+                    quiet=resolve_automation_quiet(args.quiet, cli_config),
                     garden_every=parse_optional_duration(
                         args.garden_every,
                         "--garden-every",
@@ -632,6 +636,34 @@ def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
         )
     for item in summary.needs_attention:
         print(f"  - needs attention {item.transcript_path}: {item.reason}")
+
+
+def load_cli_config(app: CodeAlmanac, wiki: str | None) -> CodeAlmanacConfig:
+    return app.config.load(LoadConfigRequest(cwd=Path.cwd(), wiki=wiki))
+
+
+def resolve_harness(value: str | None, config: CodeAlmanacConfig) -> HarnessKind:
+    if value is None:
+        return config.harness.default
+    return HarnessKind(value)
+
+
+def resolve_quiet(value: str | None, config: CodeAlmanacConfig) -> timedelta:
+    if value is None:
+        return config.sync.quiet
+    return parse_quiet(value)
+
+
+def resolve_automation_quiet(
+    value: str | None,
+    config: CodeAlmanacConfig,
+) -> timedelta:
+    if value is None:
+        return config.sync.quiet
+    parsed = parse_optional_duration(value, "--quiet")
+    if parsed is None:
+        raise AssertionError("parsed automation quiet is unexpectedly empty")
+    return parsed
 
 
 def parse_sync_apps(value: str | None) -> tuple[TranscriptApp, ...]:

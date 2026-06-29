@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from codealmanac.core.paths import default_registry_path
+from codealmanac.core.paths import default_config_path, default_registry_path
 
 
 class CodeAlmanacModel(BaseModel):
@@ -11,3 +11,4 @@ class CodeAlmanacModel(BaseModel):
 
 class AppConfig(CodeAlmanacModel):
     registry_path: Path = Field(default_factory=default_registry_path)
+    config_path: Path = Field(default_factory=default_config_path)
