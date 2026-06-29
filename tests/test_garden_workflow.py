@@ -98,6 +98,8 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
     assert result.run.status == RunStatus.DONE
+    assert result.run.started_at is not None
+    assert result.run.finished_at is not None
     assert result.run.summary == "gardened wiki graph"
     assert result.run.harness_transcript is not None
     assert result.run.harness_transcript.session_id == "codex-garden-session"
@@ -116,11 +118,13 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert "Improve a single page if useful." in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
+        RunEventKind.STATUS,
         RunEventKind.MESSAGE,
         RunEventKind.MESSAGE,
         RunEventKind.OUTPUT,
         RunEventKind.STATUS,
     )
+    assert log[1].message == RunStatus.RUNNING.value
 
 
 def test_garden_workflow_rejects_harness_mutation_outside_almanac(

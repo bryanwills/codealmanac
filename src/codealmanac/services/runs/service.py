@@ -4,6 +4,7 @@ from codealmanac.services.runs.models import RunLogEvent, RunRecord
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     ListRunsRequest,
+    MarkRunRunningRequest,
     ReadRunLogRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
@@ -50,6 +51,10 @@ class RunsService:
             request.kind,
             request.message,
         )
+
+    def mark_running(self, request: MarkRunRunningRequest) -> RunRecord:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.mark_running(workspace.almanac_path, request.run_id)
 
     def record_harness_transcript(
         self,

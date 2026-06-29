@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from codealmanac.core.errors import NotFoundError
+from codealmanac.core.errors import ConflictError, NotFoundError
 from codealmanac.services.harnesses.models import HarnessTranscriptRef
 from codealmanac.services.runs.models import (
     RunEventKind,
@@ -89,6 +89,35 @@ class RunStore:
             record.model_copy(update={"updated_at": event.timestamp}),
         )
         return event
+
+    def mark_running(self, almanac_path: Path, run_id: str) -> RunRecord:
+        record = self.read(almanac_path, run_id)
+        if record.status == RunStatus.RUNNING:
+            return record
+        if record.status != RunStatus.QUEUED:
+            raise ConflictError(
+                f"run {run_id} cannot start from {record.status.value}"
+            )
+        now = datetime.now(UTC)
+        running = record.model_copy(
+            update={
+                "status": RunStatus.RUNNING,
+                "updated_at": now,
+                "started_at": now,
+            }
+        )
+        write_record(almanac_path, running)
+        append_event(
+            almanac_path,
+            RunLogEvent(
+                run_id=run_id,
+                sequence=next_sequence(almanac_path, run_id),
+                timestamp=now,
+                kind=RunEventKind.STATUS,
+                message=RunStatus.RUNNING.value,
+            ),
+        )
+        return running
 
     def record_harness_transcript(
         self,

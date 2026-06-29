@@ -47,6 +47,12 @@ class RecordRunEventRequest(CodeAlmanacModel):
     wiki: str | None = None
 
 
+class MarkRunRunningRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: str
+    wiki: str | None = None
+
+
 class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
     cwd: Path
     run_id: str

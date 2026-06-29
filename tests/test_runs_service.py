@@ -4,12 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
+from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
 from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     ListRunsRequest,
+    MarkRunRunningRequest,
     ReadRunLogRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
@@ -34,6 +36,9 @@ def test_runs_service_records_job_and_events(
             operation=RunOperation.INGEST,
             title="Digest design note",
         )
+    )
+    running = app.runs.mark_running(
+        MarkRunRunningRequest(cwd=repo, run_id=record.run_id)
     )
     event = app.runs.record_event(
         RecordRunEventRequest(
@@ -68,15 +73,19 @@ def test_runs_service_records_job_and_events(
     log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=record.run_id))
 
     assert record.status == RunStatus.QUEUED
-    assert event.sequence == 2
+    assert running.status == RunStatus.RUNNING
+    assert running.started_at is not None
+    assert event.sequence == 3
     assert attached.harness_transcript == transcript
     assert finished.status == RunStatus.DONE
+    assert finished.started_at == running.started_at
     assert finished.harness_transcript == transcript
     assert finished.summary == "updated wiki"
     assert [run.run_id for run in listed] == [record.run_id]
     assert shown.status == RunStatus.DONE
     assert shown.log_path == Path(".almanac/jobs") / f"{record.run_id}.jsonl"
     assert tuple(entry.kind for entry in log) == (
+        RunEventKind.STATUS,
         RunEventKind.STATUS,
         RunEventKind.MESSAGE,
         RunEventKind.STATUS,
@@ -107,6 +116,32 @@ def test_runs_service_targets_registered_wiki(
     assert app.runs.list(ListRunsRequest(cwd=second, wiki="first"))[0].run_id == (
         record.run_id
     )
+
+
+def test_runs_service_refuses_running_transition_after_terminal_status(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(
+        StartRunRequest(cwd=repo, operation=RunOperation.INGEST)
+    )
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            status=RunStatus.FAILED,
+            error="failed before running",
+        )
+    )
+
+    with pytest.raises(ConflictError):
+        app.runs.mark_running(
+            MarkRunRunningRequest(cwd=repo, run_id=record.run_id)
+        )
 
 
 def test_finish_run_request_requires_terminal_status(tmp_path: Path):

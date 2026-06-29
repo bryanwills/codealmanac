@@ -30,7 +30,7 @@ that root instead of constructing stores or adapters themselves.
 | `wiki` | page files, frontmatter, topics, wikilinks, page writes, health inputs | `init`, `show`, page parsing for index |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | `search`, `show --links`, `health` |
 | `sources` | source observations, source refs, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
-| `runs` | run ledger, events, outputs, lifecycle state, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion |
+| `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
 | `config` | user/project config parsing and precedence | first slice only if pyproject/config needs it |

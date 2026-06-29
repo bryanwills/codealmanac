@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed slice: `feat(slice-35): add sync pending claims`.
+- Latest committed slice: `feat(slice-36): add run lifecycle state`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
@@ -38,6 +38,8 @@ Updated: 2026-06-29
 - Foreground `sync` writes a durable pending ledger claim before invoking
   Ingest, skips active pending transcript ranges, reports stale pending ranges
   as needs-attention, and clears pending fields on terminal success/failure.
+- Run records now have an explicit lifecycle transition: queued at creation,
+  running before Ingest/Garden side effects, then terminal done/failed/cancelled.
 - Ingest remains source-kind agnostic. It resolves `SourceBrief` values, asks
   `SourcesService.inspect_runtime(...)` for snapshots, renders typed runtime
   JSON into the prompt, calls the selected harness, validates `.almanac/`
@@ -153,6 +155,18 @@ Behavior:
 - terminal success/failure clears pending fields
 - this is not a full background retry/reconciliation loop
 
+Slice 36 adds run lifecycle state.
+
+Behavior:
+
+- `RunsService.mark_running(...)` moves a queued run to running
+- `RunStore` sets `started_at` and appends a `running` status event
+- marking an already running run is idempotent
+- marking a terminal run running raises a conflict
+- Ingest and Garden mark their run records running before side-effecting work
+- this prepares sync reconciliation but does not add a background queue or
+  pending run id yet
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -182,13 +196,16 @@ Behavior:
   build/doctor manual dogfood
 - Slice 35 sync pending tests, full pytest, full ruff, diff check, and pending
   claim dogfood
+- Slice 36 run lifecycle tests, full pytest, full ruff, diff check, and live
+  run-status dogfood
 
 ## Next Move
 
 1. Likely next pressure points:
    - semantic diversity or recency ranking for clean large directories if
      Git-listed unchanged files are still too noisy in dogfood
-   - background sync retry/reconciliation now that durable pending claims exist
+   - background sync pending run linkage and retry/reconciliation now that
+     durable pending claims and run lifecycle states exist
    - scheduled update automation only after non-editable update dogfood
    - browser-harness visual verification for `serve` once Chrome remote
      debugging permission is available

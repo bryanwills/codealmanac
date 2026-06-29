@@ -9,6 +9,7 @@ from codealmanac.services.index.service import IndexService
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
+    MarkRunRunningRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
     StartRunRequest,
@@ -66,6 +67,13 @@ class IngestWorkflow:
                 wiki=request.wiki,
                 operation=RunOperation.INGEST,
                 title=request.title or default_title(request.inputs),
+            )
+        )
+        self.runs.mark_running(
+            MarkRunRunningRequest(
+                cwd=request.cwd,
+                wiki=request.wiki,
+                run_id=started.run_id,
             )
         )
         try:

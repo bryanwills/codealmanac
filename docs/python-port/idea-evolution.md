@@ -818,3 +818,31 @@ identity instead of treating the raw key string as the only truth.
 Follow-up test:
 When background execution exists, decide whether stale pending work should
 retry automatically, require manual attention, or use a bounded retry policy.
+
+## 2026-06-29 - Run Records Are Lifecycle Consistency Boundaries
+
+Old hypothesis:
+Run records could be created as `queued` and then finished as `done` or
+`failed` by the foreground workflow.
+
+New hypothesis:
+The run record needs an explicit `running` transition before lifecycle side
+effects begin. The `runs` service owns that transition and rejects attempts to
+restart terminal records.
+
+Evidence that forced the change:
+Sync pending claims need future reconciliation against run state. A record that
+jumps from `queued` to a terminal state cannot distinguish queued work from
+started work after a crash. Cosmic Python chapter 7 frames an aggregate as the
+consistency boundary for related state changes; here the run record is that
+boundary for lifecycle execution state.
+
+Code or product assumption affected:
+`RunsService.mark_running(...)` is now the only path from `queued` to
+`running`. Ingest and Garden call it immediately after creating the run record.
+The public CLI still exposes `jobs` as the inspection noun.
+
+Follow-up test:
+When sync stores pending run ids, reconcile stale pending entries against
+`queued`, `running`, and terminal run records instead of treating age alone as
+the only signal.

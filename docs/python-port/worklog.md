@@ -455,6 +455,14 @@
 - Sent a Relayforge Discord checkpoint for the Cosmic Python chapter 6 pattern
   applied in slice 35: sync needs an explicit durable pending claim before the
   side-effecting Ingest run, so the cursor update has an atomic checkpoint.
+- Added slice-36 run lifecycle state. `RunsService` now exposes
+  `mark_running(...)`, `RunStore` enforces `queued -> running -> terminal`
+  transitions, and Ingest/Garden mark run records running before their
+  side-effecting work begins.
+- Sent a Relayforge Discord checkpoint for the Cosmic Python chapter 7 pattern
+  applied in slice 36: the run record is the consistency boundary for
+  lifecycle state, so future sync reconciliation can trust status instead of
+  inferring execution from logs.
 
 ## Current Hypothesis
 
@@ -466,7 +474,8 @@ read surface. Source inputs, prompt rendering, harness execution, mutation
 safety, and run logging now have typed service/workflow boundaries. Claude and
 Codex CLI adapters are wired through the app composition root. Public `ingest`
 and `garden` commands reach their workflows without making the CLI an internal
-API. `sync status` now exposes read-only local transcript readiness behind the
+API. Run records now move through queued, running, and terminal states under
+the `runs` service. `sync status` now exposes read-only local transcript readiness behind the
 same service/workflow/adapter boundaries, and it skips provider transcripts
 that came from CodeAlmanac lifecycle runs. Lifecycle runs retain optional
 provider transcript identity for that exclusion. Foreground `sync` now runs
@@ -489,9 +498,10 @@ adding a public command.
 
 ## Next Hypothesis
 
-The next automation or sync slice should add retry/reconciliation semantics
-only if it builds on the durable pending claim with an explicit background owner
-and recovery policy. Scheduled update checks should wait for real non-editable
+The next automation or sync slice should add pending run linkage and
+retry/reconciliation semantics only if it builds on the durable pending claim
+and run lifecycle states with an explicit background owner and recovery policy.
+Scheduled update checks should wait for real non-editable
 install dogfood. The remaining
 source-runtime pressure is semantic diversity or recency ranking for clean
 large directories if dogfood shows unchanged inputs are still too noisy. The

@@ -25,6 +25,9 @@ It is the constraint document for future agents.
   surface as needs-attention; terminal success or failure clears the pending
   fields. This is foreground/scheduled sync safety, not a background
   worker/retry loop.
+- 2026-06-29: `runs` owns lifecycle state transitions. Run records start as
+  `queued`, workflows explicitly mark them `running`, and only terminal
+  finish calls may move them to `done`, `failed`, or `cancelled`.
 - 2026-06-29: Source input has four local layers:
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue
@@ -214,7 +217,7 @@ not make CLI contain product decisions.
 | `wiki` | markdown page truth, frontmatter, topics, wikilinks, page writes, health inputs | trigger timing, harness execution, source discovery |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | markdown truth, agent execution |
 | `sources` | source observations, source refs, fingerprints, local source state | deciding when AI runs, page writes |
-| `runs` | run ledger, events, outputs, lifecycle state | source discovery, page parsing, provider transports |
+| `runs` | run ledger, events, outputs, lifecycle state transitions | source discovery, page parsing, provider transports |
 | `harnesses` | normalized Codex/Claude task/session contracts and ports | run lifecycle, page writes, source catalog |
 | `automation` | local trigger decisions, quiet windows, scheduler state | run internals, source parsing, provider transports |
 | `config` | user/project config parsing and precedence | product workflows |

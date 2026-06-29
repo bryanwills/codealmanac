@@ -12,6 +12,7 @@ from codealmanac.services.index.service import IndexService
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
+    MarkRunRunningRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
     StartRunRequest,
@@ -63,6 +64,13 @@ class GardenWorkflow:
                 wiki=request.wiki,
                 operation=RunOperation.GARDEN,
                 title=request.title or "Garden wiki",
+            )
+        )
+        self.runs.mark_running(
+            MarkRunRunningRequest(
+                cwd=request.cwd,
+                wiki=request.wiki,
+                run_id=started.run_id,
             )
         )
         try:

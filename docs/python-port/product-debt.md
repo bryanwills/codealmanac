@@ -22,12 +22,12 @@ alive while rebuilding in Python.
 
 | Debt | Pressure test |
 |---|---|
-| `jobs` vs `runs` public noun | Decide before implementing the run ledger CLI surface. |
+| `jobs` vs `runs` public noun | resolved: public CLI noun is `jobs`; internal service noun is `runs`. |
 | Local `add` command | Decide only when source-pool behavior is concrete. |
-| `serve` slice timing | Restore after core read model works unless a viewer need becomes the highest-risk boundary. |
+| `serve` slice timing | resolved: read-only local viewer exists; remaining risk is browser-harness visual verification. |
 | Agent harness contract | Re-evaluate old Codex app-server and Claude SDK adapters before implementing lifecycle workflows. |
 | Codex app-server parity | The Python v1 Codex adapter uses `codex exec`; port app-server only if the harness contract needs streaming, usage, structured tool display, structured output, or subagents. |
-| Background sync reconciliation | Foreground `codealmanac sync` now writes a durable pending claim before Ingest, clears it on terminal success/failure, and reports stale pending entries. Background execution still needs retry/reconciliation policy before stale pending work can recover unattended. |
+| Background sync reconciliation | Foreground `codealmanac sync` now writes a durable pending claim before Ingest, clears it on terminal success/failure, reports stale pending entries, and run records now expose `queued -> running -> terminal`. Background execution still needs pending run linkage plus retry/reconciliation policy before stale pending work can recover unattended. |
 | Scheduled update automation | Manual `codealmanac update` now exists. Do not schedule update automation until package-manager behavior has more real install dogfood. |
 | Legacy automation migration | The Python rewrite does not port TypeScript capture-sweep migration in the first automation slice. Add only if real installed legacy jobs must be migrated. |
 | Index refresh cost | `ensure_fresh` skips unchanged projection writes using source signatures, but still parses page markdown to compute them. Optimize only after real large-repo dogfood shows this is too slow. |
