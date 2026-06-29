@@ -75,9 +75,10 @@ It is the constraint document for future agents.
   a non-target reference for CodeAlmanac. The desired direction is the local
   viewer already explored here: persistent sidebar, direct page reading,
   topic/file/search movement, and wiki navigation that feels like a repo-local
-  knowledge browser. The design layer can borrow UseAlmanac polish; the page
-  and search interaction model should not be copied from UseAlmanac. The issue
-  is not the wiki content model; it is the visual/product treatment around the
+  knowledge browser. The earlier CodeAlmanac sidebar shell is the interaction
+  target. The design layer can borrow UseAlmanac polish, but the current
+  UseAlmanac page list and search treatment should not be copied. The issue is
+  not the wiki content model; it is the visual/product treatment around the
   wiki reader.
 - 2026-06-29: Bulletproof React is a frontend architecture reference for
   `serve`, not a mandate to add React or Next.js immediately. Apply its

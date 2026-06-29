@@ -44,8 +44,9 @@ Updated: 2026-06-29
   CodeAlmanac's local wiki IA. Preserve the sidebar/page graph/search/topic/file
   navigation model; do not copy UseAlmanac's hosted wiki page-list/search flow,
   hosted account routes, billing/settings surfaces, or hosted wording. The
-  current UseAlmanac wiki page/search UX is a non-target reference; the desired
-  shape is the sidebar-first local viewer with better visual treatment.
+  current UseAlmanac wiki page/search UX is a non-target reference. The desired
+  shape is the earlier CodeAlmanac sidebar-first local viewer with better visual
+  treatment layered over it.
 - Bulletproof React Markdown reference lives under
   `docs/reference/bulletproof-react/`. Treat it as frontend architecture
   guidance for future viewer growth, not a reason to add React/Next.js while
