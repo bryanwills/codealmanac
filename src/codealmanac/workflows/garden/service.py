@@ -2,8 +2,12 @@ from contextlib import suppress
 from pathlib import Path
 
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
+from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
+from codealmanac.services.health.requests import HealthCheckRequest
+from codealmanac.services.health.service import HealthService
+from codealmanac.services.index.models import HealthReport, IndexSummary
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
@@ -12,58 +16,65 @@ from codealmanac.services.runs.requests import (
     StartRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
-from codealmanac.services.sources.models import SourceBrief
-from codealmanac.services.sources.requests import ResolveSourcesRequest
-from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
-from codealmanac.workflows.ingest.models import IngestPromptPayload, IngestResult
-from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.workflows.garden.models import GardenPromptPayload, GardenResult
+from codealmanac.workflows.garden.requests import RunGardenRequest
 from codealmanac.workflows.lifecycle import (
     LifecycleMutationPolicy,
     first_line,
     validate_harness_result,
 )
 
-INGEST_PROMPT_SECTIONS = (
+GARDEN_PROMPT_SECTIONS = (
     PromptName.BASE_PURPOSE,
     PromptName.BASE_NOTABILITY,
     PromptName.BASE_SYNTAX,
-    PromptName.OPERATION_INGEST,
+    PromptName.OPERATION_GARDEN,
 )
 
 
-class IngestWorkflow:
+class GardenWorkflow:
     def __init__(
         self,
         workspaces: WorkspacesService,
-        sources: SourcesService,
         harnesses: HarnessesService,
         runs: RunsService,
         index: IndexService,
+        health: HealthService,
         mutation_policy: LifecycleMutationPolicy,
         prompts: PromptRenderer,
     ):
         self.workspaces = workspaces
-        self.sources = sources
         self.harnesses = harnesses
         self.runs = runs
         self.index = index
+        self.health = health
         self.mutation_policy = mutation_policy
         self.prompts = prompts
 
-    def run(self, request: RunIngestRequest) -> IngestResult:
+    def run(self, request: RunGardenRequest) -> GardenResult:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         started = self.runs.start(
             StartRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
-                operation=RunOperation.INGEST,
-                title=request.title or default_title(request.inputs),
+                operation=RunOperation.GARDEN,
+                title=request.title or "Garden wiki",
             )
         )
         try:
+            index_before = self.index.summary(workspace.workspace_id)
+            health_before = self.health.check(
+                HealthCheckRequest(cwd=request.cwd, wiki=request.wiki)
+            )
+            self.record(
+                request,
+                started.run_id,
+                RunEventKind.MESSAGE,
+                "prepared garden context",
+            )
             preflight = self.mutation_policy.preflight(workspace)
             self.record(
                 request,
@@ -71,23 +82,15 @@ class IngestWorkflow:
                 RunEventKind.MESSAGE,
                 "verified clean .almanac preflight",
             )
-            sources = self.sources.resolve(
-                ResolveSourcesRequest(cwd=request.cwd, inputs=request.inputs)
-            )
-            self.record(
-                request,
-                started.run_id,
-                RunEventKind.MESSAGE,
-                f"resolved {len(sources)} {source_word(len(sources))}",
-            )
             harness = self.harnesses.run(
                 RunHarnessRequest(
                     kind=request.harness,
                     cwd=workspace.root_path,
-                    prompt=render_ingest_prompt(
+                    prompt=render_garden_prompt(
                         self.prompts,
                         workspace,
-                        sources,
+                        index_before,
+                        health_before,
                         request.guidance,
                     ),
                     title=request.title,
@@ -99,28 +102,23 @@ class IngestWorkflow:
                 harness.changed_files,
             )
             validate_harness_result(harness)
-            self.record(
-                request,
-                started.run_id,
-                RunEventKind.OUTPUT,
-                f"{harness.kind.value} {harness.status.value}",
-            )
-            index = self.index.ensure_fresh(workspace.workspace_id)
+            self.record_harness(request, started.run_id, harness)
+            index_after = self.index.ensure_fresh(workspace.workspace_id)
             finished = self.runs.finish(
                 FinishRunRequest(
                     cwd=request.cwd,
                     wiki=request.wiki,
                     run_id=started.run_id,
                     status=RunStatus.DONE,
-                    summary=harness.summary or "ingest completed",
+                    summary=harness.summary or "garden completed",
                 )
             )
-            return IngestResult(
+            return GardenResult(
                 run=finished,
-                sources=sources,
                 harness=harness,
                 safety=safety,
-                index=index,
+                index=index_after,
+                health_before=health_before,
             )
         except Exception as error:
             self.fail_run(request, started.run_id, error)
@@ -135,7 +133,7 @@ class IngestWorkflow:
 
     def record(
         self,
-        request: RunIngestRequest,
+        request: RunGardenRequest,
         run_id: str,
         kind: RunEventKind,
         message: str,
@@ -150,9 +148,22 @@ class IngestWorkflow:
             )
         )
 
+    def record_harness(
+        self,
+        request: RunGardenRequest,
+        run_id: str,
+        harness: HarnessRunResult,
+    ) -> None:
+        self.record(
+            request,
+            run_id,
+            RunEventKind.OUTPUT,
+            f"{harness.kind.value} {harness.status.value}",
+        )
+
     def fail_run(
         self,
-        request: RunIngestRequest,
+        request: RunGardenRequest,
         run_id: str,
         error: Exception,
     ) -> None:
@@ -170,35 +181,29 @@ class IngestWorkflow:
             )
 
 
-def render_ingest_prompt(
+def render_garden_prompt(
     prompts: PromptRenderer,
     workspace: Workspace,
-    sources: tuple[SourceBrief, ...],
+    index: IndexSummary,
+    health: HealthReport,
     guidance: str | None,
 ) -> str:
-    payload = IngestPromptPayload(
+    payload = GardenPromptPayload(
         workspace_name=workspace.name,
         workspace_root=workspace.root_path,
         almanac_root=workspace.almanac_path,
-        sources=sources,
+        pages_root=workspace.almanac_path / "pages",
+        topics_file=workspace.almanac_path / "topics.yaml",
+        index=index,
+        health=health,
         guidance=guidance,
     )
     return prompts.render(
         RenderPromptRequest(
-            sections=INGEST_PROMPT_SECTIONS,
+            sections=GARDEN_PROMPT_SECTIONS,
             context=(
                 "Runtime context:\n"
                 f"{payload.model_dump_json(indent=2)}\n",
             ),
         )
     )
-
-
-def default_title(inputs: tuple[str, ...]) -> str:
-    if len(inputs) == 1:
-        return f"Ingest {inputs[0]}"
-    return f"Ingest {len(inputs)} sources"
-
-
-def source_word(count: int) -> str:
-    return "source" if count == 1 else "sources"

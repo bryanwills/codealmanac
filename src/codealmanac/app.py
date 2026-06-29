@@ -5,6 +5,7 @@ from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.integrations.workspaces.git import GitWorkspaceChangeProbe
+from codealmanac.prompts import PromptRenderer
 from codealmanac.services.diagnostics.service import DiagnosticsService
 from codealmanac.services.harnesses.ports import HarnessAdapter
 from codealmanac.services.harnesses.service import HarnessesService
@@ -24,14 +25,16 @@ from codealmanac.services.wiki.service import WikiService
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.build.service import BuildWorkflow
-from codealmanac.workflows.ingest.safety import IngestMutationPolicy
+from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
+from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 
 
 @dataclass(frozen=True)
 class CodeAlmanacWorkflows:
     build: BuildWorkflow
     ingest: IngestWorkflow
+    garden: GardenWorkflow
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,7 @@ class CodeAlmanac:
     runs: RunsService
     sources: SourcesService
     harnesses: HarnessesService
+    prompts: PromptRenderer
     workflows: CodeAlmanacWorkflows
 
 
@@ -69,6 +73,7 @@ def create_app(
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService()
+    prompts = PromptRenderer()
     harnesses = HarnessesService(
         default_harness_adapters() if harness_adapters is None else harness_adapters
     )
@@ -79,9 +84,19 @@ def create_app(
         harnesses,
         runs,
         index,
-        IngestMutationPolicy(GitWorkspaceChangeProbe()),
+        LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="ingest"),
+        prompts,
     )
-    workflows = CodeAlmanacWorkflows(build=build, ingest=ingest)
+    garden = GardenWorkflow(
+        workspaces,
+        harnesses,
+        runs,
+        index,
+        health,
+        LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
+        prompts,
+    )
+    workflows = CodeAlmanacWorkflows(build=build, ingest=ingest, garden=garden)
     return CodeAlmanac(
         workspaces=workspaces,
         wiki=wiki,
@@ -96,5 +111,6 @@ def create_app(
         runs=runs,
         sources=sources,
         harnesses=harnesses,
+        prompts=prompts,
         workflows=workflows,
     )

@@ -1,25 +1,35 @@
 from pathlib import Path
 
-from codealmanac.core.errors import ValidationFailed
+from codealmanac.core.errors import ExecutionFailed, ValidationFailed
+from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.harnesses.models import HarnessRunResult, HarnessRunStatus
 from codealmanac.services.workspaces.models import (
     Workspace,
     WorkspaceChangeSnapshot,
     WorkspacePathChange,
 )
 from codealmanac.services.workspaces.ports import WorkspaceChangeProbe
-from codealmanac.workflows.ingest.models import (
-    IngestMutationPreflight,
-    IngestMutationReport,
-)
 
 
-class IngestMutationPolicy:
-    def __init__(self, probe: WorkspaceChangeProbe):
+class LifecycleMutationPreflight(CodeAlmanacModel):
+    before: WorkspaceChangeSnapshot
+    almanac_prefix: Path
+
+
+class LifecycleMutationReport(CodeAlmanacModel):
+    before: WorkspaceChangeSnapshot
+    after: WorkspaceChangeSnapshot
+    changed_files: tuple[Path, ...]
+
+
+class LifecycleMutationPolicy:
+    def __init__(self, probe: WorkspaceChangeProbe, operation: str):
         self.probe = probe
+        self.operation = operation
 
-    def preflight(self, workspace: Workspace) -> IngestMutationPreflight:
+    def preflight(self, workspace: Workspace) -> LifecycleMutationPreflight:
         before = self.probe.snapshot(workspace.root_path)
-        validate_snapshot_available(before)
+        validate_snapshot_available(before, self.operation)
         almanac_prefix = almanac_relative_path(workspace)
         dirty_almanac = tuple(
             change.path
@@ -28,23 +38,23 @@ class IngestMutationPolicy:
         )
         if dirty_almanac:
             raise ValidationFailed(
-                "ingest requires a clean .almanac before running: "
+                f"{self.operation} requires a clean .almanac before running: "
                 f"{format_paths(dirty_almanac)}"
             )
-        return IngestMutationPreflight(
+        return LifecycleMutationPreflight(
             before=before,
             almanac_prefix=almanac_prefix,
         )
 
     def validate(
         self,
-        preflight: IngestMutationPreflight,
+        preflight: LifecycleMutationPreflight,
         workspace: Workspace,
         reported_changed_files: tuple[Path, ...],
-    ) -> IngestMutationReport:
+    ) -> LifecycleMutationReport:
         validate_reported_changes(workspace, reported_changed_files)
         after = self.probe.snapshot(workspace.root_path)
-        validate_snapshot_available(after)
+        validate_snapshot_available(after, self.operation)
         mutated = changed_paths(preflight.before, after)
         unsafe = tuple(
             path
@@ -53,10 +63,10 @@ class IngestMutationPolicy:
         )
         if unsafe:
             raise ValidationFailed(
-                "ingest changed file outside .almanac: "
+                f"{self.operation} changed file outside .almanac: "
                 f"{format_paths(unsafe)}"
             )
-        return IngestMutationReport(
+        return LifecycleMutationReport(
             before=preflight.before,
             after=after,
             changed_files=tuple(
@@ -67,11 +77,28 @@ class IngestMutationPolicy:
         )
 
 
-def validate_snapshot_available(snapshot: WorkspaceChangeSnapshot) -> None:
+def validate_harness_result(result: HarnessRunResult) -> None:
+    if result.status != HarnessRunStatus.SUCCEEDED:
+        suffix = first_line(result.output_text)
+        details = f": {suffix}" if suffix else ""
+        raise ExecutionFailed(
+            f"harness {result.kind.value} failed with status "
+            f"{result.status.value}{details}"
+        )
+
+
+def first_line(value: str) -> str:
+    return value.splitlines()[0] if value.splitlines() else value
+
+
+def validate_snapshot_available(
+    snapshot: WorkspaceChangeSnapshot,
+    operation: str,
+) -> None:
     if snapshot.available:
         return
     reason = snapshot.unavailable_reason or "unknown git status failure"
-    raise ValidationFailed(f"ingest requires Git change tracking: {reason}")
+    raise ValidationFailed(f"{operation} requires Git change tracking: {reason}")
 
 
 def validate_reported_changes(

@@ -309,3 +309,32 @@ If a later slice adds streaming job attach, usage accounting, structured
 output schemas, or provider-owned subagents to the Python harness contract,
 reopen the app-server path and add fake-protocol tests before changing
 `CodexCliHarnessAdapter`.
+
+## 2026-06-29 - Garden Uses Wiki State, Not Source Inputs
+
+Old hypothesis:
+The next lifecycle operation might reuse most of Ingest directly because both
+operations ask a harness to update `.almanac/`.
+
+New hypothesis:
+Garden should be a separate workflow over wiki state. It shares prompt
+doctrine, harness execution, run logging, index refresh, and mutation safety,
+but it does not consume `SourceBrief` values or preserve a selected-source
+boundary.
+
+Evidence that forced the change:
+The live agreement and lifecycle wiki describe Garden as whole-graph
+maintenance: topics, links, stale pages, boundaries, hubs, and no-op judgment.
+That is different from Ingest, which starts from bounded selected material.
+The first implementation stayed clean once prompt rendering and mutation
+safety were shared below the operation workflows.
+
+Code or product assumption affected:
+`workflows/garden` receives index and health context. `workflows/ingest`
+receives selected source briefs. Both use `PromptRenderer`,
+`HarnessesService`, `RunsService`, and `LifecycleMutationPolicy`.
+
+Follow-up test:
+If `sync` lands next, keep discovery separate from both operations: Sync may
+select material and call Ingest, but it should not become another prompt-writing
+workflow unless product behavior requires it.

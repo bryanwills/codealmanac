@@ -52,6 +52,8 @@ from codealmanac.services.topics.requests import (
     UnlinkTopicRequest,
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.workflows.garden.models import GardenResult
+from codealmanac.workflows.garden.requests import RunGardenRequest
 from codealmanac.workflows.ingest.models import IngestResult
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 
@@ -97,6 +99,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ingest.add_argument("--title")
     ingest.add_argument("--guidance")
+
+    garden = subcommands.add_parser("garden", help="garden the local wiki")
+    garden.add_argument("--wiki")
+    garden.add_argument(
+        "--using",
+        choices=tuple(kind.value for kind in HarnessKind),
+        default=HarnessKind.CLAUDE.value,
+    )
+    garden.add_argument("--title")
+    garden.add_argument("--guidance")
 
     subcommands.add_parser("list", help="list registered local wikis")
 
@@ -232,6 +244,18 @@ def dispatch(args: argparse.Namespace) -> int:
             )
         )
         render_ingest(result)
+        return 0
+    if args.command == "garden":
+        result = app.workflows.garden.run(
+            RunGardenRequest(
+                cwd=Path.cwd(),
+                wiki=args.wiki,
+                harness=HarnessKind(args.using),
+                title=args.title,
+                guidance=args.guidance,
+            )
+        )
+        render_garden(result)
         return 0
     if args.command == "list":
         for workspace in app.workspaces.list():
@@ -417,6 +441,28 @@ def render_ingest(result: IngestResult) -> None:
     print(f"wiki_changes: {len(result.safety.changed_files)}")
     if result.run.summary is not None:
         print(f"summary: {result.run.summary}")
+
+
+def render_garden(result: GardenResult) -> None:
+    print(f"gardened {result.run.run_id}: {result.run.status.value}")
+    print(f"wiki_changes: {len(result.safety.changed_files)}")
+    print(f"health_before: {health_issue_count(result.health_before)}")
+    if result.run.summary is not None:
+        print(f"summary: {result.run.summary}")
+
+
+def health_issue_count(report: HealthReport) -> int:
+    return sum(
+        len(items)
+        for items in (
+            report.orphans,
+            report.dead_refs,
+            report.broken_links,
+            report.broken_xwiki,
+            report.empty_topics,
+            report.empty_pages,
+        )
+    )
 
 
 def render_reindex(result: IndexRefreshResult, json_output: bool) -> None:

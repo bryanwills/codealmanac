@@ -37,17 +37,28 @@ that root instead of constructing stores or adapters themselves.
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
 | `viewer` | read-only browser payloads, page/topic/search overview assembly, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
 
+## Support Packages
+
+| Package | Owns | First implementation pressure |
+|---|---|---|
+| `prompts` | packaged lifecycle prompt doctrine and operation prompt rendering | `ingest`, `garden`, future `sync` |
+
 ## Workflows
 
 | Workflow | Owns | Calls |
 |---|---|---|
 | `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
-| `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index` |
+| `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index`, `prompts`, `lifecycle` |
 | `sync` | discover quiet local transcripts and queue ingest work | `automation`, `sources`, `runs`, `ingest` |
-| `garden` | maintain wiki shape, links, topics, staleness, quality | `wiki`, `index`, `runs`, `harnesses` |
+| `garden` | maintain wiki shape, links, topics, staleness, quality | `health`, `index`, `runs`, `harnesses`, `prompts`, `lifecycle` |
 
 Workflows coordinate. They do not own durable schema unless a missing service is
 identified and added to this map.
+
+`workflows/lifecycle.py` owns shared lifecycle execution helpers: harness-result
+validation and Git-backed `.almanac/` mutation safety. Operation-specific
+workflows pass their public verb into `LifecycleMutationPolicy`, so shared
+safety does not leak another workflow's product language.
 
 ## Integration Rule
 

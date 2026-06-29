@@ -25,19 +25,28 @@ Updated: 2026-06-29
   adapters wired by default.
 - `workflows/ingest` now coordinates source resolution, harness execution, run
   ledger updates, `.almanac/` mutation safety, and index refresh.
-- App workflow entrypoints now live under `app.workflows.build` and
-  `app.workflows.ingest`. `create_app()` wires the default Claude and Codex
-  adapters.
-- Ingest lifecycle writes now require Git change tracking, clean `.almanac/`
+- `workflows/garden` now coordinates whole-wiki maintenance from index and
+  health context, harness execution, run ledger updates, `.almanac/` mutation
+  safety, and index refresh.
+- `src/codealmanac/prompts/` contains packaged Markdown prompt doctrine and
+  operation prompts. `PromptRenderer` composes those resources with typed
+  runtime JSON for Ingest and Garden.
+- App workflow entrypoints now live under `app.workflows.build`,
+  `app.workflows.ingest`, and `app.workflows.garden`. `create_app()` wires the
+  default Claude and Codex adapters.
+- Lifecycle writes now require Git change tracking, clean `.almanac/`
   preflight, and no non-wiki mutation during harness execution. Dirty app files
   are allowed as source material if they remain unchanged.
 - The index read model now uses stale-aware source signatures for ordinary
   `ensure_fresh`; `reindex` remains the explicit forced rebuild command.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
   `show`, `topics`, `health`, `reindex`, `doctor`, `jobs`, `serve`, `tag`,
-  `untag`, and `ingest`.
+  `untag`, `ingest`, and `garden`.
 - Public `codealmanac ingest` is a thin CLI adapter over
   `app.workflows.ingest.run(...)`. It supports `--using claude|codex`, `--wiki`,
+  `--title`, and `--guidance`.
+- Public `codealmanac garden` is a thin CLI adapter over
+  `app.workflows.garden.run(...)`. It supports `--using claude|codex`, `--wiki`,
   `--title`, and `--guidance`.
 - Topic metadata mutation now covers `topics create`, `topics describe`,
   `topics link`, `topics unlink`, `topics rename`, and `topics delete`.
@@ -194,20 +203,31 @@ Updated: 2026-06-29
     status showed only that wiki page changed
   - failed-provider mutation regression passed: a failed harness that mutates
     `src/app.py` is reported as an ingest mutation-safety failure
+- Slice-18 Garden workflow checks passed:
+  - focused prompt, Garden workflow, CLI Garden, ingest regression, and
+    architecture tests
+  - 101 full tests
+  - ruff
+  - `git diff --check`
+  - top-level and `garden` help smoke
+  - `uv build` wheel inspection confirmed packaged prompt Markdown
+  - real temp-repo `codealmanac garden --using codex` dogfood added the
+    existing `concepts` topic to `.almanac/pages/thin-dogfood-note.md`; Git
+    status showed only that wiki page changed; job log showed queued,
+    prepared context, clean preflight, `codex succeeded`, and done
 
 ## Dirty/Staged Files
 
-After slice 17 is committed, the worktree should be clean. If any slice-17 files
-are dirty, re-run focused Codex/Claude/harness/ingest/architecture tests,
-`git diff --check`, pytest, ruff, a direct `codex exec` smoke, and a real
-temp-repo `codealmanac ingest --using codex` dogfood run.
+After slice 18 is committed, the worktree should be clean. If any slice-18 files
+are dirty, re-run focused Garden/prompt/CLI/ingest/architecture tests,
+`git diff --check`, pytest, ruff, CLI help, package build inspection, and a real
+temp-repo `codealmanac garden --using codex` dogfood run.
 
 ## Next Move
 
-1. Add the next lifecycle workflow (`garden` or `sync`) behind the same
-   run/safety/harness seams, or do a harness review now that both Claude and
-   Codex adapters exist.
-2. Decide whether the viewer needs source/file route hardening before AI-backed
+1. Add `sync` discovery/automation behind the existing run/safety/harness seams,
+   or review prompt quality now that prompt Markdown is packaged.
+2. Decide whether the viewer needs source/file route hardening before more
    lifecycle commands.
 3. Keep AI execution behind workflow and harness seams; do not put it in CLI.
 4. If provider runtime requirements expand to streaming, usage accounting,

@@ -247,26 +247,43 @@
   results were validated before the after-run Git snapshot. The workflow now
   checks mutation safety before harness status, so failed providers cannot hide
   non-wiki file mutations behind an `ExecutionFailed`.
+- Read the live agreement, lifecycle wiki pages, and archived Garden operation
+  reference before slice 18. No new Cosmic checkpoint was sent because the
+  service-layer, command/event, and adapter-port lessons were already being
+  applied directly.
+- Added slice-18 public `codealmanac garden`. `GardenWorkflow` prepares index
+  and health context, records a run, validates clean `.almanac/` preflight,
+  calls the selected harness, validates mutations, refreshes the index, and
+  marks the run done or failed.
+- Added packaged prompt resources under `src/codealmanac/prompts/`. Ingest and
+  Garden now compose shared base doctrine plus operation-specific Markdown and
+  typed runtime JSON through `PromptRenderer`.
+- Generalized ingest mutation safety into `LifecycleMutationPolicy`, so Garden
+  reuses the same Git snapshot guard without inheriting ingest-specific error
+  language.
+- Verified slice 18 with 101 passing tests, ruff, `git diff --check`, CLI
+  help for top-level and `garden`, package build with prompt Markdown in the
+  wheel, and real temp-repo `codealmanac garden --using codex` dogfood. The
+  dogfood run added the existing `concepts` topic to
+  `.almanac/pages/thin-dogfood-note.md` and changed no application files.
 
 ## Current Hypothesis
 
 The read and organization paths now cover the main local wiki management loop:
 search/show, topic reads, health, tag/untag, topic DAG mutation including
 rename/delete, explicit `build`, `reindex`, `doctor`, and a first read-only
-local `serve` viewer. The highest-risk serve/index review issue found so far is
-fixed: read traffic no longer forces projection rewrites when the source wiki
-is unchanged. The first lifecycle/runs spine now exists as a ledger and read
-surface. Source inputs and harness execution now have typed service contracts,
-the internal ingest workflow coordinates them with the run ledger and index,
-Claude and Codex CLI adapters are wired through the app composition root, and
-ingest has provider-neutral Git mutation safety around harness execution. The
-public `codealmanac ingest` command now reaches that workflow without making
-the CLI an internal API.
+local `serve` viewer. The first lifecycle/runs spine now exists as a ledger and
+read surface. Source inputs, prompt rendering, harness execution, mutation
+safety, and run logging now have typed service/workflow boundaries. Claude and
+Codex CLI adapters are wired through the app composition root. Public `ingest`
+and `garden` commands reach their workflows without making the CLI an internal
+API.
 
 ## Next Hypothesis
 
-The next slice should add the next lifecycle workflow (`garden` or `sync`) or
-review the provider harness now that Claude and Codex both exist. The remaining
-serve risks are markdown wikilink rewriting inside code spans, browser-harness
-verification once Chrome allows remote debugging, and whether a source/file
-route belongs in the first viewer shape.
+The next slice should either add `sync` discovery/automation, review lifecycle
+prompt quality now that prompt Markdown is packaged, or harden provider runtime
+behavior if real Garden/Ingest dogfood exposes long-run issues. The remaining
+serve risks are markdown wikilink rewriting inside code spans,
+browser-harness verification once Chrome allows remote debugging, and whether a
+source/file route belongs in the first viewer shape.

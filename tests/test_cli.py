@@ -58,6 +58,43 @@ The public CLI ingested bounded source material.
         )
 
 
+class CliGardenHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        page = request.cwd / ".almanac/pages/cli-garden-note.md"
+        page.write_text(
+            """---
+title: CLI Garden Note
+topics: [getting-started]
+sources: []
+---
+# CLI Garden Note
+
+The public CLI gardened the local wiki graph.
+""",
+            encoding="utf-8",
+        )
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="gardened through CLI",
+            summary="gardened through CLI",
+            changed_files=(page,),
+        )
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -197,6 +234,7 @@ def test_cli_help_includes_serve(capsys):
     assert "serve" in output.out
     assert "jobs" in output.out
     assert "ingest" in output.out
+    assert "garden" in output.out
 
 
 def test_cli_ingest_runs_workflow_with_selected_harness(
@@ -243,6 +281,50 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     assert adapter.requests[0].title == "Digest note"
     assert "Write one short page." in adapter.requests[0].prompt
     assert (repo / ".almanac/pages/cli-ingest-note.md").is_file()
+
+
+def test_cli_garden_runs_workflow_with_selected_harness(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = CliGardenHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "garden",
+                "--using",
+                "codex",
+                "--title",
+                "Clean up graph",
+                "--guidance",
+                "Improve one page boundary.",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr()
+    assert "gardened " in output.out
+    assert "wiki_changes: 1\n" in output.out
+    assert "summary: gardened through CLI\n" in output.out
+    assert adapter.requests[0].title == "Clean up graph"
+    assert "Garden Operation" in adapter.requests[0].prompt
+    assert "Improve one page boundary." in adapter.requests[0].prompt
+    assert (repo / ".almanac/pages/cli-garden-note.md").is_file()
 
 
 def test_cli_jobs_inspects_local_run_records(
