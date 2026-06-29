@@ -15,6 +15,13 @@
   guide.
 - First implementation pressure is the Python spine: packaging, CLI entrypoint,
   application composition root, workspace service, and a test harness.
+- Committed archive/docs baseline as `4520812`.
+- Added the first Python scaffold: `pyproject.toml`, `src/codealmanac/`,
+  `tests/`, `codealmanac` console script, `create_app(...)`, workspace registry
+  service, wiki scaffold service, and build workflow-backed `init`.
+- Verified first scaffold with `uv run pytest`, `uv run ruff check .`,
+  `uv run codealmanac --help`, and an isolated live `codealmanac init` plus
+  `codealmanac list` smoke run.
 
 ## Current Hypothesis
 
@@ -22,3 +29,9 @@ Start with the smallest useful spine, not with all product commands. A thin CLI
 and composition root will make later services additive. The first slice should
 prove that the repo can install, invoke `codealmanac`, initialize a `.almanac/`,
 and run tests through service/CLI entrypoints.
+
+## Next Hypothesis
+
+The next slice should add the SQLite read-model spine before AI lifecycle
+commands. That means `database/`, `wiki` page parsing, `index` service/search
+schema, and `search`/`show` CLI commands over initialized `.almanac/pages/`.

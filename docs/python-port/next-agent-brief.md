@@ -6,10 +6,12 @@ Updated: 2026-06-29
 
 - Goal is active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- The old TypeScript code is staged under `archive/code/`.
+- Archive/docs baseline committed as `4520812`.
 - `docs/python-port-live-agreement.md` is the live contract.
 - `docs/reference/cosmic-python/` contains Markdown-only reference chapters.
 - Steering docs live in `docs/python-port/`.
+- First Python scaffold exists under `src/codealmanac/` with CLI, app,
+  workspaces, wiki scaffold, and build workflow.
 
 ## Last Good Evidence
 
@@ -20,18 +22,26 @@ Updated: 2026-06-29
   - entrypoints thin
   - service-layer tests where possible
   - dependencies wired in one composition root
+- First scaffold verification passed:
+  - `uv run pytest`
+  - `uv run ruff check .`
+  - `uv run codealmanac --help`
+  - isolated live `codealmanac init` and `codealmanac list`
 
 ## Dirty/Staged Files
 
-At this checkpoint, the archive/docs baseline is staged and should be committed
-before starting Python code if `git diff --cached --check` passes.
+At this checkpoint, the first Python scaffold files should be committed after
+`git diff --check`, `uv run pytest`, `uv run ruff check .`, and the live CLI
+smoke remain green.
 
 ## Next Move
 
-1. Verify and commit the archive/docs/steering baseline.
-2. Scaffold `pyproject.toml`, `src/codealmanac/`, and `tests/`.
-3. Implement the minimal composition root, CLI, and workspace init service.
-4. Add pytest coverage and run a live `codealmanac init` smoke test.
+1. Commit the first Python scaffold if it is still unstaged/uncommitted.
+2. Start the SQLite read-model slice: `database/`, `wiki` page parsing,
+   `index` service, and `search`/`show` commands.
+3. Add focused service/store tests before broad CLI tests.
+4. Add an architecture test that CLI imports do not import concrete integration
+   modules once integrations exist.
 
 ## Things Not To Do
 

@@ -9,6 +9,13 @@ coverage/
 .vitest-cache/
 *.tsbuildinfo
 install-runtime.json
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
 
 # codealmanac
 .almanac/index.db

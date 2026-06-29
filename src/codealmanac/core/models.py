@@ -1,0 +1,13 @@
+from pathlib import Path
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from codealmanac.core.paths import default_registry_path
+
+
+class CodeAlmanacModel(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class AppConfig(CodeAlmanacModel):
+    registry_path: Path = Field(default_factory=default_registry_path)
