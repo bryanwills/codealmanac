@@ -18,7 +18,7 @@ def test_manual_library_reads_all_bundled_documents():
     assert all(
         document.body.strip().startswith("---") for document in inventory.documents
     )
-    assert ".almanac/" in ManualLibrary().read(
+    assert "configured Almanac root" in ManualLibrary().read(
         ManualReadRequest(document=ManualDocumentName.README)
     ).body
 

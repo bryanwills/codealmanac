@@ -27,7 +27,7 @@ class WikiService:
         write_if_missing(almanac_path / "topics.yaml", starter_topics_yaml())
         write_if_missing(pages_path / "getting-started.md", starter_page())
         self.manual.install_missing(manual_path)
-        ensure_root_gitignore(workspace.root_path)
+        ensure_root_gitignore(workspace.root_path, workspace.almanac_root)
 
 
 def write_if_missing(path: Path, body: str) -> None:
@@ -36,11 +36,15 @@ def write_if_missing(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def ensure_root_gitignore(root_path: Path) -> None:
+def ensure_root_gitignore(root_path: Path, almanac_root: Path) -> None:
     path = root_path / ".gitignore"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     lines = {line.strip() for line in existing.splitlines()}
-    missing = [line for line in gitignore_runtime_block() if line not in lines]
+    missing = [
+        line
+        for line in gitignore_runtime_block(almanac_root)
+        if line not in lines
+    ]
     if len(missing) == 0:
         return
     header = "# codealmanac"

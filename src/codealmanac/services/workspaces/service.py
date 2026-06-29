@@ -3,12 +3,17 @@ from hashlib import sha256
 from pathlib import Path
 
 from codealmanac.core.errors import ConflictError, NotFoundError, ValidationFailed
-from codealmanac.core.paths import nearest_almanac_root, normalize_path
+from codealmanac.core.paths import normalize_path
 from codealmanac.core.slug import to_kebab_case
 from codealmanac.services.workspaces.models import Workspace, WorkspaceRegistryEntry
 from codealmanac.services.workspaces.requests import (
     RegisterWorkspaceRequest,
     SelectWorkspaceRequest,
+)
+from codealmanac.services.workspaces.roots import (
+    DEFAULT_ALMANAC_ROOT,
+    AlmanacRootMatch,
+    nearest_almanac_root,
 )
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 
@@ -17,23 +22,54 @@ class WorkspacesService:
     def __init__(self, store: WorkspaceRegistryStore):
         self.store = store
 
-    def initialization_root(self, path: Path) -> Path:
+    def initialization_target(
+        self,
+        path: Path,
+        almanac_root: Path | None,
+    ) -> AlmanacRootMatch:
         normalized = normalize_path(path)
         if normalized.is_file():
             normalized = normalized.parent
-        existing = nearest_almanac_root(normalized)
-        return existing or normalized
+        if almanac_root is None:
+            selected = containing_workspace(normalized, self.list())
+            if selected is not None:
+                return AlmanacRootMatch(
+                    repo_root=selected.root_path,
+                    almanac_root=selected.almanac_root,
+                    almanac_path=selected.almanac_path,
+                )
+            almanac_root = DEFAULT_ALMANAC_ROOT
+        existing = nearest_almanac_root(normalized, (almanac_root,))
+        if existing is not None:
+            return existing
+        return AlmanacRootMatch(
+            repo_root=normalized,
+            almanac_root=almanac_root,
+            almanac_path=normalized / almanac_root,
+        )
 
     def register(self, request: RegisterWorkspaceRequest) -> Workspace:
         root_path = normalize_path(request.root_path)
-        name = workspace_name_for(root_path, request.name)
+        almanac_path = root_path / request.almanac_root
+        existing = entry_by_exact_path(root_path, self.store.list())
+        name = workspace_name_for(
+            root_path,
+            request.name or (existing.name if existing is not None else None),
+        )
+        description = (
+            request.description.strip()
+            or (existing.description if existing is not None else "")
+        )
         workspace = Workspace(
             workspace_id=workspace_id_for(root_path),
             name=name,
-            description=request.description.strip(),
+            description=description,
             root_path=root_path,
-            almanac_path=root_path / ".almanac",
-            registered_at=datetime.now(UTC),
+            almanac_root=request.almanac_root,
+            almanac_path=almanac_path,
+            registered_at=(
+                existing.registered_at if existing is not None else datetime.now(UTC)
+            ),
         )
         return self.store.remember(workspace).to_workspace()
 
@@ -61,10 +97,15 @@ class WorkspacesService:
         selected = containing_workspace(normalized, self.list())
         if selected is not None:
             return selected
-        root_path = nearest_almanac_root(normalized)
-        if root_path is None:
+        match = nearest_almanac_root(normalized, self.discoverable_almanac_roots())
+        if match is None:
             raise NotFoundError("workspace", str(path))
-        return self.register(RegisterWorkspaceRequest(root_path=root_path))
+        return self.register(
+            RegisterWorkspaceRequest(
+                root_path=match.repo_root,
+                almanac_root=match.almanac_root,
+            )
+        )
 
     def validate_path(self, workspace_id: str, path: Path) -> Path:
         workspace = self.get(workspace_id)
@@ -77,6 +118,13 @@ class WorkspacesService:
 
     def list(self) -> list[Workspace]:
         return [entry.to_workspace() for entry in self.store.list()]
+
+    def discoverable_almanac_roots(self) -> tuple[Path, ...]:
+        roots = [DEFAULT_ALMANAC_ROOT]
+        for workspace in self.list():
+            if workspace.almanac_root not in roots:
+                roots.append(workspace.almanac_root)
+        return tuple(roots)
 
     @property
     def registry_path(self) -> Path:
@@ -130,6 +178,16 @@ def entry_by_path(
         return None
     for entry in entries:
         if same_path(entry.path, selector_path):
+            return entry
+    return None
+
+
+def entry_by_exact_path(
+    path: Path,
+    entries: list[WorkspaceRegistryEntry],
+) -> WorkspaceRegistryEntry | None:
+    for entry in entries:
+        if same_path(entry.path, path):
             return entry
     return None
 

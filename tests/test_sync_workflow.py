@@ -63,7 +63,7 @@ class SyncWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / ".almanac/pages/synced-transcript.md"
+        page = request.cwd / "almanac/pages/synced-transcript.md"
         page.write_text(
             """---
 title: Synced Transcript
@@ -93,7 +93,7 @@ class LedgerObservingHarnessAdapter(SyncWritingHarnessAdapter):
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         ledger = SyncLedger.model_validate_json(
-            (request.cwd / ".almanac/jobs/sync-ledger.json").read_text(
+            (request.cwd / "almanac/jobs/sync-ledger.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -128,6 +128,43 @@ def test_sync_status_reports_ready_transcript_ranges(
     assert summary.ready[0].to_line == 2
     assert summary.skipped == ()
     assert summary.needs_attention == ()
+    adapter = app.sources.transcript_discovery_adapters[0]
+    assert adapter.requests[0].almanac_roots == (Path("almanac"),)
+
+
+def test_sync_status_passes_configured_roots_to_discovery(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\n")
+    candidate = transcript_candidate(
+        repo,
+        transcript,
+        modified_at=old_time(),
+        almanac_path=repo / "docs/almanac",
+    )
+    app = app_with_candidates(isolated_home, (candidate,))
+    app.workflows.build.initialize(
+        InitializeWorkspaceRequest(path=repo, almanac_root=Path("docs/almanac"))
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+        )
+    )
+
+    adapter = app.sources.transcript_discovery_adapters[0]
+    assert summary.eligible == 1
+    assert adapter.requests[0].almanac_roots == (
+        Path("almanac"),
+        Path("docs/almanac"),
+    )
 
 
 def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
@@ -164,7 +201,7 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
     )
 
     ledger = SyncLedger.model_validate_json(
-        (repo / ".almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
+        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
     )
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.mode == SyncMode.SYNC
@@ -226,7 +263,7 @@ def test_sync_run_writes_pending_claim_before_ingest(
     assert harness.observed_entry.pending_from_line == 1
     assert harness.observed_entry.pending_to_line == 2
     ledger = SyncLedger.model_validate_json(
-        (repo / ".almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
+        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
     )
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert entry.status == SyncLedgerStatus.DONE
@@ -467,7 +504,7 @@ def test_sync_run_reconciles_done_pending_run_before_new_work(
     )
 
     ledger = SyncLedger.model_validate_json(
-        (repo / ".almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
+        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
     )
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.eligible == 1
@@ -780,6 +817,7 @@ def transcript_candidate(
     repo: Path,
     transcript: Path,
     modified_at: datetime,
+    almanac_path: Path | None = None,
 ) -> TranscriptCandidate:
     return TranscriptCandidate(
         app=TranscriptApp.CODEX,
@@ -787,6 +825,7 @@ def transcript_candidate(
         transcript_path=transcript,
         cwd=repo,
         repo_root=repo,
+        almanac_path=almanac_path or repo / "almanac",
         modified_at=modified_at,
         size_bytes=transcript.stat().st_size,
     )

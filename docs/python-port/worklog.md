@@ -500,15 +500,24 @@
 - User clarified after slice 39 that the Python rewrite is for new users, not
   backward compatibility with old TypeScript installs. The repo Almanac root
   must become configurable and default to `almanac/`, with `docs/almanac/` or
-  `.almanac/` available only by configuration. Current code still hard-codes
-  `.almanac/` in workspace paths, prompts, tests, safety checks, and dogfood
-  docs; that is now product debt, not the target shape.
+  `.almanac/` available only by configuration. At that point, hard-coded
+  `.almanac/` assumptions in workspace paths, prompts, tests, safety checks,
+  and dogfood docs became product debt, not the target shape.
 - Added slice-40 CLI edge split. `src/codealmanac/cli/main.py` now only owns
   parser invocation, known error formatting, and app dispatch. Parser
   construction lives under `cli/parser/` and is split into lifecycle, wiki, and
   admin command domains. Dispatch and render moved out of `main.py` into
   `cli/dispatch/root.py` and `cli/render/root.py`; they remain broad but are no
   longer mixed into the process entrypoint.
+- Added slice-41 configurable Almanac root. `services/workspaces` now owns
+  repo-relative root validation and nearest-root discovery. New repos default
+  to `almanac/`; `init --root docs/almanac` and explicit
+  `init --root .almanac` are supported setup choices. The registry stores
+  `almanac_root`, downstream services use `workspace.almanac_path`, sync
+  transcript candidates carry `almanac_path`, project config lives under the
+  configured root, run log references use the configured root, prompts/manual
+  say "configured Almanac root", and index health no longer assumes
+  `almanac_path.parent` is the repo root.
 
 ## Current Hypothesis
 
@@ -550,20 +559,20 @@ should default to `almanac/` and all wiki docs plus local runtime artifacts
 should resolve through the configured Almanac root.
 The CLI edge now follows the same parser/dispatch/render package shape as the
 sibling Almanac CLI, with architecture tests preventing `main.py` and parser
-root from growing back into all-purpose modules.
+root from growing back into all-purpose modules. The configured-root slice now
+implements the new default `almanac/` root across setup, registry, index,
+manual, runs, sync ledger, config, prompts, and lifecycle safety.
 
 ## Next Hypothesis
 
-The next high-pressure product slice is configurable Almanac root ownership:
-`workspaces` should default new repos to `almanac/`, support configured
-alternatives such as `docs/almanac/` and `.almanac/`, and make pages, topics,
-index, manual, runs, sync ledger, config, viewer, prompts, and lifecycle safety
-resolve through that root. After that, automation or sync can add a real
-background owner, retry budget, or unattended failure policy only if it builds
-on the durable pending claim and run lifecycle reconciliation already in
-foreground sync. Scheduled update checks should wait for real non-editable
-install dogfood. The remaining source-runtime pressure is semantic diversity
-or recency ranking for clean large directories if dogfood shows unchanged
-inputs are still too noisy. The remaining serve risks are markdown wikilink
-rewriting inside code spans and browser-harness verification once Chrome
-allows remote debugging.
+The next high-pressure product slice is not another root migration. Automation
+or sync can add a real background owner, retry budget, or unattended failure
+policy only if it builds on the durable pending claim and run lifecycle
+reconciliation already in foreground sync. Scheduled update checks should wait
+for real non-editable install dogfood. The remaining source-runtime pressure is
+semantic diversity or recency ranking for clean large directories if dogfood
+shows unchanged inputs are still too noisy; arbitrary custom Almanac roots also
+need to be passed into filesystem source runtime only if dogfood shows those
+directories being ingested. The remaining serve risks are markdown wikilink
+rewriting inside code spans and browser-harness verification once Chrome allows
+remote debugging.

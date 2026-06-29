@@ -29,10 +29,14 @@ class BuildWorkflow:
         return BuildResult(workspace=workspace, index=index)
 
     def _initialize_workspace(self, request: InitializeWorkspaceRequest) -> Workspace:
-        root_path = self.workspaces.initialization_root(request.path)
+        target = self.workspaces.initialization_target(
+            request.path,
+            request.almanac_root,
+        )
         workspace = self.workspaces.register(
             RegisterWorkspaceRequest(
-                root_path=root_path,
+                root_path=target.repo_root,
+                almanac_root=target.almanac_root,
                 name=request.name,
                 description=request.description,
             )

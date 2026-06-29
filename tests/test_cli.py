@@ -49,7 +49,7 @@ class CliWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / ".almanac/pages/cli-ingest-note.md"
+        page = request.cwd / "almanac/pages/cli-ingest-note.md"
         page.write_text(
             """---
 title: CLI Ingest Note
@@ -86,7 +86,7 @@ class CliGardenHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / ".almanac/pages/cli-garden-note.md"
+        page = request.cwd / "almanac/pages/cli-garden-note.md"
         page.write_text(
             """---
 title: CLI Garden Note
@@ -185,8 +185,25 @@ def test_cli_init_creates_wiki_and_prints_name(
     assert exit_code == 0
     assert captured.out == "my-repo\n"
     assert "initialized" in captured.err
-    assert (repo / ".almanac/pages/getting-started.md").is_file()
+    assert (repo / "almanac/pages/getting-started.md").is_file()
     assert (isolated_home / ".almanac/registry.json").is_file()
+
+
+def test_cli_init_accepts_configured_root(
+    tmp_path: Path,
+    isolated_home: Path,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    exit_code = main(["init", str(repo), "--root", "docs/almanac"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out == "repo\n"
+    assert str(repo / "docs/almanac") in captured.err
+    assert (repo / "docs/almanac/pages/getting-started.md").is_file()
 
 
 def test_cli_list_outputs_registered_wikis(
@@ -204,7 +221,7 @@ def test_cli_list_outputs_registered_wikis(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == f"repo\t{repo}\n"
+    assert captured.out == f"repo\t{repo}\talmanac\n"
 
 
 def test_cli_build_and_reindex_commands(
@@ -219,9 +236,9 @@ def test_cli_build_and_reindex_commands(
     assert main(["build", str(repo)]) == 0
     build_output = capsys.readouterr()
     assert build_output.out == "built repo: 1 page (1 updated, 0 removed)\n"
-    assert (repo / ".almanac/index.db").is_file()
+    assert (repo / "almanac/index.db").is_file()
 
-    (repo / ".almanac/pages/note.md").write_text(
+    (repo / "almanac/pages/note.md").write_text(
         "# Note\n\nReindexNeedle.\n",
         encoding="utf-8",
     )
@@ -251,7 +268,7 @@ def test_cli_reindex_can_target_registered_wiki(
     capsys.readouterr()
     assert main(["build", str(second), "--name", "second"]) == 0
     capsys.readouterr()
-    (first / ".almanac/pages/remote.md").write_text(
+    (first / "almanac/pages/remote.md").write_text(
         "# Remote\n\nTargeted reindex.\n",
         encoding="utf-8",
     )
@@ -411,7 +428,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     assert "summary: ingested through CLI\n" in output.out
     assert adapter.requests[0].title == "Digest note"
     assert "Write one short page." in adapter.requests[0].prompt
-    assert (repo / ".almanac/pages/cli-ingest-note.md").is_file()
+    assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
 def test_cli_ingest_uses_configured_default_harness(
@@ -429,7 +446,7 @@ def test_cli_ingest_uses_configured_default_harness(
         harness_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    (repo / ".almanac/config.toml").write_text(
+    (repo / "almanac/config.toml").write_text(
         """
 [harness]
 default = "codex"
@@ -446,7 +463,7 @@ default = "codex"
     output = capsys.readouterr()
     assert "ingested " in output.out
     assert adapter.requests[0].kind == HarnessKind.CODEX
-    assert (repo / ".almanac/pages/cli-ingest-note.md").is_file()
+    assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
 def test_cli_garden_runs_workflow_with_selected_harness(
@@ -490,7 +507,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     assert adapter.requests[0].title == "Clean up graph"
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Improve one page boundary." in adapter.requests[0].prompt
-    assert (repo / ".almanac/pages/cli-garden-note.md").is_file()
+    assert (repo / "almanac/pages/cli-garden-note.md").is_file()
 
 
 def test_cli_sync_status_reports_ready_transcripts(
@@ -509,6 +526,7 @@ def test_cli_sync_status_reports_ready_transcripts(
         transcript_path=transcript,
         cwd=repo,
         repo_root=repo,
+        almanac_path=repo / "almanac",
         modified_at=datetime(2026, 1, 1, tzinfo=UTC),
         size_bytes=transcript.stat().st_size,
     )
@@ -547,6 +565,7 @@ def test_cli_sync_status_uses_configured_quiet_window(
         transcript_path=transcript,
         cwd=repo,
         repo_root=repo,
+        almanac_path=repo / "almanac",
         modified_at=datetime.now(UTC),
         size_bytes=transcript.stat().st_size,
     )
@@ -556,7 +575,7 @@ def test_cli_sync_status_uses_configured_quiet_window(
         transcript_discovery_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    (repo / ".almanac/config.toml").write_text(
+    (repo / "almanac/config.toml").write_text(
         """
 [sync]
 quiet = "0s"
@@ -589,6 +608,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
         transcript_path=transcript,
         cwd=repo,
         repo_root=repo,
+        almanac_path=repo / "almanac",
         modified_at=datetime(2026, 1, 1, tzinfo=UTC),
         size_bytes=transcript.stat().st_size,
     )
@@ -615,7 +635,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
     assert "started codex codex-session: ingest-" in output.out
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
     assert f"transcript:{transcript}" in harness.requests[0].prompt
-    assert (repo / ".almanac/jobs/sync-ledger.json").is_file()
+    assert (repo / "almanac/jobs/sync-ledger.json").is_file()
 
 
 def test_cli_automation_install_status_and_uninstall(
@@ -740,7 +760,7 @@ def test_cli_search_and_show_read_current_repo_wiki(
     repo.mkdir()
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
-    page_path = repo / ".almanac/pages/auth-flow.md"
+    page_path = repo / "almanac/pages/auth-flow.md"
     page_path.write_text(
         """---
 title: Auth Flow
@@ -781,9 +801,9 @@ def test_cli_topics_and_health_read_current_repo_wiki(
     capsys,
 ):
     repo = tmp_path / "repo"
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text(
+    (repo / "almanac/topics.yaml").write_text(
         """topics:
   - slug: auth
     title: Auth
@@ -821,7 +841,7 @@ def test_cli_tag_and_untag_update_page_frontmatter(
     capsys,
 ):
     repo = tmp_path / "repo"
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
     page = pages / "auth-flow.md"
     page.write_text("---\ntopics: [auth]\n---\n# Auth Flow\n", encoding="utf-8")
@@ -849,9 +869,9 @@ def test_cli_topics_mutation_commands(
     capsys,
 ):
     repo = tmp_path / "repo"
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text(
+    (repo / "almanac/topics.yaml").write_text(
         """topics:
   - slug: concepts
     title: Concepts

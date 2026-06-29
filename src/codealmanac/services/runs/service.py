@@ -26,6 +26,7 @@ class RunsService:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.create(
             workspace.almanac_path,
+            workspace.almanac_root,
             workspace.workspace_id,
             request.operation,
             request.title,

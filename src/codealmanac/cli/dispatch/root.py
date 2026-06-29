@@ -77,6 +77,7 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
         workspace = app.workflows.build.initialize(
             InitializeWorkspaceRequest(
                 path=Path(args.path),
+                almanac_root=Path(args.root) if args.root is not None else None,
                 name=args.name,
                 description=args.description,
             )
@@ -92,6 +93,7 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
         result = app.workflows.build.build(
             InitializeWorkspaceRequest(
                 path=Path(args.path),
+                almanac_root=Path(args.root) if args.root is not None else None,
                 name=args.name,
                 description=args.description,
             )
@@ -152,7 +154,10 @@ def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
         return 0
     if args.command == "list":
         for workspace in app.workspaces.list():
-            print(f"{workspace.name}\t{workspace.root_path}")
+            print(
+                f"{workspace.name}\t{workspace.root_path}\t"
+                f"{workspace.almanac_root.as_posix()}"
+            )
         return 0
     if args.command == "search":
         rows = app.search.search(

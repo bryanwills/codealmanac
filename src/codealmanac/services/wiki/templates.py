@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def starter_readme() -> str:
     return """# CodeAlmanac Wiki
 
@@ -72,10 +75,11 @@ durable reading path for this repository.
 """
 
 
-def gitignore_runtime_block() -> list[str]:
+def gitignore_runtime_block(almanac_root: Path) -> list[str]:
+    root = almanac_root.as_posix().rstrip("/")
     return [
-        ".almanac/index.db",
-        ".almanac/index.db-wal",
-        ".almanac/index.db-shm",
-        ".almanac/jobs/",
+        f"{root}/index.db",
+        f"{root}/index.db-wal",
+        f"{root}/index.db-shm",
+        f"{root}/jobs/",
     ]

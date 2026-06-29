@@ -255,9 +255,9 @@ class IndexStore:
     def health_report(
         self,
         almanac_path: Path,
+        repo_root: Path,
         registered_wikis: set[str],
     ) -> HealthReport:
-        repo_root = almanac_path.parent
         with connect_index(index_db_path(almanac_path)) as connection:
             return HealthReport(
                 orphans=orphan_pages(connection),

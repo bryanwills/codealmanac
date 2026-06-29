@@ -50,9 +50,9 @@ def test_malformed_topics_yaml_does_not_break_reads(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text("topics: [", encoding="utf-8")
+    (repo / "almanac/topics.yaml").write_text("topics: [", encoding="utf-8")
     (pages / "note.md").write_text("# Note\n\nBody.\n", encoding="utf-8")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -65,9 +65,9 @@ def test_malformed_topics_yaml_does_not_break_reads(
 
 def make_topic_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text(
+    (repo / "almanac/topics.yaml").write_text(
         """topics:
   - slug: concepts
     title: Concepts

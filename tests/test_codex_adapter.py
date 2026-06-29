@@ -90,7 +90,7 @@ def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
         (
             CommandResult(returncode=0, stdout=""),
             CommandResult(returncode=0, stdout="codex diagnostics"),
-            CommandResult(returncode=0, stdout="?? .almanac/pages/codex-note.md\0"),
+            CommandResult(returncode=0, stdout="?? almanac/pages/codex-note.md\0"),
         ),
         last_message="updated wiki",
         transcript_root=sessions,
@@ -124,7 +124,7 @@ def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
     assert result.transcript.kind == HarnessKind.CODEX
     assert result.transcript.session_id == "codex-session-1"
     assert result.transcript.transcript_path == sessions / "rollout.jsonl"
-    assert result.changed_files == (tmp_path / ".almanac/pages/codex-note.md",)
+    assert result.changed_files == (tmp_path / "almanac/pages/codex-note.md",)
 
 
 def test_codex_adapter_returns_failed_result_when_final_message_is_missing(

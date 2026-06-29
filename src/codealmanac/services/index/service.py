@@ -79,4 +79,8 @@ class IndexService:
         self.ensure_fresh(workspace_id)
         workspace = self.workspaces.get(workspace_id)
         registered_wikis = {workspace.name for workspace in self.workspaces.list()}
-        return self.store.health_report(workspace.almanac_path, registered_wikis)
+        return self.store.health_report(
+            workspace.almanac_path,
+            workspace.root_path,
+            registered_wikis,
+        )

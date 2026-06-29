@@ -107,7 +107,7 @@ class IngestWorkflow:
                 request,
                 run_id,
                 RunEventKind.MESSAGE,
-                "verified clean .almanac preflight",
+                f"verified clean {workspace.almanac_root.as_posix()} preflight",
             )
             sources = self.sources.resolve(
                 ResolveSourcesRequest(cwd=request.cwd, inputs=request.inputs)

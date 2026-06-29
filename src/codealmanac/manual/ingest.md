@@ -5,7 +5,7 @@ topics: [manual]
 
 # Ingest
 
-Ingest folds selected local material into an existing `.almanac/` wiki.
+Ingest folds selected local material into an existing configured Almanac wiki.
 
 Read the new material, then read nearby pages, backlinks, topics, and local
 wiki conventions. Decide what the material changes.

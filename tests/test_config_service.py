@@ -48,7 +48,7 @@ quiet = "30m"
         )
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    (repo / ".almanac/config.toml").write_text(
+    (repo / "almanac/config.toml").write_text(
         """
 [sync]
 quiet = "5s"
@@ -73,7 +73,7 @@ def test_config_service_uses_explicit_wiki_project_config(
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=first))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=second))
-    (second / ".almanac/config.toml").write_text(
+    (second / "almanac/config.toml").write_text(
         """
 [harness]
 default = "codex"

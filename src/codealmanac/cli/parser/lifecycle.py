@@ -6,11 +6,13 @@ from codealmanac.services.harnesses.models import HarnessKind
 def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     init = subcommands.add_parser("init", help="initialize a local Almanac wiki")
     init.add_argument("path", nargs="?", default=".")
+    init.add_argument("--root")
     init.add_argument("--name")
     init.add_argument("--description", default="")
 
     build = subcommands.add_parser("build", help="build or refresh a local wiki")
     build.add_argument("path", nargs="?", default=".")
+    build.add_argument("--root")
     build.add_argument("--name")
     build.add_argument("--description", default="")
 

@@ -5,7 +5,7 @@ topics: []
 
 # Manual Overview
 
-This manual defines how agents maintain a CodeAlmanac `.almanac/` wiki.
+This manual defines how agents maintain a CodeAlmanac repo-owned wiki.
 
 Prompts name the job. The manual defines the writing rules, evidence bar, page
 shape, and operation-specific workflow.
@@ -20,5 +20,5 @@ Read the relevant page before editing:
 - `ingest.md`: how to fold new material into an existing wiki.
 - `garden.md`: how to improve an existing wiki graph.
 
-Repo-specific conventions live in `.almanac/README.md` and
-`.almanac/topics.yaml`.
+Repo-specific conventions live in `README.md` and `topics.yaml` under the
+configured Almanac root.

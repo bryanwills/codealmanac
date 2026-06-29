@@ -16,7 +16,7 @@ def test_codex_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / ".almanac").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
     sessions = home / ".codex/sessions/2026/06/29"
     sessions.mkdir(parents=True)
     transcript = sessions / "session.jsonl"
@@ -56,6 +56,7 @@ def test_codex_transcript_discovery_reads_metadata_and_skips_subagents(
     assert candidates[0].app == TranscriptApp.CODEX
     assert candidates[0].session_id == "codex-1"
     assert candidates[0].repo_root == repo
+    assert candidates[0].almanac_path == repo / "almanac"
     assert candidates[0].transcript_path == transcript
 
 
@@ -64,7 +65,7 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / ".almanac").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
     projects = home / ".claude/projects/repo"
     projects.mkdir(parents=True)
     transcript = projects / "session.jsonl"
@@ -87,4 +88,34 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
     assert candidates[0].app == TranscriptApp.CLAUDE
     assert candidates[0].session_id == "claude-1"
     assert candidates[0].repo_root == repo
+    assert candidates[0].almanac_path == repo / "almanac"
     assert candidates[0].transcript_path == transcript
+
+
+def test_transcript_discovery_uses_configured_almanac_roots(tmp_path: Path):
+    home = tmp_path / "home"
+    repo = tmp_path / "repo"
+    (repo / "docs/almanac").mkdir(parents=True)
+    sessions = home / ".codex/sessions/2026/06/29"
+    sessions.mkdir(parents=True)
+    transcript = sessions / "session.jsonl"
+    transcript.write_text(
+        json.dumps({"payload": {"id": "codex-1", "cwd": str(repo)}}) + "\n",
+        encoding="utf-8",
+    )
+
+    default_candidates = CodexTranscriptDiscoveryAdapter().discover(
+        DiscoverTranscriptsRequest(home=home, apps=(TranscriptApp.CODEX,))
+    )
+    configured_candidates = CodexTranscriptDiscoveryAdapter().discover(
+        DiscoverTranscriptsRequest(
+            home=home,
+            apps=(TranscriptApp.CODEX,),
+            almanac_roots=(Path("docs/almanac"),),
+        )
+    )
+
+    assert default_candidates == ()
+    assert len(configured_candidates) == 1
+    assert configured_candidates[0].repo_root == repo
+    assert configured_candidates[0].almanac_path == repo / "docs/almanac"

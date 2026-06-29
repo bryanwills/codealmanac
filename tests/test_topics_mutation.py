@@ -29,7 +29,7 @@ def test_create_topic_with_parent_preserves_topics_yaml_comment(
     )
     auth = app.topics.show(ShowTopicRequest(cwd=repo, slug="auth"))
 
-    raw = (repo / ".almanac/topics.yaml").read_text(encoding="utf-8")
+    raw = (repo / "almanac/topics.yaml").read_text(encoding="utf-8")
     assert result.action == TopicMutationAction.CREATED
     assert auth.parents == ("concepts",)
     assert "# keep this comment" in raw
@@ -41,7 +41,7 @@ def test_create_rejects_missing_parent_without_overwriting_file(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
+    topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -58,7 +58,7 @@ def test_link_promotes_ad_hoc_page_topic_and_rejects_cycle(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     (pages / "jwt.md").write_text(
         "---\ntopics: [jwt]\n---\n# JWT\n\nToken notes.\n",
         encoding="utf-8",
@@ -67,7 +67,7 @@ def test_link_promotes_ad_hoc_page_topic_and_rejects_cycle(
 
     linked = app.topics.link(LinkTopicRequest(cwd=repo, child="jwt", parent="concepts"))
 
-    raw = (repo / ".almanac/topics.yaml").read_text(encoding="utf-8")
+    raw = (repo / "almanac/topics.yaml").read_text(encoding="utf-8")
     concepts = app.topics.show(ShowTopicRequest(cwd=repo, slug="concepts"))
     assert linked.action == TopicMutationAction.LINKED
     assert concepts.children == ("jwt",)
@@ -81,7 +81,7 @@ def test_describe_promotes_ad_hoc_page_topic(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    pages = repo / ".almanac/pages"
+    pages = repo / "almanac/pages"
     (pages / "runtime.md").write_text(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
@@ -99,7 +99,7 @@ def test_describe_promotes_ad_hoc_page_topic(
 
     assert result.action == TopicMutationAction.DESCRIBED
     assert runtime.description == "Runtime assumptions"
-    raw = (repo / ".almanac/topics.yaml").read_text(encoding="utf-8")
+    raw = (repo / "almanac/topics.yaml").read_text(encoding="utf-8")
     assert "slug: runtime" in raw
     assert "description: Runtime assumptions" in raw
 
@@ -130,7 +130,7 @@ def test_mutating_malformed_topics_yaml_fails_without_overwrite(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
+    topics_path = repo / "almanac/topics.yaml"
     topics_path.write_text("topics: [", encoding="utf-8")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -145,8 +145,8 @@ def test_rename_updates_topics_yaml_parent_edges_and_page_frontmatter(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
-    pages = repo / ".almanac/pages"
+    topics_path = repo / "almanac/topics.yaml"
+    pages = repo / "almanac/pages"
     topics_path.write_text(
         """# keep this comment
 topics:
@@ -194,8 +194,8 @@ def test_rename_refuses_merge_without_writing_files(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
-    pages = repo / ".almanac/pages"
+    topics_path = repo / "almanac/topics.yaml"
+    pages = repo / "almanac/pages"
     topics_path.write_text(
         """topics:
   - slug: auth
@@ -230,7 +230,7 @@ def test_rename_same_slug_is_noop_without_requiring_topic(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
+    topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -248,7 +248,7 @@ def test_rename_page_only_ad_hoc_topic(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    page_path = repo / ".almanac/pages/runtime.md"
+    page_path = repo / "almanac/pages/runtime.md"
     page_path.write_text(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
@@ -270,8 +270,8 @@ def test_delete_removes_topic_edges_and_page_frontmatter_without_deleting_pages(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
-    pages = repo / ".almanac/pages"
+    topics_path = repo / "almanac/topics.yaml"
+    pages = repo / "almanac/pages"
     topics_path.write_text(
         """topics:
   - slug: auth
@@ -308,7 +308,7 @@ def test_delete_refuses_missing_topic_without_writing_files(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
+    topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -323,7 +323,7 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    topics_path = repo / ".almanac/topics.yaml"
+    topics_path = repo / "almanac/topics.yaml"
     topics_path.write_text(
         """topics:
   - slug: auth
@@ -332,7 +332,7 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
 """,
         encoding="utf-8",
     )
-    (repo / ".almanac/pages/broken.md").write_text(
+    (repo / "almanac/pages/broken.md").write_text(
         "---\ntopics: [\n---\n# Broken\n",
         encoding="utf-8",
     )
@@ -349,8 +349,8 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
 
 def make_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
-    (repo / ".almanac/pages").mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text(
+    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac/topics.yaml").write_text(
         """# keep this comment
 topics:
   - slug: concepts

@@ -83,15 +83,15 @@ def test_runs_service_records_job_and_events(
     assert finished.summary == "updated wiki"
     assert [run.run_id for run in listed] == [record.run_id]
     assert shown.status == RunStatus.DONE
-    assert shown.log_path == Path(".almanac/jobs") / f"{record.run_id}.jsonl"
+    assert shown.log_path == Path("almanac/jobs") / f"{record.run_id}.jsonl"
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.STATUS,
         RunEventKind.MESSAGE,
         RunEventKind.STATUS,
     )
-    assert (repo / ".almanac/jobs" / f"{record.run_id}.json").is_file()
-    assert (repo / ".almanac/jobs" / f"{record.run_id}.jsonl").is_file()
+    assert (repo / "almanac/jobs" / f"{record.run_id}.json").is_file()
+    assert (repo / "almanac/jobs" / f"{record.run_id}.jsonl").is_file()
 
 
 def test_runs_service_targets_registered_wiki(
@@ -112,7 +112,7 @@ def test_runs_service_targets_registered_wiki(
         StartRunRequest(cwd=second, wiki="first", operation=RunOperation.GARDEN)
     )
 
-    assert (first / ".almanac/jobs" / f"{record.run_id}.json").is_file()
+    assert (first / "almanac/jobs" / f"{record.run_id}.json").is_file()
     assert app.runs.list(ListRunsRequest(cwd=second, wiki="first"))[0].run_id == (
         record.run_id
     )

@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-39): add config boundary`.
+- Latest committed implementation slice: `refactor(slice-40): split cli edge`.
 - Latest product-direction commit: `docs: record configurable almanac root`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
@@ -14,17 +14,18 @@ Updated: 2026-06-29
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime` before Ingest
   calls a harness.
 - Current Python product surface includes CLI/app composition, workspace
-  registry, hard-coded `.almanac/` build, SQLite read model, search/show/topics/health,
+  registry, configurable Almanac root, SQLite read model, search/show/topics/health,
   tag/untag/topic mutation, reindex, doctor, serve, runs/jobs, ingest, garden,
   foreground sync, sync status, local automation, Codex/Claude harness adapters,
   transcript discovery, source runtime adapters, bundled manual resources
-  materialized into `.almanac/manual/`, and a conservative package update
+  materialized into `<almanac-root>/manual/`, and a conservative package update
   command.
-- Product direction changed after slice 39: the Python rewrite targets new
-  users and must not preserve TypeScript-era `.almanac/` compatibility by
-  default. The configured Almanac root should default to `almanac/`; users may
-  configure `docs/almanac/` or `.almanac/`. Current code still needs a root
-  configuration slice before this is true.
+- Slice 41 implements the configured-root decision: new repos default to
+  `almanac/`; users may configure `docs/almanac/` or explicit `.almanac/`.
+  The registry stores `almanac_root`, `Workspace` exposes `almanac_path`,
+  project config lives under `<almanac-root>/config.toml`, run logs and sync
+  ledgers live under `<almanac-root>/jobs/`, and prompts/manual text refers to
+  the configured Almanac root.
 - The local viewer now exposes `/api/file?path=...` and frontend
   `#/file/<path>` for wiki file/folder reference navigation. It lists pages
   mentioning the reference and does not read repo source contents.
@@ -34,9 +35,8 @@ Updated: 2026-06-29
   application. `IndexStore` owns the first typed store migration for the
   derived `index.db` read model.
 - `services/config` owns local TOML config parsing and precedence. Project
-  config should become `<almanac-root>/config.toml`; current code still uses
-  `.almanac/config.toml` and must be updated with the configurable-root slice.
-  CLI flags still win over config. It uses `pydantic-settings` TOML sources.
+  config is `<almanac-root>/config.toml`; CLI flags still win over config. It
+  uses `pydantic-settings` TOML sources.
   The first supported fields are `[harness].default` and `[sync].quiet`.
 - Slice 40 splits the CLI edge: `main.py` is thin, parser construction is under
   `cli/parser/` by command domain, and dispatch/render moved to
@@ -157,9 +157,10 @@ Behavior:
 - `app.py` wires `ManualLibrary` once and injects it into `WikiService` and
   `DiagnosticsService`
 - `codealmanac init` and `codealmanac build` copy missing files into
-  `.almanac/manual/` without overwriting local edits
+  `<almanac-root>/manual/` without overwriting local edits
 - `codealmanac doctor` reports `install.manual` and `wiki.manual`
-- lifecycle prompts point agents at `.almanac/manual/` before wiki edits
+- lifecycle prompts point agents at the configured root's `manual/` before wiki
+  edits
 
 Slice 35 adds sync pending claims.
 
@@ -232,6 +233,35 @@ Behavior:
 - `tests/test_architecture.py` rejects `tomllib` imports outside
   `services/config`
 
+Slice 40 splits the CLI edge.
+
+Behavior:
+
+- `src/codealmanac/cli/main.py` owns parser invocation, app construction,
+  dispatch, and known error formatting only
+- parser construction lives under `cli/parser/` by command domain
+- dispatch and render live under `cli/dispatch/root.py` and
+  `cli/render/root.py`
+- architecture tests keep `main.py` and parser root thin
+
+Slice 41 adds configurable Almanac roots.
+
+Behavior:
+
+- first-time `codealmanac init` and `codealmanac build` default to
+  `--root almanac`
+- existing registered repos keep their registered root when `--root` is omitted
+- setup can explicitly use `--root docs/almanac` or `--root .almanac`
+- `WorkspaceRegistryEntry` stores `almanac_root`
+- `WorkspacesService.resolve(...)` discovers default roots plus roots already
+  present in the registry
+- `codealmanac list` prints name, repo path, and configured root
+- `WikiService`, index, runs, sync ledger, config, prompts, and manual surfaces
+  resolve through `workspace.almanac_path`
+- transcript candidates now carry `almanac_path`
+- index health receives the true repo root rather than assuming
+  `almanac_path.parent`
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -273,16 +303,17 @@ Behavior:
 - Slice 40 focused CLI/public-contract/architecture tests, full pytest, full
   ruff, diff check, package build, CLI help smoke, and temp build/search
   dogfood
+- Slice 41 focused root/config/sync/lifecycle/CLI tests, full pytest, full
+  ruff, diff check, package build, and temp build/search dogfood with default
+  `almanac/`
 
 ## Next Move
 
 1. Likely next pressure points:
-   - configurable Almanac root: default new repos to `almanac/`, allow
-     `docs/almanac/` and explicit `.almanac/`, and make pages, index, manual,
-     runs, config, viewer, prompts, sync ledger, and safety checks resolve
-     through `workspaces`
    - semantic diversity or recency ranking for clean large directories if
      Git-listed unchanged files are still too noisy in dogfood
+   - arbitrary custom Almanac roots in filesystem source runtime only if
+     dogfood shows custom roots being included as source material
    - background sync owner/retry policy now that foreground sync can reconcile
      pending run ids against local run state
    - scheduled update automation only after non-editable update dogfood

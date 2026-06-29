@@ -10,7 +10,7 @@ class LoadConfigRequest(CodeAlmanacModel):
     cwd: Path
     wiki: str | None = Field(
         default=None,
-        description="None means use the nearest .almanac/ project config.",
+        description="None means use the nearest project config.",
     )
 
     @field_validator("wiki")

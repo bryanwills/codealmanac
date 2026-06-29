@@ -63,7 +63,7 @@ def test_search_auto_registers_existing_wiki(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    (repo / ".almanac/pages").mkdir(parents=True)
+    (repo / "almanac/pages").mkdir(parents=True)
     write_page(repo, "note.md", "# Note\n\nUniqueNeedle context.\n")
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
@@ -82,7 +82,7 @@ def test_search_rebuilds_stale_existing_index_schema(
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nStaleSchemaNeedle context.\n")
-    db_path = repo / ".almanac/index.db"
+    db_path = repo / "almanac/index.db"
     with sqlite3.connect(db_path) as connection:
         connection.execute("CREATE TABLE pages (slug TEXT PRIMARY KEY)")
         connection.execute("PRAGMA user_version = 1")
@@ -100,14 +100,14 @@ def test_rebuild_removes_stale_topic_rows(
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    page_path = repo / ".almanac/pages/note.md"
+    page_path = repo / "almanac/pages/note.md"
     page_path.write_text("---\ntopics: [old]\n---\n# Note\n", encoding="utf-8")
     app.search.search(SearchPagesRequest(cwd=repo, query="note"))
     page_path.write_text("---\ntopics: [new]\n---\n# Note\n", encoding="utf-8")
 
     app.search.search(SearchPagesRequest(cwd=repo, query="note"))
 
-    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+    with sqlite3.connect(repo / "almanac/index.db") as connection:
         rows = connection.execute("SELECT slug FROM topics ORDER BY slug").fetchall()
     topic_slugs = {row[0] for row in rows}
     assert "new" in topic_slugs
@@ -125,7 +125,7 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
     write_page(repo, "note.md", "# Note\n\nOriginalNeedle.\n")
 
     first = app.index.ensure_fresh(workspace.workspace_id)
-    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+    with sqlite3.connect(repo / "almanac/index.db") as connection:
         connection.execute("CREATE TABLE rewrite_log (slug TEXT NOT NULL)")
         connection.execute(
             """
@@ -137,11 +137,11 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
             """
         )
     unchanged = app.index.ensure_fresh(workspace.workspace_id)
-    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+    with sqlite3.connect(repo / "almanac/index.db") as connection:
         rewrites = connection.execute("SELECT COUNT(*) FROM rewrite_log").fetchone()[0]
     write_page(repo, "note.md", "# Note\n\nChangedNeedle.\n")
     refreshed = app.index.ensure_fresh(workspace.workspace_id)
-    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+    with sqlite3.connect(repo / "almanac/index.db") as connection:
         refreshed_rewrites = connection.execute(
             "SELECT COUNT(*) FROM rewrite_log"
         ).fetchone()[0]
@@ -173,6 +173,6 @@ def test_reindex_forces_projection_rebuild_when_index_is_fresh(
 
 
 def write_page(repo: Path, name: str, body: str) -> None:
-    path = repo / ".almanac/pages" / name
+    path = repo / "almanac/pages" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")

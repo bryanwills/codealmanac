@@ -26,7 +26,7 @@ that root instead of constructing stores or adapters themselves.
 
 | Service | Owns | First implementation pressure |
 |---|---|---|
-| `workspaces` | repo root detection, configurable Almanac root, registry, path containment, local wiki selection | `init`, current-repo queries, `--wiki` lookup |
+| `workspaces` | repo root detection, configurable Almanac root, registry, nearest-root discovery, path containment, local wiki selection | `init`, current-repo queries, `--wiki` lookup |
 | `wiki` | page files, frontmatter, topics, wikilinks, page writes, health inputs | `init`, `show`, page parsing for index |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | `search`, `show --links`, `health` |
 | `sources` | source observations, source refs, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
@@ -113,6 +113,11 @@ precedence order: selected project `<almanac-root>/config.toml`, then user
 config, then model defaults. CLI flags remain the final override at the
 command edge. There is no public `config` command in v1.
 
+`services/workspaces/roots.py` owns repo-local Almanac root validation and
+nearest-root discovery. `DEFAULT_ALMANAC_ROOT` is `almanac/`. The registry
+stores each workspace's repo-relative `almanac_root`; downstream services use
+`workspace.almanac_path` instead of concatenating a literal path.
+
 `integrations/harnesses/git_status.py` holds Git porcelain changed-file
 snapshots shared by Claude and Codex harness adapters.
 
@@ -121,6 +126,8 @@ sync to observe local transcript stores. Concrete Codex and Claude JSONL
 scanners live in `integrations/sources/transcripts/`. Those integrations parse
 raw provider JSON and return typed `TranscriptCandidate` values; they do not
 decide quiet windows, cursor state, or whether ingest should run.
+`TranscriptCandidate` carries both `repo_root` and `almanac_path` so sync can
+write ledgers under the configured root without guessing.
 
 `workflows/sync` owns sync ledger cursor policy. It writes a durable pending
 claim with the selected run id before calling Ingest, treats active linked runs

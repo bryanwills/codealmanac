@@ -89,7 +89,7 @@ class GardenWorkflow:
                 request,
                 started.run_id,
                 RunEventKind.MESSAGE,
-                "verified clean .almanac preflight",
+                f"verified clean {workspace.almanac_root.as_posix()} preflight",
             )
             harness = self.harnesses.run(
                 RunHarnessRequest(

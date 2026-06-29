@@ -50,6 +50,7 @@ def registry_entry_for(workspace: Workspace) -> WorkspaceRegistryEntry:
         name=workspace.name,
         description=workspace.description,
         path=workspace.root_path,
+        almanac_root=workspace.almanac_root,
         registered_at=workspace.registered_at,
         workspace_id=workspace.workspace_id,
     )
@@ -98,6 +99,8 @@ def parse_entry(raw_entry: Any) -> WorkspaceRegistryEntry:
         upgraded["workspace_id"] = workspace_id_for_path(path)
     if "description" not in upgraded:
         upgraded["description"] = ""
+    if "almanac_root" not in upgraded:
+        upgraded["almanac_root"] = "almanac"
     if "registered_at" not in upgraded or upgraded["registered_at"] == "":
         upgraded["registered_at"] = datetime.now(UTC).isoformat()
     try:

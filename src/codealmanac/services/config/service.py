@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from codealmanac.core.paths import nearest_almanac_root, normalize_path
+from codealmanac.core.errors import NotFoundError
+from codealmanac.core.paths import normalize_path
 from codealmanac.services.config.models import CodeAlmanacConfig
 from codealmanac.services.config.requests import LoadConfigRequest
 from codealmanac.services.config.store import ConfigStore
@@ -39,12 +40,10 @@ class ConfigService:
             )
             return workspace.almanac_path / PROJECT_CONFIG_NAME
         try:
-            root_path = nearest_almanac_root(request.cwd)
-        except OSError:
-            root_path = None
-        if root_path is None:
+            workspace = self.workspaces.resolve(request.cwd)
+        except (NotFoundError, OSError):
             return None
-        return root_path / ".almanac" / PROJECT_CONFIG_NAME
+        return workspace.almanac_path / PROJECT_CONFIG_NAME
 
 
 def config_source_paths(

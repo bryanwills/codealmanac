@@ -5,6 +5,37 @@ Updated: 2026-06-29
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-06-29 - Configured Root Is A Workspace Fact
+
+Old hypothesis:
+The configurable root decision could be handled as a setup flag and a path
+rename from `.almanac/` to `almanac/`.
+
+New hypothesis:
+The configured root is a workspace fact. The registry stores the relative root,
+`Workspace` exposes both `almanac_root` and `almanac_path`, and downstream
+services must receive the workspace object or an explicit path from it.
+
+Evidence that forced the change:
+Nested roots such as `docs/almanac/` break assumptions that the repo root is
+`almanac_path.parent`. Sync also broke the simpler model because transcript
+discovery first maps provider transcript cwd values to a repo and then later
+needs the exact wiki root for the sync ledger. A `repo_root` alone is not
+enough.
+
+Code or product assumption affected:
+`services/workspaces/roots.py` owns root validation and nearest-root discovery.
+The registry stores `almanac_root`. Transcript candidates now carry
+`almanac_path`. `IndexService` passes the true repo root into health checks.
+Prompts/manual/lifecycle errors describe the configured Almanac root instead of
+literal `.almanac/`.
+
+Follow-up test:
+Keep tests for default `almanac/`, configured `docs/almanac/`, and explicit
+`.almanac/`. If arbitrary custom roots matter for directory source runtime,
+pass the configured root into that adapter instead of extending hard-coded
+ignore lists.
+
 ## 2026-06-29 - Configured Almanac Root, Default `almanac/`
 
 Old hypothesis:

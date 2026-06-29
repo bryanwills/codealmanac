@@ -37,8 +37,9 @@ class LifecycleMutationPolicy:
             if path_is_under(change.path, almanac_prefix)
         )
         if dirty_almanac:
+            almanac_label = almanac_prefix.as_posix()
             raise ValidationFailed(
-                f"{self.operation} requires a clean .almanac before running: "
+                f"{self.operation} requires a clean {almanac_label} before running: "
                 f"{format_paths(dirty_almanac)}"
             )
         return LifecycleMutationPreflight(
@@ -62,8 +63,9 @@ class LifecycleMutationPolicy:
             if not path_is_under(path, preflight.almanac_prefix)
         )
         if unsafe:
+            almanac_label = preflight.almanac_prefix.as_posix()
             raise ValidationFailed(
-                f"{self.operation} changed file outside .almanac: "
+                f"{self.operation} changed file outside {almanac_label}: "
                 f"{format_paths(unsafe)}"
             )
         return LifecycleMutationReport(
@@ -114,7 +116,8 @@ def validate_reported_changes(
             candidate.resolve().relative_to(almanac_root)
         except ValueError as error:
             raise ValidationFailed(
-                f"harness reported change outside .almanac: {changed_file}"
+                "harness reported change outside configured Almanac root: "
+                f"{changed_file}"
             ) from error
 
 
@@ -155,7 +158,7 @@ def almanac_relative_path(workspace: Workspace) -> Path:
         )
     except ValueError as error:
         raise ValidationFailed(
-            f".almanac path is outside workspace: {workspace.almanac_path}"
+            f"Almanac root is outside workspace: {workspace.almanac_path}"
         ) from error
 
 

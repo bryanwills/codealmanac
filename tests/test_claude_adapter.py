@@ -78,7 +78,7 @@ def test_claude_adapter_runs_print_json_and_reports_git_changes(tmp_path: Path):
             ),
             CommandResult(
                 returncode=0,
-                stdout="?? .almanac/pages/new-page.md\0 M src/app.py\0",
+                stdout="?? almanac/pages/new-page.md\0 M src/app.py\0",
             ),
         )
     )
@@ -104,7 +104,7 @@ def test_claude_adapter_runs_print_json_and_reports_git_changes(tmp_path: Path):
     assert result.transcript.kind == HarnessKind.CLAUDE
     assert result.transcript.session_id == "claude-session-1"
     assert result.changed_files == (
-        tmp_path / ".almanac/pages/new-page.md",
+        tmp_path / "almanac/pages/new-page.md",
         tmp_path / "src/app.py",
     )
 

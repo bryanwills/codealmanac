@@ -308,14 +308,14 @@ catalog. `[[src/foo.py]]` and `[[src/foo/]]` power mentions search and health.
 The v1 CLI is local-only.
 
 ```text
-codealmanac init [path]
+codealmanac init [path] [--root <repo-relative-path>]
 codealmanac list
 codealmanac search [query]
 codealmanac show <slug>
 codealmanac topics
 codealmanac health
 codealmanac serve
-codealmanac build
+codealmanac build [path] [--root <repo-relative-path>]
 codealmanac reindex
 codealmanac ingest <inputs...>
 codealmanac sync
@@ -329,6 +329,12 @@ codealmanac update
 
 Commands run inside a repo resolve the nearest configured Almanac root, like
 Git resolves `.git/`.
+
+`--root` is a setup-time option on `init` and `build`. It must be a
+repo-relative directory. On first setup, omitting it means `almanac/`. Inside an
+existing registered repo, omitting it means "keep the registered root."
+`docs/almanac/` and `.almanac/` are valid only when explicitly selected or
+already recorded in the local registry for that repo.
 
 `codealmanac list` reads the local registry of known repos with configured
 Almanac roots.

@@ -1,11 +1,10 @@
 # Garden Operation
 
-Garden improves the existing `.almanac/` wiki as a whole graph.
+Garden improves the existing configured Almanac wiki as a whole graph.
 
-Before editing, read `.almanac/manual/README.md`,
-`.almanac/manual/pages.md`, `.almanac/manual/evidence.md`,
-`.almanac/manual/style.md`, `.almanac/manual/sources.md`, and
-`.almanac/manual/garden.md`.
+Before editing, read `manual/README.md`, `manual/pages.md`,
+`manual/evidence.md`, `manual/style.md`, `manual/sources.md`, and
+`manual/garden.md` under the configured Almanac root.
 
 Garden is cultivation. The goal is not to add activity; the goal is to make the
 project memory more coherent, navigable, current, and trustworthy.

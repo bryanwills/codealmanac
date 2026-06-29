@@ -2,8 +2,9 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.core.paths import nearest_almanac_root, normalize_path
+from codealmanac.core.paths import normalize_path
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
+from codealmanac.services.workspaces.roots import nearest_almanac_root
 
 
 def collect_jsonl(root: Path) -> tuple[Path, ...]:
@@ -60,9 +61,10 @@ def candidate_from_meta(
     transcript_path: Path,
     session_id: str,
     cwd: str,
+    almanac_roots: tuple[Path, ...],
 ) -> TranscriptCandidate | None:
-    repo_root = nearest_almanac_root(Path(cwd))
-    if repo_root is None:
+    match = nearest_almanac_root(Path(cwd), almanac_roots)
+    if match is None:
         return None
     try:
         stat = transcript_path.stat()
@@ -75,7 +77,8 @@ def candidate_from_meta(
         session_id=session_id,
         transcript_path=normalize_path(transcript_path),
         cwd=normalize_path(Path(cwd)),
-        repo_root=repo_root,
+        repo_root=match.repo_root,
+        almanac_path=match.almanac_path,
         modified_at=datetime.fromtimestamp(stat.st_mtime, UTC),
         size_bytes=stat.st_size,
     )

@@ -52,7 +52,7 @@ def test_doctor_reports_missing_workspace_manual(
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
-    (repo / ".almanac/manual/pages.md").unlink()
+    (repo / "almanac/manual/pages.md").unlink()
 
     report = app.diagnostics.check(DoctorRequest(cwd=repo))
 

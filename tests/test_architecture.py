@@ -93,6 +93,16 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/root.py").is_file()
 
 
+def test_repo_almanac_root_is_workspace_owned():
+    from codealmanac.services.workspaces.roots import DEFAULT_ALMANAC_ROOT
+
+    core_paths = (SRC_ROOT / "core/paths.py").read_text(encoding="utf-8")
+
+    assert Path("almanac") == DEFAULT_ALMANAC_ROOT
+    assert (SRC_ROOT / "services/workspaces/roots.py").is_file()
+    assert "nearest_almanac_root" not in core_paths
+
+
 def imports_integration(path: Path) -> bool:
     return imports_module(path, "codealmanac.integrations")
 

@@ -36,7 +36,7 @@ class GardenWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / ".almanac/pages/gardened-note.md"
+        page = request.cwd / "almanac/pages/gardened-note.md"
         page.write_text(
             """---
 title: Gardened Note
@@ -105,10 +105,10 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript.session_id == "codex-garden-session"
     assert result.health_before.empty_pages == ()
     assert result.harness.changed_files == (
-        repo / ".almanac/pages/gardened-note.md",
+        repo / "almanac/pages/gardened-note.md",
     )
     assert result.safety.changed_files == (
-        repo / ".almanac/pages/gardened-note.md",
+        repo / "almanac/pages/gardened-note.md",
     )
     assert result.index.pages_indexed == 2
     assert matches[0].slug == "gardened-note"
@@ -154,7 +154,7 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
     run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
     assert run.status == RunStatus.FAILED
-    assert run.error == "garden changed file outside .almanac: src/app.py"
+    assert run.error == "garden changed file outside almanac: src/app.py"
 
 
 def initialize_git(repo: Path) -> None:

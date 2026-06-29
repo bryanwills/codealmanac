@@ -82,7 +82,10 @@ class DiagnosticsService:
             DoctorCheck(
                 key="wiki.registered",
                 status=DoctorStatus.OK,
-                message=f"registered as '{workspace.name}'",
+                message=(
+                    f"registered as '{workspace.name}' "
+                    f"({workspace.almanac_root.as_posix()})"
+                ),
             ),
         ]
         checks.extend(self._index_checks(workspace))
@@ -134,7 +137,7 @@ class DiagnosticsService:
                 return DoctorCheck(
                     key="wiki.none",
                     status=DoctorStatus.INFO,
-                    message="no .almanac wiki found from current directory",
+                    message="no Almanac wiki found from current directory",
                     fix="run: codealmanac init",
                 )
             return DoctorCheck(

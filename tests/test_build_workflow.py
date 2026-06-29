@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.services.workspaces.requests import (
@@ -21,14 +23,104 @@ def test_initialize_creates_almanac_wiki_and_registry(
     )
 
     assert workspace.name == "example-repo"
-    assert (repo / ".almanac/README.md").is_file()
-    assert (repo / ".almanac/topics.yaml").is_file()
-    assert (repo / ".almanac/pages/getting-started.md").is_file()
-    assert (repo / ".almanac/manual/README.md").is_file()
-    assert (repo / ".almanac/manual/ingest.md").is_file()
+    assert (repo / "almanac/README.md").is_file()
+    assert (repo / "almanac/topics.yaml").is_file()
+    assert (repo / "almanac/pages/getting-started.md").is_file()
+    assert (repo / "almanac/manual/README.md").is_file()
+    assert (repo / "almanac/manual/ingest.md").is_file()
     gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
-    assert gitignore_lines.count(".almanac/index.db") == 1
+    assert gitignore_lines.count("almanac/index.db") == 1
     assert app.workspaces.list()[0].description == "test wiki"
+
+
+def test_initialize_supports_configured_almanac_root(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+
+    workspace = app.workflows.build.initialize(
+        InitializeWorkspaceRequest(
+            path=repo,
+            almanac_root=Path("docs/almanac"),
+            name="repo",
+        )
+    )
+
+    assert workspace.almanac_root == Path("docs/almanac")
+    assert workspace.almanac_path == repo / "docs/almanac"
+    assert (repo / "docs/almanac/pages/getting-started.md").is_file()
+    gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert "docs/almanac/index.db" in gitignore_lines
+    assert app.workspaces.resolve(repo / "src").almanac_path == repo / "docs/almanac"
+
+
+def test_build_without_root_preserves_registered_almanac_root(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workflows.build.initialize(
+        InitializeWorkspaceRequest(
+            path=repo,
+            almanac_root=Path("docs/almanac"),
+            name="docs-root",
+            description="configured docs root",
+        )
+    )
+
+    result = app.workflows.build.build(InitializeWorkspaceRequest(path=repo / "src"))
+
+    assert result.workspace.name == "docs-root"
+    assert result.workspace.description == "configured docs root"
+    assert result.workspace.almanac_root == Path("docs/almanac")
+    assert result.workspace.almanac_path == repo / "docs/almanac"
+    assert not (repo / "almanac").exists()
+
+
+def test_initialize_allows_explicit_dot_almanac_root(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+
+    workspace = app.workflows.build.initialize(
+        InitializeWorkspaceRequest(
+            path=repo,
+            almanac_root=Path(".almanac"),
+            name="repo",
+        )
+    )
+
+    assert workspace.almanac_root == Path(".almanac")
+    assert (repo / ".almanac/pages/getting-started.md").is_file()
+    assert app.workspaces.resolve(repo).almanac_path == repo / ".almanac"
+
+
+@pytest.mark.parametrize("root", [Path("/tmp/almanac"), Path("../almanac")])
+def test_initialize_rejects_roots_outside_repo(
+    tmp_path: Path,
+    isolated_home: Path,
+    root: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+
+    with pytest.raises(ValueError):
+        app.workflows.build.initialize(
+            InitializeWorkspaceRequest(
+                path=repo,
+                almanac_root=root,
+                name="repo",
+            )
+        )
 
 
 def test_initialize_is_idempotent_and_preserves_existing_pages(
@@ -39,9 +131,9 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
-    readme = repo / ".almanac/README.md"
+    readme = repo / "almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
-    manual_readme = repo / ".almanac/manual/README.md"
+    manual_readme = repo / "almanac/manual/README.md"
     manual_readme.write_text("local manual edit\n", encoding="utf-8")
 
     workspace = app.workflows.build.initialize(
@@ -69,7 +161,7 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     assert result.workspace.name == "repo"
     assert result.index.pages_indexed == 1
     assert result.index.files_seen == 1
-    assert (repo / ".almanac/index.db").is_file()
+    assert (repo / "almanac/index.db").is_file()
 
 
 def test_workspace_selection_supports_name_id_and_path(

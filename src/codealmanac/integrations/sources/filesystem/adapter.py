@@ -40,6 +40,8 @@ DEFAULT_MAX_CHARS = 60_000
 GIT_DIRECTORY_LIST_TIMEOUT_SECONDS = 10
 DEFAULT_IGNORE_PATTERNS = (
     ".git/",
+    "almanac/",
+    "docs/almanac/",
     ".almanac/",
     "node_modules/",
     ".venv/",

@@ -82,7 +82,7 @@ class SyncWorkflow:
             pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
             ledger.sessions[item.ledger_key] = pending
             ledger = self.ledger_store.save(
-                item.candidate.repo_root / ".almanac",
+                item.candidate.almanac_path,
                 ledger,
                 now,
             )
@@ -107,7 +107,7 @@ class SyncWorkflow:
                     run.run_id,
                 )
                 self.ledger_store.save(
-                    item.candidate.repo_root / ".almanac",
+                    item.candidate.almanac_path,
                     ledger,
                     now,
                 )
@@ -120,7 +120,7 @@ class SyncWorkflow:
                 now,
             )
             ledgers[item.candidate.repo_root] = self.ledger_store.save(
-                item.candidate.repo_root / ".almanac",
+                item.candidate.almanac_path,
                 ledger,
                 now,
             )
@@ -153,6 +153,7 @@ class SyncWorkflow:
             DiscoverTranscriptsRequest(
                 home=normalize_path(request.home or Path.home()),
                 apps=request.apps,
+                almanac_roots=self.workspaces.discoverable_almanac_roots(),
             )
         )
         scoped_candidates = self.scope_candidates(request, candidates)
@@ -176,7 +177,7 @@ class SyncWorkflow:
                 continue
             ledger = ledgers.setdefault(
                 candidate.repo_root,
-                self.ledger_store.load(candidate.repo_root / ".almanac"),
+                self.ledger_store.load(candidate.almanac_path),
             )
             snapshot = read_transcript(candidate)
             if snapshot is None:
@@ -189,7 +190,7 @@ class SyncWorkflow:
                 if reconciled != entry:
                     ledger.sessions[key] = reconciled
                     ledger = self.ledger_store.save(
-                        candidate.repo_root / ".almanac",
+                        candidate.almanac_path,
                         ledger,
                         current_time,
                     )

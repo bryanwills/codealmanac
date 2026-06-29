@@ -19,6 +19,7 @@ class RunStore:
     def create(
         self,
         almanac_path: Path,
+        almanac_root: Path,
         workspace_id: str,
         operation: RunOperation,
         title: str | None,
@@ -33,7 +34,7 @@ class RunStore:
             title=title,
             created_at=now,
             updated_at=now,
-            log_path=run_log_reference_path(run_id),
+            log_path=run_log_reference_path(almanac_root, run_id),
         )
         write_record(almanac_path, record)
         append_event(
@@ -185,8 +186,8 @@ def run_log_path(almanac_path: Path, run_id: str) -> Path:
     return runs_dir(almanac_path) / f"{run_id}.jsonl"
 
 
-def run_log_reference_path(run_id: str) -> Path:
-    return Path(".almanac/jobs") / f"{run_id}.jsonl"
+def run_log_reference_path(almanac_root: Path, run_id: str) -> Path:
+    return almanac_root / "jobs" / f"{run_id}.jsonl"
 
 
 def write_record(almanac_path: Path, record: RunRecord) -> None:

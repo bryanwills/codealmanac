@@ -1,12 +1,11 @@
 # Ingest Operation
 
 Ingest starts from bounded selected material and distills reusable project
-understanding into the existing `.almanac/` graph.
+understanding into the existing configured Almanac graph.
 
-Before editing, read `.almanac/manual/README.md`,
-`.almanac/manual/pages.md`, `.almanac/manual/evidence.md`,
-`.almanac/manual/style.md`, `.almanac/manual/sources.md`, and
-`.almanac/manual/ingest.md`.
+Before editing, read `manual/README.md`, `manual/pages.md`,
+`manual/evidence.md`, `manual/style.md`, `manual/sources.md`, and
+`manual/ingest.md` under the configured Almanac root.
 
 Use the source briefs and source runtime snapshots in the runtime context as
 operation input. The brief identifies the selected source and its provenance
