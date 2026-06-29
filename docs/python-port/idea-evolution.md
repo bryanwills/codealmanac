@@ -846,3 +846,33 @@ Follow-up test:
 When sync stores pending run ids, reconcile stale pending entries against
 `queued`, `running`, and terminal run records instead of treating age alone as
 the only signal.
+
+## 2026-06-29 - Sync Pending Claims Need Run Linkage
+
+Old hypothesis:
+Pending sync claims could rely on owner/start/range fields plus a stale timeout
+until a background worker existed.
+
+New hypothesis:
+The pending claim needs to store the Ingest run id and the claimed cursor
+snapshot now. `sync status` can then distinguish active linked work from
+terminal work that needs reconciliation, and foreground `sync` can reconcile
+terminal linked runs before choosing the next transcript range.
+
+Evidence that forced the change:
+Slice 36 made run records a lifecycle consistency boundary with
+`queued -> running -> terminal` state. Without `pending_run_id`, sync still had
+to infer from age even when the local run ledger already knew whether the
+claimed Ingest run had finished. Cosmic Python chapter 8's event/message-bus
+pattern pushed the split: record the fact in one place, then react to it at the
+workflow boundary.
+
+Code or product assumption affected:
+`IngestWorkflow` now exposes `start(...)` and `run_with_run(...)` beneath the
+unchanged public `run(...)` method. `SyncWorkflow` creates the run, writes the
+pending claim with run id and cursor hash/size, and then executes Ingest with
+that run. Transcript adapters still do no policy work.
+
+Follow-up test:
+When a real background queue exists, add an owner/retry budget that uses the
+same pending run linkage instead of adding a second queue ledger.

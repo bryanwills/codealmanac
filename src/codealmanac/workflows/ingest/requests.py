@@ -28,3 +28,12 @@ class RunIngestRequest(CodeAlmanacModel):
         if value is None:
             return None
         return required_text(value, "ingest request text")
+
+
+class RunIngestWithRunRequest(RunIngestRequest):
+    run_id: str
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "ingest run id")

@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.runs.models import RunRecord
+from codealmanac.services.runs.models import RunRecord, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.sources.models import TranscriptCandidate
@@ -13,7 +13,10 @@ from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
-from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.workflows.ingest.requests import (
+    RunIngestRequest,
+    RunIngestWithRunRequest,
+)
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.sync.models import (
     SyncCursorDecision,
@@ -67,7 +70,16 @@ class SyncWorkflow:
         ledgers = dict(evaluation.ledgers)
         for item in evaluation.work_items:
             ledger = ledgers[item.candidate.repo_root]
-            pending = pending_entry(item.entry, item, now, claim_owner)
+            ingest_request = RunIngestRequest(
+                cwd=item.candidate.repo_root,
+                inputs=(f"transcript:{item.candidate.transcript_path}",),
+                harness=request.harness,
+                wiki=request.wiki,
+                title=sync_ingest_title(item.candidate),
+                guidance=sync_ingest_guidance(item),
+            )
+            run = self.ingest.start(ingest_request)
+            pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
             ledger.sessions[item.ledger_key] = pending
             ledger = self.ledger_store.save(
                 item.candidate.repo_root / ".almanac",
@@ -77,18 +89,23 @@ class SyncWorkflow:
             ledgers[item.candidate.repo_root] = ledger
             item = item.model_copy(update={"entry": pending})
             try:
-                result = self.ingest.run(
-                    RunIngestRequest(
-                        cwd=item.candidate.repo_root,
-                        inputs=(f"transcript:{item.candidate.transcript_path}",),
-                        harness=request.harness,
-                        wiki=request.wiki,
-                        title=sync_ingest_title(item.candidate),
-                        guidance=sync_ingest_guidance(item),
+                result = self.ingest.run_with_run(
+                    RunIngestWithRunRequest(
+                        cwd=ingest_request.cwd,
+                        inputs=ingest_request.inputs,
+                        harness=ingest_request.harness,
+                        wiki=ingest_request.wiki,
+                        title=ingest_request.title,
+                        guidance=ingest_request.guidance,
+                        run_id=run.run_id,
                     )
                 )
             except Exception as error:
-                ledger.sessions[item.ledger_key] = failed_entry(item.entry, error)
+                ledger.sessions[item.ledger_key] = failed_entry(
+                    item.entry,
+                    error,
+                    run.run_id,
+                )
                 self.ledger_store.save(
                     item.candidate.repo_root / ".almanac",
                     ledger,
@@ -167,6 +184,26 @@ class SyncWorkflow:
                 continue
             key = ledger_key(candidate)
             entry = ledger_entry(ledger, candidate, key)
+            if mode == SyncMode.SYNC:
+                reconciled = reconcile_pending_entry(entry, records, current_time)
+                if reconciled != entry:
+                    ledger.sessions[key] = reconciled
+                    ledger = self.ledger_store.save(
+                        candidate.repo_root / ".almanac",
+                        ledger,
+                        current_time,
+                    )
+                    ledgers[candidate.repo_root] = ledger
+                    entry = reconciled
+            pending_run_decision = evaluate_pending_run(entry, records)
+            if pending_run_decision is not None:
+                if pending_run_decision.kind == SyncDecisionKind.SKIP:
+                    skipped.append(skip(candidate, pending_run_decision.reason))
+                else:
+                    needs_attention.append(
+                        skip(candidate, pending_run_decision.reason)
+                    )
+                continue
             decision = evaluate_cursor(
                 entry,
                 snapshot,
@@ -304,19 +341,30 @@ def absorbed_entry(
             "last_error": None,
             "pending_started_at": None,
             "pending_owner": None,
+            "pending_run_id": None,
+            "pending_to_size": None,
+            "pending_prefix_hash": None,
             "pending_from_line": None,
             "pending_to_line": None,
         }
     )
 
 
-def failed_entry(entry: SyncLedgerEntry, error: Exception) -> SyncLedgerEntry:
+def failed_entry(
+    entry: SyncLedgerEntry,
+    error: Exception,
+    run_id: str | None = None,
+) -> SyncLedgerEntry:
     return entry.model_copy(
         update={
             "status": SyncLedgerStatus.FAILED,
             "last_error": first_error_line(error),
+            "last_job_id": run_id or entry.pending_run_id or entry.last_job_id,
             "pending_started_at": None,
             "pending_owner": None,
+            "pending_run_id": None,
+            "pending_to_size": None,
+            "pending_prefix_hash": None,
             "pending_from_line": None,
             "pending_to_line": None,
         }
@@ -328,6 +376,7 @@ def pending_entry(
     item: SyncWorkItem,
     now: datetime,
     owner: str,
+    run_id: str,
 ) -> SyncLedgerEntry:
     return entry.model_copy(
         update={
@@ -335,6 +384,9 @@ def pending_entry(
             "last_error": None,
             "pending_started_at": now,
             "pending_owner": owner,
+            "pending_run_id": run_id,
+            "pending_to_size": item.snapshot.current_size,
+            "pending_prefix_hash": sha256_bytes(item.snapshot.content),
             "pending_from_line": item.from_line,
             "pending_to_line": item.to_line,
         }
@@ -354,6 +406,11 @@ def evaluate_cursor(
     now: datetime,
     pending_timeout: timedelta,
 ) -> SyncCursorDecision:
+    if entry.status == SyncLedgerStatus.NEEDS_ATTENTION:
+        return SyncCursorDecision(
+            kind=SyncDecisionKind.NEEDS_ATTENTION,
+            reason=entry.last_error or "sync-needs-attention",
+        )
     if entry.status == SyncLedgerStatus.PENDING:
         if pending_is_stale(entry, now, pending_timeout):
             return SyncCursorDecision(
@@ -387,6 +444,112 @@ def pending_is_stale(
     if entry.pending_started_at is None:
         return True
     return now - entry.pending_started_at > pending_timeout
+
+
+def evaluate_pending_run(
+    entry: SyncLedgerEntry,
+    records: tuple[RunRecord, ...],
+) -> SyncCursorDecision | None:
+    if entry.status != SyncLedgerStatus.PENDING or entry.pending_run_id is None:
+        return None
+    record = run_record(records, entry.pending_run_id)
+    if record is None:
+        return None
+    if record.status in {RunStatus.QUEUED, RunStatus.RUNNING}:
+        return SyncCursorDecision(
+            kind=SyncDecisionKind.SKIP,
+            reason="sync-pending-run-active",
+        )
+    if record.status == RunStatus.DONE:
+        return SyncCursorDecision(
+            kind=SyncDecisionKind.NEEDS_ATTENTION,
+            reason="sync-pending-run-done",
+        )
+    return SyncCursorDecision(
+        kind=SyncDecisionKind.NEEDS_ATTENTION,
+        reason="sync-pending-run-failed",
+    )
+
+
+def reconcile_pending_entry(
+    entry: SyncLedgerEntry,
+    records: tuple[RunRecord, ...],
+    now: datetime,
+) -> SyncLedgerEntry:
+    if entry.status != SyncLedgerStatus.PENDING or entry.pending_run_id is None:
+        return entry
+    record = run_record(records, entry.pending_run_id)
+    if record is None or record.status in {RunStatus.QUEUED, RunStatus.RUNNING}:
+        return entry
+    if record.status == RunStatus.DONE:
+        if not pending_cursor_complete(entry):
+            return needs_attention_entry(
+                entry,
+                "sync-pending-missing-cursor",
+                record.run_id,
+            )
+        return entry.model_copy(
+            update={
+                "status": SyncLedgerStatus.DONE,
+                "last_absorbed_size": entry.pending_to_size,
+                "last_absorbed_line": entry.pending_to_line,
+                "last_absorbed_prefix_hash": entry.pending_prefix_hash,
+                "last_absorbed_at": record.finished_at or now,
+                "last_job_id": record.run_id,
+                "last_error": None,
+                **cleared_pending_fields(),
+            }
+        )
+    return entry.model_copy(
+        update={
+            "status": SyncLedgerStatus.FAILED,
+            "last_job_id": record.run_id,
+            "last_error": record.error or f"sync-pending-run-{record.status.value}",
+            **cleared_pending_fields(),
+        }
+    )
+
+
+def pending_cursor_complete(entry: SyncLedgerEntry) -> bool:
+    return (
+        entry.pending_to_size is not None
+        and entry.pending_to_line is not None
+        and entry.pending_prefix_hash is not None
+    )
+
+
+def needs_attention_entry(
+    entry: SyncLedgerEntry,
+    reason: str,
+    run_id: str,
+) -> SyncLedgerEntry:
+    return entry.model_copy(
+        update={
+            "status": SyncLedgerStatus.NEEDS_ATTENTION,
+            "last_job_id": run_id,
+            "last_error": reason,
+            **cleared_pending_fields(),
+        }
+    )
+
+
+def cleared_pending_fields() -> dict[str, None]:
+    return {
+        "pending_started_at": None,
+        "pending_owner": None,
+        "pending_run_id": None,
+        "pending_to_size": None,
+        "pending_prefix_hash": None,
+        "pending_from_line": None,
+        "pending_to_line": None,
+    }
+
+
+def run_record(records: tuple[RunRecord, ...], run_id: str) -> RunRecord | None:
+    for record in records:
+        if record.run_id == run_id:
+            return record
+    return None
 
 
 def sync_claim_owner(now: datetime) -> str:

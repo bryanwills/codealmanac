@@ -6,7 +6,7 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed slice: `feat(slice-36): add run lifecycle state`.
+- Latest committed slice: `feat(slice-37): add sync pending run linkage`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
@@ -37,7 +37,9 @@ Updated: 2026-06-29
   `doctor` checks package/workspace manual readiness.
 - Foreground `sync` writes a durable pending ledger claim before invoking
   Ingest, skips active pending transcript ranges, reports stale pending ranges
-  as needs-attention, and clears pending fields on terminal success/failure.
+  as needs-attention, stores linked run ids plus cursor snapshots, reconciles
+  terminal linked runs before cursor evaluation, and clears pending fields on
+  terminal success/failure.
 - Run records now have an explicit lifecycle transition: queued at creation,
   running before Ingest/Garden side effects, then terminal done/failed/cancelled.
 - Ingest remains source-kind agnostic. It resolves `SourceBrief` values, asks
@@ -167,6 +169,23 @@ Behavior:
 - this prepares sync reconciliation but does not add a background queue or
   pending run id yet
 
+Slice 37 adds sync pending run linkage.
+
+Behavior:
+
+- `IngestWorkflow.run(...)` keeps its public contract but now delegates to
+  `start(...)` and `run_with_run(...)`
+- foreground `sync` creates the Ingest run before claiming the transcript range
+- pending sync ledger entries store `pending_run_id`, `pending_to_size`,
+  `pending_prefix_hash`, and claimed line range
+- `sync status` reports linked active runs as `sync-pending-run-active`
+- `sync status` reports linked terminal done runs as `sync-pending-run-done`
+- foreground `sync` promotes linked done pending cursors before checking for
+  newer transcript bytes
+- foreground `sync` clears failed/cancelled linked pending claims and retries
+  from the last successful cursor when the transcript prefix still matches
+- unlinked pending entries keep the existing active/stale timeout behavior
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -198,14 +217,16 @@ Behavior:
   claim dogfood
 - Slice 36 run lifecycle tests, full pytest, full ruff, diff check, and live
   run-status dogfood
+- Slice 37 sync pending run-linkage tests, ingest regression tests, full
+  pytest, full ruff, diff check, and live sync reconciliation dogfood
 
 ## Next Move
 
 1. Likely next pressure points:
    - semantic diversity or recency ranking for clean large directories if
      Git-listed unchanged files are still too noisy in dogfood
-   - background sync pending run linkage and retry/reconciliation now that
-     durable pending claims and run lifecycle states exist
+   - background sync owner/retry policy now that foreground sync can reconcile
+     pending run ids against local run state
    - scheduled update automation only after non-editable update dogfood
    - browser-harness visual verification for `serve` once Chrome remote
      debugging permission is available

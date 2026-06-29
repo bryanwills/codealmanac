@@ -14,8 +14,10 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.runs.models import RunOperation
+from codealmanac.services.runs.models import RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
+    FinishRunRequest,
+    MarkRunRunningRequest,
     RecordRunHarnessTranscriptRequest,
     StartRunRequest,
 )
@@ -218,6 +220,9 @@ def test_sync_run_writes_pending_claim_before_ingest(
     assert harness.observed_entry.status == SyncLedgerStatus.PENDING
     assert harness.observed_entry.pending_started_at == current_time()
     assert harness.observed_entry.pending_owner == "test-sync-owner"
+    assert harness.observed_entry.pending_run_id is not None
+    assert harness.observed_entry.pending_to_size == transcript.stat().st_size
+    assert harness.observed_entry.pending_prefix_hash == sha256_text("one\ntwo\n")
     assert harness.observed_entry.pending_from_line == 1
     assert harness.observed_entry.pending_to_line == 2
     ledger = SyncLedger.model_validate_json(
@@ -228,6 +233,9 @@ def test_sync_run_writes_pending_claim_before_ingest(
     assert entry.last_job_id == summary.started[0].run_id
     assert entry.pending_started_at is None
     assert entry.pending_owner is None
+    assert entry.pending_run_id is None
+    assert entry.pending_to_size is None
+    assert entry.pending_prefix_hash is None
     assert entry.pending_from_line is None
     assert entry.pending_to_line is None
 
@@ -306,6 +314,227 @@ def test_sync_status_reports_stale_pending_ledger_entry(
     assert summary.eligible == 0
     assert summary.ready == ()
     assert summary.needs_attention[0].reason == "sync-pending-stale"
+
+
+def test_sync_status_skips_active_pending_run(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    run = app.runs.start(
+        StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
+    )
+    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=run.run_id))
+    write_sync_ledger(
+        workspace.almanac_path,
+        candidate,
+        last_absorbed_size=0,
+        last_absorbed_line=0,
+        prefix_hash=sha256_text(""),
+        status=SyncLedgerStatus.PENDING,
+        pending_started_at=current_time() - timedelta(minutes=30),
+        pending_owner="active-owner",
+        pending_run_id=run.run_id,
+        pending_to_size=transcript.stat().st_size,
+        pending_prefix_hash=sha256_text("one\ntwo\n"),
+        pending_from_line=1,
+        pending_to_line=2,
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            pending_timeout=timedelta(hours=1),
+            now=current_time(),
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.ready == ()
+    assert summary.skipped[0].reason == "sync-pending-run-active"
+
+
+def test_sync_status_reports_done_pending_run_needs_reconcile(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    run = app.runs.start(
+        StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
+    )
+    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=run.run_id))
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=run.run_id,
+            status=RunStatus.DONE,
+            summary="done",
+        )
+    )
+    write_sync_ledger(
+        workspace.almanac_path,
+        candidate,
+        last_absorbed_size=0,
+        last_absorbed_line=0,
+        prefix_hash=sha256_text(""),
+        status=SyncLedgerStatus.PENDING,
+        pending_started_at=current_time() - timedelta(minutes=30),
+        pending_owner="done-owner",
+        pending_run_id=run.run_id,
+        pending_to_size=transcript.stat().st_size,
+        pending_prefix_hash=sha256_text("one\ntwo\n"),
+        pending_from_line=1,
+        pending_to_line=2,
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            pending_timeout=timedelta(hours=1),
+            now=current_time(),
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.ready == ()
+    assert summary.needs_attention[0].reason == "sync-pending-run-done"
+
+
+def test_sync_run_reconciles_done_pending_run_before_new_work(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    absorbed = "one\ntwo\n"
+    transcript = write_transcript(tmp_path, f"{absorbed}three\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    harness = SyncWritingHarnessAdapter()
+    app = app_with_candidates(isolated_home, (candidate,), harness=harness)
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    run = app.runs.start(
+        StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
+    )
+    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=run.run_id))
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=run.run_id,
+            status=RunStatus.DONE,
+            summary="done",
+        )
+    )
+    write_sync_ledger(
+        workspace.almanac_path,
+        candidate,
+        last_absorbed_size=0,
+        last_absorbed_line=0,
+        prefix_hash=sha256_text(""),
+        status=SyncLedgerStatus.PENDING,
+        pending_started_at=current_time() - timedelta(minutes=30),
+        pending_owner="done-owner",
+        pending_run_id=run.run_id,
+        pending_to_size=len(absorbed.encode("utf-8")),
+        pending_prefix_hash=sha256_text(absorbed),
+        pending_from_line=1,
+        pending_to_line=2,
+    )
+
+    summary = app.workflows.sync.run(
+        RunSyncRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            harness=HarnessKind.CODEX,
+            now=current_time(),
+        )
+    )
+
+    ledger = SyncLedger.model_validate_json(
+        (repo / ".almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
+    )
+    entry = ledger.sessions[sync_ledger_key(candidate)]
+    assert summary.eligible == 1
+    assert summary.started[0].from_line == 3
+    assert summary.started[0].to_line == 3
+    assert "Focus on line 3 onward." in harness.requests[0].prompt
+    assert entry.status == SyncLedgerStatus.DONE
+    assert entry.last_absorbed_size == transcript.stat().st_size
+    assert entry.last_absorbed_line == 3
+    assert entry.last_job_id == summary.started[0].run_id
+    assert entry.pending_run_id is None
+
+
+def test_sync_run_reconciles_failed_pending_run_and_retries(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    harness = SyncWritingHarnessAdapter()
+    app = app_with_candidates(isolated_home, (candidate,), harness=harness)
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    run = app.runs.start(
+        StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
+    )
+    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=run.run_id))
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=run.run_id,
+            status=RunStatus.FAILED,
+            error="previous crash",
+        )
+    )
+    write_sync_ledger(
+        workspace.almanac_path,
+        candidate,
+        last_absorbed_size=0,
+        last_absorbed_line=0,
+        prefix_hash=sha256_text(""),
+        status=SyncLedgerStatus.PENDING,
+        pending_started_at=current_time() - timedelta(minutes=30),
+        pending_owner="failed-owner",
+        pending_run_id=run.run_id,
+        pending_to_size=transcript.stat().st_size,
+        pending_prefix_hash=sha256_text("one\ntwo\n"),
+        pending_from_line=1,
+        pending_to_line=2,
+    )
+
+    summary = app.workflows.sync.run(
+        RunSyncRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            harness=HarnessKind.CODEX,
+            now=current_time(),
+        )
+    )
+
+    assert summary.eligible == 1
+    assert summary.started[0].from_line == 1
+    assert "Focus on line 1 onward." in harness.requests[0].prompt
 
 
 def test_sync_status_matches_normalized_transcript_ledger_key(
@@ -586,6 +815,9 @@ def write_sync_ledger(
     status: SyncLedgerStatus = SyncLedgerStatus.DONE,
     pending_started_at: datetime | None = None,
     pending_owner: str | None = None,
+    pending_run_id: str | None = None,
+    pending_to_size: int | None = None,
+    pending_prefix_hash: str | None = None,
     pending_from_line: int | None = None,
     pending_to_line: int | None = None,
     session_key: str | None = None,
@@ -607,6 +839,9 @@ def write_sync_ledger(
                 last_absorbed_prefix_hash=prefix_hash,
                 pending_started_at=pending_started_at,
                 pending_owner=pending_owner,
+                pending_run_id=pending_run_id,
+                pending_to_size=pending_to_size,
+                pending_prefix_hash=pending_prefix_hash,
                 pending_from_line=pending_from_line,
                 pending_to_line=pending_to_line,
             )

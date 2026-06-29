@@ -28,6 +28,11 @@ It is the constraint document for future agents.
 - 2026-06-29: `runs` owns lifecycle state transitions. Run records start as
   `queued`, workflows explicitly mark them `running`, and only terminal
   finish calls may move them to `done`, `failed`, or `cancelled`.
+- 2026-06-29: Sync pending claims store the run id plus claimed byte/line
+  cursor. `sync status` reports active linked runs separately from terminal
+  linked runs that need reconciliation. Foreground `sync` reconciles terminal
+  linked runs against the run ledger before deciding whether newer transcript
+  bytes still need Ingest.
 - 2026-06-29: Source input has four local layers:
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue

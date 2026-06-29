@@ -463,6 +463,20 @@
   applied in slice 36: the run record is the consistency boundary for
   lifecycle state, so future sync reconciliation can trust status instead of
   inferring execution from logs.
+- Added slice-37 sync pending run linkage. `IngestWorkflow` now has an internal
+  `start(...)` plus `run_with_run(...)` split beneath the existing public
+  `run(...)` method. Foreground `sync` creates the Ingest run, writes a pending
+  ledger claim with `pending_run_id`, claimed byte size, prefix hash, and line
+  range, then executes Ingest with that run id.
+- Sync status now reports linked active runs as `sync-pending-run-active` and
+  linked terminal done runs as `sync-pending-run-done`. Foreground sync
+  reconciles terminal linked runs before cursor evaluation, promoting done
+  pending cursors or clearing failed/cancelled pending claims so retry starts
+  from the last successful cursor.
+- Sent a Relayforge Discord checkpoint for the Cosmic Python chapter 8 pattern
+  applied in slice 37: run lifecycle transitions are durable facts, and sync
+  reconciliation reacts to those facts at the workflow boundary rather than
+  hiding policy inside transcript adapters or CLI glue.
 
 ## Current Hypothesis
 
@@ -480,8 +494,9 @@ same service/workflow/adapter boundaries, and it skips provider transcripts
 that came from CodeAlmanac lifecycle runs. Lifecycle runs retain optional
 provider transcript identity for that exclusion. Foreground `sync` now runs
 ordinary Ingest work for ready transcripts, writes a durable pending claim
-before Ingest, advances the sync ledger after success, and reports stale
-pending work as needs-attention. Local automation now installs scheduler
+before Ingest, stores the linked run id plus claimed cursor, reconciles terminal
+linked runs against run state, advances the sync ledger after success, and
+reports stale or unreconciled pending work as needs-attention. Local automation now installs scheduler
 entries for foreground sync and Garden through a service-owned task plan and a
 launchd adapter. Git,
 GitHub, transcript, web URL, and local path source refs now produce bounded
@@ -498,10 +513,10 @@ adding a public command.
 
 ## Next Hypothesis
 
-The next automation or sync slice should add pending run linkage and
-retry/reconciliation semantics only if it builds on the durable pending claim
-and run lifecycle states with an explicit background owner and recovery policy.
-Scheduled update checks should wait for real non-editable
+The next automation or sync slice should add a real background owner, retry
+budget, or unattended failure policy only if it builds on the durable pending
+claim and run lifecycle reconciliation already in foreground sync. Scheduled
+update checks should wait for real non-editable
 install dogfood. The remaining
 source-runtime pressure is semantic diversity or recency ranking for clean
 large directories if dogfood shows unchanged inputs are still too noisy. The

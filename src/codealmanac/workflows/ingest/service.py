@@ -6,7 +6,12 @@ from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.index.service import IndexService
-from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
+from codealmanac.services.runs.models import (
+    RunEventKind,
+    RunOperation,
+    RunRecord,
+    RunStatus,
+)
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     MarkRunRunningRequest,
@@ -25,7 +30,10 @@ from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.workflows.ingest.models import IngestPromptPayload, IngestResult
-from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.workflows.ingest.requests import (
+    RunIngestRequest,
+    RunIngestWithRunRequest,
+)
 from codealmanac.workflows.lifecycle import (
     LifecycleMutationPolicy,
     first_line,
@@ -60,8 +68,21 @@ class IngestWorkflow:
         self.prompts = prompts
 
     def run(self, request: RunIngestRequest) -> IngestResult:
-        workspace = self.resolve_workspace(request.cwd, request.wiki)
-        started = self.runs.start(
+        started = self.start(request)
+        return self.run_with_run(
+            RunIngestWithRunRequest(
+                cwd=request.cwd,
+                inputs=request.inputs,
+                harness=request.harness,
+                wiki=request.wiki,
+                title=request.title,
+                guidance=request.guidance,
+                run_id=started.run_id,
+            )
+        )
+
+    def start(self, request: RunIngestRequest) -> RunRecord:
+        return self.runs.start(
             StartRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
@@ -69,18 +90,22 @@ class IngestWorkflow:
                 title=request.title or default_title(request.inputs),
             )
         )
-        self.runs.mark_running(
-            MarkRunRunningRequest(
-                cwd=request.cwd,
-                wiki=request.wiki,
-                run_id=started.run_id,
-            )
-        )
+
+    def run_with_run(self, request: RunIngestWithRunRequest) -> IngestResult:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        run_id = request.run_id
         try:
+            self.runs.mark_running(
+                MarkRunRunningRequest(
+                    cwd=request.cwd,
+                    wiki=request.wiki,
+                    run_id=run_id,
+                )
+            )
             preflight = self.mutation_policy.preflight(workspace)
             self.record(
                 request,
-                started.run_id,
+                run_id,
                 RunEventKind.MESSAGE,
                 "verified clean .almanac preflight",
             )
@@ -89,14 +114,14 @@ class IngestWorkflow:
             )
             self.record(
                 request,
-                started.run_id,
+                run_id,
                 RunEventKind.MESSAGE,
                 f"resolved {len(sources)} {source_word(len(sources))}",
             )
             source_runtime = self.inspect_source_runtime(workspace, sources)
             self.record(
                 request,
-                started.run_id,
+                run_id,
                 RunEventKind.MESSAGE,
                 f"loaded {len(source_runtime)} source runtime snapshot"
                 f"{'' if len(source_runtime) == 1 else 's'}",
@@ -115,7 +140,7 @@ class IngestWorkflow:
                     title=request.title,
                 )
             )
-            self.record_harness_transcript(request, started.run_id, harness)
+            self.record_harness_transcript(request, run_id, harness)
             safety = self.mutation_policy.validate(
                 preflight,
                 workspace,
@@ -124,7 +149,7 @@ class IngestWorkflow:
             validate_harness_result(harness)
             self.record(
                 request,
-                started.run_id,
+                run_id,
                 RunEventKind.OUTPUT,
                 f"{harness.kind.value} {harness.status.value}",
             )
@@ -133,7 +158,7 @@ class IngestWorkflow:
                 FinishRunRequest(
                     cwd=request.cwd,
                     wiki=request.wiki,
-                    run_id=started.run_id,
+                    run_id=run_id,
                     status=RunStatus.DONE,
                     summary=harness.summary or "ingest completed",
                 )
@@ -147,7 +172,7 @@ class IngestWorkflow:
                 index=index,
             )
         except Exception as error:
-            self.fail_run(request, started.run_id, error)
+            self.fail_run(request, run_id, error)
             raise
 
     def resolve_workspace(self, cwd: Path, wiki: str | None) -> Workspace:

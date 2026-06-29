@@ -40,6 +40,9 @@ class SyncLedgerEntry(CodeAlmanacModel):
     last_error: str | None = None
     pending_started_at: datetime | None = None
     pending_owner: str | None = None
+    pending_run_id: str | None = None
+    pending_to_size: int | None = None
+    pending_prefix_hash: str | None = None
     pending_from_line: int | None = None
     pending_to_line: int | None = None
 
@@ -48,12 +51,12 @@ class SyncLedgerEntry(CodeAlmanacModel):
     def require_text(cls, value: str) -> str:
         return required_text(value, "sync ledger entry")
 
-    @field_validator("pending_owner")
+    @field_validator("pending_owner", "pending_run_id", "pending_prefix_hash")
     @classmethod
-    def require_pending_owner(cls, value: str | None) -> str | None:
+    def require_optional_pending_text(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return required_text(value, "sync pending owner")
+        return required_text(value, "sync pending value")
 
     @field_validator("last_absorbed_size", "last_absorbed_line")
     @classmethod
@@ -62,11 +65,11 @@ class SyncLedgerEntry(CodeAlmanacModel):
             raise ValueError("sync cursor must be non-negative")
         return value
 
-    @field_validator("pending_from_line", "pending_to_line")
+    @field_validator("pending_to_size", "pending_from_line", "pending_to_line")
     @classmethod
-    def non_negative_pending_line(cls, value: int | None) -> int | None:
+    def non_negative_pending_cursor(cls, value: int | None) -> int | None:
         if value is not None and value < 0:
-            raise ValueError("sync pending line must be non-negative")
+            raise ValueError("sync pending cursor must be non-negative")
         return value
 
 

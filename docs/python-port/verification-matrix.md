@@ -463,3 +463,15 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Live run lifecycle dogfood | temp repo Ingest through fake harness plus `jobs show`/`jobs logs` readback | passed; `jobs show --json` reported `done` with `started_at` and `finished_at`, and `jobs logs --json` showed `queued ingest`, `running`, `done` |
+
+## Gates For Slice 37 Sync Pending Run Linkage
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused sync tests | `uv run pytest tests/test_sync_workflow.py` | 15 passed |
+| Focused ingest tests | `uv run pytest tests/test_ingest_workflow.py` | 13 passed |
+| Focused lint | `uv run ruff check src/codealmanac/workflows/sync src/codealmanac/workflows/ingest tests/test_sync_workflow.py tests/test_ingest_workflow.py` | passed |
+| Full tests | `uv run pytest` | 179 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Live sync reconciliation dogfood | isolated temp repo with a linked terminal pending run, foreground sync, final ledger readback, and prompt cursor check | passed; CLI status reported `sync-pending-run-done`, foreground sync started a new run at cursor `3-3`, prompt contained `Focus on line 3 onward.`, and final ledger cleared `pending_run_id` |
