@@ -25,7 +25,8 @@ It is the constraint document for future agents.
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue
   runtime uses GitHub CLI through the same port. Transcript runtime uses
   local JSONL parsing through the same port. Web URL runtime uses a local HTTP
-  and HTML/text adapter through the same port.
+  and HTML/text adapter through the same port. Path file/directory runtime uses
+  a local filesystem adapter through the same port.
 
 ## Product Frame
 
@@ -110,6 +111,7 @@ integrations/
     git/
     github/
     transcripts/
+    web/
   automation/
     scheduler/
 ```
@@ -127,7 +129,8 @@ Concrete integrations implement those ports:
 ```text
 integrations/harnesses/codex/adapter.py
 integrations/harnesses/claude/adapter.py
-integrations/sources/github/client.py
+integrations/sources/filesystem/adapter.py
+integrations/sources/github/adapter.py
 integrations/sources/transcripts/codex.py
 integrations/automation/scheduler/launchd.py
 ```

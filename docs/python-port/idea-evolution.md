@@ -173,6 +173,36 @@ Keep an ingest workflow test where a real `WebSourceRuntimeAdapter` with
 `httpx.MockTransport` feeds web runtime text into the prompt, and dogfood a real
 public URL with a fake harness before committing the slice.
 
+## 2026-06-29 - Path Refs Need Runtime Material
+
+Old hypothesis:
+Local path refs could start as observations: existence, kind, absolute path, and
+file fingerprint. The harness could use tool access to read a selected file if
+it needed more.
+
+New hypothesis:
+Path file and directory refs should produce bounded `SourceRuntime` snapshots
+before the harness runs. A lifecycle prompt should include the selected local
+material directly instead of forcing the writer to infer which files to read
+from metadata.
+
+Evidence that forced the change:
+The product contract says `ingest <inputs...>` uses selected local material as
+source material. Tests showed `note.md` ingest previously produced a skipped
+runtime snapshot even though the user explicitly selected that file. The
+existing source-runtime port already handles Git, GitHub, transcripts, and web
+without changing Ingest.
+
+Code or product assumption affected:
+`integrations/sources/filesystem/` owns filesystem reading, directory filtering,
+text decoding, and prompt-friendly rendering. `services/sources` keeps the
+product contract. `workflows/ingest` remains source-kind agnostic.
+
+Follow-up test:
+Keep the ingest workflow test that proves a selected `note.md` reaches the
+prompt as available runtime content, and dogfood local file plus directory
+inputs through a temp repo before committing the slice.
+
 ## 2026-06-29 - Harnesses Are Ports Before Adapters
 
 Old hypothesis:

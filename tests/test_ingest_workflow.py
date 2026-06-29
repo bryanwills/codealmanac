@@ -196,7 +196,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript is not None
     assert result.run.harness_transcript.session_id == "codex-ingest-session"
     assert result.sources[0].ref.fingerprint is not None
-    assert result.source_runtime[0].status == SourceRuntimeStatus.SKIPPED
+    assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
     assert result.harness.changed_files == (
         repo / ".almanac/pages/ingested-note.md",
     )
@@ -207,7 +207,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
     assert '"source_runtime": [' in adapter.requests[0].prompt
-    assert '"status": "skipped"' in adapter.requests[0].prompt
+    assert "auth decision" in adapter.requests[0].prompt
     assert "Prefer short pages." in adapter.requests[0].prompt
     assert "public CLI name is codealmanac" in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
