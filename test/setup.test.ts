@@ -346,7 +346,7 @@ describe("codealmanac setup", () => {
     });
   });
 
-  it("default hosted setup disables an existing auto-commit opt-in", async () => {
+  it("default hosted setup leaves existing local auto-commit config alone", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
       await writeConfig({ auto_commit: true });
@@ -364,10 +364,11 @@ describe("codealmanac setup", () => {
       });
 
       await expect(readConfig()).resolves.toMatchObject({
-        auto_commit: false,
+        auto_commit: true,
       });
       expect(existsSync(env.plistPath)).toBe(false);
       expect(existsSync(env.gardenPlistPath)).toBe(false);
+      expect(env.stdout()).not.toContain("Auto-commit");
     });
   });
 
@@ -472,7 +473,8 @@ describe("codealmanac setup", () => {
         .toContain("almanac cloud capture-hook --provider claude --event UserPromptSubmit");
       expect(await readFile(join(home, ".claude", "settings.json"), "utf8"))
         .toContain("almanac cloud capture-hook --provider claude --event Stop");
-      expect(env.stdout()).toContain("Cloud capture hooks installed");
+      expect(env.stdout()).toContain("Signed in to Almanac Cloud");
+      expect(env.stdout()).toContain("Cloud capture ready (Claude + Codex)");
       expect(env.stdout()).toContain("almanac cloud status");
       expect(existsSync(env.plistPath)).toBe(false);
     });
@@ -660,8 +662,8 @@ describe("codealmanac setup", () => {
   it("interactive explicit sync flags install sync without a sync prompt", async () => {
     await withTempHome(async (home) => {
       const env = await scaffold(home);
-      let answeredAutoCommit = false;
       let answeredCloud = false;
+      let answeredAutoCommit = false;
       env.out.on("data", () => {
         const text = env.stdout();
         if (!answeredCloud && text.includes("Send Claude/Codex turns to Almanac Cloud?")) {
@@ -694,8 +696,13 @@ describe("codealmanac setup", () => {
       expect(env.stdout()).not.toContain("Keep your codebase wiki synced automatically?");
       expect(await readFile(env.plistPath, "utf8")).toContain("<string>sync</string>");
       expect(await readFile(env.gardenPlistPath, "utf8")).toContain("<string>garden</string>");
-      expect(answeredCloud).toBe(true);
+      expect(answeredCloud).toBe(false);
+      expect(env.stdout()).not.toContain("Send Claude/Codex turns to Almanac Cloud?");
       expect(answeredAutoCommit).toBe(true);
+      expect(env.stdout()).toContain("Commit Almanac wiki updates automatically? \u001b[2m[Y/n]\u001b[0m");
+      await expect(readConfig()).resolves.toMatchObject({
+        auto_commit: true,
+      });
     });
   });
 });

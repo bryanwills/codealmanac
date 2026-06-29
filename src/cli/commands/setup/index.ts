@@ -261,12 +261,6 @@ export async function runSetup(
         interactive,
         options: { autoCommit: plan.autoCommit },
       });
-    } else if (plan.autoCommit === false) {
-      await runAutoCommitSetupStep({
-        out,
-        interactive: false,
-        options: { autoCommit: false },
-      });
     }
   } catch (err: unknown) {
     if (isSetupInterrupted(err)) {

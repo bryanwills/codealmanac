@@ -10,6 +10,8 @@ export const SETUP_DEFAULTS = {
   autoCommit: false,
 } as const;
 
+const INTERACTIVE_AUTO_COMMIT_DEFAULT = true;
+
 export interface SetupPlan {
   instructionTargets: InstructionTargetId[];
   cliAutoUpdate: boolean;
@@ -29,8 +31,8 @@ export async function buildSetupPlan(
 ): Promise<SetupPlan> {
   const instructionTargets = await resolveInstructionTargets(args);
   const cliAutoUpdate = await resolveCliAutoUpdate(args);
-  const cloudCapture = await resolveCloudCapture(args);
   const selfManagedAutomation = await resolveSelfManagedAutomation(args);
+  const cloudCapture = resolveCloudCapture(args, selfManagedAutomation);
   const autoCommit = selfManagedAutomation
     ? await resolveAutoCommit(args)
     : resolveExplicitAutoCommit(args.options);
@@ -64,9 +66,9 @@ async function resolveSelfManagedAutomation(
   if (!args.interactive) return SETUP_DEFAULTS.selfManagedAutomation;
   return await confirmBoolean(
     args.out,
-    "Do you want to handle automations yourself?",
-    SETUP_DEFAULTS.selfManagedAutomation,
-  );
+    "Handle Almanac automations on the cloud?",
+    true,
+  ) === false;
 }
 
 function hasExplicitLocalAutomationOptions(options: SetupOptions): boolean {
@@ -77,16 +79,15 @@ function hasExplicitLocalAutomationOptions(options: SetupOptions): boolean {
   return false;
 }
 
-async function resolveCloudCapture(
+function resolveCloudCapture(
   args: SetupPlanOptions,
-): Promise<boolean> {
+  selfManagedAutomation: boolean,
+): boolean {
   if (args.options.cloudCapture !== undefined) return args.options.cloudCapture;
+  if (args.options.skipAutomation === true) return false;
+  if (selfManagedAutomation) return false;
   if (!args.interactive) return SETUP_DEFAULTS.cloudCapture;
-  return await confirmBoolean(
-    args.out,
-    "Send Claude/Codex turns to Almanac Cloud?",
-    SETUP_DEFAULTS.cloudCapture,
-  );
+  return true;
 }
 
 async function resolveAutoCommit(
@@ -98,7 +99,7 @@ async function resolveAutoCommit(
   return await confirmBoolean(
     args.out,
     "Commit Almanac wiki updates automatically?",
-    SETUP_DEFAULTS.autoCommit,
+    INTERACTIVE_AUTO_COMMIT_DEFAULT,
   );
 }
 

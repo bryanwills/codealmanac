@@ -96,7 +96,6 @@ describe("setup plan", () => {
     const { out, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
-    let answeredCloud = false;
     let answeredAutomation = false;
     out.on("data", () => {
       const text = stdout();
@@ -108,13 +107,9 @@ describe("setup plan", () => {
         answeredUpdate = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("n\n")));
       }
-      if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
+      if (!answeredAutomation && text.includes("Handle Almanac automations on the cloud?")) {
         answeredAutomation = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
-      }
-      if (!answeredCloud && text.includes("Send Claude/Codex turns to Almanac Cloud?")) {
-        answeredCloud = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("y\n")));
       }
     });
 
@@ -131,15 +126,14 @@ describe("setup plan", () => {
     });
     expect(answeredTargets).toBe(true);
     expect(answeredUpdate).toBe(true);
-    expect(answeredCloud).toBe(true);
     expect(answeredAutomation).toBe(true);
+    expect(stdout()).not.toContain("Send Claude/Codex turns to Almanac Cloud?");
   });
 
   it("interactive target selection can intentionally choose no targets", async () => {
     const { out, stdout } = setupOutput();
     let answeredTargets = false;
     let answeredUpdate = false;
-    let answeredCloud = false;
     let answeredAutomation = false;
     out.on("data", () => {
       const text = stdout();
@@ -151,12 +145,8 @@ describe("setup plan", () => {
         answeredUpdate = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
       }
-      if (!answeredAutomation && text.includes("Do you want to handle automations yourself?")) {
+      if (!answeredAutomation && text.includes("Handle Almanac automations on the cloud?")) {
         answeredAutomation = true;
-        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
-      }
-      if (!answeredCloud && text.includes("Send Claude/Codex turns to Almanac Cloud?")) {
-        answeredCloud = true;
         queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
       }
     });
@@ -168,10 +158,54 @@ describe("setup plan", () => {
     })).resolves.toMatchObject({
       instructionTargets: [],
       cliAutoUpdate: true,
-      cloudCapture: false,
+      cloudCapture: true,
       selfManagedAutomation: false,
       autoCommit: false,
     });
     expect(answeredTargets).toBe(true);
+    expect(answeredAutomation).toBe(true);
+    expect(stdout()).not.toContain("Send Claude/Codex turns to Almanac Cloud?");
+  });
+
+  it("interactive cloud automation opt-out enters self-managed setup", async () => {
+    const { out, stdout } = setupOutput();
+    let answeredTargets = false;
+    let answeredUpdate = false;
+    let answeredAutomation = false;
+    let answeredAutoCommit = false;
+    out.on("data", () => {
+      const text = stdout();
+      if (!answeredTargets && text.includes("Select targets")) {
+        answeredTargets = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
+      if (!answeredUpdate && text.includes("Keep the Almanac CLI updated automatically?")) {
+        answeredUpdate = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
+      if (!answeredAutomation && text.includes("Handle Almanac automations on the cloud?")) {
+        answeredAutomation = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("n\n")));
+      }
+      if (!answeredAutoCommit && text.includes("Commit Almanac wiki updates automatically?")) {
+        answeredAutoCommit = true;
+        queueMicrotask(() => process.stdin.emit("data", Buffer.from("\n")));
+      }
+    });
+
+    await expect(buildSetupPlan({
+      out,
+      interactive: true,
+      options: {},
+    })).resolves.toMatchObject({
+      cloudCapture: false,
+      selfManagedAutomation: true,
+      autoCommit: true,
+    });
+    expect(answeredTargets).toBe(true);
+    expect(answeredUpdate).toBe(true);
+    expect(answeredAutomation).toBe(true);
+    expect(answeredAutoCommit).toBe(true);
+    expect(stdout()).toContain("Commit Almanac wiki updates automatically? \u001b[2m[Y/n]\u001b[0m");
   });
 });

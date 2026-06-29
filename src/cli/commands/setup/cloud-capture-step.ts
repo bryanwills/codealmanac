@@ -1,8 +1,7 @@
 import { readCredentials, login } from "../../../cloud/auth.js";
 import { installClaudeCloudHooks } from "../../../platform/cloud-hooks/claude.js";
 import { installCodexCloudHooks } from "../../../platform/cloud-hooks/codex.js";
-import type { CloudHookInstallResult } from "../../../platform/cloud-hooks/common.js";
-import { BAR, DIM, RST, stepDone } from "./output.js";
+import { BAR, stepDone } from "./output.js";
 
 export interface CloudCaptureSetupOptions {
   cloudHooksHomeDir?: string;
@@ -16,7 +15,8 @@ export async function runCloudCaptureSetupStep(args: {
   options: CloudCaptureSetupOptions;
 }): Promise<void> {
   await (args.options.ensureCloudLogin ?? ensureCloudLogin)();
-  const [codex, claude] = await Promise.all([
+  stepDone(args.out, "Signed in to Almanac Cloud");
+  await Promise.all([
     installCodexCloudHooks({
       homeDir: args.options.cloudHooksHomeDir,
       configPath: args.options.codexCloudHooksPath,
@@ -26,7 +26,7 @@ export async function runCloudCaptureSetupStep(args: {
       configPath: args.options.claudeCloudHooksPath,
     }),
   ]);
-  stepDone(args.out, `Cloud capture hooks ${hookSummary([codex, claude])}`);
+  stepDone(args.out, "Cloud capture ready (Claude + Codex)");
   args.out.write(BAR + "\n");
 }
 
@@ -34,10 +34,4 @@ async function ensureCloudLogin(): Promise<void> {
   const credentials = await readCredentials();
   if (credentials !== null) return;
   await login();
-}
-
-function hookSummary(results: CloudHookInstallResult[]): string {
-  return results.some((result) => result.changed)
-    ? "installed"
-    : `already installed ${DIM}(Claude + Codex)${RST}`;
 }
