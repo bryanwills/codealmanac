@@ -304,6 +304,16 @@
 - Verified slice 20 with focused runs, Ingest, Garden, Claude adapter, Codex
   adapter, and jobs CLI tests, full pytest, ruff, `git diff --check`, and a
   live temp-repo `jobs show` smoke that displayed the stored transcript id.
+- Added slice-21 internal lifecycle transcript exclusion to `sync status`.
+  `SyncWorkflow` now loads repo-local run records through `RunsService` and
+  skips discovered transcripts that match a stored `harness_transcript` by
+  provider kind plus session id or transcript path.
+- The skip reason is `internal-lifecycle-transcript`. This keeps the
+  read-only status gate aligned with the future write-capable sync path without
+  starting Ingest yet.
+- Verified slice 21 with focused sync workflow tests, 109 passing full tests,
+  ruff, `git diff --check`, and an isolated `sync status` dogfood where
+  `internal-session` was skipped and `ordinary-session` was ready.
 
 ## Current Hypothesis
 
@@ -316,13 +326,14 @@ safety, and run logging now have typed service/workflow boundaries. Claude and
 Codex CLI adapters are wired through the app composition root. Public `ingest`
 and `garden` commands reach their workflows without making the CLI an internal
 API. `sync status` now exposes read-only local transcript readiness behind the
-same service/workflow/adapter boundaries. Lifecycle runs now retain optional
-provider transcript identity for future internal-transcript exclusion.
+same service/workflow/adapter boundaries, and it skips provider transcripts
+that came from CodeAlmanac lifecycle runs. Lifecycle runs retain optional
+provider transcript identity for that exclusion.
 
 ## Next Hypothesis
 
-The next slice should teach sync execution to skip recorded internal lifecycle
-transcripts, then wire `codealmanac sync` to queue ordinary local ingest work.
+The next slice should wire write-capable `codealmanac sync` to queue ordinary
+local ingest work through the existing sync eligibility gate.
 Automation install/status/uninstall remains separate from sync execution. The
 remaining serve risks are markdown wikilink rewriting inside code spans,
 browser-harness verification once Chrome allows remote debugging, and whether a

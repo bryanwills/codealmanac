@@ -3,6 +3,9 @@ from hashlib import sha256
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
+from codealmanac.services.runs.models import RunRecord
+from codealmanac.services.runs.requests import ListRunsRequest
+from codealmanac.services.runs.service import RunsService
 from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.sources.service import SourcesService
@@ -31,10 +34,12 @@ class SyncWorkflow:
         self,
         workspaces: WorkspacesService,
         sources: SourcesService,
+        runs: RunsService,
         ledger_store: SyncLedgerStore,
     ):
         self.workspaces = workspaces
         self.sources = sources
+        self.runs = runs
         self.ledger_store = ledger_store
 
     def status(self, request: RunSyncStatusRequest) -> SyncSummary:
@@ -50,10 +55,18 @@ class SyncWorkflow:
         skipped: list[SyncSkipped] = []
         needs_attention: list[SyncSkipped] = []
         ledgers: dict[Path, dict[str, SyncLedgerEntry]] = {}
+        run_records: dict[Path, tuple[RunRecord, ...]] = {}
         for candidate in scoped_candidates:
             quiet_skip = quiet_window_skip(candidate, request, now)
             if quiet_skip is not None:
                 skipped.append(quiet_skip)
+                continue
+            records = run_records.setdefault(
+                candidate.repo_root,
+                self.runs.list(ListRunsRequest(cwd=candidate.repo_root)),
+            )
+            if is_internal_transcript(candidate, records):
+                skipped.append(skip(candidate, "internal-lifecycle-transcript"))
                 continue
             ledger = ledgers.setdefault(
                 candidate.repo_root,
@@ -118,6 +131,25 @@ def quiet_window_skip(
     if now - candidate.modified_at < request.quiet:
         return skip(candidate, "quiet-window")
     return None
+
+
+def is_internal_transcript(
+    candidate: TranscriptCandidate,
+    records: tuple[RunRecord, ...],
+) -> bool:
+    candidate_path = normalize_path(candidate.transcript_path)
+    for record in records:
+        ref = record.harness_transcript
+        if ref is None or ref.kind.value != candidate.app.value:
+            continue
+        if ref.session_id == candidate.session_id:
+            return True
+        if (
+            ref.transcript_path is not None
+            and normalize_path(ref.transcript_path) == candidate_path
+        ):
+            return True
+    return False
 
 
 def read_transcript(candidate: TranscriptCandidate) -> TranscriptSnapshot | None:

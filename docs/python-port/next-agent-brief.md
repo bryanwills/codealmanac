@@ -30,8 +30,8 @@ Updated: 2026-06-29
   safety, and index refresh.
 - `workflows/sync` currently supports read-only status. It discovers local
   Codex and Claude transcripts through `SourcesService`, applies quiet-window
-  and cursor checks, and reports readiness without invoking AI or writing wiki
-  content.
+  and cursor checks, skips recorded internal lifecycle transcripts, and reports
+  readiness without invoking AI or writing wiki content.
 - Ingest and Garden now attach optional `HarnessTranscriptRef` values to run
   records as soon as a harness returns. Claude uses its structured
   `session_id`; Codex uses best-effort local transcript lookup.
@@ -234,25 +234,37 @@ Updated: 2026-06-29
   - `uv build` package build
   - isolated temp-repo dogfood with a synthetic Codex transcript reported
     ready lines 1-2
-- Slice-20 harness transcript feedback checks passed so far:
+- Slice-20 harness transcript feedback checks passed:
   - focused runs, Ingest, Garden, Claude adapter, Codex adapter, and jobs CLI
     tests
   - ruff after import sorting
   - full pytest, diff hygiene, and live temp-repo `jobs show` smoke
+- Slice-21 sync internal transcript exclusion checks passed so far:
+  - focused sync workflow tests
+  - full pytest
+  - ruff
+  - diff hygiene
+  - isolated status dogfood skipped `internal-session` and reported
+    `ordinary-session` ready
 
 ## Dirty/Staged Files
 
-If slice 20 is committed, the worktree should be clean. If slice-20 files are
-dirty, re-run focused harness transcript feedback tests, `uv run pytest`,
-`uv run ruff check src tests`, `git diff --check`, and a live `jobs show` smoke
-that displays `harness_transcript`.
+If slice 21 is committed, the worktree should be clean. If slice-21 files are
+dirty, re-run:
+
+- focused sync workflow tests
+- full pytest
+- ruff
+- `git diff --check`
+- isolated `sync status` dogfood that skips an internal transcript while
+  reporting an ordinary transcript ready
 
 ## Next Move
 
-1. Teach sync execution to skip discovered transcripts that match
-   `RunRecord.harness_transcript`.
-2. Wire full `codealmanac sync` to queue ordinary local ingest work only after
-   that internal-session exclusion is tested.
+1. Wire full `codealmanac sync` to queue ordinary local ingest work through the
+   existing sync eligibility gate.
+2. Record pending cursor state before invoking Ingest, then add later
+   reconciliation from run records to durable cursor advancement.
 3. Keep automation install/status/uninstall separate from sync execution.
 4. Decide whether the viewer needs source/file route hardening before more
    lifecycle commands.

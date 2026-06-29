@@ -106,7 +106,7 @@ def create_app(
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
         prompts,
     )
-    sync = SyncWorkflow(workspaces, sources, SyncLedgerStore())
+    sync = SyncWorkflow(workspaces, sources, runs, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
         build=build,
         ingest=ingest,

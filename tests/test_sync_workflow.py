@@ -4,6 +4,12 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
+from codealmanac.services.runs.models import RunOperation
+from codealmanac.services.runs.requests import (
+    RecordRunHarnessTranscriptRequest,
+    StartRunRequest,
+)
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
@@ -57,6 +63,91 @@ def test_sync_status_reports_ready_transcript_ranges(
     assert summary.ready[0].to_line == 2
     assert summary.skipped == ()
     assert summary.needs_attention == ()
+
+
+def test_sync_status_skips_internal_lifecycle_transcripts_by_session(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(
+        StartRunRequest(
+            cwd=repo,
+            operation=RunOperation.INGEST,
+            title="Internal ingest",
+        )
+    )
+    app.runs.record_harness_transcript(
+        RecordRunHarnessTranscriptRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            transcript=HarnessTranscriptRef(
+                kind=HarnessKind.CODEX,
+                session_id="session-1",
+            ),
+        )
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.ready == ()
+    assert summary.skipped[0].reason == "internal-lifecycle-transcript"
+
+
+def test_sync_status_skips_internal_lifecycle_transcripts_by_path(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(
+        StartRunRequest(
+            cwd=repo,
+            operation=RunOperation.GARDEN,
+            title="Internal garden",
+        )
+    )
+    app.runs.record_harness_transcript(
+        RecordRunHarnessTranscriptRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            transcript=HarnessTranscriptRef(
+                kind=HarnessKind.CODEX,
+                session_id="different-session",
+                transcript_path=transcript,
+            ),
+        )
+    )
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.ready == ()
+    assert summary.skipped[0].reason == "internal-lifecycle-transcript"
 
 
 def test_sync_status_applies_quiet_window(

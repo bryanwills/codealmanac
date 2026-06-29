@@ -27,6 +27,6 @@ alive while rebuilding in Python.
 | `serve` slice timing | Restore after core read model works unless a viewer need becomes the highest-risk boundary. |
 | Agent harness contract | Re-evaluate old Codex app-server and Claude SDK adapters before implementing lifecycle workflows. |
 | Codex app-server parity | The Python v1 Codex adapter uses `codex exec`; port app-server only if the harness contract needs streaming, usage, structured tool display, structured output, or subagents. |
-| Sync execution internal-session exclusion | Harness runs now record optional provider transcript refs. Full `codealmanac sync` must still compare discovered transcripts against those run records and skip internal Ingest/Garden sessions before it runs ingest. |
+| Sync execution | `sync status` now skips recorded internal lifecycle transcripts. Full `codealmanac sync` must still queue Ingest work, record pending cursor state, and reconcile the sync ledger. |
 | Update/self-update behavior | Keep command surface, but avoid npm-era assumptions when packaging Python. |
 | Index refresh cost | `ensure_fresh` skips unchanged projection writes using source signatures, but still parses page markdown to compute them. Optimize only after real large-repo dogfood shows this is too slow. |

@@ -398,3 +398,28 @@ Follow-up test:
 Before public `codealmanac sync` runs ingest, add a sync test that creates a
 run record with `harness_transcript` and verifies the matching discovered
 transcript is skipped while a different transcript remains ready.
+
+## 2026-06-29 - Internal Transcript Exclusion Belongs In Sync Status First
+
+Old hypothesis:
+Internal lifecycle transcript exclusion could be added alongside the first
+write-capable `codealmanac sync` command.
+
+New hypothesis:
+Add the exclusion to `sync status` first. Status is the read-only form of sync
+eligibility, so it should already hide transcripts that live sync must never
+ingest.
+
+Evidence that forced the change:
+Slice 20 gave run records the provider transcript identity needed for the
+filter. Adding the filter before execution keeps CLI thin and avoids a future
+split where status and live sync disagree about what is eligible.
+
+Code or product assumption affected:
+`SyncWorkflow` now reads repo-local run records through `RunsService` and skips
+candidates whose provider kind matches and whose session id or transcript path
+matches a stored `RunRecord.harness_transcript`.
+
+Follow-up test:
+When live `codealmanac sync` lands, assert that it uses the same internal skip
+rule before it queues Ingest and records pending cursor state.
