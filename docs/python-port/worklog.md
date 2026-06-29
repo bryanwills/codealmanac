@@ -28,16 +28,32 @@
   case-insensitively, and selector helpers have explicit registry-entry types.
 - Re-verified the review fix with `uv run pytest`, `uv run ruff check .`, and
   an isolated live `codealmanac init` plus `codealmanac list` smoke run.
+- Sent a Relayforge Discord checkpoint through Doppler-injected
+  `almanac/dev` credentials describing the Cosmic Python patterns applied so
+  far: composition root, thin CLI adapter, repository/store boundary, and
+  deferred Unit of Work machinery.
+- Added slice-2 read-model plan in `docs/python-port/slice-2-read-model.md`.
+- Added SQLite read-model services: `index` owns SQLite schema and query store,
+  `search` and `pages` own user-facing read verbs, and CLI renders service
+  results without knowing SQL exists.
+- Added `python-frontmatter` after checking for a known frontmatter parsing
+  library; Pydantic validates parsed metadata and `StrEnum` names wikilink
+  kinds.
+- Dogfood found a stale-schema bug against this repo's existing `.almanac/index.db`.
+  The Python schema now uses a high version so old Node-era DBs rebuild cleanly.
+- Verified slice-2 work with `uv run pytest`, `uv run ruff check .`, an isolated
+  live `search`/`show`/`--mentions`/backlink smoke, and dogfood
+  `codealmanac search python --limit 5` against this repo.
 
 ## Current Hypothesis
 
-Start with the smallest useful spine, not with all product commands. A thin CLI
-and composition root will make later services additive. The first slice should
-prove that the repo can install, invoke `codealmanac`, initialize a `.almanac/`,
-and run tests through service/CLI entrypoints.
+The read path now exists and should be reviewed before lifecycle commands. The
+indexer deliberately rebuilds the read model on every read command for slice 2;
+that is correct but not final for large repos.
 
 ## Next Hypothesis
 
-The next slice should add the SQLite read-model spine before AI lifecycle
-commands. That means `database/`, `wiki` page parsing, `index` service/search
-schema, and `search`/`show` CLI commands over initialized `.almanac/pages/`.
+The next slice should review and tighten the SQLite read model, then either add
+`topics`/`health` on top of the same index or optimize freshness with
+content-hash/incremental indexing if performance becomes the higher-risk
+boundary.

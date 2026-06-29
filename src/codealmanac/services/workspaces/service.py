@@ -59,9 +59,12 @@ class WorkspacesService:
     def resolve(self, path: Path) -> Workspace:
         normalized = normalize_path(path)
         selected = containing_workspace(normalized, self.list())
-        if selected is None:
+        if selected is not None:
+            return selected
+        root_path = nearest_almanac_root(normalized)
+        if root_path is None:
             raise NotFoundError("workspace", str(path))
-        return selected
+        return self.register(RegisterWorkspaceRequest(root_path=root_path))
 
     def validate_path(self, workspace_id: str, path: Path) -> Path:
         workspace = self.get(workspace_id)

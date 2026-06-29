@@ -13,6 +13,8 @@ Updated: 2026-06-29
 - Steering docs live in `docs/python-port/`.
 - First Python scaffold exists under `src/codealmanac/` with CLI, app,
   workspaces, wiki scaffold, and build workflow.
+- Slice-2 read-model work exists with `search` and `show`, SQLite FTS5 index,
+  wiki parser/link classifier, and service-layer tests.
 
 ## Last Good Evidence
 
@@ -32,19 +34,25 @@ Updated: 2026-06-29
   - `uv run pytest`
   - `uv run ruff check .`
   - isolated live `codealmanac init` and `codealmanac list`
+- Slice-2 read model passed:
+  - `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest`
+  - `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run ruff check .`
+  - isolated live `search --mentions`, `show --backlinks`, `show --files`
+  - dogfood `codealmanac search python --limit 5` in this repo
 
 ## Dirty/Staged Files
 
-At this checkpoint, only the slice-1 review fix should be dirty until it is
-committed. Re-run `git diff --check`, `uv run pytest`, `uv run ruff check .`,
-and the live CLI smoke before committing.
+At this checkpoint, slice-2 read-model files should be dirty until committed.
+Re-run `git diff --check`, pytest, ruff, isolated live smoke, and dogfood
+search before committing.
 
 ## Next Move
 
-1. Commit the slice-1 review fix if it is still unstaged/uncommitted.
-2. Start the SQLite read-model slice: `database/`, `wiki` page parsing,
-   `index` service, and `search`/`show` commands.
-3. Add focused service/store tests before broad CLI tests.
+1. Review slice-2 boundaries before adding lifecycle commands.
+2. Decide whether to optimize index freshness now or defer until after
+   `topics`/`health`; current read model rebuilds on every read command.
+3. Add `topics`/`health` on top of the existing index if the read model review
+   holds.
 4. Add an architecture test that CLI imports do not import concrete integration
    modules once integrations exist.
 

@@ -27,3 +27,4 @@ alive while rebuilding in Python.
 | `serve` slice timing | Restore after core read model works unless a viewer need becomes the highest-risk boundary. |
 | Agent harness contract | Re-evaluate old Codex app-server and Claude SDK adapters before implementing lifecycle workflows. |
 | Update/self-update behavior | Keep command surface, but avoid npm-era assumptions when packaging Python. |
+| Index freshness optimization | Slice 2 rebuilds `.almanac/index.db` on every read command for correctness. Review before large-repo use and add content-hash/mtime incremental refresh when needed. |
