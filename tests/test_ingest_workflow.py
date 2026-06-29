@@ -12,6 +12,7 @@ from codealmanac.services.harnesses.models import (
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
+    HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
@@ -58,6 +59,11 @@ Ingested durable wiki knowledge from the note.
             output_text="updated wiki",
             summary="ingested note",
             changed_files=(page,),
+            transcript=HarnessTranscriptRef(
+                kind=self.kind,
+                session_id="codex-ingest-session",
+                transcript_path=request.cwd / "codex-ingest.jsonl",
+            ),
         )
 
 
@@ -80,6 +86,10 @@ class FailedHarnessAdapter(WritingHarnessAdapter):
             kind=self.kind,
             status=HarnessRunStatus.FAILED,
             output_text="agent failed",
+            transcript=HarnessTranscriptRef(
+                kind=self.kind,
+                session_id="failed-ingest-session",
+            ),
         )
 
 
@@ -151,6 +161,8 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
 
     assert result.run.status == RunStatus.DONE
     assert result.run.summary == "ingested note"
+    assert result.run.harness_transcript is not None
+    assert result.run.harness_transcript.session_id == "codex-ingest-session"
     assert result.sources[0].ref.fingerprint is not None
     assert result.harness.changed_files == (
         repo / ".almanac/pages/ingested-note.md",
@@ -264,6 +276,8 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
 
     assert run.status == RunStatus.FAILED
     assert run.error == "harness codex failed with status failed: agent failed"
+    assert run.harness_transcript is not None
+    assert run.harness_transcript.session_id == "failed-ingest-session"
 
 
 def test_ingest_workflow_checks_mutations_before_failed_harness_status(

@@ -13,6 +13,7 @@ from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStat
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     RecordRunEventRequest,
+    RecordRunHarnessTranscriptRequest,
     StartRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
@@ -96,6 +97,7 @@ class GardenWorkflow:
                     title=request.title,
                 )
             )
+            self.record_harness_transcript(request, started.run_id, harness)
             safety = self.mutation_policy.validate(
                 preflight,
                 workspace,
@@ -145,6 +147,23 @@ class GardenWorkflow:
                 run_id=run_id,
                 kind=kind,
                 message=message,
+            )
+        )
+
+    def record_harness_transcript(
+        self,
+        request: RunGardenRequest,
+        run_id: str,
+        harness: HarnessRunResult,
+    ) -> None:
+        if harness.transcript is None:
+            return
+        self.runs.record_harness_transcript(
+            RecordRunHarnessTranscriptRequest(
+                cwd=request.cwd,
+                wiki=request.wiki,
+                run_id=run_id,
+                transcript=harness.transcript,
             )
         )
 

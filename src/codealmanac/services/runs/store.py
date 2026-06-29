@@ -5,6 +5,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from codealmanac.core.errors import NotFoundError
+from codealmanac.services.harnesses.models import HarnessTranscriptRef
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunLogEvent,
@@ -88,6 +89,22 @@ class RunStore:
             record.model_copy(update={"updated_at": event.timestamp}),
         )
         return event
+
+    def record_harness_transcript(
+        self,
+        almanac_path: Path,
+        run_id: str,
+        transcript: HarnessTranscriptRef,
+    ) -> RunRecord:
+        record = self.read(almanac_path, run_id)
+        updated = record.model_copy(
+            update={
+                "harness_transcript": transcript,
+                "updated_at": datetime.now(UTC),
+            }
+        )
+        write_record(almanac_path, updated)
+        return updated
 
     def finish(
         self,

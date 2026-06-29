@@ -12,11 +12,13 @@ from codealmanac.services.harnesses.models import (
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
+    HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunOperation
 from codealmanac.services.runs.requests import (
     RecordRunEventRequest,
+    RecordRunHarnessTranscriptRequest,
     StartRunRequest,
 )
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
@@ -409,6 +411,17 @@ def test_cli_jobs_inspects_local_run_records(
             message="read note",
         )
     )
+    app.runs.record_harness_transcript(
+        RecordRunHarnessTranscriptRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            transcript=HarnessTranscriptRef(
+                kind=HarnessKind.CODEX,
+                session_id="codex-job-session",
+                transcript_path=repo / "codex-job.jsonl",
+            ),
+        )
+    )
     monkeypatch.chdir(repo)
 
     assert main(["jobs"]) == 0
@@ -419,6 +432,10 @@ def test_cli_jobs_inspects_local_run_records(
     show_output = capsys.readouterr()
     assert f"id: {record.run_id}\n" in show_output.out
     assert "operation: ingest\n" in show_output.out
+    assert "harness_transcript: codex codex-job-session\n" in show_output.out
+    assert f"harness_transcript_path: {repo / 'codex-job.jsonl'}\n" in (
+        show_output.out
+    )
 
     assert main(["jobs", "logs", record.run_id]) == 0
     log_output = capsys.readouterr()
@@ -428,6 +445,7 @@ def test_cli_jobs_inspects_local_run_records(
     assert main(["jobs", "--json"]) == 0
     json_output = capsys.readouterr()
     assert f'"run_id": "{record.run_id}"' in json_output.out
+    assert '"session_id": "codex-job-session"' in json_output.out
 
 
 def test_cli_search_and_show_read_current_repo_wiki(

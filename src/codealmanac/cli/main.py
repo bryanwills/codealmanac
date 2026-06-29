@@ -602,6 +602,17 @@ def render_run(record: RunRecord, json_output: bool) -> None:
         print(f"summary: {record.summary}")
     if record.error is not None:
         print(f"error: {record.error}")
+    if record.harness_transcript is not None:
+        print(
+            "harness_transcript: "
+            f"{record.harness_transcript.kind.value} "
+            f"{record.harness_transcript.session_id}"
+        )
+        if record.harness_transcript.transcript_path is not None:
+            print(
+                "harness_transcript_path: "
+                f"{record.harness_transcript.transcript_path}"
+            )
     print(f"created_at: {record.created_at.isoformat()}")
     print(f"updated_at: {record.updated_at.isoformat()}")
 

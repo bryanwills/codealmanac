@@ -29,12 +29,24 @@ class HarnessReadiness(CodeAlmanacModel):
         return required_text(value, "harness readiness message")
 
 
+class HarnessTranscriptRef(CodeAlmanacModel):
+    kind: HarnessKind
+    session_id: str
+    transcript_path: Path | None = None
+
+    @field_validator("session_id")
+    @classmethod
+    def require_session_id(cls, value: str) -> str:
+        return required_text(value, "harness transcript session id")
+
+
 class HarnessRunResult(CodeAlmanacModel):
     kind: HarnessKind
     status: HarnessRunStatus
     output_text: str
     summary: str | None = None
     changed_files: tuple[Path, ...] = ()
+    transcript: HarnessTranscriptRef | None = None
 
     @field_validator("output_text")
     @classmethod

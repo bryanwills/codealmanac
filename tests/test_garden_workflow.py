@@ -11,6 +11,7 @@ from codealmanac.services.harnesses.models import (
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
+    HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
@@ -54,6 +55,11 @@ Garden preserved one coherent wiki improvement.
             output_text="updated wiki graph",
             summary="gardened wiki graph",
             changed_files=(page,),
+            transcript=HarnessTranscriptRef(
+                kind=self.kind,
+                session_id="codex-garden-session",
+                transcript_path=request.cwd / "codex-garden.jsonl",
+            ),
         )
 
 
@@ -93,6 +99,8 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
 
     assert result.run.status == RunStatus.DONE
     assert result.run.summary == "gardened wiki graph"
+    assert result.run.harness_transcript is not None
+    assert result.run.harness_transcript.session_id == "codex-garden-session"
     assert result.health_before.empty_pages == ()
     assert result.harness.changed_files == (
         repo / ".almanac/pages/gardened-note.md",

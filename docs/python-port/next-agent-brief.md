@@ -21,8 +21,8 @@ Updated: 2026-06-29
   source briefs, local path observations, file fingerprints, transcript
   discovery ports, typed transcript candidates, and Pydantic URL validation.
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
-  contracts plus the adapter port. Claude CLI and Codex CLI are both concrete
-  adapters wired by default.
+  contracts plus provider transcript refs and the adapter port. Claude CLI and
+  Codex CLI are both concrete adapters wired by default.
 - `workflows/ingest` now coordinates source resolution, harness execution, run
   ledger updates, `.almanac/` mutation safety, and index refresh.
 - `workflows/garden` now coordinates whole-wiki maintenance from index and
@@ -32,6 +32,9 @@ Updated: 2026-06-29
   Codex and Claude transcripts through `SourcesService`, applies quiet-window
   and cursor checks, and reports readiness without invoking AI or writing wiki
   content.
+- Ingest and Garden now attach optional `HarnessTranscriptRef` values to run
+  records as soon as a harness returns. Claude uses its structured
+  `session_id`; Codex uses best-effort local transcript lookup.
 - `src/codealmanac/prompts/` contains packaged Markdown prompt doctrine and
   operation prompts. `PromptRenderer` composes those resources with typed
   runtime JSON for Ingest and Garden.
@@ -231,19 +234,23 @@ Updated: 2026-06-29
   - `uv build` package build
   - isolated temp-repo dogfood with a synthetic Codex transcript reported
     ready lines 1-2
+- Slice-20 harness transcript feedback checks passed so far:
+  - focused runs, Ingest, Garden, Claude adapter, Codex adapter, and jobs CLI
+    tests
+  - ruff after import sorting
+  - full pytest, diff hygiene, and live temp-repo `jobs show` smoke
 
 ## Dirty/Staged Files
 
-After slice 19 is committed, the worktree should be clean. If any slice-19 files
-are dirty, re-run focused transcript discovery/sync/CLI/architecture tests,
-`git diff --check`, pytest, ruff, CLI help/status smoke, package build
-inspection, and an isolated transcript sync-status dogfood run.
+If slice 20 is committed, the worktree should be clean. If slice-20 files are
+dirty, re-run focused harness transcript feedback tests, `uv run pytest`,
+`uv run ruff check src tests`, `git diff --check`, and a live `jobs show` smoke
+that displays `harness_transcript`.
 
 ## Next Move
 
-1. Add provider session/transcript feedback to harness run results and run
-   records so full sync execution can skip internal CodeAlmanac lifecycle
-   transcripts.
+1. Teach sync execution to skip discovered transcripts that match
+   `RunRecord.harness_transcript`.
 2. Wire full `codealmanac sync` to queue ordinary local ingest work only after
    that internal-session exclusion is tested.
 3. Keep automation install/status/uninstall separate from sync execution.

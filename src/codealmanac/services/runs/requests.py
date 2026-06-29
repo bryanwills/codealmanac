@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.harnesses.models import HarnessTranscriptRef
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 
 
@@ -46,6 +47,13 @@ class RecordRunEventRequest(CodeAlmanacModel):
     wiki: str | None = None
 
 
+class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: str
+    transcript: HarnessTranscriptRef
+    wiki: str | None = None
+
+
 class FinishRunRequest(CodeAlmanacModel):
     cwd: Path
     run_id: str
@@ -60,4 +68,3 @@ class FinishRunRequest(CodeAlmanacModel):
         if value not in {RunStatus.DONE, RunStatus.FAILED, RunStatus.CANCELLED}:
             raise ValueError("finish status must be done, failed, or cancelled")
         return value
-

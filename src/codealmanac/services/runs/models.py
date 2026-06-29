@@ -6,6 +6,7 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
+from codealmanac.services.harnesses.models import HarnessTranscriptRef
 
 
 class RunOperation(StrEnum):
@@ -52,6 +53,7 @@ class RunRecord(CodeAlmanacModel):
     finished_at: datetime | None = None
     log_path: Path
     page_changes: PageChangeSet | None = None
+    harness_transcript: HarnessTranscriptRef | None = None
 
     @field_validator("run_id")
     @classmethod

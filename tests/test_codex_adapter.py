@@ -1,3 +1,4 @@
+import json
 import subprocess
 from pathlib import Path
 
@@ -16,9 +17,13 @@ class FakeCommandRunner:
         self,
         results: tuple[CommandResult | BaseException, ...],
         last_message: str | None = None,
+        transcript_root: Path | None = None,
+        transcript_id: str | None = None,
     ):
         self.results = list(results)
         self.last_message = last_message
+        self.transcript_root = transcript_root
+        self.transcript_id = transcript_id
         self.calls: list[tuple[str, tuple[str, ...], Path, int, str | None]] = []
 
     def run(
@@ -36,6 +41,22 @@ class FakeCommandRunner:
         if command == "codex" and self.last_message is not None:
             output_path = Path(args[args.index("--output-last-message") + 1])
             output_path.write_text(self.last_message, encoding="utf-8")
+        if command == "codex" and self.transcript_root is not None:
+            transcript = self.transcript_root / "rollout.jsonl"
+            transcript.parent.mkdir(parents=True, exist_ok=True)
+            transcript.write_text(
+                json.dumps(
+                    {
+                        "payload": {
+                            "id": self.transcript_id or "codex-session",
+                            "cwd": str(cwd),
+                            "thread_source": "user",
+                        }
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
         return result
 
 
@@ -64,6 +85,7 @@ def test_codex_adapter_reports_not_ready_when_command_is_missing():
 
 
 def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
+    sessions = tmp_path / "codex-sessions"
     runner = FakeCommandRunner(
         (
             CommandResult(returncode=0, stdout=""),
@@ -71,8 +93,10 @@ def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
             CommandResult(returncode=0, stdout="?? .almanac/pages/codex-note.md\0"),
         ),
         last_message="updated wiki",
+        transcript_root=sessions,
+        transcript_id="codex-session-1",
     )
-    adapter = CodexCliHarnessAdapter(runner=runner)
+    adapter = CodexCliHarnessAdapter(runner=runner, sessions_dir=sessions)
 
     result = adapter.run(
         RunHarnessRequest(
@@ -96,6 +120,10 @@ def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
     assert codex_call[4] == "Update the wiki."
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
+    assert result.transcript is not None
+    assert result.transcript.kind == HarnessKind.CODEX
+    assert result.transcript.session_id == "codex-session-1"
+    assert result.transcript.transcript_path == sessions / "rollout.jsonl"
     assert result.changed_files == (tmp_path / ".almanac/pages/codex-note.md",)
 
 

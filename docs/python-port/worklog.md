@@ -288,6 +288,22 @@
   architecture tests, 107 passing full tests, ruff, `git diff --check`, CLI
   help/status smoke, package build, and an isolated synthetic Codex transcript
   dogfood.
+- Added slice-20 harness transcript feedback. `HarnessRunResult` can now carry
+  a typed `HarnessTranscriptRef`, and `RunRecord` persists it as
+  `harness_transcript`.
+- `RunsService.record_harness_transcript(...)` records provider transcript
+  identity before a lifecycle run is marked done or failed. Ingest and Garden
+  call it immediately after the harness returns, before mutation validation or
+  provider-status validation.
+- Claude attaches the structured `session_id` from `claude -p --output-format
+  json`. Codex uses a best-effort local transcript lookup over `.codex/sessions`
+  after `codex exec` starts, matching fresh JSONL session metadata by `cwd` and
+  skipping subagent sessions.
+- `codealmanac jobs show <run-id>` now displays the stored harness transcript
+  session id and path when present.
+- Verified slice 20 with focused runs, Ingest, Garden, Claude adapter, Codex
+  adapter, and jobs CLI tests, full pytest, ruff, `git diff --check`, and a
+  live temp-repo `jobs show` smoke that displayed the stored transcript id.
 
 ## Current Hypothesis
 
@@ -300,12 +316,13 @@ safety, and run logging now have typed service/workflow boundaries. Claude and
 Codex CLI adapters are wired through the app composition root. Public `ingest`
 and `garden` commands reach their workflows without making the CLI an internal
 API. `sync status` now exposes read-only local transcript readiness behind the
-same service/workflow/adapter boundaries.
+same service/workflow/adapter boundaries. Lifecycle runs now retain optional
+provider transcript identity for future internal-transcript exclusion.
 
 ## Next Hypothesis
 
-The next slice should add the provider transcript feedback needed for safe sync
-execution, then wire `codealmanac sync` to queue ordinary local ingest work.
+The next slice should teach sync execution to skip recorded internal lifecycle
+transcripts, then wire `codealmanac sync` to queue ordinary local ingest work.
 Automation install/status/uninstall remains separate from sync execution. The
 remaining serve risks are markdown wikilink rewriting inside code spans,
 browser-harness verification once Chrome allows remote debugging, and whether a

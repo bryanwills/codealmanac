@@ -368,3 +368,33 @@ Follow-up test:
 When sync execution lands, add a regression where an Ingest or Garden provider
 run creates a transcript and `codealmanac sync` skips that internal transcript
 while still reporting a separate user transcript from the same repo as ready.
+
+## 2026-06-29 - Transcript Feedback Before Sync Skip Policy
+
+Old hypothesis:
+Full sync execution could add internal-transcript exclusion and ingest queuing
+in one slice.
+
+New hypothesis:
+Add harness transcript feedback first. Provider adapters should return a typed
+`HarnessTranscriptRef` when they can identify the session they created, and
+`runs` should persist that ref before the lifecycle run reaches a terminal
+state.
+
+Evidence that forced the change:
+Sync status already discovers transcript candidates. The missing information is
+not in sync; it is in the lifecycle runs that create internal provider
+transcripts. Claude exposes a structured `session_id`; Codex requires a
+best-effort local session lookup because `codex exec --output-last-message`
+does not include the run id in its final message.
+
+Code or product assumption affected:
+`HarnessRunResult` now owns optional provider transcript identity.
+`RunRecord` persists it as `harness_transcript`. Future sync execution can
+compare discovered candidates against run records without parsing provider
+output text or lifecycle logs.
+
+Follow-up test:
+Before public `codealmanac sync` runs ingest, add a sync test that creates a
+run record with `harness_transcript` and verifies the matching discovered
+transcript is skipped while a different transcript remains ready.

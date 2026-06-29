@@ -5,12 +5,14 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     ListRunsRequest,
     ReadRunLogRequest,
     RecordRunEventRequest,
+    RecordRunHarnessTranscriptRequest,
     ShowRunRequest,
     StartRunRequest,
 )
@@ -41,6 +43,18 @@ def test_runs_service_records_job_and_events(
             message="read design note",
         )
     )
+    transcript = HarnessTranscriptRef(
+        kind=HarnessKind.CODEX,
+        session_id="codex-session-1",
+        transcript_path=Path("/tmp/codex-session.jsonl"),
+    )
+    attached = app.runs.record_harness_transcript(
+        RecordRunHarnessTranscriptRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            transcript=transcript,
+        )
+    )
     finished = app.runs.finish(
         FinishRunRequest(
             cwd=repo,
@@ -55,7 +69,9 @@ def test_runs_service_records_job_and_events(
 
     assert record.status == RunStatus.QUEUED
     assert event.sequence == 2
+    assert attached.harness_transcript == transcript
     assert finished.status == RunStatus.DONE
+    assert finished.harness_transcript == transcript
     assert finished.summary == "updated wiki"
     assert [run.run_id for run in listed] == [record.run_id]
     assert shown.status == RunStatus.DONE

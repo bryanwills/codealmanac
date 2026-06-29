@@ -2,6 +2,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
+from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.index.service import IndexService
@@ -9,6 +10,7 @@ from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStat
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     RecordRunEventRequest,
+    RecordRunHarnessTranscriptRequest,
     StartRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
@@ -93,6 +95,7 @@ class IngestWorkflow:
                     title=request.title,
                 )
             )
+            self.record_harness_transcript(request, started.run_id, harness)
             safety = self.mutation_policy.validate(
                 preflight,
                 workspace,
@@ -147,6 +150,23 @@ class IngestWorkflow:
                 run_id=run_id,
                 kind=kind,
                 message=message,
+            )
+        )
+
+    def record_harness_transcript(
+        self,
+        request: RunIngestRequest,
+        run_id: str,
+        harness: HarnessRunResult,
+    ) -> None:
+        if harness.transcript is None:
+            return
+        self.runs.record_harness_transcript(
+            RecordRunHarnessTranscriptRequest(
+                cwd=request.cwd,
+                wiki=request.wiki,
+                run_id=run_id,
+                transcript=harness.transcript,
             )
         )
 

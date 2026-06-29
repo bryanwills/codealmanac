@@ -72,7 +72,8 @@ def test_claude_adapter_runs_print_json_and_reports_git_changes(tmp_path: Path):
                 returncode=0,
                 stdout=(
                     '{"type": "result", "subtype": "success", '
-                    '"is_error": false, "result": "updated wiki"}'
+                    '"is_error": false, "result": "updated wiki", '
+                    '"session_id": "claude-session-1"}'
                 ),
             ),
             CommandResult(
@@ -99,6 +100,9 @@ def test_claude_adapter_runs_print_json_and_reports_git_changes(tmp_path: Path):
     assert CLAUDE_ALLOWED_TOOLS in claude_call[1]
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
+    assert result.transcript is not None
+    assert result.transcript.kind == HarnessKind.CLAUDE
+    assert result.transcript.session_id == "claude-session-1"
     assert result.changed_files == (
         tmp_path / ".almanac/pages/new-page.md",
         tmp_path / "src/app.py",

@@ -20,6 +20,7 @@ from codealmanac.services.harnesses.models import (
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
+    HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
@@ -146,14 +147,16 @@ class ClaudeCliHarnessAdapter:
                 f"claude returned invalid JSON: {error}",
                 changed_files,
             )
+        transcript = claude_transcript_ref(parsed.session_id)
         if parsed.is_error or parsed.subtype not in {None, "success"}:
-            return failed_result(parsed.result, changed_files)
+            return failed_result(parsed.result, changed_files, transcript)
         return HarnessRunResult(
             kind=self.kind,
             status=HarnessRunStatus.SUCCEEDED,
             output_text=parsed.result,
             summary=first_line(parsed.result),
             changed_files=changed_files,
+            transcript=transcript,
         )
 
 
@@ -173,13 +176,21 @@ def claude_print_args() -> tuple[str, ...]:
 def failed_result(
     output_text: str,
     changed_files: tuple[Path, ...] = (),
+    transcript: HarnessTranscriptRef | None = None,
 ) -> HarnessRunResult:
     return HarnessRunResult(
         kind=HarnessKind.CLAUDE,
         status=HarnessRunStatus.FAILED,
         output_text=output_text,
         changed_files=changed_files,
+        transcript=transcript,
     )
+
+
+def claude_transcript_ref(session_id: str | None) -> HarnessTranscriptRef | None:
+    if session_id is None:
+        return None
+    return HarnessTranscriptRef(kind=HarnessKind.CLAUDE, session_id=session_id)
 
 
 __all__ = [
