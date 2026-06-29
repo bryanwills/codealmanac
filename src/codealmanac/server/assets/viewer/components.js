@@ -76,10 +76,19 @@ export function pageList(pages) {
   return list;
 }
 
-export function navLink(href, label) {
+export function navLink(href, label, options = {}) {
   const link = document.createElement("a");
   link.href = href;
   link.textContent = label;
+  if (options.kind) {
+    link.dataset.railKind = options.kind;
+  }
+  if (options.value) {
+    link.dataset.railValue = options.value;
+  }
+  if (options.title) {
+    link.title = options.title;
+  }
   return link;
 }
 

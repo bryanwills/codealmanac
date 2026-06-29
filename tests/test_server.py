@@ -24,6 +24,8 @@ def test_server_serves_static_assets_and_viewer_api(
 
     assert index.status_code == 200
     assert "CodeAlmanac" in index.text
+    assert "repo-owned wiki" in index.text
+    assert "Local knowledge graph" in index.text
     assert 'type="module"' in index.text
     assert javascript.status_code == 200
     assert 'import { startViewer } from "/assets/viewer/main.js";' in javascript.text
@@ -31,6 +33,7 @@ def test_server_serves_static_assets_and_viewer_api(
     assert module.status_code == 200
     assert module.headers["content-type"].startswith("text/javascript")
     assert 'from "./renderers.js"' in module.text
+    assert "dataset.railKind" in module.text
     assert api_module.status_code == 200
     assert "/api/file?path=" in api_module.text
     assert overview.json()["workspace"]["name"] == "repo"

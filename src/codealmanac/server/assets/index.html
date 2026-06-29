@@ -11,19 +11,22 @@
     <div class="dashboard-shell">
       <aside class="dashboard-rail">
         <div class="dashboard-rail-top">
-          <a class="dashboard-account-trigger" href="#/" aria-label="Current wiki">
-            <span class="app-avatar app-avatar--account">
-              <span class="app-avatar-fallback">CA</span>
-            </span>
-            <span>
-              <span class="dashboard-account-name" id="workspace-name">Wiki</span>
-              <span class="dashboard-account-subtitle">local wiki</span>
-            </span>
-            <span class="dashboard-account-caret">v</span>
-          </a>
+          <div class="dashboard-rail-picker">
+            <a class="dashboard-account-trigger" href="#/" aria-label="Current local wiki">
+              <span class="app-avatar app-avatar--account">
+                <span class="app-avatar-fallback">CA</span>
+              </span>
+              <span class="dashboard-account-text">
+                <span class="dashboard-account-name" id="workspace-name">Wiki</span>
+                <span class="dashboard-account-subtitle">repo-owned wiki</span>
+              </span>
+              <span class="dashboard-account-caret" aria-hidden="true">v</span>
+            </a>
+          </div>
         </div>
 
         <div class="dashboard-rail-nav">
+          <p class="dashboard-nav-scope">Local knowledge graph</p>
           <nav class="dashboard-nav" aria-label="Wiki navigation">
             <a class="dashboard-nav-item is-active" data-nav-kind="home" href="#/">
               <span class="nav-glyph">W</span>

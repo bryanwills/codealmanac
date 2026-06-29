@@ -636,7 +636,10 @@ HTML/string rewrite. The served viewer now has the intended visual direction:
 UseAlmanac-style shell polish over CodeAlmanac's local sidebar/wiki graph IA,
 not the hosted UseAlmanac page-list/search UX. The browser shell now has static
 module boundaries that match the current UI size without adding React, Next.js,
-or a build step.
+or a build step. Slice 51 tightens that shell toward the earlier CodeAlmanac
+sidebar interaction: repo-owned wiki rail wording, local knowledge graph scope,
+active page/topic rail state, compact mobile rail density, and no
+viewport-scaled type in served CSS.
 
 ## Next Hypothesis
 
@@ -644,8 +647,9 @@ The next high-pressure product slice is not another root or sync migration.
 Scheduled update checks should wait for real non-editable install dogfood. The
 remaining source-runtime pressure is now real-repo dogfood for the diversity
 policy rather than a missing v1 mechanism. The remaining serve risk is polish
-and product review of navigation density, especially the compact mobile rail,
-not a missing browser-harness verification gate or frontend architecture seam.
+and product review of navigation density, especially the compact mobile rail.
+Browser-harness should still verify visual changes, but the current run is
+blocked on Chrome's remote-debugging Allow prompt rather than a repo failure.
 After slice 48, the next update pressure is no longer install detection; it is
 the product policy for notification cadence, dismissal, and release channels
 before any scheduled update automation exists. After slice 49, the next CLI

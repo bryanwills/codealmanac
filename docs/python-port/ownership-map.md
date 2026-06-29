@@ -189,8 +189,9 @@ The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM
 pieces, `renderers.js` owns screen assembly, and `main.js` wires browser events
-to those modules. The server owns validation and delivery of nested package
-assets through `/assets/{path}`.
+to those modules. Sidebar page/topic active state is browser route state over
+the existing hash routes, not a second server contract. The server owns
+validation and delivery of nested package assets through `/assets/{path}`.
 
 `manual/` is a support package rather than a product service. `ManualLibrary`
 loads bundled Markdown resources, installs missing files into

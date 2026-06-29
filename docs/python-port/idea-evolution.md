@@ -1258,3 +1258,32 @@ Follow-up test:
 Architecture tests should keep `views.py` read-only: no markdown loading,
 migrations, or write SQL. Optimize index refresh cost only after large-repo
 dogfood proves source-signature parsing is too slow.
+
+## 2026-06-29 - Serve Shell Polish Stays Inside Static Viewer Modules
+
+Old hypothesis:
+The remaining serve work might need a larger frontend move, especially after
+borrowing UseAlmanac visual language.
+
+New hypothesis:
+Keep `serve` as static package data for now. The product correction is not a
+React or Next.js trigger; it is a local wiki-reader interaction correction.
+The existing `server/assets/viewer` modules can own sidebar active state and
+rail polish while `services/viewer` remains the API contract.
+
+Evidence that forced the change:
+The live agreement now says the earlier CodeAlmanac sidebar shell is the target
+and the current UseAlmanac page/search UX is a non-target reference. The
+current static viewer already has separate API, route, component, renderer, and
+main modules, so active page/topic rail state is additive.
+
+Code or product assumption affected:
+UseAlmanac colors and shell styling remain reference material. Hosted account
+routes, hosted wiki search/page list behavior, and a frontend build step remain
+out of scope. The viewer route state lives in `viewer/main.js` over existing
+hash routes.
+
+Follow-up test:
+Complete browser-harness desktop/mobile verification after Chrome allows remote
+debugging again. Do not add React, Next.js, or Vite unless the static viewer
+stops fitting real UI complexity.

@@ -101,6 +101,10 @@ button {
   font-family: var(--sans);
 }
 
+.min-w-0 {
+  min-width: 0;
+}
+
 .dashboard-rail {
   position: sticky;
   top: 0;
@@ -136,27 +140,39 @@ button {
   min-width: 0;
 }
 
+.dashboard-rail-picker {
+  width: 100%;
+  min-width: 0;
+}
+
 .dashboard-account-trigger {
   display: flex;
   width: 100%;
   align-items: center;
   gap: 10px;
+  border: 1px solid rgba(42, 46, 28, 0.08);
   border-radius: 8px;
+  background: rgba(251, 247, 236, 0.72);
   padding: 7px 8px;
   color: var(--ink);
   font-size: 14px;
   font-weight: 650;
   text-align: left;
-  transition: background 160ms ease;
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
 .dashboard-account-trigger:hover {
   background: rgba(42, 46, 28, 0.05);
+  border-color: rgba(42, 46, 28, 0.14);
 }
 
 .dashboard-account-trigger:focus-visible {
   outline: 2px solid rgba(152, 118, 26, 0.35);
   outline-offset: 2px;
+}
+
+.dashboard-account-text {
+  min-width: 0;
 }
 
 .dashboard-account-name,
@@ -175,11 +191,14 @@ button {
 }
 
 .dashboard-account-caret {
-  width: 16px;
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   margin-left: auto;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 12px;
+  place-items: center;
 }
 
 .app-avatar {
@@ -216,6 +235,15 @@ button {
   gap: 4px;
 }
 
+.dashboard-nav-scope {
+  display: none;
+  margin: 2px 0 10px;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .dashboard-nav-item {
   display: flex;
   align-items: center;
@@ -232,6 +260,12 @@ button {
 .dashboard-nav-item:hover {
   background: rgba(42, 46, 28, 0.05);
   color: var(--text);
+}
+
+.dashboard-nav-item:focus-visible,
+.wiki-rail-list a:focus-visible {
+  outline: 2px solid rgba(152, 118, 26, 0.35);
+  outline-offset: 2px;
 }
 
 .dashboard-nav-item.is-active {
@@ -290,6 +324,11 @@ button {
 .wiki-rail-list a.is-active {
   background: rgba(42, 46, 28, 0.05);
   color: var(--ink);
+}
+
+.wiki-rail-list a.is-active {
+  box-shadow: inset 2px 0 0 var(--accent);
+  font-weight: 650;
 }
 
 .local-viewer-note {
@@ -519,7 +558,7 @@ button {
 .wiki-page-title {
   margin-top: 8px;
   color: var(--ink);
-  font-size: clamp(28px, 4vw, 40px);
+  font-size: 38px;
   line-height: 1.08;
   font-weight: 720;
   letter-spacing: 0;
@@ -756,6 +795,10 @@ button {
     padding-inline: 0;
   }
 
+  .dashboard-nav-scope {
+    display: block;
+  }
+
   .dashboard-nav {
     min-width: 0;
     flex-direction: column;
@@ -789,6 +832,11 @@ button {
     font-size: 12px;
     white-space: nowrap;
   }
+
+  .dashboard-nav-scope,
+  .wiki-rail-section {
+    display: none;
+  }
 }
 
 @media (max-width: 639px) {
@@ -805,6 +853,10 @@ button {
 
   .wiki-page-row {
     gap: 6px;
+  }
+
+  .wiki-page-title {
+    font-size: 30px;
   }
 
   .wiki-side-panel {

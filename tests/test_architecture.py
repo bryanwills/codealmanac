@@ -70,6 +70,13 @@ def test_index_read_views_are_separate_from_projection_writes():
     assert "DROP " not in views_text
 
 
+def test_serve_css_does_not_scale_type_with_viewport_width():
+    css = (SRC_ROOT / "server/assets/app.css").read_text(encoding="utf-8")
+
+    assert "clamp(" not in css
+    assert "vw" not in css
+
+
 def test_cli_main_stays_as_thin_entrypoint():
     main = SRC_ROOT / "cli/main.py"
     text = main.read_text(encoding="utf-8")

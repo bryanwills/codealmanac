@@ -46,7 +46,7 @@ async function route(elements) {
   };
   try {
     const routeState = parseHash(window.location.hash);
-    setActiveNav(elements, routeState.kind);
+    setActiveNav(elements, routeState);
     if (routeState.kind === RouteKind.PAGE && routeState.value) {
       await renderPage(context, routeState.value);
       return;
@@ -79,26 +79,44 @@ function readElements() {
     pageList: document.getElementById("page-list"),
     main: document.getElementById("main"),
     navItems: Array.from(document.querySelectorAll("[data-nav-kind]")),
+    railLinks: () => Array.from(document.querySelectorAll("[data-rail-kind]")),
   };
 }
 
 function renderNav(elements, overview) {
   elements.topicList.replaceChildren(
     ...overview.topics.map((topic) =>
-      navLink(topicHref(topic.slug), topic.title || topic.slug),
+      navLink(topicHref(topic.slug), topic.title || topic.slug, {
+        kind: RouteKind.TOPIC,
+        value: topic.slug,
+        title: `${topic.page_count} pages`,
+      }),
     ),
   );
   elements.pageList.replaceChildren(
     ...overview.pages.map((page) =>
-      navLink(pageHref(page.slug), page.title || page.slug),
+      navLink(pageHref(page.slug), page.title || page.slug, {
+        kind: RouteKind.PAGE,
+        value: page.slug,
+        title: page.summary || `${page.slug}.md`,
+      }),
     ),
   );
 }
 
-function setActiveNav(elements, kind) {
-  const active = kind === RouteKind.SEARCH ? RouteKind.SEARCH : RouteKind.HOME;
+function setActiveNav(elements, routeState) {
+  const active =
+    routeState.kind === RouteKind.HOME || routeState.kind === RouteKind.SEARCH
+      ? routeState.kind
+      : "";
   for (const item of elements.navItems) {
     item.classList.toggle("is-active", item.dataset.navKind === active);
+  }
+  for (const link of elements.railLinks()) {
+    const routeMatches =
+      link.dataset.railKind === routeState.kind &&
+      link.dataset.railValue === routeState.value;
+    link.classList.toggle("is-active", routeMatches);
   }
 }
 

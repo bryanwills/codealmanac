@@ -643,3 +643,15 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice50-final`; wheel inspection | passed; wheel includes `services/index/views.py` |
+
+## Gates For Slice 51 Serve Shell Polish
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused serve/static tests | `uv run pytest tests/test_server.py tests/test_architecture.py -q` | 16 passed |
+| Static/API serve dogfood | isolated temp `HOME`; temp wiki; `uv --project /Users/rohan/Desktop/Projects/codealmanac run codealmanac serve --host 127.0.0.1 --port 49233`; `curl /`, `/assets/viewer/main.js`, `/api/overview`, `/api/page/auth-flow` | passed; returned CodeAlmanac viewer shell, route-state JS, and expected wiki payloads |
+| Full tests | `uv run pytest` | 226 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Package build | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice51-final`; wheel inspection | passed; wheel includes updated viewer assets, no `clamp(` or `vw`, `repo-owned wiki`, and `dataset.railKind` |
+| Browser-harness visual dogfood | `browser-harness` navigation to the live temp `serve` URL | blocked by Chrome remote-debugging permission: `CDP WS handshake failed`, prompt requested clicking Allow |

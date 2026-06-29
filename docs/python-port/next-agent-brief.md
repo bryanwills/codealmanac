@@ -6,8 +6,8 @@ Updated: 2026-06-29
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `codex/python-port-archive-existing-code`.
-- Latest committed implementation slice: `feat(slice-50): split index read views`.
-- Latest product-direction commit: `docs: record configurable almanac root`.
+- Latest committed implementation slice: `feat(slice-51): polish serve shell`.
+- Latest committed product-direction slice: `docs: record viewer design correction`.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Cosmic Python local guide: `docs/reference/cosmic-python/CODEALMANAC.md`.
 - Latest verified source-runtime direction: selected local material becomes
@@ -47,6 +47,12 @@ Updated: 2026-06-29
   current UseAlmanac wiki page/search UX is a non-target reference. The desired
   shape is the earlier CodeAlmanac sidebar-first local viewer with better visual
   treatment layered over it.
+- Slice 51 is a narrow `serve` shell polish pass:
+  repo-owned wiki rail wording, `Local knowledge graph` scope text, active
+  page/topic rail links from hash-route metadata, mobile rail density cleanup,
+  and a CSS guard against viewport-scaled type. Browser-harness visual dogfood
+  is the remaining open check because Chrome remote debugging requested the
+  manual Allow click.
 - Bulletproof React Markdown reference lives under
   `docs/reference/bulletproof-react/`. Treat it as frontend architecture
   guidance for future viewer growth, not a reason to add React/Next.js while
@@ -463,8 +469,9 @@ Behavior:
    - more real-repo dogfood for source-runtime diversity; add recency only
      after a failing case proves diversity is insufficient
    - scheduled update automation only after non-editable update dogfood
-   - serve polish only after product review; current known polish risk is
-     compact mobile navigation density, not missing browser verification
+   - serve polish after product review; slice 51 is currently tightening the
+     sidebar shell and still needs browser-harness visual verification after
+     Chrome remote debugging allows connection
    - manual update/sync policy only if bundled doctrine must update existing
      workspace manual files; ordinary build/init currently copies missing files
      only
