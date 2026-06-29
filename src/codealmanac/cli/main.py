@@ -182,7 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
 def dispatch(args: argparse.Namespace) -> int:
     app = create_app()
     if args.command == "init":
-        workspace = app.build.initialize(
+        workspace = app.workflows.build.initialize(
             InitializeWorkspaceRequest(
                 path=Path(args.path),
                 name=args.name,
@@ -197,7 +197,7 @@ def dispatch(args: argparse.Namespace) -> int:
         )
         return 0
     if args.command == "build":
-        result = app.build.build(
+        result = app.workflows.build.build(
             InitializeWorkspaceRequest(
                 path=Path(args.path),
                 name=args.name,

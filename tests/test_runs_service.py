@@ -24,7 +24,7 @@ def test_runs_service_records_job_and_events(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     record = app.runs.start(
         StartRunRequest(
@@ -78,8 +78,10 @@ def test_runs_service_targets_registered_wiki(
     first.mkdir()
     second.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.build.initialize(InitializeWorkspaceRequest(path=first, name="first"))
-    app.build.initialize(InitializeWorkspaceRequest(path=second, name="second"))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=first, name="first"))
+    app.workflows.build.initialize(
+        InitializeWorkspaceRequest(path=second, name="second")
+    )
 
     record = app.runs.start(
         StartRunRequest(cwd=second, wiki="first", operation=RunOperation.GARDEN)

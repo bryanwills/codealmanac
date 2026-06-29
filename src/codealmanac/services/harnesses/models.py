@@ -35,3 +35,8 @@ class HarnessRunResult(CodeAlmanacModel):
     output_text: str
     summary: str | None = None
     changed_files: tuple[Path, ...] = ()
+
+    @field_validator("output_text")
+    @classmethod
+    def require_output_text(cls, value: str) -> str:
+        return required_text(value, "harness output")

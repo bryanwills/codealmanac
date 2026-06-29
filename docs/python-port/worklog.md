@@ -160,6 +160,18 @@
 - Verified slice 12 with focused harness tests, 68 passing full tests, ruff,
   `git diff --check`, and a live fake-adapter dogfood run through
   `HarnessesService.check()` and `HarnessesService.run(...)`.
+- Read Cosmic Python chapters 8 and 10 before wiring `ingest`. The applied
+  lesson: `RunIngestRequest` is a command that fails loudly, while run ledger
+  entries are events that record facts.
+- Added slice-13 internal ingest workflow. It starts a run, resolves sources,
+  renders a Pydantic JSON prompt payload, calls the harness service, validates
+  changed files under `.almanac/`, refreshes the index, and marks the run done
+  or failed.
+- Refactored the app composition surface to `app.workflows.build` and
+  `app.workflows.ingest`, matching the live agreement.
+- Verified slice 13 with focused ingest/harness tests, 73 passing full tests,
+  ruff, `git diff --check`, and an isolated fake-harness dogfood run that wrote
+  a wiki page, refreshed the index, and read back search plus run-log state.
 
 ## Current Hypothesis
 
@@ -170,13 +182,14 @@ local `serve` viewer. The highest-risk serve/index review issue found so far is
 fixed: read traffic no longer forces projection rewrites when the source wiki
 is unchanged. The first lifecycle/runs spine now exists as a ledger and read
 surface. Source inputs and harness execution now have typed service contracts,
-but no AI-backed lifecycle workflow is wired yet.
+and the first internal ingest workflow coordinates them with the run ledger and
+index. No concrete AI harness adapter is wired yet.
 
 ## Next Hypothesis
 
-The next slice should connect `sources`, `harnesses`, and `runs` into the first
-`workflows/ingest` shape without exposing a misleading public command before it
-can honestly execute work. The remaining serve risks are markdown wikilink
-rewriting inside code spans, browser-harness verification once Chrome allows
-remote debugging, and whether a source/file route belongs in the first viewer
-shape before lifecycle commands.
+The next slice should add the first concrete harness adapter or adapter-side
+execution shim so internal `ingest` can run without a fake harness. Public
+`codealmanac ingest` should wait until that is real. The remaining serve risks
+are markdown wikilink rewriting inside code spans, browser-harness verification
+once Chrome allows remote debugging, and whether a source/file route belongs in
+the first viewer shape before lifecycle commands.

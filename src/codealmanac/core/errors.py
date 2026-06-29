@@ -5,6 +5,7 @@ ErrorCode = Literal[
     "not_found",
     "conflict",
     "validation_failed",
+    "execution_failed",
 ]
 
 
@@ -32,6 +33,13 @@ class ConflictError(CodeAlmanacError):
 
 class ValidationFailed(CodeAlmanacError):
     code: ErrorCode = "validation_failed"
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ExecutionFailed(CodeAlmanacError):
+    code: ErrorCode = "execution_failed"
 
     def __init__(self, message: str):
         super().__init__(message)

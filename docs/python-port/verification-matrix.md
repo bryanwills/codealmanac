@@ -12,7 +12,7 @@ means the goal remains active.
 | Cosmic Python actively considered | `docs/reference/cosmic-python/`, `docs/python-port/`, composition root, service-layer tests, store boundary | tests call workflow/service and CLI surfaces instead of private helpers; Relayforge Discord checkpoint sent | Need deeper transaction/freshness review before lifecycle writes. |
 | CLI exists as `codealmanac` only | `[project.scripts] codealmanac = "codealmanac.cli.main:main"` plus argparse commands | `uv run codealmanac --help`, live `init`, `build`, `list`, `search`, `show`, `topics create/describe/link/unlink/rename/delete`, `reindex`, `doctor`, `serve` passed on 2026-06-29 | Many planned lifecycle commands remain pending. |
 | SQLite-backed wiki/index behavior | `services/index`, `services/wiki`, `services/search`, `services/pages` | parser/index/search/show tests, stale-schema regression, stale-aware refresh regression, isolated live smoke, dogfood search | `refresh` still parses source markdown to compute signatures; optimize only after real large-repo pressure. |
-| Workflows: build, ingest, sync, garden | `workflows/build`; `services/runs` ledger seam; `services/sources` input contracts; `services/harnesses` execution contract | build tests; runs service/jobs CLI tests; sources service tests; source-resolution dogfood; harness service tests | `ingest`, `sync`, and `garden` execution remain pending. |
+| Workflows: build, ingest, sync, garden | `workflows/build`; internal `workflows/ingest`; `services/runs`; `services/sources`; `services/harnesses` | build tests; runs service/jobs CLI tests; sources service tests; source-resolution dogfood; harness service tests; ingest workflow tests | Public `ingest`, `sync`, and `garden` execution remain pending. |
 | Integrations behind service ports | ownership map drafted; source contracts ready for Git/GitHub/transcript adapters; harness port ready for Codex/Claude adapters | sources and harness tests prove current typed refs/ports | Concrete adapters not implemented yet. |
 | Prompts/manual surfaces | pending | pending | Must avoid old npm prompt layout assumptions. |
 | Tests and live verification | pytest/ruff configured in `pyproject.toml` | `uv run pytest`, `uv run ruff check .`, `uv run codealmanac --help`, live temp `init`/`list`/`search`/`show`, dogfood search, dogfood serve API passed | Browser-harness needs Chrome remote-debugging permission before visual UI verification can pass. |
@@ -188,3 +188,13 @@ means the goal remains active.
 | Formatting/lint | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | Harness service dogfood | fake Codex adapter through `HarnessesService.check()` and `HarnessesService.run(...)` | passed; readiness plus normalized run result shown |
+
+## Gates For Slice 13 Internal Ingest Workflow
+
+| Gate | Command | 2026-06-29 result |
+|---|---|---|
+| Focused ingest/harness tests | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest tests/test_ingest_workflow.py tests/test_harnesses_service.py` | 9 passed |
+| Full tests | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest` | 73 passed |
+| Formatting/lint | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Internal ingest dogfood | temp repo `build`; fake Codex harness writes `.almanac/pages/dogfood-ingest.md`; `app.workflows.ingest.run(...)`; search and run-log readback | passed; run `done`, 2 indexed pages, new page first in search, source JSON present in prompt |

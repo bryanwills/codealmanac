@@ -168,3 +168,30 @@ Follow-up test:
 When concrete Codex or Claude adapters land, add an architecture test that CLI
 modules do not import `integrations/harnesses/*` and workflows only depend on
 `services/harnesses`.
+
+## 2026-06-29 - Ingest Is A Command, Run Logs Are Events
+
+Old hypothesis:
+The next step might expose a public `codealmanac ingest` command once source and
+harness seams existed.
+
+New hypothesis:
+Add `workflows/ingest` internally first. It can prove the orchestration between
+sources, harnesses, runs, and the index, but public CLI should wait for a real
+harness adapter so the command does actual lifecycle work.
+
+Evidence that forced the change:
+The live agreement says CLI commands are not internal APIs and shows
+`app.workflows.ingest.run(...)` as the correct app surface. Cosmic Python
+chapter 10 also distinguishes commands, which fail loudly, from events, which
+record past facts.
+
+Code or product assumption affected:
+`RunIngestRequest` is a command and raises on missing harnesses, unsafe changed
+files, or failed harness statuses. `RunsService` records the past-tense facts
+around the attempt.
+
+Follow-up test:
+When `codealmanac ingest` becomes public, test that the CLI only adapts argv
+into `RunIngestRequest` and does not own source parsing, prompt rendering,
+harness selection, run finishing, or index refresh.

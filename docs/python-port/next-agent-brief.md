@@ -23,6 +23,10 @@ Updated: 2026-06-29
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
   contracts plus the adapter port. There are no concrete Codex or Claude
   adapters yet.
+- `workflows/ingest` now coordinates source resolution, harness execution, run
+  ledger updates, `.almanac/` changed-file validation, and index refresh.
+- App workflow entrypoints now live under `app.workflows.build` and
+  `app.workflows.ingest`.
 - The index read model now uses stale-aware source signatures for ordinary
   `ensure_fresh`; `reindex` remains the explicit forced rebuild command.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
@@ -143,17 +147,23 @@ Updated: 2026-06-29
   - 68 full tests
   - `git diff --check`
   - fake-adapter dogfood through `HarnessesService`
+- Slice-13 internal ingest workflow focused checks passed:
+  - focused ingest and harness service tests
+  - ruff
+  - 73 full tests
+  - `git diff --check`
+  - internal fake-harness ingest dogfood through `app.workflows.ingest.run(...)`
 
 ## Dirty/Staged Files
 
-After slice 12 is committed, the worktree should be clean. If any slice-12 files
-are dirty, re-run focused harness tests, `git diff --check`, pytest, ruff, and
-harness service dogfood.
+After slice 13 is committed, the worktree should be clean. If any slice-13 files
+are dirty, re-run focused ingest tests, `git diff --check`, pytest, ruff, and
+internal ingest dogfood with a fake harness.
 
 ## Next Move
 
-1. Connect source input contracts, harness contracts, and run records into the
-   first `workflows/ingest` shape without exposing a misleading public command.
+1. Add the first concrete harness adapter or adapter-side execution shim so
+   internal `ingest` can run without a fake harness.
 2. Decide whether the viewer needs source/file route hardening before AI-backed
    lifecycle commands.
 3. Keep AI execution behind workflow and harness seams; do not put it in CLI.

@@ -28,7 +28,7 @@ def test_doctor_reports_index_and_health_for_selected_wiki(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path, wiki="repo"))
 

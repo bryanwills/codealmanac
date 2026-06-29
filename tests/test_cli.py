@@ -162,7 +162,7 @@ def test_cli_jobs_inspects_local_run_records(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,

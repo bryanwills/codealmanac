@@ -1,8 +1,10 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.services.diagnostics.service import DiagnosticsService
+from codealmanac.services.harnesses.ports import HarnessAdapter
 from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
@@ -20,6 +22,13 @@ from codealmanac.services.wiki.service import WikiService
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.build.service import BuildWorkflow
+from codealmanac.workflows.ingest.service import IngestWorkflow
+
+
+@dataclass(frozen=True)
+class CodeAlmanacWorkflows:
+    build: BuildWorkflow
+    ingest: IngestWorkflow
 
 
 @dataclass(frozen=True)
@@ -37,10 +46,13 @@ class CodeAlmanac:
     runs: RunsService
     sources: SourcesService
     harnesses: HarnessesService
-    build: BuildWorkflow
+    workflows: CodeAlmanacWorkflows
 
 
-def create_app(config: AppConfig | None = None) -> CodeAlmanac:
+def create_app(
+    config: AppConfig | None = None,
+    harness_adapters: Sequence[HarnessAdapter] = (),
+) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
     wiki = WikiService(workspaces)
@@ -54,8 +66,10 @@ def create_app(config: AppConfig | None = None) -> CodeAlmanac:
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService()
-    harnesses = HarnessesService()
+    harnesses = HarnessesService(harness_adapters)
     build = BuildWorkflow(workspaces, wiki, index)
+    ingest = IngestWorkflow(workspaces, sources, harnesses, runs, index)
+    workflows = CodeAlmanacWorkflows(build=build, ingest=ingest)
     return CodeAlmanac(
         workspaces=workspaces,
         wiki=wiki,
@@ -70,5 +84,5 @@ def create_app(config: AppConfig | None = None) -> CodeAlmanac:
         runs=runs,
         sources=sources,
         harnesses=harnesses,
-        build=build,
+        workflows=workflows,
     )

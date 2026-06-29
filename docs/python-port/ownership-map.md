@@ -41,8 +41,8 @@ that root instead of constructing stores or adapters themselves.
 
 | Workflow | Owns | Calls |
 |---|---|---|
-| `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `runs`, `harnesses` |
-| `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `wiki`, `index` |
+| `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
+| `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index` |
 | `sync` | discover quiet local transcripts and queue ingest work | `automation`, `sources`, `runs`, `ingest` |
 | `garden` | maintain wiki shape, links, topics, staleness, quality | `wiki`, `index`, `runs`, `harnesses` |
 

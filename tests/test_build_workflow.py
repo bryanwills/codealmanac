@@ -16,7 +16,7 @@ def test_initialize_creates_almanac_wiki_and_registry(
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
-    workspace = app.build.initialize(
+    workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=repo, description="test wiki")
     )
 
@@ -36,11 +36,11 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
     readme = repo / ".almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
 
-    workspace = app.build.initialize(
+    workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=repo / "src", name="renamed")
     )
 
@@ -57,7 +57,9 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
 
-    result = app.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    result = app.workflows.build.build(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
 
     assert result.workspace.name == "repo"
     assert result.index.pages_indexed == 1
@@ -72,7 +74,7 @@ def test_workspace_selection_supports_name_id_and_path(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    workspace = app.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     by_name = app.workspaces.select(SelectWorkspaceRequest(selector="repo"))
 
