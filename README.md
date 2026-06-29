@@ -10,7 +10,7 @@
   <a href="https://github.com/AlmanacCode/codealmanac/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/AlmanacCode/codealmanac"></a>
   <img alt="Node support" src="https://img.shields.io/badge/node-20%20%7C%2022%2B-1f6feb">
   <a href="./LICENSE.md"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-df7b40"></a>
-  <a href="https://usealmanac.com/code"><img alt="Website" src="https://img.shields.io/badge/website-usealmanac.com%2Fcode-24292f"></a>
+  <a href="https://codealmanac.com"><img alt="Website" src="https://img.shields.io/badge/website-codealmanac.com-24292f"></a>
 </p>
 
 Almanac gives AI coding agents durable project memory. It turns the decisions, flows, invariants, and gotchas from real engineering sessions into a local wiki that lives with your repo.

@@ -2,7 +2,7 @@ import { join } from "node:path";
 
 import { getGlobalAlmanacDir } from "../paths.js";
 
-export const DEFAULT_CLOUD_BASE_URL = "https://usealmanac.com";
+export const DEFAULT_CLOUD_BASE_URL = "https://codealmanac.com";
 
 export function cloudBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   const fromEnv = env.ALMANAC_CLOUD_URL?.trim();
