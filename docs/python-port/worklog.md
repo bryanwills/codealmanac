@@ -122,18 +122,27 @@
   CLI help, serve help, and `uv build` wheel inspection confirming viewer
   assets are packaged. Browser-harness could not attach because Chrome requires
   the manual remote-debugging permission click.
+- Slice-9 review fixed index freshness semantics exposed by `serve`.
+  `ensure_fresh` now computes a source signature and skips SQLite projection
+  writes when page fingerprints and `topics.yaml` are unchanged; `reindex`
+  remains the explicit forced rebuild. Re-verified with 55 passing tests, ruff,
+  live `codealmanac serve --port 49219`, API dogfood for overview/search/page,
+  and a SQLite trigger proving warm read traffic did not rewrite `pages`.
 
 ## Current Hypothesis
 
 The read and organization paths now cover the main local wiki management loop:
 search/show, topic reads, health, tag/untag, topic DAG mutation including
 rename/delete, explicit `build`, `reindex`, `doctor`, and a first read-only
-local `serve` viewer. The next pressure should review slice 9, then choose
-whether to harden the viewer or start the first lifecycle/runs spine.
+local `serve` viewer. The highest-risk serve/index review issue found so far is
+fixed: read traffic no longer forces projection rewrites when the source wiki
+is unchanged. The next pressure should choose whether to harden another viewer
+edge or start the first lifecycle/runs spine.
 
 ## Next Hypothesis
 
-The next slice should probably be a slice-9 review fix. The highest-risk areas
+The next slice should probably move toward the lifecycle/runs spine unless
+viewer dogfood reveals a sharper local-read problem. The remaining serve risks
 are markdown wikilink rewriting inside code spans, browser-harness verification
 once Chrome allows remote debugging, and whether a source/file route belongs in
 the first viewer shape before lifecycle commands.

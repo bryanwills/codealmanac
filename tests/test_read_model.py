@@ -3,6 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.search.requests import SearchPagesRequest
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
@@ -111,6 +112,64 @@ def test_rebuild_removes_stale_topic_rows(
     topic_slugs = {row[0] for row in rows}
     assert "new" in topic_slugs
     assert "old" not in topic_slugs
+
+
+def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    workspace = app.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(repo, "note.md", "# Note\n\nOriginalNeedle.\n")
+
+    first = app.index.ensure_fresh(workspace.workspace_id)
+    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+        connection.execute("CREATE TABLE rewrite_log (slug TEXT NOT NULL)")
+        connection.execute(
+            """
+            CREATE TRIGGER log_page_rewrite
+            AFTER DELETE ON pages
+            BEGIN
+              INSERT INTO rewrite_log (slug) VALUES (old.slug);
+            END
+            """
+        )
+    unchanged = app.index.ensure_fresh(workspace.workspace_id)
+    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+        rewrites = connection.execute("SELECT COUNT(*) FROM rewrite_log").fetchone()[0]
+    write_page(repo, "note.md", "# Note\n\nChangedNeedle.\n")
+    refreshed = app.index.ensure_fresh(workspace.workspace_id)
+    with sqlite3.connect(repo / ".almanac/index.db") as connection:
+        refreshed_rewrites = connection.execute(
+            "SELECT COUNT(*) FROM rewrite_log"
+        ).fetchone()[0]
+    rows = app.search.search(SearchPagesRequest(cwd=repo, query="changedneedle"))
+
+    assert first.changed == 2
+    assert unchanged.changed == 0
+    assert rewrites == 0
+    assert refreshed.changed == 2
+    assert refreshed_rewrites == 2
+    assert [row.slug for row in rows] == ["note"]
+
+
+def test_reindex_forces_projection_rebuild_when_index_is_fresh(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(repo, "note.md", "# Note\n\nForceNeedle.\n")
+    app.search.search(SearchPagesRequest(cwd=repo, query="forceneedle"))
+
+    result = app.index.reindex(ReindexRequest(cwd=repo))
+
+    assert result.changed == 2
+    assert result.pages_indexed == 2
 
 
 def write_page(repo: Path, name: str, body: str) -> None:

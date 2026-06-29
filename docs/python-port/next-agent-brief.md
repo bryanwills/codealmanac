@@ -15,6 +15,8 @@ Updated: 2026-06-29
   workspaces, wiki scaffold/build workflow, SQLite FTS5 read model, search,
   show, topics, health, tag/untag, topic mutation, build, reindex, doctor, and
   the first local `serve` viewer.
+- The index read model now uses stale-aware source signatures for ordinary
+  `ensure_fresh`; `reindex` remains the explicit forced rebuild command.
 - Current implemented CLI commands are `init`, `build`, `list`, `search`,
   `show`, `topics`, `health`, `reindex`, `doctor`, `serve`, `tag`, and
   `untag`.
@@ -108,16 +110,25 @@ Updated: 2026-06-29
   - `uv build --out-dir /tmp/codealmanac-build` and wheel asset inspection
   - Browser-harness did not attach because Chrome requires the manual
     remote-debugging permission click.
+- Slice-9 review fix passed:
+  - 55 tests
+  - ruff
+  - focused read-model/viewer/server tests
+  - live `codealmanac serve --port 49219`
+  - live API overview/search/page/app.js checks in this repo
+  - SQLite trigger check showing warm read traffic did not rewrite `pages`
 
 ## Dirty/Staged Files
 
-After slice 9 is committed, the worktree should be clean. If any slice-9 files
-are dirty, re-run `git diff --check`, pytest, ruff, live serve API checks, and
-browser-harness if Chrome remote debugging has been allowed.
+After the slice-9 review fix is committed, the worktree should be clean. If any
+slice-9 review files are dirty, re-run `git diff --check`, pytest, ruff, live
+serve API checks, and browser-harness if Chrome remote debugging has been
+allowed.
 
 ## Next Move
 
-1. Review slice-9 serve before broader lifecycle work.
+1. Decide whether the next slice starts the lifecycle/runs spine or hardens a
+   remaining viewer issue found through dogfood.
 2. Decide whether the viewer needs source/file route hardening before jobs.
 3. Keep lifecycle/AI commands out until local maintenance surfaces hold.
 4. Add an architecture test that CLI imports do not import concrete integration

@@ -1,7 +1,11 @@
 import re
 import sqlite3
+from hashlib import sha256
 from pathlib import Path
 
+from pydantic import ValidationError
+
+from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.slug import to_kebab_case
 from codealmanac.services.index.models import (
     BrokenCrossWikiLink,
@@ -12,7 +16,9 @@ from codealmanac.services.index.models import (
     EmptyTopic,
     HealthReport,
     IndexCounts,
+    IndexedPageFingerprint,
     IndexRefreshResult,
+    IndexSourceSignature,
     OrphanPage,
     PageFileReference,
     PageView,
@@ -88,24 +94,53 @@ CREATE TABLE IF NOT EXISTS cross_wiki_links (
 );
 
 CREATE VIRTUAL TABLE IF NOT EXISTS fts_pages USING fts5(slug, title, content);
+
+CREATE TABLE IF NOT EXISTS index_metadata (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 """
+
+SOURCE_SIGNATURE_KEY = "source_signature"
 
 
 class IndexStore:
-    def rebuild(self, almanac_path: Path) -> IndexRefreshResult:
+    def refresh(self, almanac_path: Path) -> IndexRefreshResult:
+        sources = load_index_sources(almanac_path)
         db_path = index_db_path(almanac_path)
-        pages_path = almanac_path / "pages"
         db_path.parent.mkdir(parents=True, exist_ok=True)
         with connect(db_path) as connection:
             ensure_schema(connection)
-            documents, files_seen, files_skipped = load_documents(pages_path)
-            replace_documents(connection, documents, load_topics_yaml(almanac_path))
+            if stored_signature(connection) == sources.signature:
+                return IndexRefreshResult(
+                    changed=0,
+                    removed=0,
+                    pages_indexed=len(sources.documents),
+                    files_seen=sources.files_seen,
+                    files_skipped=sources.files_skipped,
+                )
+            replace_documents(connection, sources)
         return IndexRefreshResult(
-            changed=len(documents),
+            changed=len(sources.documents),
             removed=0,
-            pages_indexed=len(documents),
-            files_seen=files_seen,
-            files_skipped=files_skipped,
+            pages_indexed=len(sources.documents),
+            files_seen=sources.files_seen,
+            files_skipped=sources.files_skipped,
+        )
+
+    def rebuild(self, almanac_path: Path) -> IndexRefreshResult:
+        sources = load_index_sources(almanac_path)
+        db_path = index_db_path(almanac_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        with connect(db_path) as connection:
+            ensure_schema(connection)
+            replace_documents(connection, sources)
+        return IndexRefreshResult(
+            changed=len(sources.documents),
+            removed=0,
+            pages_indexed=len(sources.documents),
+            files_seen=sources.files_seen,
+            files_skipped=sources.files_skipped,
         )
 
     def search(
@@ -219,6 +254,14 @@ class IndexStore:
             )
 
 
+class LoadedIndexSources(CodeAlmanacModel):
+    documents: tuple[PageDocument, ...]
+    topics: tuple[TopicDefinition, ...]
+    files_seen: int
+    files_skipped: int
+    signature: IndexSourceSignature
+
+
 def index_db_path(almanac_path: Path) -> Path:
     return almanac_path / "index.db"
 
@@ -244,6 +287,7 @@ def ensure_schema(connection: sqlite3.Connection) -> None:
             DROP TABLE IF EXISTS topics;
             DROP TABLE IF EXISTS pages;
             DROP TABLE IF EXISTS fts_pages;
+            DROP TABLE IF EXISTS index_metadata;
             """
         )
     connection.executescript(SCHEMA_DDL)
@@ -268,20 +312,78 @@ def load_documents(pages_path: Path) -> tuple[list[PageDocument], int, int]:
     return documents, len(files), files_skipped
 
 
+def load_index_sources(almanac_path: Path) -> LoadedIndexSources:
+    documents, files_seen, files_skipped = load_documents(almanac_path / "pages")
+    topics = load_topics_yaml(almanac_path)
+    document_tuple = tuple(documents)
+    signature = IndexSourceSignature(
+        pages=tuple(
+            IndexedPageFingerprint(
+                slug=document.slug,
+                relative_path=document.relative_path,
+                content_hash=document.content_hash,
+            )
+            for document in document_tuple
+        ),
+        topics_hash=file_hash(almanac_path / "topics.yaml"),
+        files_seen=files_seen,
+        files_skipped=files_skipped,
+    )
+    return LoadedIndexSources(
+        documents=document_tuple,
+        topics=topics,
+        files_seen=files_seen,
+        files_skipped=files_skipped,
+        signature=signature,
+    )
+
+
+def file_hash(path: Path) -> str:
+    if not path.is_file():
+        return sha256(b"").hexdigest()
+    try:
+        return sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return sha256(b"").hexdigest()
+
+
+def stored_signature(connection: sqlite3.Connection) -> IndexSourceSignature | None:
+    row = connection.execute(
+        "SELECT value FROM index_metadata WHERE key = ?",
+        (SOURCE_SIGNATURE_KEY,),
+    ).fetchone()
+    if row is None:
+        return None
+    try:
+        return IndexSourceSignature.model_validate_json(row["value"])
+    except (ValidationError, ValueError):
+        return None
+
+
 def replace_documents(
     connection: sqlite3.Connection,
-    documents: list[PageDocument],
-    topics: tuple[TopicDefinition, ...],
+    sources: LoadedIndexSources,
 ) -> None:
     with connection:
         connection.execute("DELETE FROM fts_pages")
         connection.execute("DELETE FROM pages")
         connection.execute("DELETE FROM topic_parents")
         connection.execute("DELETE FROM topics")
-        for document in documents:
+        for document in sources.documents:
             insert_document(connection, document)
-        for topic in topics:
+        for topic in sources.topics:
             insert_topic_definition(connection, topic)
+        connection.execute(
+            """
+            INSERT INTO index_metadata (key, value)
+            VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+            """,
+            (
+                SOURCE_SIGNATURE_KEY,
+                sources.signature.model_dump_json(),
+            ),
+        )
 
 
 def insert_document(connection: sqlite3.Connection, document: PageDocument) -> None:

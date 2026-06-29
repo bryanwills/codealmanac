@@ -43,6 +43,11 @@ SQLite directly or parse page markdown from files. The only page rendering
 logic it owns is local browser presentation: markdown rendering and wikilink
 route rewriting.
 
+Slice-9 review found that `serve` made forced index rebuilds on ordinary reads
+too expensive. The fix is recorded in `fixes-slice-9-review.md`: `ensure_fresh`
+now skips SQLite writes when the source wiki signature is unchanged, while
+`reindex` remains the forced rebuild command.
+
 ## Libraries
 
 - FastAPI is the local HTTP adapter framework. It gives typed route response

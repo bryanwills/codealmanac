@@ -69,6 +69,19 @@ class IndexSummary(CodeAlmanacModel):
     files_skipped: int
 
 
+class IndexedPageFingerprint(CodeAlmanacModel):
+    slug: str
+    relative_path: str
+    content_hash: str
+
+
+class IndexSourceSignature(CodeAlmanacModel):
+    pages: tuple[IndexedPageFingerprint, ...]
+    topics_hash: str
+    files_seen: int
+    files_skipped: int
+
+
 class TopicSummary(CodeAlmanacModel):
     slug: str
     title: str | None

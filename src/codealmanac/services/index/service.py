@@ -20,7 +20,7 @@ class IndexService:
 
     def ensure_fresh(self, workspace_id: str) -> IndexRefreshResult:
         workspace = self.workspaces.get(workspace_id)
-        return self.store.rebuild(workspace.almanac_path)
+        return self.store.refresh(workspace.almanac_path)
 
     def reindex(self, request: ReindexRequest) -> IndexRefreshResult:
         if request.wiki is None:
@@ -29,11 +29,11 @@ class IndexService:
             workspace = self.workspaces.select(
                 SelectWorkspaceRequest(selector=request.wiki, base_path=request.cwd)
             )
-        return self.ensure_fresh(workspace.workspace_id)
+        return self.store.rebuild(workspace.almanac_path)
 
     def summary(self, workspace_id: str) -> IndexSummary:
         workspace = self.workspaces.get(workspace_id)
-        refresh = self.store.rebuild(workspace.almanac_path)
+        refresh = self.ensure_fresh(workspace_id)
         counts = self.store.counts(workspace.almanac_path)
         return IndexSummary(
             pages=counts.pages,
