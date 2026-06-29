@@ -19,6 +19,8 @@ from codealmanac.services.index.models import (
 )
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.search.requests import SearchPagesRequest
+from codealmanac.services.tagging.models import TaggingResult
+from codealmanac.services.tagging.requests import TagPageRequest, UntagPageRequest
 from codealmanac.services.topics.requests import ListTopicsRequest, ShowTopicRequest
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
@@ -80,6 +82,16 @@ def build_parser() -> argparse.ArgumentParser:
     health = subcommands.add_parser("health", help="check wiki health")
     health.add_argument("--wiki")
     health.add_argument("--json", action="store_true")
+
+    tag = subcommands.add_parser("tag", help="add topics to a page")
+    tag.add_argument("slug")
+    tag.add_argument("topics", nargs="+")
+    tag.add_argument("--wiki")
+
+    untag = subcommands.add_parser("untag", help="remove topics from a page")
+    untag.add_argument("slug")
+    untag.add_argument("topics", nargs="+")
+    untag.add_argument("--wiki")
     return parser
 
 
@@ -143,6 +155,28 @@ def dispatch(args: argparse.Namespace) -> int:
     if args.command == "health":
         report = app.health.check(HealthCheckRequest(cwd=Path.cwd(), wiki=args.wiki))
         render_health(report, json_output=args.json)
+        return 0
+    if args.command == "tag":
+        result = app.tagging.tag(
+            TagPageRequest(
+                cwd=Path.cwd(),
+                wiki=args.wiki,
+                slug=args.slug,
+                topics=tuple(args.topics),
+            )
+        )
+        render_tagging("tagged", "already tagged", result)
+        return 0
+    if args.command == "untag":
+        result = app.tagging.untag(
+            UntagPageRequest(
+                cwd=Path.cwd(),
+                wiki=args.wiki,
+                slug=args.slug,
+                topics=tuple(args.topics),
+            )
+        )
+        render_tagging("untagged", "not tagged", result)
         return 0
     raise AssertionError(f"unhandled command: {args.command}")
 
@@ -278,6 +312,14 @@ def render_health_section(name: str, rows: tuple[str, ...]) -> None:
     print(f"{name} ({len(rows)}):")
     for row in rows:
         print(f"  {row}")
+
+
+def render_tagging(changed_label: str, unchanged_label: str, result: TaggingResult):
+    if result.changed_topics:
+        print(f"{result.slug}: {changed_label} {', '.join(result.changed_topics)}")
+        return
+    unchanged = ", ".join(result.topics_after or result.topics_before)
+    print(f"{result.slug}: {unchanged_label} {unchanged}")
 
 
 if __name__ == "__main__":

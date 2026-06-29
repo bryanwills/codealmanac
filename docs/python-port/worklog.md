@@ -62,6 +62,10 @@
   repo-relative (`/x` becomes `x`, `../x` is ignored), and malformed
   `topics.yaml` no longer breaks read commands. Re-verified with 19 tests,
   ruff, live `health --json`, and dogfood health.
+- Added slice-4 `tag`/`untag` frontmatter mutation using `ruamel.yaml` for
+  round-trip YAML editing. Verified body preservation, comment preservation,
+  CRLF preservation, idempotence, no-frontmatter pages, CLI smoke, 24 tests,
+  and ruff.
 
 ## Current Hypothesis
 

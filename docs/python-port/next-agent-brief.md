@@ -54,18 +54,23 @@ Updated: 2026-06-29
   - ruff
   - isolated live path-safety `health --json`
   - dogfood `health`
+- Slice-4 tag/untag passed:
+  - 24 tests
+  - ruff
+  - isolated live `tag`, `show --topics`, `untag`, `show --topics`
+  - CLI `--help` includes `tag` and `untag`
 
 ## Dirty/Staged Files
 
-At this checkpoint, only slice-3 review-fix files should be dirty until
-committed. Re-run `git diff --check`, pytest, ruff, isolated live smoke, and
-dogfood health before committing.
+At this checkpoint, slice-4 tag/untag files should be dirty until committed.
+Re-run `git diff --check`, pytest, ruff, and isolated live tag/untag before
+committing.
 
 ## Next Move
 
-1. Review slice-3 boundaries before adding mutation commands.
-2. Decide whether next slice is tag/untag frontmatter mutation or index
-   freshness optimization.
+1. Review slice-4 frontmatter mutation before adding broader topic mutation.
+2. Decide whether next slice is topic create/link/describe or index freshness
+   optimization.
 3. Keep lifecycle/AI commands out until read and organization surfaces hold.
 4. Add an architecture test that CLI imports do not import concrete integration
    modules once integrations exist.

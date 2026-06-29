@@ -73,3 +73,12 @@ means the goal remains active.
 | Tests | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest` | 19 passed |
 | Isolated live path safety | temp repo `health --json` with `/src/...` and `../...` refs | passed |
 | Dogfood health | `uv run codealmanac health` in this repo | passed |
+
+## Gates For Slice 4 Tag And Untag
+
+| Gate | Command | 2026-06-29 result |
+|---|---|
+| Formatting/lint | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run ruff check .` | passed |
+| Tests | `UV_CACHE_DIR=/private/tmp/usealmanac-uv-cache uv run pytest` | 24 passed |
+| Isolated live tag/untag | temp repo `tag`, `show --topics`, `untag`, `show --topics` | passed |
+| CLI surface smoke | `uv run codealmanac --help` | passed with `tag` and `untag` |

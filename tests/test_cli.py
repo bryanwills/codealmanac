@@ -121,3 +121,27 @@ def test_cli_topics_and_health_read_current_repo_wiki(
     health_output = capsys.readouterr()
     assert '"broken_links": [' in health_output.out
     assert '"target_slug": "missing-page"' in health_output.out
+
+
+def test_cli_tag_and_untag_update_page_frontmatter(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    pages = repo / ".almanac/pages"
+    pages.mkdir(parents=True)
+    page = pages / "auth-flow.md"
+    page.write_text("---\ntopics: [auth]\n---\n# Auth Flow\n", encoding="utf-8")
+    monkeypatch.chdir(repo)
+
+    assert main(["tag", "auth-flow", "sessions"]) == 0
+    tag_output = capsys.readouterr()
+    assert tag_output.out == "auth-flow: tagged sessions\n"
+
+    assert main(["untag", "auth-flow", "auth"]) == 0
+    untag_output = capsys.readouterr()
+    assert untag_output.out == "auth-flow: untagged auth\n"
+
+    assert "sessions" in page.read_text(encoding="utf-8")
