@@ -108,7 +108,10 @@ The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness
 execution. `integrations/sources/git/` uses Git CLI commands for local
 `git:diff` and `git:range` refs. `integrations/sources/github/` uses GitHub CLI
-for PR and issue refs. Ingest does not branch on source kind.
+for PR and issue refs. `integrations/sources/transcripts/` reads provider JSONL
+transcripts with `jsonlines`, validates known Codex and Claude shapes with
+Pydantic, and renders bounded transcript snapshots. Ingest does not branch on
+source kind.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
 automation install/status/uninstall. The launchd implementation lives in

@@ -117,7 +117,16 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    transcript = write_transcript(tmp_path, "one\ntwo\n")
+    transcript = write_transcript(
+        tmp_path,
+        (
+            '{"type":"session_meta","payload":{"id":"session-1","cwd":"'
+            f'{repo}"}}\n'
+            '{"type":"response_item","payload":{"item":{"type":"message",'
+            '"role":"user","content":[{"type":"input_text","text":'
+            '"Sync should preserve the release blocker."}]}}}\n'
+        ),
+    )
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = SyncWritingHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
@@ -149,6 +158,7 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
     assert entry.last_job_id == summary.started[0].run_id
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
     assert "Focus on line 1 onward." in harness.requests[0].prompt
+    assert "Sync should preserve the release blocker." in harness.requests[0].prompt
 
     status = app.workflows.sync.status(
         RunSyncStatusRequest(

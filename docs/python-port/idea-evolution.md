@@ -532,3 +532,31 @@ and hosted GitHub app behavior remains out of scope.
 Follow-up test:
 If GitHub runtime needs review threads, checks, linked issues, or pagination,
 extend the GitHub adapter contract and tests before changing Ingest.
+
+## 2026-06-29 - Transcript Runtime Belongs Behind Source Runtime
+
+Old hypothesis:
+Foreground `sync` could pass transcript paths plus cursor guidance and trust
+the harness to inspect the transcript file itself.
+
+New hypothesis:
+`transcript:<path>` should produce a bounded `SourceRuntime` snapshot before
+the harness starts. Sync still owns transcript eligibility and cursor state;
+the transcript adapter owns local JSONL reading and provider-shape translation.
+
+Evidence that forced the change:
+Foreground sync already passes `transcript:<absolute path>` into Ingest, but
+those files often live outside the repo. Codex sandboxing and future hosted
+workers should not depend on direct provider transcript filesystem access after
+the harness starts.
+
+Code or product assumption affected:
+`integrations/sources/transcripts` now implements both discovery and runtime
+translation. Runtime uses `jsonlines` for JSONL reading, Pydantic models for
+known Codex/Claude shapes, and tail truncation because transcripts are
+append-only and recent lines usually contain the new sync material.
+
+Follow-up test:
+If source runtime needs cursor-aware slicing, extend
+`InspectSourceRuntimeRequest` with explicit line or byte bounds instead of
+teaching Ingest to parse sync guidance text.

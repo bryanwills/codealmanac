@@ -19,6 +19,7 @@ Before non-trivial Python implementation, read the chapters that match the shape
 | Test shape and fast service tests | `chapter_05_high_gear_low_gear.md` |
 | Transaction boundaries and atomic writes | `chapter_06_uow.md` |
 | Message/event workflows | `chapter_08_events_and_message_bus.md` |
+| External message adapters | `chapter_11_external_events.md` |
 | Command objects and run requests | `chapter_10_commands.md` |
 | Composition root and dependency wiring | `chapter_13_dependency_injection.md` |
 | Package layout comparison | `appendix_project_structure.md` |
@@ -28,6 +29,8 @@ Before non-trivial Python implementation, read the chapters that match the shape
 - Chapter 2 argues for a domain model with "no dependencies whatsoever."
 - Chapter 4 says the service layer defines "the use cases of our system."
 - Chapter 6 describes Unit of Work as an abstraction over "atomic operations."
+- Chapter 11 frames outside messages as adapter input that gets deserialized
+  before it reaches the application core.
 - Chapter 13 uses a bootstrap/composition root so entrypoints stop doing setup.
 
 ## Translation To CodeAlmanac
@@ -49,6 +52,8 @@ For this repo:
 - Repository pattern maps to `store.py`, `*_store.py`, and store fakes.
 - Service layer maps to `services/*/service.py`.
 - Unit of Work maps to explicit SQLite transaction ownership inside services and workflows.
+- External event adapters map to transcript/GitHub/Git runtime adapters that
+  turn outside shapes into service-owned Pydantic models.
 - Bootstrap maps to `src/codealmanac/app.py`.
 - Adapters map to `integrations/*`, implementing ports defined by services.
 

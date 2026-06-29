@@ -20,7 +20,8 @@ Updated: 2026-06-29
 - `services/sources` owns source input contracts: raw addresses, parsed refs,
   source briefs, local path observations, file fingerprints, transcript
   discovery ports, typed transcript candidates, source runtime snapshots, and
-  Pydantic URL validation.
+  Pydantic URL validation. Git, GitHub, and transcript runtime adapters are
+  wired by default.
 - `services/harnesses` owns normalized Codex/Claude task, readiness, and result
   contracts plus provider transcript refs and the adapter port. Claude CLI and
   Codex CLI are both concrete adapters wired by default.
@@ -279,40 +280,37 @@ Updated: 2026-06-29
   - full ruff
   - diff hygiene
   - temp-repo real `gh` dogfood with public `cli/cli` PR #1 and issue #2
+- Slice-26 transcript source runtime checks passed so far:
+  - focused transcript runtime, sync workflow, ingest workflow, transcript
+    discovery, and architecture tests
+  - focused ruff over transcript runtime and sync tests
 
 ## Dirty/Staged Files
 
-Slice 25 is ready to commit if the current worktree still only contains:
+Slice 26 is ready to commit if the current worktree still only contains:
 
-- `src/codealmanac/integrations/command.py`
-- `src/codealmanac/services/sources/`
+- `pyproject.toml`
+- `uv.lock`
 - `src/codealmanac/integrations/sources/`
-- `src/codealmanac/workflows/ingest/`
-- `src/codealmanac/app.py`
-- `src/codealmanac/prompts/operations/ingest.md`
-- harness adapter imports updated from `integrations.harnesses.command` to
-  `integrations.command`
-- `tests/test_github_source_runtime.py`
-- `tests/test_sources_service.py`
-- `tests/test_ingest_workflow.py`
-- `tests/test_claude_adapter.py`
-- `tests/test_codex_adapter.py`
-- `docs/python-port/slice-25-github-source-runtime.md`
+- `tests/test_transcript_source_runtime.py`
+- `tests/test_sync_workflow.py`
+- `docs/python-port/slice-26-transcript-source-runtime.md`
 - steering docs under `docs/python-port/`
 
-Before committing slice 25, re-run if any code changes:
+Before committing slice 26, re-run if any code changes:
 
-- focused GitHub runtime, source service, ingest workflow, and architecture
-  tests
+- focused transcript runtime, sync workflow, ingest workflow, transcript
+  discovery, and architecture tests
 - full pytest
 - ruff
 - `git diff --check`
-- a GitHub source runtime dogfood in a temp repo
+- a foreground sync dogfood with JSONL transcript runtime material
 
 ## Next Move
 
-1. Commit slice 25 after a final `git status` check.
-2. Decide whether web/transcript source runtime, `codealmanac update`, or viewer
+1. Finish full verification for slice 26, then commit after a final
+   `git status` check.
+2. Decide whether web URL source runtime, `codealmanac update`, or viewer
    source/file route hardening is the next highest-pressure local product gap.
 3. If background sync pending state becomes necessary, add the durable owner
    and reconciliation loop before changing sync cursor semantics.
