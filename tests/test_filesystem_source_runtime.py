@@ -184,7 +184,7 @@ def test_filesystem_source_runtime_uses_git_directory_listing(
     content = runtime.content or ""
     assert runtime.status == SourceRuntimeStatus.AVAILABLE
     assert "listing_source: git" in content
-    assert "selection_policy: changed_first" in content
+    assert "selection_policy: changed_then_diverse" in content
     assert "changed_files_available: 2" in content
     assert "src/keep.py" in content
     assert "src/keep.py [changed]" in content
@@ -262,13 +262,61 @@ def test_filesystem_source_runtime_prioritizes_git_changes_when_bounded(
     content = runtime.content or ""
     assert runtime.status == SourceRuntimeStatus.AVAILABLE
     assert runtime.truncated is True
-    assert "selection_policy: changed_first" in content
+    assert "selection_policy: changed_then_diverse" in content
     assert "changed_files_available: 2" in content
     assert "src/new.py [changed]" in content
     assert "UNTRACKED = True" in content
     assert "src/zeta.py [changed]" in content
     assert "MODIFIED = True" in content
     assert "src/alpha.py" not in content
+
+
+def test_filesystem_source_runtime_diversifies_clean_git_directory_when_bounded(
+    tmp_path: Path,
+):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for this integration test")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    run_git(repo, "init", "-q")
+    run_git(repo, "config", "user.email", "test@example.com")
+    run_git(repo, "config", "user.name", "Test User")
+    root = repo / "pkg"
+    (root / "alpha").mkdir(parents=True)
+    (root / "beta").mkdir()
+    (root / "gamma").mkdir()
+    (root / "delta").mkdir()
+    for name in ("one.py", "two.py", "three.py"):
+        (root / "alpha" / name).write_text(f"ALPHA = {name!r}\n", encoding="utf-8")
+    (root / "beta/service.py").write_text("BETA_SERVICE = True\n", encoding="utf-8")
+    (root / "gamma/adapter.py").write_text("GAMMA_ADAPTER = True\n", encoding="utf-8")
+    (root / "delta/main.py").write_text("DELTA_MAIN = True\n", encoding="utf-8")
+    run_git(repo, "add", "pkg")
+    run_git(repo, "commit", "-m", "initial", "--quiet")
+    app = create_app(
+        source_runtime_adapters=(FilesystemSourceRuntimeAdapter(max_directory_files=4),)
+    )
+    (brief,) = app.sources.resolve(ResolveSourcesRequest(cwd=repo, inputs=("pkg",)))
+
+    runtime = app.sources.inspect_runtime(
+        InspectSourceRuntimeRequest(cwd=repo, ref=brief.ref)
+    )
+
+    content = runtime.content or ""
+    assert runtime.status == SourceRuntimeStatus.AVAILABLE
+    assert runtime.truncated is True
+    assert "selection_policy: changed_then_diverse" in content
+    assert "changed_files_available: 0" in content
+    assert "pkg/beta/service.py [unchanged]" in content
+    assert "BETA_SERVICE = True" in content
+    assert "pkg/gamma/adapter.py [unchanged]" in content
+    assert "GAMMA_ADAPTER = True" in content
+    assert "pkg/delta/main.py [unchanged]" in content
+    assert "DELTA_MAIN = True" in content
+    assert "pkg/alpha/one.py [unchanged]" in content
+    assert "ALPHA = 'one.py'" in content
+    assert "pkg/alpha/two.py" not in content
+    assert "pkg/alpha/three.py" not in content
 
 
 def test_filesystem_source_runtime_bounds_directory_files(tmp_path: Path):

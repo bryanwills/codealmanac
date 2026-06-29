@@ -1021,6 +1021,36 @@ Follow-up test:
 When a real background queue exists, add an owner/retry budget that uses the
 same pending run linkage instead of adding a second queue ledger.
 
+## 2026-06-29 - Clean Directory Runtime Needs Diversity, Not Recency Yet
+
+Old hypothesis:
+Clean large directories might need semantic diversity or recency ranking after
+changed-first selection.
+
+New hypothesis:
+Use semantic diversity first. Directory runtime should gather candidates from
+Git or the Python walk, then use a pure selection function that interleaves
+directory groups and prefers role-bearing files such as `service.py`,
+`adapter.py`, `app.py`, and `main.py`. Recency stays out until dogfood shows a
+freshness-specific failure.
+
+Evidence that forced the change:
+Dogfood against clean `src/codealmanac/` selected shallow package files before
+the source, workflow, and service owners that explain the repo. Cosmic Python
+chapter 3 separates filesystem interrogation from the decision algorithm: the
+adapter should gather file candidates, then a functional core should choose the
+bounded prompt material.
+
+Code or product assumption affected:
+`integrations/sources/filesystem/selection.py` now owns group-diverse ranking.
+`FilesystemSourceRuntimeAdapter` still owns Git/walk I/O and file reads. The
+source service, Ingest workflow, and CLI still see one directory
+`SourceRuntime`; there is no durable source pool or `candidate` object.
+
+Follow-up test:
+If a real clean repo still misses the right files, add a failing source-runtime
+dogfood case before adding recency or repository-specific ranking.
+
 ## 2026-06-29 - SQLite Mechanics Belong In Database Package
 
 Old hypothesis:

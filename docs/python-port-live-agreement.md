@@ -68,6 +68,11 @@ It is the constraint document for future agents.
   `changed` or `unchanged` in the runtime tree. This is a prompt-material
   selection policy inside the filesystem adapter; it is not a durable
   `candidate` object.
+- 2026-06-29: Clean filesystem directory runtime uses semantic diversity
+  inside the adapter: after changed/untracked files, bounded selection
+  interleaves directory groups and prefers role-bearing files such as
+  `service.py`, `adapter.py`, `app.py`, and `main.py`. Do not add a source
+  pool, durable candidate object, or Ingest branching for this.
 - 2026-06-29: `manual/` is a local support package, not a public CLI surface.
   It contains bundled wiki-maintenance doctrine. `init` and `build` copy
   missing files into `<almanac-root>/manual/`, prompts tell lifecycle agents to

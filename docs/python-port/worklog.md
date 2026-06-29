@@ -529,6 +529,11 @@
   budget of 3. `SyncLedgerEntry.failed_attempts` increments after failed
   transcript Ingest attempts and exhausted failed entries report
   `sync-retry-budget-exhausted` instead of retrying forever.
+- Added slice-44 clean directory diversity. Filesystem runtime now ranks
+  changed/untracked candidates first, then interleaves clean directory groups
+  and prefers role-bearing files. Dogfood against `src/codealmanac/` now keeps
+  the changed filesystem files first and then includes service/workflow groups
+  instead of spending the bound on shallow package files.
 
 ## Current Hypothesis
 
@@ -576,13 +581,14 @@ manual, runs, sync ledger, config, prompts, and lifecycle safety. Source
 runtime now receives configured wiki-root ignore policy from Ingest rather than
 guessing root names inside the filesystem adapter. Scheduled sync now remains
 ordinary foreground sync but carries explicit unattended policy from automation
-into the workflow request and durable ledger.
+into the workflow request and durable ledger. Clean directory runtime now uses
+adapter-local diversity selection before any future recency machinery.
 
 ## Next Hypothesis
 
 The next high-pressure product slice is not another root or sync migration.
 Scheduled update checks should wait for real non-editable install dogfood. The
-remaining source-runtime pressure is semantic diversity or recency ranking for
-clean large directories if dogfood shows unchanged inputs are still too noisy.
-The remaining serve risks are markdown wikilink rewriting inside code spans and
-browser-harness verification once Chrome allows remote debugging.
+remaining source-runtime pressure is now real-repo dogfood for the diversity
+policy rather than a missing v1 mechanism. The remaining serve risks are
+markdown wikilink rewriting inside code spans and browser-harness verification
+once Chrome allows remote debugging.

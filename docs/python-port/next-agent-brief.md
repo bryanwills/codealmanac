@@ -50,8 +50,9 @@ Updated: 2026-06-29
   broad and can be split later when a concrete CLI change creates pressure.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
-- Git-listed directory runtime ranks changed and untracked files before
-  unchanged files and labels included files as `changed` or `unchanged`.
+- Directory runtime ranks changed and untracked files before unchanged files,
+  interleaves clean directory groups, prefers role-bearing files, and labels
+  included files as `changed` or `unchanged`.
 - Public-contract tests guard the local-only CLI/package surface: only the
   `codealmanac` script, no hosted verbs, no compatibility aliases, and no
   `sdk` or `mcp` package modules.
@@ -297,6 +298,19 @@ Behavior:
 - exhausted failed entries report `sync-retry-budget-exhausted` instead of
   retrying forever
 
+Slice 44 adds clean directory diversity.
+
+Behavior:
+
+- filesystem runtime selection is a pure adapter-local ranking core after
+  Git/walk I/O has produced candidates
+- changed and untracked files still rank before unchanged files
+- unchanged file selection interleaves directory groups before taking a second
+  file from the same group
+- role-bearing files such as `service.py`, `adapter.py`, `app.py`, and
+  `main.py` rank ahead of generic source files inside a group
+- Git directory metadata now reports `selection_policy: changed_then_diverse`
+
 ## Verification To Preserve
 
 - Focused filesystem/source/ingest/architecture tests
@@ -345,12 +359,15 @@ Behavior:
   diff check, package build, and custom-root source-runtime dogfood
 - Slice 43 focused sync/automation/CLI tests, full pytest, full ruff, diff
   check, package build, and retry-budget dogfood
+- Slice 44 focused filesystem selection/runtime tests, full pytest, full ruff,
+  diff check, package build, and source-runtime dogfood against
+  `src/codealmanac/`
 
 ## Next Move
 
 1. Likely next pressure points:
-   - semantic diversity or recency ranking for clean large directories if
-     Git-listed unchanged files are still too noisy in dogfood
+   - more real-repo dogfood for source-runtime diversity; add recency only
+     after a failing case proves diversity is insufficient
    - scheduled update automation only after non-editable update dogfood
    - browser-harness visual verification for `serve` once Chrome remote
      debugging permission is available

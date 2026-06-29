@@ -141,8 +141,9 @@ The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness
 execution. `integrations/sources/filesystem/` reads explicit local files and
 bounded directory material, using Git-backed directory listing inside worktrees,
-Git porcelain status for changed-first directory selection, `pathspec` as the
-non-Git fallback, and `charset-normalizer` for text decoding.
+Git porcelain status for changed-first directory selection, adapter-local
+semantic diversity for clean directory selection, `pathspec` as the non-Git
+fallback, and `charset-normalizer` for text decoding.
 `InspectSourceRuntimeRequest.context.ignored_directories` carries workflow-owned
 runtime policy such as the resolved `workspace.almanac_root`; filesystem
 adapters apply those ignores but do not hard-code Almanac root names.

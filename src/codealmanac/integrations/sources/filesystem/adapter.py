@@ -20,6 +20,7 @@ from codealmanac.integrations.sources.filesystem.selection import (
     FilesystemDirectoryFileState,
     FilesystemDirectoryListingSource,
     FilesystemDirectorySelectionPolicy,
+    directory_selection_group,
     ranked_directory_candidates,
 )
 from codealmanac.integrations.sources.runtime import (
@@ -320,8 +321,10 @@ def read_directory_document(
 ) -> FilesystemDirectoryDocument:
     ignore_spec = ignore_spec_for(root, cwd, ignored_directories)
     listing_source = FilesystemDirectoryListingSource.WALK
-    selection_policy = FilesystemDirectorySelectionPolicy.PATH_ORDER
-    candidates = tuple(walk_file_candidates(root, cwd, ignore_spec))
+    selection_policy = FilesystemDirectorySelectionPolicy.DIVERSE
+    candidates = ranked_directory_candidates(
+        tuple(walk_file_candidates(root, cwd, ignore_spec))
+    )
     git_candidates = git_directory_candidates(
         root,
         cwd,
@@ -331,7 +334,7 @@ def read_directory_document(
     )
     if git_candidates is not None:
         listing_source = FilesystemDirectoryListingSource.GIT
-        selection_policy = FilesystemDirectorySelectionPolicy.CHANGED_FIRST
+        selection_policy = FilesystemDirectorySelectionPolicy.CHANGED_THEN_DIVERSE
         candidates = git_candidates
     files: list[FilesystemTextDocument] = []
     skipped_count = 0
@@ -378,6 +381,7 @@ def walk_file_candidates(
         yield FilesystemDirectoryCandidate(
             path=path,
             display_path=display_path(path, cwd),
+            selection_group=directory_selection_group(path, root),
         )
 
 
@@ -467,6 +471,7 @@ def git_directory_candidates(
                 FilesystemDirectoryCandidate(
                     path=path,
                     display_path=display_path(path, cwd),
+                    selection_group=directory_selection_group(path, root),
                     state=state,
                     git_status=git_status,
                 )
