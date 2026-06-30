@@ -792,3 +792,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | 242 passed |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 64 README Scaffold Accuracy
+
+| Gate | Command | 2026-06-30 result |
+|---|---|---|
+| Public contract tests | `uv run pytest tests/test_public_contract.py -q` | 17 passed; README init scaffold section is guarded separately from runtime state |
+| Init scaffold dogfood | isolated temp `HOME`; temp repo; `codealmanac init <repo> --name readme-tree`; `find <repo> -maxdepth 3` | passed; init created `.gitignore`, `almanac/README.md`, `topics.yaml`, `pages/getting-started.md`, and manual docs, not `config.toml`, `jobs/`, or `index.db` |
+| Cosmic note relay | `doppler run --project almanac --config dev -- relayforge reply --config ../relayforge/relay.config.json --binding rohan-almanac-main ...` | passed; sent the Chapter 2 Repository-pattern note and how it maps to source wiki artifact vs runtime storage |
+| Full tests | `uv run pytest` | 243 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

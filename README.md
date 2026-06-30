@@ -130,7 +130,7 @@ codealmanac doctor
 Read commands do not need provider credentials. Write-capable lifecycle
 commands need the selected harness to be available and authenticated.
 
-## What Gets Created
+## What Gets Created By Init
 
 With the default root:
 
@@ -139,18 +139,28 @@ your-repo/
 |-- almanac/
 |   |-- README.md
 |   |-- topics.yaml
-|   |-- config.toml
 |   |-- pages/
 |   |-- manual/
-|   |-- jobs/
-|   `-- index.db
 |-- src/
 `-- ...
 ```
 
-Markdown pages and `topics.yaml` are the wiki source. `index.db` and `jobs/`
-are local runtime artifacts. The default `.gitignore` entries keep runtime
-artifacts out of commits.
+Markdown pages, `topics.yaml`, and manual files are the wiki source. `init`
+also writes `.gitignore` entries for runtime artifacts.
+
+## Runtime State
+
+Derived local state appears when commands need it:
+
+```text
+almanac/index.db
+almanac/index.db-wal
+almanac/index.db-shm
+almanac/jobs/
+```
+
+Those runtime files are rebuildable local machine state and should stay out of
+commits.
 
 ## Configuration
 

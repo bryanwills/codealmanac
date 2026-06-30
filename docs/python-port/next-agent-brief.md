@@ -559,6 +559,8 @@ Behavior:
 - Slice 63 missing-root hygiene, marker-based Almanac root availability, full
   pytest/ruff, diff check, and live CLI dogfood proving `doctor` does not
   recreate a deleted configured root
+- Slice 64 README scaffold accuracy, public-contract guard for init-created
+  source files versus derived runtime state, and live temp `init` tree dogfood
 
 ## Next Move
 

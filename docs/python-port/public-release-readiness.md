@@ -80,6 +80,10 @@ unless a gate below exposes a boundary problem.
   whose configured root has not been built. Registry status, root discovery,
   and index opening now require source wiki markers rather than directory
   existence.
+- Slice 64 corrected the public README's scaffold tree after live `init`
+  dogfood showed it mixed initialized wiki source files with later runtime
+  state. The README now separates init-created source files from derived
+  `index.db`/`jobs/` state, and public-contract tests guard the distinction.
 
 ## Next Useful Pressure Tests
 

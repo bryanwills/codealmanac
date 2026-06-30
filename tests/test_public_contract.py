@@ -29,6 +29,8 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac init",
     "codealmanac search",
     "codealmanac serve",
+    "## What Gets Created By Init",
+    "Derived local state appears when commands need it:",
     "No hosted login/connect/upload commands.",
 )
 
@@ -102,6 +104,20 @@ def test_readme_documents_python_local_public_surface():
         assert fragment not in readme
 
 
+def test_readme_keeps_init_scaffold_separate_from_runtime_state():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+
+    init_section = readme_section(readme, "## What Gets Created By Init")
+
+    assert "|   |-- README.md" in init_section
+    assert "|   |-- topics.yaml" in init_section
+    assert "|   |-- pages/" in init_section
+    assert "|   |-- manual/" in init_section
+    assert "almanac/index.db" not in init_section
+    assert "almanac/jobs/" not in init_section
+    assert "config.toml" not in init_section
+
+
 def test_release_guide_documents_python_package_release_surface():
     release_guide = (PROJECT_ROOT / "RELEASE.md").read_text(encoding="utf-8")
 
@@ -146,3 +162,11 @@ def test_python_package_does_not_expose_sdk_or_mcp_modules():
 
 def no_path_component(paths: set[Path], component: str) -> bool:
     return all(component not in path.parts and path.stem != component for path in paths)
+
+
+def readme_section(readme: str, heading: str) -> str:
+    start = readme.index(heading)
+    next_heading = readme.find("\n## ", start + len(heading))
+    if next_heading == -1:
+        return readme[start:]
+    return readme[start:next_heading]

@@ -726,6 +726,13 @@ marker (`README.md`, `topics.yaml`, or `pages/`), `IndexStore` refuses to open
 SQLite for a missing root, and `doctor` reports the missing registered root
 without cascading into index/manual/health checks. This repo's `.gitignore`
 also ignores default-root runtime artifacts under `almanac/`.
+Slice 64 tightens the public README after release-surface review found that the
+"What Gets Created" tree mixed `init` scaffold files with runtime artifacts.
+A live temp-repo `codealmanac init` created `.gitignore`, `README.md`,
+`topics.yaml`, `pages/getting-started.md`, and bundled manual files, but not
+`config.toml`, `jobs/`, or `index.db`. The README now separates
+`What Gets Created By Init` from `Runtime State`, and public-contract tests
+guard that the init section stays source-only.
 
 ## Next Hypothesis
 

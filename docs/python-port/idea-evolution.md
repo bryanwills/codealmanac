@@ -1508,3 +1508,30 @@ Follow-up test:
 Keep clean-install and real-repo dogfood in the release gate. If future runtime
 state moves outside the repo root, preserve this invariant: source wiki markers
 identify the wiki; derived state never does.
+
+## 2026-06-30 - Release Docs Must Preserve Source vs Runtime
+
+Old hypothesis:
+After marker-based root detection, the remaining release review would likely be
+only broad product judgment.
+
+New hypothesis:
+Release review still needs small factual pressure tests. Public docs can drift
+even when command behavior and package metadata are correct.
+
+Evidence that forced the change:
+The README's "What Gets Created" tree listed `config.toml`, `jobs/`, and
+`index.db` as peers of the initialized wiki files. A temp `codealmanac init`
+created `.gitignore`, `almanac/README.md`, `almanac/topics.yaml`,
+`almanac/pages/getting-started.md`, and `almanac/manual/*.md`; it did not
+create runtime state.
+
+Code or product assumption affected:
+The public docs now separate init scaffold from runtime state. This reinforces
+the slice 63 rule that source wiki markers identify the artifact and derived
+SQLite/job files are local machine state.
+
+Follow-up test:
+Keep public-contract tests close to user-facing claims, not only forbidden
+words. When a README section describes command effects, add a guard for the
+actual file or command contract.
