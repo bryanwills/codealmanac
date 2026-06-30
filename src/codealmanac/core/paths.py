@@ -5,8 +5,12 @@ def home_dir() -> Path:
     return Path.home()
 
 
+def state_dir_for(home: Path) -> Path:
+    return home / ".codealmanac"
+
+
 def global_state_dir() -> Path:
-    return home_dir() / ".almanac"
+    return state_dir_for(home_dir())
 
 
 def default_registry_path() -> Path:

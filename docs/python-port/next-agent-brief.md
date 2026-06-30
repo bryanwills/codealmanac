@@ -6,7 +6,8 @@ Updated: 2026-06-30
 
 - Goal remains active: rebuild CodeAlmanac from scratch as a Python codebase.
 - Branch: `dev`.
-- Latest implementation slice: slice 69 current-head package rehearsal.
+- Latest implementation slice: slice 70 real source-shape lifecycle dogfood and
+  `~/.codealmanac/` state path.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -31,11 +32,14 @@ Updated: 2026-06-30
   `updated`, because package-manager output may say no files changed and the
   service does not scrape prose for stronger semantics.
 - Slice 41 implements the configured-root decision: new repos default to
-  `almanac/`; users may configure `docs/almanac/` or explicit `.almanac/`.
-  The registry stores `almanac_root`, `Workspace` exposes `almanac_path`,
-  project config lives under `<almanac-root>/config.toml`, run logs and sync
-  ledgers live under `<almanac-root>/jobs/`, and prompts/manual text refers to
-  the configured Almanac root.
+  `almanac/`; `docs/almanac/` is the public alternate repo shape. The registry
+  stores `almanac_root`, `Workspace` exposes `almanac_path`, project config
+  lives under `<almanac-root>/config.toml`, run logs and sync ledgers live under
+  `<almanac-root>/jobs/`, and prompts/manual text refers to the configured
+  Almanac root.
+- Slice 70 moves default user/global state to `~/.codealmanac/`. The repo-local
+  wiki root remains `almanac/`; registry, user config, and automation logs now
+  use the product-specific hidden directory.
 - Slice 42 completes the configured-root source-runtime follow-through:
   Ingest passes `workspace.almanac_root` through `SourceRuntimeContext`, and
   filesystem directory runtime applies that context for both Git listing and
@@ -401,7 +405,7 @@ Behavior:
 - first-time `codealmanac init` and `codealmanac build` default to
   `--root almanac`
 - existing registered repos keep their registered root when `--root` is omitted
-- setup can explicitly use `--root docs/almanac` or `--root .almanac`
+- setup can explicitly use `--root docs/almanac`
 - `WorkspaceRegistryEntry` stores `almanac_root`
 - `WorkspacesService.resolve(...)` discovers default roots plus roots already
   present in the registry
@@ -421,8 +425,8 @@ Behavior:
 - Ingest sets that context from `workspace.almanac_root`
 - filesystem directory runtime applies the ignored directories in both Git and
   non-Git traversal
-- filesystem runtime no longer treats `almanac/`, `docs/almanac/`, or
-  `.almanac/` as universal ignore names
+- filesystem runtime no longer treats `almanac/` or `docs/almanac/` as
+  universal ignore names
 
 Slice 43 adds scheduled sync retry policy.
 

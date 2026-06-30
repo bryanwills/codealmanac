@@ -22,7 +22,9 @@ def test_create_topic_with_parent_preserves_topics_yaml_comment(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.create(
         CreateTopicRequest(cwd=repo, name="Auth", parents=("concepts",))
@@ -43,7 +45,9 @@ def test_create_rejects_missing_parent_without_overwriting_file(
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(NotFoundError):
         app.topics.create(
@@ -63,7 +67,9 @@ def test_link_promotes_ad_hoc_page_topic_and_rejects_cycle(
         "---\ntopics: [jwt]\n---\n# JWT\n\nToken notes.\n",
         encoding="utf-8",
     )
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     linked = app.topics.link(LinkTopicRequest(cwd=repo, child="jwt", parent="concepts"))
 
@@ -86,7 +92,9 @@ def test_describe_promotes_ad_hoc_page_topic(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
     )
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.describe(
         DescribeTopicRequest(
@@ -109,7 +117,9 @@ def test_unlink_removes_edge_and_is_idempotent(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.topics.create(CreateTopicRequest(cwd=repo, name="Auth", parents=("concepts",)))
 
     removed = app.topics.unlink(
@@ -132,7 +142,9 @@ def test_mutating_malformed_topics_yaml_fails_without_overwrite(
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
     topics_path.write_text("topics: [", encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(ValidationFailed):
         app.topics.create(CreateTopicRequest(cwd=repo, name="Auth"))
@@ -166,7 +178,9 @@ topics:
         "---\ntitle: Auth Flow\n# page comment\ntopics: [auth]\n---\n# Auth Flow\n",
         encoding="utf-8",
     )
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.rename(
         RenameTopicRequest(cwd=repo, old_slug="auth", new_slug="security")
@@ -214,7 +228,9 @@ def test_rename_refuses_merge_without_writing_files(
     )
     before_topics = topics_path.read_text(encoding="utf-8")
     before_page = page_path.read_text(encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(ConflictError):
         app.topics.rename(
@@ -232,7 +248,9 @@ def test_rename_same_slug_is_noop_without_requiring_topic(
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.rename(
         RenameTopicRequest(cwd=repo, old_slug="missing", new_slug="missing")
@@ -253,7 +271,9 @@ def test_rename_page_only_ad_hoc_topic(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
     )
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.rename(
         RenameTopicRequest(cwd=repo, old_slug="runtime", new_slug="python-runtime")
@@ -288,7 +308,9 @@ def test_delete_removes_topic_edges_and_page_frontmatter_without_deleting_pages(
         "---\ntopics: [auth, jwt]\n---\n# Auth Flow\n",
         encoding="utf-8",
     )
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.topics.delete(DeleteTopicRequest(cwd=repo, slug="auth"))
     jwt = app.topics.show(ShowTopicRequest(cwd=repo, slug="jwt"))
@@ -310,7 +332,9 @@ def test_delete_refuses_missing_topic_without_writing_files(
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
     before = topics_path.read_text(encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(NotFoundError):
         app.topics.delete(DeleteTopicRequest(cwd=repo, slug="missing"))
@@ -337,7 +361,9 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
         encoding="utf-8",
     )
     before = topics_path.read_text(encoding="utf-8")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(ValidationFailed):
         app.topics.rename(

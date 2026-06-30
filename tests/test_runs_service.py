@@ -27,7 +27,9 @@ def test_runs_service_records_job_and_events(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     record = app.runs.start(
@@ -102,7 +104,9 @@ def test_runs_service_targets_registered_wiki(
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=first, name="first"))
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=second, name="second")
@@ -124,11 +128,11 @@ def test_runs_service_refuses_running_transition_after_terminal_status(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(
-        StartRunRequest(cwd=repo, operation=RunOperation.INGEST)
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
     app.runs.finish(
         FinishRunRequest(
             cwd=repo,
@@ -139,9 +143,7 @@ def test_runs_service_refuses_running_transition_after_terminal_status(
     )
 
     with pytest.raises(ConflictError):
-        app.runs.mark_running(
-            MarkRunRunningRequest(cwd=repo, run_id=record.run_id)
-        )
+        app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
 
 
 def test_finish_run_request_requires_terminal_status(tmp_path: Path):

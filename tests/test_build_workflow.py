@@ -21,7 +21,9 @@ def test_initialize_creates_almanac_wiki_and_registry(
 ):
     repo = tmp_path / "Example Repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=repo, description="test wiki")
@@ -44,7 +46,9 @@ def test_initialize_starter_wiki_has_no_health_noise(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     report = app.health.check(HealthCheckRequest(cwd=repo))
@@ -60,7 +64,9 @@ def test_initialize_supports_configured_almanac_root(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(
@@ -84,7 +90,9 @@ def test_build_without_root_preserves_registered_almanac_root(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(
             path=repo,
@@ -109,7 +117,9 @@ def test_initialize_allows_explicit_dot_almanac_root(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(
@@ -132,7 +142,9 @@ def test_initialize_rejects_roots_outside_repo(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     with pytest.raises(ValueError):
         app.workflows.build.initialize(
@@ -150,7 +162,9 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
     readme = repo / "almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
@@ -173,7 +187,9 @@ def test_build_refreshes_wiki_and_rebuilds_index(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     result = app.workflows.build.build(
         InitializeWorkspaceRequest(path=repo, name="repo")
@@ -191,7 +207,9 @@ def test_workspace_selection_supports_name_id_and_path(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     by_name = app.workspaces.select(SelectWorkspaceRequest(selector="repo"))
@@ -211,7 +229,9 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
     missing_almanac.mkdir()
     index_only = tmp_path / "index-only"
     index_only.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=live_repo, name="live")
     )
@@ -256,7 +276,9 @@ def test_workspace_registry_drops_selected_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
 
     result = app.workspaces.drop(DropWorkspaceRequest(selector="repo"))

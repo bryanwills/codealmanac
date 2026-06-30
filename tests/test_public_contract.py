@@ -5,6 +5,7 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
+from codealmanac.core.models import AppConfig
 from codealmanac.services.sources.models import SourceKind
 from codealmanac.services.sources.requests import ResolveSourcesRequest
 
@@ -27,6 +28,7 @@ FORBIDDEN_TOP_LEVEL_COMMANDS = (
 README_REQUIRED_FRAGMENTS = (
     "Public command: `codealmanac`",
     "Default repo wiki root: `almanac/`",
+    "User state root: `~/.codealmanac/`",
     "Python 3.12+",
     "uv tool install codealmanac",
     "codealmanac init",
@@ -45,6 +47,7 @@ README_FORBIDDEN_FRAGMENTS = (
     "Node 20",
     "`almanac ",
     "`alm`",
+    "~/.almanac",
     "codealmanac.com/dashboard",
     "usealmanac.com",
     "ingest is an alias",
@@ -92,11 +95,19 @@ def test_python_package_metadata_declares_readme_and_license():
         "Issues": "https://github.com/AlmanacCode/codealmanac/issues",
     }
     assert "Development Status :: 3 - Alpha" in project["classifiers"]
-    assert "License :: OSI Approved :: Apache Software License" not in project[
-        "classifiers"
-    ]
+    assert (
+        "License :: OSI Approved :: Apache Software License"
+        not in project["classifiers"]
+    )
     assert "Operating System :: OS Independent" in project["classifiers"]
     assert "Topic :: Software Development :: Documentation" in project["classifiers"]
+
+
+def test_default_user_state_paths_are_product_specific(isolated_home: Path):
+    config = AppConfig()
+
+    assert config.registry_path == isolated_home / ".codealmanac/registry.json"
+    assert config.config_path == isolated_home / ".codealmanac/config.toml"
 
 
 def test_readme_documents_python_local_public_surface():
@@ -129,7 +140,7 @@ def test_readme_quickstart_uses_search_that_works_after_init():
     quickstart = readme_section(readme, "## Quickstart")
 
     assert 'codealmanac search "getting"' in quickstart
-    assert 'codealmanac show getting-started' in quickstart
+    assert "codealmanac show getting-started" in quickstart
     assert 'codealmanac search "auth"' not in quickstart
 
 

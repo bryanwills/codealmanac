@@ -23,10 +23,13 @@ It is the constraint document for future agents.
   compatibility layer for old page formats.
 - 2026-06-29: Repo-owned wiki data lives under a configurable repo-local
   Almanac root. New Python installs default to `almanac/`, not `.almanac/`.
-  Users may configure another root such as `docs/almanac/` or `.almanac/`.
+  Users may configure another root such as `docs/almanac/`.
   The chosen root owns committed wiki docs and local runtime artifacts,
   including the SQLite index, unless a future decision splits runtime state
   elsewhere.
+- 2026-06-30: Global user state belongs to `~/.codealmanac/`. The repo-local
+  folder may be named `almanac/`; user config, registry state, and scheduler
+  logs use the product-specific hidden directory.
 - 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
   models, service-owned verbs, store-owned persistence, thin CLI edges.
 - 2026-06-29: Public-release readiness is now evidence-gated in
@@ -137,10 +140,11 @@ It is the constraint document for future agents.
   `topics.yaml`.
 - 2026-06-29: `config` owns local user/project TOML parsing and precedence
   through `pydantic-settings`. The first config surface is intentionally
-  narrow: user config and `<almanac-root>/config.toml` can set the default
-  lifecycle harness and sync quiet window. CLI flags still win over config. Do
-  not add a public `config` command, environment override system, secrets
-  system, or hosted/account config surface until a later agreement requires it.
+  narrow: user config at `~/.codealmanac/config.toml` and project config at
+  `<almanac-root>/config.toml` can set the default lifecycle harness and sync
+  quiet window. CLI flags still win over config. Do not add a public `config`
+  command, environment override system, secrets system, or hosted/account
+  config surface until a later agreement requires it.
 - 2026-06-29: The CLI edge is allowed to split by command domain as pressure
   appears. `doctor`, `update`, `jobs`, and `automation` now live under the
   admin dispatch/render edge; the root dispatcher delegates to that edge and
@@ -445,8 +449,8 @@ Git resolves `.git/`.
 `--root` is a setup-time option on `init` and `build`. It must be a
 repo-relative directory. On first setup, omitting it means `almanac/`. Inside an
 existing registered repo, omitting it means "keep the registered root."
-`docs/almanac/` and `.almanac/` are valid only when explicitly selected or
-already recorded in the local registry for that repo.
+`docs/almanac/` is the public alternate shape when a repo wants docs under
+`docs/`.
 
 `codealmanac list` reads the local registry of known repos with configured
 Almanac roots.
@@ -523,6 +527,7 @@ subprocess.run(["codealmanac", "show", "..."])
 - Public naming is `codealmanac`.
 - The configured Almanac root remains the repo-owned wiki artifact. New
   installs default to `almanac/`.
+- Global user state lives under `~/.codealmanac/`.
 - Local v1 must not inherit hosted assumptions from merged `dev` or `origin/dev`.
 - CLI edges stay thin.
 - Services own product verbs.

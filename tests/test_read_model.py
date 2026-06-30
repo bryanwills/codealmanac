@@ -21,7 +21,9 @@ def test_search_indexes_pages_topics_mentions_and_links(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_page(
         repo,
@@ -71,7 +73,9 @@ def test_search_auto_registers_existing_wiki(
     repo = tmp_path / "repo"
     (repo / "almanac/pages").mkdir(parents=True)
     write_page(repo, "note.md", "# Note\n\nUniqueNeedle context.\n")
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     rows = app.search.search(SearchPagesRequest(cwd=repo, query="uniqueneedle"))
 
@@ -85,7 +89,9 @@ def test_search_does_not_materialize_missing_registered_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workspaces.register(RegisterWorkspaceRequest(root_path=repo, name="repo"))
 
     with pytest.raises(NotFoundError):
@@ -100,7 +106,9 @@ def test_search_rebuilds_stale_existing_index_schema(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nStaleSchemaNeedle context.\n")
     db_path = repo / "almanac/index.db"
@@ -119,7 +127,9 @@ def test_rebuild_removes_stale_topic_rows(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     page_path = repo / "almanac/pages/note.md"
     page_path.write_text("---\ntopics: [old]\n---\n# Note\n", encoding="utf-8")
@@ -141,7 +151,9 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nOriginalNeedle.\n")
 
@@ -182,7 +194,9 @@ def test_reindex_forces_projection_rebuild_when_index_is_fresh(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nForceNeedle.\n")
     app.search.search(SearchPagesRequest(cwd=repo, query="forceneedle"))

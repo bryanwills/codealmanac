@@ -153,9 +153,9 @@ conversation.
 - **Intelligence lives in prompts, not pipelines.** No propose/review/apply
   state machines, no orchestration JSON schema between writer and reviewer, no
   `--dry-run` rehearsals. The writer owns outcomes.
-- Local-only repo wiki roots plus `~/.almanac/registry.json` global state. New
-  repos default to `almanac/`, while `docs/almanac/` or explicit `.almanac/`
-  are setup-time choices. The configured root is **flat** — future features get
+- Local-only repo wiki roots plus `~/.codealmanac/registry.json` global state.
+  New repos default to `almanac/`, while `docs/almanac/` is the public
+  alternate setup shape. The configured root is **flat** — future features get
   peer files, not nested `wiki/` subdirs.
 - One link syntax (`[[...]]`), disambiguated by content. `GLOB` not `LIKE` for
   path queries. Paths normalized on both sides of a comparison.

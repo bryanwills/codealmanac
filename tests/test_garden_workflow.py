@@ -92,7 +92,7 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     repo.mkdir()
     adapter = GardenWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -150,7 +150,7 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
     (repo / "src").mkdir()
     (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(DirtyAppGardenHarnessAdapter(),),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -178,7 +178,7 @@ def test_garden_workflow_records_failed_harness_output_before_error(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(FailedGardenHarnessAdapter(),),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))

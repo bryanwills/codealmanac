@@ -73,7 +73,7 @@ def test_automation_install_plans_sync_and_garden(
     repo.mkdir()
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -121,6 +121,8 @@ def test_automation_install_plans_sync_and_garden(
     assert garden.working_directory == repo
     assert sync.environment[0].name == "PATH"
     assert sync.environment[0].value.startswith("/custom/bin:")
+    assert sync.stdout_path == isolated_home / ".codealmanac/logs/sync.out.log"
+    assert sync.stderr_path == isolated_home / ".codealmanac/logs/sync.err.log"
 
 
 def test_automation_install_sync_only_does_not_require_repo(
@@ -129,7 +131,7 @@ def test_automation_install_sync_only_does_not_require_repo(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
 
@@ -152,7 +154,7 @@ def test_automation_status_and_uninstall_work_outside_repo(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
 
@@ -173,7 +175,7 @@ def test_automation_garden_off_installs_sync_and_removes_garden(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
 
@@ -195,7 +197,7 @@ def test_automation_rejects_ambiguous_every_for_multiple_explicit_tasks(
     isolated_home: Path,
 ):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=FakeSchedulerAdapter(),
     )
 

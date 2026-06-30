@@ -892,7 +892,7 @@ def app_with_candidates(
     harness: SyncWritingHarnessAdapter | None = None,
 ):
     return create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=() if harness is None else (harness,),
         transcript_discovery_adapters=(FakeTranscriptDiscoveryAdapter(candidates),),
     )

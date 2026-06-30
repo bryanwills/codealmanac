@@ -6,7 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.core.paths import home_dir, normalize_path
+from codealmanac.core.paths import home_dir, normalize_path, state_dir_for
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
     AutomationStatusReport,
@@ -152,7 +152,7 @@ class AutomationService:
     ) -> ScheduledJob:
         definition = task_definition(task)
         home = normalize_path(request.home or home_dir())
-        logs_dir = home / ".almanac/logs"
+        logs_dir = state_dir_for(home) / "logs"
         return ScheduledJob(
             task=task,
             label=definition.label,

@@ -194,7 +194,7 @@ def test_cli_init_creates_wiki_and_prints_name(
     assert captured.out == "my-repo\n"
     assert "initialized" in captured.err
     assert (repo / "almanac/pages/getting-started.md").is_file()
-    assert (isolated_home / ".almanac/registry.json").is_file()
+    assert (isolated_home / ".codealmanac/registry.json").is_file()
 
 
 def test_cli_init_accepts_configured_root(
@@ -488,7 +488,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = CliWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -534,7 +534,7 @@ def test_cli_ingest_uses_configured_default_harness(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = CliWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -568,7 +568,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     repo.mkdir()
     adapter = CliGardenHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -624,7 +624,7 @@ def test_cli_sync_status_reports_ready_transcripts(
     )
     adapter = CliTranscriptDiscoveryAdapter((candidate,))
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -663,7 +663,7 @@ def test_cli_sync_status_uses_configured_quiet_window(
     )
     adapter = CliTranscriptDiscoveryAdapter((candidate,))
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -706,7 +706,7 @@ def test_cli_sync_status_uses_retry_budget_flags(
     )
     adapter = CliTranscriptDiscoveryAdapter((candidate,))
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -778,7 +778,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
     transcript_adapter = CliTranscriptDiscoveryAdapter((candidate,))
     harness = CliWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(harness,),
         transcript_discovery_adapters=(transcript_adapter,),
     )
@@ -811,7 +811,7 @@ def test_cli_automation_install_status_and_uninstall(
     repo.mkdir()
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".almanac/registry.json"),
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
@@ -859,7 +859,9 @@ def test_cli_jobs_inspects_local_run_records(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
@@ -898,9 +900,7 @@ def test_cli_jobs_inspects_local_run_records(
     assert f"id: {record.run_id}\n" in show_output.out
     assert "operation: ingest\n" in show_output.out
     assert "harness_transcript: codex codex-job-session\n" in show_output.out
-    assert f"harness_transcript_path: {repo / 'codex-job.jsonl'}\n" in (
-        show_output.out
-    )
+    assert f"harness_transcript_path: {repo / 'codex-job.jsonl'}\n" in (show_output.out)
 
     assert main(["jobs", "logs", record.run_id]) == 0
     log_output = capsys.readouterr()

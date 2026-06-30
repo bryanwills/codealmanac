@@ -4,15 +4,17 @@ Date: 2026-06-30
 
 ## Current Read
 
-CodeAlmanac is usable as an internal local alpha. Clean wheel install, final
-wheel/sdist package rehearsal, real Codex ingest, real Claude ingest, real
-sync, and final viewer browser proof now have dogfood evidence.
+CodeAlmanac's local Python implementation has public-beta gate coverage. Clean
+wheel install, final wheel/sdist package rehearsal, real Codex ingest, real
+Claude ingest, real non-toy source-shape ingest, real sync, and final viewer
+browser proof now have dogfood evidence.
 
 The gate audit in `docs/python-port/public-beta-gate-audit.md` is the current
 release-readiness checkpoint. Slice 69 passed current-head package rehearsal.
-The main remaining product work is one more real lifecycle dogfood pass against
-a non-toy project source shape. More generic architecture seams are diminishing
-returns unless a gate below exposes a boundary problem.
+Slice 70 passed the remaining lifecycle prompt-quality dogfood and fixed the
+user-state path issue it exposed. Remaining public-release work is release
+operations: PyPI credentials, version/changelog, and the human publish
+decision.
 
 ## Public Beta Gate
 
@@ -103,8 +105,16 @@ returns unless a gate below exposes a boundary problem.
   passed `twine check`, metadata/package-data inspection, clean Python 3.12.9
   installs, installed CLI smoke, live `serve` HTTP checks, and installed
   `update --check`.
+- Slice 70 ran real Claude-backed `codealmanac ingest` against a focused temp
+  repo containing CodeAlmanac source-runtime, filesystem adapter, ingest
+  workflow, prompt, and live-agreement files. It created
+  `source-runtime-flow.md`, left health clean, and produced readable job logs.
+- Slice 70 also moved default user/global state from `~/.almanac/` to
+  `~/.codealmanac/`, while preserving the repo wiki root as `almanac/`.
 
 ## Next Useful Pressure Tests
 
-1. Run one more real lifecycle prompt-quality dogfood pass against a non-toy
-   project source shape.
+1. Prepare release operations: version/changelog, PyPI credentials, and human
+   publish decision.
+2. Rerun package/install smoke if metadata, README, prompts, manual, or server
+   assets change before publishing.

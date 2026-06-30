@@ -14,7 +14,8 @@ it does not require a hosted service.
 
 - Public command: `codealmanac`
 - Default repo wiki root: `almanac/`
-- Optional roots: `docs/almanac/` or `.almanac/`
+- Optional repo wiki root: `docs/almanac/`
+- User state root: `~/.codealmanac/`
 - Runtime: Python 3.12+
 - Storage: local markdown plus a derived SQLite index
 
@@ -163,6 +164,12 @@ Those runtime files are rebuildable local machine state and should stay out of
 commits.
 
 ## Configuration
+
+User config lives at:
+
+```text
+~/.codealmanac/config.toml
+```
 
 Project config lives at:
 

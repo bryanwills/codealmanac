@@ -14,7 +14,9 @@ def test_doctor_reports_no_wiki_without_failing(
     tmp_path: Path,
     isolated_home: Path,
 ):
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path))
 
@@ -31,7 +33,9 @@ def test_doctor_does_not_materialize_missing_registered_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workspaces.register(RegisterWorkspaceRequest(root_path=repo, name="repo"))
 
     report = app.diagnostics.check(DoctorRequest(cwd=repo))
@@ -48,7 +52,9 @@ def test_doctor_reports_index_and_health_for_selected_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path, wiki="repo"))
@@ -70,7 +76,9 @@ def test_doctor_reports_missing_workspace_manual(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
     (repo / "almanac/manual/pages.md").unlink()
 
@@ -88,7 +96,9 @@ def test_doctor_reports_changed_workspace_manual(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
     (repo / "almanac/manual/README.md").write_text(
         "local manual edit\n",

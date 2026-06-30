@@ -767,6 +767,18 @@ Python 3.12.9 environments installed both artifacts and ran installed CLI smoke
 for `--help`, `init`, `search`, `show`, `topics`, `health`, `jobs`,
 `sync status`, `doctor`, `serve`, and `update --check`. The shell did not have
 `python3.12`, so the smoke used `uv venv --python 3.12`.
+Slice 70 closes the remaining lifecycle dogfood blocker. A temp repo copied
+real CodeAlmanac source-runtime, filesystem adapter, ingest workflow, prompt,
+and live-agreement files, then public `codealmanac ingest ... --using claude`
+created `almanac/pages/source-runtime-flow.md`. The page accurately described
+`SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`, `SourcesService`,
+filesystem runtime selection, ingest prompt consumption, and source-runtime
+gotchas. `health --json` was clean and `jobs logs` recorded queued, running,
+preflight, source resolution, runtime loading, Claude success, and done events.
+The dogfood also exposed that default user config still pointed at
+`~/.almanac/config.toml`, where this machine had stale old-product `[agent]`
+config. The fix moves default user/global state to `~/.codealmanac/` while
+keeping repo wiki roots under `almanac/`.
 
 ## Next Hypothesis
 
@@ -797,6 +809,8 @@ After slice 68, release judgment is recorded in
 `docs/python-port/public-beta-gate-audit.md`. The next product pressure is not
 another architecture seam; it is current-head package rehearsal plus one more
 real lifecycle dogfood run.
-After slice 69, current-head package rehearsal is done. The next product
-pressure is one more real lifecycle dogfood run against a non-toy source shape
-to judge prompt quality.
+After slice 69, current-head package rehearsal is done. After slice 70, the
+remaining public-beta implementation gate is also covered. The next pressure is
+release operations: version/changelog, PyPI credentials, and the human publish
+decision. Any package data, prompt, manual, README, or server asset change
+before publish should trigger another package/install smoke.

@@ -15,7 +15,9 @@ def test_config_service_returns_defaults_without_files(
     tmp_path: Path,
     isolated_home: Path,
 ):
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
 
     config = app.config.load(LoadConfigRequest(cwd=tmp_path))
 
@@ -27,7 +29,7 @@ def test_config_service_applies_user_then_project_precedence(
     tmp_path: Path,
     isolated_home: Path,
 ):
-    user_config = isolated_home / ".almanac/config.toml"
+    user_config = isolated_home / ".codealmanac/config.toml"
     user_config.parent.mkdir(parents=True)
     user_config.write_text(
         """
@@ -43,7 +45,7 @@ quiet = "30m"
     repo.mkdir()
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".almanac/registry.json",
+            registry_path=isolated_home / ".codealmanac/registry.json",
             config_path=user_config,
         )
     )
@@ -70,7 +72,9 @@ def test_config_service_uses_explicit_wiki_project_config(
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
-    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=first))
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=second))
     (second / "almanac/config.toml").write_text(
@@ -90,12 +94,12 @@ def test_config_service_reports_invalid_toml(
     tmp_path: Path,
     isolated_home: Path,
 ):
-    config_path = isolated_home / ".almanac/config.toml"
+    config_path = isolated_home / ".codealmanac/config.toml"
     config_path.parent.mkdir(parents=True)
-    config_path.write_text("[sync\nquiet = \"0s\"\n", encoding="utf-8")
+    config_path.write_text('[sync\nquiet = "0s"\n', encoding="utf-8")
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".almanac/registry.json",
+            registry_path=isolated_home / ".codealmanac/registry.json",
             config_path=config_path,
         )
     )
@@ -108,7 +112,7 @@ def test_config_service_reports_invalid_values(
     tmp_path: Path,
     isolated_home: Path,
 ):
-    config_path = isolated_home / ".almanac/config.toml"
+    config_path = isolated_home / ".codealmanac/config.toml"
     config_path.parent.mkdir(parents=True)
     config_path.write_text(
         """
@@ -119,7 +123,7 @@ default = "cursor"
     )
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".almanac/registry.json",
+            registry_path=isolated_home / ".codealmanac/registry.json",
             config_path=config_path,
         )
     )

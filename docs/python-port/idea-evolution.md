@@ -1666,3 +1666,56 @@ the package rerun is missing after slice 69.
 Follow-up test:
 Run one real lifecycle dogfood pass against a non-toy project source shape and
 judge the produced wiki diff, links, topics, health, and `jobs` readability.
+
+## 2026-06-30 - User State Belongs To `.codealmanac`
+
+Old hypothesis:
+The Python rewrite could keep using `~/.almanac/` for global registry and user
+config while moving the repo-owned wiki root to `almanac/`.
+
+New hypothesis:
+The repo-owned wiki root remains `almanac/`, but global user state belongs under
+`~/.codealmanac/`. The hidden user-state directory is product machinery, not the
+repo wiki artifact.
+
+Evidence that forced the change:
+The slice 70 real lifecycle dogfood needed real `HOME` so Claude auth was
+visible. With real `HOME`, the Python CLI read this machine's old
+`~/.almanac/config.toml`, which contained stale `[agent]` config from a previous
+product shape and failed strict Pydantic validation. The Python rewrite is not
+backward-compatible, so accepting the stale config would preserve the wrong
+contract.
+
+Code or product assumption affected:
+`AppConfig()` now defaults registry and config paths to `~/.codealmanac/`.
+Automation logs use the same product-specific state directory. Public docs say
+the repo wiki root is `almanac/` and user/global state is `~/.codealmanac/`.
+
+Follow-up test:
+Public-contract tests pin default `AppConfig()` paths and reject old
+`~/.almanac` README language.
+
+## 2026-06-30 - Non-Toy Lifecycle Dogfood Clears The Beta Blocker
+
+Old hypothesis:
+Public beta still needed one more lifecycle dogfood pass against a non-toy
+source shape to judge prompt quality.
+
+New hypothesis:
+The current lifecycle prompt/write path has enough public-beta evidence. More
+dogfood remains useful, but it is no longer an implementation blocker.
+
+Evidence that forced the change:
+Slice 70 ran real Claude-backed `codealmanac ingest` against a temp repo
+containing CodeAlmanac source-runtime, filesystem adapter, ingest workflow,
+prompt, and live-agreement files. The run created `source-runtime-flow.md`,
+health was clean, and job logs were readable.
+
+Code or product assumption affected:
+`public-beta-gate-audit.md` now marks the lifecycle write path ready. Remaining
+public-release work is release operations: version, changelog, PyPI credentials,
+and the human publish decision.
+
+Follow-up test:
+Rerun package/install smoke if package metadata, README, prompts, manual docs,
+or server assets change before publish.
