@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
 from codealmanac.core.models import AppConfig
@@ -364,7 +365,7 @@ def test_cli_doctor_reports_local_state(
     assert main(["doctor"]) == 0
 
     output = capsys.readouterr()
-    assert "codealmanac v0.1.0\n" in output.out
+    assert f"codealmanac v{__version__}\n" in output.out
     assert "## Install\n" in output.out
     assert "manual: 8 bundled docs" in output.out
     assert "manual: 8 docs" in output.out
