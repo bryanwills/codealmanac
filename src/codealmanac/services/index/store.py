@@ -3,6 +3,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from codealmanac.core.errors import NotFoundError
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.database import (
     SQLiteConnection,
@@ -33,6 +34,7 @@ from codealmanac.services.index.views import (
 from codealmanac.services.wiki.documents import load_page_document
 from codealmanac.services.wiki.models import PageDocument
 from codealmanac.services.wiki.topics import TopicDefinition, load_topics_yaml
+from codealmanac.services.workspaces.roots import is_initialized_almanac_root
 
 SCHEMA_VERSION = 20260630
 
@@ -122,6 +124,7 @@ SOURCE_SIGNATURE_KEY = "source_signature"
 
 class IndexStore:
     def refresh(self, almanac_path: Path) -> IndexRefreshResult:
+        require_initialized_almanac_root(almanac_path)
         sources = load_index_sources(almanac_path)
         db_path = index_db_path(almanac_path)
         with connect_index(db_path) as connection:
@@ -143,6 +146,7 @@ class IndexStore:
         )
 
     def rebuild(self, almanac_path: Path) -> IndexRefreshResult:
+        require_initialized_almanac_root(almanac_path)
         sources = load_index_sources(almanac_path)
         db_path = index_db_path(almanac_path)
         with connect_index(db_path) as connection:
@@ -160,18 +164,22 @@ class IndexStore:
         almanac_path: Path,
         request: SearchIndexRequest,
     ) -> tuple[SearchPageResult, ...]:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return search_pages(connection, request)
 
     def counts(self, almanac_path: Path) -> IndexCounts:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return index_counts(connection)
 
     def get_page(self, almanac_path: Path, slug: str) -> PageView | None:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return get_page_view(connection, slug)
 
     def list_topics(self, almanac_path: Path) -> tuple[TopicSummary, ...]:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return list_topic_summaries(connection)
 
@@ -181,6 +189,7 @@ class IndexStore:
         slug: str,
         include_descendants: bool,
     ) -> TopicDetail | None:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return get_topic_detail(connection, slug, include_descendants)
 
@@ -190,6 +199,7 @@ class IndexStore:
         repo_root: Path,
         registered_wikis: set[str],
     ) -> HealthReport:
+        require_initialized_almanac_root(almanac_path)
         with connect_index(index_db_path(almanac_path)) as connection:
             return build_health_report(connection, repo_root, registered_wikis)
 
@@ -210,6 +220,11 @@ def connect_index(path: Path) -> SQLiteConnection:
     connection = connect_sqlite(path)
     apply_migrations(connection, INDEX_MIGRATIONS)
     return connection
+
+
+def require_initialized_almanac_root(almanac_path: Path) -> None:
+    if not is_initialized_almanac_root(almanac_path):
+        raise NotFoundError("Almanac root", str(almanac_path))
 
 
 def load_documents(pages_path: Path) -> tuple[list[PageDocument], int, int]:

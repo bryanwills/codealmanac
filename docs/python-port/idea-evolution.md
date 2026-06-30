@@ -1480,3 +1480,31 @@ tests guard the guide and the PyPI metadata.
 Follow-up test:
 Before any publish attempt, run `uvx twine check dist/*` against freshly built
 artifacts and smoke both wheel and sdist from clean Python 3.12 environments.
+
+## 2026-06-30 - Runtime State Does Not Prove Wiki Availability
+
+Old hypothesis:
+The public-release pressure after package rehearsal was mostly release review
+and prompt-quality dogfood.
+
+New hypothesis:
+Keep doing release review, but first fix evidence found by local dogfood:
+availability must distinguish initialized wiki source files from derived
+runtime state.
+
+Evidence that forced the change:
+Running `codealmanac doctor --json` in this checkout with a registered default
+`almanac/` root but no built wiki created `almanac/index.db`. The old registry
+status then treated the directory as available even though it contained no
+`README.md`, `topics.yaml`, or `pages/`.
+
+Code or product assumption affected:
+`workspaces` now owns a marker-based definition of an initialized Almanac root.
+`index` validates that root before opening SQLite, so read and diagnostic
+commands cannot create an index-only fake wiki. `doctor` reports a missing
+registered root directly and stops before index/manual/health checks.
+
+Follow-up test:
+Keep clean-install and real-repo dogfood in the release gate. If future runtime
+state moves outside the repo root, preserve this invariant: source wiki markers
+identify the wiki; derived state never does.

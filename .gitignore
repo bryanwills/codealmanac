@@ -18,6 +18,10 @@ __pycache__/
 .coverage
 
 # codealmanac
+almanac/index.db
+almanac/index.db-wal
+almanac/index.db-shm
+almanac/jobs/
 .almanac/index.db
 .almanac/index.db-wal
 .almanac/index.db-shm

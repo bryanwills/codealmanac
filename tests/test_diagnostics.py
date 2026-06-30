@@ -4,7 +4,10 @@ from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.services.diagnostics.models import DoctorStatus
 from codealmanac.services.diagnostics.requests import DoctorRequest
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.services.workspaces.requests import (
+    InitializeWorkspaceRequest,
+    RegisterWorkspaceRequest,
+)
 
 
 def test_doctor_reports_no_wiki_without_failing(
@@ -20,6 +23,23 @@ def test_doctor_reports_no_wiki_without_failing(
     assert report.wiki[0].key == "wiki.none"
     assert report.wiki[0].status == DoctorStatus.INFO
     assert report.wiki[0].fix == "run: codealmanac init"
+
+
+def test_doctor_does_not_materialize_missing_registered_wiki(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workspaces.register(RegisterWorkspaceRequest(root_path=repo, name="repo"))
+
+    report = app.diagnostics.check(DoctorRequest(cwd=repo))
+
+    checks = {check.key: check for check in report.wiki}
+    assert checks["wiki.registered"].status == DoctorStatus.PROBLEM
+    assert checks["wiki.registered"].fix == "run: codealmanac build"
+    assert not (repo / "almanac").exists()
 
 
 def test_doctor_reports_index_and_health_for_selected_wiki(

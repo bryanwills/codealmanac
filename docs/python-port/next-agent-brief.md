@@ -556,6 +556,9 @@ Behavior:
   installs, including installed CLI smoke and package metadata inspection
 - Slice 62 Python release guide update, package metadata guards, and
   `twine check` package metadata verification
+- Slice 63 missing-root hygiene, marker-based Almanac root availability, full
+  pytest/ruff, diff check, and live CLI dogfood proving `doctor` does not
+  recreate a deleted configured root
 
 ## Next Move
 

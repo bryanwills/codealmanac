@@ -154,6 +154,11 @@ It is the constraint document for future agents.
   local wiki registry surface; `list --json` exposes availability status, and
   `list --drop <selector>` / `list --drop-missing` remove entries only when the
   user asks. Read commands do not silently prune missing workspaces.
+- 2026-06-30: An initialized Almanac root is identified by wiki markers
+  (`README.md`, `topics.yaml`, or `pages/`), not by directory existence.
+  Runtime artifacts such as `index.db`, WAL files, and `jobs/` are derived
+  state. They must not make registry status, root discovery, `doctor`, or read
+  commands treat an otherwise missing root as available.
 
 ## Product Frame
 

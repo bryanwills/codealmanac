@@ -12,9 +12,12 @@ from codealmanac.services.diagnostics.models import (
 from codealmanac.services.diagnostics.requests import DoctorRequest
 from codealmanac.services.index.models import HealthReport, IndexSummary
 from codealmanac.services.index.service import IndexService
-from codealmanac.services.workspaces.models import Workspace
+from codealmanac.services.workspaces.models import Workspace, WorkspaceRegistryStatus
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
-from codealmanac.services.workspaces.service import WorkspacesService
+from codealmanac.services.workspaces.service import (
+    WorkspacesService,
+    workspace_registry_status,
+)
 
 
 class DiagnosticsService:
@@ -73,21 +76,17 @@ class DiagnosticsService:
         workspace = self._select_workspace(request)
         if isinstance(workspace, DoctorCheck):
             return (workspace,)
+        registry_status = workspace_registry_status(workspace)
         checks: list[DoctorCheck] = [
             DoctorCheck(
                 key="wiki.repo",
                 status=DoctorStatus.INFO,
                 message=f"repo: {workspace.root_path}",
             ),
-            DoctorCheck(
-                key="wiki.registered",
-                status=DoctorStatus.OK,
-                message=(
-                    f"registered as '{workspace.name}' "
-                    f"({workspace.almanac_root.as_posix()})"
-                ),
-            ),
+            registered_check(workspace, registry_status),
         ]
+        if registry_status != WorkspaceRegistryStatus.AVAILABLE:
+            return tuple(checks)
         checks.extend(self._index_checks(workspace))
         checks.append(self._manual_workspace_check(workspace))
         checks.append(self._health_check(workspace))
@@ -242,6 +241,34 @@ def health_problem_count(report: HealthReport) -> int:
 
 def first_line(value: str) -> str:
     return value.splitlines()[0] if value.splitlines() else value
+
+
+def registered_check(
+    workspace: Workspace,
+    status: WorkspaceRegistryStatus,
+) -> DoctorCheck:
+    registered = (
+        f"registered as '{workspace.name}' ({workspace.almanac_root.as_posix()})"
+    )
+    if status == WorkspaceRegistryStatus.AVAILABLE:
+        return DoctorCheck(
+            key="wiki.registered",
+            status=DoctorStatus.OK,
+            message=registered,
+        )
+    if status == WorkspaceRegistryStatus.MISSING_REPO:
+        return DoctorCheck(
+            key="wiki.registered",
+            status=DoctorStatus.PROBLEM,
+            message=f"{registered}, but repo path is missing",
+            fix=f"run: codealmanac list --drop {workspace.workspace_id}",
+        )
+    return DoctorCheck(
+        key="wiki.registered",
+        status=DoctorStatus.PROBLEM,
+        message=f"{registered}, but Almanac root is missing: {workspace.almanac_path}",
+        fix="run: codealmanac build",
+    )
 
 
 def page_word(count: int) -> str:

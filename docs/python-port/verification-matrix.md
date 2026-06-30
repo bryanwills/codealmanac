@@ -780,3 +780,15 @@ means the goal remains active.
 | Full tests | `uv run pytest` | 240 passed |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 63 Missing Root Hygiene
+
+| Gate | Command | 2026-06-30 result |
+|---|---|---|
+| Targeted missing-root repros | `uv run pytest tests/test_diagnostics.py::test_doctor_does_not_materialize_missing_registered_wiki tests/test_build_workflow.py::test_workspace_registry_reports_and_drops_missing_wikis tests/test_read_model.py::test_search_does_not_materialize_missing_registered_wiki -q` | passed; 3 tests first failed against the old behavior and pass after the marker-based root guard |
+| Adjacent read/diagnostic/build tests | `uv run pytest tests/test_diagnostics.py tests/test_read_model.py tests/test_build_workflow.py tests/test_cli.py::test_cli_doctor_json_reports_no_wiki tests/test_cli.py::test_cli_list_json_reports_registry_status tests/test_cli.py::test_cli_list_drop_missing_removes_unreachable_wikis -q` | 27 passed |
+| Live missing-root dogfood | isolated temp `HOME`; `codealmanac init`; delete `repo/almanac`; `codealmanac doctor --wiki repo --json`; `codealmanac list --json` | passed; doctor reported `wiki.registered` problem with `run: codealmanac build`, list reported `missing_almanac`, and `repo/almanac` was not recreated |
+| Cosmic note relay | `doppler run --project almanac --config dev -- relayforge reply --config ../relayforge/relay.config.json --binding rohan-almanac-main ...` | passed; sent the Chapter 6 Unit of Work note and why this slice used marker validation instead of adding UoW |
+| Full tests | `uv run pytest` | 242 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

@@ -1,12 +1,18 @@
 import sqlite3
 from pathlib import Path
 
+import pytest
+
 from codealmanac.app import create_app
+from codealmanac.core.errors import NotFoundError
 from codealmanac.core.models import AppConfig
 from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.search.requests import SearchPagesRequest
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.services.workspaces.requests import (
+    InitializeWorkspaceRequest,
+    RegisterWorkspaceRequest,
+)
 
 
 def test_search_indexes_pages_topics_mentions_and_links(
@@ -71,6 +77,21 @@ def test_search_auto_registers_existing_wiki(
 
     assert [row.slug for row in rows] == ["note"]
     assert app.workspaces.list()[0].root_path == repo
+
+
+def test_search_does_not_materialize_missing_registered_wiki(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
+    app.workspaces.register(RegisterWorkspaceRequest(root_path=repo, name="repo"))
+
+    with pytest.raises(NotFoundError):
+        app.search.search(SearchPagesRequest(cwd=repo, query="anything"))
+
+    assert not (repo / "almanac").exists()
 
 
 def test_search_rebuilds_stale_existing_index_schema(

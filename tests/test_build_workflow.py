@@ -10,6 +10,7 @@ from codealmanac.services.workspaces.models import WorkspaceRegistryStatus
 from codealmanac.services.workspaces.requests import (
     DropWorkspaceRequest,
     InitializeWorkspaceRequest,
+    RegisterWorkspaceRequest,
     SelectWorkspaceRequest,
 )
 
@@ -208,6 +209,8 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
     missing_repo.mkdir()
     missing_almanac = tmp_path / "missing-almanac"
     missing_almanac.mkdir()
+    index_only = tmp_path / "index-only"
+    index_only.mkdir()
     app = create_app(AppConfig(registry_path=isolated_home / ".almanac/registry.json"))
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=live_repo, name="live")
@@ -218,6 +221,11 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=missing_almanac, name="missing-almanac")
     )
+    app.workspaces.register(
+        RegisterWorkspaceRequest(root_path=index_only, name="index-only")
+    )
+    (index_only / "almanac").mkdir()
+    (index_only / "almanac/index.db").write_bytes(b"derived")
     remove_tree(missing_repo)
     remove_tree(missing_almanac / "almanac")
 
@@ -229,10 +237,12 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
         "live": WorkspaceRegistryStatus.AVAILABLE,
         "missing": WorkspaceRegistryStatus.MISSING_REPO,
         "missing-almanac": WorkspaceRegistryStatus.MISSING_ALMANAC,
+        "index-only": WorkspaceRegistryStatus.MISSING_ALMANAC,
     }
     assert tuple(workspace.name for workspace in result.dropped) == (
         "missing",
         "missing-almanac",
+        "index-only",
     )
     remaining = tuple(
         item.workspace.name for item in app.workspaces.list_registry().items

@@ -16,7 +16,7 @@ def test_codex_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/pages").mkdir(parents=True)
     sessions = home / ".codex/sessions/2026/06/29"
     sessions.mkdir(parents=True)
     transcript = sessions / "session.jsonl"
@@ -65,7 +65,7 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/pages").mkdir(parents=True)
     projects = home / ".claude/projects/repo"
     projects.mkdir(parents=True)
     transcript = projects / "session.jsonl"
@@ -95,7 +95,7 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
 def test_transcript_discovery_uses_configured_almanac_roots(tmp_path: Path):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "docs/almanac").mkdir(parents=True)
+    (repo / "docs/almanac/pages").mkdir(parents=True)
     sessions = home / ".codex/sessions/2026/06/29"
     sessions.mkdir(parents=True)
     transcript = sessions / "session.jsonl"

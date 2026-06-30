@@ -21,6 +21,7 @@ from codealmanac.services.workspaces.requests import (
 from codealmanac.services.workspaces.roots import (
     DEFAULT_ALMANAC_ROOT,
     AlmanacRootMatch,
+    is_initialized_almanac_root,
     nearest_almanac_root,
 )
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
@@ -297,6 +298,6 @@ def same_path(left: Path, right: Path) -> bool:
 def workspace_registry_status(workspace: Workspace) -> WorkspaceRegistryStatus:
     if not workspace.root_path.is_dir():
         return WorkspaceRegistryStatus.MISSING_REPO
-    if not workspace.almanac_path.is_dir():
+    if not is_initialized_almanac_root(workspace.almanac_path):
         return WorkspaceRegistryStatus.MISSING_ALMANAC
     return WorkspaceRegistryStatus.AVAILABLE

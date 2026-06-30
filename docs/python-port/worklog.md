@@ -716,6 +716,16 @@ included the old Apache license classifier, and setuptools rejected it because
 PEP 639 license expressions supersede license classifiers. The final metadata
 keeps SPDX `Apache-2.0` and removes the license classifier. Public-contract
 tests guard the Python release guide and package metadata.
+Slice 63 fixes a local diagnostics/read-model hygiene gap found by dogfooding
+`codealmanac doctor` in this repo before the repo's default `almanac/` root had
+been built. The old path treated a registered workspace as available if the
+configured root directory existed, so `doctor` could create
+`almanac/index.db`, then `list --json` would report that derived-only directory
+as an available wiki. Root discovery and registry status now require a wiki
+marker (`README.md`, `topics.yaml`, or `pages/`), `IndexStore` refuses to open
+SQLite for a missing root, and `doctor` reports the missing registered root
+without cascading into index/manual/health checks. This repo's `.gitignore`
+also ignores default-root runtime artifacts under `almanac/`.
 
 ## Next Hypothesis
 

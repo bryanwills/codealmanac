@@ -75,6 +75,11 @@ unless a gate below exposes a boundary problem.
   guide, added PyPI-facing project metadata, verified wheel/sdist metadata with
   `twine check`, and extended public-contract tests so npm release commands do
   not return.
+- Slice 63 fixed a real local dogfood hygiene bug: `doctor` and read commands
+  no longer create a derived-only `almanac/index.db` for a registered workspace
+  whose configured root has not been built. Registry status, root discovery,
+  and index opening now require source wiki markers rather than directory
+  existence.
 
 ## Next Useful Pressure Tests
 
