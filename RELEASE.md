@@ -23,8 +23,8 @@ python -m pip install codealmanac
 Dev users must opt into a pre-release:
 
 ```bash
-uv tool install --prerelease allow codealmanac
-python -m pip install --pre codealmanac
+uv tool install "codealmanac==0.1.0.dev0"
+python -m pip install "codealmanac==0.1.0.dev0"
 ```
 
 ## Pre-Release Checklist
