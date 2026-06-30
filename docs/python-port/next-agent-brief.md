@@ -564,6 +564,9 @@ Behavior:
 - Slice 65 README quickstart dogfood, public-contract guard for the starter
   search term, and live temp proof that `search "getting"` returns
   `getting-started` after init
+- Slice 66 README lifecycle source-example check, public-contract guard that
+  examples parse and resolve `README.md` as a real file plus `github:pr:123`
+  as a PR source
 
 ## Next Move
 

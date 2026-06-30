@@ -74,7 +74,7 @@ Lifecycle commands can ask a configured local agent harness to edit wiki pages.
 They only allow changes under the configured Almanac root.
 
 ```bash
-codealmanac ingest docs/adr.md --using codex
+codealmanac ingest README.md --using codex
 codealmanac ingest github:pr:123 --using claude
 codealmanac garden --using codex
 ```

@@ -739,6 +739,13 @@ because the starter wiki contains `getting-started`, not an auth page. The
 quickstart now uses `codealmanac search "getting"` so a new user sees the
 starter page on the first search. Public-contract tests guard the quickstart
 section against drifting back to a non-starter search term.
+Slice 66 checks the README lifecycle examples against the source abstraction.
+`codealmanac ingest docs/adr.md --using codex` parsed but resolved as a missing
+path in this checkout because `docs/adr.md` does not exist. The README now uses
+`codealmanac ingest README.md --using codex`, which resolves as a real
+`path.file`, while `github:pr:123` remains valid as the supported GitHub PR
+shorthand. Public-contract tests now parse the lifecycle examples and resolve
+the documented source refs through `SourcesService`.
 
 ## Next Hypothesis
 

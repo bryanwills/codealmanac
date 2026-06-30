@@ -87,6 +87,10 @@ unless a gate below exposes a boundary problem.
 - Slice 65 dogfooded the README quickstart in a fresh temp repo. The old
   `search "auth"` example returned zero results after `init`; the quickstart
   now searches `getting`, which returns the starter `getting-started` page.
+- Slice 66 checked README lifecycle examples against the source abstraction.
+  The local-file ingest example now uses `README.md`, which resolves as a real
+  file in this repo, while the GitHub PR shorthand remains parser/source
+  supported.
 
 ## Next Useful Pressure Tests
 

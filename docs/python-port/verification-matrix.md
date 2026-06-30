@@ -815,3 +815,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | 244 passed |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 66 README Lifecycle Source Examples
+
+| Gate | Command | 2026-06-30 result |
+|---|---|---|
+| README example parser/source check | `uv run python` using `build_parser()` for lifecycle examples and `SourcesService.resolve(...)` for `README.md` plus `github:pr:123` | passed; examples parse, `README.md` resolves as `path.file`, and `github:pr:123` resolves as `github.pull_request` |
+| Public contract tests | `uv run pytest tests/test_public_contract.py -q` | 19 passed |
+| Cosmic note relay | `doppler run --project almanac --config dev -- relayforge reply --config ../relayforge/relay.config.json --binding rohan-almanac-main ...` | passed; sent the Chapter 3 abstraction note and how it maps to testing README source examples through `SourcesService` |
+| Full tests | `uv run pytest` | 245 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

@@ -3,7 +3,10 @@ from pathlib import Path
 
 import pytest
 
+from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
+from codealmanac.services.sources.models import SourceKind
+from codealmanac.services.sources.requests import ResolveSourcesRequest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src/codealmanac"
@@ -29,6 +32,8 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac init",
     'codealmanac search "getting"',
     "codealmanac serve",
+    "codealmanac ingest README.md --using codex",
+    "codealmanac ingest github:pr:123 --using claude",
     "## What Gets Created By Init",
     "Derived local state appears when commands need it:",
     "No hosted login/connect/upload commands.",
@@ -126,6 +131,29 @@ def test_readme_quickstart_uses_search_that_works_after_init():
     assert 'codealmanac search "getting"' in quickstart
     assert 'codealmanac show getting-started' in quickstart
     assert 'codealmanac search "auth"' not in quickstart
+
+
+def test_readme_lifecycle_examples_parse_and_resolve_public_sources():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    updating = readme_section(readme, "## Updating The Wiki")
+    parser = build_parser()
+
+    parser.parse_args(("ingest", "README.md", "--using", "codex"))
+    parser.parse_args(("ingest", "github:pr:123", "--using", "claude"))
+    parser.parse_args(("garden", "--using", "codex"))
+
+    assert "docs/adr.md" not in updating
+
+    file_brief, pr_brief = create_app().sources.resolve(
+        ResolveSourcesRequest(
+            cwd=PROJECT_ROOT,
+            inputs=("README.md", "github:pr:123"),
+        )
+    )
+    assert file_brief.ref.kind == SourceKind.PATH_FILE
+    assert file_brief.ref.exists is True
+    assert pr_brief.ref.kind == SourceKind.GITHUB_PULL_REQUEST
+    assert pr_brief.ref.number == 123
 
 
 def test_release_guide_documents_python_package_release_surface():

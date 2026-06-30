@@ -1561,3 +1561,30 @@ Follow-up test:
 For future public examples, distinguish runnable quickstart commands from
 illustrative daily-use commands. Runnable examples should be dogfooded in a
 fresh temp repo.
+
+## 2026-06-30 - Public Examples Should Hit Product Abstractions
+
+Old hypothesis:
+After the quickstart fix, the next release-surface risk was probably another
+full install smoke.
+
+New hypothesis:
+Keep checking README examples against the product abstractions they describe.
+Parser-valid examples can still teach the wrong thing when they resolve as
+missing source material.
+
+Evidence that forced the change:
+The README lifecycle example `codealmanac ingest docs/adr.md --using codex`
+parsed, but `SourcesService.resolve(...)` classified `docs/adr.md` as
+`path.unknown` in this checkout. `README.md` resolves as a real `path.file`,
+and `github:pr:123` resolves as `github.pull_request`.
+
+Code or product assumption affected:
+Public-contract tests now parse the lifecycle examples and call
+`SourcesService` for documented source refs. The README local-file ingest
+example now uses `README.md`.
+
+Follow-up test:
+When public docs describe source inputs, use source-resolution tests rather
+than only forbidden-word checks. This keeps examples aligned with the current
+source grammar and runtime expectations.
