@@ -50,6 +50,13 @@ It is the constraint document for future agents.
   `lifecycle.py` owns lifecycle/sync/job-start output, `wiki.py` owns
   search/show/topics/health/tagging output, `workspaces.py` owns local wiki
   registry list/drop output, and `common.py` owns shared formatting helpers.
+- 2026-07-01: Wiki CLI dispatch follows the same command-family split.
+  `cli/dispatch/wiki.py` remains the wiki-command facade for
+  search/show/health/reindex/tag/untag routing. `topics.py` owns topic
+  subcommand request construction, `workspaces.py` owns list/drop/drop-missing,
+  and `serve.py` owns local viewer startup. Do not move topic request
+  construction, workspace drop request construction, or uvicorn startup back
+  into `dispatch/wiki.py`.
 - 2026-06-30: Validation belongs at product boundaries. Use Pydantic request,
   settings, and domain models for shaped data; use enums or literals for finite
   choices; reject invalid user/product input with explicit errors. Adapter-local

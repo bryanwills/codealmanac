@@ -333,6 +333,13 @@ owns Rich-backed setup/uninstall terminal presentation. Render modules display
 service-returned facts only. Rich must not be imported from services,
 workflows, integrations, or stores.
 
+`cli/dispatch/wiki.py` is the wiki-command facade. It owns direct routing for
+search, show, health, reindex, tag, and untag. `cli/dispatch/topics.py` owns
+topic subcommands, `cli/dispatch/workspaces.py` owns local registry list/drop
+commands, and `cli/dispatch/serve.py` owns viewer startup. Dispatch modules
+construct service request models and then call render modules; they do not
+contain service logic or presentation formatting.
+
 The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM

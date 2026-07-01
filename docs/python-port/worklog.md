@@ -6,6 +6,15 @@
   proof: keep applying Cosmic Python, `MANUAL.md`, the live agreement, and
   useful `../almanac` patterns until remaining cleanup is genuinely
   diminishing returns.
+- Added slice-121 wiki-dispatch boundary plan after rereading Cosmic Python
+  chapters 4 and 13 and checking `../almanac/clients/cli`. The applied lesson
+  is that the CLI edge should translate parsed args to service requests through
+  small command-family dispatchers, not a single growing wiki module.
+- Split `cli/dispatch/wiki.py` by command family: `topics.py` owns topic
+  subcommands, `workspaces.py` owns local registry list/drop commands, and
+  `serve.py` owns local viewer startup.
+- Added an architecture guard that keeps topic/workspace request construction
+  and uvicorn startup out of `dispatch/wiki.py`.
 - Added slice-120 run-store factory/query boundary plan after rereading Cosmic
   Python chapter 6 and the run-ledger live agreement. The applied lesson is
   that `RunStore` is the repository facade over durable run state, while

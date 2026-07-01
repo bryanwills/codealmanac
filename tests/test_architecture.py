@@ -465,7 +465,10 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/config.py").is_file()
     assert (cli_root / "dispatch/lifecycle.py").is_file()
+    assert (cli_root / "dispatch/serve.py").is_file()
+    assert (cli_root / "dispatch/topics.py").is_file()
     assert (cli_root / "dispatch/wiki.py").is_file()
+    assert (cli_root / "dispatch/workspaces.py").is_file()
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/common.py").is_file()
     assert (cli_root / "render/lifecycle.py").is_file()
@@ -514,10 +517,31 @@ def test_cli_render_root_stays_facade():
 
 
 def test_cli_dispatch_edge_is_split_by_command_domain():
-    dispatch_root = (SRC_ROOT / "cli/dispatch/root.py").read_text(encoding="utf-8")
+    dispatch_path = SRC_ROOT / "cli/dispatch"
+    dispatch_root = (dispatch_path / "root.py").read_text(encoding="utf-8")
+    dispatch_wiki = (dispatch_path / "wiki.py").read_text(encoding="utf-8")
+    dispatch_topics = (dispatch_path / "topics.py").read_text(encoding="utf-8")
+    dispatch_workspaces = (dispatch_path / "workspaces.py").read_text(
+        encoding="utf-8"
+    )
+    dispatch_serve = (dispatch_path / "serve.py").read_text(encoding="utf-8")
     render_root = (SRC_ROOT / "cli/render/root.py").read_text(encoding="utf-8")
+    forbidden_wiki_fragments = (
+        "CreateTopicRequest",
+        "DeleteTopicRequest",
+        "DescribeTopicRequest",
+        "LinkTopicRequest",
+        "ListTopicsRequest",
+        "RenameTopicRequest",
+        "ShowTopicRequest",
+        "UnlinkTopicRequest",
+        "DropWorkspaceRequest",
+        "uvicorn",
+        "create_server_app",
+    )
 
     assert len(dispatch_root.splitlines()) <= 80
+    assert len(dispatch_wiki.splitlines()) <= 130
     assert "dispatch_lifecycle(args, app)" in dispatch_root
     assert "dispatch_wiki(args, app)" in dispatch_root
     assert "dispatch_admin(args, app)" in dispatch_root
@@ -530,6 +554,16 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
     assert "DoctorReport" not in render_root
     assert "UpdatePlan" not in render_root
     assert "RunRecord" not in render_root
+    assert [
+        fragment for fragment in forbidden_wiki_fragments if fragment in dispatch_wiki
+    ] == []
+    assert "dispatch_topics(args, app)" in dispatch_wiki
+    assert "dispatch_workspaces(args, app)" in dispatch_wiki
+    assert "run_serve(app, args)" in dispatch_wiki
+    assert "CreateTopicRequest" in dispatch_topics
+    assert "ListTopicsRequest" in dispatch_topics
+    assert "DropWorkspaceRequest" in dispatch_workspaces
+    assert "create_server_app" in dispatch_serve
 
 
 def test_cli_dispatch_files_stay_small():

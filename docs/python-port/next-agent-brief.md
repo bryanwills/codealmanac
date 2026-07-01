@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 120 run store factory and query boundaries.
+- Latest implementation slice: slice 121 CLI wiki dispatch boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -246,6 +246,13 @@ Updated: 2026-07-01
   queries. Architecture tests keep `uuid4`, `strftime`, log-path construction,
   direct record sorting, and `ledger.iter_records` query mechanics out of
   `store.py`.
+- Slice 121 keeps wiki CLI behavior unchanged while splitting
+  `cli/dispatch/wiki.py` by command family. `dispatch/topics.py` owns topic
+  subcommand request construction, `dispatch/workspaces.py` owns local registry
+  list/drop commands, and `dispatch/serve.py` owns local viewer startup.
+  `dispatch/wiki.py` remains the facade for direct search/show/health/reindex/
+  tag/untag routing. Architecture tests keep topic/workspace request
+  construction and uvicorn startup out of `dispatch/wiki.py`.
 - Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
   splitting source-address parsing by family. `address_resolution.py` is now a
   small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,

@@ -5,6 +5,36 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Wiki Dispatch Should Split By Command Family
+
+Old hypothesis:
+`cli/dispatch/wiki.py` could own wiki command routing, workspace list/drop,
+topic subcommands, serve startup, and search/show/health/tagging request
+construction because all of those commands are local wiki commands.
+
+New hypothesis:
+`dispatch/wiki.py` should be the wiki-command facade, while command families
+with their own subcommands or startup mechanics get separate modules.
+`dispatch/topics.py` owns topic subcommand request construction,
+`dispatch/workspaces.py` owns registry list/drop behavior, and
+`dispatch/serve.py` owns local viewer startup.
+
+Evidence that forced the change:
+`cli/dispatch/wiki.py` was 225 lines and mixed request construction for
+unrelated service families with uvicorn startup. The `../almanac` CLI keeps
+root and hosted command-family dispatchers small, and Cosmic Python chapter 4
+keeps interfacing code separate from application use cases.
+
+Code or product assumption affected:
+Slice 121 keeps CLI behavior unchanged. `codealmanac list`, search/show,
+topics, health/reindex, tag/untag, and serve still route through the same
+services and renderers. Only the dispatch module ownership changed.
+
+Follow-up test:
+Future wiki CLI commands should land in the command-family dispatcher that owns
+the service request construction. `dispatch/wiki.py` should only route top-level
+wiki commands or handle direct one-step wiki verbs.
+
 ## 2026-07-01 - RunStore Should Not Own Factory Or Query Mechanics
 
 Old hypothesis:
