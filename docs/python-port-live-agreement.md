@@ -149,6 +149,13 @@ It is the constraint document for future agents.
   automation with explicit unattended policy: a stable claim owner, pending
   timeout, and failed-attempt budget. Repeated failed transcript ingests stop
   at needs-attention instead of retrying forever.
+- 2026-07-01: Sync orchestration and sync policy are separate. `SyncWorkflow`
+  owns discovery, scoping, run-record lookup, ledger load/save, foreground
+  ingest, background enqueue, worker spawn, and summary assembly.
+  `workflows/sync/policy.py` owns deterministic ledger identity, cursor
+  decisions, pending-entry transitions, pending-run reconciliation, transcript
+  snapshot hashing, skip rows, and generated cursor guidance. Do not move
+  cursor/ledger policy back into `service.py`.
 - 2026-06-29: Source input has four local layers:
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue

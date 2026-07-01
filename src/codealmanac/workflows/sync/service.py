@@ -1,7 +1,5 @@
-from datetime import UTC, datetime, timedelta
-from hashlib import sha256
+from datetime import UTC, datetime
 from pathlib import Path
-from uuid import uuid4
 
 from codealmanac.core.paths import normalize_path
 from codealmanac.services.runs.models import RunRecord, RunStatus
@@ -10,7 +8,6 @@ from codealmanac.services.runs.service import RunsService
 from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.sources.service import SourcesService
-from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.workflows.ingest.requests import (
@@ -20,20 +17,36 @@ from codealmanac.workflows.ingest.requests import (
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.run_queue.service import RunQueueWorkflow
 from codealmanac.workflows.sync.models import (
-    SyncCursorDecision,
     SyncDecisionKind,
     SyncEvaluation,
     SyncExecution,
     SyncLedger,
-    SyncLedgerEntry,
-    SyncLedgerStatus,
     SyncMode,
     SyncReady,
     SyncSkipped,
     SyncStarted,
     SyncSummary,
     SyncWorkItem,
-    TranscriptSnapshot,
+)
+from codealmanac.workflows.sync.policy import (
+    absorbed_entry,
+    evaluate_cursor,
+    evaluate_pending_run,
+    failed_entry,
+    first_error_line,
+    is_internal_transcript,
+    ledger_entry,
+    ledger_key,
+    pending_entry,
+    quiet_window_skip,
+    read_transcript,
+    reconcile_pending_entry,
+    same_workspace,
+    skip,
+    sync_claim_owner,
+    sync_ingest_guidance,
+    sync_ingest_title,
+    sync_started,
 )
 from codealmanac.workflows.sync.requests import (
     RunSyncRequest,
@@ -41,8 +54,6 @@ from codealmanac.workflows.sync.requests import (
     SyncSelectionRequest,
 )
 from codealmanac.workflows.sync.store import SyncLedgerStore
-
-EMPTY_SHA256 = f"sha256:{sha256(b'').hexdigest()}"
 
 
 class SyncWorkflow:
@@ -297,397 +308,3 @@ class SyncWorkflow:
             for candidate in candidates
             if same_workspace(candidate.repo_root, workspace)
         )
-
-
-def same_workspace(repo_root: Path, workspace: Workspace) -> bool:
-    return normalize_path(repo_root) == normalize_path(workspace.root_path)
-
-
-def quiet_window_skip(
-    candidate: TranscriptCandidate,
-    request: SyncSelectionRequest,
-    now: datetime,
-) -> SyncSkipped | None:
-    if now - candidate.modified_at < request.quiet:
-        return skip(candidate, "quiet-window")
-    return None
-
-
-def is_internal_transcript(
-    candidate: TranscriptCandidate,
-    records: tuple[RunRecord, ...],
-) -> bool:
-    candidate_path = normalize_path(candidate.transcript_path)
-    for record in records:
-        ref = record.harness_transcript
-        if ref is None or ref.kind.value != candidate.app.value:
-            continue
-        if ref.session_id == candidate.session_id:
-            return True
-        if (
-            ref.transcript_path is not None
-            and normalize_path(ref.transcript_path) == candidate_path
-        ):
-            return True
-    return False
-
-
-def read_transcript(candidate: TranscriptCandidate) -> TranscriptSnapshot | None:
-    try:
-        content = candidate.transcript_path.read_bytes()
-    except OSError:
-        return None
-    return TranscriptSnapshot(
-        content=content,
-        current_size=len(content),
-        current_line=count_lines(content.decode("utf-8", errors="replace")),
-    )
-
-
-def fresh_ledger_entry(candidate: TranscriptCandidate) -> SyncLedgerEntry:
-    return SyncLedgerEntry(
-        app=candidate.app,
-        session_id=candidate.session_id,
-        transcript_path=candidate.transcript_path,
-        status=SyncLedgerStatus.DONE,
-        last_absorbed_size=0,
-        last_absorbed_line=0,
-        last_absorbed_prefix_hash=EMPTY_SHA256,
-    )
-
-
-def absorbed_entry(
-    entry: SyncLedgerEntry,
-    snapshot: TranscriptSnapshot,
-    run_id: str,
-    now: datetime,
-) -> SyncLedgerEntry:
-    return entry.model_copy(
-        update={
-            "status": SyncLedgerStatus.DONE,
-            "last_absorbed_size": snapshot.current_size,
-            "last_absorbed_line": snapshot.current_line,
-            "last_absorbed_prefix_hash": sha256_bytes(snapshot.content),
-            "last_absorbed_at": now,
-            "last_job_id": run_id,
-            "last_error": None,
-            "failed_attempts": 0,
-            "pending_started_at": None,
-            "pending_owner": None,
-            "pending_run_id": None,
-            "pending_to_size": None,
-            "pending_prefix_hash": None,
-            "pending_from_line": None,
-            "pending_to_line": None,
-        }
-    )
-
-
-def failed_entry(
-    entry: SyncLedgerEntry,
-    error: Exception,
-    run_id: str | None = None,
-) -> SyncLedgerEntry:
-    return entry.model_copy(
-        update={
-            "status": SyncLedgerStatus.FAILED,
-            "last_error": first_error_line(error),
-            "last_job_id": run_id or entry.pending_run_id or entry.last_job_id,
-            "failed_attempts": entry.failed_attempts + 1,
-            "pending_started_at": None,
-            "pending_owner": None,
-            "pending_run_id": None,
-            "pending_to_size": None,
-            "pending_prefix_hash": None,
-            "pending_from_line": None,
-            "pending_to_line": None,
-        }
-    )
-
-
-def pending_entry(
-    entry: SyncLedgerEntry,
-    item: SyncWorkItem,
-    now: datetime,
-    owner: str,
-    run_id: str,
-) -> SyncLedgerEntry:
-    return entry.model_copy(
-        update={
-            "status": SyncLedgerStatus.PENDING,
-            "last_error": None,
-            "pending_started_at": now,
-            "pending_owner": owner,
-            "pending_run_id": run_id,
-            "pending_to_size": item.snapshot.current_size,
-            "pending_prefix_hash": sha256_bytes(item.snapshot.content),
-            "pending_from_line": item.from_line,
-            "pending_to_line": item.to_line,
-        }
-    )
-
-
-def first_error_line(error: Exception) -> str:
-    message = str(error).strip()
-    if message == "":
-        return error.__class__.__name__
-    return message.splitlines()[0]
-
-
-def evaluate_cursor(
-    entry: SyncLedgerEntry,
-    snapshot: TranscriptSnapshot,
-    now: datetime,
-    pending_timeout: timedelta,
-    max_failed_attempts: int,
-) -> SyncCursorDecision:
-    if entry.status == SyncLedgerStatus.NEEDS_ATTENTION:
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.NEEDS_ATTENTION,
-            reason=entry.last_error or "sync-needs-attention",
-        )
-    if (
-        entry.status == SyncLedgerStatus.FAILED
-        and entry.failed_attempts >= max_failed_attempts
-    ):
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.NEEDS_ATTENTION,
-            reason="sync-retry-budget-exhausted",
-        )
-    if entry.status == SyncLedgerStatus.PENDING:
-        if pending_is_stale(entry, now, pending_timeout):
-            return SyncCursorDecision(
-                kind=SyncDecisionKind.NEEDS_ATTENTION,
-                reason="sync-pending-stale",
-            )
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.SKIP,
-            reason="sync-already-pending",
-        )
-    if snapshot.current_size <= entry.last_absorbed_size:
-        return SyncCursorDecision(kind=SyncDecisionKind.SKIP, reason="unchanged")
-    prefix_hash = sha256_bytes(snapshot.content[: entry.last_absorbed_size])
-    if prefix_hash != entry.last_absorbed_prefix_hash:
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.NEEDS_ATTENTION,
-            reason="prefix-mismatch",
-        )
-    return SyncCursorDecision(
-        kind=SyncDecisionKind.READY,
-        from_line=entry.last_absorbed_line + 1,
-        to_line=snapshot.current_line,
-    )
-
-
-def pending_is_stale(
-    entry: SyncLedgerEntry,
-    now: datetime,
-    pending_timeout: timedelta,
-) -> bool:
-    if entry.pending_started_at is None:
-        return True
-    return now - entry.pending_started_at > pending_timeout
-
-
-def evaluate_pending_run(
-    entry: SyncLedgerEntry,
-    records: tuple[RunRecord, ...],
-) -> SyncCursorDecision | None:
-    if entry.status != SyncLedgerStatus.PENDING or entry.pending_run_id is None:
-        return None
-    record = run_record(records, entry.pending_run_id)
-    if record is None:
-        return None
-    if record.status in {RunStatus.QUEUED, RunStatus.RUNNING}:
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.SKIP,
-            reason="sync-pending-run-active",
-        )
-    if record.status == RunStatus.DONE:
-        return SyncCursorDecision(
-            kind=SyncDecisionKind.NEEDS_ATTENTION,
-            reason="sync-pending-run-done",
-        )
-    return SyncCursorDecision(
-        kind=SyncDecisionKind.NEEDS_ATTENTION,
-        reason="sync-pending-run-failed",
-    )
-
-
-def reconcile_pending_entry(
-    entry: SyncLedgerEntry,
-    records: tuple[RunRecord, ...],
-    now: datetime,
-) -> SyncLedgerEntry:
-    if entry.status != SyncLedgerStatus.PENDING or entry.pending_run_id is None:
-        return entry
-    record = run_record(records, entry.pending_run_id)
-    if record is None or record.status in {RunStatus.QUEUED, RunStatus.RUNNING}:
-        return entry
-    if record.status == RunStatus.DONE:
-        if not pending_cursor_complete(entry):
-            return needs_attention_entry(
-                entry,
-                "sync-pending-missing-cursor",
-                record.run_id,
-            )
-        return entry.model_copy(
-            update={
-                "status": SyncLedgerStatus.DONE,
-                "last_absorbed_size": entry.pending_to_size,
-                "last_absorbed_line": entry.pending_to_line,
-                "last_absorbed_prefix_hash": entry.pending_prefix_hash,
-                "last_absorbed_at": record.finished_at or now,
-                "last_job_id": record.run_id,
-                "last_error": None,
-                **cleared_pending_fields(),
-            }
-        )
-    return entry.model_copy(
-        update={
-            "status": SyncLedgerStatus.FAILED,
-            "last_job_id": record.run_id,
-            "last_error": record.error or f"sync-pending-run-{record.status.value}",
-            "failed_attempts": entry.failed_attempts + 1,
-            **cleared_pending_fields(),
-        }
-    )
-
-
-def pending_cursor_complete(entry: SyncLedgerEntry) -> bool:
-    return (
-        entry.pending_to_size is not None
-        and entry.pending_to_line is not None
-        and entry.pending_prefix_hash is not None
-    )
-
-
-def needs_attention_entry(
-    entry: SyncLedgerEntry,
-    reason: str,
-    run_id: str,
-) -> SyncLedgerEntry:
-    return entry.model_copy(
-        update={
-            "status": SyncLedgerStatus.NEEDS_ATTENTION,
-            "last_job_id": run_id,
-            "last_error": reason,
-            **cleared_pending_fields(),
-        }
-    )
-
-
-def cleared_pending_fields() -> dict[str, None]:
-    return {
-        "pending_started_at": None,
-        "pending_owner": None,
-        "pending_run_id": None,
-        "pending_to_size": None,
-        "pending_prefix_hash": None,
-        "pending_from_line": None,
-        "pending_to_line": None,
-    }
-
-
-def run_record(records: tuple[RunRecord, ...], run_id: str) -> RunRecord | None:
-    for record in records:
-        if record.run_id == run_id:
-            return record
-    return None
-
-
-def sync_claim_owner(now: datetime) -> str:
-    stamp = now.strftime("%Y%m%d%H%M%S")
-    return f"sync-{stamp}-{uuid4().hex[:8]}"
-
-
-def ledger_key(candidate: TranscriptCandidate) -> str:
-    return f"{candidate.app.value}:{normalize_path(candidate.transcript_path)}"
-
-
-def ledger_entry(
-    ledger: SyncLedger,
-    candidate: TranscriptCandidate,
-    key: str,
-) -> SyncLedgerEntry:
-    entry = ledger.sessions.get(key)
-    if entry is not None:
-        return entry
-    raw_key = raw_ledger_key(candidate)
-    if raw_key != key:
-        entry = ledger.sessions.get(raw_key)
-        if entry is not None:
-            return entry
-    for stored_entry in ledger.sessions.values():
-        if same_ledger_identity(stored_entry, candidate):
-            return stored_entry
-    return fresh_ledger_entry(candidate)
-
-
-def raw_ledger_key(candidate: TranscriptCandidate) -> str:
-    return f"{candidate.app.value}:{candidate.transcript_path}"
-
-
-def same_ledger_identity(
-    entry: SyncLedgerEntry,
-    candidate: TranscriptCandidate,
-) -> bool:
-    return (
-        entry.app == candidate.app
-        and entry.session_id == candidate.session_id
-        and normalize_path(entry.transcript_path)
-        == normalize_path(candidate.transcript_path)
-    )
-
-
-def sha256_bytes(content: bytes) -> str:
-    return f"sha256:{sha256(content).hexdigest()}"
-
-
-def count_lines(content: str) -> int:
-    if content == "":
-        return 0
-    return content.count("\n") + (0 if content.endswith("\n") else 1)
-
-
-def skip(candidate: TranscriptCandidate, reason: str) -> SyncSkipped:
-    return SyncSkipped(
-        app=candidate.app,
-        session_id=candidate.session_id,
-        transcript_path=candidate.transcript_path,
-        repo_root=candidate.repo_root,
-        reason=reason,
-    )
-
-
-def sync_started(item: SyncWorkItem, run_id: str) -> SyncStarted:
-    return SyncStarted(
-        app=item.candidate.app,
-        session_id=item.candidate.session_id,
-        transcript_path=item.candidate.transcript_path,
-        repo_root=item.candidate.repo_root,
-        run_id=run_id,
-        from_line=item.from_line,
-        to_line=item.to_line,
-    )
-
-
-def sync_ingest_title(candidate: TranscriptCandidate) -> str:
-    return f"Sync {candidate.app.value} transcript {candidate.session_id}"
-
-
-def sync_ingest_guidance(item: SyncWorkItem) -> str:
-    return "\n".join(
-        (
-            "Scheduled sync cursor:",
-            f"- App: {item.candidate.app.value}",
-            f"- Session id: {item.candidate.session_id}",
-            f"- Transcript: {item.candidate.transcript_path}",
-            f"- Previously absorbed through line: {item.entry.last_absorbed_line}",
-            f"- Previously absorbed through byte: {item.entry.last_absorbed_size}",
-            f"- Focus on line {item.from_line} onward.",
-            "- You may inspect earlier lines only for context.",
-            "- Do not re-document decisions already absorbed unless newer lines "
-            "amend, invalidate, or add important nuance to them.",
-        )
-    )

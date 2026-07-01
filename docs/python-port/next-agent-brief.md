@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 94 GitHub contract proof.
+- Latest implementation slice: slice 95 sync policy extraction.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -186,6 +186,14 @@ Updated: 2026-07-01
   behavior prompt, and public-contract tests parse `.github/workflows/*.yml`
   with `ruamel-yaml` before asserting the CI/package-check Python gate
   commands.
+- Slice 95 splits deterministic sync policy out of `SyncWorkflow`.
+  `workflows/sync/service.py` is now a 308-line orchestration surface that
+  discovers candidates, scopes wikis, loads run records and ledgers, starts or
+  queues ingest, and saves ledger changes. `workflows/sync/policy.py` owns
+  ledger identity, transcript snapshot reading, cursor hashing, pending-entry
+  transitions, pending-run reconciliation, skip rows, and generated cursor
+  guidance. Architecture tests prevent the policy helpers from regrowing in
+  `service.py` and prevent policy from importing orchestration services.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

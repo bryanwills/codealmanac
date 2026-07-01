@@ -264,6 +264,45 @@ def test_run_queue_workflow_stays_operation_dispatch_only():
     assert [fragment for fragment in forbidden_fragments if fragment in text] == []
 
 
+def test_sync_workflow_policy_stays_out_of_service_orchestration():
+    service = SRC_ROOT / "workflows/sync/service.py"
+    policy = SRC_ROOT / "workflows/sync/policy.py"
+    service_text = service.read_text(encoding="utf-8")
+    policy_text = policy.read_text(encoding="utf-8")
+
+    forbidden_service_fragments = (
+        "def evaluate_cursor(",
+        "def reconcile_pending_entry(",
+        "def pending_entry(",
+        "def absorbed_entry(",
+        "def failed_entry(",
+        "def ledger_key(",
+        "def sync_ingest_guidance(",
+        "EMPTY_SHA256",
+    )
+    forbidden_policy_imports = (
+        "codealmanac.integrations",
+        "codealmanac.workflows.ingest",
+        "codealmanac.workflows.run_queue",
+        "codealmanac.services.sources.service",
+        "codealmanac.services.runs.service",
+        "codealmanac.services.workspaces.service",
+    )
+
+    assert policy.is_file()
+    assert len(service_text.splitlines()) <= 320
+    assert [
+        fragment
+        for fragment in forbidden_service_fragments
+        if fragment in service_text
+    ] == []
+    assert [
+        fragment
+        for fragment in forbidden_policy_imports
+        if fragment in policy_text
+    ] == []
+
+
 def test_viewer_jobs_surface_stays_read_only():
     paths = (
         SRC_ROOT / "services/viewer/service.py",

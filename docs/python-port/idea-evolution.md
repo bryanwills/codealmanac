@@ -5,6 +5,36 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Sync Needs A Policy Module
+
+Old hypothesis:
+`SyncWorkflow` could own transcript discovery, run reconciliation, ledger cursor
+rules, pending-entry transitions, and ingest startup in one service module
+because `sync` is one workflow.
+
+New hypothesis:
+`SyncWorkflow` should remain the service-layer use case, but deterministic
+ledger/cursor policy deserves a first-class module. The service coordinates
+sources, runs, queue, ingest, and ledger persistence; `workflows/sync/policy.py`
+owns ledger identity, cursor decisions, pending-run reconciliation, and cursor
+guidance.
+
+Evidence that forced the change:
+`workflows/sync/service.py` reached 693 lines and mixed orchestration with pure
+cursor transition rules. The old TypeScript wiki already treated the sync
+ledger as the dedupe and recovery contract, not a side detail of the scheduler.
+Cosmic Python's service-layer guidance points toward workflows that coordinate
+repositories/services while keeping policy rules separately testable.
+
+Code or product assumption affected:
+Architecture tests now keep sync cursor helpers out of `service.py` and prevent
+`policy.py` from importing orchestration services or integrations.
+
+Follow-up test:
+Future sync behavior changes should add focused tests around the policy
+function that owns the cursor or ledger transition, plus a workflow-level test
+for the public `sync` behavior.
+
 ## 2026-07-01 - Viewer Scope Is A Read Model
 
 Old hypothesis:

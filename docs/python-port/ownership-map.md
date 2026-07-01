@@ -1,6 +1,6 @@
 # Python Port Ownership Map
 
-Updated: 2026-06-29
+Updated: 2026-07-01
 
 This map turns `docs/python-port-live-agreement.md` into implementation
 boundaries. If code needs a different boundary, update this file and record the
@@ -53,7 +53,7 @@ that root instead of constructing stores or adapters themselves.
 |---|---|---|
 | `build` | initial wiki creation or refresh | `workspaces`, `wiki`, `index` |
 | `ingest` | update wiki from selected local material | `sources`, `runs`, `harnesses`, `index`, `prompts`, `lifecycle` |
-| `sync` | discover quiet local transcripts, skip internal lifecycle transcripts, evaluate cursor readiness, claim pending transcript ranges with run linkage, reconcile terminal pending runs, track failed-attempt retry budget, run foreground ingest, clear terminal claims, and update sync cursor ledger | `sources`, `runs`, `ingest`, sync ledger, automation command policy |
+| `sync` | discover quiet local transcripts, scope them to local wikis, coordinate run-record lookup and ledger persistence, call sync policy for cursor/ledger decisions, run foreground ingest or enqueue background ingest, and assemble sync summaries | `sources`, `runs`, `ingest`, `run_queue`, sync ledger store, sync policy, automation command policy |
 | `garden` | maintain wiki shape, links, topics, staleness, quality | `health`, `index`, `runs`, `harnesses`, `prompts`, `lifecycle` |
 
 Workflows coordinate. They do not own durable schema unless a missing service is
@@ -136,13 +136,19 @@ decide quiet windows, cursor state, or whether ingest should run.
 `TranscriptCandidate` carries both `repo_root` and `almanac_path` so sync can
 write ledgers under the configured root without guessing.
 
-`workflows/sync` owns sync ledger cursor and retry policy. It writes a durable
-pending claim with the selected run id before calling Ingest, treats active
-linked runs as skipped work, reports terminal linked runs as needs-reconcile
-during read-only status, reconciles terminal linked runs during foreground
-sync, increments failed attempts when transcript ingest fails, and stops
-retrying when the failed-attempt budget is exhausted. Scheduled sync uses this
-same foreground workflow; local v1 does not add a separate queue worker.
+`workflows/sync/service.py` owns sync orchestration. It discovers transcripts,
+scopes them to the requested local wiki, loads run records and ledgers, starts
+foreground ingest or queues background ingest, spawns local workers, persists
+ledger changes, and assembles summaries.
+
+`workflows/sync/policy.py` owns deterministic sync ledger cursor and retry
+policy. It builds ledger keys, finds matching ledger entries, reads transcript
+snapshots, hashes cursor prefixes, writes pending/absorbed/failed entry
+transitions, reconciles terminal linked runs, treats active linked runs as
+skipped work, reports terminal linked runs as needs-reconcile during read-only
+status, increments failed attempts when transcript ingest fails, stops retrying
+when the failed-attempt budget is exhausted, and generates cursor guidance for
+Ingest. Scheduled sync uses the same workflow/policy split.
 
 The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness

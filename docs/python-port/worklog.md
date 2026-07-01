@@ -1078,3 +1078,13 @@ Slice 94 tightens that public project-surface proof. The exact CI sync command
 CodeAlmanac in the expected-behavior prompt, and public-contract tests parse
 all `.github/workflows/*.yml` files with `ruamel-yaml` before asserting the
 CI and package-check Python gate commands.
+Slice 95 extracts deterministic sync ledger and cursor policy from
+`SyncWorkflow`. `workflows/sync/service.py` now stays focused on discovery,
+wiki scoping, run-record lookup, ledger load/save, foreground ingest,
+background enqueue, worker spawn, and summary assembly. New
+`workflows/sync/policy.py` owns ledger keys, transcript snapshot reading,
+cursor hashing, pending/absorbed/failed entry transitions, pending-run
+reconciliation, skip rows, and sync ingest cursor guidance. Focused sync and
+architecture tests passed after the move, and an architecture guard now
+prevents the service from regrowing cursor helpers or policy from importing
+orchestration services.
