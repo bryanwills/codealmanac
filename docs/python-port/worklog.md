@@ -1313,3 +1313,10 @@ Slice 122 keeps wiki CLI output unchanged while splitting
 `topics.py` owns topic list/show/mutation output, `health.py` owns health
 sections, and `tagging.py` owns tag/untag summaries. Architecture tests keep
 service model imports and render definitions out of the facade.
+Slice 123 keeps admin CLI output unchanged while splitting
+`cli/render/admin.py` by output family. `admin.py` is now a facade;
+`automation.py` owns automation install/status/uninstall output,
+`diagnostics.py` owns doctor output, `jobs.py` owns jobs output, `updates.py`
+owns update output, and `setup.py` owns setup/uninstall result output plus Rich
+presentation. Architecture tests keep service model imports and render
+definitions out of the facade.

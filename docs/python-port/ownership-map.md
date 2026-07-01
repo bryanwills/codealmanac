@@ -329,11 +329,13 @@ build/ingest/garden/sync/job-start output. `cli/render/wiki.py` is a
 wiki-render facade only; `search.py` owns search/reindex output, `pages.py`
 owns show/page output, `topics.py` owns topic output, `health.py` owns health
 output, and `tagging.py` owns tag/untag output. `workspaces.py` owns local wiki
-registry list/drop output, `admin.py` owns setup/doctor/update/jobs/automation
-output, and `common.py` owns shared formatting helpers. `cli/render/setup.py`
-owns Rich-backed setup/uninstall terminal presentation. Render modules display
-service-returned facts only. Rich must not be imported from services,
-workflows, integrations, or stores.
+registry list/drop output. `cli/render/admin.py` is an admin-render facade
+only; `automation.py` owns automation output, `diagnostics.py` owns doctor
+output, `jobs.py` owns jobs output, `updates.py` owns update output, and
+`setup.py` owns setup/uninstall output plus Rich-backed setup/uninstall
+terminal presentation. `common.py` owns shared formatting helpers. Render
+modules display service-returned facts only. Rich must not be imported from
+services, workflows, integrations, or stores.
 
 `cli/dispatch/wiki.py` is the wiki-command facade. It owns direct routing for
 search, show, health, reindex, tag, and untag. `cli/dispatch/topics.py` owns

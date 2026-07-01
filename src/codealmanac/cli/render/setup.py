@@ -6,6 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from codealmanac.cli.render.common import print_json_model
 from codealmanac.services.automation.defaults import duration_text
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
@@ -18,6 +19,20 @@ from codealmanac.services.setup.models import (
     SetupResult,
     UninstallResult,
 )
+
+
+def render_setup_result(result: SetupResult, json_output: bool) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    render_setup_text(result)
+
+
+def render_uninstall_result(result: UninstallResult, json_output: bool) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    render_uninstall_text(result)
 
 
 def render_setup_text(result: SetupResult) -> None:

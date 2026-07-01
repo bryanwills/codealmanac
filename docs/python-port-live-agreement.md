@@ -51,8 +51,11 @@ It is the constraint document for future agents.
   search/reindex output, `pages.py` owns show/page output, `topics.py` owns
   topic output, `health.py` owns health output, and `tagging.py` owns
   tag/untag output. `lifecycle.py` owns lifecycle/sync/job-start output,
-  `workspaces.py` owns local wiki registry list/drop output, and `common.py`
-  owns shared formatting helpers.
+  `workspaces.py` owns local wiki registry list/drop output, and
+  `cli/render/admin.py` is an admin-render facade only; `automation.py` owns
+  automation output, `diagnostics.py` owns doctor output, `jobs.py` owns jobs
+  output, `updates.py` owns update output, and `setup.py` owns setup/uninstall
+  output plus Rich presentation. `common.py` owns shared formatting helpers.
 - 2026-07-01: Wiki CLI dispatch follows the same command-family split.
   `cli/dispatch/wiki.py` remains the wiki-command facade for
   search/show/health/reindex/tag/untag routing. `topics.py` owns topic

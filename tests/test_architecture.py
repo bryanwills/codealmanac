@@ -470,13 +470,17 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/wiki.py").is_file()
     assert (cli_root / "dispatch/workspaces.py").is_file()
     assert (cli_root / "render/root.py").is_file()
+    assert (cli_root / "render/automation.py").is_file()
     assert (cli_root / "render/common.py").is_file()
+    assert (cli_root / "render/diagnostics.py").is_file()
     assert (cli_root / "render/health.py").is_file()
+    assert (cli_root / "render/jobs.py").is_file()
     assert (cli_root / "render/lifecycle.py").is_file()
     assert (cli_root / "render/pages.py").is_file()
     assert (cli_root / "render/search.py").is_file()
     assert (cli_root / "render/tagging.py").is_file()
     assert (cli_root / "render/topics.py").is_file()
+    assert (cli_root / "render/updates.py").is_file()
     assert (cli_root / "render/wiki.py").is_file()
     assert (cli_root / "render/workspaces.py").is_file()
     assert (cli_root / "render/admin.py").is_file()
@@ -501,15 +505,19 @@ def test_cli_render_root_stays_facade():
 
     assert {
         "admin.py",
+        "automation.py",
         "common.py",
+        "diagnostics.py",
         "lifecycle.py",
         "root.py",
         "health.py",
+        "jobs.py",
         "pages.py",
         "search.py",
         "setup.py",
         "tagging.py",
         "topics.py",
+        "updates.py",
         "wiki.py",
         "workspaces.py",
     } <= module_names
@@ -524,6 +532,44 @@ def test_cli_render_root_stays_facade():
     assert "render_workspace_list" in (
         render_root / "workspaces.py"
     ).read_text(encoding="utf-8")
+
+
+def test_cli_admin_render_stays_split_by_output_family():
+    render_path = SRC_ROOT / "cli/render"
+    admin = (render_path / "admin.py").read_text(encoding="utf-8")
+    module_expectations = {
+        "automation.py": ("AutomationInstallResult", "def render_automation_install("),
+        "diagnostics.py": ("DoctorReport", "def render_doctor("),
+        "jobs.py": ("RunRecord", "def render_runs("),
+        "setup.py": ("SetupResult", "def render_setup_result("),
+        "updates.py": ("UpdatePlan", "def render_update_plan("),
+    }
+    forbidden_admin_fragments = (
+        "def render_",
+        "json.dumps",
+        "AutomationInstallResult",
+        "DoctorReport",
+        "RunRecord",
+        "SetupResult",
+        "UpdatePlan",
+        "print(",
+    )
+    oversized = []
+
+    for module_name, fragments in module_expectations.items():
+        text = (render_path / module_name).read_text(encoding="utf-8")
+        assert all(fragment in text for fragment in fragments)
+        line_count = len(text.splitlines())
+        if module_name != "setup.py" and line_count > 140:
+            oversized.append(f"{module_name}:{line_count}")
+
+    assert len(admin.splitlines()) <= 80
+    assert [
+        fragment for fragment in forbidden_admin_fragments if fragment in admin
+    ] == []
+    assert "from codealmanac.cli.render.automation import" in admin
+    assert "from codealmanac.cli.render.jobs import" in admin
+    assert oversized == []
 
 
 def test_cli_wiki_render_stays_split_by_output_family():

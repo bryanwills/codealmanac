@@ -2813,6 +2813,34 @@ Future wiki output changes should add or extend the output-family module that
 owns the displayed result. Architecture tests should keep service model imports
 and `render_*` definitions out of `cli/render/wiki.py`.
 
+## 2026-07-01 - Admin Render Is An Output-Family Facade
+
+Old hypothesis:
+`cli/render/admin.py` could own setup, doctor, update, jobs, and automation
+output because those commands share the admin dispatch module.
+
+New hypothesis:
+`cli/render/admin.py` should be a facade over admin output-family modules.
+Automation, diagnostics, jobs, updates, and setup/uninstall presentation each
+depend on different service result models and change for different product
+reasons.
+
+Evidence that forced the change:
+After slice 122, `cli/render/admin.py` was the largest CLI render file at 232
+lines. It mixed scheduler output, doctor sections, package update text, run
+ledger output, JSON dumping, job log JSON exclusions, and setup/uninstall
+Rich handoff.
+
+Code or product assumption affected:
+Slice 123 keeps every public admin render function available through
+`cli/render/admin.py`. Only ownership changes: `automation.py`,
+`diagnostics.py`, `jobs.py`, `updates.py`, and `setup.py` own their output.
+
+Follow-up test:
+Future admin output changes should land in the output-family module that owns
+the service result. Architecture tests should keep service model imports and
+`render_*` definitions out of `cli/render/admin.py`.
+
 ## 2026-07-01 - Filesystem Listing Needs Mechanic-Level Boundaries
 
 Old hypothesis:
