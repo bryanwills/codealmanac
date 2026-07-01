@@ -2625,3 +2625,33 @@ Follow-up test:
 Future sync execution changes such as default background mode, spawn retry, or
 terminal-run reconciliation should land in `execution.py` unless they change
 candidate selection or cursor policy.
+
+## 2026-07-01 - Viewer Scope And Projection Are Separate From Use Cases
+
+Old hypothesis:
+`ViewerService` could own local workspace fallback, available-registry
+filtering, multi-wiki navigation ordering, index-to-viewer DTO mapping, and the
+viewer use cases because all of those details feed the `serve` payloads.
+
+New hypothesis:
+`ViewerService` should read as the local reader use-case facade.
+`ViewerWorkspaceScope` should own selected-wiki fallback and registered-wiki
+navigation. `projections.py` should own conversion from index/workspace models
+to viewer DTOs.
+
+Evidence that forced the change:
+After slice 109, `services/viewer/service.py` was tied for the largest
+production file at 303 lines. It mixed product verbs with registry filtering,
+workspace fallback, topic summary construction, page source conversion, and
+page summary projection.
+
+Code or product assumption affected:
+Slice 110 keeps `serve` behavior unchanged. Default `serve` still lists
+available registered local wikis, `serve --wiki` still narrows scope, and the
+browser still passes stable `workspace_id` selectors. The split only moves
+selection and DTO mechanics behind named collaborators.
+
+Follow-up test:
+Future viewer payload changes should land in `service.py` only when they alter
+the use case. Registry selection belongs in `workspace_scope.py`; browser DTO
+conversion belongs in `projections.py`.

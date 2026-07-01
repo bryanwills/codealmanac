@@ -264,6 +264,11 @@ return the selected workspace plus available registered local workspaces, using
 `workspace_id` as the stable selector. The service skips unavailable registry
 entries without dropping them. The server and browser pass optional wiki
 selectors; they do not decide registry availability or workspace fallback.
+`services/viewer/workspace_scope.py` owns that selection and navigation
+ordering. `services/viewer/projections.py` owns viewer DTO conversion from
+index/workspace models. `services/viewer/service.py` should read as the
+use-case facade that calls the index, runs service, renderer, scope, and
+projection helpers.
 
 `server/assets/` owns the packaged browser shell for `serve`. It can borrow
 UseAlmanac's visual language, but it must preserve `services/viewer` as the

@@ -173,6 +173,42 @@ def test_serve_css_does_not_scale_type_with_viewport_width():
     assert "vw" not in css
 
 
+def test_viewer_service_keeps_scope_and_projection_boundaries():
+    viewer_root = SRC_ROOT / "services/viewer"
+    service_text = (viewer_root / "service.py").read_text(encoding="utf-8")
+    scope_text = (viewer_root / "workspace_scope.py").read_text(encoding="utf-8")
+    projections_text = (viewer_root / "projections.py").read_text(encoding="utf-8")
+
+    assert {
+        "projections.py",
+        "workspace_scope.py",
+    } <= {path.name for path in viewer_root.glob("*.py")}
+    assert len(service_text.splitlines()) <= 230
+    assert "ViewerWorkspaceScope(workspaces)" in service_text
+    assert [
+        fragment
+        for fragment in (
+            "WorkspaceRegistryStatus",
+            "SelectWorkspaceRequest",
+            "def select_workspace(",
+            "def select_default_workspace(",
+            "def available_registered_workspaces(",
+            "ViewerWorkspace(",
+            "ViewerTopicSummary(",
+            "ViewerPageSource(",
+            "SearchPageResult",
+        )
+        if fragment in service_text
+    ] == []
+
+    assert "WorkspaceRegistryStatus.AVAILABLE" in scope_text
+    assert "SelectWorkspaceRequest(" in scope_text
+    assert "def navigation(" in scope_text
+    assert "def viewer_page_sources(" in projections_text
+    assert "def page_summary_from_search(" in projections_text
+    assert "def page_summary_from_view(" in projections_text
+
+
 def test_cli_main_stays_as_thin_entrypoint():
     main = SRC_ROOT / "cli/main.py"
     text = main.read_text(encoding="utf-8")

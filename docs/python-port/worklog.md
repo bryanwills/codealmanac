@@ -1198,3 +1198,11 @@ ledger writes, and started summary rows through explicit dependencies in
 ingest-failure, pending-claim, architecture, and lint checks passed. Public
 `sync status --json` dogfood with an old synthetic Codex transcript returned
 one ready transcript for lines 1-2.
+Slice 110 keeps viewer behavior unchanged while splitting local reader
+boundaries. `services/viewer/service.py` remains the
+overview/page/search/file/topic/jobs use-case facade. `workspace_scope.py` owns
+selected-wiki fallback, available-registry filtering, and multi-wiki navigation
+ordering. `projections.py` owns index/workspace to viewer DTO conversion.
+Focused viewer/server/architecture tests and lint passed, and live `serve` API
+dogfood initialized two registered temp wikis and verified default overview
+plus selected-wiki overview behavior.

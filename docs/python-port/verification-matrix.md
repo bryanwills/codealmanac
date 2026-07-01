@@ -1208,3 +1208,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 312 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 110 Viewer Service Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused viewer/server/architecture tests | `uv run pytest tests/test_viewer_service.py tests/test_server.py tests/test_architecture.py::test_viewer_service_keeps_scope_and_projection_boundaries -q` | passed; 18 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/viewer src/codealmanac/server tests/test_viewer_service.py tests/test_server.py tests/test_architecture.py` | passed |
+| Live serve multi-wiki API dogfood | temp `HOME`, two initialized repos, current-checkout `codealmanac serve`, `curl /api/overview`, `curl /api/overview?wiki=<beta-id>` | passed; default overview listed `alpha` and `beta`, selected overview returned `beta-note` |
+| Full tests | `uv run pytest` | passed; 332 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

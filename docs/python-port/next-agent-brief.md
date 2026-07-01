@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 109 sync execution boundaries.
+- Latest implementation slice: slice 110 viewer service boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -273,6 +273,13 @@ Updated: 2026-07-01
   writes, and started summary rows. Architecture tests prevent execution
   request construction, queueing, worker spawn, pending writes, and terminal
   ledger transitions from regrowing in `service.py`.
+- Slice 110 splits viewer workspace scope and payload projection out of
+  `ViewerService` while preserving multi-wiki `serve` behavior.
+  `services/viewer/workspace_scope.py` owns selected-wiki fallback,
+  available-registry filtering, and workspace switcher ordering.
+  `services/viewer/projections.py` owns index/workspace to viewer DTO
+  conversion. Architecture tests prevent registry filtering and DTO
+  construction from regrowing in `service.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -924,6 +931,9 @@ Behavior:
   pytest/full Ruff/diff check
 - Slice 109 sync execution boundary split, focused foreground/background/failure
   sync tests, focused Ruff over sync modules, public `sync status --json`
+  dogfood, then full pytest/full Ruff/diff check
+- Slice 110 viewer service boundary split, focused viewer/server/architecture
+  tests, focused Ruff over viewer/server modules, live two-wiki `serve` API
   dogfood, then full pytest/full Ruff/diff check
 
 ## Next Move

@@ -330,6 +330,13 @@ It is the constraint document for future agents.
 - 2026-07-01: `serve` should browse all registered local wikis, matching the
   archive's multi-wiki viewer scope, while keeping the local sidebar/wiki
   reader interaction model.
+- 2026-07-01: Viewer service boundaries are split by local-reader
+  responsibility. `services/viewer/service.py` remains the use-case facade for
+  overview/page/search/file/topic/jobs payloads; `workspace_scope.py` owns
+  selected-wiki fallback, registry availability filtering, and multi-wiki
+  navigation ordering; `projections.py` owns conversion from index/workspace
+  models to viewer DTOs. Do not move registry filtering or DTO construction
+  back into `service.py`.
 - 2026-06-29: The CLI edge is allowed to split by command domain as pressure
   appears. `doctor`, `update`, `jobs`, and `automation` now live under the
   admin dispatch/render edge; the root dispatcher delegates to that edge and
