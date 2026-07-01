@@ -46,6 +46,14 @@
 - Focused slice-79 tests cover idempotence, Codex override selection, Claude
   import installation, uninstall preserving user content, CLI setup/uninstall,
   and public-contract next-agent freshness.
+- Added slice-80 setup terminal renderer after rereading the live agreement,
+  `MANUAL.md`, Cosmic Python service/command/composition-root chapters, and
+  archived setup output helpers. The setup service stays UI-agnostic; Rich is
+  used only in `cli/render/setup.py` for branded panels, status rows, and a
+  next-steps box.
+- Added an architecture test that keeps Rich imports inside the CLI render edge,
+  so terminal UI polish cannot leak into services, workflows, integrations, or
+  stores.
 
 ## 2026-06-29
 

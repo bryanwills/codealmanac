@@ -3,6 +3,7 @@ import shlex
 import sys
 from datetime import timedelta
 
+from codealmanac.cli.render.setup import render_setup_text, render_uninstall_text
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
     AutomationStatusReport,
@@ -40,34 +41,14 @@ def render_setup_result(result: SetupResult, json_output: bool) -> None:
     if json_output:
         print(json.dumps(result.model_dump(mode="json"), indent=2))
         return
-    print("codealmanac setup")
-    if result.skipped_instructions:
-        print("  instructions: skipped")
-        return
-    for change in result.changes:
-        status = "updated" if change.changed else "ok"
-        print(f"  {change.target.value}: {status} - {change.message}")
-        for path in change.paths:
-            print(f"    {path}")
-    print("")
-    print("next:")
-    print("  codealmanac init")
-    print("  codealmanac search \"your topic\"")
+    render_setup_text(result)
 
 
 def render_uninstall_result(result: UninstallResult, json_output: bool) -> None:
     if json_output:
         print(json.dumps(result.model_dump(mode="json"), indent=2))
         return
-    print("codealmanac uninstall")
-    if result.kept_instructions:
-        print("  instructions: kept")
-        return
-    for change in result.changes:
-        status = "removed" if change.changed else "ok"
-        print(f"  {change.target.value}: {status} - {change.message}")
-        for path in change.paths:
-            print(f"    {path}")
+    render_uninstall_text(result)
 
 
 def render_automation_uninstall(

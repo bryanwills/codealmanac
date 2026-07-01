@@ -247,18 +247,23 @@ def test_cli_setup_and_uninstall_codex_instructions(
     captured = capsys.readouterr()
     agents_path = isolated_home / ".codex/AGENTS.md"
     assert exit_code == 0
-    assert "codealmanac setup" in captured.out
+    assert "CodeAlmanac setup" in captured.out
+    assert "Agent instructions" in captured.out
+    assert "Next steps" in captured.out
+    assert "codealmanac init" in captured.out
+    assert "codealmanac automation install sync" in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
 
     second_exit = main(["setup", "--yes", "--target", "codex"])
     second = capsys.readouterr()
     assert second_exit == 0
-    assert "ok - Codex instructions already installed" in second.out
+    assert "Codex instructions already installed" in second.out
 
     uninstall_exit = main(["uninstall", "--yes", "--target", "codex"])
     uninstall = capsys.readouterr()
     assert uninstall_exit == 0
-    assert "codealmanac uninstall" in uninstall.out
+    assert "CodeAlmanac uninstall" in uninstall.out
+    assert "Removed artifacts" in uninstall.out
     assert not agents_path.exists()
 
 

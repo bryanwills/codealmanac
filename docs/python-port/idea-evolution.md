@@ -2018,3 +2018,28 @@ Follow-up test:
 The next setup slice should dogfood the terminal UX in a real TTY and decide
 whether setup owns `automation install` choices directly or only presents
 explicit next-step commands.
+
+## 2026-07-01 - Setup Polish Belongs To The CLI Adapter
+
+Old hypothesis:
+Setup terminal polish might require expanding the setup service result model or
+copying the archived ANSI helper machinery.
+
+New hypothesis:
+The setup service should stay fact-shaped, while the CLI render edge owns all
+terminal presentation. Use Rich for panels and status layout instead of
+hand-rolled ANSI helpers.
+
+Evidence that forced the change:
+Slice 79 already made setup/uninstall return typed results. The live agreement
+requires terminal quality, and the user explicitly prefers common libraries
+over hand-rolled implementations when mature libraries exist.
+
+Code or product assumption affected:
+Slice 80 adds `rich` as a runtime dependency and places all Rich imports in
+`cli/render/setup.py`. Architecture tests now fail if Rich leaks outside the
+CLI render edge.
+
+Follow-up test:
+The future raw-mode target selector should either use a terminal-input library
+or explicitly document why Rich output plus argparse flags is enough for v1.

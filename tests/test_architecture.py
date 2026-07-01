@@ -55,6 +55,17 @@ def test_config_service_owns_pydantic_settings_imports():
     assert offenders == []
 
 
+def test_rich_terminal_ui_stays_in_cli_render_edge():
+    offenders = [
+        path
+        for path in SRC_ROOT.rglob("*.py")
+        if path.relative_to(SRC_ROOT).parts[:2] != ("cli", "render")
+        and imports_module(path, "rich")
+    ]
+
+    assert offenders == []
+
+
 def test_index_read_views_are_separate_from_projection_writes():
     store = SRC_ROOT / "services/index/store.py"
     views = SRC_ROOT / "services/index/views.py"

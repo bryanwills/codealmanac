@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 79 setup/uninstall instruction foundation.
+- Latest implementation slice: slice 80 setup terminal renderer.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -93,6 +93,11 @@ Updated: 2026-07-01
   uninstall --yes --target ...` removes only those setup-owned artifacts.
   Remaining setup work is terminal UX, target selection UI, default agent/model
   selection, and local automation choices.
+- Slice 80 improves setup/uninstall terminal output through Rich under the CLI
+  render edge. Services still return Pydantic result facts; only
+  `cli/render/setup.py` imports Rich. Text setup output now has a branded panel,
+  status rows, and an explicit next-steps box that suggests manual automation
+  separately from setup. JSON output remains unchanged.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

@@ -200,6 +200,10 @@ page, topic, search, file-reference graph routes, and read-only page viewing.
 Hosted UseAlmanac account, billing, settings, and hosted wiki-search flows do
 not belong in this local viewer.
 
+`cli/render/setup.py` owns Rich-backed setup/uninstall terminal presentation.
+It renders service-returned facts only. Rich must not be imported from services,
+workflows, integrations, or stores.
+
 The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM

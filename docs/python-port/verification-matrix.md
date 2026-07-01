@@ -909,3 +909,15 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Public CLI dogfood | isolated temp `HOME`; `uv run codealmanac setup --yes`; rerun `setup --yes --target codex`; inspect Codex block and Claude import; `uv run codealmanac uninstall --yes`; inspect removal | passed; setup installed Codex and Claude artifacts, rerun was idempotent for Codex, uninstall removed setup-owned artifacts |
 | Package resource proof | `uv build --out-dir <tmp>` and stdlib `zipfile` inspection | passed; wheel contains `codealmanac/services/setup/agent-guide.md` |
+
+## Gates For Slice 80 Setup Terminal Renderer
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused setup CLI/render tests | `uv run pytest tests/test_cli.py tests/test_architecture.py tests/test_public_contract.py` | passed; 74 tests |
+| Focused lint | `uv run ruff check src/codealmanac/cli tests/test_cli.py tests/test_architecture.py tests/test_public_contract.py` | passed |
+| Full tests | `uv run pytest` | passed; 282 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Public CLI dogfood | isolated temp `HOME`; `uv run codealmanac setup --yes --target codex`; `uv run codealmanac uninstall --yes --target codex` | passed; setup and uninstall rendered Rich panels and completed against temp-home artifacts |
+| Package metadata proof | `uv build --out-dir <tmp>` and stdlib wheel metadata inspection | passed; wheel metadata includes `Requires-Dist: rich>=15.0.0` |
