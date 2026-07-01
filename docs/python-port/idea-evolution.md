@@ -2448,3 +2448,31 @@ Follow-up test:
 If a future sync feature adds new retry policy, source-app filtering, scheduler
 ownership, or prompt guidance, extend the module that owns that rule family and
 keep `service.py` orchestration-only.
+
+## 2026-07-01 - GitHub Source Runtime Needs Adapter Internals Split
+
+Old hypothesis:
+`GitHubSourceRuntimeAdapter` could own GitHub PR and issue source runtime end to
+end because it is one concrete `SourceRuntimeAdapter` implementation.
+
+New hypothesis:
+The public adapter should stay small, while GitHub CLI execution, typed payload
+models, target argument policy, prompt-facing rendering, and unavailable
+diagnostics live in focused modules under `integrations/sources/github/`.
+
+Evidence that forced the change:
+After slice 103, `integrations/sources/github/adapter.py` was the largest
+production module at 413 lines. It mixed Pydantic `gh --json` payload models,
+`gh` subprocess execution, PR/issue inspection flow, ref-to-target argument
+policy, error shaping, and prompt rendering.
+
+Code or product assumption affected:
+Slice 104 keeps `GitHubSourceRuntimeAdapter` and all fake-runner behavior
+unchanged. `client.py` owns `gh` execution and typed retrieval, `models.py` owns
+payload models, `targets.py` owns target args, `rendering.py` owns source text,
+and `errors.py` owns unavailable-runtime diagnostics.
+
+Follow-up test:
+If future GitHub source runtime adds reviews, linked issues, check runs, or a
+native API/MCP transport, add the behavior to the module that owns the reason to
+change instead of growing `adapter.py`.

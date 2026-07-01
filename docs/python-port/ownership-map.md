@@ -206,7 +206,12 @@ runtime policy such as the resolved `workspace.almanac_root`; filesystem
 adapters apply those ignores but do not hard-code Almanac root names.
 `integrations/sources/git/` uses Git CLI commands for local
 `git:diff` and `git:range` refs. `integrations/sources/github/` uses GitHub CLI
-for PR and issue refs. `integrations/sources/transcripts/` reads provider JSONL
+for PR and issue refs. `adapter.py` implements the service-owned
+`SourceRuntimeAdapter` port, `client.py` owns `gh` command execution and typed
+payload retrieval, `models.py` owns Pydantic `gh --json` payloads, `targets.py`
+owns `SourceRef` to `gh` target argument policy, `rendering.py` owns
+prompt-facing PR and issue runtime text, and `errors.py` owns unavailable
+runtime diagnostics. `integrations/sources/transcripts/` reads provider JSONL
 transcripts with `jsonlines`, validates known Codex and Claude shapes with
 Pydantic, and renders bounded transcript snapshots. Ingest does not branch on
 source kind. `integrations/sources/web/` uses `httpx` plus Beautiful Soup to

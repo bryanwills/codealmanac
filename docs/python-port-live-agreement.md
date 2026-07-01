@@ -242,6 +242,12 @@ It is the constraint document for future agents.
   assembly; `rendering.py` owns prompt-facing runtime text; `paths.py` owns
   shared display/relative path helpers. Keep source selection policy local to
   the filesystem integration unless a second adapter needs the same behavior.
+- 2026-07-01: GitHub source runtime is split by integration responsibility.
+  `integrations/sources/github/adapter.py` implements the `SourceRuntimeAdapter`
+  port; `client.py` owns `gh` process execution and typed payload retrieval;
+  `models.py` owns Pydantic `gh --json` payloads; `targets.py` owns
+  `SourceRef` to `gh` target arguments; `rendering.py` owns prompt-facing PR
+  and issue runtime text; `errors.py` owns unavailable-runtime diagnostics.
 - 2026-06-29: `manual/` is a local support package, not a public CLI surface.
   It contains bundled wiki-maintenance doctrine. `init` and `build` copy
   missing files into `<almanac-root>/manual/`, prompts tell lifecycle agents to
@@ -434,6 +440,8 @@ integrations/harnesses/codex/adapter.py
 integrations/harnesses/claude/adapter.py
 integrations/sources/filesystem/adapter.py
 integrations/sources/github/adapter.py
+integrations/sources/github/client.py
+integrations/sources/github/models.py
 integrations/sources/transcripts/codex.py
 integrations/automation/scheduler/launchd.py
 ```

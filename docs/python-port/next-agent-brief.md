@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 103 sync policy boundaries.
+- Latest implementation slice: slice 104 GitHub source runtime boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -226,6 +226,14 @@ Updated: 2026-07-01
   macOS `/var` paths still render repo-relative runtime paths. Architecture
   tests prevent charset, pathspec/Git walking, document Pydantic models, or
   rendering helpers from regrowing in `adapter.py`.
+- Slice 104 splits the GitHub source-runtime integration by responsibility.
+  `integrations/sources/github/adapter.py` remains the small
+  `SourceRuntimeAdapter` implementation, while `client.py` owns `gh` command
+  execution and typed payload retrieval, `models.py` owns Pydantic `gh --json`
+  payloads, `targets.py` owns `SourceRef` target args, `rendering.py` owns
+  prompt-facing PR/issue runtime text, and `errors.py` owns unavailable-runtime
+  diagnostics. Architecture tests prevent payload models, process execution,
+  target policy, and rendering helpers from regrowing in `adapter.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -327,6 +335,9 @@ Updated: 2026-07-01
   loading, and projection writes out of the `IndexStore` facade.
 - Slice 103 keeps sync behavior unchanged while splitting deterministic sync
   policy behind the existing `workflows/sync/policy.py` facade.
+- Slice 104 keeps GitHub source-runtime behavior unchanged while splitting
+  payload models, `gh` command execution, target arguments, rendering, and
+  diagnostics out of the adapter.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -855,6 +866,9 @@ Behavior:
   tests, focused Ruff over sync modules and architecture tests, public
   `sync status --json` dogfood against a temp Codex transcript, then full
   pytest/full Ruff/diff check
+- Slice 104 GitHub source-runtime boundary split, focused GitHub runtime,
+  ingest, and architecture tests, focused Ruff over GitHub runtime and tests,
+  fake-runner source-runtime dogfood, then full pytest/full Ruff/diff check
 
 ## Next Move
 

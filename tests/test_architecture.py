@@ -437,6 +437,50 @@ def test_filesystem_source_runtime_stays_split_by_responsibility():
     ] == []
 
 
+def test_github_source_runtime_stays_split_by_responsibility():
+    github_root = SRC_ROOT / "integrations/sources/github"
+    adapter = github_root / "adapter.py"
+    adapter_text = adapter.read_text(encoding="utf-8")
+    module_names = {path.name for path in github_root.glob("*.py")}
+    forbidden_adapter_fragments = (
+        "BaseModel",
+        "ConfigDict",
+        "Field(",
+        "SubprocessCommandRunner",
+        "surface_process_error",
+        "def github_target_args(",
+        "def render_pull_request_metadata(",
+        "def render_comments(",
+        "PULL_REQUEST_FIELDS",
+        "ISSUE_FIELDS",
+    )
+
+    assert {
+        "adapter.py",
+        "client.py",
+        "errors.py",
+        "models.py",
+        "rendering.py",
+        "targets.py",
+    } <= module_names
+    assert len(adapter_text.splitlines()) <= 120
+    assert [
+        fragment for fragment in forbidden_adapter_fragments if fragment in adapter_text
+    ] == []
+    assert "class GitHubPullRequestPayload" in (github_root / "models.py").read_text(
+        encoding="utf-8"
+    )
+    assert "class GitHubClient" in (github_root / "client.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def github_target_args(" in (github_root / "targets.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def render_pull_request_runtime(" in (
+        github_root / "rendering.py"
+    ).read_text(encoding="utf-8")
+
+
 def test_run_queue_workflow_stays_operation_dispatch_only():
     text = (SRC_ROOT / "workflows/run_queue/service.py").read_text(encoding="utf-8")
 

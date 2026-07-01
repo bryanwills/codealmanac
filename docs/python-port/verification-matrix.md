@@ -1040,6 +1040,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 104 GitHub Source Runtime Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused GitHub runtime/ingest/architecture tests | `uv run pytest tests/test_github_source_runtime.py tests/test_ingest_workflow.py::test_ingest_prompt_includes_github_source_runtime tests/test_architecture.py::test_github_source_runtime_stays_split_by_responsibility -q` | passed; 5 tests |
+| Focused GitHub lint | `uv run ruff check src/codealmanac/integrations/sources/github tests/test_architecture.py tests/test_github_source_runtime.py tests/test_ingest_workflow.py` | passed |
+| Fake-runner source-runtime dogfood | `uv run python` resolving and inspecting `https://github.com/acme/project/pull/42` through `GitHubSourceRuntimeAdapter` with fake `gh` output | passed; rendered title, file, comment, review, and diff material through 2 fake `gh` calls |
+| Full tests | `uv run pytest` | passed; 326 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

@@ -1147,3 +1147,12 @@ owns transcript reading and hashes, `reporting.py` owns skip/start rows, and
 architecture tests passed. Public CLI dogfood initialized a temp repo, created
 a temp Codex transcript, and confirmed `sync status --json` reported scanned 1,
 eligible 1, and ready `codex-sync-103` lines 1-1.
+Slice 104 keeps GitHub source runtime behavior unchanged while splitting
+`GitHubSourceRuntimeAdapter` internals by responsibility. `adapter.py` remains
+the `SourceRuntimeAdapter` implementation; `client.py` owns `gh` command
+execution and typed payload retrieval; `models.py` owns Pydantic `gh --json`
+payloads; `targets.py` owns `SourceRef` to `gh` target args; `rendering.py`
+owns prompt-facing PR/issue runtime text; and `errors.py` owns unavailable
+runtime diagnostics. Focused GitHub runtime, ingest, and architecture tests
+passed. Fake-runner dogfood resolved and inspected a GitHub PR URL through the
+service path and rendered file, comment, review, and diff material.
