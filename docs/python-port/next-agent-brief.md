@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 110 viewer service boundaries.
+- Latest implementation slice: slice 111 web source runtime boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -280,6 +280,15 @@ Updated: 2026-07-01
   `services/viewer/projections.py` owns index/workspace to viewer DTO
   conversion. Architecture tests prevent registry filtering and DTO
   construction from regrowing in `service.py`.
+- Slice 111 splits web source runtime internals while preserving web URL
+  material behavior. `integrations/sources/web/adapter.py` remains the
+  `SourceRuntimeAdapter` implementation; `client.py` owns `httpx` streaming;
+  `models.py` owns typed fetched-response/runtime-document models;
+  `documents.py` owns content-kind classification and Beautiful Soup
+  HTML/text extraction; `rendering.py` owns prompt-facing runtime text; and
+  `errors.py` owns unavailable diagnostics. Architecture tests prevent the
+  adapter from regrowing HTTP streaming, Pydantic models, parsing, and
+  rendering helpers.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -935,6 +944,10 @@ Behavior:
 - Slice 110 viewer service boundary split, focused viewer/server/architecture
   tests, focused Ruff over viewer/server modules, live two-wiki `serve` API
   dogfood, then full pytest/full Ruff/diff check
+- Slice 111 web source runtime boundary split, focused web runtime, Ingest, and
+  architecture tests, focused Ruff over web runtime modules, service-level
+  `SourcesService` web dogfood with `httpx.MockTransport`, then full pytest,
+  full Ruff, and diff check
 
 ## Next Move
 

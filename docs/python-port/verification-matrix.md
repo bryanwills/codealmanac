@@ -1219,3 +1219,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 332 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 111 Web Source Runtime Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused web runtime and architecture tests | `uv run pytest tests/test_web_source_runtime.py tests/test_ingest_workflow.py::test_ingest_prompt_includes_web_source_runtime tests/test_architecture.py::test_web_source_runtime_stays_split_by_responsibility -q` | passed; 7 tests |
+| Focused lint | `uv run ruff check src/codealmanac/integrations/sources/web tests/test_web_source_runtime.py tests/test_ingest_workflow.py tests/test_architecture.py` | passed |
+| Service-level web runtime dogfood | `uv run python - <<'PY' ...` with `WebSourceRuntimeAdapter`, `httpx.MockTransport`, `SourcesService.resolve`, and `SourcesService.inspect_runtime` | passed; HTML title/content extracted and script text removed |
+| Full tests | `uv run pytest` | passed; 333 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

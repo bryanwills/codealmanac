@@ -274,6 +274,14 @@ It is the constraint document for future agents.
   `models.py` owns Pydantic `gh --json` payloads; `targets.py` owns
   `SourceRef` to `gh` target arguments; `rendering.py` owns prompt-facing PR
   and issue runtime text; `errors.py` owns unavailable-runtime diagnostics.
+- 2026-07-01: Web source runtime is split by integration responsibility.
+  `integrations/sources/web/adapter.py` implements the `SourceRuntimeAdapter`
+  port; `client.py` owns `httpx` streaming and bounded response reads;
+  `models.py` owns typed fetched-response and runtime-document models;
+  `documents.py` owns content-type classification, UTF-8 decoding, and
+  Beautiful Soup HTML text extraction; `rendering.py` owns prompt-facing
+  metadata/content rendering; and `errors.py` owns unavailable-runtime
+  diagnostics.
 - 2026-06-29: `manual/` is a local support package, not a public CLI surface.
   It contains bundled wiki-maintenance doctrine. `init` and `build` copy
   missing files into `<almanac-root>/manual/`, prompts tell lifecycle agents to

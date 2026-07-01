@@ -1206,3 +1206,13 @@ ordering. `projections.py` owns index/workspace to viewer DTO conversion.
 Focused viewer/server/architecture tests and lint passed, and live `serve` API
 dogfood initialized two registered temp wikis and verified default overview
 plus selected-wiki overview behavior.
+Slice 111 keeps web source runtime behavior unchanged while splitting the
+integration by responsibility. `adapter.py` remains the `SourceRuntimeAdapter`
+implementation; `client.py` owns `httpx` streaming and bounded response reads;
+`models.py` owns fetched-response and runtime-document Pydantic models;
+`documents.py` owns content-kind classification, UTF-8 decoding, Beautiful Soup
+HTML cleanup, and normalized text extraction; `rendering.py` owns prompt-facing
+metadata/content rendering; and `errors.py` owns unavailable diagnostics.
+Focused web runtime, Ingest web-source prompt, architecture, and lint checks
+passed, and service-level dogfood inspected a mock web URL through
+`SourcesService`.

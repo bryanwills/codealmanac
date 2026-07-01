@@ -585,6 +585,51 @@ def test_github_source_runtime_stays_split_by_responsibility():
     ).read_text(encoding="utf-8")
 
 
+def test_web_source_runtime_stays_split_by_responsibility():
+    web_root = SRC_ROOT / "integrations/sources/web"
+    adapter = web_root / "adapter.py"
+    adapter_text = adapter.read_text(encoding="utf-8")
+    module_names = {path.name for path in web_root.glob("*.py")}
+    forbidden_adapter_fragments = (
+        "BeautifulSoup",
+        "CodeAlmanacModel",
+        "field_validator",
+        "def fetch_with_client(",
+        "def read_bounded_response(",
+        "def parse_web_response(",
+        "def parse_html_document(",
+        "def normalized_text(",
+        "def render_metadata(",
+        "source_runtime_section",
+    )
+
+    assert {
+        "adapter.py",
+        "client.py",
+        "documents.py",
+        "errors.py",
+        "models.py",
+        "rendering.py",
+    } <= module_names
+    assert len(adapter_text.splitlines()) <= 120
+    assert [
+        fragment for fragment in forbidden_adapter_fragments if fragment in adapter_text
+    ] == []
+    assert "class FetchedWebResponse" in (web_root / "models.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def fetch_with_client(" in (web_root / "client.py").read_text(
+        encoding="utf-8"
+    )
+    assert "BeautifulSoup" in (web_root / "documents.py").read_text(encoding="utf-8")
+    assert "def render_web_runtime(" in (web_root / "rendering.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def unavailable_runtime(" in (web_root / "errors.py").read_text(
+        encoding="utf-8"
+    )
+
+
 def test_transcript_source_runtime_stays_split_by_responsibility():
     transcripts_root = SRC_ROOT / "integrations/sources/transcripts"
     runtime = transcripts_root / "runtime.py"

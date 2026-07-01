@@ -228,7 +228,11 @@ truncation, `paths.py` owns path resolution, and `errors.py` owns unavailable
 diagnostics. Ingest does not branch on source kind. `integrations/sources/web/`
 uses `httpx` plus Beautiful Soup to fetch generic web URLs, remove non-readable
 HTML nodes, and render bounded HTML/text snapshots through the same
-source-runtime port.
+source-runtime port. `adapter.py` implements the port, `client.py` owns
+streaming HTTP reads, `models.py` owns typed web response/document models,
+`documents.py` owns content-kind classification and HTML/text extraction,
+`rendering.py` owns prompt-facing metadata/content rendering, and `errors.py`
+owns unavailable diagnostics.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
 automation install/status/uninstall. The automation service decides scheduled

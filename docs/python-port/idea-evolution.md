@@ -2655,3 +2655,35 @@ Follow-up test:
 Future viewer payload changes should land in `service.py` only when they alter
 the use case. Registry selection belongs in `workspace_scope.py`; browser DTO
 conversion belongs in `projections.py`.
+
+## 2026-07-01 - Web Runtime Needs Edge-Mechanic Boundaries
+
+Old hypothesis:
+`WebSourceRuntimeAdapter` could own HTTP streaming, response validation,
+content-type classification, HTML text extraction, prompt rendering, and error
+projection because all of those steps happen inside one web URL runtime.
+
+New hypothesis:
+The adapter should implement the `SourceRuntimeAdapter` port and coordinate the
+web runtime path. `client.py` should own `httpx` response fetching,
+`models.py` should own typed web payloads, `documents.py` should own content
+classification and HTML/text parsing, `rendering.py` should own prompt-facing
+text, and `errors.py` should own unavailable-runtime projection.
+
+Evidence that forced the change:
+After slice 110, `integrations/sources/web/adapter.py` was tied for the
+largest production file at 303 lines. It mixed dependency wiring with
+streaming HTTP reads, Pydantic response/document models, Beautiful Soup
+cleanup, text normalization, metadata rendering, and diagnostic shaping.
+
+Code or product assumption affected:
+Slice 111 keeps web URLs as selected runtime material, not a source library or
+crawler. The same `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`
+path feeds Ingest, and the adapter still accepts an injected `httpx.Client` for
+testable dependency inversion.
+
+Follow-up test:
+Future web runtime changes should land in the module that owns the mechanism:
+HTTP behavior in `client.py`, parsed document behavior in `documents.py`,
+prompt text in `rendering.py`, and source-runtime port behavior in
+`adapter.py`.
