@@ -20,3 +20,12 @@ class RunGardenRequest(CodeAlmanacModel):
         if value is None:
             return None
         return required_text(value, "garden request text")
+
+
+class RunGardenWithRunRequest(RunGardenRequest):
+    run_id: str
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "garden run id")

@@ -114,15 +114,22 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/config.py").is_file()
+    assert (cli_root / "dispatch/lifecycle.py").is_file()
+    assert (cli_root / "dispatch/wiki.py").is_file()
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/admin.py").is_file()
 
 
-def test_cli_admin_edge_is_split_by_command_domain():
+def test_cli_dispatch_edge_is_split_by_command_domain():
     dispatch_root = (SRC_ROOT / "cli/dispatch/root.py").read_text(encoding="utf-8")
     render_root = (SRC_ROOT / "cli/render/root.py").read_text(encoding="utf-8")
 
+    assert len(dispatch_root.splitlines()) <= 80
+    assert "dispatch_lifecycle(args, app)" in dispatch_root
+    assert "dispatch_wiki(args, app)" in dispatch_root
     assert "dispatch_admin(args, app)" in dispatch_root
+    assert "RunIngestRequest" not in dispatch_root
+    assert "SearchPagesRequest" not in dispatch_root
     assert "AutomationStatusRequest" not in dispatch_root
     assert "DoctorRequest" not in dispatch_root
     assert "UpdateStatus" not in dispatch_root
@@ -130,6 +137,77 @@ def test_cli_admin_edge_is_split_by_command_domain():
     assert "DoctorReport" not in render_root
     assert "UpdatePlan" not in render_root
     assert "RunRecord" not in render_root
+
+
+def test_cli_dispatch_files_stay_small():
+    oversized = []
+    for path in (SRC_ROOT / "cli/dispatch").glob("*.py"):
+        line_count = len(path.read_text(encoding="utf-8").splitlines())
+        if line_count > 250:
+            oversized.append(f"{path.name}:{line_count}")
+
+    assert oversized == []
+
+
+def test_page_run_workflow_owns_shared_lifecycle_execution():
+    page_run_service = SRC_ROOT / "workflows/page_run/service.py"
+    page_run_text = page_run_service.read_text(encoding="utf-8")
+
+    assert page_run_service.is_file()
+    assert "RunHarnessRequest" in page_run_text
+    assert "RecordRunHarnessTranscriptRequest" in page_run_text
+    assert "validate_harness_result" in page_run_text
+
+    operation_services = (
+        SRC_ROOT / "workflows/ingest/service.py",
+        SRC_ROOT / "workflows/garden/service.py",
+    )
+    forbidden_fragments = (
+        "RunHarnessRequest",
+        "RecordRunHarnessTranscriptRequest",
+        "MarkRunRunningRequest",
+        "FinishRunRequest",
+        "validate_harness_result",
+        "harness_events",
+        "harness_run_event_kind",
+    )
+    offenders = [
+        f"{path.relative_to(SRC_ROOT)}:{fragment}"
+        for path in operation_services
+        for fragment in forbidden_fragments
+        if fragment in path.read_text(encoding="utf-8")
+    ]
+
+    assert offenders == []
+
+
+def test_page_writing_workflow_services_stay_small():
+    oversized = []
+    for path in (
+        SRC_ROOT / "workflows/ingest/service.py",
+        SRC_ROOT / "workflows/garden/service.py",
+        SRC_ROOT / "workflows/page_run/service.py",
+        SRC_ROOT / "workflows/run_queue/service.py",
+    ):
+        line_count = len(path.read_text(encoding="utf-8").splitlines())
+        if line_count > 250:
+            oversized.append(f"{path.relative_to(SRC_ROOT)}:{line_count}")
+
+    assert oversized == []
+
+
+def test_run_queue_workflow_stays_operation_dispatch_only():
+    text = (SRC_ROOT / "workflows/run_queue/service.py").read_text(encoding="utf-8")
+
+    forbidden_fragments = (
+        "RunHarnessRequest",
+        "RenderPromptRequest",
+        "ResolveSourcesRequest",
+        "InspectSourceRuntimeRequest",
+        "LifecycleMutationPolicy",
+    )
+
+    assert [fragment for fragment in forbidden_fragments if fragment in text] == []
 
 
 def test_repo_almanac_root_is_workspace_owned():

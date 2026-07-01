@@ -28,6 +28,7 @@ FORBIDDEN_TOP_LEVEL_COMMANDS = (
 README_REQUIRED_FRAGMENTS = (
     "Public command: `codealmanac`",
     "Default repo wiki root: `almanac/`",
+    "Custom repo wiki roots: any safe repo-relative directory via `--root`",
     "User state root: `~/.codealmanac/`",
     "Python 3.12+",
     "uv tool install codealmanac",
@@ -37,6 +38,8 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac ingest README.md --using codex",
     "codealmanac ingest github:pr:123 --using claude",
     "## What Gets Created By Init",
+    "a folder counts as a CodeAlmanac wiki only when it has both",
+    "`topics.yaml` and `pages/`",
     "Derived local state appears when commands need it:",
     "No hosted login/connect/upload commands.",
 )
@@ -118,6 +121,27 @@ def test_readme_documents_python_local_public_surface():
 
     for fragment in README_FORBIDDEN_FRAGMENTS:
         assert fragment not in readme
+
+
+def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
+    docs = {
+        "CONTRIBUTING.md": (PROJECT_ROOT / "CONTRIBUTING.md").read_text(
+            encoding="utf-8"
+        ),
+        "docs/concepts.md": (PROJECT_ROOT / "docs/concepts.md").read_text(
+            encoding="utf-8"
+        ),
+    }
+
+    assert "uv sync" in docs["CONTRIBUTING.md"]
+    assert "uv run pytest" in docs["CONTRIBUTING.md"]
+    assert "codealmanac init --root <path>" in docs["docs/concepts.md"]
+    for body in docs.values():
+        assert "npm install" not in body
+        assert "npm test" not in body
+        assert "Vitest" not in body
+        assert "~/.almanac" not in body
+        assert "almanac capture" not in body
 
 
 def test_readme_keeps_init_scaffold_separate_from_runtime_state():

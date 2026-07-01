@@ -120,4 +120,5 @@ def test_tag_preserves_crlf_frontmatter_and_body(
 def make_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     return repo

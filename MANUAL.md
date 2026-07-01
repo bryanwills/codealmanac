@@ -154,9 +154,22 @@ conversation.
   state machines, no orchestration JSON schema between writer and reviewer, no
   `--dry-run` rehearsals. The writer owns outcomes.
 - Local-only repo wiki roots plus `~/.codealmanac/registry.json` global state.
-  New repos default to `almanac/`, while `docs/almanac/` is the public
-  alternate setup shape. The configured root is **flat** — future features get
-  peer files, not nested `wiki/` subdirs.
+  New repos default to `almanac/`; `docs/almanac/`, `.almanac/`, or another
+  safe repo-relative directory are explicit configuration choices. The
+  configured root is **flat** — future features get peer files, not nested
+  `wiki/` subdirs.
+- The initialized wiki source markers are `topics.yaml` plus `pages/` under the
+  configured root. `README.md` is useful guidance, not an auto-detection marker.
+  The root shape is:
+  ```text
+  <almanac-root>/
+  |-- README.md
+  |-- topics.yaml
+  |-- pages/
+  |-- manual/
+  ```
+  Runtime artifacts such as `index.db` and `jobs/` are peers under the same
+  root when commands need them, but they are derived local state.
 - One link syntax (`[[...]]`), disambiguated by content. `GLOB` not `LIKE` for
   path queries. Paths normalized on both sides of a comparison.
 - Slices: plan → build → review → fix → next. The review pass is where latent

@@ -5,8 +5,8 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
 
 DEFAULT_ALMANAC_ROOT = Path("almanac")
-ALMANAC_ROOT_MARKER_FILES = ("README.md", "topics.yaml")
-ALMANAC_ROOT_MARKER_DIRS = ("pages",)
+ALMANAC_ROOT_MARKER_FILE = "topics.yaml"
+ALMANAC_ROOT_MARKER_DIR = "pages"
 
 
 class AlmanacRootMatch(CodeAlmanacModel):
@@ -62,9 +62,10 @@ def nearest_almanac_root(
 def is_initialized_almanac_root(path: Path) -> bool:
     if not path.is_dir():
         return False
-    if any((path / name).is_file() for name in ALMANAC_ROOT_MARKER_FILES):
-        return True
-    return any((path / name).is_dir() for name in ALMANAC_ROOT_MARKER_DIRS)
+    return (
+        (path / ALMANAC_ROOT_MARKER_FILE).is_file()
+        and (path / ALMANAC_ROOT_MARKER_DIR).is_dir()
+    )
 
 
 def validate_almanac_root_field(value: Path | str | None) -> Path:

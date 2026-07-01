@@ -22,3 +22,32 @@ Read the relevant page before editing:
 
 Repo-specific conventions live in `README.md` and `topics.yaml` under the
 configured Almanac root.
+
+## Folder Structure
+
+The configured Almanac root is flat. A new repo defaults to `almanac/`, but a
+repo may explicitly use another safe repo-relative directory such as
+`docs/almanac/` or `.almanac/`.
+
+```text
+<almanac-root>/
+|-- README.md
+|-- topics.yaml
+|-- pages/
+|-- manual/
+```
+
+`topics.yaml` plus `pages/` identify an initialized CodeAlmanac wiki. `README.md`
+is guidance for readers and writers, not a marker by itself.
+
+Runtime state is local and rebuildable:
+
+```text
+<almanac-root>/index.db
+<almanac-root>/index.db-wal
+<almanac-root>/index.db-shm
+<almanac-root>/jobs/
+```
+
+`jobs/` contains foreground run logs, queued background specs, worker locks,
+and sync ledger state. It is not wiki source.

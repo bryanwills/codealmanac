@@ -23,6 +23,7 @@ from codealmanac.services.workspaces.models import (
 )
 from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.ingest.models import IngestResult
+from codealmanac.workflows.run_queue.models import RunQueueStartResult
 from codealmanac.workflows.sync.models import SyncMode, SyncSummary
 
 
@@ -81,6 +82,27 @@ def render_garden(result: GardenResult) -> None:
     print(f"health_before: {health_issue_count(result.health_before)}")
     if result.run.summary is not None:
         print(f"summary: {result.run.summary}")
+
+
+def render_run_queue_start(
+    result: RunQueueStartResult,
+    json_output: bool,
+) -> None:
+    if json_output:
+        print(
+            json.dumps(
+                {
+                    "run_id": result.run.run_id,
+                    "status": result.run.status.value,
+                    "child_pid": result.worker.child_pid,
+                },
+                indent=2,
+            )
+        )
+        return
+    print(f"queued {result.run.run_id}: {result.run.status.value}")
+    print(f"worker_pid: {result.worker.child_pid}")
+
 
 def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
     if json_output:

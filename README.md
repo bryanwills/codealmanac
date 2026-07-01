@@ -14,7 +14,8 @@ it does not require a hosted service.
 
 - Public command: `codealmanac`
 - Default repo wiki root: `almanac/`
-- Optional repo wiki root: `docs/almanac/`
+- Common alternate repo wiki root: `docs/almanac/`
+- Custom repo wiki roots: any safe repo-relative directory via `--root`
 - User state root: `~/.codealmanac/`
 - Runtime: Python 3.12+
 - Storage: local markdown plus a derived SQLite index
@@ -52,7 +53,8 @@ codealmanac serve
 ```
 
 `init` creates a local wiki scaffold under the configured Almanac root. New
-repos default to `almanac/`.
+repos default to `almanac/`. Use `--root docs/almanac`, `--root .almanac`, or
+another repo-relative directory when a project needs a different location.
 
 ## Daily Read Surface
 
@@ -77,7 +79,9 @@ They only allow changes under the configured Almanac root.
 ```bash
 codealmanac ingest README.md --using codex
 codealmanac ingest github:pr:123 --using claude
+codealmanac ingest README.md --using codex --background
 codealmanac garden --using codex
+codealmanac garden --using codex --background
 ```
 
 `ingest` folds selected local material into the wiki. Inputs can include files,
@@ -89,6 +93,9 @@ leads, duplicate pages, and unsupported claims.
 
 No-op is valid. If the material adds no durable wiki knowledge, the harness
 should leave the wiki unchanged.
+
+Add `--background` to queue an `ingest` or `garden` run and start a detached
+local worker. Plain `ingest` and `garden` run in the foreground.
 
 ## Sync And Automation
 
@@ -113,6 +120,8 @@ Lifecycle runs are recorded under the configured Almanac root:
 codealmanac jobs
 codealmanac jobs show <run-id>
 codealmanac jobs logs <run-id>
+codealmanac jobs attach <run-id>
+codealmanac jobs cancel <run-id>
 ```
 
 Run logs include source-resolution facts, harness events, safety errors, and
@@ -148,6 +157,9 @@ your-repo/
 
 Markdown pages, `topics.yaml`, and manual files are the wiki source. `init`
 also writes `.gitignore` entries for runtime artifacts.
+
+For auto-detection, a folder counts as a CodeAlmanac wiki only when it has both
+`topics.yaml` and `pages/`. `README.md` alone is not a wiki marker.
 
 ## Runtime State
 

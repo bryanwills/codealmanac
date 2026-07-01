@@ -1,17 +1,32 @@
+import os
+from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.services.runs.models import RunLogEvent, RunRecord
+from codealmanac.services.runs.models import (
+    QueuedRun,
+    RunAttachSnapshot,
+    RunCancelResult,
+    RunLogEvent,
+    RunRecord,
+    RunSpec,
+)
 from codealmanac.services.runs.requests import (
+    AcquireRunWorkerLockRequest,
+    AttachRunRequest,
+    CancelRunRequest,
     FinishRunRequest,
     ListRunsRequest,
     MarkRunRunningRequest,
+    NextQueuedRunRequest,
+    QueueRunRequest,
     ReadRunLogRequest,
+    ReadRunSpecRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
     ShowRunRequest,
     StartRunRequest,
 )
-from codealmanac.services.runs.store import RunStore
+from codealmanac.services.runs.store import RunStore, RunWorkerLease
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
@@ -32,6 +47,19 @@ class RunsService:
             request.title,
         )
 
+    def queue(self, request: QueueRunRequest) -> RunRecord:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        spec = request.spec.model_copy(
+            update={"cwd": request.cwd, "wiki": request.wiki}
+        )
+        return self.store.queue(
+            workspace.almanac_path,
+            workspace.almanac_root,
+            workspace.workspace_id,
+            spec,
+            request.title,
+        )
+
     def list(self, request: ListRunsRequest) -> tuple[RunRecord, ...]:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.list(workspace.almanac_path, request.limit)
@@ -40,9 +68,34 @@ class RunsService:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.read(workspace.almanac_path, request.run_id)
 
+    def read_spec(self, request: ReadRunSpecRequest) -> RunSpec | None:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.read_spec(workspace.almanac_path, request.run_id)
+
+    def next_queued(self, request: NextQueuedRunRequest) -> QueuedRun | None:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.next_queued(workspace.almanac_path)
+
+    def acquire_worker_lock(
+        self,
+        request: AcquireRunWorkerLockRequest,
+    ) -> RunWorkerLease | None:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.acquire_worker_lock(
+            workspace.almanac_path,
+            request.owner,
+            request.pid or os.getpid(),
+            request.now or datetime.now(UTC),
+            request.stale_after,
+        )
+
     def log(self, request: ReadRunLogRequest) -> tuple[RunLogEvent, ...]:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.log(workspace.almanac_path, request.run_id)
+
+    def attach(self, request: AttachRunRequest) -> RunAttachSnapshot:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.attach(workspace.almanac_path, request.run_id)
 
     def record_event(self, request: RecordRunEventRequest) -> RunLogEvent:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
@@ -77,6 +130,10 @@ class RunsService:
             request.summary,
             request.error,
         )
+
+    def cancel(self, request: CancelRunRequest) -> RunCancelResult:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.store.cancel(workspace.almanac_path, request.run_id)
 
     def resolve_workspace(self, cwd: Path, wiki: str | None) -> Workspace:
         if wiki is None:

@@ -1,5 +1,39 @@
 # Python Port Worklog
 
+## 2026-07-01
+
+- Active goal continued for architecture quality after public-beta package
+  proof: keep applying Cosmic Python, `MANUAL.md`, the live agreement, and
+  useful `../almanac` patterns until remaining cleanup is genuinely
+  diminishing returns.
+- Added slice-73 page-run workflow plan after comparing current
+  `ingest`/`garden` duplication with `../almanac`'s page-run workflow shape.
+- Extracted `workflows/page_run/` so shared page-writing lifecycle execution
+  owns running-state transition, mutation preflight, harness invocation,
+  harness transcript/event recording, mutation validation, index refresh,
+  terminal success, and failure recording.
+- Kept `IngestWorkflow` responsible for source resolution, source runtime, and
+  ingest prompt payloads. Kept `GardenWorkflow` responsible for index/health
+  context and garden prompt payloads.
+- Added architecture tests that prevent `ingest` and `garden` from importing
+  shared run/harness plumbing directly, and keep the page-writing workflow
+  services small.
+- Verified slice 73 with focused ingest, garden, architecture tests and
+  focused ruff checks before broad verification.
+- Ran an isolated live service dogfood with a fake Codex harness. Ingest
+  finished `done`, wrote `page-run-dogfood`, and preserved the expected run
+  event sequence: `status,status,message,message,message,output,status`.
+- Added slice-74 jobs control plan and implementation. `jobs attach` now
+  replays durable log events plus current status; `jobs cancel` marks
+  queued/running runs cancelled through `RunsService`; `RunStore.finish(...)`
+  returns already-cancelled runs unchanged so later workflow finalization cannot
+  resurrect a cancelled job.
+- Verified slice 74 focused behavior with runs-service, CLI, and architecture
+  tests before broad verification.
+- Ran an isolated CLI dogfood for `jobs attach` and `jobs cancel` against a
+  temporary repo. Attach replayed the queued job log and current status; cancel
+  marked the job `cancelled`; `jobs show` read back the cancelled record.
+
 ## 2026-06-29
 
 - Active goal created for a full Python rewrite using
@@ -722,7 +756,7 @@ been built. The old path treated a registered workspace as available if the
 configured root directory existed, so `doctor` could create
 `almanac/index.db`, then `list --json` would report that derived-only directory
 as an available wiki. Root discovery and registry status now require a wiki
-marker (`README.md`, `topics.yaml`, or `pages/`), `IndexStore` refuses to open
+marker pair (`topics.yaml` plus `pages/`), `IndexStore` refuses to open
 SQLite for a missing root, and `doctor` reports the missing registered root
 without cascading into index/manual/health checks. This repo's `.gitignore`
 also ignores default-root runtime artifacts under `almanac/`.
@@ -826,3 +860,39 @@ is release operations: version/changelog, PyPI credentials, and the human
 publish decision. Any package data, prompt, manual, README, server asset, or
 installed-behavior change before publish should trigger another package/install
 smoke.
+Slice 72 reopens architecture quality work under the new active goal. The CLI
+root dispatcher is now a small delegator, lifecycle commands live in
+`cli/dispatch/lifecycle.py`, and wiki/read commands live in
+`cli/dispatch/wiki.py`. Architecture tests require the domain dispatch files to
+exist, keep `dispatch/root.py` under 80 lines, and keep dispatch files under the
+250-line split-review threshold. Focused ruff passed; focused pytest initially
+failed only because `next-agent-brief.md` still pointed at slice 71. After the
+brief update, focused pytest, focused ruff, `git diff --check`, full pytest
+(`253 passed`), and full ruff all passed.
+Slice 75 restores the queue core behind background jobs. `runs` now persists
+`<run-id>.spec.json` next to run records, treats spec-backed queued records as
+worker-eligible background work, selects the oldest eligible run, and uses a
+per-wiki `worker.lock/owner.json` with stale-lock recovery. `RunQueueWorkflow`
+drains in-process by dispatching persisted Ingest/Garden specs to the existing
+operation workflows, which keeps prompt rendering, mutation safety, harness
+events, index refresh, and terminal finalization in the shared lifecycle path.
+Focused pytest covered run spec persistence, oldest selection, lock
+exclusivity/stale recovery, cancelled queued skips, in-process ingest drain,
+and architecture guards. Full pytest passed with 263 tests, full Ruff passed,
+`git diff --check` passed, and a temp-repo app-level dogfood run queued an
+ingest spec, drained one run, finished it as `done`, and found the generated
+page through search.
+Slice 76 adds detached worker spawning and explicit public background mode.
+`RunQueueWorkflow` now accepts an injected worker spawner, `SubprocessRunWorkerSpawner`
+launches `sys.executable -m codealmanac.cli.main __run-worker --cwd <repo>`,
+and the hidden worker command drains the queue through the app composition root.
+`codealmanac ingest --background` and `codealmanac garden --background` queue
+spec-backed runs and spawn a worker; `--json` reports run id/status/child pid
+for background starts. Focused tests cover the spawner command shape, workflow
+background start, CLI background output, and hidden worker drain. Foreground
+remains the default pending a separate product decision. Full pytest passed
+with 268 tests, full Ruff passed, and `git diff --check` passed. Dogfood ran
+the hidden worker command against an empty temp wiki and then ran public
+`garden --background --json` in a non-Git temp repo; the public command queued a
+run, spawned a child process, and the worker finalized the run as `failed` at
+Git preflight without invoking a provider harness.

@@ -12,7 +12,12 @@ from codealmanac.services.automation.models import (
     ScheduledJobStatus,
 )
 from codealmanac.services.diagnostics.models import DoctorCheck, DoctorReport
-from codealmanac.services.runs.models import RunLogEvent, RunRecord
+from codealmanac.services.runs.models import (
+    RunAttachSnapshot,
+    RunCancelResult,
+    RunLogEvent,
+    RunRecord,
+)
 from codealmanac.services.updates.models import UpdatePlan, UpdateResult
 
 
@@ -189,3 +194,23 @@ def render_run_log(events: tuple[RunLogEvent, ...], json_output: bool) -> None:
         return
     for event in events:
         print(f"{event.sequence}\t{event.kind.value}\t{event.message}")
+
+
+def render_run_attach(snapshot: RunAttachSnapshot, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(snapshot.model_dump(mode="json"), indent=2))
+        return
+    render_run_log(snapshot.events, json_output=False)
+    if len(snapshot.events) == 0:
+        print("no log events")
+    print(f"status: {snapshot.record.status.value}")
+
+
+def render_run_cancel(result: RunCancelResult, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+        return
+    if result.changed:
+        print(f"cancelled {result.record.run_id}")
+        return
+    print(f"job already {result.record.status.value}: {result.record.run_id}")

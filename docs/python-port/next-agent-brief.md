@@ -1,16 +1,16 @@
 # Next Agent Brief
 
-Updated: 2026-06-30
+Updated: 2026-07-01
 
 ## Current State
 
-- Python local-product implementation goal is complete against
-  `docs/python-port/completion-audit.md`. Next work is release operations:
-  version/changelog, PyPI credentials, publish ownership, and the human publish
-  decision.
+- The earlier Python local-product implementation goal reached public-beta
+  package proof in slice 71, but the active goal now reopens architecture
+  quality work before release: keep applying Cosmic Python, `MANUAL.md`, and
+  useful `../almanac` patterns until further cleanup is genuinely diminishing
+  returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 71 current-head package smoke after the
-  `~/.codealmanac/` state-path change.
+- Latest implementation slice: slice 76 background worker spawn.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -98,8 +98,41 @@ Updated: 2026-06-30
 - Slice 49 splits the admin CLI edge. `doctor`, `update`, `jobs`, and
   `automation` live under `cli/dispatch/admin.py` and `cli/render/admin.py`;
   shared CLI config/duration resolution lives in `cli/dispatch/config.py`.
-  Wiki/lifecycle dispatch remains in root until a concrete command change
-  creates pressure.
+- Slice 72 splits the rest of CLI dispatch by domain. `cli/dispatch/root.py` is
+  a small delegator; lifecycle commands live in `cli/dispatch/lifecycle.py`;
+  wiki/read commands live in `cli/dispatch/wiki.py`; architecture tests guard
+  the root size and dispatch file size.
+- Slice 73 extracts the shared page-writing lifecycle into
+  `workflows/page_run/`. `IngestWorkflow` and `GardenWorkflow` keep
+  operation-specific context and prompt preparation; `PageRunWorkflow` owns
+  running-state transition, mutation preflight, harness calls, transcript/event
+  recording, mutation validation, index refresh, terminal success, and failure
+  recording. Architecture tests now prevent ingest/garden from importing the
+  shared harness/run plumbing directly.
+- Slice 74 restores the first jobs control surface in Python:
+  `codealmanac jobs attach <run-id>` replays the durable run log and reports the
+  current status, `codealmanac jobs cancel <run-id>` marks queued/running runs
+  cancelled through `RunsService`, and `RunStore.finish(...)` preserves an
+  already-cancelled record instead of resurrecting it as done or failed. This
+  is the control seam the future queue/worker will use; it does not yet spawn
+  background workers.
+- Slice 75 restores the in-process background queue core. `RunsService.queue`
+  persists executable `<run-id>.spec.json` files beside run records,
+  `next_queued` selects the oldest queued run that has a spec, and per-wiki
+  `worker.lock/owner.json` serializes worker drains with stale-lock recovery.
+  `RunQueueWorkflow` dispatches persisted Ingest/Garden specs back through the
+  existing operation workflows, so prompt construction, mutation preflight,
+  harness execution, index refresh, and terminal state still live in the
+  lifecycle path. Detached process spawning and public foreground/background
+  lifecycle flags are still missing.
+- Slice 76 exposes the queue core through explicit background lifecycle mode.
+  `ingest --background` and `garden --background` enqueue a spec-backed run and
+  spawn a detached worker through an injected spawner port. The real adapter
+  runs `sys.executable -m codealmanac.cli.main __run-worker --cwd <repo>`;
+  the hidden worker command drains through `RunQueueWorkflow`, so it remains an
+  entrypoint rather than an internal API. Plain `ingest` and `garden` still run
+  foreground until the default-mode product decision is made explicitly. Sync
+  still runs foreground ingest in-process.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -163,12 +196,13 @@ Updated: 2026-06-30
   `list --drop <selector>` removes one explicit entry; `list --drop-missing`
   explicitly removes unreachable entries. Read commands do not prune registry
   state silently.
-- Lifecycle workflows record normalized harness events before later validation.
-  `ingest` and `garden` write returned `HarnessEvent` values as soon as the
-  harness returns, so failed harness runs remain visible in `jobs logs` even
-  when the terminal run error is a mutation-safety failure. Current Codex and
-  Claude CLI adapters emit terminal `done` events only; Codex app-server is
-  the future path if jobs need richer text/tool/usage transcript completeness.
+- Page-writing lifecycle workflows record normalized harness events before
+  later validation. `PageRunWorkflow` writes returned `HarnessEvent` values as
+  soon as the harness returns, so failed harness runs remain visible in
+  `jobs logs` even when the terminal run error is a mutation-safety failure.
+  Current Codex and Claude CLI adapters emit terminal `done` events only; the
+  active rewrite goal still needs the richer Codex app-server and Claude
+  SDK/event harness model before the harness contract is genuinely restored.
 - Foreground `sync` writes a durable pending ledger claim before invoking
   Ingest, skips active pending transcript ranges, reports stale pending ranges
   as needs-attention, stores linked run ids plus cursor snapshots, reconciles
@@ -180,6 +214,9 @@ Updated: 2026-06-30
   `sync-retry-budget-exhausted`.
 - Run records now have an explicit lifecycle transition: queued at creation,
   running before Ingest/Garden side effects, then terminal done/failed/cancelled.
+- Run cancellation is durable and idempotent. Terminal runs are not rewritten by
+  `jobs cancel`; queued/running runs get a final `cancelled` status event; and
+  later terminal `finish(...)` calls return the cancelled record unchanged.
 - Ingest remains source-kind agnostic. It resolves `SourceBrief` values, asks
   `SourcesService.inspect_runtime(...)` for snapshots, renders typed runtime
   JSON into the prompt, calls the selected harness, validates wiki-root

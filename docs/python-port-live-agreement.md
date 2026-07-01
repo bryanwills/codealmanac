@@ -12,6 +12,11 @@ It is the constraint document for future agents.
   not as product direction for this rewrite.
 - 2026-06-29: The old TypeScript/Node implementation is archived under
   `archive/code/`. Use it as behavior reference, not as code to preserve.
+- 2026-07-01: "Behavior reference" means the archived product behavior should
+  be ported unless a decision below explicitly drops it. The Python rewrite is
+  allowed to improve architecture and naming, but it must not silently simplify
+  away setup UX, lifecycle semantics, harness events, page provenance, or
+  viewer scope.
 - 2026-06-29: Public command, package, and user-state language is
   `codealmanac`. Do not call the product Codex Almanac, and do not add public
   `almanac` or `alm` aliases for compatibility. Python identifiers may use
@@ -20,6 +25,12 @@ It is the constraint document for future agents.
   TypeScript-era backward compatibility, legacy aliases, legacy root
   migrations, or old frontmatter repair paths unless the user explicitly
   reopens that decision.
+- 2026-07-01: The intentionally dropped archive-era surfaces are: public
+  `almanac`/`alm` compatibility bins, hosted login/connect/upload/MCP/SDK
+  surfaces, migration commands unless a migration need becomes concrete, and
+  the `review` command family for now. `setup`, `uninstall`, structured page
+  `sources:`, multi-wiki `serve`, background jobs, and rich harness events are
+  not intentionally dropped.
 - 2026-06-29: "Frontmatter rewrite" means deterministic editing of current
   page metadata such as `topics:` while preserving page body text. It is not a
   compatibility layer for old page formats.
@@ -44,10 +55,15 @@ It is the constraint document for future agents.
   toward clean-install proof, real lifecycle dogfood, prompt quality, package
   metadata, README accuracy, and browser verification instead of adding
   speculative architecture seams.
-- 2026-06-29: Local automation v1 installs scheduler jobs for foreground
-  `sync` and `garden`. Manual `update` is a foreground package-manager command
-  and has pip/uv non-editable install dogfood. Do not schedule `update` until
-  an explicit update-notification policy exists.
+- 2026-07-01: Background jobs are in scope for v1. Restore the archived
+  machinery in Python shape: per-wiki queue, worker lock, background process
+  owner, durable job/run spec and record files, append-only event logs, attach,
+  cancel, stale-lock handling, and safe foreground execution when explicitly
+  requested. Automation may schedule commands, but the implementation should
+  call workflow/services directly rather than shelling out internally.
+- 2026-06-29: Manual `update` is a foreground package-manager command and has
+  pip/uv non-editable install dogfood. Do not schedule `update` until an
+  explicit update-notification policy exists.
 - 2026-06-29: There is no cloud capture surface in Python v1.
   `codealmanac update` updates the installed CLI package only. `sync` scans
   local transcripts and runs local ingest. `automation` schedules local
@@ -56,21 +72,50 @@ It is the constraint document for future agents.
 - 2026-06-29: `sync` writes a durable pending ledger claim before it invokes
   Ingest. Active pending claims skip that transcript; stale pending claims
   surface as needs-attention; terminal success or failure clears the pending
-  fields. This is foreground/scheduled sync safety, not a background
-  worker/retry loop.
+  fields. With background jobs enabled, sync can enqueue ingest work while the
+  ledger records pending ownership and later reconciles terminal run state.
 - 2026-06-29: `runs` owns lifecycle state transitions. Run records start as
   `queued`, workflows explicitly mark them `running`, and only terminal
   finish calls may move them to `done`, `failed`, or `cancelled`.
+- 2026-07-01: `jobs attach` and `jobs cancel` are public control verbs over the
+  run ledger. Cancellation is durable run state, not a CLI-side file edit.
+  Terminal runs are cancel no-ops; queued or running runs append a `cancelled`
+  status event. Terminal finish calls must preserve an already-cancelled run
+  rather than rewriting it as done or failed.
+- 2026-07-01: Background queue membership is "queued run with a durable
+  `<run-id>.spec.json`", not merely any run whose status is `queued`.
+  Foreground lifecycle runs also begin as `queued`, so workers must select only
+  spec-backed runs. The queue core owns durable specs, oldest spec-backed
+  selection, per-wiki `worker.lock/owner.json`, stale-lock recovery, and
+  in-process draining through existing Ingest/Garden workflows. Detached worker
+  spawning and public foreground/background flags remain a later slice.
+- 2026-07-01: Public background lifecycle execution is opt-in for now.
+  `ingest --background` and `garden --background` enqueue spec-backed runs and
+  spawn a detached local worker through an injected worker-spawner port. The
+  hidden `__run-worker` command is a process entrypoint that calls
+  `RunQueueWorkflow.drain(...)`; it is not a public command and it does not
+  contain lifecycle business logic. Plain `ingest` and `garden` still run
+  foreground until the default-mode product decision is made explicitly.
+- 2026-07-01: Shared page-writing lifecycle execution belongs to
+  `PageRunWorkflow`. Operation workflows such as `ingest` and `garden` prepare
+  operation-specific context and prompts, then delegate running-state
+  transition, mutation preflight, harness invocation, harness transcript/event
+  recording, mutation validation, index refresh, terminal success, and failure
+  recording to the page-run workflow. Do not move this harness/run plumbing
+  back into individual operation workflows.
 - 2026-06-29: Lifecycle workflows record returned harness status/output before
   mutation-safety validation and harness success validation. A failed harness
   run should leave an `output` event in `jobs logs` even when the terminal run
   error is a later safety failure.
-- 2026-06-29: The inspectable transcript surface is a CodeAlmanac-owned
-  normalized harness event stream, not raw provider transcript files. Current
-  Python CLI adapters may emit only terminal `done` events; richer text,
-  tool, usage, and warning events belong in the same `HarnessEvent` contract.
-  Codex app-server should be reconsidered when this event completeness becomes
-  required, while `codex exec` remains acceptable for one-shot local v1 runs.
+- 2026-07-01: The inspectable transcript surface is a CodeAlmanac-owned
+  normalized harness event stream, not raw provider transcript files. Port the
+  archived harness event model: text, tool use/results, usage, provider
+  session, done/failure details, and agent trace events where the provider can
+  expose them. Codex should use the Codex app-server harness, not `codex exec`,
+  for the main lifecycle path. Claude should use the richer SDK/event harness,
+  not only the one-shot CLI print path, when porting archive behavior.
+- 2026-07-01: The default lifecycle harness is Codex. Docs, config defaults,
+  setup recommendations, and no-flag lifecycle behavior must agree on that.
 - 2026-06-29: Sync pending claims store the run id plus claimed byte/line
   cursor. `sync status` reports active linked runs separately from terminal
   linked runs that need reconciliation. Foreground `sync` reconciles terminal
@@ -140,6 +185,18 @@ It is the constraint document for future agents.
   It contains bundled wiki-maintenance doctrine. `init` and `build` copy
   missing files into `<almanac-root>/manual/`, prompts tell lifecycle agents to
   read those files, and `doctor` reports package/workspace manual readiness.
+- 2026-07-01: Preserve the archived terminal setup experience in Python:
+  branded banner, step indicators, raw-mode selection when available,
+  non-interactive `--yes`, idempotent setup, agent/default-model selection,
+  instruction target installation, local automation choices, and a polished
+  next-steps box. Hosted-specific wording must be removed, but the terminal UX
+  quality and setup responsibilities remain first-class.
+- 2026-07-01: `uninstall` should exist as the reverse of `setup`. It should
+  remove setup-owned instructions and scheduler entries idempotently, with
+  `--yes` and keep flags where useful.
+- 2026-07-01: The archive's `review` command family is not required for now.
+  The archive's `migrate` command family is not needed unless a concrete
+  migration path is reopened.
 - 2026-06-29: `database/` owns SQLite connection setup and migration
   application. Product stores still own their SQL schemas and query semantics.
   The current `index.db` migration strategy is rebuild-on-version-change
@@ -152,6 +209,19 @@ It is the constraint document for future agents.
   quiet window. CLI flags still win over config. Do not add a public `config`
   command, environment override system, secrets system, or hosted/account
   config surface until a later agreement requires it.
+- 2026-07-01: Page `sources:` are part of the wiki page model, not just prompt
+  guidance. The Python index/read model should parse structured `sources:`,
+  project them into SQLite, derive file refs from `sources[type=file]`, expose
+  them through `show`/viewer APIs, and let health reason about missing/unused
+  citation IDs. This is distinct from ingest source inputs such as paths,
+  diffs, PRs, URLs, and transcripts.
+- 2026-07-01: Remove archive/supersede page lineage from the Python product
+  model. Git history is the archive. Do not keep `archived_at`,
+  `superseded_by`, `supersedes`, `--include-archive`, or `--archived` as
+  product concepts unless the user reopens that decision.
+- 2026-07-01: `serve` should browse all registered local wikis, matching the
+  archive's multi-wiki viewer scope, while keeping the local sidebar/wiki
+  reader interaction model.
 - 2026-06-29: The CLI edge is allowed to split by command domain as pressure
   appears. `doctor`, `update`, `jobs`, and `automation` now live under the
   admin dispatch/render edge; the root dispatcher delegates to that edge and
@@ -381,8 +451,11 @@ server/assets/viewer/main.js
 Workflows coordinate services. They do not own durable schema unless a service
 is missing.
 
-`build` creates or refreshes the initial local wiki in the configured Almanac
-root. New installs default to `almanac/`.
+`init` creates or refreshes the initial local wiki in the configured Almanac
+root and may run the initial agent-backed wiki build. New installs default to
+`almanac/`. Do not split the user-facing first-build story into a surprising
+`init` scaffold plus unrelated `build` index refresh unless the CLI names make
+that distinction obvious.
 
 `ingest` updates the wiki from selected local material such as paths, PR refs,
 diffs, commit ranges, notes, or transcript refs.
@@ -433,32 +506,34 @@ The v1 CLI is local-only.
 
 ```text
 codealmanac init [path] [--root <repo-relative-path>]
+codealmanac setup
 codealmanac list
 codealmanac search [query]
 codealmanac show <slug>
 codealmanac topics
 codealmanac health
 codealmanac serve
-codealmanac build [path] [--root <repo-relative-path>]
 codealmanac reindex
 codealmanac ingest <inputs...>
 codealmanac sync
 codealmanac sync status
 codealmanac garden
-codealmanac jobs
 codealmanac automation install|status|uninstall
+codealmanac jobs
+codealmanac jobs attach <run-id>
+codealmanac jobs cancel <run-id>
 codealmanac doctor
 codealmanac update
+codealmanac uninstall
 ```
 
 Commands run inside a repo resolve the nearest configured Almanac root, like
 Git resolves `.git/`.
 
-`--root` is a setup-time option on `init` and `build`. It must be a
-repo-relative directory. On first setup, omitting it means `almanac/`. Inside an
-existing registered repo, omitting it means "keep the registered root."
-`docs/almanac/` is the public alternate shape when a repo wants docs under
-`docs/`.
+`--root` is a setup-time option on `init`. It must be a repo-relative
+directory. On first setup, omitting it means `almanac/`. Inside an existing
+registered repo, omitting it means "keep the registered root." `docs/almanac/`
+is the public alternate shape when a repo wants docs under `docs/`.
 
 `codealmanac list` reads the local registry of known repos with configured
 Almanac roots.
@@ -478,6 +553,11 @@ SQLite read model. Query commands may refresh the index implicitly and silently.
 `codealmanac sync` accepts local execution controls such as
 `--claim-owner`, `--pending-timeout`, and `--max-failed-attempts`. Automation
 uses them to make scheduled sync ownership and retry policy explicit.
+
+Public `jobs` is required because background lifecycle execution ships. Internal
+`runs` owns records, logs, event streams, outputs, and lifecycle state.
+`jobs attach` streams a running job's event log. `jobs cancel` requests
+cancellation for queued/running work.
 
 CLI commands are not internal APIs. Automation, workers, tests, and server
 wrappers must call the same Python services/workflows that CLI dispatch
@@ -511,8 +591,8 @@ subprocess.run(["codealmanac", "show", "..."])
 | Wiki | pages, frontmatter, topics, wikilinks, file/folder refs |
 | Index | SQLite read model, FTS search, mentions, backlinks, health |
 | Sources | transcript/path/Git/GitHub/web input contracts, local observations, and runtime snapshots |
-| Runs | durable ledger, events, outputs, foreground/background jobs |
-| Harnesses | Codex and Claude behind normalized ports |
+| Runs/jobs | durable ledger, events, outputs, foreground/background lifecycle state, attach/cancel |
+| Harnesses | Codex app-server and Claude SDK/event harnesses behind normalized ports |
 | Workflows | `build`, `ingest`, `sync`, `garden` |
 | Automation | local scheduled sync/garden |
 | CLI | thin local command surface |
@@ -528,6 +608,7 @@ subprocess.run(["codealmanac", "show", "..."])
 | SDK | No Python SDK package |
 | MCP | No MCP server |
 | Compatibility aliases | No public `almanac`, `alm`, or `absorb` |
+| Archive lineage | No `archived_at` / `superseded_by` page state |
 | Semantic search | FTS and refs first |
 
 ## Non-Negotiables
@@ -553,9 +634,9 @@ subprocess.run(["codealmanac", "show", "..."])
 
 1. Whether local `add` deserves a v1 command or should wait until source-pool
    behavior is concrete.
-2. Resolved 2026-06-29: keep public `jobs` as the CLI inspection noun and use
-   internal `runs` as the service that owns execution records, events, outputs,
-   and lifecycle state.
+2. Resolved 2026-07-01: background jobs ship in v1. Public `jobs` returns as
+   the inspection/control noun; internal `runs` owns records, events, outputs,
+   worker state, and lifecycle transitions.
 3. Resolved 2026-06-29: `serve` is restored after the core CLI/read model,
    because the Python index can now support a read-only viewer without a second
    content model.

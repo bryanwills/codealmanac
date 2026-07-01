@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
+from codealmanac.core.errors import NotFoundError
 from codealmanac.core.models import AppConfig
 from codealmanac.services.health.requests import HealthCheckRequest
 from codealmanac.services.workspaces.models import WorkspaceRegistryStatus
@@ -13,6 +14,7 @@ from codealmanac.services.workspaces.requests import (
     RegisterWorkspaceRequest,
     SelectWorkspaceRequest,
 )
+from codealmanac.services.workspaces.roots import is_initialized_almanac_root
 
 
 def test_initialize_creates_almanac_wiki_and_registry(
@@ -132,6 +134,45 @@ def test_initialize_allows_explicit_dot_almanac_root(
     assert workspace.almanac_root == Path(".almanac")
     assert (repo / ".almanac/pages/getting-started.md").is_file()
     assert app.workspaces.resolve(repo).almanac_path == repo / ".almanac"
+
+
+def test_initialized_wiki_requires_topics_yaml_and_pages(tmp_path: Path):
+    readme_only = tmp_path / "readme-only"
+    topics_only = tmp_path / "topics-only"
+    pages_only = tmp_path / "pages-only"
+    initialized = tmp_path / "initialized"
+    readme_only.mkdir()
+    topics_only.mkdir()
+    (pages_only / "pages").mkdir(parents=True)
+    (initialized / "pages").mkdir(parents=True)
+    (readme_only / "README.md").write_text("# Not enough\n", encoding="utf-8")
+    (topics_only / "topics.yaml").write_text("topics: []\n", encoding="utf-8")
+    (initialized / "topics.yaml").write_text("topics: []\n", encoding="utf-8")
+
+    assert is_initialized_almanac_root(readme_only) is False
+    assert is_initialized_almanac_root(topics_only) is False
+    assert is_initialized_almanac_root(pages_only) is False
+    assert is_initialized_almanac_root(initialized) is True
+
+
+def test_readme_only_almanac_folder_does_not_auto_register_parent(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    projects = tmp_path / "Projects"
+    repo = projects / "codealmanac"
+    sibling = projects / "almanac"
+    repo.mkdir(parents=True)
+    sibling.mkdir()
+    (sibling / "README.md").write_text("# Separate project\n", encoding="utf-8")
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+
+    with pytest.raises(NotFoundError):
+        app.workspaces.resolve(repo)
+
+    assert app.workspaces.list() == []
 
 
 @pytest.mark.parametrize("root", [Path("/tmp/almanac"), Path("../almanac")])

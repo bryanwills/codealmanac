@@ -1,10 +1,17 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessTranscriptRef
-from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
+from codealmanac.services.runs.models import (
+    RunEventKind,
+    RunOperation,
+    RunSpec,
+    RunStatus,
+)
 
 
 class ListRunsRequest(CodeAlmanacModel):
@@ -32,11 +39,74 @@ class ReadRunLogRequest(CodeAlmanacModel):
     wiki: str | None = None
 
 
+class AttachRunRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: str
+    wiki: str | None = None
+
+
+class CancelRunRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: str
+    wiki: str | None = None
+
+
 class StartRunRequest(CodeAlmanacModel):
     cwd: Path
     operation: RunOperation
     wiki: str | None = None
     title: str | None = None
+
+
+class QueueRunRequest(CodeAlmanacModel):
+    cwd: Path
+    spec: RunSpec
+    wiki: str | None = None
+    title: str | None = None
+
+
+class ReadRunSpecRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: str
+    wiki: str | None = None
+
+
+class NextQueuedRunRequest(CodeAlmanacModel):
+    cwd: Path
+    wiki: str | None = None
+
+
+class AcquireRunWorkerLockRequest(CodeAlmanacModel):
+    cwd: Path
+    wiki: str | None = None
+    owner: str
+    pid: int | None = None
+    now: datetime | None = None
+    stale_after: timedelta = timedelta(minutes=30)
+
+    @field_validator("stale_after")
+    @classmethod
+    def positive_stale_after(cls, value: timedelta) -> timedelta:
+        if value.total_seconds() <= 0:
+            raise ValueError("worker lock stale_after must be positive")
+        return value
+
+    @field_validator("owner")
+    @classmethod
+    def require_owner(cls, value: str) -> str:
+        return required_text(value, "run worker lock owner")
+
+    @field_validator("pid")
+    @classmethod
+    def positive_pid(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("worker lock pid must be positive")
+        return value
+
+
+class SpawnRunWorkerRequest(CodeAlmanacModel):
+    cwd: Path
+    wiki: str | None = None
 
 
 class RecordRunEventRequest(CodeAlmanacModel):

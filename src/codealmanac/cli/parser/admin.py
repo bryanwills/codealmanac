@@ -23,6 +23,12 @@ def add_admin_commands(subcommands: argparse._SubParsersAction) -> None:
     jobs_logs = job_subcommands.add_parser("logs", help="show one job log")
     jobs_logs.add_argument("run_id")
     jobs_logs.add_argument("--json", action="store_true")
+    jobs_attach = job_subcommands.add_parser("attach", help="attach to one job log")
+    jobs_attach.add_argument("run_id")
+    jobs_attach.add_argument("--json", action="store_true")
+    jobs_cancel = job_subcommands.add_parser("cancel", help="cancel one queued job")
+    jobs_cancel.add_argument("run_id")
+    jobs_cancel.add_argument("--json", action="store_true")
 
     automation = subcommands.add_parser(
         "automation",

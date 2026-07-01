@@ -1,54 +1,61 @@
-# Contributing to Almanac
+# Contributing to CodeAlmanac
 
-Thanks for helping improve Almanac. The project is a local-first codebase wiki for AI coding agents, so the contribution bar is not only "does it work?" but also "will a future agent understand why this shape exists?"
+CodeAlmanac is a local codebase wiki for AI coding agents. A good contribution
+keeps the command surface scriptable, the wiki artifact repo-owned, and the
+code shape easy for the next maintainer to extend.
 
 ## Start Here
 
 ```bash
 git clone https://github.com/AlmanacCode/codealmanac.git
 cd codealmanac
-npm install
-npm run build
-npm test
+uv sync
+uv run codealmanac --help
 ```
 
-For local CLI testing:
-
-```bash
-npm link
-almanac --help
-```
+For local CLI testing, prefer `uv run codealmanac ...` from the checkout. To
+test the installed package path, use `uv tool install --force .` in a disposable
+environment.
 
 ## Development Checks
 
 Run these before opening a pull request:
 
 ```bash
-npm run build
-npx tsc --noEmit
-npm test
+uv run pytest
+uv run ruff check .
+uv build
 ```
 
-Use focused Vitest runs while developing, then run the full suite before review.
+Use focused pytest runs while developing, then run the full suite before review.
 
 ## Working With The Codebase
 
-- Read `README.md` and `docs/concepts.md` for the user-facing model.
-- Read `AGENTS.md` before structural changes. It contains the active implementation philosophy and non-negotiables.
-- Search the local `.almanac/` wiki before changing a subsystem. The wiki captures decisions, invariants, and gotchas that are not obvious from code.
-- Keep changes local-first. Almanac stores repo wiki data in `.almanac/` and global registry data in `~/.almanac/`.
+- Read `README.md`, `MANUAL.md`, and `docs/concepts.md` for the product model.
+- Search the local `.almanac/` wiki before changing a real subsystem.
+- Keep changes local-first. Repo wiki data lives under the configured Almanac
+  root, which defaults to `almanac/`. User state lives in `~/.codealmanac/`.
 - Keep commands scriptable. Avoid interactive prompts in CLI flows.
 
 ## Tests And Fixtures
 
-Tests use Vitest. Any test that touches `~/.almanac/` or creates a wiki must wrap its body in `withTempHome` from `test/helpers.ts`; this prevents tests from touching a real user registry.
+Tests use pytest. Tests that touch user state should use the `isolated_home`
+fixture so they write under a temp `~/.codealmanac/`, not the real registry.
 
-Prefer the existing helpers in `test/helpers.ts`:
+Prefer creating real initialized wikis through:
 
-- `withTempHome`
-- `makeRepo`
-- `scaffoldWiki`
-- `writePage`
+```python
+app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+```
+
+Synthetic wiki fixtures must include both source markers:
+
+```text
+<almanac-root>/topics.yaml
+<almanac-root>/pages/
+```
+
+`README.md` alone is not a wiki marker.
 
 ## Pull Request Shape
 
@@ -57,7 +64,7 @@ A good pull request includes:
 - A clear problem statement.
 - The design choice, including rejected alternatives when architecture changes.
 - Tests or a short explanation of why no automated test is useful.
-- Any docs or `.almanac/` wiki updates needed for future agents.
+- Any docs or wiki updates needed for future agents.
 
 Keep pull requests buildable and scoped. Avoid unrelated formatting churn.
 
@@ -69,7 +76,3 @@ Use the existing commit style:
 - `fix(slice-N-review): <summary>` for review fixes.
 - `docs: <summary>` for documentation-only changes.
 - `refactor(slice-N): <summary>` for structural cleanup within a slice.
-
-## Good First Contributions
-
-Good first issues usually improve docs, examples, error messages, or focused command behavior. If you are unsure where to start, look for issues labeled `good first issue` or open a short issue describing what you want to improve.

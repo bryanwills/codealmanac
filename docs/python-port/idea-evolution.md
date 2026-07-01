@@ -1,9 +1,89 @@
 # Python Port Idea Evolution
 
-Updated: 2026-06-29
+Updated: 2026-07-01
 
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
+
+## 2026-07-01 - Page Writing Has One Lifecycle
+
+Old hypothesis:
+`ingest` and `garden` could each own their own run ledger, harness, safety, and
+failure flow because the workflows were still small enough to read.
+
+New hypothesis:
+Page-writing operations need a shared lifecycle workflow. Operation workflows
+prepare their own context and prompt; `PageRunWorkflow` owns the repeated run
+transition, preflight, harness, normalized event recording, safety validation,
+index refresh, and terminal state.
+
+Evidence that forced the change:
+`IngestWorkflow` and `GardenWorkflow` duplicated the same harness/run machinery.
+The archived Almanac engine already has a page-run workflow for the same
+reason, and the Python files had grown large enough that ownership was no
+longer obvious.
+
+Code or product assumption affected:
+`workflows/page_run/` is now the only place page-writing operations should call
+`RunHarnessRequest`, record harness transcripts, translate harness events, and
+finish or fail runs.
+
+Follow-up test:
+Keep architecture coverage that prevents `ingest` and `garden` from importing
+shared harness/run plumbing directly.
+
+## 2026-07-01 - App-Server And Background Jobs Are Active Work Again
+
+Old hypothesis:
+Public-beta readiness was close enough that richer Codex app-server support,
+Claude SDK events, and queue/worker background jobs could wait for later
+evidence.
+
+New hypothesis:
+The active rewrite goal is no longer just public-beta packaging. Restoring the
+archived behavior means bringing back rich harness events and background job
+machinery in Python shape before calling the architecture good enough.
+
+Evidence that forced the change:
+The user explicitly reopened architecture quality work and named Codex
+app-server, Claude SDK/event harnesses, background jobs, attach/cancel, and
+durable run events as required restoration targets.
+
+Code or product assumption affected:
+`codex exec` is a temporary adapter, not the final Codex lifecycle path.
+Foreground `sync` pending claims remain useful, but they do not replace the
+background queue/worker surface now required by the active goal.
+
+Follow-up test:
+When those slices land, add behavior tests for attach/cancel/run-event replay
+and provider tests that prove rich normalized events survive into `jobs logs`.
+
+## 2026-07-01 - Cancellation Is Run State
+
+Old hypothesis:
+Background jobs should probably start with a queue and worker, because that is
+the most visible missing machinery from the archived implementation.
+
+New hypothesis:
+The queue and worker need a stable control contract first. `cancel` must be
+durable run state, `attach` must read the durable event stream, and terminal
+finalization must not overwrite cancelled records.
+
+Evidence that forced the change:
+The archive's worker, finalization, and CLI all depended on cancellation being
+visible in storage before and after execution. The current Python code could
+finish a run after any external actor marked it cancelled because `finish(...)`
+did not re-check terminal cancellation.
+
+Code or product assumption affected:
+`RunStore.finish(...)` now preserves `cancelled`; `RunsService.cancel(...)`
+owns cancellation; `jobs cancel` no longer needs storage knowledge; and future
+background workers should use the same service/store behavior instead of
+inventing a separate cancellation marker path.
+
+Follow-up test:
+The worker slice should prove that queued cancellation prevents execution and
+running cancellation cannot be rewritten by finalization.
 
 ## 2026-06-29 - Public Release Is A Gate, Not A Feeling
 
@@ -1496,7 +1576,7 @@ Evidence that forced the change:
 Running `codealmanac doctor --json` in this checkout with a registered default
 `almanac/` root but no built wiki created `almanac/index.db`. The old registry
 status then treated the directory as available even though it contained no
-`README.md`, `topics.yaml`, or `pages/`.
+source marker pair.
 
 Code or product assumption affected:
 `workspaces` now owns a marker-based definition of an initialized Almanac root.
@@ -1745,3 +1825,114 @@ Slice 71 built fresh wheel/sdist artifacts, installed each into clean Python
 Follow-up test:
 Only rerun package smoke again if package metadata, README, prompts, manual
 docs, server assets, or installed behavior changes before publish.
+
+## 2026-06-30 - Wiki Detection Requires Source Markers, Not README
+
+Old hypothesis:
+A configured Almanac root could be considered initialized when it contained any
+one marker: `README.md`, `topics.yaml`, or `pages/`.
+
+New hypothesis:
+An initialized CodeAlmanac wiki requires both `topics.yaml` and `pages/`.
+`README.md` is useful guidance, but it is too generic to identify a wiki.
+
+Evidence that forced the change:
+Running diagnostics from this repo resolved `/Users/rohan/Desktop/Projects` as
+the workspace because that directory has a sibling `almanac/` project folder
+with a `README.md`. That made a separate project look like the default
+`almanac/` wiki root for the parent directory.
+
+Code or product assumption affected:
+Root detection, transcript discovery, registry availability, README language,
+the bundled manual, and contributor fixtures now use `topics.yaml + pages/` as
+the source marker pair. The repo root remains configurable; the marker rule
+applies inside whichever root was configured.
+
+Follow-up test:
+Keep a regression test where `Projects/almanac/README.md` exists beside
+`Projects/codealmanac/`; resolving from `Projects/codealmanac/` must not
+register `Projects` as a wiki workspace.
+
+## 2026-07-01 - Architecture Quality Reopens Before Release
+
+Old hypothesis:
+After slice 71, implementation work was effectively complete and the next work
+was release operations.
+
+New hypothesis:
+The active goal is to keep improving the Python architecture while implementing
+the missing behavior until further cleanup is genuinely diminishing returns.
+The first renewed pressure point is the CLI edge because `dispatch/root.py`
+still owned lifecycle and wiki request construction.
+
+Evidence that forced the change:
+Comparing the current Python rewrite against `../almanac` showed that Almanac's
+CLI edge has a smaller root router and clearer product-noun dispatch modules.
+`MANUAL.md` says the unit of work is evolving the codebase so the feature fits,
+and Cosmic Python chapter 4 treats the service layer as the use-case boundary
+rather than letting entrypoints become product logic.
+
+Code or product assumption affected:
+Slice 72 splits dispatch into lifecycle, wiki, and admin modules. The root
+dispatcher is now only a domain delegator, which leaves background jobs,
+setup/uninstall, structured page sources, and richer harness work with cleaner
+CLI landing zones.
+
+Follow-up test:
+Run focused CLI/architecture tests after each CLI-domain change, and split
+`cli/render/root.py` only when output behavior creates enough pressure to make
+that split pay for itself.
+
+## 2026-07-01 - Background Queue Membership Is Spec-Backed
+
+Old hypothesis:
+The next background-jobs step was simply to drain runs whose status was
+`queued`.
+
+New hypothesis:
+A background queue item is a queued run with a durable executable spec. A
+foreground lifecycle run also starts as `queued`, so worker eligibility must be
+marked by `<run-id>.spec.json`, not status alone.
+
+Evidence that forced the change:
+`IngestWorkflow.run(...)` and `GardenWorkflow.run(...)` create a queued record
+before `PageRunWorkflow.begin(...)` marks it running. A worker that selected
+all queued records could steal or fail a foreground run during that legitimate
+transition window.
+
+Code or product assumption affected:
+`RunStore.next_queued(...)` now selects only queued records with a spec file.
+`RunQueueWorkflow` persists and consumes `RunSpec` values for Ingest/Garden,
+and missing detached process spawning remains a separate slice.
+
+Follow-up test:
+When public foreground/background flags land, prove foreground lifecycle runs
+still execute immediately and background lifecycle runs enqueue a spec-backed
+record that a worker can drain.
+
+## 2026-07-01 - Background Mode Without Default-Mode Drift
+
+Old hypothesis:
+Restoring the archive's background machinery might also mean restoring archived
+operation defaults in the same slice.
+
+New hypothesis:
+Restore the machinery first and keep the default-mode decision explicit. Python
+v1 can support `ingest --background` and `garden --background` without silently
+changing the behavior of plain `ingest` and `garden`.
+
+Evidence that forced the change:
+The current Python CLI has shipped and tested foreground lifecycle semantics.
+The archive defaulted some operations to background, but the live agreement
+also says behavior reference should not silently simplify away lifecycle
+semantics. Changing defaults is a product decision, not a prerequisite for the
+process boundary.
+
+Code or product assumption affected:
+Slice 76 adds a worker-spawner port, subprocess adapter, hidden `__run-worker`
+entrypoint, and explicit background flags. It leaves default foreground
+behavior intact.
+
+Follow-up test:
+When deciding defaults, update README/manual/CLI tests together and dogfood the
+chosen default from an installed CLI, not only through the app API.

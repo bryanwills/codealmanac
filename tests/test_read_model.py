@@ -72,6 +72,7 @@ def test_search_auto_registers_existing_wiki(
 ):
     repo = tmp_path / "repo"
     (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     write_page(repo, "note.md", "# Note\n\nUniqueNeedle context.\n")
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")

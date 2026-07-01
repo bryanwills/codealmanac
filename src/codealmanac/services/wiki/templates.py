@@ -27,6 +27,9 @@ Do not write pages that restate nearby code.
 
 Topics live in `topics.yaml`. Pages live in `pages/`.
 
+Those two entries are the source markers for an initialized CodeAlmanac wiki.
+`README.md` guides writers, but it is not a marker by itself.
+
 ## Manual
 
 Read `manual/README.md` before creating, reorganizing, or substantially

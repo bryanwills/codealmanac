@@ -5,6 +5,7 @@ from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
+from codealmanac.integrations.runs import SubprocessRunWorkerSpawner
 from codealmanac.integrations.sources import (
     default_source_runtime_adapters,
     default_transcript_discovery_adapters,
@@ -27,6 +28,7 @@ from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.index.store import IndexStore
 from codealmanac.services.pages.service import PagesService
+from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.search.service import SearchService
@@ -51,6 +53,8 @@ from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
+from codealmanac.workflows.page_run import PageRunWorkflow
+from codealmanac.workflows.run_queue import RunQueueWorkflow
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncLedgerStore
 
@@ -60,6 +64,7 @@ class CodeAlmanacWorkflows:
     build: BuildWorkflow
     ingest: IngestWorkflow
     garden: GardenWorkflow
+    queue: RunQueueWorkflow
     sync: SyncWorkflow
 
 
@@ -92,6 +97,7 @@ def create_app(
     transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None = None,
     source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None,
     scheduler: SchedulerAdapter | None = None,
+    worker_spawner: RunWorkerSpawner | None = None,
     update_metadata: PackageInstallMetadataProvider | None = None,
     update_runner: PackageCommandRunner | None = None,
 ) -> CodeAlmanac:
@@ -127,29 +133,45 @@ def create_app(
         default_harness_adapters() if harness_adapters is None else harness_adapters
     )
     build = BuildWorkflow(workspaces, wiki, index)
-    ingest = IngestWorkflow(
+    ingest_page_runs = PageRunWorkflow(
         workspaces,
-        sources,
         harnesses,
         runs,
         index,
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="ingest"),
-        prompts,
     )
-    garden = GardenWorkflow(
+    garden_page_runs = PageRunWorkflow(
         workspaces,
         harnesses,
         runs,
         index,
-        health,
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
+    )
+    ingest = IngestWorkflow(
+        sources,
+        runs,
+        ingest_page_runs,
         prompts,
+    )
+    garden = GardenWorkflow(
+        runs,
+        index,
+        health,
+        garden_page_runs,
+        prompts,
+    )
+    queue = RunQueueWorkflow(
+        runs,
+        ingest,
+        garden,
+        worker_spawner or SubprocessRunWorkerSpawner(),
     )
     sync = SyncWorkflow(workspaces, sources, runs, ingest, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
         build=build,
         ingest=ingest,
         garden=garden,
+        queue=queue,
         sync=sync,
     )
     return CodeAlmanac(

@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 from datetime import UTC, datetime
@@ -23,10 +24,18 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.runs.models import RunEventKind, RunOperation
+from codealmanac.services.runs.models import (
+    RunEventKind,
+    RunOperation,
+    RunStatus,
+    RunWorkerSpawnResult,
+)
 from codealmanac.services.runs.requests import (
+    ListRunsRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
+    ShowRunRequest,
+    SpawnRunWorkerRequest,
     StartRunRequest,
 )
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
@@ -36,6 +45,7 @@ from codealmanac.services.updates.models import (
     PackageInstallMetadata,
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.workflows.ingest.requests import RunIngestRequest
 from codealmanac.workflows.sync.models import (
     SyncLedger,
     SyncLedgerEntry,
@@ -114,6 +124,18 @@ The public CLI gardened the local wiki graph.
             output_text="gardened through CLI",
             summary="gardened through CLI",
             changed_files=(page,),
+        )
+
+
+class CliWorkerSpawner:
+    def __init__(self):
+        self.requests: list[SpawnRunWorkerRequest] = []
+
+    def spawn(self, request: SpawnRunWorkerRequest) -> RunWorkerSpawnResult:
+        self.requests.append(request)
+        return RunWorkerSpawnResult(
+            child_pid=5151,
+            command=("fake-codealmanac-worker",),
         )
 
 
@@ -559,6 +581,43 @@ default = "codex"
     assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
+def test_cli_ingest_background_queues_run_and_spawns_worker(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
+    harness = CliWritingHarnessAdapter()
+    spawner = CliWorkerSpawner()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(harness,),
+        worker_spawner=spawner,
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(["ingest", "note.md", "--using", "codex", "--background", "--json"])
+        == 0
+    )
+
+    output = capsys.readouterr()
+    data = json.loads(output.out)
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=data["run_id"]))
+
+    assert data["status"] == "queued"
+    assert data["child_pid"] == 5151
+    assert run.status == RunStatus.QUEUED
+    assert harness.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+
+
 def test_cli_garden_runs_workflow_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
@@ -601,6 +660,72 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Improve one page boundary." in adapter.requests[0].prompt
     assert (repo / "almanac/pages/cli-garden-note.md").is_file()
+
+
+def test_cli_garden_background_plain_output(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    harness = CliGardenHarnessAdapter()
+    spawner = CliWorkerSpawner()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(harness,),
+        worker_spawner=spawner,
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["garden", "--using", "codex", "--background"]) == 0
+
+    output = capsys.readouterr()
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+
+    assert f"queued {run.run_id}: queued" in output.out
+    assert "worker_pid: 5151" in output.out
+    assert run.operation == RunOperation.GARDEN
+    assert harness.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+
+
+def test_cli_hidden_run_worker_drains_queued_run(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
+    harness = CliWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(harness,),
+        worker_spawner=CliWorkerSpawner(),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    queued = app.workflows.queue.queue_ingest(
+        RunIngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
+        )
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["__run-worker", "--cwd", str(repo)]) == 0
+
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=queued.run_id))
+
+    assert run.status == RunStatus.DONE
+    assert harness.requests[0].kind == HarnessKind.CODEX
+    assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
 def test_cli_sync_status_reports_ready_transcripts(
@@ -908,10 +1033,28 @@ def test_cli_jobs_inspects_local_run_records(
     assert "1\tstatus\tqueued ingest\n" in log_output.out
     assert "2\tmessage\tread note\n" in log_output.out
 
+    assert main(["jobs", "attach", record.run_id]) == 0
+    attach_output = capsys.readouterr()
+    assert "1\tstatus\tqueued ingest\n" in attach_output.out
+    assert "2\tmessage\tread note\n" in attach_output.out
+    assert "status: queued\n" in attach_output.out
+
+    assert main(["jobs", "cancel", record.run_id]) == 0
+    cancel_output = capsys.readouterr()
+    assert f"cancelled {record.run_id}\n" in cancel_output.out
+    assert app.runs.show(ShowRunRequest(cwd=repo, run_id=record.run_id)).status == (
+        RunStatus.CANCELLED
+    )
+
     assert main(["jobs", "--json"]) == 0
     json_output = capsys.readouterr()
     assert f'"run_id": "{record.run_id}"' in json_output.out
     assert '"session_id": "codex-job-session"' in json_output.out
+
+    assert main(["jobs", "cancel", record.run_id, "--json"]) == 0
+    cancel_json_output = capsys.readouterr()
+    assert '"changed": false' in cancel_json_output.out
+    assert '"status": "cancelled"' in cancel_json_output.out
 
 
 def test_cli_search_and_show_read_current_repo_wiki(
@@ -1007,6 +1150,7 @@ def test_cli_tag_and_untag_update_page_frontmatter(
     repo = tmp_path / "repo"
     pages = repo / "almanac/pages"
     pages.mkdir(parents=True)
+    (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     page = pages / "auth-flow.md"
     page.write_text("---\ntopics: [auth]\n---\n# Auth Flow\n", encoding="utf-8")
     monkeypatch.chdir(repo)
