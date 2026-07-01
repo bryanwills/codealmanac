@@ -999,3 +999,13 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 | CLI import smoke | `uv run codealmanac --help` | passed; command list rendered with lifecycle, read, setup, jobs, and automation verbs |
+
+## Gates For Slice 88 Setup Automation Docs
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused public docs contract | `uv run pytest tests/test_public_contract.py` | passed; 24 tests |
+| README command parse proof | `build_parser().parse_args(...)` for the new setup/uninstall examples | passed; parsed 4 commands |
+| Full tests | `uv run pytest` | passed; 299 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

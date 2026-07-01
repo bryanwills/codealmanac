@@ -94,7 +94,9 @@ Command groups:
 | Read | `list`, `search`, `show`, `topics`, `health`, `serve` | No |
 | Organize | `tag`, `untag`, `topics create/rename/delete/link` | No |
 | Lifecycle | `init`, `build`, `ingest`, `garden`, `sync`, `jobs` | `ingest`, `garden`, and write-capable `sync` |
-| Admin | `doctor`, `update`, `automation`, `reindex` | No |
+| Admin | `setup`, `uninstall`, `doctor`, `update`, `automation`, `reindex` | No |
 
 Scheduled automation is local scheduler state. It runs ordinary `codealmanac
 sync` or `codealmanac garden` commands; it is not hosted sync.
+`codealmanac setup --install-automation` can install those scheduler entries,
+and `codealmanac uninstall --keep-automation` leaves them in place.

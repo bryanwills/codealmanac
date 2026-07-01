@@ -33,6 +33,8 @@ README_REQUIRED_FRAGMENTS = (
     "Python 3.12+",
     "uv tool install codealmanac",
     "codealmanac setup --yes",
+    "codealmanac setup --yes --install-automation",
+    "codealmanac setup --yes --sync-every 5h --sync-quiet 45m",
     "codealmanac init",
     'codealmanac search "getting"',
     "codealmanac serve",
@@ -43,6 +45,7 @@ README_REQUIRED_FRAGMENTS = (
     "`topics.yaml` and `pages/`",
     "Derived local state appears when commands need it:",
     "codealmanac uninstall --yes",
+    "codealmanac uninstall --yes --keep-automation",
     "No hosted login/connect/upload commands.",
 )
 
@@ -55,6 +58,7 @@ README_FORBIDDEN_FRAGMENTS = (
     "~/.almanac",
     "codealmanac.com/dashboard",
     "usealmanac.com",
+    "does not install scheduled automation",
     "ingest is an alias",
     "absorb",
 )
@@ -138,6 +142,8 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
     assert "uv sync" in docs["CONTRIBUTING.md"]
     assert "uv run pytest" in docs["CONTRIBUTING.md"]
     assert "codealmanac init --root <path>" in docs["docs/concepts.md"]
+    assert "codealmanac setup --install-automation" in docs["docs/concepts.md"]
+    assert "codealmanac uninstall --keep-automation" in docs["docs/concepts.md"]
     for body in docs.values():
         assert "npm install" not in body
         assert "npm test" not in body

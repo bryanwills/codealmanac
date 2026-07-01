@@ -51,13 +51,24 @@ codealmanac setup --yes --target codex
 codealmanac setup --yes --target claude
 ```
 
-Setup currently installs only local agent instructions. It does not connect to
-a hosted service and it does not install scheduled automation.
+Plain setup installs only local agent instructions and does not connect to a
+hosted service. Scheduled automation is explicit:
 
-To remove setup-owned instruction artifacts:
+```bash
+codealmanac setup --yes --install-automation
+codealmanac setup --yes --sync-every 5h --sync-quiet 45m
+codealmanac setup --yes --install-automation --garden-off
+```
+
+`--install-automation` installs local scheduled `sync` and `garden` jobs.
+Passing `--sync-every`, `--sync-quiet`, `--garden-every`, or `--garden-off`
+also opts into automation installation.
+
+To remove setup-owned instruction artifacts and scheduled automation:
 
 ```bash
 codealmanac uninstall --yes
+codealmanac uninstall --yes --keep-automation
 ```
 
 ## Quickstart

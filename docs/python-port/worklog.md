@@ -1030,3 +1030,9 @@ and temp repo: public `search --mentions src/auth/session.py` found a page
 through `sources[type=file]`, `show --meta` and `show --json` displayed file
 and web sources, and `health --json` reported no source warnings when citations
 matched source ids.
+Slice 88 fixes the docs drift introduced after setup gained automation install
+flags in slice 87. README now documents explicit setup automation commands and
+`uninstall --keep-automation`; `docs/concepts.md` lists setup/uninstall in the
+Admin group and names their scheduler behavior; public-contract tests require
+the new examples and reject the stale "does not install scheduled automation"
+wording.

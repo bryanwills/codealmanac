@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 87 setup automation options.
+- Latest implementation slice: slice 88 setup automation docs.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -91,8 +91,9 @@ Updated: 2026-07-01
   `codealmanac setup --yes --target codex|claude|all` installs a current
   `codealmanac` managed instruction block or Claude guide/import. `codealmanac
   uninstall --yes --target ...` removes only those setup-owned artifacts.
-  Remaining setup work is terminal UX, target selection UI, default agent/model
-  selection, and local automation choices.
+  Later slices restored Rich terminal output, default harness recommendations,
+  and explicit setup-owned automation. Raw-mode target selection remains a
+  possible polish slice if setup interaction is reopened.
 - Slice 80 improves setup/uninstall terminal output through Rich under the CLI
   render edge. Services still return Pydantic result facts; only
   `cli/render/setup.py` imports Rich. Text setup output now has a branded panel,
@@ -147,6 +148,11 @@ Updated: 2026-07-01
   through CLI shell-out. Plain setup still only recommends automation.
   `codealmanac uninstall` removes scheduled automation by default, and
   `--keep-automation` preserves scheduler entries.
+- Slice 88 updates user-facing docs after setup gained automation install
+  flags. README now documents explicit setup automation commands and
+  `--keep-automation`; `docs/concepts.md` includes setup/uninstall in Admin;
+  public-contract tests guard against the old "does not install scheduled
+  automation" wording returning.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
