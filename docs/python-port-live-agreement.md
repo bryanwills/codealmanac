@@ -247,6 +247,11 @@ It is the constraint document for future agents.
   The current `index.db` migration strategy is rebuild-on-version-change
   because the index is a derived read model from `<almanac-root>/pages/` and
   `topics.yaml`.
+- 2026-07-01: Index read views are split by query family. `IndexStore` remains
+  the store facade, `services/index/views.py` remains a small compatibility
+  facade, and read-side SQL lives in `search_views.py`, `summary_views.py`,
+  `page_views.py`, `topic_views.py`, and `health_views.py`. Projection writes,
+  migrations, and page-document loading stay in `store.py`.
 - 2026-06-29: `config` owns local user/project TOML parsing and precedence
   through `pydantic-settings`. The first config surface is intentionally
   narrow: user config at `~/.codealmanac/config.toml` and project config at

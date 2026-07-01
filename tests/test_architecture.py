@@ -69,16 +69,65 @@ def test_rich_terminal_ui_stays_in_cli_render_edge():
 def test_index_read_views_are_separate_from_projection_writes():
     store = SRC_ROOT / "services/index/store.py"
     views = SRC_ROOT / "services/index/views.py"
+    view_modules = (
+        views,
+        SRC_ROOT / "services/index/search_views.py",
+        SRC_ROOT / "services/index/summary_views.py",
+        SRC_ROOT / "services/index/page_views.py",
+        SRC_ROOT / "services/index/topic_views.py",
+        SRC_ROOT / "services/index/health_views.py",
+    )
     views_text = views.read_text(encoding="utf-8")
 
     assert views.is_file()
     assert "search_pages(connection, request)" in store.read_text(encoding="utf-8")
-    assert "load_page_document" not in views_text
-    assert "apply_migrations" not in views_text
-    assert "INSERT " not in views_text
-    assert "DELETE " not in views_text
-    assert "CREATE " not in views_text
-    assert "DROP " not in views_text
+    assert len(views_text.splitlines()) <= 40
+    assert "codealmanac.services.index.search_views import search_pages" in views_text
+    assert "codealmanac.services.index.summary_views import index_counts" in views_text
+    assert "codealmanac.services.index.page_views import get_page_view" in views_text
+    assert "codealmanac.services.index.topic_views import" in views_text
+    assert "codealmanac.services.index.health_views import" in views_text
+    for path in view_modules:
+        text = path.read_text(encoding="utf-8")
+        assert "load_page_document" not in text
+        assert "apply_migrations" not in text
+        assert "INSERT " not in text
+        assert "DELETE " not in text
+        assert "CREATE " not in text
+        assert "DROP " not in text
+
+
+def test_index_read_views_are_split_by_query_family():
+    index_root = SRC_ROOT / "services/index"
+    expected = {
+        "views.py",
+        "search_views.py",
+        "summary_views.py",
+        "page_views.py",
+        "topic_views.py",
+        "health_views.py",
+    }
+    oversized = []
+    for path in expected:
+        line_count = len((index_root / path).read_text(encoding="utf-8").splitlines())
+        if line_count > 260:
+            oversized.append(f"{path}:{line_count}")
+
+    assert expected <= {path.name for path in index_root.glob("*.py")}
+    assert oversized == []
+    assert "fts_pages MATCH" in (index_root / "search_views.py").read_text(
+        encoding="utf-8"
+    )
+    assert "PageView(" in (index_root / "page_views.py").read_text(encoding="utf-8")
+    assert "IndexCounts(" in (index_root / "summary_views.py").read_text(
+        encoding="utf-8"
+    )
+    assert "WITH RECURSIVE descendants" in (
+        index_root / "topic_views.py"
+    ).read_text(encoding="utf-8")
+    assert "MissingSourceCitation" in (index_root / "health_views.py").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_serve_css_does_not_scale_type_with_viewport_width():

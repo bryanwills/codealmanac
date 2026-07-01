@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 97 run ledger persistence boundaries.
+- Latest implementation slice: slice 98 index read view boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -213,15 +213,22 @@ Updated: 2026-07-01
   uncommitted queue spec. Architecture tests keep `store.py` under 280 lines
   and prevent JSON parsing, path validation, worker lock code, and append-file
   mechanics from moving back into the facade.
+- Slice 98 splits the index read side by query family. `IndexStore` still
+  imports from the small `services/index/views.py` facade, while
+  `search_views.py` owns FTS/file-mention SQL, `summary_views.py` owns count
+  summaries, `page_views.py` owns page detail projection, `topic_views.py` owns
+  topic DAG reads, and `health_views.py` owns health findings. Architecture
+  tests keep view modules read-only, keep `views.py` tiny, and prevent
+  migrations, projection-write SQL, or page-document loading from entering the
+  read side.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
   such as ignored workspace directories.
 - `codealmanac.database` owns SQLite connection setup and migration
-  application. `IndexStore` owns the first typed store migration for the
-  derived `index.db` read model. `services/index/views.py` owns read-only
-  query SQL and row-to-Pydantic view construction for search, page/topic reads,
-  and health.
+  application. `IndexStore` owns the derived `index.db` schema, source loading,
+  and projection writes. `services/index/views.py` is a small read facade over
+  query-family view modules.
 - `services/config` owns local TOML config parsing and precedence. Project
   config is `<almanac-root>/config.toml`; CLI flags still win over config. It
   uses `pydantic-settings` TOML sources.

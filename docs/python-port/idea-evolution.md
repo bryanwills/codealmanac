@@ -5,6 +5,33 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Index Reads Need Query-Family Modules
+
+Old hypothesis:
+The index read side could live in one `services/index/views.py` file because
+all functions were read-only SQL over the same derived SQLite model.
+
+New hypothesis:
+`views.py` should be a small facade over query-family modules. Search and
+file-mention SQL lives in `search_views.py`, summary counts live in
+`summary_views.py`, page detail projection lives in `page_views.py`, topic DAG
+reads live in `topic_views.py`, and health findings live in `health_views.py`.
+
+Evidence that forced the change:
+`views.py` reached 627 lines. The read side now serves search/show/topics,
+health, and the local viewer. Those surfaces share a database but have
+different reasons to change, especially after structured page `sources:` added
+health findings and page provenance projections.
+
+Code or product assumption affected:
+Architecture tests now keep `views.py` tiny, require the query-family modules,
+keep each read-view module under 260 lines, and prevent migrations,
+projection-write SQL, and page-document loading from entering any view module.
+
+Follow-up test:
+Future index changes should add behavior tests for the affected public read
+surface and keep read-only SQL in the module named for that query family.
+
 ## 2026-07-01 - Run Ledger Needs A Transition Writer
 
 Old hypothesis:
