@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 135 streaming jobs attach.
+- Latest implementation slice: slice 136 real Codex app-server dogfood.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -133,6 +133,15 @@ Updated: 2026-07-01
   `uv run pytest` (`353 passed`), full Ruff, and diff hygiene passed; temp-repo
   dogfood confirmed attach replayed queued/message/done events and exited at
   `status: done`.
+- Slice 136 dogfooded a real installed `codex app-server` through the default
+  Python Codex harness and `IngestWorkflow`. The first real run exposed
+  whitespace-only `item/agentMessage/delta` notifications; the Codex event edge
+  now drops blank text/plan deltas before constructing `HarnessEvent`. The
+  rerun used `create_app(AppConfig(registry_path=<tmp>))` with real HOME/Codex
+  auth, wrote `webhook-idempotency-invariant.md`, finished run
+  `ingest-20260701163042-e849c0e6` as `done`, search found the page, and health
+  was clean. Focused Codex/public-contract tests, full `uv run pytest`
+  (`353 passed`), full Ruff, and diff hygiene passed.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into
@@ -1130,8 +1139,8 @@ Behavior:
 ## Next Move
 
 1. Likely next pressure points:
-   - real-provider dogfood for the richer Codex app-server and Claude SDK
-     transports, once model-call cost is acceptable
+   - real-provider dogfood for the richer Claude SDK transport, once model-call
+     cost is acceptable; real Codex app-server dogfood passed in slice 136
    - final publish operations: version/changelog, PyPI credentials, and human
      publish decision; slice 93 fixed the stale GitHub npm automation, but the
      publish workflow is intentionally disabled until a PyPI policy is chosen

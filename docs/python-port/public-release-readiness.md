@@ -120,6 +120,11 @@ and the human publish decision.
   inspection confirmed the updated README/state-root metadata and package data,
   clean Python 3.12.9 installs passed installed CLI smoke, `serve` HTTP checks
   passed, and both artifacts wrote registry state under `~/.codealmanac/`.
+- Slice 136 ran the default real Codex app-server harness through
+  `IngestWorkflow`. The first run exposed whitespace-only text deltas from the
+  real app-server; the provider edge now drops blank deltas before constructing
+  `HarnessEvent`, and the rerun finished `done`, created a page, search found
+  it, and health was clean.
 
 ## Next Useful Pressure Tests
 

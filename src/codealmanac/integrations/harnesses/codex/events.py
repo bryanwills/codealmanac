@@ -142,7 +142,7 @@ def text_delta_event(
     actor: HarnessRunActor,
 ) -> tuple[HarnessEvent, ...]:
     delta = string_field(params, "delta")
-    if delta is None:
+    if delta is None or delta.strip() == "":
         return ()
     return (
         HarnessEvent(
@@ -160,7 +160,7 @@ def plan_delta_event(
     actor: HarnessRunActor,
 ) -> tuple[HarnessEvent, ...]:
     delta = string_field(params, "delta")
-    if delta is None:
+    if delta is None or delta.strip() == "":
         return ()
     return (
         HarnessEvent(

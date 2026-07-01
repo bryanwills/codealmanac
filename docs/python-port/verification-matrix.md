@@ -1430,3 +1430,15 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 349 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 136 Real Codex App-Server Dogfood
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused Codex app-server regression | `uv run pytest tests/test_codex_app_server_adapter.py tests/test_codex_adapter.py` | passed; 11 tests. Fake app-server now emits a whitespace-only `item/agentMessage/delta` before a real text delta, and the expected normalized events stay unchanged. |
+| Focused lint | `uv run ruff check src/codealmanac/integrations/harnesses/codex/events.py tests/test_codex_app_server_adapter.py` | passed |
+| First real Codex app-server dogfood | service-level `create_app(AppConfig(registry_path=<tmp>))` with real HOME/Codex auth, temp Git repo, and `IngestWorkflow` using `HarnessKind.CODEX` | failed productively; real app-server emitted a whitespace-only text delta, which violated `HarnessEvent.message` non-empty validation. |
+| Real Codex app-server rerun | same service-level dogfood after blank-delta filtering | passed; repo `/var/folders/v2/f289rp_d0_118wk72xtvtp5r0000gn/T/codealmanac-real-codex-yyd0gccs/repo`, run `ingest-20260701163042-e849c0e6`, status `done`, created `webhook-idempotency-invariant.md`, search for `webhook` returned the page, and health counts were all zero. |
+| Full tests | `uv run pytest` | passed; 353 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

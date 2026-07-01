@@ -208,6 +208,12 @@ It is the constraint document for future agents.
   detection; `run_result.py` owns `CodexRunState`/failure to
   `HarnessRunResult` projection; and `timeouts.py` owns tolerant timeout-env
   parsing.
+- 2026-07-01: Real Codex app-server dogfood proved the installed app-server can
+  drive a full local Ingest lifecycle through the Python harness. The run first
+  exposed that real `item/agentMessage/delta` notifications may be
+  whitespace-only; the provider edge now drops blank text/plan deltas before
+  constructing `HarnessEvent` because normalized harness events require
+  non-empty messages.
 - 2026-07-01: The default Python Claude harness now uses `claude-agent-sdk` for
   lifecycle execution, not `claude -p --output-format json`. The adapter keeps
   readiness probing at `claude auth status` with `ANTHROPIC_API_KEY` fallback

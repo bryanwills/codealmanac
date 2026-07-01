@@ -1369,3 +1369,13 @@ Focused service, CLI, architecture, and public-contract tests passed. Full
 `uv run pytest` reported `353 passed`; full Ruff and diff hygiene passed.
 Temp-repo CLI dogfood confirmed attach replayed queued/message/done events
 before exiting at `status: done`.
+Slice 136 runs the real installed Codex app-server through the default Python
+Codex harness and `IngestWorkflow`. The first real run reached model output and
+then failed because real `item/agentMessage/delta` notifications can be
+whitespace-only; `HarnessEvent.message` correctly rejects empty messages, so
+the Codex provider edge now drops blank text and plan deltas. The rerun used a
+temp registry with the real HOME/Codex auth, finished
+`ingest-20260701163042-e849c0e6` as `done`, created
+`webhook-idempotency-invariant.md`, search found the page, and all health
+counts were zero. Focused Codex/public-contract tests, full pytest
+(`353 passed`), full Ruff, and diff hygiene passed.

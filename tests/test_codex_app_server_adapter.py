@@ -178,6 +178,16 @@ def run_success():
             "params": {
                 "threadId": "thread-root",
                 "turnId": "turn-root",
+                "delta": "\n",
+            },
+        }
+    )
+    send(
+        {
+            "method": "item/agentMessage/delta",
+            "params": {
+                "threadId": "thread-root",
+                "turnId": "turn-root",
                 "delta": "final ",
             },
         }
