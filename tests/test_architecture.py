@@ -464,15 +464,18 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/automation.py").is_file()
+    assert (cli_root / "dispatch/build.py").is_file()
     assert (cli_root / "dispatch/config.py").is_file()
     assert (cli_root / "dispatch/diagnostics.py").is_file()
     assert (cli_root / "dispatch/jobs.py").is_file()
     assert (cli_root / "dispatch/lifecycle.py").is_file()
     assert (cli_root / "dispatch/serve.py").is_file()
     assert (cli_root / "dispatch/setup.py").is_file()
+    assert (cli_root / "dispatch/sync.py").is_file()
     assert (cli_root / "dispatch/topics.py").is_file()
     assert (cli_root / "dispatch/updates.py").is_file()
     assert (cli_root / "dispatch/wiki.py").is_file()
+    assert (cli_root / "dispatch/worker.py").is_file()
     assert (cli_root / "dispatch/workspaces.py").is_file()
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/automation.py").is_file()
@@ -709,6 +712,54 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     assert "dispatch_uninstall(args, app)" in admin
     assert "dispatch_jobs(args, app)" in admin
     assert "dispatch_automation(args, app)" in admin
+    assert oversized == []
+
+
+def test_cli_lifecycle_dispatch_stays_split_by_command_family():
+    dispatch_path = SRC_ROOT / "cli/dispatch"
+    lifecycle = (dispatch_path / "lifecycle.py").read_text(encoding="utf-8")
+    module_expectations = {
+        "build.py": ("InitializeWorkspaceRequest", "def dispatch_build("),
+        "operations.py": ("RunIngestRequest", "def dispatch_ingest("),
+        "sync.py": ("RunSyncRequest", "def dispatch_sync("),
+        "worker.py": ("DrainRunQueueRequest", "def dispatch_run_worker("),
+    }
+    forbidden_lifecycle_fragments = (
+        "InitializeWorkspaceRequest",
+        "RunIngestRequest",
+        "RunGardenRequest",
+        "RunSyncRequest",
+        "RunSyncStatusRequest",
+        "DrainRunQueueRequest",
+        "TranscriptApp",
+        "ValidationFailed",
+        "load_cli_config",
+        "resolve_harness",
+        "parse_sync_apps",
+        "sync_execution",
+        "render_",
+    )
+    oversized = []
+
+    for module_name, fragments in module_expectations.items():
+        text = (dispatch_path / module_name).read_text(encoding="utf-8")
+        assert all(fragment in text for fragment in fragments)
+        line_count = len(text.splitlines())
+        if line_count > 140:
+            oversized.append(f"{module_name}:{line_count}")
+
+    assert len(lifecycle.splitlines()) <= 80
+    assert [
+        fragment
+        for fragment in forbidden_lifecycle_fragments
+        if fragment in lifecycle
+    ] == []
+    assert "dispatch_init(args, app)" in lifecycle
+    assert "dispatch_build(args, app)" in lifecycle
+    assert "dispatch_ingest(args, app)" in lifecycle
+    assert "dispatch_garden(args, app)" in lifecycle
+    assert "dispatch_sync(args, app)" in lifecycle
+    assert "dispatch_run_worker(args, app)" in lifecycle
     assert oversized == []
 
 

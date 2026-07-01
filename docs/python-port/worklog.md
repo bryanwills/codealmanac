@@ -1327,3 +1327,10 @@ doctor request construction, `updates.py` owns update request construction,
 `jobs.py` owns jobs request construction, and `automation.py` owns automation
 request construction. Architecture tests keep service request imports and
 command-family helpers out of the facade.
+Slice 125 keeps lifecycle CLI behavior unchanged while splitting
+`cli/dispatch/lifecycle.py` by command family. `lifecycle.py` is now a facade;
+`build.py` owns init/build request construction, `operations.py` owns
+ingest/garden foreground/background dispatch, `sync.py` owns sync and sync
+status request construction, and `worker.py` owns the hidden queue-drain
+entrypoint. Architecture tests keep workflow request imports and sync helpers
+out of the facade.

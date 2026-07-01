@@ -351,6 +351,13 @@ owns jobs request construction, and `automation.py` owns automation request
 construction. Setup may reuse automation quiet-duration resolution; automation
 must not call setup.
 
+`cli/dispatch/lifecycle.py` is the lifecycle-command facade. `build.py` owns
+init/build request construction, `operations.py` owns ingest/garden
+foreground/background dispatch, `sync.py` owns sync and sync status request
+construction plus transcript app parsing, and `worker.py` owns the hidden
+queue-drain entrypoint. Lifecycle dispatch modules adapt CLI args into workflow
+requests; lifecycle workflows own product behavior.
+
 The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM

@@ -3086,3 +3086,31 @@ entrypoint.
 Follow-up test:
 Future doctor expansion should add a focused check-family module or extend the
 existing family module, while architecture tests keep `service.py` facade-only.
+
+## 2026-07-01 - Lifecycle Dispatch Is A Command-Family Facade
+
+Old hypothesis:
+`cli/dispatch/lifecycle.py` could own init, build, ingest, garden, hidden
+worker, sync, and sync status request construction because those commands share
+the lifecycle CLI domain.
+
+New hypothesis:
+`cli/dispatch/lifecycle.py` should be a facade over lifecycle command-family
+modules. Init/build, page-writing operations, sync, and hidden worker draining
+construct different workflow requests and have different helper parsing rules.
+
+Evidence that forced the change:
+After slice 124, `cli/dispatch/lifecycle.py` was the largest CLI edge file at
+176 lines. It mixed workspace initialization, index build output, ingest/garden
+foreground/background policy, hidden queue draining, transcript app parsing,
+pending timeout resolution, sync execution mode, and harness resolution.
+
+Code or product assumption affected:
+Slice 125 keeps the public lifecycle command surface unchanged. Only ownership
+changes: `build.py`, `operations.py`, `sync.py`, and `worker.py` own their
+request construction.
+
+Follow-up test:
+Future lifecycle command behavior should land in the command-family dispatcher
+that owns the workflow request. Architecture tests should keep workflow request
+imports and sync helper parsers out of `cli/dispatch/lifecycle.py`.

@@ -63,6 +63,13 @@ It is the constraint document for future agents.
   and `serve.py` owns local viewer startup. Do not move topic request
   construction, workspace drop request construction, or uvicorn startup back
   into `dispatch/wiki.py`.
+- 2026-07-01: Lifecycle CLI dispatch follows the same command-family split.
+  `cli/dispatch/lifecycle.py` remains the lifecycle-command facade;
+  `build.py` owns init/build request construction, `operations.py` owns
+  ingest/garden foreground/background dispatch, `sync.py` owns sync and sync
+  status request construction, and `worker.py` owns the hidden queue-drain
+  entrypoint. Do not move workflow request construction, sync source parsing,
+  or worker-drain request construction back into `dispatch/lifecycle.py`.
 - 2026-06-30: Validation belongs at product boundaries. Use Pydantic request,
   settings, and domain models for shaped data; use enums or literals for finite
   choices; reject invalid user/product input with explicit errors. Adapter-local

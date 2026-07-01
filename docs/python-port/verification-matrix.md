@@ -19,6 +19,17 @@ means the goal remains active.
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, package module names, README, release guide, GitHub automation/templates, package metadata, next-agent freshness, beta-audit coverage, and `~/.codealmanac/` user-state defaults | `uv run pytest tests/test_public_contract.py` passed with 26 tests on 2026-07-01; full `uv run pytest` and `uv run ruff check .` passed on 2026-07-01 | Future CLI, docs, or project automation expansion must keep the public-contract guard current. |
 
+## Gates For Slice 125 CLI Lifecycle Dispatch Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused CLI, lifecycle workflow, and architecture tests | `uv run pytest tests/test_cli.py tests/test_sync_workflow.py tests/test_ingest_workflow.py tests/test_garden_workflow.py tests/test_run_queue_workflow.py tests/test_architecture.py::test_cli_has_separate_parser_dispatch_and_render_packages tests/test_architecture.py::test_cli_lifecycle_dispatch_stays_split_by_command_family tests/test_architecture.py::test_cli_dispatch_files_stay_small -q` | 81 passed |
+| Focused lint | `uv run ruff check src/codealmanac/cli tests/test_cli.py tests/test_sync_workflow.py tests/test_ingest_workflow.py tests/test_garden_workflow.py tests/test_run_queue_workflow.py tests/test_architecture.py` | passed |
+| Isolated lifecycle CLI dogfood | temp `HOME`; temp repo; `init`; authored page; `build`; `sync status --json`; `sync --background --json` with no eligible transcripts; hidden `__run-worker` against empty queue | passed; public non-AI lifecycle dispatch paths worked through the CLI |
+| Full tests | `uv run pytest` | 344 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 124 CLI Admin Dispatch Boundaries
 
 | Gate | Command | 2026-07-01 result |
