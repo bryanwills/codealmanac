@@ -529,6 +529,51 @@ def test_transcript_source_runtime_stays_split_by_responsibility():
     ).read_text(encoding="utf-8")
 
 
+def test_sources_service_stays_orchestration_only():
+    sources_root = SRC_ROOT / "services/sources"
+    service_text = (sources_root / "service.py").read_text(encoding="utf-8")
+    address_text = (sources_root / "address_resolution.py").read_text(
+        encoding="utf-8"
+    )
+    forbidden_service_fragments = (
+        "urlsplit",
+        "AnyHttpUrl",
+        "sha256",
+        "HTTP_URL_ADAPTER",
+        "def resolve_github_shorthand(",
+        "def resolve_git_range(",
+        "def resolve_url(",
+        "def resolve_path(",
+        "def file_fingerprint(",
+        "PULL_REQUEST_PROMPT_HINT",
+    )
+    forbidden_address_fragments = (
+        "SourceRuntimeAdapter",
+        "TranscriptDiscoveryAdapter",
+        "DiscoverTranscriptsRequest",
+        "InspectSourceRuntimeRequest",
+        "SourceRuntimeStatus",
+    )
+
+    assert len(service_text.splitlines()) <= 90
+    assert (sources_root / "address_resolution.py").is_file()
+    assert (sources_root / "transcripts.py").is_file()
+    assert [
+        fragment
+        for fragment in forbidden_service_fragments
+        if fragment in service_text
+    ] == []
+    assert [
+        fragment
+        for fragment in forbidden_address_fragments
+        if fragment in address_text
+    ] == []
+    assert "def resolve_address(" in address_text
+    assert "def transcript_sort_key(" in (
+        sources_root / "transcripts.py"
+    ).read_text(encoding="utf-8")
+
+
 def test_run_queue_workflow_stays_operation_dispatch_only():
     text = (SRC_ROOT / "workflows/run_queue/service.py").read_text(encoding="utf-8")
 

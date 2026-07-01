@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 105 transcript source runtime boundaries.
+- Latest implementation slice: slice 106 source address resolution boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -243,6 +243,14 @@ Updated: 2026-07-01
   unavailable-runtime diagnostics. Architecture tests prevent provider models,
   JSONL reading, entry normalization, and rendering helpers from regrowing in
   `runtime.py`.
+- Slice 106 splits source-address syntax out of `SourcesService`.
+  `services/sources/service.py` remains the resolve/discover/inspect facade over
+  request models and injected ports; `address_resolution.py` owns prompt hints,
+  GitHub shorthand and URL parsing, git diff/range parsing, transcript address
+  parsing, web URL validation, local path classification, and file
+  fingerprinting; `transcripts.py` owns transcript discovery ordering.
+  Architecture tests prevent URL parsing, hashing, and source-family resolver
+  functions from regrowing in `service.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -882,6 +890,9 @@ Behavior:
   runtime, sync, and architecture tests, focused Ruff over transcript runtime
   and tests, service-level transcript runtime dogfood, then full pytest/full
   Ruff/diff check
+- Slice 106 source address resolution boundary split, focused source service,
+  source runtime, and architecture tests, focused Ruff over `services/sources`,
+  service-level source-resolution dogfood, then full pytest/full Ruff/diff check
 
 ## Next Move
 

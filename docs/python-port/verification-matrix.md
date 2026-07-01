@@ -1062,6 +1062,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 106 Source Address Resolution Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused source service/runtime/architecture tests | `uv run pytest tests/test_sources_service.py tests/test_github_source_runtime.py tests/test_transcript_source_runtime.py tests/test_architecture.py::test_sources_service_stays_orchestration_only -q` | passed; 14 tests |
+| Focused source lint | `uv run ruff check src/codealmanac/services/sources tests/test_sources_service.py tests/test_architecture.py` | passed |
+| Service-level source-resolution dogfood | temp app-service `sources.resolve(...)` over file, directory, missing path, GitHub shorthand, GitHub URL, web URL, git range, git diff, and transcript refs | passed; returned the expected nine `SourceKind` values and file fingerprint |
+| Full tests | `uv run pytest` | passed; 328 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

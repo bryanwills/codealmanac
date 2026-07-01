@@ -29,7 +29,7 @@ that root instead of constructing stores or adapters themselves.
 | `workspaces` | repo root detection, configurable Almanac root, registry, nearest-root discovery, path containment, local wiki selection, explicit registry cleanup | `init`, `list`, current-repo queries, `--wiki` lookup |
 | `wiki` | page files, frontmatter, topics, wikilinks, page writes, health inputs | `init`, `show`, page parsing for index |
 | `index` | SQLite derived read model, projection refresh/write facade, read-only query views, FTS, mentions, backlinks, health projections | `search`, `show --links`, `health` |
-| `sources` | source observations, source refs, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
+| `sources` | source observations, source refs, address resolution, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
 | `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, provider-neutral harness events, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessEvent`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, unattended sync command policy, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
@@ -189,8 +189,12 @@ the same workflow/policy split.
 
 The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness
-execution. `integrations/sources/filesystem/` reads explicit local files and
-bounded directory material. `adapter.py` implements the service-owned
+execution. `services/sources/address_resolution.py` owns source-address syntax,
+prompt hints, URL validation, GitHub URL parsing, local path classification,
+and file fingerprinting. `SourcesService` calls it from the `resolve` verb but
+does not own those parsing rules. `integrations/sources/filesystem/` reads
+explicit local files and bounded directory material. `adapter.py` implements the
+service-owned
 `SourceRuntimeAdapter` port and delegates to module-level responsibilities:
 `documents.py` owns text document models, file byte bounds, and
 `charset-normalizer` decoding; `listing.py` owns ignore specs, Git-backed

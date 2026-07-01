@@ -1164,3 +1164,12 @@ provider line and runtime-entry models; `reader.py` owns JSONL file reading;
 owns prompt-facing transcript text and tail truncation; `paths.py` owns
 transcript path resolution; and `errors.py` owns unavailable diagnostics.
 Focused transcript runtime, sync, architecture, and lint checks passed.
+Slice 106 keeps source resolution behavior unchanged while splitting
+source-address syntax out of `SourcesService`. `service.py` remains the
+resolve/discover/inspect facade over request models and injected ports.
+`address_resolution.py` owns prompt hints, GitHub shorthand and URL parsing,
+git diff/range parsing, transcript address parsing, web URL validation, local
+path classification, and file fingerprinting. `transcripts.py` owns transcript
+candidate ordering. Focused source service, source runtime, architecture, and
+lint checks passed, and service-level dogfood resolved every current
+source-address family.

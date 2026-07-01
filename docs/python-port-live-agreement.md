@@ -186,6 +186,12 @@ It is the constraint document for future agents.
   local JSONL parsing through the same port. Web URL runtime uses a local HTTP
   and HTML/text adapter through the same port. Path file/directory runtime uses
   a local filesystem adapter through the same port.
+- 2026-07-01: `SourcesService` is the service-facing facade for source verbs.
+  It owns resolve/discover/inspect orchestration over request models and ports,
+  while `services/sources/address_resolution.py` owns source-address syntax,
+  prompt hints, URL validation, GitHub URL parsing, local path classification,
+  and file fingerprinting. Keep runtime adapters and transcript discovery
+  adapters out of address resolution.
 - 2026-07-01: Transcript source runtime is split by integration
   responsibility. `integrations/sources/transcripts/runtime.py` implements the
   `SourceRuntimeAdapter` port; `models.py` owns typed transcript line and entry

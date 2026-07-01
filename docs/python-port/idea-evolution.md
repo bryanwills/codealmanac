@@ -2507,3 +2507,33 @@ Follow-up test:
 If future transcript runtime adds another provider shape, richer event
 reconstruction, or alternate transcript storage, add it to the module that owns
 that reason to change instead of growing `runtime.py`.
+
+## 2026-07-01 - Source Address Resolution Should Not Live In The Service Facade
+
+Old hypothesis:
+`SourcesService` could own source address parsing because resolving selected
+material is one of its product verbs.
+
+New hypothesis:
+`SourcesService` should own resolve/discover/inspect orchestration only.
+Source-address syntax, prompt hints, URL validation, GitHub URL parsing, local
+path classification, and file fingerprinting have their own reason to change
+and belong in `services/sources/address_resolution.py`.
+
+Evidence that forced the change:
+After slice 105, `services/sources/service.py` was the largest production file
+at 351 lines. It mixed injected adapter orchestration with GitHub shorthand
+parsing, Git range/diff parsing, transcript address parsing, HTTP URL
+validation, GitHub URL decomposition, local path classification, SHA-256 file
+fingerprinting, and prompt-hint constants.
+
+Code or product assumption affected:
+Slice 106 keeps the public `SourcesService` API and source address grammar
+unchanged. `address_resolution.py` owns the syntax mechanics and returns
+`SourceBrief`; `transcripts.py` owns transcript candidate ordering; `service.py`
+stays the facade over request models and ports.
+
+Follow-up test:
+If a future source kind adds syntax or classification rules, add it to
+`address_resolution.py` or a source-family helper it delegates to. Do not grow
+`SourcesService` unless the product verb itself changes.
