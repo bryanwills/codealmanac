@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 85 Claude SDK event-boundary split.
+- Latest implementation slice: slice 86 Codex default and setup plan.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -135,6 +135,12 @@ Updated: 2026-07-01
   `ClaudeSdkClient`. The client now imports state, SDK-message helpers, and
   result helpers from their owning modules; `events.py` only dispatches SDK
   messages.
+- Slice 86 aligns config defaults with the live agreement: no-flag lifecycle
+  runs default to Codex. Setup now returns a typed `SetupPlan` containing the
+  default harness, selected instruction targets, sync/garden automation
+  recommendations, and shared next-step commands. Setup still recommends
+  automation explicitly; it does not install automation or add interactive
+  target selection.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

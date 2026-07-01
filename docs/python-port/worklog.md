@@ -120,6 +120,16 @@
   helpers through `events.py`. The review fix moved those imports to
   `state.py`, `sdk_messages.py`, and `result.py`, and expanded the architecture
   test so `events.py` remains dispatch-only.
+- Added slice-86 Codex default and setup plan after finding that the live
+  agreement said Codex but `DEFAULT_HARNESS` still selected Claude. Config
+  defaults now choose Codex for no-flag lifecycle runs.
+- Moved shared automation cadence constants into
+  `services/automation/defaults.py` so setup can recommend the same sync/garden
+  commands that automation uses.
+- Added typed setup plan facts to `SetupResult`: default harness, selected
+  instruction targets, automation recommendations, and next commands. Rich text
+  and JSON setup output now render those service facts instead of duplicating
+  command strings in the renderer.
 
 ## 2026-06-29
 

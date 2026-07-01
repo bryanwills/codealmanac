@@ -27,6 +27,19 @@ def test_setup_installs_codex_block_idempotently(home: Path):
     assert body.count(CODEALMANAC_START) == 1
     assert body.count(CODEALMANAC_END) == 1
     assert "codealmanac search" in body
+    assert first.plan.default_harness.value == "codex"
+    assert first.plan.instruction_targets == (SetupTarget.CODEX,)
+    assert first.plan.automation[0].command == (
+        "codealmanac",
+        "automation",
+        "install",
+        "sync",
+        "--every",
+        "5h",
+        "--quiet",
+        "45m",
+    )
+    assert first.plan.next_commands[-1].command == first.plan.automation[0].command
 
 
 def test_setup_uses_non_empty_codex_override(home: Path):
@@ -83,6 +96,18 @@ def test_uninstall_removes_claude_artifacts_and_preserves_user_content(home: Pat
 def test_empty_target_request_is_rejected():
     with pytest.raises(ValidationError):
         RunSetupRequest(targets=())
+
+
+def test_setup_skip_instructions_still_returns_plan(home: Path):
+    result = setup_service(home).run(RunSetupRequest(skip_instructions=True))
+
+    assert result.skipped_instructions is True
+    assert result.changes == ()
+    assert result.plan.default_harness.value == "codex"
+    assert tuple(target.value for target in result.plan.instruction_targets) == (
+        "codex",
+        "claude",
+    )
 
 
 @pytest.fixture

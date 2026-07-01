@@ -21,7 +21,7 @@ def test_config_service_returns_defaults_without_files(
 
     config = app.config.load(LoadConfigRequest(cwd=tmp_path))
 
-    assert config.harness.default == HarnessKind.CLAUDE
+    assert config.harness.default == HarnessKind.CODEX
     assert config.sync.quiet == timedelta(minutes=45)
 
 

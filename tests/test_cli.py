@@ -249,9 +249,13 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert exit_code == 0
     assert "CodeAlmanac setup" in captured.out
     assert "Agent instructions" in captured.out
+    assert "default agent" in captured.out
+    assert "codex" in captured.out
     assert "Next steps" in captured.out
     assert "codealmanac init" in captured.out
-    assert "codealmanac automation install sync" in captured.out
+    assert "codealmanac automation install sync --every 5h --quiet 45m" in (
+        captured.out
+    )
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
 
     second_exit = main(["setup", "--yes", "--target", "codex"])
@@ -272,10 +276,21 @@ def test_cli_setup_skip_instructions_json(capsys):
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert json.loads(captured.out) == {
-        "skipped_instructions": True,
-        "changes": [],
-    }
+    payload = json.loads(captured.out)
+    assert payload["skipped_instructions"] is True
+    assert payload["changes"] == []
+    assert payload["plan"]["default_harness"] == "codex"
+    assert payload["plan"]["instruction_targets"] == ["codex", "claude"]
+    assert payload["plan"]["automation"][0]["command"] == [
+        "codealmanac",
+        "automation",
+        "install",
+        "sync",
+        "--every",
+        "5h",
+        "--quiet",
+        "45m",
+    ]
 
 
 def test_cli_list_outputs_registered_wikis(

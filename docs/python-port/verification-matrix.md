@@ -39,6 +39,17 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Review fix | `uv run pytest tests/test_claude_adapter.py tests/test_architecture.py`; `uv run ruff check src/codealmanac/integrations/harnesses/claude tests/test_claude_adapter.py tests/test_architecture.py`; `uv run pytest`; `uv run ruff check .`; `git diff --check` | passed; 26 focused tests and 293 full tests |
 
+## Gates For Slice 86 Codex Default And Setup Plan
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused behavior and contract tests | `uv run pytest tests/test_config_service.py tests/test_setup_service.py tests/test_cli.py::test_cli_setup_and_uninstall_codex_instructions tests/test_cli.py::test_cli_setup_skip_instructions_json tests/test_automation_service.py tests/test_public_contract.py` | 44 passed |
+| Focused lint | `uv run ruff check src/codealmanac/services/config src/codealmanac/services/setup src/codealmanac/services/automation src/codealmanac/cli/render/setup.py tests/test_config_service.py tests/test_setup_service.py tests/test_cli.py tests/test_automation_service.py tests/test_public_contract.py` | passed |
+| Live setup smoke | isolated temp home with `uv --project /Users/rohan/Desktop/Projects/codealmanac run codealmanac setup --yes --target codex` and `setup --yes --skip-instructions --json` | passed; text and JSON both showed default harness `codex` and sync/garden automation recommendations |
+| Full tests | `uv run pytest` | 294 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice-1 Review Fix
 
 | Gate | Command | 2026-06-29 result |

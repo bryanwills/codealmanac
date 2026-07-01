@@ -10,6 +10,12 @@ from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation.scheduler.launchd import (
     LaunchdSchedulerAdapter,
 )
+from codealmanac.services.automation.defaults import (
+    AUTOMATION_SYNC_CLAIM_OWNER,
+    AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS,
+    AUTOMATION_SYNC_PENDING_TIMEOUT,
+    duration_text,
+)
 from codealmanac.services.automation.models import (
     AutomationTask,
     ScheduledJob,
@@ -19,12 +25,6 @@ from codealmanac.services.automation.requests import (
     AutomationStatusRequest,
     InstallAutomationRequest,
     UninstallAutomationRequest,
-)
-from codealmanac.services.automation.service import (
-    AUTOMATION_SYNC_CLAIM_OWNER,
-    AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS,
-    AUTOMATION_SYNC_PENDING_TIMEOUT,
-    duration_text,
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 

@@ -1,5 +1,8 @@
 from codealmanac.services.setup.models import (
     InstructionChange,
+    SetupAutomationRecommendation,
+    SetupCommand,
+    SetupPlan,
     SetupResult,
     SetupTarget,
     UninstallResult,
@@ -11,6 +14,9 @@ __all__ = [
     "InstructionChange",
     "RunSetupRequest",
     "RunUninstallRequest",
+    "SetupAutomationRecommendation",
+    "SetupCommand",
+    "SetupPlan",
     "SetupResult",
     "SetupService",
     "SetupTarget",

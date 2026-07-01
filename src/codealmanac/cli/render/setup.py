@@ -1,3 +1,4 @@
+import shlex
 import sys
 
 from rich.console import Console, Group
@@ -20,19 +21,12 @@ def render_setup_text(result: SetupResult) -> None:
             "Local repo wiki, maintained by coding agents.",
         )
     )
+    console.print(plan_panel(result))
     if result.skipped_instructions:
         console.print(status_panel("Instructions skipped", "No files changed."))
         return
     console.print(changes_panel("Agent instructions", result.changes))
-    console.print(
-        next_steps_panel(
-            (
-                "codealmanac init",
-                'codealmanac search "getting"',
-                "codealmanac automation install sync --every 5h --quiet 30m",
-            )
-        )
-    )
+    console.print(next_steps_panel(result))
 
 
 def render_uninstall_text(result: UninstallResult) -> None:
@@ -71,10 +65,33 @@ def changes_panel(title: str, changes: tuple[InstructionChange, ...]) -> Panel:
     )
 
 
-def next_steps_panel(commands: tuple[str, ...]) -> Panel:
+def plan_panel(result: SetupResult) -> Panel:
+    plan = result.plan
+    table = Table.grid(padding=(0, 2))
+    table.add_column("label", style="bold")
+    table.add_column("value")
+    table.add_row("default agent", plan.default_harness.value)
+    table.add_row(
+        "instruction targets",
+        ", ".join(target.value for target in plan.instruction_targets),
+    )
+    for recommendation in plan.automation:
+        table.add_row(
+            f"{recommendation.task.value} automation",
+            shell_command(recommendation.command),
+        )
+    return Panel(
+        Group(Text("Setup plan", style="bold"), table),
+        border_style="blue",
+        padding=(1, 2),
+    )
+
+
+def next_steps_panel(result: SetupResult) -> Panel:
     table = Table.grid()
-    for command in commands:
-        table.add_row(Text(command, style="bold cyan"))
+    for command in result.plan.next_commands:
+        table.add_row(Text(command.label, style="bold"))
+        table.add_row(Text(shell_command(command.command), style="cyan"))
     return Panel(
         Group(Text("Next steps", style="bold"), table),
         border_style="green",
@@ -84,6 +101,10 @@ def next_steps_panel(commands: tuple[str, ...]) -> Panel:
 
 def change_status(change: InstructionChange) -> str:
     return "changed" if change.changed else "ok"
+
+
+def shell_command(command: tuple[str, ...]) -> str:
+    return shlex.join(command)
 
 
 def setup_console() -> Console:

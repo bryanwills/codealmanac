@@ -7,6 +7,17 @@ from pathlib import Path
 
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.paths import home_dir, normalize_path, state_dir_for
+from codealmanac.services.automation.defaults import (
+    AUTOMATION_SYNC_CLAIM_OWNER,
+    AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS,
+    AUTOMATION_SYNC_PENDING_TIMEOUT,
+    DEFAULT_GARDEN_INTERVAL,
+    DEFAULT_SYNC_INTERVAL,
+    GARDEN_LABEL,
+    LAUNCHD_FALLBACK_PATHS,
+    SYNC_LABEL,
+    duration_text,
+)
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
     AutomationStatusReport,
@@ -26,24 +37,6 @@ from codealmanac.services.automation.requests import (
 )
 from codealmanac.services.config.models import DEFAULT_SYNC_QUIET
 from codealmanac.services.workspaces.service import WorkspacesService
-
-DEFAULT_SYNC_INTERVAL = timedelta(hours=5)
-DEFAULT_GARDEN_INTERVAL = timedelta(hours=4)
-AUTOMATION_SYNC_CLAIM_OWNER = "codealmanac.automation.sync"
-AUTOMATION_SYNC_PENDING_TIMEOUT = timedelta(hours=24)
-AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS = 3
-
-SYNC_LABEL = "com.codealmanac.sync"
-GARDEN_LABEL = "com.codealmanac.garden"
-
-LAUNCHD_FALLBACK_PATHS = (
-    "/usr/local/bin",
-    "/opt/homebrew/bin",
-    "/usr/bin",
-    "/bin",
-    "/usr/sbin",
-    "/sbin",
-)
 
 
 @dataclass(frozen=True)
@@ -283,12 +276,3 @@ def unique(values: Sequence[str]) -> tuple[str, ...]:
         if value not in seen:
             seen.append(value)
     return tuple(seen)
-
-
-def duration_text(value: timedelta) -> str:
-    seconds = int(value.total_seconds())
-    if seconds % 3600 == 0:
-        return f"{seconds // 3600}h"
-    if seconds % 60 == 0:
-        return f"{seconds // 60}m"
-    return f"{seconds}s"
