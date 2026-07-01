@@ -5,6 +5,34 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Source Address Resolution Needs Family Modules
+
+Old hypothesis:
+After slice 106, one `services/sources/address_resolution.py` module could own
+all source-address syntax because it was already outside `SourcesService`.
+
+New hypothesis:
+`address_resolution.py` should be a dispatcher facade. Git, GitHub, web URL,
+local path, transcript, prompt hints, and shared number parsing now have
+separate modules named for their reason to change.
+
+Evidence that forced the change:
+`address_resolution.py` reached 290 lines and mixed unrelated grammars:
+GitHub shorthand, GitHub URL decomposition, HTTP URL validation, Git range/diff
+syntax, transcript refs, local path classification, and file hashing. Cosmic
+Python chapter 3 argues for simple abstractions that hide messy details; each
+address family now hides its own grammar details behind the same
+`SourceBrief` contract.
+
+Code or product assumption affected:
+Architecture tests now keep `AnyHttpUrl`, `sha256`, GitHub/Git/path resolver
+definitions, prompt hints, and positive-int parsing out of the dispatcher
+facade.
+
+Follow-up test:
+Future source-address syntax changes should add focused source-resolution tests
+and update only the module for that source family.
+
 ## 2026-07-01 - Topic Commands Need A Graph Boundary
 
 Old hypothesis:

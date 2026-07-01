@@ -214,9 +214,14 @@ the same workflow/policy split.
 The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness
 execution. `services/sources/address_resolution.py` owns source-address syntax,
-prompt hints, URL validation, GitHub URL parsing, local path classification,
-and file fingerprinting. `SourcesService` calls it from the `resolve` verb but
-does not own those parsing rules. `integrations/sources/filesystem/` reads
+and dispatches to source-family modules. `address_git.py` owns Git range/diff
+syntax, `address_github.py` owns GitHub shorthand and URL decomposition,
+`address_web.py` owns HTTP URL validation and generic web refs,
+`address_path.py` owns local path classification and file fingerprints,
+`address_transcript.py` owns transcript refs, `address_hints.py` owns prompt
+hints, and `address_numbers.py` owns shared positive-integer parsing.
+`SourcesService` calls it from the `resolve` verb but does not own those
+parsing rules. `integrations/sources/filesystem/` reads
 explicit local files and bounded directory material. `adapter.py` implements the
 service-owned
 `SourceRuntimeAdapter` port and delegates to module-level responsibilities:

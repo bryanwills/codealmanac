@@ -856,6 +856,7 @@ def test_sources_service_stays_orchestration_only():
     address_text = (sources_root / "address_resolution.py").read_text(
         encoding="utf-8"
     )
+    module_names = {path.name for path in sources_root.glob("*.py")}
     forbidden_service_fragments = (
         "urlsplit",
         "AnyHttpUrl",
@@ -868,7 +869,20 @@ def test_sources_service_stays_orchestration_only():
         "def file_fingerprint(",
         "PULL_REQUEST_PROMPT_HINT",
     )
-    forbidden_address_fragments = (
+    forbidden_address_facade_fragments = (
+        "AnyHttpUrl",
+        "sha256",
+        "HTTP_URL_ADAPTER",
+        "PULL_REQUEST_PROMPT_HINT",
+        "def resolve_github_shorthand(",
+        "def parse_github_url(",
+        "def resolve_git_range(",
+        "def resolve_url(",
+        "def resolve_path(",
+        "def file_fingerprint(",
+        "def parse_positive_int(",
+    )
+    forbidden_address_runtime_fragments = (
         "SourceRuntimeAdapter",
         "TranscriptDiscoveryAdapter",
         "DiscoverTranscriptsRequest",
@@ -876,7 +890,17 @@ def test_sources_service_stays_orchestration_only():
         "SourceRuntimeStatus",
     )
 
+    assert {
+        "address_git.py",
+        "address_github.py",
+        "address_hints.py",
+        "address_numbers.py",
+        "address_path.py",
+        "address_transcript.py",
+        "address_web.py",
+    } <= module_names
     assert len(service_text.splitlines()) <= 90
+    assert len(address_text.splitlines()) <= 45
     assert (sources_root / "address_resolution.py").is_file()
     assert (sources_root / "transcripts.py").is_file()
     assert [
@@ -886,10 +910,28 @@ def test_sources_service_stays_orchestration_only():
     ] == []
     assert [
         fragment
-        for fragment in forbidden_address_fragments
+        for fragment in (
+            *forbidden_address_facade_fragments,
+            *forbidden_address_runtime_fragments,
+        )
         if fragment in address_text
     ] == []
     assert "def resolve_address(" in address_text
+    assert "def resolve_github_shorthand(" in (
+        sources_root / "address_github.py"
+    ).read_text(encoding="utf-8")
+    assert "def resolve_git_range(" in (sources_root / "address_git.py").read_text(
+        encoding="utf-8"
+    )
+    assert "AnyHttpUrl" in (sources_root / "address_web.py").read_text(
+        encoding="utf-8"
+    )
+    assert "sha256" in (sources_root / "address_path.py").read_text(
+        encoding="utf-8"
+    )
+    assert "TRANSCRIPT_PROMPT_HINT" in (
+        sources_root / "address_transcript.py"
+    ).read_text(encoding="utf-8")
     assert "def transcript_sort_key(" in (
         sources_root / "transcripts.py"
     ).read_text(encoding="utf-8")

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 115 topic service boundaries.
+- Latest implementation slice: slice 116 source address family boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -216,6 +216,14 @@ Updated: 2026-07-01
   install/runtime/manual-package readiness, `wiki.py` owns selected-wiki
   registry/index/manual/health readiness, and `messages.py` owns shared doctor
   formatting. Architecture tests keep `service.py` facade-only.
+- Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
+  splitting source-address parsing by family. `address_resolution.py` is now a
+  small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,
+  `address_path.py`, and `address_transcript.py` own family-specific grammar
+  and `SourceBrief` construction; `address_hints.py` owns prompt hints; and
+  `address_numbers.py` owns shared positive integer parsing. Architecture tests
+  keep URL validation, hashing, GitHub/Git/path parser definitions, prompt
+  hints, and runtime adapter contracts out of the dispatcher facade.
 - Slice 115 keeps topic command behavior unchanged while splitting graph and
   workspace mechanics out of `TopicsService`. `services/topics/graph.py` owns
   topic existence checks, self-parent validation, and cycle traversal;

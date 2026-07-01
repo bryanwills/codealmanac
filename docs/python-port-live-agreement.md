@@ -223,6 +223,14 @@ It is the constraint document for future agents.
   prompt hints, URL validation, GitHub URL parsing, local path classification,
   and file fingerprinting. Keep runtime adapters and transcript discovery
   adapters out of address resolution.
+- 2026-07-01: Source-address resolution is split by address family.
+  `address_resolution.py` is the small dispatcher facade; `address_git.py`,
+  `address_github.py`, `address_web.py`, `address_path.py`, and
+  `address_transcript.py` own family-specific parsing and `SourceBrief`
+  construction. `address_hints.py` owns prompt hints, and
+  `address_numbers.py` owns shared positive-integer parsing. Do not regrow
+  GitHub/web/path/transcript parsing, URL validation, hashing, or prompt hints
+  inside the facade.
 - 2026-07-01: Transcript source runtime is split by integration
   responsibility. `integrations/sources/transcripts/runtime.py` implements the
   `SourceRuntimeAdapter` port; `models.py` owns typed transcript line and entry

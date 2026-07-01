@@ -6,6 +6,14 @@
   proof: keep applying Cosmic Python, `MANUAL.md`, the live agreement, and
   useful `../almanac` patterns until remaining cleanup is genuinely
   diminishing returns.
+- Added slice-116 source-address family boundary plan after rereading Cosmic
+  Python chapter 3/4 guidance on simple abstractions and service-layer
+  orchestration. `address_resolution.py` is now a small dispatcher facade.
+- Split source-address internals into family modules for Git, GitHub, web URL,
+  local path, transcript, prompt hints, and shared positive-integer parsing.
+- Added an architecture guard to keep URL validation, hashing, GitHub/Git/path
+  parser definitions, prompt hints, and runtime adapter contracts out of the
+  address dispatcher facade.
 - Added slice-115 topic-service boundary plan after rereading
   `.almanac/README.md`, `MANUAL.md`, the live agreement, and Cosmic Python
   chapter 4. The service-layer lesson applied here is that `TopicsService`

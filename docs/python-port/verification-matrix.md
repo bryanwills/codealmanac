@@ -19,6 +19,17 @@ means the goal remains active.
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, package module names, README, release guide, GitHub automation/templates, package metadata, next-agent freshness, beta-audit coverage, and `~/.codealmanac/` user-state defaults | `uv run pytest tests/test_public_contract.py` passed with 26 tests on 2026-07-01; full `uv run pytest` and `uv run ruff check .` passed on 2026-07-01 | Future CLI, docs, or project automation expansion must keep the public-contract guard current. |
 
+## Gates For Slice 116 Source Address Family Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused lint | `uv run ruff check src/codealmanac/services/sources tests/test_sources_service.py tests/test_architecture.py` | passed |
+| Focused behavior and architecture tests | `uv run pytest tests/test_sources_service.py tests/test_architecture.py::test_sources_service_stays_orchestration_only` | 7 passed |
+| Isolated service dogfood | temp app resolving file, directory, missing path, Git range/diff, GitHub PR/issue, transcript, and web URL inputs | passed |
+| Full tests | `uv run pytest` | 337 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 115 Topic Service Boundaries
 
 | Gate | Command | 2026-07-01 result |
