@@ -148,6 +148,31 @@ def test_automation_install_sync_only_does_not_require_repo(
     assert scheduler.installed[0].interval == timedelta(minutes=10)
 
 
+def test_automation_install_preserves_zero_quiet(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    scheduler = FakeSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+
+    app.automation.install(
+        InstallAutomationRequest(
+            cwd=tmp_path,
+            home=isolated_home,
+            tasks=(AutomationTask.SYNC,),
+            every=timedelta(minutes=10),
+            quiet=timedelta(seconds=0),
+        )
+    )
+
+    args = scheduler.installed[0].program_arguments
+    assert duration_text(timedelta(seconds=0)) == "0s"
+    assert args[args.index("--quiet") + 1] == "0s"
+
+
 def test_automation_status_and_uninstall_work_outside_repo(
     tmp_path: Path,
     isolated_home: Path,

@@ -50,6 +50,19 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 87 Setup Automation Options
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused behavior tests | `uv run pytest tests/test_setup_service.py tests/test_cli.py::test_cli_setup_and_uninstall_codex_instructions tests/test_cli.py::test_cli_setup_skip_instructions_json tests/test_cli.py::test_cli_setup_installs_automation_with_explicit_flags tests/test_automation_service.py` | 20 passed |
+| Focused lint | `uv run ruff check src/codealmanac/app.py src/codealmanac/services/setup src/codealmanac/services/automation src/codealmanac/cli/parser/admin.py src/codealmanac/cli/dispatch/admin.py src/codealmanac/cli/render/setup.py tests/test_setup_service.py tests/test_cli.py tests/test_automation_service.py` | passed |
+| Architecture tests | `uv run pytest tests/test_architecture.py` | 17 passed |
+| Public setup help smoke | `uv run codealmanac setup --help` | passed; help shows `--install-automation`, `--sync-every`, `--sync-quiet`, `--garden-every`, and `--garden-off` |
+| Public contract | `uv run pytest tests/test_public_contract.py` | 24 passed |
+| Full tests | `uv run pytest` | 299 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice-1 Review Fix
 
 | Gate | Command | 2026-06-29 result |

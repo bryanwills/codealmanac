@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 86 Codex default and setup plan.
+- Latest implementation slice: slice 87 setup automation options.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -141,6 +141,12 @@ Updated: 2026-07-01
   recommendations, and shared next-step commands. Setup still recommends
   automation explicitly; it does not install automation or add interactive
   target selection.
+- Slice 87 restores explicit setup-owned local automation installation.
+  `codealmanac setup --install-automation` and sync/Garden timing flags now
+  install scheduled automation through the Python `AutomationService` port, not
+  through CLI shell-out. Plain setup still only recommends automation.
+  `codealmanac uninstall` removes scheduled automation by default, and
+  `--keep-automation` preserves scheduler entries.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,16 @@ from codealmanac.integrations.setup.instructions import (
     CODEALMANAC_END,
     CODEALMANAC_START,
     FileInstructionInstaller,
+)
+from codealmanac.services.automation.models import (
+    AutomationInstallResult,
+    AutomationTask,
+    AutomationUninstallResult,
+    ScheduledJob,
+)
+from codealmanac.services.automation.requests import (
+    InstallAutomationRequest,
+    UninstallAutomationRequest,
 )
 from codealmanac.services.setup.models import SetupTarget
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
@@ -110,10 +121,149 @@ def test_setup_skip_instructions_still_returns_plan(home: Path):
     )
 
 
+def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
+    automation = FakeSetupAutomationManager(home)
+    result = setup_service(home, automation).run(
+        RunSetupRequest(
+            cwd=tmp_path,
+            install_automation=True,
+            sync_every=timedelta(minutes=2),
+            sync_quiet=timedelta(seconds=5),
+            garden_off=True,
+        )
+    )
+
+    request = automation.installed[0]
+    assert request.cwd == tmp_path
+    assert request.every == timedelta(minutes=2)
+    assert request.quiet == timedelta(seconds=5)
+    assert request.garden_off is True
+    assert result.plan.automation_mode.value == "install"
+    assert tuple(item.task for item in result.plan.automation) == (AutomationTask.SYNC,)
+    assert result.plan.next_commands[-1].command == (
+        "codealmanac",
+        "automation",
+        "status",
+    )
+    assert result.automation_install is not None
+    assert tuple(job.task for job in result.automation_install.jobs) == (
+        AutomationTask.SYNC,
+    )
+
+
+def test_uninstall_removes_automation_by_default(home: Path):
+    automation = FakeSetupAutomationManager(home)
+
+    result = setup_service(home, automation).uninstall(
+        RunUninstallRequest(targets=(SetupTarget.CODEX,))
+    )
+
+    assert len(automation.uninstalled) == 1
+    assert result.kept_automation is False
+    assert result.automation_uninstall is not None
+    assert result.automation_uninstall.tasks == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+
+
+def test_uninstall_can_keep_automation(home: Path):
+    automation = FakeSetupAutomationManager(home)
+
+    result = setup_service(home, automation).uninstall(
+        RunUninstallRequest(
+            targets=(SetupTarget.CODEX,),
+            keep_automation=True,
+        )
+    )
+
+    assert automation.uninstalled == []
+    assert result.kept_automation is True
+    assert result.automation_uninstall is None
+
+
 @pytest.fixture
 def home(tmp_path: Path) -> Path:
     return tmp_path / "home"
 
 
-def setup_service(home: Path) -> SetupService:
-    return SetupService(FileInstructionInstaller(home))
+def setup_service(
+    home: Path,
+    automation: "FakeSetupAutomationManager | None" = None,
+) -> SetupService:
+    return SetupService(
+        FileInstructionInstaller(home),
+        automation or FakeSetupAutomationManager(home),
+    )
+
+
+class FakeSetupAutomationManager:
+    def __init__(self, home: Path):
+        self.home = home
+        self.installed: list[InstallAutomationRequest] = []
+        self.uninstalled: list[UninstallAutomationRequest] = []
+
+    def install(self, request: InstallAutomationRequest) -> AutomationInstallResult:
+        self.installed.append(request)
+        jobs = tuple(
+            scheduled_job(
+                home=self.home,
+                task=task,
+                interval=automation_interval(task, request),
+            )
+            for task in automation_tasks(request)
+        )
+        disabled = (
+            (scheduled_job(home=self.home, task=AutomationTask.GARDEN),)
+            if request.garden_off
+            else ()
+        )
+        return AutomationInstallResult(jobs=jobs, disabled=disabled)
+
+    def uninstall(
+        self,
+        request: UninstallAutomationRequest,
+    ) -> AutomationUninstallResult:
+        self.uninstalled.append(request)
+        tasks = request.tasks or (AutomationTask.SYNC, AutomationTask.GARDEN)
+        return AutomationUninstallResult(
+            tasks=tasks,
+            removed=tuple(self.home / f"{task.value}.plist" for task in tasks),
+        )
+
+
+def automation_tasks(request: InstallAutomationRequest) -> tuple[AutomationTask, ...]:
+    tasks = request.tasks or (AutomationTask.SYNC, AutomationTask.GARDEN)
+    return tuple(
+        task
+        for task in tasks
+        if not (task == AutomationTask.GARDEN and request.garden_off)
+    )
+
+
+def automation_interval(
+    task: AutomationTask,
+    request: InstallAutomationRequest,
+) -> timedelta:
+    if task == AutomationTask.SYNC:
+        return request.every if request.every is not None else timedelta(hours=5)
+    if request.garden_every is not None:
+        return request.garden_every
+    return timedelta(hours=4)
+
+
+def scheduled_job(
+    home: Path,
+    task: AutomationTask,
+    interval: timedelta = timedelta(hours=4),
+) -> ScheduledJob:
+    return ScheduledJob(
+        task=task,
+        label=f"com.codealmanac.{task.value}",
+        plist_path=home / f"{task.value}.plist",
+        program_arguments=("codealmanac", task.value),
+        interval=interval,
+        environment=(),
+        stdout_path=home / f"{task.value}.out.log",
+        stderr_path=home / f"{task.value}.err.log",
+    )

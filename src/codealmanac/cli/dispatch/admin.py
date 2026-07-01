@@ -54,11 +54,22 @@ def is_admin_command(command: str | None) -> bool:
 
 def dispatch_admin(args: argparse.Namespace, app: CodeAlmanac) -> int:
     if args.command == "setup":
+        install_automation = should_setup_install_automation(args)
+        cli_config = load_cli_config(app, None) if install_automation else None
         result = app.setup.run(
             RunSetupRequest(
+                cwd=Path.cwd(),
                 targets=parse_setup_targets(args.target),
                 yes=args.yes,
                 skip_instructions=args.skip_instructions,
+                install_automation=install_automation,
+                sync_every=parse_optional_duration(args.sync_every, "--sync-every"),
+                sync_quiet=resolve_setup_quiet(args.sync_quiet, cli_config),
+                garden_every=parse_optional_duration(
+                    args.garden_every,
+                    "--garden-every",
+                ),
+                garden_off=args.garden_off,
             )
         )
         render_setup_result(result, json_output=args.json)
@@ -69,6 +80,7 @@ def dispatch_admin(args: argparse.Namespace, app: CodeAlmanac) -> int:
                 targets=parse_setup_targets(args.target),
                 yes=args.yes,
                 keep_instructions=args.keep_instructions,
+                keep_automation=args.keep_automation,
             )
         )
         render_uninstall_result(result, json_output=args.json)
@@ -155,6 +167,25 @@ def resolve_automation_quiet(
     if parsed is None:
         raise AssertionError("parsed automation quiet is unexpectedly empty")
     return parsed
+
+
+def resolve_setup_quiet(
+    value: str | None,
+    config: CodeAlmanacConfig | None,
+) -> timedelta | None:
+    if config is None:
+        return None
+    return resolve_automation_quiet(value, config)
+
+
+def should_setup_install_automation(args: argparse.Namespace) -> bool:
+    return (
+        args.install_automation
+        or args.sync_every is not None
+        or args.sync_quiet is not None
+        or args.garden_every is not None
+        or args.garden_off
+    )
 
 
 def parse_automation_tasks(values: Sequence[str]) -> tuple[AutomationTask, ...]:

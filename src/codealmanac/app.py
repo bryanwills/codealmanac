@@ -123,7 +123,10 @@ def create_app(
         update_metadata or InstalledPackageMetadataProvider(),
         update_runner or SubprocessPackageCommandRunner(),
     )
-    setup = SetupService(instruction_installer or FileInstructionInstaller())
+    setup = SetupService(
+        instruction_installer or FileInstructionInstaller(),
+        automation,
+    )
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService(

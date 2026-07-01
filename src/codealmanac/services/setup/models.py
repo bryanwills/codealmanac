@@ -5,13 +5,22 @@ from pydantic import Field, field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.automation.models import AutomationTask
+from codealmanac.services.automation.models import (
+    AutomationInstallResult,
+    AutomationTask,
+    AutomationUninstallResult,
+)
 from codealmanac.services.harnesses.models import HarnessKind
 
 
 class SetupTarget(StrEnum):
     CODEX = "codex"
     CLAUDE = "claude"
+
+
+class SetupAutomationMode(StrEnum):
+    RECOMMEND = "recommend"
+    INSTALL = "install"
 
 
 class InstructionChange(CodeAlmanacModel):
@@ -63,6 +72,7 @@ class SetupAutomationRecommendation(CodeAlmanacModel):
 class SetupPlan(CodeAlmanacModel):
     default_harness: HarnessKind
     instruction_targets: tuple[SetupTarget, ...]
+    automation_mode: SetupAutomationMode = SetupAutomationMode.RECOMMEND
     automation: tuple[SetupAutomationRecommendation, ...]
     next_commands: tuple[SetupCommand, ...]
 
@@ -81,8 +91,11 @@ class SetupResult(CodeAlmanacModel):
     plan: SetupPlan
     skipped_instructions: bool = False
     changes: tuple[InstructionChange, ...] = ()
+    automation_install: AutomationInstallResult | None = None
 
 
 class UninstallResult(CodeAlmanacModel):
     kept_instructions: bool = False
+    kept_automation: bool = False
     changes: tuple[InstructionChange, ...] = ()
+    automation_uninstall: AutomationUninstallResult | None = None

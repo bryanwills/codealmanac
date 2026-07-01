@@ -14,6 +14,7 @@ from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import normalize_path
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
+    AutomationTask,
     ScheduledJob,
     ScheduledJobStatus,
 )
@@ -291,6 +292,62 @@ def test_cli_setup_skip_instructions_json(capsys):
         "--quiet",
         "45m",
     ]
+
+
+def test_cli_setup_installs_automation_with_explicit_flags(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "setup",
+                "--yes",
+                "--target",
+                "codex",
+                "--install-automation",
+                "--sync-every",
+                "1m",
+                "--sync-quiet",
+                "1s",
+                "--garden-every",
+                "2m",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr()
+    assert "automation mode" in output.out
+    assert "install" in output.out
+    assert "Scheduled automation" in output.out
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+    assert scheduler.installed[0].interval.total_seconds() == 60
+    assert scheduler.installed[1].interval.total_seconds() == 120
+
+    assert main(["uninstall", "--yes", "--target", "codex"]) == 0
+
+    capsys.readouterr()
+    assert tuple(job.task for job in scheduler.uninstalled) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
 
 
 def test_cli_list_outputs_registered_wikis(

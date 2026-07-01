@@ -130,6 +130,16 @@
   instruction targets, automation recommendations, and next commands. Rich text
   and JSON setup output now render those service facts instead of duplicating
   command strings in the renderer.
+- Added slice-87 setup automation options after rereading the live agreement,
+  `MANUAL.md`, `.almanac/README.md`, Cosmic Python command guidance, and the
+  archived setup automation branch.
+- Setup now installs scheduled sync/Garden automation when the user passes
+  `--install-automation` or explicit sync/Garden timing flags. The setup
+  service calls an automation service port directly; it does not shell out to
+  `codealmanac automation install`.
+- Uninstall now removes scheduled automation by default and exposes
+  `--keep-automation` as the escape hatch, so setup has a complete reverse path
+  for the scheduler state it can create.
 
 ## 2026-06-29
 

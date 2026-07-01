@@ -6,8 +6,15 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from codealmanac.services.automation.defaults import duration_text
+from codealmanac.services.automation.models import (
+    AutomationInstallResult,
+    AutomationUninstallResult,
+    ScheduledJob,
+)
 from codealmanac.services.setup.models import (
     InstructionChange,
+    SetupAutomationMode,
     SetupResult,
     UninstallResult,
 )
@@ -24,8 +31,10 @@ def render_setup_text(result: SetupResult) -> None:
     console.print(plan_panel(result))
     if result.skipped_instructions:
         console.print(status_panel("Instructions skipped", "No files changed."))
-        return
-    console.print(changes_panel("Agent instructions", result.changes))
+    else:
+        console.print(changes_panel("Agent instructions", result.changes))
+    if result.automation_install is not None:
+        console.print(automation_install_panel(result.automation_install))
     console.print(next_steps_panel(result))
 
 
@@ -34,8 +43,12 @@ def render_uninstall_text(result: UninstallResult) -> None:
     console.print(setup_panel("CodeAlmanac uninstall", "Remove setup-owned files."))
     if result.kept_instructions:
         console.print(status_panel("Instructions kept", "No files changed."))
-        return
-    console.print(changes_panel("Removed artifacts", result.changes))
+    else:
+        console.print(changes_panel("Removed artifacts", result.changes))
+    if result.kept_automation:
+        console.print(status_panel("Automation kept", "No scheduler entries changed."))
+    elif result.automation_uninstall is not None:
+        console.print(automation_uninstall_panel(result.automation_uninstall))
 
 
 def setup_panel(title: str, subtitle: str) -> Panel:
@@ -75,9 +88,15 @@ def plan_panel(result: SetupResult) -> Panel:
         "instruction targets",
         ", ".join(target.value for target in plan.instruction_targets),
     )
+    table.add_row("automation mode", plan.automation_mode.value)
     for recommendation in plan.automation:
+        label = (
+            f"{recommendation.task.value} automation"
+            if plan.automation_mode == SetupAutomationMode.RECOMMEND
+            else f"{recommendation.task.value} plan"
+        )
         table.add_row(
-            f"{recommendation.task.value} automation",
+            label,
             shell_command(recommendation.command),
         )
     return Panel(
@@ -85,6 +104,44 @@ def plan_panel(result: SetupResult) -> Panel:
         border_style="blue",
         padding=(1, 2),
     )
+
+
+def automation_install_panel(result: AutomationInstallResult) -> Panel:
+    table = Table.grid(padding=(0, 2))
+    table.add_column("task", style="bold")
+    table.add_column("value")
+    for job in result.jobs:
+        add_job_rows(table, job)
+    for job in result.disabled:
+        table.add_row(job.task.value, "disabled")
+    return Panel(
+        Group(Text("Scheduled automation", style="bold"), table),
+        border_style="green",
+        padding=(1, 2),
+    )
+
+
+def automation_uninstall_panel(result: AutomationUninstallResult) -> Panel:
+    table = Table.grid(padding=(0, 2))
+    table.add_column("label", style="bold")
+    table.add_column("value")
+    if len(result.removed) == 0:
+        table.add_row("automation", "not installed")
+    for path in result.removed:
+        table.add_row("removed", str(path))
+    return Panel(
+        Group(Text("Scheduled automation", style="bold"), table),
+        border_style="blue",
+        padding=(1, 2),
+    )
+
+
+def add_job_rows(table: Table, job: ScheduledJob) -> None:
+    table.add_row(job.task.value, f"every {duration_text(job.interval)}")
+    table.add_row("", shell_command(job.program_arguments))
+    if job.working_directory is not None:
+        table.add_row("", str(job.working_directory))
+    table.add_row("", str(job.plist_path))
 
 
 def next_steps_panel(result: SetupResult) -> Panel:

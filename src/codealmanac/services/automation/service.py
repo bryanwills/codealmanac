@@ -223,7 +223,7 @@ def interval_for(
     explicit_tasks: bool,
 ) -> timedelta:
     if task == AutomationTask.SYNC:
-        return request.every or DEFAULT_SYNC_INTERVAL
+        return request.every if request.every is not None else DEFAULT_SYNC_INTERVAL
     if request.garden_every is not None:
         return request.garden_every
     if explicit_tasks and request.every is not None:
@@ -238,7 +238,7 @@ def program_arguments_for(
     executable = request.python_executable or Path(sys.executable)
     base = (str(executable), "-m", "codealmanac.cli.main")
     if task == AutomationTask.SYNC:
-        quiet = request.quiet or DEFAULT_SYNC_QUIET
+        quiet = request.quiet if request.quiet is not None else DEFAULT_SYNC_QUIET
         return (
             *base,
             "sync",
