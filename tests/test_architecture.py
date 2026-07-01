@@ -1431,6 +1431,7 @@ def test_run_queue_workflow_stays_operation_dispatch_only():
 def test_sync_workflow_policy_stays_out_of_service_orchestration():
     service = SRC_ROOT / "workflows/sync/service.py"
     sync_root = SRC_ROOT / "workflows/sync"
+    evaluation = sync_root / "evaluation.py"
     policy = sync_root / "policy.py"
     policy_modules = (
         policy,
@@ -1442,6 +1443,7 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
         sync_root / "snapshots.py",
     )
     service_text = service.read_text(encoding="utf-8")
+    evaluation_text = evaluation.read_text(encoding="utf-8")
     policy_text = policy.read_text(encoding="utf-8")
     combined_policy_text = "\n".join(
         path.read_text(encoding="utf-8") for path in policy_modules
@@ -1457,6 +1459,16 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
         "def sync_ingest_guidance(",
         "EMPTY_SHA256",
     )
+    forbidden_service_evaluation_fragments = (
+        "DiscoverTranscriptsRequest",
+        "ListRunsRequest",
+        "SelectWorkspaceRequest",
+        "SyncReady(",
+        "SyncWorkItem(",
+        "read_transcript(",
+        "quiet_window_skip(",
+        "evaluate_pending_run(",
+    )
     forbidden_policy_imports = (
         "codealmanac.integrations",
         "codealmanac.workflows.ingest",
@@ -1466,8 +1478,19 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
         "codealmanac.services.workspaces.service",
     )
 
+    assert evaluation.is_file()
     assert all(path.is_file() for path in policy_modules)
-    assert len(service_text.splitlines()) <= 320
+    assert len(service_text.splitlines()) <= 120
+    assert "SyncEvaluator(" in service_text
+    assert "class SyncEvaluator" in evaluation_text
+    assert "DiscoverTranscriptsRequest" in evaluation_text
+    assert "ListRunsRequest" in evaluation_text
+    assert "SelectWorkspaceRequest" in evaluation_text
+    assert [
+        fragment
+        for fragment in forbidden_service_evaluation_fragments
+        if fragment in service_text
+    ] == []
     assert len(policy_text.splitlines()) <= 80
     assert [
         fragment
@@ -1508,6 +1531,7 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
 def test_sync_execution_effects_stay_out_of_service_orchestration():
     sync_root = SRC_ROOT / "workflows/sync"
     service_text = (sync_root / "service.py").read_text(encoding="utf-8")
+    evaluation_text = (sync_root / "evaluation.py").read_text(encoding="utf-8")
     execution_text = (sync_root / "execution.py").read_text(encoding="utf-8")
     forbidden_service_fragments = (
         "RunIngestRequest",
@@ -1523,13 +1547,27 @@ def test_sync_execution_effects_stay_out_of_service_orchestration():
         "spawn_worker(",
         "run_with_run(",
     )
+    forbidden_evaluation_fragments = (
+        "RunIngestRequest",
+        "RunIngestWithRunRequest",
+        "FinishRunRequest",
+        "RunStatus.FAILED",
+        "queue_ingest(",
+        "spawn_worker(",
+        "run_with_run(",
+    )
 
     assert (sync_root / "execution.py").is_file()
-    assert len(service_text.splitlines()) <= 230
+    assert len(service_text.splitlines()) <= 120
     assert [
         fragment
         for fragment in forbidden_service_fragments
         if fragment in service_text
+    ] == []
+    assert [
+        fragment
+        for fragment in forbidden_evaluation_fragments
+        if fragment in evaluation_text
     ] == []
     assert "class SyncRunExecutor" in execution_text
     assert "RunIngestRequest" in execution_text

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 131 setup service boundaries.
+- Latest implementation slice: slice 132 sync evaluation boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -108,6 +108,13 @@ Updated: 2026-07-01
   `planning.py` owns `SetupPlan`, automation recommendation rows, and
   next-step commands; and `automation.py` owns setup automation selection plus
   `InstallAutomationRequest` conversion.
+- Slice 132 splits sync candidate evaluation from the workflow facade.
+  `SyncWorkflow` still owns the public `status`, `run`, and `evaluate`
+  methods; `workflows/sync/evaluation.py` owns transcript discovery, explicit
+  `--wiki` scoping, run-record lookup, pending-ledger reconciliation, cursor
+  decisions, work-item construction, and summary assembly; and
+  `workflows/sync/execution.py` remains the only sync module that starts
+  foreground or background Ingest runs.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into

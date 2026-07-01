@@ -215,21 +215,26 @@ It is the constraint document for future agents.
   automation with explicit unattended policy: a stable claim owner, pending
   timeout, and failed-attempt budget. Repeated failed transcript ingests stop
   at needs-attention instead of retrying forever.
-- 2026-07-01: Sync orchestration and sync policy are separate. `SyncWorkflow`
-  owns discovery, scoping, run-record lookup, ledger load/save, foreground
-  ingest, background enqueue, worker spawn, and summary assembly.
-  `workflows/sync/policy.py` remains the facade for deterministic sync policy.
-  `decisions.py` owns cursor and pending-run decisions, `entries.py` owns
-  ledger-entry transitions, `identity.py` owns workspace/session/ledger
-  identity helpers, `snapshots.py` owns transcript snapshot reading and hashes,
-  `reporting.py` owns skip/start rows, and `guidance.py` owns generated cursor
-  guidance. Do not move cursor/ledger policy back into `service.py`.
+- 2026-07-01: Sync orchestration, candidate evaluation, deterministic policy,
+  and run execution are separate. `SyncWorkflow` remains the public facade for
+  `status`, `run`, and `evaluate`, but it does not own transcript discovery,
+  wiki scoping, run-record lookup, candidate evaluation, or execution effects.
+  `workflows/sync/evaluation.py` owns transcript discovery, explicit `--wiki`
+  scoping, run-record lookup, ledger load/save for pending reconciliation,
+  cursor decisions, ready/skipped/attention rows, work-item construction, and
+  summary assembly. Do not move these mechanics back into `service.py`.
+- 2026-07-01: `workflows/sync/policy.py` remains the facade for deterministic
+  sync policy. `decisions.py` owns cursor and pending-run decisions,
+  `entries.py` owns ledger-entry transitions, `identity.py` owns
+  workspace/session/ledger identity helpers, `snapshots.py` owns transcript
+  snapshot reading and hashes, `reporting.py` owns skip/start rows, and
+  `guidance.py` owns generated cursor guidance. Policy modules must not import
+  provider integrations or service objects.
 - 2026-07-01: Sync run execution effects are split from sync selection.
-  `SyncWorkflow` owns status/run/evaluate/scoping orchestration;
   `workflows/sync/execution.py` owns foreground Ingest execution, background
   queueing, worker-spawn failure handling, pending/failed/absorbed ledger
   writes, and started summary rows. Do not move lifecycle execution effects
-  back into `service.py`.
+  into `service.py` or `evaluation.py`.
 - 2026-07-01: Diagnostics is split by check family. `DiagnosticsService`
   remains the service-facing `doctor` facade. `diagnostics/install.py` owns
   install/runtime/manual-package checks, `diagnostics/wiki.py` owns selected
