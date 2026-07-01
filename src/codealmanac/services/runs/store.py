@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from codealmanac.core.errors import ConflictError, NotFoundError
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
@@ -14,6 +14,7 @@ from codealmanac.services.runs.models import (
     RunAttachSnapshot,
     RunCancelResult,
     RunEventKind,
+    RunId,
     RunLogEvent,
     RunOperation,
     RunRecord,
@@ -21,6 +22,8 @@ from codealmanac.services.runs.models import (
     RunStatus,
     RunWorkerLockOwner,
 )
+
+RUN_ID_ADAPTER = TypeAdapter(RunId)
 
 
 class RunWorkerLease:
@@ -320,19 +323,27 @@ def runs_dir(almanac_path: Path) -> Path:
 
 
 def run_record_path(almanac_path: Path, run_id: str) -> Path:
+    run_id = validate_run_id(run_id)
     return runs_dir(almanac_path) / f"{run_id}.json"
 
 
 def run_spec_path(almanac_path: Path, run_id: str) -> Path:
+    run_id = validate_run_id(run_id)
     return runs_dir(almanac_path) / f"{run_id}.spec.json"
 
 
 def run_log_path(almanac_path: Path, run_id: str) -> Path:
+    run_id = validate_run_id(run_id)
     return runs_dir(almanac_path) / f"{run_id}.jsonl"
 
 
 def run_log_reference_path(almanac_root: Path, run_id: str) -> Path:
+    run_id = validate_run_id(run_id)
     return almanac_root / "jobs" / f"{run_id}.jsonl"
+
+
+def validate_run_id(run_id: str) -> RunId:
+    return RUN_ID_ADAPTER.validate_python(run_id)
 
 
 def write_record(almanac_path: Path, record: RunRecord) -> None:
@@ -385,7 +396,10 @@ def iter_records(almanac_path: Path) -> tuple[RunRecord, ...]:
         if path.name.endswith(".spec.json"):
             continue
         run_id = path.stem
-        record = read_record(almanac_path, run_id)
+        try:
+            record = read_record(almanac_path, run_id)
+        except ValidationError:
+            continue
         if record is not None:
             records.append(record)
     return tuple(records)

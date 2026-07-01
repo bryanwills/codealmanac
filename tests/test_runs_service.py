@@ -16,7 +16,9 @@ from codealmanac.services.harnesses.models import (
 )
 from codealmanac.services.runs.models import (
     RunEventKind,
+    RunLogEvent,
     RunOperation,
+    RunRecord,
     RunSpec,
     RunStatus,
 )
@@ -36,6 +38,7 @@ from codealmanac.services.runs.requests import (
     ShowRunRequest,
     StartRunRequest,
 )
+from codealmanac.services.runs.store import RunStore
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
@@ -390,3 +393,60 @@ def test_finish_run_request_requires_terminal_status(tmp_path: Path):
             run_id="run-1",
             status=RunStatus.RUNNING,
         )
+
+
+def test_run_id_requests_reject_path_shaped_identifiers(tmp_path: Path):
+    request_classes = (
+        ShowRunRequest,
+        ReadRunLogRequest,
+        AttachRunRequest,
+        CancelRunRequest,
+        ReadRunSpecRequest,
+        MarkRunRunningRequest,
+    )
+
+    for request_class in request_classes:
+        with pytest.raises(ValidationError, match="String should match pattern"):
+            request_class(cwd=tmp_path, run_id="../secret")
+
+    for bad_run_id in ("", "   ", "run.json", "run id"):
+        with pytest.raises(ValidationError):
+            ShowRunRequest(cwd=tmp_path, run_id=bad_run_id)
+
+
+def test_run_records_and_events_reject_unsafe_run_ids(tmp_path: Path):
+    now = datetime.now(UTC)
+
+    with pytest.raises(ValidationError, match="String should match pattern"):
+        RunRecord(
+            run_id="../secret",
+            workspace_id="workspace",
+            operation=RunOperation.INGEST,
+            status=RunStatus.QUEUED,
+            title=None,
+            created_at=now,
+            updated_at=now,
+            log_path=tmp_path / "run.jsonl",
+        )
+
+    with pytest.raises(ValidationError, match="String should match pattern"):
+        RunLogEvent(
+            run_id="run.json",
+            sequence=1,
+            timestamp=now,
+            kind=RunEventKind.STATUS,
+            message="queued ingest",
+        )
+
+
+def test_run_store_rejects_unsafe_run_ids_before_path_access(tmp_path: Path):
+    store = RunStore()
+    almanac_path = tmp_path / "almanac"
+    bad_record = almanac_path / "jobs/run.json.json"
+    bad_record.parent.mkdir(parents=True)
+    bad_record.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="String should match pattern"):
+        store.read(almanac_path, "../secret")
+
+    assert store.list(almanac_path, limit=None) == ()

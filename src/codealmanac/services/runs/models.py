@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import field_validator, model_validator
+from pydantic import StringConstraints, field_validator, model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
@@ -11,6 +12,12 @@ from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessTranscriptRef,
 )
+
+RUN_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
+RunId = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, pattern=RUN_ID_PATTERN),
+]
 
 
 class RunOperation(StrEnum):
@@ -44,7 +51,7 @@ class PageChangeSet(CodeAlmanacModel):
 
 
 class RunRecord(CodeAlmanacModel):
-    run_id: str
+    run_id: RunId
     workspace_id: str
     operation: RunOperation
     status: RunStatus
@@ -59,11 +66,6 @@ class RunRecord(CodeAlmanacModel):
     page_changes: PageChangeSet | None = None
     harness_transcript: HarnessTranscriptRef | None = None
 
-    @field_validator("run_id")
-    @classmethod
-    def require_run_id(cls, value: str) -> str:
-        return required_text(value, "run_id")
-
     @field_validator("workspace_id")
     @classmethod
     def require_workspace_id(cls, value: str) -> str:
@@ -71,17 +73,12 @@ class RunRecord(CodeAlmanacModel):
 
 
 class RunLogEvent(CodeAlmanacModel):
-    run_id: str
+    run_id: RunId
     sequence: int
     timestamp: datetime
     kind: RunEventKind
     message: str
     harness_event: HarnessEvent | None = None
-
-    @field_validator("run_id")
-    @classmethod
-    def require_run_id(cls, value: str) -> str:
-        return required_text(value, "run_id")
 
     @field_validator("message")
     @classmethod

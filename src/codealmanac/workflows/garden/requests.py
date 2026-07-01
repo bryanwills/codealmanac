@@ -5,6 +5,7 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.runs.models import RunId
 
 
 class RunGardenRequest(CodeAlmanacModel):
@@ -23,9 +24,4 @@ class RunGardenRequest(CodeAlmanacModel):
 
 
 class RunGardenWithRunRequest(RunGardenRequest):
-    run_id: str
-
-    @field_validator("run_id")
-    @classmethod
-    def require_run_id(cls, value: str) -> str:
-        return required_text(value, "garden run id")
+    run_id: RunId

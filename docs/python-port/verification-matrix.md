@@ -1049,3 +1049,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 304 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 92 Shared Run ID Validation
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused validation tests | `uv run pytest tests/test_runs_service.py::test_run_id_requests_reject_path_shaped_identifiers tests/test_runs_service.py::test_run_records_and_events_reject_unsafe_run_ids tests/test_runs_service.py::test_run_store_rejects_unsafe_run_ids_before_path_access tests/test_viewer_service.py::test_viewer_job_request_rejects_path_shaped_run_ids tests/test_server.py::test_server_rejects_path_shaped_job_ids tests/test_cli.py::test_cli_jobs_rejects_path_shaped_run_ids tests/test_architecture.py::test_run_id_validation_is_owned_by_runs_models` | passed; 7 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/runs src/codealmanac/services/viewer/requests.py src/codealmanac/workflows/ingest/requests.py src/codealmanac/workflows/garden/requests.py src/codealmanac/workflows/page_run tests/test_runs_service.py tests/test_viewer_service.py tests/test_server.py tests/test_cli.py tests/test_architecture.py` | passed |
+| CLI invalid-id dogfood | isolated temp `HOME` and initialized repo; `codealmanac jobs show ../secret`; `codealmanac jobs logs run.json` | passed; both exited 1 with Pydantic pattern validation and no `almanac/jobs/` files were created |
+| Full tests | `uv run pytest` | passed; 309 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

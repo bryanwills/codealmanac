@@ -1236,6 +1236,14 @@ def test_cli_jobs_inspects_local_run_records(
     assert '"status": "cancelled"' in cancel_json_output.out
 
 
+def test_cli_jobs_rejects_path_shaped_run_ids(capsys):
+    assert main(["jobs", "show", "../secret"]) == 1
+
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "String should match pattern" in output.err
+
+
 def test_cli_search_and_show_read_current_repo_wiki(
     tmp_path: Path,
     isolated_home: Path,

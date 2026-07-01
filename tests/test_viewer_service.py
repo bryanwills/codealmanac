@@ -208,7 +208,7 @@ def test_viewer_job_request_rejects_path_shaped_run_ids(
 ):
     repo, _ = viewer_repo
 
-    with pytest.raises(ValidationError, match="invalid character"):
+    with pytest.raises(ValidationError, match="String should match pattern"):
         ViewerJobRequest(cwd=repo, run_id="../secret")
 
 

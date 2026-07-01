@@ -8,6 +8,7 @@ from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
 from codealmanac.services.runs.models import (
     RunEventKind,
+    RunId,
     RunOperation,
     RunSpec,
     RunStatus,
@@ -29,25 +30,25 @@ class ListRunsRequest(CodeAlmanacModel):
 
 class ShowRunRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
 class ReadRunLogRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
 class AttachRunRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
 class CancelRunRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
@@ -67,7 +68,7 @@ class QueueRunRequest(CodeAlmanacModel):
 
 class ReadRunSpecRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
@@ -111,7 +112,7 @@ class SpawnRunWorkerRequest(CodeAlmanacModel):
 
 class RecordRunEventRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     kind: RunEventKind
     message: str
     wiki: str | None = None
@@ -120,20 +121,20 @@ class RecordRunEventRequest(CodeAlmanacModel):
 
 class MarkRunRunningRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
 
 
 class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     transcript: HarnessTranscriptRef
     wiki: str | None = None
 
 
 class FinishRunRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     status: RunStatus
     wiki: str | None = None
     summary: str | None = None

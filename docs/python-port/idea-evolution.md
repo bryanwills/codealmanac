@@ -2099,3 +2099,33 @@ Follow-up test:
 If `serve` later adds richer live updates, start with this same read boundary:
 replace the browser polling transport, but do not add browser-side cancel,
 retry, or attach controls without a separate product decision.
+
+## 2026-07-01 - Run IDs Are A Shared Product Type
+
+Old hypothesis:
+The viewer could protect `/api/jobs/{run_id}` with a local safe-character
+validator while core run requests accepted plain strings.
+
+New hypothesis:
+Run-id safety belongs to the runs product model because run ids become filenames
+under `<almanac-root>/jobs/` in every CLI, workflow, and viewer path.
+
+Evidence that forced the change:
+`ViewerJobRequest` rejected `../secret`, but `ShowRunRequest`,
+`ReadRunLogRequest`, `AttachRunRequest`, and `CancelRunRequest` still accepted
+plain strings before `RunStore` built paths such as `jobs/{run_id}.json`.
+The live agreement says validation belongs at product boundaries and the user
+explicitly preferred Pydantic validation over hand-rolled parsing.
+
+Code or product assumption affected:
+Slice 92 adds `RunId` as a Pydantic-constrained type in
+`services/runs/models.py` and applies it to run records, run log events, run
+requests, viewer job requests, and page-run workflow requests.
+`services/runs/store.py` also validates path helper inputs through a Pydantic
+`TypeAdapter(RunId)` before constructing filenames. The sync ledger still
+stores `pending_run_id` as tolerant persisted recovery state; tightening that
+would need its own migration/read-tolerance decision.
+
+Follow-up test:
+If future code adds a public request with an existing run id, import `RunId`
+instead of adding a local `field_validator` or string character set.

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 91 serve job polling.
+- Latest implementation slice: slice 92 shared run-id validation.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -168,6 +168,13 @@ Updated: 2026-07-01
   browser timer and route guard; `viewer/main.js` clears polling on route and
   wiki changes. No server endpoint, viewer service, or run-control mutation
   surface was added.
+- Slice 92 moves run-id validation into the runs product model. `RunId` is a
+  Pydantic-constrained type in `services/runs/models.py`, used by run records,
+  run log events, run request models, viewer job requests, and page-run
+  workflow requests. `RunStore` also validates path helper inputs with
+  `TypeAdapter(RunId)`. Path-shaped or dotted public job ids now fail request
+  validation before `RunStore` constructs `<almanac-root>/jobs/{run_id}.*`
+  paths, and direct store calls cannot use unsafe ids.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

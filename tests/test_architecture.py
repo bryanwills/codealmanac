@@ -288,6 +288,24 @@ def test_viewer_jobs_surface_stays_read_only():
     assert offenders == []
 
 
+def test_run_id_validation_is_owned_by_runs_models():
+    runs_models = (SRC_ROOT / "services/runs/models.py").read_text(encoding="utf-8")
+    runs_requests = (SRC_ROOT / "services/runs/requests.py").read_text(
+        encoding="utf-8"
+    )
+    runs_store = (SRC_ROOT / "services/runs/store.py").read_text(encoding="utf-8")
+    viewer_requests = (SRC_ROOT / "services/viewer/requests.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "RunId = Annotated[" in runs_models
+    assert "StringConstraints" in runs_models
+    assert "run_id: RunId" in runs_requests
+    assert "TypeAdapter(RunId)" in runs_store
+    assert "run_id: RunId" in viewer_requests
+    assert "SAFE_RUN_ID" not in viewer_requests
+
+
 def test_repo_almanac_root_is_workspace_owned():
     from codealmanac.services.workspaces.roots import DEFAULT_ALMANAC_ROOT
 

@@ -1056,3 +1056,12 @@ the checkout with `uv run --project /Users/rohan/Desktop/Projects/codealmanac`.
 Browser-harness then proved a job detail route moved from `running` to `done`
 without a manual refresh after `RunsService.finish(...)` updated the durable
 run record.
+Slice 92 moves run-id validation out of the viewer adapter and into the runs
+product model. `RunId` is now a Pydantic-constrained string type shared by run
+records, log events, run request models, viewer job requests, and page-run
+workflow requests, and `RunStore` revalidates path helper inputs with
+`TypeAdapter(RunId)`. Focused tests prove path-shaped and dotted ids fail
+request validation for service, CLI, viewer, server, and direct-store
+boundaries. Isolated CLI dogfood initialized a temp repo and confirmed
+`jobs show ../secret` and `jobs logs run.json` exit with validation errors
+before any `almanac/jobs/` files are created.

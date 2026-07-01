@@ -4,15 +4,10 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
+from codealmanac.services.runs.models import RunId
 from codealmanac.services.wiki.paths import (
     looks_like_dir,
     normalize_reference_path_preserving_case,
-)
-
-SAFE_RUN_ID_CHARACTERS = set(
-    "abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "0123456789-_"
 )
 
 
@@ -108,13 +103,5 @@ class ViewerJobsRequest(CodeAlmanacModel):
 
 class ViewerJobRequest(CodeAlmanacModel):
     cwd: Path
-    run_id: str
+    run_id: RunId
     wiki: str | None = None
-
-    @field_validator("run_id")
-    @classmethod
-    def require_safe_run_id(cls, value: str) -> str:
-        run_id = required_text(value, "run id")
-        if any(character not in SAFE_RUN_ID_CHARACTERS for character in run_id):
-            raise ValueError("run id contains an invalid character")
-        return run_id
