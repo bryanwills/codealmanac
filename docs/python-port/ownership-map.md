@@ -197,10 +197,11 @@ explicit local files and bounded directory material. `adapter.py` implements the
 service-owned
 `SourceRuntimeAdapter` port and delegates to module-level responsibilities:
 `documents.py` owns text document models, file byte bounds, and
-`charset-normalizer` decoding; `listing.py` owns ignore specs, Git-backed
-directory listing inside worktrees, Git porcelain status for changed-first
-directory selection, Python walking through `pathspec`, and directory document
-assembly; `selection.py` owns semantic diversity for clean directory
+`charset-normalizer` decoding; `listing.py` owns directory document assembly
+and Git-vs-walk source selection; `ignore.py` owns default/configured ignore
+rules and `.gitignore` loading; `walk.py` owns Python directory walking;
+`git.py` owns Git listing, Git status parsing, repo-root probing, and Git
+command tolerance; `selection.py` owns semantic diversity for clean directory
 selection; `rendering.py` owns prompt-facing runtime text; `paths.py` owns
 shared display/relative path helpers. The adapter normalizes the request `cwd`
 before delegating because source refs are already normalized; this keeps

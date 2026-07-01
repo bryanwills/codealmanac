@@ -256,8 +256,10 @@ It is the constraint document for future agents.
 - 2026-07-01: Filesystem source runtime is split by integration
   responsibility. `adapter.py` implements the `SourceRuntimeAdapter` port;
   `documents.py` owns text document models and charset decoding; `listing.py`
-  owns ignore rules, Git listing, Python walking, and directory document
-  assembly; `rendering.py` owns prompt-facing runtime text; `paths.py` owns
+  owns directory document assembly and Git-vs-walk source selection;
+  `ignore.py` owns default/configured ignore rules and `.gitignore` loading;
+  `walk.py` owns Python directory walking; `git.py` owns Git listing/status
+  mechanics; `rendering.py` owns prompt-facing runtime text; `paths.py` owns
   shared display/relative path helpers. Keep source selection policy local to
   the filesystem integration unless a second adapter needs the same behavior.
 - 2026-07-01: GitHub source runtime is split by integration responsibility.

@@ -1180,3 +1180,12 @@ output; `wiki.py` owns search/show/topics/health/tagging output;
 `workspaces.py` owns local wiki registry list/drop output; and `common.py` owns
 shared JSON/index/page-word helpers. Focused CLI and architecture tests passed,
 and public CLI dogfood covered help, init, `list --json`, and empty search.
+Slice 108 keeps filesystem directory runtime behavior unchanged while splitting
+listing internals by mechanic. `listing.py` now assembles directory documents
+and chooses Git-vs-walk source policy; `ignore.py` owns default/configured
+ignore rules and `.gitignore` loading; `walk.py` owns recursive Python walking;
+and `git.py` owns Git `ls-files`, Git status parsing, repo-root probing, and
+command failure tolerance. Focused filesystem runtime, directory selection,
+architecture, and lint checks passed. Service-level dogfood rendered a
+repo-relative directory source while respecting `.gitignore` and configured
+Almanac-root ignores.

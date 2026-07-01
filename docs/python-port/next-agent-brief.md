@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 107 CLI render facade split.
+- Latest implementation slice: slice 108 filesystem listing boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -258,6 +258,14 @@ Updated: 2026-07-01
   registry list/drop output, and `common.py` owns shared JSON/index/page-word
   helpers. Architecture tests prevent service model imports and render function
   implementations from regrowing in `root.py`.
+- Slice 108 splits filesystem directory listing internals while preserving
+  source-runtime behavior. `integrations/sources/filesystem/listing.py` now
+  assembles directory documents and chooses Git-vs-walk listing source;
+  `ignore.py` owns default/configured ignore rules and `.gitignore` loading;
+  `walk.py` owns Python recursive walking; `git.py` owns Git `ls-files`,
+  status parsing, repo-root probing, and command tolerance. Architecture tests
+  prevent `GitIgnoreSpec`, recursive walking, subprocess handling, and Git
+  status parsing from regrowing in `listing.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -903,6 +911,10 @@ Behavior:
 - Slice 107 CLI render facade split, focused CLI and architecture tests,
   focused Ruff over CLI render/dispatch/parser, public CLI dogfood for help,
   init, list JSON, and empty search, then full pytest/full Ruff/diff check
+- Slice 108 filesystem listing boundary split, focused filesystem runtime,
+  directory-selection, and architecture tests, focused Ruff over filesystem
+  source modules, service-level filesystem directory dogfood, then full
+  pytest/full Ruff/diff check
 
 ## Next Move
 

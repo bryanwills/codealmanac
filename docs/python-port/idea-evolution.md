@@ -2565,3 +2565,34 @@ Follow-up test:
 Future CLI output changes should land in the domain renderer that owns the
 command family. Do not add rendering logic or service model imports to
 `root.py`.
+
+## 2026-07-01 - Filesystem Listing Needs Mechanic-Level Boundaries
+
+Old hypothesis:
+`integrations/sources/filesystem/listing.py` could own ignore specs, Python
+walking, Git directory listing, Git status parsing, repo-root probing, and
+directory document assembly because those all contribute to one filesystem
+source runtime.
+
+New hypothesis:
+`listing.py` should assemble directory documents and choose Git-vs-walk source
+policy, while ignore rules, Python walking, and Git mechanics each live in
+their own modules. Those mechanics change for different reasons and already
+have enough behavior to deserve names.
+
+Evidence that forced the change:
+After slice 107, `integrations/sources/filesystem/listing.py` became the
+largest production module at 327 lines. It mixed `.gitignore` loading,
+configured wiki-root ignores, recursive directory walking, Git `ls-files`,
+Git `status --porcelain -z`, rename-source skipping, repo-root detection,
+subprocess failure tolerance, and final document assembly.
+
+Code or product assumption affected:
+Slice 108 keeps filesystem runtime behavior unchanged. `ignore.py` owns ignore
+spec construction, `walk.py` owns Python walking, `git.py` owns Git listing and
+status mechanics, and `listing.py` remains the assembly facade.
+
+Follow-up test:
+Future filesystem material-selection changes should land in `selection.py` or
+`listing.py` only when the assembly policy changes. Ignore, walking, and Git
+mechanics should stay in their focused modules.

@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.integrations.sources.filesystem import FilesystemSourceRuntimeAdapter
+from codealmanac.integrations.sources.filesystem.git import parse_git_status_z
 from codealmanac.services.sources.models import SourceRuntimeStatus
 from codealmanac.services.sources.requests import (
     InspectSourceRuntimeRequest,
@@ -225,6 +226,12 @@ def test_filesystem_source_runtime_uses_git_directory_listing(
     assert "almanac/pages/wiki.md" not in content
     assert "SECRET=1" not in content
     assert "root-ignored.md" not in content
+
+
+def test_filesystem_git_status_parser_skips_rename_sources():
+    statuses = parse_git_status_z("R  src/new.py\0src/old.py\0?? docs/note.md\0")
+
+    assert statuses == (("src/new.py", "R "), ("docs/note.md", "??"))
 
 
 def test_filesystem_source_runtime_uses_configured_wiki_root_ignore_with_git(

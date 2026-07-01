@@ -453,6 +453,10 @@ def test_filesystem_source_runtime_stays_split_by_responsibility():
     filesystem_root = SRC_ROOT / "integrations/sources/filesystem"
     adapter = filesystem_root / "adapter.py"
     adapter_text = adapter.read_text(encoding="utf-8")
+    listing_text = (filesystem_root / "listing.py").read_text(encoding="utf-8")
+    git_text = (filesystem_root / "git.py").read_text(encoding="utf-8")
+    ignore_text = (filesystem_root / "ignore.py").read_text(encoding="utf-8")
+    walk_text = (filesystem_root / "walk.py").read_text(encoding="utf-8")
     module_names = {path.name for path in filesystem_root.glob("*.py")}
     forbidden_adapter_fragments = (
         "charset_normalizer",
@@ -467,10 +471,13 @@ def test_filesystem_source_runtime_stays_split_by_responsibility():
     assert {
         "adapter.py",
         "documents.py",
+        "git.py",
+        "ignore.py",
         "listing.py",
         "paths.py",
         "rendering.py",
         "selection.py",
+        "walk.py",
     } <= module_names
     assert len(adapter_text.splitlines()) <= 220
     assert [
@@ -478,6 +485,24 @@ def test_filesystem_source_runtime_stays_split_by_responsibility():
         for fragment in forbidden_adapter_fragments
         if fragment in adapter_text
     ] == []
+    assert len(listing_text.splitlines()) <= 110
+    assert [
+        fragment
+        for fragment in (
+            "GitIgnoreSpec",
+            "subprocess",
+            "def walk_files(",
+            "def parse_git_status_z(",
+            "DEFAULT_IGNORE_PATTERNS",
+            "def git_repo_root(",
+        )
+        if fragment in listing_text
+    ] == []
+    assert "def parse_git_status_z(" in git_text
+    assert "def git_directory_candidates(" in git_text
+    assert "DEFAULT_IGNORE_PATTERNS" in ignore_text
+    assert "def ignore_spec_for(" in ignore_text
+    assert "def walk_files(" in walk_text
 
 
 def test_github_source_runtime_stays_split_by_responsibility():

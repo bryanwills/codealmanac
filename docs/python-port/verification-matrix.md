@@ -1084,6 +1084,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 108 Filesystem Listing Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused filesystem listing tests | `uv run pytest tests/test_filesystem_source_runtime.py tests/test_filesystem_directory_selection.py tests/test_architecture.py::test_filesystem_source_runtime_stays_split_by_responsibility -q` | passed; 22 tests |
+| Focused filesystem lint | `uv run ruff check src/codealmanac/integrations/sources/filesystem tests/test_filesystem_source_runtime.py tests/test_filesystem_directory_selection.py tests/test_architecture.py` | passed |
+| Service-level filesystem dogfood | temp app-service directory runtime through `FilesystemSourceRuntimeAdapter` with `.gitignore` and configured Almanac-root ignore | passed; rendered `Directory .`, `src/service.py`, and excluded ignored wiki/material paths |
+| Full tests | `uv run pytest` | passed; 330 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |
