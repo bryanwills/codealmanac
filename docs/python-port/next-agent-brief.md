@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 125 CLI lifecycle dispatch boundaries.
+- Latest implementation slice: slice 126 CLI admin parser boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -283,6 +283,13 @@ Updated: 2026-07-01
   `dispatch/worker.py` owns the hidden queue-drain entrypoint. Architecture
   tests keep workflow request imports and sync helpers out of
   `cli/dispatch/lifecycle.py`.
+- Slice 126 keeps admin CLI flags unchanged while splitting
+  `cli/parser/admin.py` by command family. `admin.py` is now a facade;
+  `parser/setup.py` owns setup/uninstall flags, `parser/diagnostics.py` owns
+  doctor flags, `parser/updates.py` owns update flags, `parser/jobs.py` owns
+  jobs flags, and `parser/automation.py` owns automation flags and task
+  choices. Architecture tests keep command flag construction out of
+  `cli/parser/admin.py`.
 - Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
   splitting source-address parsing by family. `address_resolution.py` is now a
   small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,

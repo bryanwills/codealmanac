@@ -3114,3 +3114,29 @@ Follow-up test:
 Future lifecycle command behavior should land in the command-family dispatcher
 that owns the workflow request. Architecture tests should keep workflow request
 imports and sync helper parsers out of `cli/dispatch/lifecycle.py`.
+
+## 2026-07-01 - Admin Parser Is A Command-Family Facade
+
+Old hypothesis:
+`cli/parser/admin.py` could own setup, uninstall, doctor, update, jobs, and
+automation flag construction because those commands share the admin CLI domain.
+
+New hypothesis:
+`cli/parser/admin.py` should be a facade over admin command-family parser
+modules. Setup/uninstall, diagnostics, updates, jobs, and automation have
+different flag sets and change for different product reasons.
+
+Evidence that forced the change:
+After slice 125, `cli/parser/admin.py` was the largest parser file at 147
+lines. It mixed setup automation flags, uninstall preservation flags, doctor
+flags, update flags, jobs subcommands, and automation task choices.
+
+Code or product assumption affected:
+Slice 126 keeps all admin flags, defaults, and help text unchanged. Only
+ownership changes: `setup.py`, `diagnostics.py`, `updates.py`, `jobs.py`, and
+`automation.py` own command flag construction.
+
+Follow-up test:
+Future admin flags should land in the parser module that owns the command
+family. Architecture tests should keep `add_parser(...)` command construction
+and flag strings out of `cli/parser/admin.py`.

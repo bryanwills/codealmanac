@@ -1334,3 +1334,8 @@ ingest/garden foreground/background dispatch, `sync.py` owns sync and sync
 status request construction, and `worker.py` owns the hidden queue-drain
 entrypoint. Architecture tests keep workflow request imports and sync helpers
 out of the facade.
+Slice 126 keeps admin CLI flags unchanged while splitting `cli/parser/admin.py`
+by command family. `admin.py` is now a facade; `setup.py` owns setup/uninstall
+flags, `diagnostics.py` owns doctor flags, `updates.py` owns update flags,
+`jobs.py` owns jobs flags, and `automation.py` owns automation flags and task
+choices. Architecture tests keep command flag construction out of the facade.

@@ -358,6 +358,12 @@ construction plus transcript app parsing, and `worker.py` owns the hidden
 queue-drain entrypoint. Lifecycle dispatch modules adapt CLI args into workflow
 requests; lifecycle workflows own product behavior.
 
+`cli/parser/admin.py` is the admin-parser facade. `cli/parser/setup.py` owns
+setup/uninstall flags, `diagnostics.py` owns doctor flags, `updates.py` owns
+update flags, `jobs.py` owns jobs flags, and `automation.py` owns automation
+flags plus task choices. Parser modules define CLI shape only; they do not
+import services beyond enum choices needed for argparse validation.
+
 The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM

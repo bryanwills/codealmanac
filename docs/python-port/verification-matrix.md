@@ -19,6 +19,17 @@ means the goal remains active.
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, package module names, README, release guide, GitHub automation/templates, package metadata, next-agent freshness, beta-audit coverage, and `~/.codealmanac/` user-state defaults | `uv run pytest tests/test_public_contract.py` passed with 26 tests on 2026-07-01; full `uv run pytest` and `uv run ruff check .` passed on 2026-07-01 | Future CLI, docs, or project automation expansion must keep the public-contract guard current. |
 
+## Gates For Slice 126 CLI Admin Parser Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused parser, CLI, and public-contract tests | `uv run pytest tests/test_public_contract.py tests/test_cli.py tests/test_architecture.py::test_cli_parser_is_split_by_command_domain tests/test_architecture.py::test_cli_admin_parser_stays_split_by_command_family tests/test_architecture.py::test_cli_has_separate_parser_dispatch_and_render_packages -q` | 66 passed |
+| Focused lint | `uv run ruff check src/codealmanac/cli/parser tests/test_cli.py tests/test_public_contract.py tests/test_architecture.py` | passed |
+| Public help dogfood | `codealmanac setup/uninstall/doctor/update/jobs/jobs show/automation/automation install/automation status --help` | passed; moved admin parser families exposed expected flags/subcommands |
+| Full tests | `uv run pytest` | 345 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 125 CLI Lifecycle Dispatch Boundaries
 
 | Gate | Command | 2026-07-01 result |

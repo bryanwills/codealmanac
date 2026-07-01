@@ -446,8 +446,13 @@ def test_cli_parser_is_split_by_command_domain():
     assert parser_files == {
         "__init__.py",
         "admin.py",
+        "automation.py",
+        "diagnostics.py",
+        "jobs.py",
         "lifecycle.py",
         "root.py",
+        "setup.py",
+        "updates.py",
         "wiki.py",
     }
     assert len(root.splitlines()) <= 80
@@ -457,10 +462,56 @@ def test_cli_parser_is_split_by_command_domain():
     assert "add_parser(" not in root
 
 
+def test_cli_admin_parser_stays_split_by_command_family():
+    parser_root = SRC_ROOT / "cli/parser"
+    admin = (parser_root / "admin.py").read_text(encoding="utf-8")
+    module_expectations = {
+        "automation.py": ("AutomationTask", "def add_automation_commands("),
+        "diagnostics.py": ('add_parser("doctor"', "def add_diagnostics_commands("),
+        "jobs.py": ('add_parser("jobs"', "def add_jobs_commands("),
+        "setup.py": ('add_parser("setup"', "def add_setup_commands("),
+        "updates.py": ('add_parser("update"', "def add_update_commands("),
+    }
+    forbidden_admin_fragments = (
+        "AutomationTask",
+        "add_argument",
+        "choices=",
+        'dest="jobs_command"',
+        'dest="automation_command"',
+        "--target",
+        "--check",
+        "--keep-automation",
+    )
+    oversized = []
+
+    for module_name, fragments in module_expectations.items():
+        text = (parser_root / module_name).read_text(encoding="utf-8")
+        assert all(fragment in text for fragment in fragments)
+        line_count = len(text.splitlines())
+        if line_count > 100:
+            oversized.append(f"{module_name}:{line_count}")
+
+    assert len(admin.splitlines()) <= 80
+    assert [
+        fragment for fragment in forbidden_admin_fragments if fragment in admin
+    ] == []
+    assert "add_setup_commands(subcommands)" in admin
+    assert "add_diagnostics_commands(subcommands)" in admin
+    assert "add_update_commands(subcommands)" in admin
+    assert "add_jobs_commands(subcommands)" in admin
+    assert "add_automation_commands(subcommands)" in admin
+    assert oversized == []
+
+
 def test_cli_has_separate_parser_dispatch_and_render_packages():
     cli_root = SRC_ROOT / "cli"
 
     assert (cli_root / "parser/root.py").is_file()
+    assert (cli_root / "parser/automation.py").is_file()
+    assert (cli_root / "parser/diagnostics.py").is_file()
+    assert (cli_root / "parser/jobs.py").is_file()
+    assert (cli_root / "parser/setup.py").is_file()
+    assert (cli_root / "parser/updates.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/automation.py").is_file()

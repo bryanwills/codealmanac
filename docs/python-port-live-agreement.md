@@ -70,6 +70,12 @@ It is the constraint document for future agents.
   status request construction, and `worker.py` owns the hidden queue-drain
   entrypoint. Do not move workflow request construction, sync source parsing,
   or worker-drain request construction back into `dispatch/lifecycle.py`.
+- 2026-07-01: Admin CLI parser construction follows the same command-family
+  split. `cli/parser/admin.py` remains the admin-parser facade; `setup.py`
+  owns setup/uninstall flags, `diagnostics.py` owns doctor flags, `updates.py`
+  owns update flags, `jobs.py` owns jobs flags, and `automation.py` owns
+  automation flags and task choices. Do not move command flag construction
+  back into `parser/admin.py`.
 - 2026-06-30: Validation belongs at product boundaries. Use Pydantic request,
   settings, and domain models for shaped data; use enums or literals for finite
   choices; reject invalid user/product input with explicit errors. Adapter-local
