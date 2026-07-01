@@ -2476,3 +2476,34 @@ Follow-up test:
 If future GitHub source runtime adds reviews, linked issues, check runs, or a
 native API/MCP transport, add the behavior to the module that owns the reason to
 change instead of growing `adapter.py`.
+
+## 2026-07-01 - Transcript Source Runtime Needs Entry And Rendering Boundaries
+
+Old hypothesis:
+`TranscriptSourceRuntimeAdapter` could own path resolution, JSONL reading,
+Pydantic provider shapes, entry normalization, prompt rendering, and truncation
+because it is one concrete `SourceRuntimeAdapter` implementation.
+
+New hypothesis:
+The public adapter should stay small, while transcript line models, file
+reading, line-to-entry normalization, prompt-facing rendering, path resolution,
+and unavailable diagnostics live in focused modules under
+`integrations/sources/transcripts/`.
+
+Evidence that forced the change:
+After slice 104, `integrations/sources/transcripts/runtime.py` became the
+largest production module at 387 lines. It mixed source-runtime orchestration
+with provider JSON shape models, `jsonlines` parsing, tolerant Pydantic
+validation, Codex/Claude entry normalization, text extraction, and tail
+truncation.
+
+Code or product assumption affected:
+Slice 105 keeps `TranscriptSourceRuntimeAdapter` behavior unchanged. `models.py`
+owns typed line and entry models, `reader.py` owns JSONL IO, `entries.py` owns
+normalization, `rendering.py` owns prompt text and truncation, `paths.py` owns
+path resolution, and `errors.py` owns unavailable-runtime diagnostics.
+
+Follow-up test:
+If future transcript runtime adds another provider shape, richer event
+reconstruction, or alternate transcript storage, add it to the module that owns
+that reason to change instead of growing `runtime.py`.

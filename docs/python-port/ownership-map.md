@@ -213,10 +213,15 @@ owns `SourceRef` to `gh` target argument policy, `rendering.py` owns
 prompt-facing PR and issue runtime text, and `errors.py` owns unavailable
 runtime diagnostics. `integrations/sources/transcripts/` reads provider JSONL
 transcripts with `jsonlines`, validates known Codex and Claude shapes with
-Pydantic, and renders bounded transcript snapshots. Ingest does not branch on
-source kind. `integrations/sources/web/` uses `httpx` plus Beautiful Soup to
-fetch generic web URLs, remove non-readable HTML nodes, and render bounded
-HTML/text snapshots through the same source-runtime port.
+Pydantic, and renders bounded transcript snapshots. `runtime.py` implements the
+service-owned `SourceRuntimeAdapter` port, `models.py` owns typed transcript
+line and entry models, `reader.py` owns JSONL file reading, `entries.py` owns
+line-to-entry normalization, `rendering.py` owns prompt-facing text and
+truncation, `paths.py` owns path resolution, and `errors.py` owns unavailable
+diagnostics. Ingest does not branch on source kind. `integrations/sources/web/`
+uses `httpx` plus Beautiful Soup to fetch generic web URLs, remove non-readable
+HTML nodes, and render bounded HTML/text snapshots through the same
+source-runtime port.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
 automation install/status/uninstall. The automation service decides scheduled

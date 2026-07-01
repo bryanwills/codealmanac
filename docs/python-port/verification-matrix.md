@@ -1051,6 +1051,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 105 Transcript Source Runtime Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused transcript runtime/sync/architecture tests | `uv run pytest tests/test_transcript_source_runtime.py tests/test_sync_workflow.py::test_sync_run_ingests_ready_transcripts_and_advances_ledger tests/test_architecture.py::test_transcript_source_runtime_stays_split_by_responsibility -q` | passed; 6 tests |
+| Focused transcript lint | `uv run ruff check src/codealmanac/integrations/sources/transcripts tests/test_architecture.py tests/test_transcript_source_runtime.py tests/test_sync_workflow.py tests/test_ingest_workflow.py` | passed |
+| Service-level transcript runtime dogfood | temp app-service source runtime inspection for Codex and Claude shaped JSONL through `TranscriptSourceRuntimeAdapter` | passed; rendered Codex user/tool material and Claude session/user material |
+| Full tests | `uv run pytest` | passed; 327 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

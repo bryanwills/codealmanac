@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 104 GitHub source runtime boundaries.
+- Latest implementation slice: slice 105 transcript source runtime boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -234,6 +234,15 @@ Updated: 2026-07-01
   prompt-facing PR/issue runtime text, and `errors.py` owns unavailable-runtime
   diagnostics. Architecture tests prevent payload models, process execution,
   target policy, and rendering helpers from regrowing in `adapter.py`.
+- Slice 105 splits the transcript source-runtime integration by responsibility.
+  `integrations/sources/transcripts/runtime.py` remains the small
+  `SourceRuntimeAdapter` implementation, while `models.py` owns typed transcript
+  line and entry models, `reader.py` owns JSONL file reading, `entries.py` owns
+  known-provider line-to-entry normalization, `rendering.py` owns prompt-facing
+  text and truncation, `paths.py` owns path resolution, and `errors.py` owns
+  unavailable-runtime diagnostics. Architecture tests prevent provider models,
+  JSONL reading, entry normalization, and rendering helpers from regrowing in
+  `runtime.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -869,6 +878,10 @@ Behavior:
 - Slice 104 GitHub source-runtime boundary split, focused GitHub runtime,
   ingest, and architecture tests, focused Ruff over GitHub runtime and tests,
   fake-runner source-runtime dogfood, then full pytest/full Ruff/diff check
+- Slice 105 transcript source-runtime boundary split, focused transcript
+  runtime, sync, and architecture tests, focused Ruff over transcript runtime
+  and tests, service-level transcript runtime dogfood, then full pytest/full
+  Ruff/diff check
 
 ## Next Move
 

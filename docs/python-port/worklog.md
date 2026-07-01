@@ -1156,3 +1156,11 @@ owns prompt-facing PR/issue runtime text; and `errors.py` owns unavailable
 runtime diagnostics. Focused GitHub runtime, ingest, and architecture tests
 passed. Fake-runner dogfood resolved and inspected a GitHub PR URL through the
 service path and rendered file, comment, review, and diff material.
+Slice 105 keeps transcript source runtime behavior unchanged while splitting
+`TranscriptSourceRuntimeAdapter` internals by responsibility. `runtime.py`
+remains the `SourceRuntimeAdapter` implementation; `models.py` owns typed
+provider line and runtime-entry models; `reader.py` owns JSONL file reading;
+`entries.py` owns known-provider line-to-entry normalization; `rendering.py`
+owns prompt-facing transcript text and tail truncation; `paths.py` owns
+transcript path resolution; and `errors.py` owns unavailable diagnostics.
+Focused transcript runtime, sync, architecture, and lint checks passed.

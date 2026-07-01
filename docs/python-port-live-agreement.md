@@ -186,6 +186,13 @@ It is the constraint document for future agents.
   local JSONL parsing through the same port. Web URL runtime uses a local HTTP
   and HTML/text adapter through the same port. Path file/directory runtime uses
   a local filesystem adapter through the same port.
+- 2026-07-01: Transcript source runtime is split by integration
+  responsibility. `integrations/sources/transcripts/runtime.py` implements the
+  `SourceRuntimeAdapter` port; `models.py` owns typed transcript line and entry
+  models; `reader.py` owns JSONL file reading; `entries.py` owns known-provider
+  line-to-entry normalization; `rendering.py` owns prompt-facing transcript
+  text and tail truncation; `paths.py` owns `SourceRef` path resolution; and
+  `errors.py` owns unavailable-runtime diagnostics.
 - 2026-06-29: The local viewer's file route is a wiki-reference route:
   `/api/file?path=src/foo.py` returns pages that mention the file or folder
   reference. It does not read or preview repo file contents.

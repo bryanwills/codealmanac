@@ -481,6 +481,54 @@ def test_github_source_runtime_stays_split_by_responsibility():
     ).read_text(encoding="utf-8")
 
 
+def test_transcript_source_runtime_stays_split_by_responsibility():
+    transcripts_root = SRC_ROOT / "integrations/sources/transcripts"
+    runtime = transcripts_root / "runtime.py"
+    runtime_text = runtime.read_text(encoding="utf-8")
+    module_names = {path.name for path in transcripts_root.glob("*.py")}
+    forbidden_runtime_fragments = (
+        "JsonValue",
+        "ValidationError",
+        "jsonlines",
+        "Field(",
+        "field_validator",
+        "TranscriptJsonLine",
+        "def read_jsonl_object(",
+        "def transcript_entry(",
+        "def entry_from_payload(",
+        "def render_json_text(",
+        "def bounded_tail_text(",
+    )
+
+    assert {
+        "entries.py",
+        "errors.py",
+        "models.py",
+        "paths.py",
+        "reader.py",
+        "rendering.py",
+        "runtime.py",
+    } <= module_names
+    assert len(runtime_text.splitlines()) <= 100
+    assert [
+        fragment
+        for fragment in forbidden_runtime_fragments
+        if fragment in runtime_text
+    ] == []
+    assert "class TranscriptJsonLine" in (
+        transcripts_root / "models.py"
+    ).read_text(encoding="utf-8")
+    assert "def transcript_entry(" in (
+        transcripts_root / "entries.py"
+    ).read_text(encoding="utf-8")
+    assert "def read_transcript_entries(" in (
+        transcripts_root / "reader.py"
+    ).read_text(encoding="utf-8")
+    assert "def render_transcript_runtime(" in (
+        transcripts_root / "rendering.py"
+    ).read_text(encoding="utf-8")
+
+
 def test_run_queue_workflow_stays_operation_dispatch_only():
     text = (SRC_ROOT / "workflows/run_queue/service.py").read_text(encoding="utf-8")
 
