@@ -3195,3 +3195,31 @@ Follow-up test:
 Future workspace selection changes should preserve
 `test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry` and
 real-checkout dogfood with a broad parent registry entry.
+
+## 2026-07-01 - Health Has Two Finding Families
+
+Old hypothesis:
+`health_views.py` could own all health SQL and helper logic because `health`
+is one read-view query family.
+
+New hypothesis:
+`health_views.py` should assemble the report, while graph/file/page checks and
+source/citation checks live in separate modules. Those two finding families
+change for different reasons.
+
+Evidence that forced the change:
+After slice 128, `health_views.py` still mixed orphan detection, dead file
+stat calls, broken page links, cross-wiki checks, empty topic/page checks,
+source citation regex parsing, source-id lookup, duplicate source SQL, and
+the final `HealthReport` constructor.
+
+Code or product assumption affected:
+Slice 129 does not change `codealmanac health` output. It changes ownership:
+`health_graph_views.py` owns page/topic/link/file findings,
+`health_source_views.py` owns sources/citations findings, and
+`health_views.py` remains the facade imported by `views.py`.
+
+Follow-up test:
+Future health categories should land in the finding-family module that owns
+the reason to change. Architecture tests keep SQL and regex helpers out of
+`health_views.py`.

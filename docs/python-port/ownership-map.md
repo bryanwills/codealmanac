@@ -123,8 +123,10 @@ loading and freshness signatures. `services/index/projection.py` owns
 replacement writes and stored source signatures. `services/index/views.py` is a
 small read facade. `services/index/search_views.py` owns FTS and file-mention
 query construction, `summary_views.py` owns count summaries, `page_views.py`
-owns page detail projections, `topic_views.py` owns topic DAG reads, and
-`health_views.py` owns health findings.
+owns page detail projections, `topic_views.py` owns topic DAG reads,
+`health_views.py` assembles `HealthReport`, `health_graph_views.py` owns
+page/topic/link/file findings, and `health_source_views.py` owns
+sources/citations findings.
 
 `services/config/` owns local config parsing and precedence. `ConfigStore`
 uses `pydantic-settings` TOML sources to build the frozen

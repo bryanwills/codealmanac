@@ -381,7 +381,10 @@ It is the constraint document for future agents.
 - 2026-07-01: Index read views are split by query family. `IndexStore` remains
   the store facade, `services/index/views.py` remains a small compatibility
   facade, and read-side SQL lives in `search_views.py`, `summary_views.py`,
-  `page_views.py`, `topic_views.py`, and `health_views.py`.
+  `page_views.py`, `topic_views.py`, and health read views. `health_views.py`
+  is the `HealthReport` facade; `health_graph_views.py` owns
+  page/topic/link/file findings, and `health_source_views.py` owns
+  sources/citations findings.
 - 2026-07-01: Index write-side responsibilities are split behind `IndexStore`.
   `services/index/schema.py` owns the derived `index.db` schema, migrations,
   and index connection helper; `sources.py` owns page/topic source loading and

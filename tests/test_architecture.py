@@ -76,6 +76,8 @@ def test_index_read_views_are_separate_from_projection_writes():
         SRC_ROOT / "services/index/page_views.py",
         SRC_ROOT / "services/index/topic_views.py",
         SRC_ROOT / "services/index/health_views.py",
+        SRC_ROOT / "services/index/health_graph_views.py",
+        SRC_ROOT / "services/index/health_source_views.py",
     )
     views_text = views.read_text(encoding="utf-8")
 
@@ -106,6 +108,8 @@ def test_index_read_views_are_split_by_query_family():
         "page_views.py",
         "topic_views.py",
         "health_views.py",
+        "health_graph_views.py",
+        "health_source_views.py",
     }
     oversized = []
     for path in expected:
@@ -125,9 +129,17 @@ def test_index_read_views_are_split_by_query_family():
     assert "WITH RECURSIVE descendants" in (
         index_root / "topic_views.py"
     ).read_text(encoding="utf-8")
-    assert "MissingSourceCitation" in (index_root / "health_views.py").read_text(
+    health_facade = (index_root / "health_views.py").read_text(encoding="utf-8")
+    health_graph = (index_root / "health_graph_views.py").read_text(encoding="utf-8")
+    health_sources = (index_root / "health_source_views.py").read_text(
         encoding="utf-8"
     )
+    assert len(health_facade.splitlines()) <= 60
+    assert "HealthReport(" in health_facade
+    assert "connection.execute" not in health_facade
+    assert "re.findall" not in health_facade
+    assert "DeadFileReference" in health_graph
+    assert "MissingSourceCitation" in health_sources
 
 
 def test_index_store_keeps_write_side_responsibilities_split():

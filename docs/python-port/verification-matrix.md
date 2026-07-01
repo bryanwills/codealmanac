@@ -1419,3 +1419,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 349 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 129 Index Health View Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused health and architecture tests | `uv run pytest tests/test_topics_health.py tests/test_build_workflow.py::test_initialize_starter_wiki_has_no_health_noise tests/test_garden_workflow.py tests/test_architecture.py::test_index_read_views_are_separate_from_projection_writes tests/test_architecture.py::test_index_read_views_are_split_by_query_family -q` | passed; 10 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/index tests/test_topics_health.py tests/test_architecture.py` | passed |
+| Real checkout health dogfood | `uv run codealmanac health --json` | passed; returned existing issue counts through the split health views |
+| Full tests | `uv run pytest` | passed; 349 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

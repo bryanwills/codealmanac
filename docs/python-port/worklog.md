@@ -1354,3 +1354,9 @@ A broad `/Users/rohan/Desktop/Projects` registry entry no longer shadows this
 repo's `.almanac/`. Dogfood with `uv run codealmanac search "topic service"`
 now returns pages from this checkout and auto-registers the checkout as a
 `.almanac` workspace.
+Slice 129 keeps health behavior unchanged while splitting index health read
+views by finding family. `health_views.py` is now a 35-line `HealthReport`
+facade, `health_graph_views.py` owns page/topic/link/file findings, and
+`health_source_views.py` owns sources/citations findings. Focused health and
+architecture tests passed, and real-checkout `codealmanac health --json`
+returned the existing issue counts through the split modules.

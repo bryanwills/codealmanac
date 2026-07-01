@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 128 workspace root resolution.
+- Latest implementation slice: slice 129 index health view boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -94,6 +94,9 @@ Updated: 2026-07-01
   `almanac/`, `docs/almanac/`, or `.almanac/` root by `topics.yaml + pages/`
   before falling back to registry containment. Real dogfood in this checkout
   made `uv run codealmanac search "topic service"` return `.almanac/` pages.
+- Slice 129 splits health read views by finding family. `health_views.py`
+  assembles `HealthReport`, `health_graph_views.py` owns page/topic/link/file
+  findings, and `health_source_views.py` owns sources/citations findings.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into
@@ -424,7 +427,9 @@ Updated: 2026-07-01
   imports from the small `services/index/views.py` facade, while
   `search_views.py` owns FTS/file-mention SQL, `summary_views.py` owns count
   summaries, `page_views.py` owns page detail projection, `topic_views.py` owns
-  topic DAG reads, and `health_views.py` owns health findings. Architecture
+  topic DAG reads, `health_views.py` assembles `HealthReport`,
+  `health_graph_views.py` owns page/topic/link/file findings, and
+  `health_source_views.py` owns sources/citations findings. Architecture
   tests keep view modules read-only, keep `views.py` tiny, and prevent
   migrations, projection-write SQL, or page-document loading from entering the
   read side.
@@ -1030,6 +1035,8 @@ Behavior:
   CLI, read-model, transcript-discovery, and sync tests passed; real checkout
   dogfood proved `uv run codealmanac search "topic service"` now reads this
   repo's `.almanac/` wiki. Full pytest, full Ruff, and diff hygiene passed.
+- Slice 129 splits index health views. Focused health/architecture tests,
+  focused Ruff, and real-checkout `codealmanac health --json` dogfood passed.
 - Slice 93 GitHub Python automation, public-contract guards, package build
   artifact ignore, wheel build dogfood, full pytest, full ruff, and diff check
 - Slice 94 GitHub workflow parse/command contract guard, exact `uv sync
