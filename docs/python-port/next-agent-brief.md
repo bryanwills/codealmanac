@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 89 serve jobs view.
+- Latest implementation slice: slice 90 harness event rendering.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -159,6 +159,10 @@ Updated: 2026-07-01
   `#/jobs/<run-id>` with normalized harness event details. Browser write
   controls remain out of scope; CLI `jobs attach` and `jobs cancel` still own
   run control.
+- Slice 90 makes the job detail page render more of the normalized
+  `HarnessEvent` payload: tool display rows, usage token rows, failure
+  details, and agent trace rows. It still does not read raw provider transcript
+  files or expose browser-side run controls.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

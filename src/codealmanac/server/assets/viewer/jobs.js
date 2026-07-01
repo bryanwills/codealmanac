@@ -28,7 +28,10 @@ export async function renderJob(context, runId) {
 
 function jobList(runs) {
   if (runs.length === 0) {
-    return emptyState("No jobs yet", "Lifecycle runs appear here after ingest, garden, or sync.");
+    return emptyState(
+      "No jobs yet",
+      "Lifecycle runs appear here after ingest, garden, or sync.",
+    );
   }
   const list = document.createElement("nav");
   list.className = "job-list";
@@ -56,7 +59,11 @@ function jobRow(run) {
 
   const meta = document.createElement("span");
   meta.className = "job-row-meta";
-  meta.append(jobPill(run.status), textSpan(run.operation), textSpan(shortTime(run.updated_at)));
+  meta.append(
+    jobPill(run.status),
+    textSpan(run.operation),
+    textSpan(shortTime(run.updated_at)),
+  );
 
   item.append(main, meta);
   return item;
@@ -74,7 +81,10 @@ function jobDetail(run) {
   );
   if (run.harness_transcript) {
     section.append(
-      detailRow("Transcript", `${run.harness_transcript.kind} ${run.harness_transcript.session_id}`),
+      detailRow(
+        "Transcript",
+        `${run.harness_transcript.kind} ${run.harness_transcript.session_id}`,
+      ),
     );
   }
   if (run.summary) section.append(detailRow("Summary", run.summary));
@@ -103,7 +113,11 @@ function eventRow(event) {
 
   const header = document.createElement("header");
   header.className = "job-event-header";
-  header.append(textSpan(`#${event.sequence}`), jobPill(event.kind), textSpan(shortTime(event.timestamp)));
+  header.append(
+    textSpan(`#${event.sequence}`),
+    jobPill(event.kind),
+    textSpan(shortTime(event.timestamp)),
+  );
 
   const message = document.createElement("p");
   message.className = "job-event-message";
@@ -120,13 +134,111 @@ function harnessSummary(event) {
   const box = document.createElement("div");
   box.className = "job-harness";
   box.append(detailRow("Harness", event.kind));
-  if (event.actor) box.append(detailRow("Actor", event.actor.label || event.actor.role));
+  if (event.status) box.append(detailRow("Run status", event.status));
+  if (event.actor) box.append(actorRows(event.actor));
   if (event.tool_name) box.append(detailRow("Tool", event.tool_name));
-  if (event.provider_session_id) box.append(detailRow("Session", event.provider_session_id));
-  if (event.usage?.total_tokens !== null && event.usage?.total_tokens !== undefined) {
-    box.append(detailRow("Tokens", String(event.usage.total_tokens)));
+  if (event.tool_id) box.append(detailRow("Tool id", event.tool_id));
+  if (event.tool_input) box.append(detailRow("Tool input", event.tool_input));
+  if (event.tool_result !== null && event.tool_result !== undefined) {
+    box.append(detailRow("Tool result", valueText(event.tool_result)));
   }
+  if (event.tool_is_error === true) box.append(detailRow("Tool error", "true"));
+  if (event.provider_session_id) box.append(detailRow("Session", event.provider_session_id));
+  if (event.provider_event_id) box.append(detailRow("Event id", event.provider_event_id));
+  if (event.tool_display) box.append(toolDisplayRows(event.tool_display));
+  if (event.usage) box.append(usageRows(event.usage));
+  if (event.failure) box.append(failureRows(event.failure));
+  if (event.agent_trace) box.append(agentTraceRows(event.agent_trace));
   return box;
+}
+
+function actorRows(actor) {
+  return detailGroup(
+    "Actor",
+    [
+      ["Role", actor.role],
+      ["Label", actor.label],
+      ["Thread", actor.thread_id],
+      ["Parent", actor.parent_thread_id],
+      ["Confidence", actor.confidence],
+    ],
+  );
+}
+
+function toolDisplayRows(display) {
+  return detailGroup(
+    "Tool display",
+    [
+      ["Kind", display.kind],
+      ["Title", display.title],
+      ["Path", display.path],
+      ["Command", display.command],
+      ["Cwd", display.cwd],
+      ["Status", display.status],
+      ["Exit code", display.exit_code],
+      ["Duration", millis(display.duration_ms)],
+      ["Summary", display.summary],
+      ["Thread", display.provider_thread_id],
+      ["Turn", display.provider_turn_id],
+    ],
+  );
+}
+
+function usageRows(usage) {
+  return detailGroup(
+    "Usage",
+    [
+      ["Input tokens", usage.input_tokens],
+      ["Cached input", usage.cached_input_tokens],
+      ["Output tokens", usage.output_tokens],
+      ["Reasoning output", usage.reasoning_output_tokens],
+      ["Total tokens", usage.total_tokens],
+      ["Processed tokens", usage.total_processed_tokens],
+      ["Max tokens", usage.max_tokens],
+    ],
+  );
+}
+
+function failureRows(failure) {
+  return detailGroup(
+    "Failure",
+    [
+      ["Provider", failure.provider],
+      ["Code", failure.code],
+      ["Message", failure.message],
+      ["Fix", failure.fix],
+      ["Raw", failure.raw],
+      ["Details", failure.details],
+    ],
+  );
+}
+
+function agentTraceRows(trace) {
+  return detailGroup(
+    "Agent trace",
+    [
+      ["Parent", trace.parent_thread_id],
+      ["Child", trace.child_thread_id],
+      ["Children", trace.child_thread_ids?.join(", ")],
+      ["Model", trace.model],
+      ["Reasoning", trace.reasoning_effort],
+      ["Prompt", trace.prompt],
+      ["Result", trace.result],
+    ],
+  );
+}
+
+function detailGroup(title, rows) {
+  const group = document.createElement("section");
+  group.className = "job-detail-group";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  group.append(heading);
+  for (const [label, value] of rows) {
+    if (value === null || value === undefined || value === "") continue;
+    group.append(detailRow(label, valueText(value)));
+  }
+  return group;
 }
 
 function detailRow(label, value) {
@@ -138,6 +250,17 @@ function detailRow(label, value) {
   val.textContent = value;
   row.append(key, val);
   return row;
+}
+
+function valueText(value) {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return JSON.stringify(value);
+}
+
+function millis(value) {
+  if (value === null || value === undefined) return null;
+  return `${value}ms`;
 }
 
 function jobPill(value) {

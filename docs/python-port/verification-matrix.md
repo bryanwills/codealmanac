@@ -1022,3 +1022,16 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 304 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 90 Harness Event Rendering
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused server/static tests | `uv run pytest tests/test_server.py` | passed; 8 tests |
+| Focused lint | `uv run ruff check tests/test_server.py` | passed |
+| ES module syntax | `node --input-type=module --check < src/codealmanac/server/assets/viewer/jobs.js` and `main.js` | passed |
+| Browser harness-event dogfood | temp repo, synthetic run with tool display/usage/failure/agent trace harness events, current-checkout `serve`, browser-harness `#/jobs/{run_id}` | passed; structured fields rendered, raw payload label absent, no desktop overflow |
+| Package asset proof | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice90` plus stdlib wheel inspection | passed; wheel jobs renderer contains tool/usage/failure/agent trace fragments |
+| Full tests | `uv run pytest` | passed; 304 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

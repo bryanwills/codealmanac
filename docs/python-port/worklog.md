@@ -1042,3 +1042,8 @@ Slice 89 restores the first read-only jobs surface in the local viewer.
 renders `#/jobs` plus job detail pages with normalized harness event summaries.
 The slice keeps browser run control out of scope and adds an architecture test
 that prevents viewer jobs code from importing run mutation requests.
+Slice 90 deepens that read surface by rendering typed `HarnessEvent` fields
+already present in the job-detail API. The browser now shows tool display rows
+for command/path/status/summary, usage token counts, failure provider/code/fix
+details, and agent trace parent/child/model/result rows. Raw provider payloads
+remain hidden by default, and run control stays in the CLI.

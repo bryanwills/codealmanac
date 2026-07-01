@@ -876,9 +876,24 @@ button {
 
 .job-harness {
   display: grid;
-  gap: 5px;
+  gap: 8px;
   border-left: 2px solid rgba(152, 118, 26, 0.28);
   padding-left: 10px;
+}
+
+.job-detail-group {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--hair);
+  padding-top: 8px;
+}
+
+.job-detail-group h3 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .job-pill {

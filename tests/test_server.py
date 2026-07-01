@@ -52,6 +52,10 @@ def test_server_serves_static_assets_and_viewer_api(
     assert "withQuery" in api_module.text
     assert jobs_module.status_code == 200
     assert "renderJob" in jobs_module.text
+    assert "Tool display" in jobs_module.text
+    assert "Input tokens" in jobs_module.text
+    assert "Failure" in jobs_module.text
+    assert "Agent trace" in jobs_module.text
     assert overview.json()["workspace"]["name"] == "repo"
     assert overview.json()["workspaces"][0]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
