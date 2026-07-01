@@ -1,3 +1,5 @@
-from codealmanac.integrations.harnesses.codex.adapter import CodexCliHarnessAdapter
+from codealmanac.integrations.harnesses.codex.adapter import (
+    CodexAppServerHarnessAdapter,
+)
 
-__all__ = ["CodexCliHarnessAdapter"]
+__all__ = ["CodexAppServerHarnessAdapter"]

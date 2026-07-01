@@ -75,6 +75,21 @@
   inspectable transcript surface for future app-server and Claude SDK adapters.
 - Focused slice-82 tests cover structured event persistence through a real
   ingest workflow and direct run-service logging.
+- Added slice-83 Codex app-server harness after rereading the live agreement,
+  `MANUAL.md`, `.almanac/README.md`, the full codebase-wiki spec, Cosmic
+  Python chapters 11 and 13, and the archived TypeScript app-server provider.
+  The default Codex adapter now uses `codex app-server --listen stdio://`
+  instead of `codex exec`, while readiness remains `codex login status`.
+- The Codex integration is split by responsibility: `adapter.py` wraps the
+  service port and Git changed-file accounting, `app_server.py` owns run
+  semantics, `rpc.py` owns the line-oriented JSON-RPC child process,
+  `events.py` maps notifications, `display.py` maps structured tool display,
+  and `failures.py`/`usage.py`/`fields.py` hold focused boundary helpers.
+- Focused slice-83 tests use a fake Codex app-server executable to verify the
+  JSON-RPC handshake, `mcp_servers={}` isolation, internal-session env,
+  ephemeral thread, workspace-write/no-network sandbox, noninteractive approval
+  responses, ChatGPT token-refresh refusal, base64 output decoding, usage
+  parsing, root/helper turn handling, and startup/turn timeouts.
 
 ## 2026-06-29
 
@@ -737,10 +752,10 @@ before the terminal `error`, including the case where a failed harness also
 mutates a non-wiki file and the run error correctly remains the safety failure.
 Slice 55 turns that log line into a normalized harness event contract.
 `HarnessRunResult.events` now carries typed text/tool/usage/warning/error/done
-events. Current Codex and Claude CLI adapters emit terminal `done` events, and
-`ingest`/`garden` persist all returned events in order before later validation.
-This keeps `codex exec` acceptable for v1 while leaving a clean Codex
-app-server trigger: port it when actual transcript event completeness matters.
+events. At slice 55, the Codex and Claude CLI adapters emitted terminal `done`
+events, and `ingest`/`garden` persisted all returned events in order before
+later validation. That kept `codex exec` acceptable until actual transcript
+event completeness made Codex app-server necessary in slice 83.
 Slice 56 shifts the work toward public-release proof. The old README still
 advertised the Node/npm `almanac` and hosted-dashboard path, which would
 mislead Python users. `README.md` now documents the Python `codealmanac` local

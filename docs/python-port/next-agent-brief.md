@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 82 rich harness event logs.
+- Latest implementation slice: slice 83 Codex app-server harness.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -109,8 +109,15 @@ Updated: 2026-07-01
   ids, failure metadata, agent trace records, and raw JSON debug payloads.
   `RunLogEvent` stores the readable `kind`/`message` plus optional nested
   `harness_event` JSON, so text `jobs logs` remains stable while JSON logs can
-  serve as the inspectable transcript surface. Codex app-server transport and
-  Claude SDK streaming are still the next harness parity work.
+  serve as the inspectable transcript surface.
+- Slice 83 makes the default Codex lifecycle harness use
+  `codex app-server --listen stdio://` instead of `codex exec`. The adapter
+  isolates MCP config with `mcp_servers={}`, creates ephemeral threads, declines
+  approval/user-input/token-refresh requests noninteractively, runs
+  workspace-write with network disabled, maps app-server notifications into
+  normalized harness events, preserves root/helper turn attribution, and keeps
+  changed-file accounting around the run. Claude SDK streaming remains the next
+  harness parity gap.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -243,9 +250,10 @@ Updated: 2026-07-01
   later validation. `PageRunWorkflow` writes returned `HarnessEvent` values as
   soon as the harness returns, so failed harness runs remain visible in
   `jobs logs` even when the terminal run error is a mutation-safety failure.
-  Current Codex and Claude CLI adapters emit terminal `done` events only; the
-  active rewrite goal still needs the richer Codex app-server and Claude
-  SDK/event harness model before the harness contract is genuinely restored.
+  Codex now uses app-server notifications for richer normalized events. Claude
+  still uses the one-shot CLI adapter, so the active rewrite goal still needs
+  the richer Claude SDK/event harness model before the harness contract is
+  genuinely restored for both providers.
 - Foreground `sync` writes a durable pending ledger claim before invoking
   Ingest, skips active pending transcript ranges, reports stale pending ranges
   as needs-attention, stores linked run ids plus cursor snapshots, reconciles

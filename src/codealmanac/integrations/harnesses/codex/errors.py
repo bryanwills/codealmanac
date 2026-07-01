@@ -1,0 +1,2 @@
+class CodexAppServerError(Exception):
+    pass

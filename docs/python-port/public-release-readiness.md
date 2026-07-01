@@ -37,8 +37,9 @@ and the human publish decision.
 - Do not add hosted verbs, login/connect/upload, SDK, MCP, or aliases.
 - Do not add a frontend build step until the static viewer becomes the harder
   path.
-- Do not port Codex app-server for parity. Port it only when normalized harness
-  event completeness is required.
+- Do not add more provider transports for parity. Codex app-server is now the
+  default Codex path because normalized harness event completeness is required;
+  further transport work should answer a concrete product gap.
 - Do not add a source pool or candidate object without a concrete product
   workflow that needs it.
 

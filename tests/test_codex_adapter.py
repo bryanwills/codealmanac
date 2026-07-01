@@ -1,33 +1,22 @@
-import json
 import subprocess
 from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.integrations.command import CommandResult
 from codealmanac.integrations.harnesses.codex.adapter import (
-    CodexCliHarnessAdapter,
-    codex_exec_args,
+    CodexAppServerHarnessAdapter,
 )
 from codealmanac.services.harnesses.models import (
-    HarnessEventKind,
     HarnessKind,
+    HarnessRunResult,
     HarnessRunStatus,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 
 class FakeCommandRunner:
-    def __init__(
-        self,
-        results: tuple[CommandResult | BaseException, ...],
-        last_message: str | None = None,
-        transcript_root: Path | None = None,
-        transcript_id: str | None = None,
-    ):
+    def __init__(self, results: tuple[CommandResult | BaseException, ...]):
         self.results = list(results)
-        self.last_message = last_message
-        self.transcript_root = transcript_root
-        self.transcript_id = transcript_id
         self.calls: list[tuple[str, tuple[str, ...], Path, int, str | None]] = []
 
     def run(
@@ -42,33 +31,24 @@ class FakeCommandRunner:
         result = self.results.pop(0)
         if isinstance(result, BaseException):
             raise result
-        if command == "codex" and self.last_message is not None:
-            output_path = Path(args[args.index("--output-last-message") + 1])
-            output_path.write_text(self.last_message, encoding="utf-8")
-        if command == "codex" and self.transcript_root is not None:
-            transcript = self.transcript_root / "rollout.jsonl"
-            transcript.parent.mkdir(parents=True, exist_ok=True)
-            transcript.write_text(
-                json.dumps(
-                    {
-                        "payload": {
-                            "id": self.transcript_id or "codex-session",
-                            "cwd": str(cwd),
-                            "thread_source": "user",
-                        }
-                    }
-                )
-                + "\n",
-                encoding="utf-8",
-            )
         return result
+
+
+class FakeAppServer:
+    def __init__(self, result: HarnessRunResult):
+        self.result = result
+        self.requests: list[RunHarnessRequest] = []
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        return self.result
 
 
 def test_codex_adapter_reports_ready_when_login_status_succeeds():
     runner = FakeCommandRunner(
         (CommandResult(returncode=0, stdout="Logged in using ChatGPT\n"),)
     )
-    adapter = CodexCliHarnessAdapter(runner=runner)
+    adapter = CodexAppServerHarnessAdapter(runner=runner)
 
     readiness = adapter.check()
 
@@ -80,7 +60,7 @@ def test_codex_adapter_reports_ready_when_login_status_succeeds():
 
 def test_codex_adapter_reports_not_ready_when_command_is_missing():
     runner = FakeCommandRunner((FileNotFoundError("missing"),))
-    adapter = CodexCliHarnessAdapter(runner=runner)
+    adapter = CodexAppServerHarnessAdapter(runner=runner)
 
     readiness = adapter.check()
 
@@ -88,103 +68,54 @@ def test_codex_adapter_reports_not_ready_when_command_is_missing():
     assert readiness.message == "codex not found on PATH"
 
 
-def test_codex_adapter_runs_exec_and_reports_git_changes(tmp_path: Path):
-    sessions = tmp_path / "codex-sessions"
-    runner = FakeCommandRunner(
-        (
-            CommandResult(returncode=0, stdout=""),
-            CommandResult(returncode=0, stdout="codex diagnostics"),
-            CommandResult(returncode=0, stdout="?? almanac/pages/codex-note.md\0"),
-        ),
-        last_message="updated wiki",
-        transcript_root=sessions,
-        transcript_id="codex-session-1",
-    )
-    adapter = CodexCliHarnessAdapter(runner=runner, sessions_dir=sessions)
+def test_codex_adapter_reports_not_ready_when_login_status_times_out():
+    runner = FakeCommandRunner((subprocess.TimeoutExpired("codex", 1),))
+    adapter = CodexAppServerHarnessAdapter(runner=runner)
 
-    result = adapter.run(
-        RunHarnessRequest(
-            kind=HarnessKind.CODEX,
-            cwd=tmp_path,
-            prompt="Update the wiki.",
-            title="Ingest note",
-        )
-    )
+    readiness = adapter.check()
 
-    codex_call = runner.calls[1]
-    assert codex_call[0] == "codex"
-    assert codex_call[1] == codex_exec_args(
-        tmp_path,
-        Path(codex_call[1][codex_call[1].index("--output-last-message") + 1]),
-    )
-    assert "--config" in codex_call[1]
-    assert "mcp_servers={}" in codex_call[1]
-    assert 'approval_policy="never"' in codex_call[1]
-    assert "--ephemeral" in codex_call[1]
-    assert codex_call[4] == "Update the wiki."
-    assert result.status == HarnessRunStatus.SUCCEEDED
-    assert result.output_text == "updated wiki"
-    assert result.transcript is not None
-    assert result.transcript.kind == HarnessKind.CODEX
-    assert result.transcript.session_id == "codex-session-1"
-    assert result.transcript.transcript_path == sessions / "rollout.jsonl"
-    assert result.changed_files == (tmp_path / "almanac/pages/codex-note.md",)
-    assert result.events[0].kind == HarnessEventKind.DONE
-    assert result.events[0].status == HarnessRunStatus.SUCCEEDED
-    assert result.events[0].message == "codex succeeded: updated wiki"
+    assert readiness.available is False
+    assert readiness.message == "codex login status timed out"
 
 
-def test_codex_adapter_returns_failed_result_when_final_message_is_missing(
+def test_codex_adapter_wraps_app_server_run_with_git_change_detection(
     tmp_path: Path,
 ):
     runner = FakeCommandRunner(
         (
-            CommandResult(returncode=1, stderr="not a git repo"),
-            CommandResult(returncode=0, stdout="empty final"),
-            CommandResult(returncode=1, stderr="not a git repo"),
+            CommandResult(returncode=0, stdout=""),
+            CommandResult(returncode=0, stdout="?? almanac/pages/codex-note.md\0"),
         )
     )
-    adapter = CodexCliHarnessAdapter(runner=runner)
-
-    result = adapter.run(
-        RunHarnessRequest(
+    app_server = FakeAppServer(
+        HarnessRunResult(
             kind=HarnessKind.CODEX,
-            cwd=tmp_path,
-            prompt="Update the wiki.",
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="updated wiki",
+            summary="updated wiki",
         )
     )
-
-    assert result.status == HarnessRunStatus.FAILED
-    assert result.output_text == "empty final"
-    assert result.events[0].kind == HarnessEventKind.DONE
-    assert result.events[0].status == HarnessRunStatus.FAILED
-    assert result.events[0].message == "codex failed: empty final"
-
-
-def test_codex_adapter_returns_failed_result_for_timeout(tmp_path: Path):
-    runner = FakeCommandRunner(
-        (
-            CommandResult(returncode=1, stderr="not a git repo"),
-            subprocess.TimeoutExpired("codex", 1),
-        )
-    )
-    adapter = CodexCliHarnessAdapter(runner=runner)
-
-    result = adapter.run(
-        RunHarnessRequest(
-            kind=HarnessKind.CODEX,
-            cwd=tmp_path,
-            prompt="Update the wiki.",
-        )
+    adapter = CodexAppServerHarnessAdapter(runner=runner, app_server=app_server)
+    request = RunHarnessRequest(
+        kind=HarnessKind.CODEX,
+        cwd=tmp_path,
+        prompt="Update the wiki.",
+        title="Ingest note",
     )
 
-    assert result.status == HarnessRunStatus.FAILED
-    assert result.output_text == "codex run timed out"
+    result = adapter.run(request)
+
+    assert app_server.requests == [request]
+    assert result.status == HarnessRunStatus.SUCCEEDED
+    assert result.output_text == "updated wiki"
+    assert result.changed_files == (tmp_path / "almanac/pages/codex-note.md",)
+    assert runner.calls[0][0] == "git"
+    assert runner.calls[1][0] == "git"
 
 
-def test_create_app_wires_default_codex_adapter():
+def test_create_app_wires_default_codex_app_server_adapter():
     app = create_app()
 
     adapter = app.harnesses.adapter_for(HarnessKind.CODEX)
 
-    assert adapter.kind == HarnessKind.CODEX
+    assert isinstance(adapter, CodexAppServerHarnessAdapter)
