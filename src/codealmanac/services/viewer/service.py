@@ -27,7 +27,7 @@ from codealmanac.services.viewer.requests import (
     ViewerTopicRequest,
 )
 from codealmanac.services.wiki.paths import looks_like_dir
-from codealmanac.services.workspaces.models import Workspace
+from codealmanac.services.workspaces.models import Workspace, WorkspaceRegistryStatus
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
 
@@ -53,6 +53,10 @@ class ViewerService:
         topics = self.index.list_topics(workspace.workspace_id)
         return ViewerOverview(
             workspace=viewer_workspace(workspace),
+            workspaces=self.viewer_workspaces(
+                selected=workspace,
+                include_all=request.include_workspaces,
+            ),
             page_count=summary.pages,
             topic_count=summary.topics,
             pages=tuple(page_summary_from_search(page) for page in pages),
@@ -157,9 +161,43 @@ class ViewerService:
 
     def select_workspace(self, cwd: Path, wiki: str | None) -> Workspace:
         if wiki is None:
-            return self.workspaces.resolve(cwd)
+            return self.select_default_workspace(cwd)
         return self.workspaces.select(
             SelectWorkspaceRequest(selector=wiki, base_path=cwd)
+        )
+
+    def select_default_workspace(self, cwd: Path) -> Workspace:
+        try:
+            return self.workspaces.resolve(cwd)
+        except NotFoundError:
+            workspaces = self.available_registered_workspaces()
+            if workspaces:
+                return workspaces[0]
+            raise
+
+    def viewer_workspaces(
+        self,
+        selected: Workspace,
+        include_all: bool,
+    ) -> tuple[ViewerWorkspace, ...]:
+        if not include_all:
+            return (viewer_workspace(selected),)
+
+        ordered = [selected]
+        seen = {selected.workspace_id}
+        for workspace in self.available_registered_workspaces():
+            if workspace.workspace_id in seen:
+                continue
+            seen.add(workspace.workspace_id)
+            ordered.append(workspace)
+        return tuple(viewer_workspace(workspace) for workspace in ordered)
+
+    def available_registered_workspaces(self) -> tuple[Workspace, ...]:
+        registry = self.workspaces.list_registry()
+        return tuple(
+            item.workspace
+            for item in registry.items
+            if item.status == WorkspaceRegistryStatus.AVAILABLE
         )
 
     def get_page_or_raise(self, workspace: Workspace, slug: str) -> PageView:
@@ -200,7 +238,11 @@ class ViewerService:
 
 
 def viewer_workspace(workspace: Workspace) -> ViewerWorkspace:
-    return ViewerWorkspace(name=workspace.name, root_path=workspace.root_path)
+    return ViewerWorkspace(
+        workspace_id=workspace.workspace_id,
+        name=workspace.name,
+        root_path=workspace.root_path,
+    )
 
 
 def page_summary_from_search(page: SearchPageResult) -> ViewerPageSummary:

@@ -229,7 +229,9 @@ codealmanac serve
 ```
 
 The viewer is read-only. It renders pages, search, topics, backlinks, and
-file-reference navigation from local wiki data.
+file-reference navigation from local wiki data. By default it can switch across
+available registered local wikis. Use `codealmanac serve --wiki <name>` to
+narrow the viewer to one wiki.
 
 ## Public Contract
 

@@ -13,10 +13,12 @@ def test_connect_sqlite_creates_parent_and_applies_pragmas(tmp_path: Path):
     with connect_sqlite(db_path) as connection:
         foreign_keys = connection.execute("PRAGMA foreign_keys").fetchone()[0]
         journal_mode = connection.execute("PRAGMA journal_mode").fetchone()[0]
+        busy_timeout = connection.execute("PRAGMA busy_timeout").fetchone()[0]
 
     assert db_path.is_file()
     assert foreign_keys == 1
     assert journal_mode == "wal"
+    assert busy_timeout == 30_000
 
 
 def test_apply_migrations_runs_each_version_once(tmp_path: Path):

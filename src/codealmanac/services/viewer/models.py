@@ -10,6 +10,7 @@ class ViewerFileKind(StrEnum):
 
 
 class ViewerWorkspace(CodeAlmanacModel):
+    workspace_id: str
     name: str
     root_path: Path
 
@@ -45,6 +46,7 @@ class ViewerPageSource(CodeAlmanacModel):
 
 class ViewerOverview(CodeAlmanacModel):
     workspace: ViewerWorkspace
+    workspaces: tuple[ViewerWorkspace, ...]
     page_count: int
     topic_count: int
     pages: tuple[ViewerPageSummary, ...]

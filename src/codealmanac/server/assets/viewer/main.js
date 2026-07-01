@@ -18,6 +18,7 @@ import {
 
 const state = {
   overview: null,
+  selectedWiki: "",
 };
 
 export function startViewer() {
@@ -26,14 +27,20 @@ export function startViewer() {
     event.preventDefault();
     window.location.hash = searchHref(elements.searchInput.value.trim());
   });
+  elements.workspaceSelect.addEventListener("change", async () => {
+    state.selectedWiki = elements.workspaceSelect.value;
+    await loadOverview(elements, state.selectedWiki);
+    await route(elements);
+  });
 
   window.addEventListener("hashchange", () => route(elements));
   loadOverview(elements).then(() => route(elements));
 }
 
-async function loadOverview(elements) {
-  state.overview = await viewerApi.overview();
-  elements.workspaceName.textContent = state.overview.workspace.name;
+async function loadOverview(elements, wiki = state.selectedWiki) {
+  state.overview = await viewerApi.overview(wiki);
+  state.selectedWiki = state.overview.workspace.workspace_id;
+  renderWorkspaceOptions(elements, state.overview);
   renderNav(elements, state.overview);
 }
 
@@ -42,6 +49,7 @@ async function route(elements) {
   const context = {
     elements,
     overview: state.overview,
+    wiki: state.selectedWiki,
     setRouteTitle: (title) => setRouteTitle(elements, title),
   };
   try {
@@ -71,7 +79,7 @@ async function route(elements) {
 
 function readElements() {
   return {
-    workspaceName: document.getElementById("workspace-name"),
+    workspaceSelect: document.getElementById("workspace-select"),
     routeTitle: document.getElementById("route-title"),
     searchForm: document.getElementById("search-form"),
     searchInput: document.getElementById("search-input"),
@@ -81,6 +89,19 @@ function readElements() {
     navItems: Array.from(document.querySelectorAll("[data-nav-kind]")),
     railLinks: () => Array.from(document.querySelectorAll("[data-rail-kind]")),
   };
+}
+
+function renderWorkspaceOptions(elements, overview) {
+  elements.workspaceSelect.replaceChildren(
+    ...overview.workspaces.map((workspace) => {
+      const option = document.createElement("option");
+      option.value = workspace.workspace_id;
+      option.textContent = workspace.name;
+      return option;
+    }),
+  );
+  elements.workspaceSelect.value = overview.workspace.workspace_id;
+  elements.workspaceSelect.disabled = overview.workspaces.length <= 1;
 }
 
 function renderNav(elements, overview) {

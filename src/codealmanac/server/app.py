@@ -74,12 +74,17 @@ def create_server_app(
     wiki: str | None = None,
 ) -> FastAPI:
     server = FastAPI(title="CodeAlmanac Local Viewer")
+    scope_wiki = wiki
 
     @server.get("/api/overview", response_model=ViewerOverview)
-    def overview() -> ViewerOverview:
+    def overview(wiki: str | None = None) -> ViewerOverview:
         try:
             return codealmanac.viewer.overview(
-                ViewerOverviewRequest(cwd=cwd, wiki=wiki)
+                ViewerOverviewRequest(
+                    cwd=cwd,
+                    wiki=selected_wiki(scope_wiki, wiki),
+                    include_workspaces=scope_wiki is None,
+                )
             )
         except ValidationError as error:
             raise validation_error(error) from error
@@ -87,10 +92,14 @@ def create_server_app(
             raise http_error(error) from error
 
     @server.get("/api/page/{slug}", response_model=ViewerPage)
-    def page(slug: str) -> ViewerPage:
+    def page(slug: str, wiki: str | None = None) -> ViewerPage:
         try:
             return codealmanac.viewer.page(
-                ViewerPageRequest(cwd=cwd, wiki=wiki, slug=slug)
+                ViewerPageRequest(
+                    cwd=cwd,
+                    wiki=selected_wiki(scope_wiki, wiki),
+                    slug=slug,
+                )
             )
         except ValidationError as error:
             raise validation_error(error) from error
@@ -98,10 +107,19 @@ def create_server_app(
             raise http_error(error) from error
 
     @server.get("/api/search", response_model=ViewerSearch)
-    def search(q: str | None = None, limit: int = 50) -> ViewerSearch:
+    def search(
+        q: str | None = None,
+        limit: int = 50,
+        wiki: str | None = None,
+    ) -> ViewerSearch:
         try:
             return codealmanac.viewer.search(
-                ViewerSearchRequest(cwd=cwd, wiki=wiki, query=q, limit=limit)
+                ViewerSearchRequest(
+                    cwd=cwd,
+                    wiki=selected_wiki(scope_wiki, wiki),
+                    query=q,
+                    limit=limit,
+                )
             )
         except ValidationError as error:
             raise validation_error(error) from error
@@ -109,10 +127,19 @@ def create_server_app(
             raise http_error(error) from error
 
     @server.get("/api/file", response_model=ViewerFile)
-    def file(path: str, limit: int = 50) -> ViewerFile:
+    def file(
+        path: str,
+        limit: int = 50,
+        wiki: str | None = None,
+    ) -> ViewerFile:
         try:
             return codealmanac.viewer.file(
-                ViewerFileRequest(cwd=cwd, wiki=wiki, path=path, limit=limit)
+                ViewerFileRequest(
+                    cwd=cwd,
+                    wiki=selected_wiki(scope_wiki, wiki),
+                    path=path,
+                    limit=limit,
+                )
             )
         except ValidationError as error:
             raise validation_error(error) from error
@@ -120,12 +147,16 @@ def create_server_app(
             raise http_error(error) from error
 
     @server.get("/api/topic/{slug}", response_model=ViewerTopic)
-    def topic(slug: str, descendants: bool = False) -> ViewerTopic:
+    def topic(
+        slug: str,
+        descendants: bool = False,
+        wiki: str | None = None,
+    ) -> ViewerTopic:
         try:
             return codealmanac.viewer.topic(
                 ViewerTopicRequest(
                     cwd=cwd,
-                    wiki=wiki,
+                    wiki=selected_wiki(scope_wiki, wiki),
                     slug=slug,
                     include_descendants=descendants,
                 )
@@ -158,6 +189,10 @@ def create_server_app(
         return HTMLResponse(read_asset_text(ServerAssetRequest(path="index.html")))
 
     return server
+
+
+def selected_wiki(scope_wiki: str | None, request_wiki: str | None) -> str | None:
+    return scope_wiki or request_wiki
 
 
 def asset_response(asset_path: str) -> Response:

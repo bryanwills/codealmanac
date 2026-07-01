@@ -9,6 +9,9 @@ from codealmanac.core.text import required_text
 type SQLiteConnection = sqlite3.Connection
 type SQLiteRow = sqlite3.Row
 
+SQLITE_BUSY_TIMEOUT_SECONDS = 30.0
+SQLITE_BUSY_TIMEOUT_MS = int(SQLITE_BUSY_TIMEOUT_SECONDS * 1000)
+
 
 class SQLiteMigration(CodeAlmanacModel):
     version: int
@@ -29,8 +32,9 @@ class SQLiteMigration(CodeAlmanacModel):
 
 def connect_sqlite(path: Path) -> SQLiteConnection:
     path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(path)
+    connection = sqlite3.connect(path, timeout=SQLITE_BUSY_TIMEOUT_SECONDS)
     connection.row_factory = sqlite3.Row
+    connection.execute(f"PRAGMA busy_timeout = {SQLITE_BUSY_TIMEOUT_MS}")
     connection.execute("PRAGMA foreign_keys = ON")
     connection.execute("PRAGMA journal_mode = WAL")
     return connection

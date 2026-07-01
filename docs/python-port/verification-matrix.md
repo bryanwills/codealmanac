@@ -1,6 +1,6 @@
 # Python Port Verification Matrix
 
-Updated: 2026-06-30
+Updated: 2026-07-01
 
 This matrix tracks evidence for the full active goal. Empty or weak evidence
 means the goal remains active.
@@ -921,3 +921,19 @@ means the goal remains active.
 | Diff hygiene | `git diff --check` | passed |
 | Public CLI dogfood | isolated temp `HOME`; `uv run codealmanac setup --yes --target codex`; `uv run codealmanac uninstall --yes --target codex` | passed; setup and uninstall rendered Rich panels and completed against temp-home artifacts |
 | Package metadata proof | `uv build --out-dir <tmp>` and stdlib wheel metadata inspection | passed; wheel metadata includes `Requires-Dist: rich>=15.0.0` |
+
+## Gates For Slice 81 Multi-Wiki Serve
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused viewer/server tests | `uv run pytest tests/test_viewer_service.py tests/test_server.py` | passed; 13 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/viewer src/codealmanac/server tests/test_viewer_service.py tests/test_server.py` | passed |
+| Focused database/viewer/server tests | `uv run pytest tests/test_database.py tests/test_viewer_service.py tests/test_server.py` | passed; 16 tests |
+| Focused database/viewer/server lint | `uv run ruff check src/codealmanac/database src/codealmanac/services/viewer src/codealmanac/server tests/test_database.py tests/test_viewer_service.py tests/test_server.py` | passed |
+| Full tests | `uv run pytest` | passed; 285 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Public contract rerun | `uv run pytest tests/test_public_contract.py -q` after docs updates | passed; 24 tests |
+| Live multi-wiki serve dogfood | temp `HOME`; two temp repos; live `codealmanac serve`; concurrent curl `/api/overview`, `/api/overview?wiki=wiki-b`, and `/api/page/getting-started?wiki=wiki-b`; live `serve --wiki wiki-b` overview | passed; default overview listed `wiki-a` and `wiki-b`, selected route returned `wiki-b`, concurrent first reads no longer hit SQLite lock after busy-timeout patch, and locked serve exposed only `wiki-b` |
+| Browser-harness serve dogfood | live temp `serve`; browser-harness screenshot and DOM check; select switched from `wiki-a` to `wiki-b` | passed; switcher listed both wikis, switch event updated selected wiki and page stats, and desktop overflow check stayed false |
+| Package asset proof | `uv build --wheel --no-build-logs --out-dir <tmp>` and stdlib wheel inspection | passed; wheel includes updated viewer HTML, CSS, API module, and main module |

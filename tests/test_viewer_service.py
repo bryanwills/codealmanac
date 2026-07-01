@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from codealmanac.services.viewer.requests import (
     ViewerSearchRequest,
     ViewerTopicRequest,
 )
+from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
 def test_viewer_overview_search_and_topic_use_index_read_model(
@@ -28,6 +30,71 @@ def test_viewer_overview_search_and_topic_use_index_read_model(
     assert "auth-flow" in [page.slug for page in overview.pages]
     assert [page.slug for page in search.pages] == ["auth-flow"]
     assert [page.slug for page in topic.pages] == ["auth-flow", "session-store"]
+
+
+def test_viewer_overview_lists_available_registered_wikis(
+    viewer_repo: tuple[Path, CodeAlmanac],
+    tmp_path: Path,
+):
+    repo, app = viewer_repo
+    other_repo = tmp_path / "other"
+    other_repo.mkdir()
+    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    write_viewer_page(
+        other_repo,
+        "ops-note.md",
+        """---
+title: Ops Note
+topics: [operations]
+---
+# Ops Note
+
+Tracks operational decisions.
+""",
+    )
+    missing_repo = tmp_path / "missing"
+    missing_repo.mkdir()
+    missing = app.workflows.build.initialize(
+        InitializeWorkspaceRequest(path=missing_repo)
+    )
+    shutil.rmtree(missing_repo)
+
+    overview = app.viewer.overview(ViewerOverviewRequest(cwd=repo))
+    selected = app.viewer.overview(
+        ViewerOverviewRequest(cwd=repo, wiki=other.workspace_id)
+    )
+
+    assert overview.workspace.name == "repo"
+    assert [workspace.name for workspace in overview.workspaces] == ["repo", "other"]
+    assert missing.workspace_id not in [
+        workspace.workspace_id for workspace in overview.workspaces
+    ]
+    assert selected.workspace.name == "other"
+    assert [workspace.name for workspace in selected.workspaces] == ["other", "repo"]
+    assert "ops-note" in [page.slug for page in selected.pages]
+
+
+def test_viewer_overview_can_be_narrowed_to_one_wiki(
+    viewer_repo: tuple[Path, CodeAlmanac],
+    tmp_path: Path,
+):
+    repo, app = viewer_repo
+    other_repo = tmp_path / "other"
+    other_repo.mkdir()
+    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+
+    overview = app.viewer.overview(
+        ViewerOverviewRequest(
+            cwd=repo,
+            wiki=other.workspace_id,
+            include_workspaces=False,
+        )
+    )
+
+    assert overview.workspace.workspace_id == other.workspace_id
+    assert [workspace.workspace_id for workspace in overview.workspaces] == [
+        other.workspace_id
+    ]
 
 
 def test_viewer_page_renders_markdown_and_reader_relationships(
@@ -90,3 +157,9 @@ def test_viewer_file_request_rejects_paths_outside_reference_space(
 
     with pytest.raises(ValidationError, match="file path must be repo-relative"):
         ViewerFileRequest(cwd=repo, path="../secret.txt")
+
+
+def write_viewer_page(repo: Path, name: str, body: str) -> None:
+    path = repo / "almanac/pages" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")

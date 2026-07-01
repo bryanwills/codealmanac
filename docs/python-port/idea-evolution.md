@@ -5,6 +5,34 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Viewer Scope Is A Read Model
+
+Old hypothesis:
+`serve` could capture one resolved workspace at startup and treat `--wiki` as
+the only cross-wiki mechanism.
+
+New hypothesis:
+The local viewer needs an explicit read-scope model. `ViewerService` selects the
+current or requested workspace, exposes available registered local wikis, skips
+unavailable entries without mutating the registry, and lets the browser pass a
+stable `workspace_id` selector for detail routes.
+
+Evidence that forced the change:
+The live agreement says `serve` should browse all registered local wikis, while
+the current FastAPI routes and viewer requests always resolved exactly one
+workspace. That made the archive-era multi-wiki scope impossible without
+teaching the viewer service about the registry.
+
+Code or product assumption affected:
+`ViewerOverview` now carries `workspaces`; `/api/*` viewer routes accept a
+`wiki` query selector; `serve --wiki` is a narrowing flag that exposes only the
+selected wiki in overview.
+
+Follow-up test:
+Keep server/viewer tests that prove default `serve` lists available registered
+wikis, skips missing entries, and locked `serve --wiki` returns a single-wiki
+overview.
+
 ## 2026-07-01 - Page Writing Has One Lifecycle
 
 Old hypothesis:

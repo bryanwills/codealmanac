@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.server.app import create_server_app
+from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
 def test_server_serves_static_assets_and_viewer_api(
@@ -38,8 +39,9 @@ def test_server_serves_static_assets_and_viewer_api(
     assert renderers_module.status_code == 200
     assert "Sources" in renderers_module.text
     assert api_module.status_code == 200
-    assert "/api/file?path=" in api_module.text
+    assert "withQuery" in api_module.text
     assert overview.json()["workspace"]["name"] == "repo"
+    assert overview.json()["workspaces"][0]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
     assert page.json()["sources"][0]["source_id"] == "session-file"
     assert page.json()["sources"][0]["target"] == "src/auth/session.py"
@@ -51,6 +53,58 @@ def test_server_serves_static_assets_and_viewer_api(
         "auth-flow",
         "session-store",
     ]
+
+
+def test_server_viewer_api_switches_between_registered_wikis(
+    viewer_repo: tuple[Path, CodeAlmanac],
+    tmp_path: Path,
+):
+    repo, app = viewer_repo
+    other_repo = tmp_path / "other"
+    other_repo.mkdir()
+    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    write_server_page(
+        other_repo,
+        "ops-note.md",
+        """---
+title: Ops Note
+topics: [operations]
+---
+# Ops Note
+
+Tracks operational decisions.
+""",
+    )
+    client = TestClient(create_server_app(app, repo))
+
+    overview = client.get("/api/overview")
+    other_overview = client.get("/api/overview", params={"wiki": other.workspace_id})
+    other_page = client.get(
+        "/api/page/ops-note",
+        params={"wiki": other.workspace_id},
+    )
+    locked_client = TestClient(create_server_app(app, repo, other.workspace_id))
+    locked_overview = locked_client.get("/api/overview")
+    locked_page = locked_client.get("/api/page/ops-note")
+
+    assert overview.status_code == 200
+    assert [workspace["name"] for workspace in overview.json()["workspaces"]] == [
+        "repo",
+        "other",
+    ]
+    assert other_overview.status_code == 200
+    assert other_overview.json()["workspace"]["workspace_id"] == other.workspace_id
+    assert other_page.status_code == 200
+    assert other_page.json()["title"] == "Ops Note"
+    assert locked_overview.status_code == 200
+    assert locked_overview.json()["workspace"]["workspace_id"] == other.workspace_id
+    locked_workspace_ids = [
+        workspace["workspace_id"]
+        for workspace in locked_overview.json()["workspaces"]
+    ]
+    assert locked_workspace_ids == [other.workspace_id]
+    assert locked_page.status_code == 200
+    assert locked_page.json()["slug"] == "ops-note"
 
 
 def test_server_maps_product_errors_to_http_statuses(
@@ -105,3 +159,9 @@ def test_server_rejects_invalid_static_asset_paths(
     assert missing.json()["detail"]["code"] == "not_found"
     assert unsupported.status_code == 422
     assert unsupported.json()["detail"]["code"] == "validation_failed"
+
+
+def write_server_page(repo: Path, name: str, body: str) -> None:
+    path = repo / "almanac/pages" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")

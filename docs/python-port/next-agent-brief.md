@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 80 setup terminal renderer.
+- Latest implementation slice: slice 81 multi-wiki serve.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -98,6 +98,11 @@ Updated: 2026-07-01
   `cli/render/setup.py` imports Rich. Text setup output now has a branded panel,
   status rows, and an explicit next-steps box that suggests manual automation
   separately from setup. JSON output remains unchanged.
+- Slice 81 restores multi-wiki local viewer scope. `ViewerOverview` returns the
+  selected workspace plus available registered local workspaces, detail/search
+  viewer routes accept a `wiki` query selector, the static sidebar switcher uses
+  stable `workspace_id` values, unavailable registry entries are skipped without
+  being dropped, and `serve --wiki` narrows the viewer to one workspace.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -656,6 +661,8 @@ Behavior:
   from current HEAD, passed `twine check`, package-data inspection, clean
   Python 3.12.9 installs, installed CLI smoke, live `serve` HTTP checks, and
   installed `update --check`
+- Slice 81 focused viewer/server tests, focused ruff, full pytest, full ruff,
+  diff check, and live multi-wiki serve API dogfood
 
 ## Next Move
 
@@ -664,9 +671,9 @@ Behavior:
      source-runtime ranking/recency only after a failing case proves current
      diversity is insufficient
    - scheduled update automation only after non-editable update dogfood
-   - serve polish after product review; slice 51 browser-verified the sidebar
-     shell through an isolated temporary Chrome profile, while default-profile
-     Chrome remote debugging still needs the manual Allow click
+   - serve visual polish only after product review; slice 81 restored
+     multi-wiki local scope, while slice 51/60 browser-verified the sidebar
+     shell through an isolated temporary Chrome profile
    - manual replacement policy only if users need a workflow for accepting
      bundled doctrine changes; doctor now reports drift, while build/init still
      copy missing files only

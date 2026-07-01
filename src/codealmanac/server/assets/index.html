@@ -12,16 +12,19 @@
       <aside class="dashboard-rail">
         <div class="dashboard-rail-top">
           <div class="dashboard-rail-picker">
-            <a class="dashboard-account-trigger" href="#/" aria-label="Current local wiki">
+            <div class="dashboard-account-trigger">
               <span class="app-avatar app-avatar--account">
                 <span class="app-avatar-fallback">CA</span>
               </span>
               <span class="dashboard-account-text">
-                <span class="dashboard-account-name" id="workspace-name">Wiki</span>
+                <select
+                  id="workspace-select"
+                  class="dashboard-workspace-select"
+                  aria-label="Current local wiki"
+                ></select>
                 <span class="dashboard-account-subtitle">repo-owned wiki</span>
               </span>
-              <span class="dashboard-account-caret" aria-hidden="true">v</span>
-            </a>
+            </div>
           </div>
         </div>
 

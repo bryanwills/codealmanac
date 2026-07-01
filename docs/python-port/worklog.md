@@ -54,6 +54,18 @@
 - Added an architecture test that keeps Rich imports inside the CLI render edge,
   so terminal UI polish cannot leak into services, workflows, integrations, or
   stores.
+- Added slice-81 multi-wiki serve after rereading the live agreement,
+  `MANUAL.md`, Cosmic Python service/read-view/composition-root references, and
+  the current viewer/server code. `ViewerService` now exposes the selected wiki
+  plus available registered local wikis, the FastAPI edge accepts `wiki` query
+  selectors, and the static viewer can switch wikis without restarting
+  `codealmanac serve`.
+- Focused slice-81 tests cover available-wiki listing, skipping unavailable
+  registry entries, `workspace_id` selection, and `serve --wiki` narrowing.
+- Slice-81 live dogfood exposed concurrent first-read `database is locked`
+  failures when overview and page requests refreshed the same wiki index at the
+  same time. `connect_sqlite(...)` now sets a 30-second SQLite busy timeout
+  before WAL mode, and `tests/test_database.py` guards the PRAGMA.
 
 ## 2026-06-29
 

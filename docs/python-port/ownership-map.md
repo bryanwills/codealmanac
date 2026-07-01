@@ -37,7 +37,7 @@ that root instead of constructing stores or adapters themselves.
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
 | `updates` | package update planning, installer metadata, supported foreground update methods | `codealmanac update`, `PackageInstallMetadataProvider`, `PackageCommandRunner` |
 | `setup` | setup/uninstall command requests, setup-owned agent instruction result models, and the instruction installer port | `codealmanac setup`, `codealmanac uninstall` |
-| `viewer` | read-only browser payloads, page/topic/search/file overview assembly, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
+| `viewer` | read-only browser payloads, page/topic/search/file overview assembly, multi-wiki local viewer scope, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
 
 ## Support Packages
 
@@ -103,10 +103,10 @@ integration adapters. It is not a service port because it describes local
 process mechanics, not a product contract.
 
 `database/` holds local SQLite mechanics shared by stores. `connect_sqlite`
-creates parent directories, applies row factory and PRAGMA policy, and returns
-the connection. `apply_migrations` applies typed `SQLiteMigration` values in
-version order. Product stores still own SQL schema text, row conversion, and
-query semantics.
+creates parent directories, applies row factory and PRAGMA policy, sets a
+busy timeout before WAL mode, and returns the connection. `apply_migrations`
+applies typed `SQLiteMigration` values in version order. Product stores still
+own SQL schema text, row conversion, and query semantics.
 
 `services/config/` owns local config parsing and precedence. `ConfigStore`
 uses `pydantic-settings` TOML sources to build the frozen
@@ -192,6 +192,11 @@ adapters; selected source material belongs to lifecycle workflows, while viewer
 file routes are graph-navigation routes. `services/viewer/renderer.py` owns
 Markdown rendering and token-level wikilink rewriting for the local viewer; it
 rewrites text inline tokens and leaves code tokens untouched.
+`services/viewer` also owns local wiki scope for the viewer. Overview responses
+return the selected workspace plus available registered local workspaces, using
+`workspace_id` as the stable selector. The service skips unavailable registry
+entries without dropping them. The server and browser pass optional wiki
+selectors; they do not decide registry availability or workspace fallback.
 
 `server/assets/` owns the packaged browser shell for `serve`. It can borrow
 UseAlmanac's visual language, but it must preserve `services/viewer` as the
@@ -208,9 +213,10 @@ The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM
 pieces, `renderers.js` owns screen assembly, and `main.js` wires browser events
-to those modules. Sidebar page/topic active state is browser route state over
-the existing hash routes, not a second server contract. The server owns
-validation and delivery of nested package assets through `/assets/{path}`.
+and the selected wiki switcher to those modules. Sidebar page/topic active
+state is browser route state over the existing hash routes, not a second server
+contract. The server owns validation and delivery of nested package assets
+through `/assets/{path}`.
 
 `manual/` is a support package rather than a product service. `ManualLibrary`
 loads bundled Markdown resources, installs missing files into
