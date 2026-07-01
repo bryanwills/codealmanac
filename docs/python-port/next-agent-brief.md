@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 101 Codex app-server client boundaries.
+- Latest implementation slice: slice 102 index store boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -238,14 +238,21 @@ Updated: 2026-07-01
   tests keep view modules read-only, keep `views.py` tiny, and prevent
   migrations, projection-write SQL, or page-document loading from entering the
   read side.
+- Slice 102 splits the index write side by reason to change. `IndexStore`
+  remains the service-facing facade, `schema.py` owns derived `index.db`
+  schema/migrations/connection setup, `sources.py` owns markdown/topic source
+  loading and freshness signatures, and `projection.py` owns replacement writes
+  plus stored source signatures. Architecture tests keep schema, source loading,
+  and projection SQL out of `store.py`.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
   such as ignored workspace directories.
 - `codealmanac.database` owns SQLite connection setup and migration
-  application. `IndexStore` owns the derived `index.db` schema, source loading,
-  and projection writes. `services/index/views.py` is a small read facade over
-  query-family view modules.
+  application. `IndexStore` is a facade over index schema, source loading,
+  projection writes, and read views; those responsibilities live in
+  `services/index/schema.py`, `sources.py`, `projection.py`, and the query-
+  family view modules.
 - `services/config` owns local TOML config parsing and precedence. Project
   config is `<almanac-root>/config.toml`; CLI flags still win over config. It
   uses `pydantic-settings` TOML sources.
@@ -311,6 +318,8 @@ Updated: 2026-07-01
 - Slice 101 keeps Codex app-server behavior unchanged while splitting
   response, sandbox, turn-completion, timeout, and result-projection helpers out
   of the transport client.
+- Slice 102 keeps index behavior unchanged while splitting schema, source
+  loading, and projection writes out of the `IndexStore` facade.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -831,6 +840,9 @@ Behavior:
 - Slice 101 Codex app-server client-boundary split, focused Codex app-server,
   Codex adapter, and architecture tests, focused Ruff over Codex harness and
   architecture tests, fake app-server client dogfood, then full pytest/full
+  Ruff/diff check
+- Slice 102 index store boundary split, focused architecture/read-model tests,
+  focused Ruff over index modules and architecture tests, then full pytest/full
   Ruff/diff check
 
 ## Next Move

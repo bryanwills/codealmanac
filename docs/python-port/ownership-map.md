@@ -114,11 +114,14 @@ busy timeout before WAL mode, and returns the connection. `apply_migrations`
 applies typed `SQLiteMigration` values in version order. Product stores still
 own SQL schema text and write/query semantics.
 
-`services/index/store.py` owns the derived `index.db` schema, migrations,
-source loading, and projection writes. `services/index/views.py` is a small
-read facade. `services/index/search_views.py` owns FTS and file-mention query
-construction, `summary_views.py` owns count summaries, `page_views.py` owns
-page detail projections, `topic_views.py` owns topic DAG reads, and
+`services/index/store.py` is the service-facing `IndexStore` facade.
+`services/index/schema.py` owns derived `index.db` schema, migrations, and the
+index connection helper. `services/index/sources.py` owns page/topic source
+loading and freshness signatures. `services/index/projection.py` owns
+replacement writes and stored source signatures. `services/index/views.py` is a
+small read facade. `services/index/search_views.py` owns FTS and file-mention
+query construction, `summary_views.py` owns count summaries, `page_views.py`
+owns page detail projections, `topic_views.py` owns topic DAG reads, and
 `health_views.py` owns health findings.
 
 `services/config/` owns local config parsing and precedence. `ConfigStore`

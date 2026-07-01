@@ -1129,3 +1129,12 @@ owns `CodexRunState`/failure projection to `HarnessRunResult`, and
 `timeouts.py` owns tolerant timeout-env parsing. The Codex app-server wiki page
 now cites the new module ownership. Focused Codex app-server, Codex adapter,
 architecture, and Ruff checks passed after the split.
+Slice 102 splits the index write side while keeping `IndexStore` as the public
+store facade. `schema.py` owns derived `index.db` schema, migrations, and the
+index connection helper; `sources.py` owns markdown page loading,
+`topics.yaml` loading, skipped-file counts, and freshness signatures;
+`projection.py` owns replacement writes and stored source signatures. Focused
+architecture and read-model tests passed after the split. Public CLI dogfood
+initialized a temp repo, added a page, searched original text, edited the page,
+and searched changed text through implicit refresh. Full pytest, Ruff, and diff
+hygiene passed.

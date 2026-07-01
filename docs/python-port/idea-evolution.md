@@ -2388,3 +2388,33 @@ Follow-up test:
 If Codex app-server later supports model/effort/output-schema request
 construction, add a request-construction module instead of growing `_run()` with
 more inline payload policy.
+
+## 2026-07-01 - IndexStore Should Be A Facade, Not The Whole Indexer
+
+Old hypothesis:
+After the read-view split, `IndexStore` could keep schema DDL, migration setup,
+markdown source loading, freshness signatures, and projection writes because
+those mechanics all belong to the derived SQLite index.
+
+New hypothesis:
+`IndexStore` should stay the service-facing store facade, while schema,
+source-loading, and projection writes live in named modules. Those three
+mechanics all belong to the index service, but they change for different
+reasons.
+
+Evidence that forced the change:
+After slice 101, `services/index/store.py` was still the largest production
+module at 447 lines. The file mixed facade methods with `SCHEMA_DDL`, migration
+construction, `load_page_document`, `load_topics_yaml`, source hashing,
+signature persistence, and every `INSERT`/`DELETE` used to rebuild `index.db`.
+
+Code or product assumption affected:
+Slice 102 keeps query and refresh behavior unchanged. `schema.py` owns derived
+`index.db` schema and connection setup, `sources.py` owns page/topic source
+loading and freshness signatures, `projection.py` owns replacement writes and
+stored signatures, and `store.py` delegates across those modules.
+
+Follow-up test:
+If future index work adds source filters, schema migrations, or projection
+tables, extend the named module that owns the reason to change instead of
+growing `store.py`.

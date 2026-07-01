@@ -130,6 +130,42 @@ def test_index_read_views_are_split_by_query_family():
     )
 
 
+def test_index_store_keeps_write_side_responsibilities_split():
+    index_root = SRC_ROOT / "services/index"
+    store = (index_root / "store.py").read_text(encoding="utf-8")
+    schema = (index_root / "schema.py").read_text(encoding="utf-8")
+    sources = (index_root / "sources.py").read_text(encoding="utf-8")
+    projection = (index_root / "projection.py").read_text(encoding="utf-8")
+
+    assert len(store.splitlines()) <= 160
+    assert "SCHEMA_DDL" not in store
+    assert "SQLiteMigration" not in store
+    assert "load_page_document" not in store
+    assert "INSERT INTO pages" not in store
+    assert "DELETE FROM fts_pages" not in store
+
+    assert "SCHEMA_DDL" in schema
+    assert "INDEX_MIGRATIONS" in schema
+    assert "def connect_index" in schema
+    assert "load_page_document" not in schema
+    assert "INSERT INTO pages" not in schema
+
+    assert "class LoadedIndexSources" in sources
+    assert "def load_index_sources" in sources
+    assert "load_page_document" in sources
+    assert "load_topics_yaml" in sources
+    assert "IndexSourceSignature(" in sources
+    assert "INSERT INTO pages" not in sources
+
+    assert "SOURCE_SIGNATURE_KEY" in projection
+    assert "def stored_signature" in projection
+    assert "def replace_documents" in projection
+    assert "INSERT INTO pages" in projection
+    assert "DELETE FROM fts_pages" in projection
+    assert "load_page_document" not in projection
+    assert "SCHEMA_DDL" not in projection
+
+
 def test_serve_css_does_not_scale_type_with_viewport_width():
     css = (SRC_ROOT / "server/assets/app.css").read_text(encoding="utf-8")
 

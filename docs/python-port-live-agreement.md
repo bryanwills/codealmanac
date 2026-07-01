@@ -264,8 +264,12 @@ It is the constraint document for future agents.
 - 2026-07-01: Index read views are split by query family. `IndexStore` remains
   the store facade, `services/index/views.py` remains a small compatibility
   facade, and read-side SQL lives in `search_views.py`, `summary_views.py`,
-  `page_views.py`, `topic_views.py`, and `health_views.py`. Projection writes,
-  migrations, and page-document loading stay in `store.py`.
+  `page_views.py`, `topic_views.py`, and `health_views.py`.
+- 2026-07-01: Index write-side responsibilities are split behind `IndexStore`.
+  `services/index/schema.py` owns the derived `index.db` schema, migrations,
+  and index connection helper; `sources.py` owns page/topic source loading and
+  freshness signatures; `projection.py` owns replacement writes and stored
+  source signatures. `store.py` stays the service-facing facade.
 - 2026-06-29: `config` owns local user/project TOML parsing and precedence
   through `pydantic-settings`. The first config surface is intentionally
   narrow: user config at `~/.codealmanac/config.toml` and project config at
@@ -297,10 +301,10 @@ It is the constraint document for future agents.
   admin dispatch/render edge; the root dispatcher delegates to that edge and
   keeps services/workflows as the product boundary.
 - 2026-06-29: The SQLite index service separates projection writes from
-  read-only views. `services/index/store.py` owns schema, migrations,
-  freshness signatures, source loading, and replacement writes into
-  `index.db`; `services/index/views.py` owns read-only query SQL and row-to-
-  Pydantic view construction.
+  read-only views. `services/index/store.py` stays the service-facing facade;
+  `schema.py`, `sources.py`, and `projection.py` own write-side mechanics;
+  `services/index/views.py` owns read-only query SQL and row-to-Pydantic view
+  construction.
 - 2026-06-29: Registry cleanup is explicit. `codealmanac list` remains the
   local wiki registry surface; `list --json` exposes availability status, and
   `list --drop <selector>` / `list --drop-missing` remove entries only when the

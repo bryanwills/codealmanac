@@ -147,13 +147,13 @@ Defined in `src/wiki/indexer/schema.ts` and applied idempotently on every open (
 
 ## Markdown Projection Boundary
 
-`src/wiki/indexer/` owns the pipeline that turns markdown pages into queryable rows. That includes frontmatter parsing in `[[src/wiki/indexer/frontmatter.ts]]`, source normalization in `[[src/wiki/indexer/page-sources.ts]]`, wikilink extraction, path normalization, and the `file_refs` and `page_sources` projections in SQLite. `[[src/wiki/health/index.ts]]` owns the health checks that query those projections.
+The Python index service owns the pipeline that turns markdown pages into queryable rows. `[[src/codealmanac/services/index/store.py]]` is the service-facing `IndexStore` facade. `[[src/codealmanac/services/index/schema.py]]` owns the derived `index.db` schema, migrations, and connection helper. `[[src/codealmanac/services/index/sources.py]]` owns markdown page loading, `topics.yaml` loading, skipped-file counts, and freshness signatures. `[[src/codealmanac/services/index/projection.py]]` owns replacement writes and stored source signatures. Read SQL lives under `[[src/codealmanac/services/index/search_views.py]]`, `[[src/codealmanac/services/index/page_views.py]]`, `[[src/codealmanac/services/index/topic_views.py]]`, `[[src/codealmanac/services/index/summary_views.py]]`, and `[[src/codealmanac/services/index/health_views.py]]`.
 
 The 2026-05-30 source-architecture discussion rejected a separate `provenance/`, `page-metadata/`, or generic source-connector owner for page-source projection code at the current stage. Page `sources:` are provenance in the document model, but the code that parses, indexes, checks, and displays them is indexer-facing markdown projection infrastructure. The deterministic rewrite helper now lives in `[[src/wiki/sources/maintenance.ts]]` because `almanac migrate legacy-sources` owns mechanical source-frontmatter migration; it should not become a source-connector module or a generic provenance subsystem. [@source-architecture-session]
 
 ## Schema versioning
 
-`SCHEMA_VERSION` constant (currently `4`). On open, if `user_version < SCHEMA_VERSION`, affected tables are dropped or altered and the hash column is cleared to force a full reindex. The v3 migration adds `pages.summary` with `ALTER TABLE`; the other current migrations rebuild changed projection tables from markdown.
+`SCHEMA_VERSION` lives in `[[src/codealmanac/services/index/schema.py]]` and currently uses the date-shaped value `20260701`. The current Python migration strategy rebuilds the derived `index.db` tables on version change because markdown pages and `topics.yaml` are the source of truth.
 
 ## Path handling
 

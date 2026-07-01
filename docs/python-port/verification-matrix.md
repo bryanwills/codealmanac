@@ -1018,6 +1018,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 102 Index Store Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused architecture/read-model tests | `uv run pytest tests/test_public_contract.py::test_next_agent_brief_tracks_latest_python_port_slice tests/test_architecture.py::test_index_store_keeps_write_side_responsibilities_split tests/test_read_model.py::test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits tests/test_read_model.py::test_reindex_forces_projection_rebuild_when_index_is_fresh -q` | passed; 4 tests |
+| Focused index lint | `uv run ruff check src/codealmanac/services/index tests/test_architecture.py` | passed |
+| Public CLI dogfood | isolated temp `HOME`; temp repo; `codealmanac init`; create page; `search originalneedle`; edit page; `search changedneedle` | passed; both searches returned `slice-102-dogfood` through implicit index refresh |
+| Full tests | `uv run pytest` | passed; 325 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |
