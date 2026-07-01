@@ -733,6 +733,42 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
     )
 
 
+def test_sync_execution_effects_stay_out_of_service_orchestration():
+    sync_root = SRC_ROOT / "workflows/sync"
+    service_text = (sync_root / "service.py").read_text(encoding="utf-8")
+    execution_text = (sync_root / "execution.py").read_text(encoding="utf-8")
+    forbidden_service_fragments = (
+        "RunIngestRequest",
+        "RunIngestWithRunRequest",
+        "FinishRunRequest",
+        "RunStatus.FAILED",
+        "pending_entry(item",
+        "failed_entry(",
+        "absorbed_entry(",
+        "sync_ingest_guidance(",
+        "sync_ingest_title(",
+        "queue_ingest(",
+        "spawn_worker(",
+        "run_with_run(",
+    )
+
+    assert (sync_root / "execution.py").is_file()
+    assert len(service_text.splitlines()) <= 230
+    assert [
+        fragment
+        for fragment in forbidden_service_fragments
+        if fragment in service_text
+    ] == []
+    assert "class SyncRunExecutor" in execution_text
+    assert "RunIngestRequest" in execution_text
+    assert "RunIngestWithRunRequest" in execution_text
+    assert "FinishRunRequest" in execution_text
+    assert "pending_entry(" in execution_text
+    assert "absorbed_entry(" in execution_text
+    assert "queue_ingest(" in execution_text
+    assert "spawn_worker(" in execution_text
+
+
 def test_viewer_jobs_surface_stays_read_only():
     paths = (
         SRC_ROOT / "services/viewer/service.py",

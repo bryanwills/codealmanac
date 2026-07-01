@@ -2,51 +2,39 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.runs.models import RunRecord, RunStatus
-from codealmanac.services.runs.requests import FinishRunRequest, ListRunsRequest
+from codealmanac.services.runs.models import RunRecord
+from codealmanac.services.runs.requests import ListRunsRequest
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
-from codealmanac.workflows.ingest.requests import (
-    RunIngestRequest,
-    RunIngestWithRunRequest,
-)
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.run_queue.service import RunQueueWorkflow
+from codealmanac.workflows.sync.execution import SyncRunExecutor
 from codealmanac.workflows.sync.models import (
     SyncDecisionKind,
     SyncEvaluation,
-    SyncExecution,
     SyncLedger,
     SyncMode,
     SyncReady,
     SyncSkipped,
-    SyncStarted,
     SyncSummary,
     SyncWorkItem,
 )
 from codealmanac.workflows.sync.policy import (
-    absorbed_entry,
     evaluate_cursor,
     evaluate_pending_run,
-    failed_entry,
-    first_error_line,
     is_internal_transcript,
     ledger_entry,
     ledger_key,
-    pending_entry,
     quiet_window_skip,
     read_transcript,
     reconcile_pending_entry,
     same_workspace,
     skip,
     sync_claim_owner,
-    sync_ingest_guidance,
-    sync_ingest_title,
-    sync_started,
 )
 from codealmanac.workflows.sync.requests import (
     RunSyncRequest,
@@ -69,9 +57,13 @@ class SyncWorkflow:
         self.workspaces = workspaces
         self.sources = sources
         self.runs = runs
-        self.ingest = ingest
-        self.queue = queue
         self.ledger_store = ledger_store
+        self.executor = SyncRunExecutor(
+            runs=runs,
+            ingest=ingest,
+            queue=queue,
+            ledger_store=ledger_store,
+        )
 
     def status(self, request: RunSyncStatusRequest) -> SyncSummary:
         return self.evaluate(request, SyncMode.STATUS).summary
@@ -80,106 +72,16 @@ class SyncWorkflow:
         now = request.now or datetime.now(UTC)
         evaluation = self.evaluate(request, SyncMode.SYNC, now=now)
         claim_owner = request.claim_owner or sync_claim_owner(now)
-        started: list[SyncStarted] = []
-        needs_attention = list(evaluation.summary.needs_attention)
-        ledgers = dict(evaluation.ledgers)
-        for item in evaluation.work_items:
-            ledger = ledgers[item.candidate.repo_root]
-            ingest_request = RunIngestRequest(
-                cwd=item.candidate.repo_root,
-                inputs=(f"transcript:{item.candidate.transcript_path}",),
-                harness=request.harness,
-                wiki=request.wiki,
-                title=sync_ingest_title(item.candidate),
-                guidance=sync_ingest_guidance(item),
-            )
-            if request.execution == SyncExecution.BACKGROUND:
-                run = self.queue.queue_ingest(ingest_request)
-                pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
-                ledger.sessions[item.ledger_key] = pending
-                ledger = self.ledger_store.save(
-                    item.candidate.almanac_path,
-                    ledger,
-                    now,
-                )
-                ledgers[item.candidate.repo_root] = ledger
-                try:
-                    self.queue.spawn_worker(item.candidate.repo_root, request.wiki)
-                except Exception as error:
-                    self.runs.finish(
-                        FinishRunRequest(
-                            cwd=item.candidate.repo_root,
-                            wiki=request.wiki,
-                            run_id=run.run_id,
-                            status=RunStatus.FAILED,
-                            error=first_error_line(error),
-                        )
-                    )
-                    ledger.sessions[item.ledger_key] = failed_entry(
-                        pending,
-                        error,
-                        run.run_id,
-                    )
-                    self.ledger_store.save(
-                        item.candidate.almanac_path,
-                        ledger,
-                        now,
-                    )
-                    needs_attention.append(skip(item.candidate, "worker-spawn-failed"))
-                    continue
-                started.append(sync_started(item, run.run_id))
-                continue
-            run = self.ingest.start(ingest_request)
-            pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
-            ledger.sessions[item.ledger_key] = pending
-            ledger = self.ledger_store.save(
-                item.candidate.almanac_path,
-                ledger,
-                now,
-            )
-            ledgers[item.candidate.repo_root] = ledger
-            item = item.model_copy(update={"entry": pending})
-            try:
-                result = self.ingest.run_with_run(
-                    RunIngestWithRunRequest(
-                        cwd=ingest_request.cwd,
-                        inputs=ingest_request.inputs,
-                        harness=ingest_request.harness,
-                        wiki=ingest_request.wiki,
-                        title=ingest_request.title,
-                        guidance=ingest_request.guidance,
-                        run_id=run.run_id,
-                    )
-                )
-            except Exception as error:
-                ledger.sessions[item.ledger_key] = failed_entry(
-                    item.entry,
-                    error,
-                    run.run_id,
-                )
-                self.ledger_store.save(
-                    item.candidate.almanac_path,
-                    ledger,
-                    now,
-                )
-                needs_attention.append(skip(item.candidate, "ingest-failed"))
-                continue
-            ledger.sessions[item.ledger_key] = absorbed_entry(
-                item.entry,
-                item.snapshot,
-                result.run.run_id,
-                now,
-            )
-            ledgers[item.candidate.repo_root] = self.ledger_store.save(
-                item.candidate.almanac_path,
-                ledger,
-                now,
-            )
-            started.append(sync_started(item, result.run.run_id))
+        effects = self.executor.run(
+            request,
+            evaluation,
+            now,
+            claim_owner,
+        )
         return evaluation.summary.model_copy(
             update={
-                "started": tuple(started),
-                "needs_attention": tuple(needs_attention),
+                "started": effects.started,
+                "needs_attention": effects.needs_attention,
             }
         )
 

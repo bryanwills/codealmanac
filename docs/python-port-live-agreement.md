@@ -184,6 +184,12 @@ It is the constraint document for future agents.
   identity helpers, `snapshots.py` owns transcript snapshot reading and hashes,
   `reporting.py` owns skip/start rows, and `guidance.py` owns generated cursor
   guidance. Do not move cursor/ledger policy back into `service.py`.
+- 2026-07-01: Sync run execution effects are split from sync selection.
+  `SyncWorkflow` owns status/run/evaluate/scoping orchestration;
+  `workflows/sync/execution.py` owns foreground Ingest execution, background
+  queueing, worker-spawn failure handling, pending/failed/absorbed ledger
+  writes, and started summary rows. Do not move lifecycle execution effects
+  back into `service.py`.
 - 2026-06-29: Source input has four local layers:
   `SourceAddress -> SourceRef -> SourceBrief -> SourceRuntime`. Git source
   runtime uses the Git CLI through a source-runtime adapter. GitHub PR/issue

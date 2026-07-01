@@ -1189,3 +1189,12 @@ command failure tolerance. Focused filesystem runtime, directory selection,
 architecture, and lint checks passed. Service-level dogfood rendered a
 repo-relative directory source while respecting `.gitignore` and configured
 Almanac-root ignores.
+Slice 109 keeps sync behavior unchanged while splitting run execution effects
+out of `SyncWorkflow.service`. `service.py` remains the status/run/evaluate
+orchestration surface. `execution.py` owns foreground Ingest execution,
+background queueing, worker-spawn failure handling, pending/failed/absorbed
+ledger writes, and started summary rows through explicit dependencies in
+`SyncRunExecutor`. Focused foreground, background, worker-spawn failure,
+ingest-failure, pending-claim, architecture, and lint checks passed. Public
+`sync status --json` dogfood with an old synthetic Codex transcript returned
+one ready transcript for lines 1-2.

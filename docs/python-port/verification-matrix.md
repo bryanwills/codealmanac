@@ -1095,6 +1095,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 109 Sync Execution Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused sync execution tests | `uv run pytest tests/test_sync_workflow.py::test_sync_run_ingests_ready_transcripts_and_advances_ledger tests/test_sync_workflow.py::test_sync_background_queues_ingest_and_leaves_pending_claim tests/test_sync_workflow.py::test_sync_background_spawn_failure_marks_run_and_ledger_failed tests/test_sync_workflow.py::test_sync_run_records_failed_attempt_after_ingest_failure tests/test_sync_workflow.py::test_sync_run_writes_pending_claim_before_ingest tests/test_architecture.py::test_sync_execution_effects_stay_out_of_service_orchestration -q` | passed; 6 tests |
+| Focused sync lint | `uv run ruff check src/codealmanac/workflows/sync tests/test_sync_workflow.py tests/test_architecture.py` | passed |
+| Public sync-status dogfood | isolated temp `HOME`; temp repo; old synthetic Codex transcript; `codealmanac sync --quiet 1s --from codex status --json` | passed; JSON reported scanned 1, eligible 1, ready `sync-109` lines 1-2 |
+| Full tests | `uv run pytest` | passed; 331 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

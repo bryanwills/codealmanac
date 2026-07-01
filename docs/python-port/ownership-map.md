@@ -173,10 +173,12 @@ decide quiet windows, cursor state, or whether ingest should run.
 `TranscriptCandidate` carries both `repo_root` and `almanac_path` so sync can
 write ledgers under the configured root without guessing.
 
-`workflows/sync/service.py` owns sync orchestration. It discovers transcripts,
-scopes them to the requested local wiki, loads run records and ledgers, starts
-foreground ingest or queues background ingest, spawns local workers, persists
-ledger changes, and assembles summaries.
+`workflows/sync/service.py` owns sync selection orchestration. It discovers
+transcripts, scopes them to the requested local wiki, loads run records and
+ledgers, evaluates policy decisions, and assembles status/sync summaries.
+`workflows/sync/execution.py` owns sync run execution effects: foreground
+Ingest execution, background queueing, worker-spawn failure handling,
+pending/failed/absorbed ledger writes, and started summary rows.
 
 `workflows/sync/policy.py` is the deterministic sync-policy facade imported by
 `SyncWorkflow`. `decisions.py` owns cursor decisions and pending-run

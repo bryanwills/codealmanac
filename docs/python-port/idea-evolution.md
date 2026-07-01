@@ -2596,3 +2596,32 @@ Follow-up test:
 Future filesystem material-selection changes should land in `selection.py` or
 `listing.py` only when the assembly policy changes. Ignore, walking, and Git
 mechanics should stay in their focused modules.
+
+## 2026-07-01 - Sync Workflow Needs An Execution Effects Boundary
+
+Old hypothesis:
+`SyncWorkflow.run(...)` could own evaluated work-item execution because sync is
+one workflow and policy had already been split out.
+
+New hypothesis:
+`SyncWorkflow` should own the public status/run/evaluate/scoping surface, while
+`SyncRunExecutor` owns the side effects that turn evaluated work items into run
+records, queue specs, ledger transitions, and started/needs-attention rows.
+
+Evidence that forced the change:
+After slice 108, `workflows/sync/service.py` was the largest production module
+at 310 lines. The `run(...)` method mixed claim-owner selection with foreground
+Ingest execution, background queueing, worker-spawn failure handling,
+pending-entry writes, failed-entry writes, absorbed-entry writes, and summary
+row construction.
+
+Code or product assumption affected:
+Slice 109 keeps foreground/background sync behavior unchanged. `service.py`
+still exposes `status`, `run`, `evaluate`, and `scope_candidates`.
+`execution.py` owns the execution effects and receives explicit workflow/service
+dependencies through `SyncRunExecutor`.
+
+Follow-up test:
+Future sync execution changes such as default background mode, spawn retry, or
+terminal-run reconciliation should land in `execution.py` unless they change
+candidate selection or cursor policy.
