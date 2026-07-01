@@ -797,6 +797,43 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     assert oversized == []
 
 
+def test_setup_instruction_adapter_stays_split_by_target_family():
+    setup_root = SRC_ROOT / "integrations/setup"
+    instructions = (setup_root / "instructions.py").read_text(encoding="utf-8")
+    codex = (setup_root / "codex.py").read_text(encoding="utf-8")
+    claude = (setup_root / "claude.py").read_text(encoding="utf-8")
+    managed_blocks = (setup_root / "managed_blocks.py").read_text(encoding="utf-8")
+    guide = (setup_root / "guide.py").read_text(encoding="utf-8")
+
+    assert {
+        "instructions.py",
+        "codex.py",
+        "claude.py",
+        "managed_blocks.py",
+        "guide.py",
+        "text_files.py",
+    } <= {path.name for path in setup_root.glob("*.py")}
+    assert len(instructions.splitlines()) <= 80
+    assert "class FileInstructionInstaller" in instructions
+    assert "install_codex_instructions" in instructions
+    assert "install_claude_instructions" in instructions
+    assert "resources.files" not in instructions
+    assert "write_text" not in instructions
+    assert "read_text" not in instructions
+    assert "unlink(" not in instructions
+    assert "contents.find" not in instructions
+
+    assert "resolve_codex_agents_path" in codex
+    assert "AGENTS.override.md" in codex
+    assert "CLAUDE.md" not in codex
+    assert "CLAUDE_IMPORT_LINE" in claude
+    assert "codealmanac.md" in claude
+    assert "AGENTS.override.md" not in claude
+    assert "CODEALMANAC_START" in managed_blocks
+    assert "def upsert_managed_block" in managed_blocks
+    assert "resources.files" in guide
+
+
 def test_cli_lifecycle_dispatch_stays_split_by_command_family():
     dispatch_path = SRC_ROOT / "cli/dispatch"
     lifecycle = (dispatch_path / "lifecycle.py").read_text(encoding="utf-8")

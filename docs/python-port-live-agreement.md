@@ -370,6 +370,14 @@ It is the constraint document for future agents.
 - 2026-07-01: `uninstall` should exist as the reverse of `setup`. It should
   remove setup-owned instructions and scheduler entries idempotently, with
   `--yes` and keep flags where useful.
+- 2026-07-01: Setup instruction installation is split by target family behind
+  the service-owned `InstructionInstaller` port. `integrations/setup/instructions.py`
+  is only the `FileInstructionInstaller` facade and target dispatcher;
+  `codex.py` owns Codex AGENTS block selection and cleanup; `claude.py` owns
+  Claude guide/import files; `managed_blocks.py` owns marker text transforms;
+  `guide.py` owns package resource loading; and `text_files.py` owns narrow
+  UTF-8 file reads. Do not move provider marker surgery, package resource
+  reads, or target-specific file writes back into `instructions.py`.
 - 2026-07-01: The archive's `review` command family is not required for now.
   The archive's `migrate` command family is not needed unless a concrete
   migration path is reopened.

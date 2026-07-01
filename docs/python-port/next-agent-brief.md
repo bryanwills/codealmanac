@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 129 index health view boundaries.
+- Latest implementation slice: slice 130 setup instruction boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -97,6 +97,12 @@ Updated: 2026-07-01
 - Slice 129 splits health read views by finding family. `health_views.py`
   assembles `HealthReport`, `health_graph_views.py` owns page/topic/link/file
   findings, and `health_source_views.py` owns sources/citations findings.
+- Slice 130 splits setup instruction installation by target family.
+  `integrations/setup/instructions.py` is now only the
+  `FileInstructionInstaller` facade and target dispatcher; `codex.py` owns
+  Codex AGENTS block writes/removal; `claude.py` owns Claude guide/import
+  files; `managed_blocks.py` owns marker text transforms; and `guide.py` owns
+  packaged guide loading.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into
