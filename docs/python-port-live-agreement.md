@@ -410,9 +410,12 @@ It is the constraint document for future agents.
   owns product/Pydantic exception mapping. Do not move route bodies, asset
   loading, or HTTP error mapping back into `app.py`.
 - 2026-06-29: The CLI edge is allowed to split by command domain as pressure
-  appears. `doctor`, `update`, `jobs`, and `automation` now live under the
-  admin dispatch/render edge; the root dispatcher delegates to that edge and
-  keeps services/workflows as the product boundary.
+  appears. `cli/dispatch/admin.py` is an admin-command facade only;
+  `setup.py` owns setup/uninstall request construction, `diagnostics.py` owns
+  doctor request construction, `updates.py` owns update request construction,
+  `jobs.py` owns jobs request construction, and `automation.py` owns automation
+  request construction. The root dispatcher delegates to command-domain edges
+  and keeps services/workflows as the product boundary.
 - 2026-06-29: The SQLite index service separates projection writes from
   read-only views. `services/index/store.py` stays the service-facing facade;
   `schema.py`, `sources.py`, and `projection.py` own write-side mechanics;

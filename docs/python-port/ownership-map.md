@@ -344,6 +344,13 @@ commands, and `cli/dispatch/serve.py` owns viewer startup. Dispatch modules
 construct service request models and then call render modules; they do not
 contain service logic or presentation formatting.
 
+`cli/dispatch/admin.py` is the admin-command facade. `cli/dispatch/setup.py`
+owns setup/uninstall request construction, `diagnostics.py` owns doctor
+request construction, `updates.py` owns update request construction, `jobs.py`
+owns jobs request construction, and `automation.py` owns automation request
+construction. Setup may reuse automation quiet-duration resolution; automation
+must not call setup.
+
 The browser shell stays static package data while it is small. `app.js` is the
 module entrypoint. `server/assets/viewer/api.js` owns HTTP calls, `routes.js`
 owns hash parsing and href construction, `components.js` owns shared DOM

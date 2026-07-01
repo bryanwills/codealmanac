@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 123 CLI admin render boundaries.
+- Latest implementation slice: slice 124 CLI admin dispatch boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -267,6 +267,14 @@ Updated: 2026-07-01
   update output, and `render/setup.py` owns setup/uninstall result output plus
   Rich presentation. Architecture tests keep service model imports and render
   definitions out of `cli/render/admin.py`.
+- Slice 124 keeps admin CLI behavior unchanged while splitting
+  `cli/dispatch/admin.py` by command family. `admin.py` is now a facade;
+  `dispatch/setup.py` owns setup/uninstall request construction,
+  `dispatch/diagnostics.py` owns doctor request construction,
+  `dispatch/updates.py` owns update request construction, `dispatch/jobs.py`
+  owns jobs request construction, and `dispatch/automation.py` owns automation
+  request construction. Architecture tests keep service request imports and
+  command-family helpers out of `cli/dispatch/admin.py`.
 - Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
   splitting source-address parsing by family. `address_resolution.py` is now a
   small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,

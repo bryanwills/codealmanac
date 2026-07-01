@@ -1320,3 +1320,10 @@ Slice 123 keeps admin CLI output unchanged while splitting
 owns update output, and `setup.py` owns setup/uninstall result output plus Rich
 presentation. Architecture tests keep service model imports and render
 definitions out of the facade.
+Slice 124 keeps admin CLI behavior unchanged while splitting
+`cli/dispatch/admin.py` by command family. `admin.py` is now a facade;
+`setup.py` owns setup/uninstall request construction, `diagnostics.py` owns
+doctor request construction, `updates.py` owns update request construction,
+`jobs.py` owns jobs request construction, and `automation.py` owns automation
+request construction. Architecture tests keep service request imports and
+command-family helpers out of the facade.

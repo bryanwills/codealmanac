@@ -2841,6 +2841,34 @@ Future admin output changes should land in the output-family module that owns
 the service result. Architecture tests should keep service model imports and
 `render_*` definitions out of `cli/render/admin.py`.
 
+## 2026-07-01 - Admin Dispatch Is A Command-Family Facade
+
+Old hypothesis:
+`cli/dispatch/admin.py` could own setup/uninstall, doctor, update, jobs, and
+automation request construction because those commands share the admin CLI
+domain.
+
+New hypothesis:
+`cli/dispatch/admin.py` should be a facade over admin command-family modules.
+Setup/uninstall, diagnostics, updates, jobs, and automation each construct
+different request models and have different helper parsing rules.
+
+Evidence that forced the change:
+After slice 123, `cli/dispatch/admin.py` was the largest CLI file at 203
+lines. It mixed setup target parsing, setup automation policy, automation task
+deduplication, duration resolution, update exit status, jobs subcommand
+routing, and doctor request construction.
+
+Code or product assumption affected:
+Slice 124 keeps the public admin command surface unchanged. Only ownership
+changes: `setup.py`, `diagnostics.py`, `updates.py`, `jobs.py`, and
+`automation.py` own their request construction.
+
+Follow-up test:
+Future admin command behavior should land in the command-family dispatcher that
+owns the service request. Architecture tests should keep request imports and
+helper parsers out of `cli/dispatch/admin.py`.
+
 ## 2026-07-01 - Filesystem Listing Needs Mechanic-Level Boundaries
 
 Old hypothesis:

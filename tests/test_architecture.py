@@ -463,10 +463,15 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "parser/root.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
+    assert (cli_root / "dispatch/automation.py").is_file()
     assert (cli_root / "dispatch/config.py").is_file()
+    assert (cli_root / "dispatch/diagnostics.py").is_file()
+    assert (cli_root / "dispatch/jobs.py").is_file()
     assert (cli_root / "dispatch/lifecycle.py").is_file()
     assert (cli_root / "dispatch/serve.py").is_file()
+    assert (cli_root / "dispatch/setup.py").is_file()
     assert (cli_root / "dispatch/topics.py").is_file()
+    assert (cli_root / "dispatch/updates.py").is_file()
     assert (cli_root / "dispatch/wiki.py").is_file()
     assert (cli_root / "dispatch/workspaces.py").is_file()
     assert (cli_root / "render/root.py").is_file()
@@ -661,6 +666,50 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
     assert "ListTopicsRequest" in dispatch_topics
     assert "DropWorkspaceRequest" in dispatch_workspaces
     assert "create_server_app" in dispatch_serve
+
+
+def test_cli_admin_dispatch_stays_split_by_command_family():
+    dispatch_path = SRC_ROOT / "cli/dispatch"
+    admin = (dispatch_path / "admin.py").read_text(encoding="utf-8")
+    module_expectations = {
+        "automation.py": ("InstallAutomationRequest", "def dispatch_automation("),
+        "diagnostics.py": ("DoctorRequest", "def dispatch_doctor("),
+        "jobs.py": ("ShowRunRequest", "def dispatch_jobs("),
+        "setup.py": ("RunSetupRequest", "def dispatch_setup("),
+        "updates.py": ("RunUpdateRequest", "def dispatch_update("),
+    }
+    forbidden_admin_fragments = (
+        "RunSetupRequest",
+        "RunUninstallRequest",
+        "DoctorRequest",
+        "CheckUpdateRequest",
+        "RunUpdateRequest",
+        "ShowRunRequest",
+        "InstallAutomationRequest",
+        "parse_optional_duration",
+        "load_cli_config",
+        "parse_setup_targets",
+        "parse_automation_tasks",
+        "render_",
+    )
+    oversized = []
+
+    for module_name, fragments in module_expectations.items():
+        text = (dispatch_path / module_name).read_text(encoding="utf-8")
+        assert all(fragment in text for fragment in fragments)
+        line_count = len(text.splitlines())
+        if line_count > 140:
+            oversized.append(f"{module_name}:{line_count}")
+
+    assert len(admin.splitlines()) <= 80
+    assert [
+        fragment for fragment in forbidden_admin_fragments if fragment in admin
+    ] == []
+    assert "dispatch_setup(args, app)" in admin
+    assert "dispatch_uninstall(args, app)" in admin
+    assert "dispatch_jobs(args, app)" in admin
+    assert "dispatch_automation(args, app)" in admin
+    assert oversized == []
 
 
 def test_cli_dispatch_files_stay_small():
