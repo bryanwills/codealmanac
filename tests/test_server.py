@@ -52,6 +52,9 @@ def test_server_serves_static_assets_and_viewer_api(
     assert "withQuery" in api_module.text
     assert jobs_module.status_code == 200
     assert "renderJob" in jobs_module.text
+    assert "clearJobPolling" in jobs_module.text
+    assert "setTimeout" in jobs_module.text
+    assert '"queued", "running"' in jobs_module.text
     assert "Tool display" in jobs_module.text
     assert "Input tokens" in jobs_module.text
     assert "Failure" in jobs_module.text

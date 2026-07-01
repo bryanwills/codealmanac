@@ -1047,3 +1047,12 @@ already present in the job-detail API. The browser now shows tool display rows
 for command/path/status/summary, usage token counts, failure provider/code/fix
 details, and agent trace parent/child/model/result rows. Raw provider payloads
 remain hidden by default, and run control stays in the CLI.
+Slice 91 makes the local `serve` jobs views refresh themselves while active
+runs are visible. The polling timer lives in the static jobs viewer module, is
+cleared by the route/wiki entrypoint, and calls only the existing read APIs.
+The first dogfood attempt accidentally launched an older installed console
+because `uv run` was executed from the temp repo; the corrected command pinned
+the checkout with `uv run --project /Users/rohan/Desktop/Projects/codealmanac`.
+Browser-harness then proved a job detail route moved from `running` to `done`
+without a manual refresh after `RunsService.finish(...)` updated the durable
+run record.

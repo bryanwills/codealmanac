@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 90 harness event rendering.
+- Latest implementation slice: slice 91 serve job polling.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -163,6 +163,11 @@ Updated: 2026-07-01
   `HarnessEvent` payload: tool display rows, usage token rows, failure
   details, and agent trace rows. It still does not read raw provider transcript
   files or expose browser-side run controls.
+- Slice 91 makes the read-only jobs views poll the existing jobs API while
+  queued or running jobs are visible. `server/assets/viewer/jobs.js` owns the
+  browser timer and route guard; `viewer/main.js` clears polling on route and
+  wiki changes. No server endpoint, viewer service, or run-control mutation
+  surface was added.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

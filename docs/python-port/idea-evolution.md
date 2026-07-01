@@ -2072,3 +2072,30 @@ CLI render edge.
 Follow-up test:
 The future raw-mode target selector should either use a terminal-input library
 or explicitly document why Rich output plus argparse flags is enough for v1.
+
+## 2026-07-01 - Serve Job Polling Belongs To The Read Edge
+
+Old hypothesis:
+The first `serve` jobs surface could stay static because browser run control was
+out of scope and the CLI already had `jobs attach`.
+
+New hypothesis:
+The read-only jobs viewer should poll active runs because background jobs can
+change durable run records after the browser has rendered them. Polling is a
+read-side freshness behavior, not run-control machinery.
+
+Evidence that forced the change:
+Slice 89 restored `/api/jobs` and `/api/jobs/{run_id}` as read APIs, and slice
+90 made the detail page useful enough to watch. A running background job detail
+that never moves to `done` without manual refresh makes the local viewer feel
+stale even though the run ledger is correct.
+
+Code or product assumption affected:
+Slice 91 keeps polling in `server/assets/viewer/jobs.js` and clears it from
+`server/assets/viewer/main.js` on route/wiki changes. `ViewerService`,
+`server/app.py`, and `RunsService` remain read-only from the viewer path.
+
+Follow-up test:
+If `serve` later adds richer live updates, start with this same read boundary:
+replace the browser polling transport, but do not add browser-side cancel,
+retry, or attach controls without a separate product decision.

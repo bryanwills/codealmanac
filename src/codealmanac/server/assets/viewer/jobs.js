@@ -2,20 +2,38 @@ import { viewerApi } from "./api.js";
 import { emptyState, pageIntro } from "./components.js";
 import { jobHref } from "./routes.js";
 
+const ACTIVE_JOB_STATUSES = new Set(["queued", "running"]);
+const JOB_POLL_INTERVAL_MS = 1500;
+
+let jobPollTimer = null;
+
+export function clearJobPolling() {
+  if (jobPollTimer === null) return;
+  window.clearTimeout(jobPollTimer);
+  jobPollTimer = null;
+}
+
 export async function renderJobs(context) {
   const { elements, setRouteTitle, wiki } = context;
+  const routeHash = window.location.hash;
   const result = await viewerApi.jobs(wiki);
+  if (window.location.hash !== routeHash) return;
   setRouteTitle("Jobs");
   replaceMain(
     elements,
     pageIntro("Lifecycle runs", "Jobs", `${result.runs.length} local runs.`),
     jobList(result.runs),
   );
+  if (result.runs.some((run) => isActiveJobStatus(run.status))) {
+    scheduleJobPolling(routeHash, () => renderJobs(context));
+  }
 }
 
 export async function renderJob(context, runId) {
   const { elements, setRouteTitle, wiki } = context;
+  const routeHash = window.location.hash;
   const detail = await viewerApi.job(runId, wiki);
+  if (window.location.hash !== routeHash) return;
   const run = detail.run;
   setRouteTitle(run.title || run.run_id);
   replaceMain(
@@ -24,6 +42,24 @@ export async function renderJob(context, runId) {
     jobDetail(run),
     eventList(detail.events),
   );
+  if (isActiveJobStatus(run.status)) {
+    scheduleJobPolling(routeHash, () => renderJob(context, runId));
+  }
+}
+
+function scheduleJobPolling(routeHash, render) {
+  clearJobPolling();
+  jobPollTimer = window.setTimeout(() => {
+    jobPollTimer = null;
+    if (window.location.hash !== routeHash) return;
+    render().catch((error) => {
+      console.error("CodeAlmanac job refresh failed", error);
+    });
+  }, JOB_POLL_INTERVAL_MS);
+}
+
+function isActiveJobStatus(status) {
+  return ACTIVE_JOB_STATUSES.has(status);
 }
 
 function jobList(runs) {

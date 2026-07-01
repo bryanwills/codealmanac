@@ -1035,3 +1035,17 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 304 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 91 Serve Job Polling
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused server/static/architecture tests | `uv run pytest tests/test_server.py tests/test_architecture.py::test_viewer_jobs_surface_stays_read_only` | passed; 9 tests |
+| Focused Python lint | `uv run ruff check tests/test_server.py tests/test_architecture.py` | passed |
+| ES module syntax | `node --input-type=module --check < src/codealmanac/server/assets/viewer/jobs.js` and `main.js` | passed |
+| Browser polling dogfood | temp repo, isolated `HOME`, current-checkout `codealmanac serve`, browser-harness `#/jobs/<run-id>`, then `RunsService.finish(...)` | passed; page moved from `ingest · running` to `ingest · done` without manual refresh |
+| Package asset proof | `uv build --wheel --no-build-logs --out-dir /tmp/codealmanac-build-slice91` plus stdlib wheel inspection | passed; wheel jobs/main modules include `clearJobPolling` and `setTimeout` |
+| Full tests before brief update | `uv run pytest` | failed only because `next-agent-brief.md` still reported slice 90 as latest; 303 tests passed |
+| Full tests | `uv run pytest` | passed; 304 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

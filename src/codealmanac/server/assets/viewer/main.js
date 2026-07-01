@@ -1,6 +1,6 @@
 import { viewerApi } from "./api.js";
 import { navLink } from "./components.js";
-import { renderJob, renderJobs } from "./jobs.js";
+import { clearJobPolling, renderJob, renderJobs } from "./jobs.js";
 import {
   renderError,
   renderFile,
@@ -29,6 +29,7 @@ export function startViewer() {
     window.location.hash = searchHref(elements.searchInput.value.trim());
   });
   elements.workspaceSelect.addEventListener("change", async () => {
+    clearJobPolling();
     state.selectedWiki = elements.workspaceSelect.value;
     await loadOverview(elements, state.selectedWiki);
     await route(elements);
@@ -47,6 +48,7 @@ async function loadOverview(elements, wiki = state.selectedWiki) {
 
 async function route(elements) {
   if (!state.overview) return;
+  clearJobPolling();
   const context = {
     elements,
     overview: state.overview,
