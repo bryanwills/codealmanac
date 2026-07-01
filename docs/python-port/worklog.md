@@ -6,6 +6,14 @@
   proof: keep applying Cosmic Python, `MANUAL.md`, the live agreement, and
   useful `../almanac` patterns until remaining cleanup is genuinely
   diminishing returns.
+- Added slice-117 automation-service boundary plan after rereading the live
+  agreement, `MANUAL.md`, `.almanac/README.md`, and Cosmic Python chapter 4.
+- Split automation internals into `services/automation/selection.py` for task
+  defaulting and install validation, `definitions.py` for static task metadata,
+  and `jobs.py` for `ScheduledJob` construction.
+- Added an architecture guard that keeps scheduler command construction,
+  launch PATH assembly, plist paths, interval policy, and validation mechanics
+  out of `AutomationService`.
 - Added slice-116 source-address family boundary plan after rereading Cosmic
   Python chapter 3/4 guidance on simple abstractions and service-layer
   orchestration. `address_resolution.py` is now a small dispatcher facade.

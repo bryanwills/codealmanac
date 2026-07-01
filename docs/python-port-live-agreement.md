@@ -201,6 +201,14 @@ It is the constraint document for future agents.
   install/runtime/manual-package checks, `diagnostics/wiki.py` owns selected
   wiki readiness checks, and `diagnostics/messages.py` owns shared doctor
   message formatting. Do not move `doctor` mechanics back into `service.py`.
+- 2026-07-01: Automation service orchestration is split from scheduler job
+  construction. `AutomationService` remains the service-facing install,
+  uninstall, and status facade. `services/automation/selection.py` owns task
+  defaulting and install-selection validation; `definitions.py` owns static
+  task metadata; and `jobs.py` owns `ScheduledJob` construction, command argv,
+  plist path, launch PATH, interval, and working-directory resolution. Do not
+  move scheduler command construction or selection validation back into
+  `service.py`.
 - 2026-07-01: Topic service orchestration is split from topic graph mechanics.
   `TopicsService` remains the service-facing use-case entrypoint for list,
   show, create, describe, link, unlink, rename, and delete.
@@ -219,10 +227,9 @@ It is the constraint document for future agents.
   a local filesystem adapter through the same port.
 - 2026-07-01: `SourcesService` is the service-facing facade for source verbs.
   It owns resolve/discover/inspect orchestration over request models and ports,
-  while `services/sources/address_resolution.py` owns source-address syntax,
-  prompt hints, URL validation, GitHub URL parsing, local path classification,
-  and file fingerprinting. Keep runtime adapters and transcript discovery
-  adapters out of address resolution.
+  while `services/sources/address_resolution.py` dispatches source-address
+  syntax to source-family modules. Keep runtime adapters and transcript
+  discovery adapters out of address resolution.
 - 2026-07-01: Source-address resolution is split by address family.
   `address_resolution.py` is the small dispatcher facade; `address_git.py`,
   `address_github.py`, `address_web.py`, `address_path.py`, and

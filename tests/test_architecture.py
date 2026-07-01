@@ -937,6 +937,55 @@ def test_sources_service_stays_orchestration_only():
     ).read_text(encoding="utf-8")
 
 
+def test_automation_service_keeps_selection_and_job_construction_boundaries():
+    automation_root = SRC_ROOT / "services/automation"
+    service_text = (automation_root / "service.py").read_text(encoding="utf-8")
+    definitions_text = (automation_root / "definitions.py").read_text(
+        encoding="utf-8"
+    )
+    jobs_text = (automation_root / "jobs.py").read_text(encoding="utf-8")
+    selection_text = (automation_root / "selection.py").read_text(encoding="utf-8")
+    forbidden_service_fragments = (
+        "AutomationTaskDefinition",
+        "DEFAULT_SYNC_INTERVAL",
+        "DEFAULT_GARDEN_INTERVAL",
+        "LAUNCHD_FALLBACK_PATHS",
+        "AUTOMATION_SYNC_CLAIM_OWNER",
+        "duration_text(",
+        "ValidationFailed",
+        "EnvironmentVariable(",
+        "program_arguments_for(",
+        "plist_path_for(",
+        "launch_path(",
+        "interval_for(",
+        "selected_tasks(",
+        "task_definition(",
+        "state_dir_for(",
+        "sys.executable",
+        "os.environ",
+        "def _job_for_task(",
+    )
+
+    assert {"definitions.py", "jobs.py", "selection.py"} <= {
+        path.name for path in automation_root.glob("*.py")
+    }
+    assert len(service_text.splitlines()) <= 110
+    assert [
+        fragment
+        for fragment in forbidden_service_fragments
+        if fragment in service_text
+    ] == []
+    assert "class AutomationTaskDefinition" in definitions_text
+    assert "def task_definition(" in definitions_text
+    assert "class AutomationJobFactory" in jobs_text
+    assert "def program_arguments_for(" in jobs_text
+    assert "def launch_path(" in jobs_text
+    assert "state_dir_for(" in jobs_text
+    assert "class InstallTaskSelection" in selection_text
+    assert "def install_task_selection(" in selection_text
+    assert "ValidationFailed" in selection_text
+
+
 def test_run_queue_workflow_stays_operation_dispatch_only():
     text = (SRC_ROOT / "workflows/run_queue/service.py").read_text(encoding="utf-8")
 

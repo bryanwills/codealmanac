@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 116 source address family boundaries.
+- Latest implementation slice: slice 117 automation service boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -216,6 +216,13 @@ Updated: 2026-07-01
   install/runtime/manual-package readiness, `wiki.py` owns selected-wiki
   registry/index/manual/health readiness, and `messages.py` owns shared doctor
   formatting. Architecture tests keep `service.py` facade-only.
+- Slice 117 keeps automation behavior unchanged while splitting scheduler task
+  selection and scheduled-job construction out of `AutomationService`.
+  `selection.py` owns task defaulting and install validation, `definitions.py`
+  owns static task metadata, and `jobs.py` owns `ScheduledJob` construction
+  including command argv, launch PATH, plist path, interval, and working
+  directory. Architecture tests keep those mechanics out of
+  `services/automation/service.py`.
 - Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
   splitting source-address parsing by family. `address_resolution.py` is now a
   small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,

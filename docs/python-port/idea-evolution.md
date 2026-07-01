@@ -5,6 +5,36 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Automation Needs Selection And Job Construction Modules
+
+Old hypothesis:
+`AutomationService` could own install/status/uninstall orchestration, task
+defaulting, validation, scheduler command arguments, plist paths, launch PATH,
+intervals, and Garden working-directory resolution in one service file.
+
+New hypothesis:
+`AutomationService` should remain the use-case facade. Task selection and
+install validation belong in `services/automation/selection.py`, static task
+metadata belongs in `definitions.py`, and `ScheduledJob` construction belongs in
+`jobs.py`.
+
+Evidence that forced the change:
+`services/automation/service.py` reached 278 lines and mixed application-service
+orchestration with command construction mechanics. Cosmic Python chapter 4
+defines application services as orchestration; scheduled-job construction is a
+mechanism that should be testable without reading the install/status/uninstall
+verb flow.
+
+Code or product assumption affected:
+Architecture tests now keep command argv construction, launch PATH assembly,
+plist path construction, interval policy, selection validation, and task
+definition helpers out of `service.py`.
+
+Follow-up test:
+Future automation changes should add behavior tests around the public
+install/status/uninstall verb and update `jobs.py` or `selection.py` based on
+which reason to change is involved.
+
 ## 2026-07-01 - Source Address Resolution Needs Family Modules
 
 Old hypothesis:

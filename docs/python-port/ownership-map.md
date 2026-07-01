@@ -262,9 +262,12 @@ streaming HTTP reads, `models.py` owns typed web response/document models,
 owns unavailable diagnostics.
 
 `services/automation/ports.py` owns `SchedulerAdapter`, the port used by local
-automation install/status/uninstall. The automation service decides scheduled
-task command policy, including sync's stable claim owner, pending timeout, and
-failed-attempt budget. The launchd implementation lives in
+automation install/status/uninstall. `services/automation/service.py` is the
+install/status/uninstall facade. `selection.py` owns task defaulting and
+install-selection validation. `definitions.py` owns static task metadata.
+`jobs.py` owns `ScheduledJob` construction, including sync's stable claim owner,
+pending timeout, failed-attempt budget, launch PATH, plist path, interval, and
+working directory. The launchd implementation lives in
 `integrations/automation/scheduler/` and only translates `ScheduledJob` models
 into plist files plus launchctl calls. It does not decide which jobs should
 exist or what `sync` and `garden` mean.
