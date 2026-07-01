@@ -364,6 +364,7 @@ def test_run_id_validation_is_owned_by_runs_models():
         encoding="utf-8"
     )
     runs_store = (SRC_ROOT / "services/runs/store.py").read_text(encoding="utf-8")
+    runs_paths = (SRC_ROOT / "services/runs/paths.py").read_text(encoding="utf-8")
     viewer_requests = (SRC_ROOT / "services/viewer/requests.py").read_text(
         encoding="utf-8"
     )
@@ -371,9 +372,39 @@ def test_run_id_validation_is_owned_by_runs_models():
     assert "RunId = Annotated[" in runs_models
     assert "StringConstraints" in runs_models
     assert "run_id: RunId" in runs_requests
-    assert "TypeAdapter(RunId)" in runs_store
+    assert "TypeAdapter(RunId)" not in runs_store
+    assert "TypeAdapter(RunId)" in runs_paths
     assert "run_id: RunId" in viewer_requests
     assert "SAFE_RUN_ID" not in viewer_requests
+
+
+def test_run_ledger_persistence_stays_split_by_responsibility():
+    runs_root = SRC_ROOT / "services/runs"
+    module_names = {path.name for path in runs_root.glob("*.py")}
+    store_text = (runs_root / "store.py").read_text(encoding="utf-8")
+    io_text = (runs_root / "io.py").read_text(encoding="utf-8")
+    locks_text = (runs_root / "locks.py").read_text(encoding="utf-8")
+    transitions_text = (runs_root / "transitions.py").read_text(encoding="utf-8")
+    forbidden_store_fragments = (
+        "write_json_atomically",
+        "model_validate_json",
+        "worker_lock_owner_path",
+        "os.kill",
+        'open("a"',
+        ".open(\"a\"",
+        "RUN_ID_ADAPTER",
+    )
+
+    assert {"paths.py", "io.py", "locks.py", "transitions.py"} <= module_names
+    assert len(store_text.splitlines()) <= 280
+    assert [
+        fragment for fragment in forbidden_store_fragments if fragment in store_text
+    ] == []
+    assert "write_json_atomically" in io_text
+    assert "model_validate_json" in io_text
+    assert "worker_lock_owner_path" in locks_text
+    assert "process_is_alive" in locks_text
+    assert "write_record_with_event" in transitions_text
 
 
 def test_repo_almanac_root_is_workspace_owned():

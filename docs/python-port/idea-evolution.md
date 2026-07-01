@@ -5,6 +5,36 @@ Updated: 2026-07-01
 Record hypothesis changes here. Do not rewrite history; append a new entry when
 evidence changes the shape.
 
+## 2026-07-01 - Run Ledger Needs A Transition Writer
+
+Old hypothesis:
+`RunStore` could remain one service-facing repository file that owned run paths,
+JSON record/spec IO, JSONL event appends, worker locks, queue selection, and
+state transitions.
+
+New hypothesis:
+`RunStore` should stay the repository facade, but the persistence details need
+named modules. `paths.py` owns run-id validation and file naming, `io.py` owns
+record/spec/event file mechanics, `locks.py` owns worker locks, and
+`transitions.py` owns grouped record-plus-event writes.
+
+Evidence that forced the change:
+`store.py` reached 486 lines and the status transitions in `mark_running`,
+`finish`, and `cancel` manually wrote the run JSON record and then appended a
+matching status event. Jobs attach/cancel, background workers, sync
+reconciliation, and viewer job detail all depend on the record and event log
+staying coherent.
+
+Code or product assumption affected:
+Architecture tests now require the split modules, keep `store.py` under 280
+lines, and prevent JSON parsing, path validation, worker lock ownership, and
+manual append-file mechanics from moving back into the store facade.
+
+Follow-up test:
+Future run-ledger changes should test public `RunsService` behavior, and
+transition-level failure tests should keep proving that event append failure
+restores the previous record or removes an uncommitted queue spec.
+
 ## 2026-07-01 - Filesystem Runtime Is A Small Adapter Plus Modules
 
 Old hypothesis:

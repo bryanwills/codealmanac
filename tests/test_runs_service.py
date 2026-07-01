@@ -14,6 +14,7 @@ from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessTranscriptRef,
 )
+from codealmanac.services.runs.io import RunLedgerIO
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunLogEvent,
@@ -40,6 +41,16 @@ from codealmanac.services.runs.requests import (
 )
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+
+
+class FailingAppendLedger(RunLedgerIO):
+    def __init__(self):
+        self.fail_append = False
+
+    def append_event(self, almanac_path: Path, event: RunLogEvent) -> None:
+        if self.fail_append:
+            raise OSError("cannot append event")
+        super().append_event(almanac_path, event)
 
 
 def test_runs_service_records_job_and_events(
@@ -384,6 +395,59 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     assert (repo / "almanac/jobs/worker.lock").is_dir()
     recovered.release()
     assert not (repo / "almanac/jobs/worker.lock").exists()
+
+
+def test_run_store_restores_previous_record_when_status_event_append_fails(
+    tmp_path: Path,
+):
+    almanac_path = tmp_path / "almanac"
+    ledger = FailingAppendLedger()
+    store = RunStore(ledger=ledger)
+    record = store.create(
+        almanac_path,
+        Path("almanac"),
+        "workspace",
+        RunOperation.INGEST,
+        title=None,
+    )
+
+    ledger.fail_append = True
+    with pytest.raises(OSError, match="cannot append event"):
+        store.mark_running(almanac_path, record.run_id)
+
+    restored = store.read(almanac_path, record.run_id)
+    log = store.log(almanac_path, record.run_id)
+
+    assert restored.status == RunStatus.QUEUED
+    assert restored.started_at is None
+    assert tuple(event.message for event in log) == ("queued ingest",)
+
+
+def test_run_store_removes_queue_spec_when_initial_event_append_fails(
+    tmp_path: Path,
+):
+    almanac_path = tmp_path / "almanac"
+    ledger = FailingAppendLedger()
+    store = RunStore(ledger=ledger)
+    spec = RunSpec(
+        operation=RunOperation.INGEST,
+        cwd=tmp_path,
+        harness=HarnessKind.CODEX,
+        inputs=("note.md",),
+    )
+
+    ledger.fail_append = True
+    with pytest.raises(OSError, match="cannot append event"):
+        store.queue(
+            almanac_path,
+            Path("almanac"),
+            "workspace",
+            spec,
+            title=None,
+        )
+
+    assert store.list(almanac_path, limit=None) == ()
+    assert list((almanac_path / "jobs").glob("*.spec.json")) == []
 
 
 def test_finish_run_request_requires_terminal_status(tmp_path: Path):

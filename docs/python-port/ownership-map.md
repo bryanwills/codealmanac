@@ -128,6 +128,14 @@ workflows persist anything to run logs. Raw provider transcript files are not a
 workflow contract; they are optional provider evidence for exclusion and
 debugging.
 
+`services/runs/store.py` is the service-facing repository facade for the run
+ledger. `services/runs/paths.py` owns run-id validation and file naming,
+`services/runs/io.py` owns JSON record/spec and JSONL event file mechanics,
+`services/runs/locks.py` owns worker lock ownership, and
+`services/runs/transitions.py` owns grouped record-plus-event transition writes.
+Callers should not hand-pair record rewrites with status event appends outside
+the transition writer.
+
 `services/sources/ports.py` owns `TranscriptDiscoveryAdapter`, the port used by
 sync to observe local transcript stores. Concrete Codex and Claude JSONL
 scanners live in `integrations/sources/transcripts/`. Those integrations parse

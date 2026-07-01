@@ -82,6 +82,13 @@ It is the constraint document for future agents.
   Terminal runs are cancel no-ops; queued or running runs append a `cancelled`
   status event. Terminal finish calls must preserve an already-cancelled run
   rather than rewriting it as done or failed.
+- 2026-07-01: Run ledger persistence is split by responsibility. `RunStore`
+  remains the service-facing repository facade. `services/runs/paths.py` owns
+  run-id validation and path construction; `io.py` owns JSON record/spec and
+  JSONL event file mechanics; `locks.py` owns worker lock ownership; and
+  `transitions.py` owns grouped record-plus-event transition writes. Do not
+  regrow path validation, worker lock mechanics, JSON parsing, or manual
+  record/event pair writes inside `store.py`.
 - 2026-07-01: Background queue membership is "queued run with a durable
   `<run-id>.spec.json`", not merely any run whose status is `queued`.
   Foreground lifecycle runs also begin as `queued`, so workers must select only

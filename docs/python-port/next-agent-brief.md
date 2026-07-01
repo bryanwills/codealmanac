@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 96 filesystem runtime boundaries.
+- Latest implementation slice: slice 97 run ledger persistence boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -204,6 +204,15 @@ Updated: 2026-07-01
   macOS `/var` paths still render repo-relative runtime paths. Architecture
   tests prevent charset, pathspec/Git walking, document Pydantic models, or
   rendering helpers from regrowing in `adapter.py`.
+- Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
+  the `RunsService` repository facade, while `services/runs/paths.py` owns
+  run-id validation and path construction, `io.py` owns JSON record/spec and
+  JSONL event mechanics, `locks.py` owns worker lock ownership, and
+  `transitions.py` owns grouped record-plus-event writes. Transition tests
+  prove that event append failure restores the previous record or removes an
+  uncommitted queue spec. Architecture tests keep `store.py` under 280 lines
+  and prevent JSON parsing, path validation, worker lock code, and append-file
+  mechanics from moving back into the facade.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
