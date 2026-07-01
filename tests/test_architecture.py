@@ -213,7 +213,50 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/lifecycle.py").is_file()
     assert (cli_root / "dispatch/wiki.py").is_file()
     assert (cli_root / "render/root.py").is_file()
+    assert (cli_root / "render/common.py").is_file()
+    assert (cli_root / "render/lifecycle.py").is_file()
+    assert (cli_root / "render/wiki.py").is_file()
+    assert (cli_root / "render/workspaces.py").is_file()
     assert (cli_root / "render/admin.py").is_file()
+
+
+def test_cli_render_root_stays_facade():
+    render_root = SRC_ROOT / "cli/render"
+    root = (render_root / "root.py").read_text(encoding="utf-8")
+    module_names = {path.name for path in render_root.glob("*.py")}
+    forbidden_root_fragments = (
+        "def render_",
+        "def print_",
+        "json.dumps",
+        "sys.stderr",
+        "argparse",
+        "HealthReport",
+        "IndexRefreshResult",
+        "PageView",
+        "SyncSummary",
+        "WorkspaceListResult",
+    )
+
+    assert {
+        "admin.py",
+        "common.py",
+        "lifecycle.py",
+        "root.py",
+        "setup.py",
+        "wiki.py",
+        "workspaces.py",
+    } <= module_names
+    assert len(root.splitlines()) <= 80
+    assert [
+        fragment for fragment in forbidden_root_fragments if fragment in root
+    ] == []
+    assert "render_sync_status" in (render_root / "lifecycle.py").read_text(
+        encoding="utf-8"
+    )
+    assert "render_page" in (render_root / "wiki.py").read_text(encoding="utf-8")
+    assert "render_workspace_list" in (
+        render_root / "workspaces.py"
+    ).read_text(encoding="utf-8")
 
 
 def test_cli_dispatch_edge_is_split_by_command_domain():

@@ -1173,3 +1173,10 @@ path classification, and file fingerprinting. `transcripts.py` owns transcript
 candidate ordering. Focused source service, source runtime, architecture, and
 lint checks passed, and service-level dogfood resolved every current
 source-address family.
+Slice 107 keeps CLI output behavior unchanged while splitting ordinary render
+internals by command domain. `cli/render/root.py` remains a re-export facade for
+dispatcher imports; `lifecycle.py` owns build/ingest/garden/sync/job-start
+output; `wiki.py` owns search/show/topics/health/tagging output;
+`workspaces.py` owns local wiki registry list/drop output; and `common.py` owns
+shared JSON/index/page-word helpers. Focused CLI and architecture tests passed,
+and public CLI dogfood covered help, init, `list --json`, and empty search.

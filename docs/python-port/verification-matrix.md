@@ -1073,6 +1073,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 107 CLI Render Facade Split
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused CLI/render architecture tests | `uv run pytest tests/test_cli.py tests/test_architecture.py::test_cli_render_root_stays_facade tests/test_architecture.py::test_cli_has_separate_parser_dispatch_and_render_packages tests/test_architecture.py::test_cli_dispatch_edge_is_split_by_command_domain -q` | passed; 39 tests |
+| Focused CLI lint | `uv run ruff check src/codealmanac/cli tests/test_cli.py tests/test_architecture.py` | passed |
+| Public CLI dogfood | isolated temp `HOME`; temp repo; `codealmanac --help`, `codealmanac init`, `codealmanac list --json`, and empty `codealmanac search` | passed; list JSON remained an array and empty search wrote `# 0 results` to stderr |
+| Full tests | `uv run pytest` | passed; 329 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

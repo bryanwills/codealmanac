@@ -45,6 +45,11 @@ It is the constraint document for future agents.
   logs use the product-specific hidden directory.
 - 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
   models, service-owned verbs, store-owned persistence, thin CLI edges.
+- 2026-07-01: CLI render follows the parser/dispatch/render domain split.
+  `cli/render/root.py` is a small re-export facade for dispatcher stability;
+  `lifecycle.py` owns lifecycle/sync/job-start output, `wiki.py` owns
+  search/show/topics/health/tagging output, `workspaces.py` owns local wiki
+  registry list/drop output, and `common.py` owns shared formatting helpers.
 - 2026-06-30: Validation belongs at product boundaries. Use Pydantic request,
   settings, and domain models for shaped data; use enums or literals for finite
   choices; reject invalid user/product input with explicit errors. Adapter-local

@@ -269,8 +269,14 @@ page, topic, search, file-reference graph routes, and read-only page viewing.
 Hosted UseAlmanac account, billing, settings, and hosted wiki-search flows do
 not belong in this local viewer.
 
-`cli/render/setup.py` owns Rich-backed setup/uninstall terminal presentation.
-It renders service-returned facts only. Rich must not be imported from services,
+`cli/render/root.py` is a re-export facade over domain render modules so
+dispatch imports stay stable. `cli/render/lifecycle.py` owns
+build/ingest/garden/sync/job-start output, `wiki.py` owns
+search/show/topics/health/tagging output, `workspaces.py` owns local wiki
+registry list/drop output, `admin.py` owns setup/doctor/update/jobs/automation
+output, and `common.py` owns shared formatting helpers. `cli/render/setup.py`
+owns Rich-backed setup/uninstall terminal presentation. Render modules display
+service-returned facts only. Rich must not be imported from services,
 workflows, integrations, or stores.
 
 The browser shell stays static package data while it is small. `app.js` is the

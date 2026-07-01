@@ -2537,3 +2537,31 @@ Follow-up test:
 If a future source kind adds syntax or classification rules, add it to
 `address_resolution.py` or a source-family helper it delegates to. Do not grow
 `SourcesService` unless the product verb itself changes.
+
+## 2026-07-01 - CLI Render Root Should Be A Facade
+
+Old hypothesis:
+`cli/render/root.py` could own all ordinary text and JSON renderers because it
+was already separate from parser and dispatch code.
+
+New hypothesis:
+`cli/render/root.py` should mirror `cli/parser/root.py` and
+`cli/dispatch/root.py`: a stable facade over domain modules. Lifecycle output,
+wiki read/mutation output, workspace registry output, admin output, Rich setup
+presentation, and shared formatting each change for different reasons.
+
+Evidence that forced the change:
+After slice 106, `cli/render/root.py` was the largest production file at 338
+lines. It mixed build/ingest/garden/sync output, run queue start output, local
+wiki list/drop output, search/show/topics/health/tagging output, JSON dumping,
+metadata formatting, and shared page-word/index helpers.
+
+Code or product assumption affected:
+Slice 107 keeps dispatcher imports stable by making `root.py` re-export the
+same render function names. `lifecycle.py`, `wiki.py`, `workspaces.py`, and
+`common.py` own the implementation details.
+
+Follow-up test:
+Future CLI output changes should land in the domain renderer that owns the
+command family. Do not add rendering logic or service model imports to
+`root.py`.

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 106 source address resolution boundaries.
+- Latest implementation slice: slice 107 CLI render facade split.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -251,6 +251,13 @@ Updated: 2026-07-01
   fingerprinting; `transcripts.py` owns transcript discovery ordering.
   Architecture tests prevent URL parsing, hashing, and source-family resolver
   functions from regrowing in `service.py`.
+- Slice 107 splits CLI render internals while preserving dispatcher imports.
+  `cli/render/root.py` is now a small re-export facade; `lifecycle.py` owns
+  build/ingest/garden/sync/job-start output, `wiki.py` owns
+  search/show/topics/health/tagging output, `workspaces.py` owns local wiki
+  registry list/drop output, and `common.py` owns shared JSON/index/page-word
+  helpers. Architecture tests prevent service model imports and render function
+  implementations from regrowing in `root.py`.
 - Slice 97 splits run-ledger persistence by responsibility. `RunStore` remains
   the `RunsService` repository facade, while `services/runs/paths.py` owns
   run-id validation and path construction, `io.py` owns JSON record/spec and
@@ -893,6 +900,9 @@ Behavior:
 - Slice 106 source address resolution boundary split, focused source service,
   source runtime, and architecture tests, focused Ruff over `services/sources`,
   service-level source-resolution dogfood, then full pytest/full Ruff/diff check
+- Slice 107 CLI render facade split, focused CLI and architecture tests,
+  focused Ruff over CLI render/dispatch/parser, public CLI dogfood for help,
+  init, list JSON, and empty search, then full pytest/full Ruff/diff check
 
 ## Next Move
 
