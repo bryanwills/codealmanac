@@ -3166,3 +3166,32 @@ Follow-up test:
 Future page-lifecycle work should add a new explicit product decision before
 adding archive-like fields. `test_active_python_model_has_no_page_archive_lineage`
 guards active Python source against silent reintroduction.
+
+## 2026-07-01 - Nearest Initialized Wiki Beats Broad Registry
+
+Old hypothesis:
+The workspace resolver could choose the nearest containing registry entry
+before scanning for initialized roots on disk.
+
+New hypothesis:
+Current-repo lookup should first scan for the nearest initialized wiki root
+using conventional and registered roots. Registry containment is a fallback
+only when the selected registered workspace's configured root is initialized.
+
+Evidence that forced the change:
+This checkout has `.almanac/topics.yaml` and `.almanac/pages/`, but
+`uv run codealmanac search "topic service"` failed because
+`~/.codealmanac/registry.json` contained a broad
+`/Users/rohan/Desktop/Projects` workspace whose `almanac/` root does not
+exist. The broad parent entry shadowed the current repo wiki.
+
+Code or product assumption affected:
+Slice 128 makes `almanac/`, `docs/almanac/`, and `.almanac/` conventional
+discoverable roots. Other custom roots remain registry-discovered. Stale broad
+registry entries stay visible and removable through `codealmanac list`, but
+they no longer win over a nearer initialized repo wiki.
+
+Follow-up test:
+Future workspace selection changes should preserve
+`test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry` and
+real-checkout dogfood with a broad parent registry entry.

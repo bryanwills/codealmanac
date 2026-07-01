@@ -59,6 +59,9 @@ def select_workspace(
         )
     except NotFoundError as error:
         if request.wiki is None:
+            registered = workspaces.containing_registered(request.cwd)
+            if registered is not None:
+                return registered
             return DoctorCheck(
                 key="wiki.none",
                 status=DoctorStatus.INFO,
@@ -191,4 +194,3 @@ def registered_check(
         message=f"{registered}, but Almanac root is missing: {workspace.almanac_path}",
         fix="run: codealmanac build",
     )
-

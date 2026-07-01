@@ -5,6 +5,11 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
 
 DEFAULT_ALMANAC_ROOT = Path("almanac")
+CONVENTIONAL_ALMANAC_ROOTS = (
+    DEFAULT_ALMANAC_ROOT,
+    Path("docs/almanac"),
+    Path(".almanac"),
+)
 ALMANAC_ROOT_MARKER_FILE = "topics.yaml"
 ALMANAC_ROOT_MARKER_DIR = "pages"
 

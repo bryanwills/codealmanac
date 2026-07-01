@@ -14,6 +14,10 @@ def workspace_registry_status(workspace: Workspace) -> WorkspaceRegistryStatus:
     return WorkspaceRegistryStatus.AVAILABLE
 
 
+def workspace_has_initialized_root(workspace: Workspace) -> bool:
+    return workspace_registry_status(workspace) == WorkspaceRegistryStatus.AVAILABLE
+
+
 def available_registry_entries(
     entries: list[WorkspaceRegistryEntry],
 ) -> list[WorkspaceRegistryEntry]:

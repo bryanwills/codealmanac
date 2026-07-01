@@ -136,6 +136,50 @@ def test_initialize_allows_explicit_dot_almanac_root(
     assert app.workspaces.resolve(repo).almanac_path == repo / ".almanac"
 
 
+def test_resolve_discovers_unregistered_dot_almanac_root(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    (repo / ".almanac/pages").mkdir(parents=True)
+    (repo / ".almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+
+    workspace = app.workspaces.resolve(repo / "src")
+
+    assert workspace.root_path == repo
+    assert workspace.almanac_root == Path(".almanac")
+    assert workspace.almanac_path == repo / ".almanac"
+
+
+def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    projects = tmp_path / "Projects"
+    repo = projects / "codealmanac"
+    (repo / ".almanac/pages").mkdir(parents=True)
+    (repo / ".almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workspaces.register(
+        RegisterWorkspaceRequest(
+            root_path=projects,
+            almanac_root=Path("almanac"),
+            name="projects",
+        )
+    )
+
+    workspace = app.workspaces.resolve(repo)
+
+    assert workspace.root_path == repo
+    assert workspace.almanac_root == Path(".almanac")
+    assert workspace.almanac_path == repo / ".almanac"
+
+
 def test_initialized_wiki_requires_topics_yaml_and_pages(tmp_path: Path):
     readme_only = tmp_path / "readme-only"
     topics_only = tmp_path / "topics-only"

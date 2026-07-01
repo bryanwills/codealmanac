@@ -146,8 +146,10 @@ index. `services/topics/workspace.py` owns current-repo vs explicit-`--wiki`
 selection through `WorkspacesService`.
 
 `services/workspaces/roots.py` owns repo-local Almanac root validation and
-nearest-root discovery. `DEFAULT_ALMANAC_ROOT` is `almanac/`. The registry
-stores each workspace's repo-relative `almanac_root`; downstream services use
+nearest-root discovery. `DEFAULT_ALMANAC_ROOT` is `almanac/`, and the
+conventional discoverable roots are `almanac/`, `docs/almanac/`, and
+`.almanac/`, detected by `topics.yaml + pages/`. The registry stores each
+workspace's repo-relative `almanac_root`; downstream services use
 `workspace.almanac_path` instead of concatenating a literal path.
 `services/workspaces/service.py` is the use-case facade. `identity.py` owns
 workspace name/id generation, `selection.py` owns selector matching and path

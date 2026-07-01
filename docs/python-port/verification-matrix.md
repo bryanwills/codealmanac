@@ -1408,3 +1408,14 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 347 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 128 Workspace Root Resolution
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused workspace/read/discovery tests | `uv run pytest tests/test_build_workflow.py tests/test_cli.py::test_cli_search_and_show_read_current_repo_wiki tests/test_read_model.py tests/test_transcript_discovery.py tests/test_sync_workflow.py::test_sync_status_reports_ready_transcript_ranges tests/test_sync_workflow.py::test_sync_status_passes_configured_roots_to_discovery -q` | passed; 31 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/workspaces tests/test_build_workflow.py tests/test_sync_workflow.py` | passed |
+| Real checkout wiki dogfood | `uv run codealmanac search "topic service"` with broad `/Users/rohan/Desktop/Projects` registry entry present | passed; resolved this repo's `.almanac/` and returned wiki pages |
+| Full tests | `uv run pytest` | passed; 349 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 127 remove page archive lineage.
+- Latest implementation slice: slice 128 workspace root resolution.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -89,6 +89,11 @@ Updated: 2026-07-01
   product. The derived index and viewer model no longer store page archive
   state, obsolete `archived_at` and `superseded_by` frontmatter keys are
   ignored, and `search --include-archive` / `search --archived` are invalid.
+- Slice 128 fixes current-repo wiki resolution when a broad parent registry
+  entry exists. `WorkspacesService` now detects the nearest initialized
+  `almanac/`, `docs/almanac/`, or `.almanac/` root by `topics.yaml + pages/`
+  before falling back to registry containment. Real dogfood in this checkout
+  made `uv run codealmanac search "topic service"` return `.almanac/` pages.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into
@@ -1021,6 +1026,10 @@ Behavior:
   flags, no index archive columns, and no viewer archive markers. Focused
   wiki parsing, CLI, index architecture, isolated CLI dogfood, full pytest,
   full Ruff, and diff hygiene passed.
+- Slice 128 fixes broad-parent registry shadowing. Focused build/workspace,
+  CLI, read-model, transcript-discovery, and sync tests passed; real checkout
+  dogfood proved `uv run codealmanac search "topic service"` now reads this
+  repo's `.almanac/` wiki. Full pytest, full Ruff, and diff hygiene passed.
 - Slice 93 GitHub Python automation, public-contract guards, package build
   artifact ignore, wheel build dogfood, full pytest, full ruff, and diff check
 - Slice 94 GitHub workflow parse/command contract guard, exact `uv sync
@@ -1078,10 +1087,6 @@ Behavior:
 ## Next Move
 
 1. Likely next pressure points:
-   - investigate the local wiki dogfood failure where `uv run codealmanac
-     search ...` tried `/Users/rohan/Desktop/Projects/almanac` as the Almanac
-     root before searching this repo; likely registry/current-selection
-     behavior, not part of slice 127
    - real-provider dogfood for the richer Codex app-server and Claude SDK
      transports, once model-call cost is acceptable
    - final publish operations: version/changelog, PyPI credentials, and human

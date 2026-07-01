@@ -40,6 +40,11 @@ It is the constraint document for future agents.
   The chosen root owns committed wiki docs and local runtime artifacts,
   including the SQLite index, unless a future decision splits runtime state
   elsewhere.
+- 2026-07-01: Current-repo auto-detection prefers the nearest initialized wiki
+  root on disk over broad parent registry entries. The conventional roots
+  `almanac/`, `docs/almanac/`, and `.almanac/` are detected by the
+  `topics.yaml + pages/` marker shape; other custom roots become discoverable
+  after registration. Registry entries are still never auto-dropped.
 - 2026-06-30: Global user state belongs to `~/.codealmanac/`. The repo-local
   folder may be named `almanac/`; user config, registry state, and scheduler
   logs use the product-specific hidden directory.

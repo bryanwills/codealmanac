@@ -161,7 +161,11 @@ def test_sync_status_reports_ready_transcript_ranges(
     assert summary.skipped == ()
     assert summary.needs_attention == ()
     adapter = app.sources.transcript_discovery_adapters[0]
-    assert adapter.requests[0].almanac_roots == (Path("almanac"),)
+    assert adapter.requests[0].almanac_roots == (
+        Path("almanac"),
+        Path("docs/almanac"),
+        Path(".almanac"),
+    )
 
 
 def test_sync_status_passes_configured_roots_to_discovery(
@@ -196,6 +200,7 @@ def test_sync_status_passes_configured_roots_to_discovery(
     assert adapter.requests[0].almanac_roots == (
         Path("almanac"),
         Path("docs/almanac"),
+        Path(".almanac"),
     )
 
 

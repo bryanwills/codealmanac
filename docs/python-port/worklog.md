@@ -1347,3 +1347,10 @@ longer exposes `--include-archive` or `--archived`, topic/health queries treat
 every indexed page as current, and viewer page summaries no longer expose an
 archive marker. Architecture tests keep active Python source from regrowing
 page archive lineage fragments.
+Slice 128 fixes current-repo workspace resolution. `WorkspacesService.resolve`
+now checks nearest initialized roots before broad registry containment, and the
+built-in discoverable roots are `almanac/`, `docs/almanac/`, and `.almanac/`.
+A broad `/Users/rohan/Desktop/Projects` registry entry no longer shadows this
+repo's `.almanac/`. Dogfood with `uv run codealmanac search "topic service"`
+now returns pages from this checkout and auto-registers the checkout as a
+`.almanac` workspace.
