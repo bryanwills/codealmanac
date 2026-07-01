@@ -2298,3 +2298,31 @@ still allowing "Almanac root" where it names the repo-local wiki root.
 Follow-up test:
 If a future change adds another workflow, update the parsed workflow list and
 include the intended gate commands in the public-contract test.
+
+## 2026-07-01 - Source Target Is A Parser Fallback, Not A Read-Model Branch
+
+Old hypothesis:
+Structured page sources could stay strictly type-specific because the manual
+teaches `path:` for file sources and `url:` for web sources.
+
+New hypothesis:
+The parser should accept generic `target:` as a fallback for every page source
+type, while keeping type-specific fields preferred. `PageSource.target` is
+already the internal model and prompt-shaped lifecycle outputs can naturally use
+`target:`.
+
+Evidence that forced the change:
+Slice 78 restored structured page sources, but `source_target()` ignored
+generic `target:`. Existing fake lifecycle harnesses in the test suite write
+`sources[type=file].target`, which meant the page kept a source id but did not
+derive a file ref for `search --mentions`.
+
+Code or product assumption affected:
+Slice 99 keeps the alternate spelling inside
+`services/wiki/frontmatter.py`. Downstream index, search, show, health, and
+viewer code still consume normalized `PageSource.target` values and do not
+branch on raw frontmatter spellings.
+
+Follow-up test:
+If a new source type is added, add its type-specific address fields to
+`SOURCE_TARGET_FIELDS` and keep generic `target:` as the last fallback.

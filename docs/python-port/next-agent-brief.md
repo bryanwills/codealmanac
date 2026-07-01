@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 98 index read view boundaries.
+- Latest implementation slice: slice 99 source target fallback.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -85,6 +85,11 @@ Updated: 2026-07-01
   `show --json`, and viewer page APIs, and reports missing citations, unused
   sources, and duplicate source ids through health. This is page evidence,
   not the source-runtime input model.
+- Slice 99 makes page source target parsing tolerant at the frontmatter
+  boundary: type-specific fields such as `path:` and `url:` remain preferred,
+  and generic `target:` is a fallback that normalizes into
+  `PageSource.target`. Index, search, show, health, and viewer code should keep
+  consuming normalized page sources rather than raw frontmatter keys.
 - Slice 79 restores the first setup/uninstall layer. `SetupService` owns
   setup/uninstall requests and results; `integrations/setup` installs/removes
   Codex and Claude instruction artifacts behind `InstructionInstaller`.
@@ -285,6 +290,9 @@ Updated: 2026-07-01
   `page_sources` is a derived projection, and source-health warnings stay
   report-only. No migration command, source catalog, or web snapshot machinery
   was added.
+- Slice 99 keeps `sources[type=file].target` from silently losing file-aware
+  retrieval by accepting generic `target:` as a parser fallback after the
+  type-specific source fields.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -795,6 +803,10 @@ Behavior:
   artifact ignore, wheel build dogfood, full pytest, full ruff, and diff check
 - Slice 94 GitHub workflow parse/command contract guard, exact `uv sync
   --locked` proof, focused/full pytest, focused/full ruff, and diff check
+- Slice 99 source target fallback, parser/read-model/public-contract focused
+  pytest, focused ruff, isolated CLI dogfood proving
+  `sources[type=file].target` powers `search --mentions` and `show --json`,
+  full pytest, full ruff, and diff check
 
 ## Next Move
 

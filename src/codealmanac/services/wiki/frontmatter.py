@@ -12,6 +12,17 @@ from codealmanac.services.wiki.models import (
     ParsedFrontmatter,
 )
 
+SOURCE_TARGET_FIELDS: dict[PageSourceType, tuple[str, ...]] = {
+    PageSourceType.FILE: ("path",),
+    PageSourceType.WEB: ("url",),
+    PageSourceType.COMMIT: ("commit", "sha", "ref"),
+    PageSourceType.PR: ("pr", "number", "url"),
+    PageSourceType.ISSUE: ("issue", "number", "url"),
+    PageSourceType.CONVERSATION: ("path", "run_id", "session_id"),
+    PageSourceType.WIKI: ("page", "slug", "path"),
+    PageSourceType.MANUAL: ("path", "page", "title"),
+}
+
 
 def parse_frontmatter(raw: str) -> ParsedFrontmatter:
     try:
@@ -135,17 +146,7 @@ def parse_source_item(value: Any) -> PageSource | None:
 
 
 def source_target(value: dict[Any, Any], source_type: PageSourceType) -> str | None:
-    fields_by_type = {
-        PageSourceType.FILE: ("path",),
-        PageSourceType.WEB: ("url",),
-        PageSourceType.COMMIT: ("commit", "sha", "ref"),
-        PageSourceType.PR: ("pr", "number", "url"),
-        PageSourceType.ISSUE: ("issue", "number", "url"),
-        PageSourceType.CONVERSATION: ("path", "run_id", "session_id"),
-        PageSourceType.WIKI: ("page", "slug", "path"),
-        PageSourceType.MANUAL: ("path", "page", "title"),
-    }
-    for field in fields_by_type[source_type]:
+    for field in (*SOURCE_TARGET_FIELDS[source_type], "target"):
         target = text_or_number_field(value, field)
         if target is not None:
             return target

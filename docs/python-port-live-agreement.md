@@ -265,6 +265,12 @@ It is the constraint document for future agents.
   them through `show`/viewer APIs, and let health reason about missing/unused
   citation IDs. This is distinct from ingest source inputs such as paths,
   diffs, PRs, URLs, and transcripts.
+- 2026-07-01: Page source address parsing prefers type-specific fields
+  (`path:` for `file`, `url:` for `web`, and the documented fields for other
+  types), but accepts generic `target:` as a fallback for every source type.
+  This keeps the internal `PageSource.target` model aligned with prompt-shaped
+  output without making downstream index/search/viewer code know alternate
+  frontmatter spellings.
 - 2026-07-01: Remove archive/supersede page lineage from the Python product
   model. Git history is the archive. Do not keep `archived_at`,
   `superseded_by`, `supersedes`, `--include-archive`, or `--archived` as

@@ -118,6 +118,44 @@ The auth service checks provider behavior. [@service] [@provider-docs]
     assert [ref.path for ref in page.file_refs] == ["src/auth/service.py"]
 
 
+def test_read_model_projects_generic_source_targets(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(
+        repo,
+        "target-backed.md",
+        """---
+title: Target Backed
+topics: [evidence]
+sources:
+  - id: service
+    type: file
+    target: src/auth/service.py
+    note: Defines the authentication service.
+---
+# Target Backed
+
+The auth service is evidence-backed. [@service]
+""",
+    )
+
+    mentioned = app.search.search(
+        SearchPagesRequest(cwd=repo, mentions="src/auth/service.py")
+    )
+    page = app.pages.show(ShowPageRequest(cwd=repo, slug="target-backed"))
+
+    assert [row.slug for row in mentioned] == ["target-backed"]
+    assert page.sources[0].target == "src/auth/service.py"
+    assert [ref.path for ref in page.file_refs] == ["src/auth/service.py"]
+
+
 def test_search_auto_registers_existing_wiki(
     tmp_path: Path,
     isolated_home: Path,

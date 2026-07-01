@@ -27,6 +27,43 @@ ignored: true
     assert parsed.body == "# Body"
 
 
+def test_frontmatter_sources_accept_generic_target_fallback():
+    parsed = parse_frontmatter(
+        """---
+title: Auth Flow
+sources:
+  - id: auth-code
+    type: file
+    target: src/auth/service.py
+---
+# Body
+"""
+    )
+
+    assert len(parsed.sources) == 1
+    assert parsed.sources[0].source_id == "auth-code"
+    assert parsed.sources[0].source_type == "file"
+    assert parsed.sources[0].target == "src/auth/service.py"
+
+
+def test_frontmatter_sources_prefer_type_specific_target_fields():
+    parsed = parse_frontmatter(
+        """---
+title: Provider
+sources:
+  - id: provider
+    type: web
+    url: https://example.com/current
+    target: https://example.com/stale
+---
+# Body
+"""
+    )
+
+    assert len(parsed.sources) == 1
+    assert parsed.sources[0].target == "https://example.com/current"
+
+
 def test_wikilink_classification_preserves_existing_rules():
     assert classify_wikilink("openalmanac:supabase").kind == "xwiki"
     assert classify_wikilink("src/a:b.ts").kind == "file"

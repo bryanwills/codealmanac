@@ -59,6 +59,12 @@ that root instead of constructing stores or adapters themselves.
 Workflows coordinate. They do not own durable schema unless a missing service is
 identified and added to this map.
 
+`services/wiki/frontmatter.py` is the normalization boundary for page
+frontmatter. It accepts type-specific source address fields first and generic
+`target:` as a fallback, then returns normalized `PageSource.target` values.
+Index, search, show, health, and viewer code must consume `PageSource` rather
+than reading raw source frontmatter keys.
+
 `workflows/lifecycle.py` owns shared lifecycle execution helpers: harness-result
 validation and Git-backed wiki-root mutation safety. Operation-specific
 workflows pass their public verb into `LifecycleMutationPolicy`, so shared

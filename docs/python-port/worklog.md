@@ -1100,3 +1100,12 @@ refs could render absolute paths when `cwd` arrived through a symlink or macOS
 listing work, and a symlink regression covers repo-relative display. Focused
 filesystem runtime, directory selection, architecture tests, and lint passed
 after the move.
+Slice 99 makes generic page source `target:` a parser fallback instead of a
+downstream read-model concern. `services/wiki/frontmatter.py` still prefers
+type-specific source address fields such as `path:` and `url:`, then falls back
+to `target:` and returns normalized `PageSource.target` values. Parser and
+read-model tests now prove `sources[type=file].target` is projected into
+`show.sources`, derives `file_refs`, and powers `search --mentions`. Isolated
+CLI dogfood initialized a temp repo with isolated `HOME`, authored a page with
+`sources[type=file].target`, and proved public `search --mentions` plus
+`show --json` see the source target and derived file ref.
