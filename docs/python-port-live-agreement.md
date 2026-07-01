@@ -46,10 +46,13 @@ It is the constraint document for future agents.
 - 2026-06-29: Follow Almanac's Python style: service symmetry, explicit request
   models, service-owned verbs, store-owned persistence, thin CLI edges.
 - 2026-07-01: CLI render follows the parser/dispatch/render domain split.
-  `cli/render/root.py` is a small re-export facade for dispatcher stability;
-  `lifecycle.py` owns lifecycle/sync/job-start output, `wiki.py` owns
-  search/show/topics/health/tagging output, `workspaces.py` owns local wiki
-  registry list/drop output, and `common.py` owns shared formatting helpers.
+  `cli/render/root.py` is a small re-export facade for dispatcher stability.
+  `cli/render/wiki.py` is a wiki-render facade only; `search.py` owns
+  search/reindex output, `pages.py` owns show/page output, `topics.py` owns
+  topic output, `health.py` owns health output, and `tagging.py` owns
+  tag/untag output. `lifecycle.py` owns lifecycle/sync/job-start output,
+  `workspaces.py` owns local wiki registry list/drop output, and `common.py`
+  owns shared formatting helpers.
 - 2026-07-01: Wiki CLI dispatch follows the same command-family split.
   `cli/dispatch/wiki.py` remains the wiki-command facade for
   search/show/health/reindex/tag/untag routing. `topics.py` owns topic

@@ -1307,3 +1307,9 @@ index, workspace manual, and health checks, and `messages.py` owns shared
 doctor message formatting. Focused diagnostics/CLI/architecture tests and lint
 passed, and isolated CLI dogfood covered no-wiki plus initialized-wiki
 `doctor --json`.
+Slice 122 keeps wiki CLI output unchanged while splitting
+`cli/render/wiki.py` by output family. `wiki.py` is now a facade;
+`search.py` owns search/reindex output, `pages.py` owns show/page output,
+`topics.py` owns topic list/show/mutation output, `health.py` owns health
+sections, and `tagging.py` owns tag/untag summaries. Architecture tests keep
+service model imports and render definitions out of the facade.

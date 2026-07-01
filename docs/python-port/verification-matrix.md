@@ -19,6 +19,17 @@ means the goal remains active.
 | Frequent review | slice-1 review fix hardened registry temp writes and typed selector helpers | `uv run pytest`, `uv run ruff check .`, live temp `init`/`list` passed after review fix | Need the same checkpoint discipline after each meaningful slice. |
 | No hosted CLI/MCP/SDK/aliases | live agreement records exclusion; `tests/test_public_contract.py` guards entry points, forbidden commands, package module names, README, release guide, GitHub automation/templates, package metadata, next-agent freshness, beta-audit coverage, and `~/.codealmanac/` user-state defaults | `uv run pytest tests/test_public_contract.py` passed with 26 tests on 2026-07-01; full `uv run pytest` and `uv run ruff check .` passed on 2026-07-01 | Future CLI, docs, or project automation expansion must keep the public-contract guard current. |
 
+## Gates For Slice 122 CLI Wiki Render Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused CLI, topic, and architecture tests | `uv run pytest tests/test_cli.py tests/test_topics_mutation.py tests/test_architecture.py::test_cli_has_separate_parser_dispatch_and_render_packages tests/test_architecture.py::test_cli_render_root_stays_facade tests/test_architecture.py::test_cli_wiki_render_stays_split_by_output_family -q` | 52 passed |
+| Focused lint | `uv run ruff check src/codealmanac/cli tests/test_cli.py tests/test_topics_mutation.py tests/test_architecture.py` | passed |
+| Isolated public CLI dogfood | temp `HOME`; temp repo; `init`; authored sourced page; `reindex`; `search`; `show --meta`; `show --lead`; `topics`; `topics show`; `health`; `tag`; `untag`; `list --json` | passed; each moved renderer was exercised through public CLI commands |
+| Full tests | `uv run pytest` | 341 passed |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 121 CLI Wiki Dispatch Boundaries
 
 | Gate | Command | 2026-07-01 result |

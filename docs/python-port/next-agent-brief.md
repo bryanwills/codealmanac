@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 121 CLI wiki dispatch boundaries.
+- Latest implementation slice: slice 122 CLI wiki render boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -253,6 +253,13 @@ Updated: 2026-07-01
   `dispatch/wiki.py` remains the facade for direct search/show/health/reindex/
   tag/untag routing. Architecture tests keep topic/workspace request
   construction and uvicorn startup out of `dispatch/wiki.py`.
+- Slice 122 keeps wiki CLI output unchanged while splitting
+  `cli/render/wiki.py` by output family. `wiki.py` is now a facade;
+  `render/search.py` owns search/reindex output, `render/pages.py` owns
+  show/page output, `render/topics.py` owns topic output, `render/health.py`
+  owns health output, and `render/tagging.py` owns tag/untag output.
+  Architecture tests keep service model imports and render definitions out of
+  `cli/render/wiki.py`.
 - Slice 116 keeps `SourcesService.resolve(...)` behavior unchanged while
   splitting source-address parsing by family. `address_resolution.py` is now a
   small dispatcher; `address_git.py`, `address_github.py`, `address_web.py`,

@@ -325,8 +325,10 @@ No route body, package-resource read, or product-error mapping belongs back in
 
 `cli/render/root.py` is a re-export facade over domain render modules so
 dispatch imports stay stable. `cli/render/lifecycle.py` owns
-build/ingest/garden/sync/job-start output, `wiki.py` owns
-search/show/topics/health/tagging output, `workspaces.py` owns local wiki
+build/ingest/garden/sync/job-start output. `cli/render/wiki.py` is a
+wiki-render facade only; `search.py` owns search/reindex output, `pages.py`
+owns show/page output, `topics.py` owns topic output, `health.py` owns health
+output, and `tagging.py` owns tag/untag output. `workspaces.py` owns local wiki
 registry list/drop output, `admin.py` owns setup/doctor/update/jobs/automation
 output, and `common.py` owns shared formatting helpers. `cli/render/setup.py`
 owns Rich-backed setup/uninstall terminal presentation. Render modules display

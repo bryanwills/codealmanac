@@ -471,7 +471,12 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/workspaces.py").is_file()
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/common.py").is_file()
+    assert (cli_root / "render/health.py").is_file()
     assert (cli_root / "render/lifecycle.py").is_file()
+    assert (cli_root / "render/pages.py").is_file()
+    assert (cli_root / "render/search.py").is_file()
+    assert (cli_root / "render/tagging.py").is_file()
+    assert (cli_root / "render/topics.py").is_file()
     assert (cli_root / "render/wiki.py").is_file()
     assert (cli_root / "render/workspaces.py").is_file()
     assert (cli_root / "render/admin.py").is_file()
@@ -499,7 +504,12 @@ def test_cli_render_root_stays_facade():
         "common.py",
         "lifecycle.py",
         "root.py",
+        "health.py",
+        "pages.py",
+        "search.py",
         "setup.py",
+        "tagging.py",
+        "topics.py",
         "wiki.py",
         "workspaces.py",
     } <= module_names
@@ -510,10 +520,51 @@ def test_cli_render_root_stays_facade():
     assert "render_sync_status" in (render_root / "lifecycle.py").read_text(
         encoding="utf-8"
     )
-    assert "render_page" in (render_root / "wiki.py").read_text(encoding="utf-8")
+    assert "render_page" in (render_root / "pages.py").read_text(encoding="utf-8")
     assert "render_workspace_list" in (
         render_root / "workspaces.py"
     ).read_text(encoding="utf-8")
+
+
+def test_cli_wiki_render_stays_split_by_output_family():
+    render_path = SRC_ROOT / "cli/render"
+    wiki = (render_path / "wiki.py").read_text(encoding="utf-8")
+    module_expectations = {
+        "health.py": ("HealthReport", "def render_health("),
+        "pages.py": ("PageView", "def render_page("),
+        "search.py": ("SearchPageResult", "def render_search("),
+        "tagging.py": ("TaggingResult", "def render_tagging("),
+        "topics.py": ("TopicDetail", "def render_topics("),
+    }
+    forbidden_wiki_fragments = (
+        "def render_",
+        "argparse",
+        "sys.stderr",
+        "HealthReport",
+        "IndexRefreshResult",
+        "PageView",
+        "SearchPageResult",
+        "TaggingResult",
+        "TopicDetail",
+        "TopicMutationResult",
+        "print(",
+    )
+    oversized = []
+
+    for module_name, fragments in module_expectations.items():
+        text = (render_path / module_name).read_text(encoding="utf-8")
+        assert all(fragment in text for fragment in fragments)
+        line_count = len(text.splitlines())
+        if line_count > 140:
+            oversized.append(f"{module_name}:{line_count}")
+
+    assert len(wiki.splitlines()) <= 80
+    assert [
+        fragment for fragment in forbidden_wiki_fragments if fragment in wiki
+    ] == []
+    assert "from codealmanac.cli.render.health import render_health" in wiki
+    assert "from codealmanac.cli.render.pages import render_page" in wiki
+    assert oversized == []
 
 
 def test_cli_dispatch_edge_is_split_by_command_domain():

@@ -2782,6 +2782,37 @@ Future CLI output changes should land in the domain renderer that owns the
 command family. Do not add rendering logic or service model imports to
 `root.py`.
 
+## 2026-07-01 - Wiki Render Is An Output-Family Facade
+
+Old hypothesis:
+After slice 107, `cli/render/wiki.py` could own all search, page, topic,
+health, and tagging output because those commands all read or organize a local
+wiki.
+
+New hypothesis:
+`cli/render/wiki.py` should mirror `cli/dispatch/wiki.py`: a stable facade
+over smaller output-family modules. Search/reindex output, page display,
+topic display/mutations, health sections, and tag summaries each change for
+different reasons.
+
+Evidence that forced the change:
+After slice 121, `cli/render/wiki.py` was 223 lines and mixed
+`SearchPageResult`, `PageView`, `TopicDetail`, `HealthReport`, and
+`TaggingResult` formatting. The sibling Almanac CLI keeps hosted renderers
+small by noun, and the CodeAlmanac CLI now has the same pressure inside the
+local wiki surface.
+
+Code or product assumption affected:
+Slice 122 keeps every public render function name available through
+`cli/render/wiki.py` and `cli/render/root.py`. Only ownership changes:
+`search.py`, `pages.py`, `topics.py`, `health.py`, and `tagging.py` own their
+respective text output.
+
+Follow-up test:
+Future wiki output changes should add or extend the output-family module that
+owns the displayed result. Architecture tests should keep service model imports
+and `render_*` definitions out of `cli/render/wiki.py`.
+
 ## 2026-07-01 - Filesystem Listing Needs Mechanic-Level Boundaries
 
 Old hypothesis:
