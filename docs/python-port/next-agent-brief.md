@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 100 Codex event boundaries.
+- Latest implementation slice: slice 101 Codex app-server client boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -129,6 +129,12 @@ Updated: 2026-07-01
   item/output mapping; `agent_events.py` owns helper traces; and `result.py`
   owns usage, provider-session, turn-completion, and done events. Architecture
   tests now prevent the dispatch module from regrowing the old event monolith.
+- Slice 101 keeps `CodexAppServerClient` focused on process startup, handshake
+  requests, JSON-RPC reads, and turn flow. Noninteractive server-request
+  responses, sandbox mode/payload policy, root-turn completion detection,
+  timeout env parsing, and `HarnessRunResult` projection now live in focused
+  Codex provider modules, with an architecture guard preventing those helpers
+  from returning to `app_server.py`.
 - Slice 84 makes the default Claude lifecycle harness use `claude-agent-sdk`
   instead of `claude -p --output-format json`. The SDK client isolates ambient
   Claude settings with `setting_sources=[]`, `strict_mcp_config=True`, and
@@ -302,6 +308,9 @@ Updated: 2026-07-01
 - Slice 100 keeps Codex app-server behavior unchanged while splitting the
   provider-event mapper into named modules and adding an architecture guard for
   the new boundary.
+- Slice 101 keeps Codex app-server behavior unchanged while splitting
+  response, sandbox, turn-completion, timeout, and result-projection helpers out
+  of the transport client.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -819,6 +828,10 @@ Behavior:
 - Slice 100 Codex event-boundary split, focused Codex app-server/Codex adapter
   and architecture tests, focused Ruff over Codex harness and architecture
   tests, fake app-server client dogfood, then full pytest/full Ruff/diff check
+- Slice 101 Codex app-server client-boundary split, focused Codex app-server,
+  Codex adapter, and architecture tests, focused Ruff over Codex harness and
+  architecture tests, fake app-server client dogfood, then full pytest/full
+  Ruff/diff check
 
 ## Next Move
 

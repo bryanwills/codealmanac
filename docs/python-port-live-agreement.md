@@ -144,6 +144,14 @@ It is the constraint document for future agents.
   `item_events.py` owns item and output mapping; `agent_events.py` owns helper
   lifecycle traces; and `result.py` owns provider-session, usage, turn
   completion, and done events. Do not regrow one Codex event monolith.
+- 2026-07-01: Codex app-server transport orchestration is split from provider
+  policy helpers. `app_server.py` owns process startup, handshake requests,
+  JSON-RPC reads, and turn flow. `responses.py` owns noninteractive
+  server-request responses; `sandbox.py` owns sandbox mode/env policy and
+  payload construction; `turn_completion.py` owns root-turn completion
+  detection; `run_result.py` owns `CodexRunState`/failure to
+  `HarnessRunResult` projection; and `timeouts.py` owns tolerant timeout-env
+  parsing.
 - 2026-07-01: The default Python Claude harness now uses `claude-agent-sdk` for
   lifecycle execution, not `claude -p --output-format json`. The adapter keeps
   readiness probing at `claude auth status` with `ANTHROPIC_API_KEY` fallback

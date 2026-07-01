@@ -1120,3 +1120,12 @@ behavior is unchanged. Focused Codex app-server, Codex adapter, architecture,
 and Ruff checks passed after the split. A fake app-server dogfood run outside
 pytest used `CodexAppServerClient` against a temporary fake `codex` binary and
 produced the expected provider-session, tool, text, usage, and done events.
+Slice 101 splits Codex app-server transport orchestration from provider policy
+helpers. `app_server.py` now owns process startup, handshake requests,
+JSON-RPC reads, and turn flow. `responses.py` owns noninteractive
+server-request responses, `sandbox.py` owns sandbox mode/env policy and payload
+construction, `turn_completion.py` owns root-turn detection, `run_result.py`
+owns `CodexRunState`/failure projection to `HarnessRunResult`, and
+`timeouts.py` owns tolerant timeout-env parsing. The Codex app-server wiki page
+now cites the new module ownership. Focused Codex app-server, Codex adapter,
+architecture, and Ruff checks passed after the split.

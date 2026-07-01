@@ -146,6 +146,13 @@ state, `actors.py` assigns root/helper attribution, `item_events.py` maps tool
 items and output deltas, `agent_events.py` maps helper-agent lifecycle traces,
 and `result.py` maps usage, provider-session, turn completion, and final done
 events.
+Codex app-server transport stays separate from provider policy helpers:
+`app_server.py` owns process startup, handshake requests, JSON-RPC reads, and
+turn flow; `responses.py` owns noninteractive server-request responses;
+`sandbox.py` owns sandbox mode/env policy and turn sandbox payloads;
+`turn_completion.py` owns root-turn completion detection; `run_result.py` owns
+`HarnessRunResult` projection; and `timeouts.py` owns tolerant timeout-env
+parsing.
 
 `services/runs/store.py` is the service-facing repository facade for the run
 ledger. `services/runs/paths.py` owns run-id validation and file naming,

@@ -2357,3 +2357,34 @@ Follow-up test:
 If a future Codex app-server notification type adds a new event family, add a
 named mapper module when the responsibility is not already owned by
 `item_events.py`, `agent_events.py`, or `result.py`.
+
+## 2026-07-01 - Codex App-Server Client Should Not Own Provider Policy
+
+Old hypothesis:
+After the event mapper split, `CodexAppServerClient` could keep server-request
+responses, sandbox policy, timeout-env parsing, root-turn completion detection,
+and result projection in `app_server.py` because those helpers were small.
+
+New hypothesis:
+`app_server.py` should own process startup, handshake requests, JSON-RPC reads,
+and turn flow only. Provider policy helpers deserve named modules because they
+change for different reasons than the transport loop.
+
+Evidence that forced the change:
+After slice 100, `app_server.py` was still the largest Codex module at 359
+lines and still held `noninteractive_response`, `sandbox_policy`,
+`root_turn_completion`, `result_from_state`, `failed_result`, and
+`env_milliseconds`. The repo wiki's Codex app-server page and the archived
+provider shape both distinguish response policy, sandbox construction, result
+projection, and app-server process handling.
+
+Code or product assumption affected:
+Slice 101 keeps `CodexAppServerClient` and app-server behavior unchanged while
+moving helpers into `responses.py`, `sandbox.py`, `turn_completion.py`,
+`run_result.py`, and `timeouts.py`. Architecture tests now reject those helper
+definitions inside `app_server.py`.
+
+Follow-up test:
+If Codex app-server later supports model/effort/output-schema request
+construction, add a request-construction module instead of growing `_run()` with
+more inline payload policy.

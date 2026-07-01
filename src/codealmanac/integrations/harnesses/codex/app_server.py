@@ -1,8 +1,4 @@
-import os
 import time
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Literal
 
 from pydantic import JsonValue
 
@@ -14,24 +10,34 @@ from codealmanac.integrations.harnesses.codex.events import (
     map_codex_notification,
     provider_session_event,
 )
-from codealmanac.integrations.harnesses.codex.failures import (
-    classify_codex_failure,
-)
 from codealmanac.integrations.harnesses.codex.fields import (
     JsonObject,
     as_record,
     string_field,
 )
+from codealmanac.integrations.harnesses.codex.responses import (
+    noninteractive_response,
+)
 from codealmanac.integrations.harnesses.codex.rpc import (
     JsonRpcLineProcess,
     is_server_request,
 )
+from codealmanac.integrations.harnesses.codex.run_result import (
+    failed_result,
+    result_from_state,
+)
+from codealmanac.integrations.harnesses.codex.sandbox import (
+    SandboxMode,
+    resolve_sandbox_mode,
+    sandbox_policy,
+)
+from codealmanac.integrations.harnesses.codex.timeouts import env_milliseconds
+from codealmanac.integrations.harnesses.codex.turn_completion import (
+    root_turn_completion,
+)
 from codealmanac.services.harnesses.models import (
     HarnessEvent,
-    HarnessEventKind,
-    HarnessKind,
     HarnessRunResult,
-    HarnessRunStatus,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
@@ -39,9 +45,6 @@ CODEX_APP_SERVER_RPC_TIMEOUT_MS = 30_000
 CODEX_APP_SERVER_TURN_TIMEOUT_MS = 30 * 60_000
 CODEX_APP_SERVER_RPC_TIMEOUT_ENV = "CODEALMANAC_CODEX_APP_SERVER_RPC_TIMEOUT_MS"
 CODEX_APP_SERVER_TURN_TIMEOUT_ENV = "CODEALMANAC_CODEX_APP_SERVER_TURN_TIMEOUT_MS"
-CODEX_APP_SERVER_SANDBOX_MODE_ENV = "CODEALMANAC_CODEX_APP_SERVER_SANDBOX_MODE"
-
-SandboxMode = Literal["workspace-write", "danger-full-access"]
 
 
 class CodexAppServerClient:
@@ -232,128 +235,4 @@ class CodexAppServerClient:
         ) / 1000
 
     def resolved_sandbox_mode(self) -> SandboxMode:
-        if self.sandbox_mode is not None:
-            return self.sandbox_mode
-        value = os.environ.get(CODEX_APP_SERVER_SANDBOX_MODE_ENV)
-        if value in {None, "", "workspace-write"}:
-            return "workspace-write"
-        if value == "danger-full-access":
-            return "danger-full-access"
-        raise CodexAppServerError(
-            f"{CODEX_APP_SERVER_SANDBOX_MODE_ENV} must be "
-            "workspace-write or danger-full-access"
-        )
-
-@dataclass(frozen=True)
-class ServerResponse:
-    result: JsonObject | None = None
-    error: JsonObject | None = None
-
-
-def noninteractive_response(method: str) -> ServerResponse:
-    if method in {
-        "item/commandExecution/requestApproval",
-        "item/fileChange/requestApproval",
-    }:
-        return ServerResponse(result={"decision": "decline"})
-    if method in {"execCommandApproval", "applyPatchApproval"}:
-        return ServerResponse(result={"decision": "denied"})
-    if method == "item/tool/requestUserInput":
-        return ServerResponse(result={"answers": {}})
-    if method == "mcpServer/elicitation/request":
-        return ServerResponse(
-            result={"action": "decline", "content": None, "_meta": None}
-        )
-    if method == "item/tool/call":
-        return ServerResponse(result={"contentItems": [], "success": False})
-    if method == "item/permissions/requestApproval":
-        return ServerResponse(
-            result={"permissions": {}, "scope": "turn", "strictAutoReview": True}
-        )
-    if method == "account/chatgptAuthTokens/refresh":
-        return ServerResponse(
-            error={
-                "code": -32001,
-                "message": (
-                    "CodeAlmanac does not manage ChatGPT auth tokens for "
-                    "Codex app-server."
-                ),
-            }
-        )
-    return ServerResponse(
-        error={
-            "code": -32601,
-            "message": f"CodeAlmanac does not handle Codex app-server request {method}",
-        }
-    )
-
-
-def root_turn_completion(message: JsonObject, state: CodexRunState) -> bool:
-    if string_field(message, "method") != "turn/completed":
-        return False
-    params = as_record(message.get("params"))
-    completed_turn_id = string_field(params, "turnId")
-    completed_thread_id = string_field(params, "threadId")
-    return (
-        state.root_turn_id is not None
-        and completed_turn_id == state.root_turn_id
-    ) or (
-        state.root_thread_id is not None
-        and completed_thread_id == state.root_thread_id
-    )
-
-
-def sandbox_policy(cwd: Path, mode: SandboxMode) -> JsonObject:
-    if mode == "danger-full-access":
-        return {"type": "dangerFullAccess"}
-    return {
-        "type": "workspaceWrite",
-        "writableRoots": [str(cwd)],
-        "networkAccess": False,
-        "excludeTmpdirEnvVar": False,
-        "excludeSlashTmp": False,
-    }
-
-
-def result_from_state(
-    state: CodexRunState,
-    events: list[HarnessEvent],
-) -> HarnessRunResult:
-    succeeded = state.success and state.failure is None
-    output_text = state.result or state.error or "codex completed"
-    return HarnessRunResult(
-        kind=HarnessKind.CODEX,
-        status=HarnessRunStatus.SUCCEEDED if succeeded else HarnessRunStatus.FAILED,
-        output_text=output_text,
-        summary=output_text.splitlines()[0],
-        events=tuple(events),
-    )
-
-
-def failed_result(message: str) -> HarnessRunResult:
-    failure = classify_codex_failure(message)
-    event = HarnessEvent(
-        kind=HarnessEventKind.ERROR,
-        message=failure.message,
-        failure=failure,
-    )
-    return HarnessRunResult(
-        kind=HarnessKind.CODEX,
-        status=HarnessRunStatus.FAILED,
-        output_text=failure.message,
-        summary=failure.message,
-        events=(event,),
-    )
-
-
-def env_milliseconds(name: str, fallback: int) -> int:
-    value = os.environ.get(name)
-    if value is None:
-        return fallback
-    try:
-        parsed = int(value)
-    except ValueError:
-        return fallback
-    if parsed <= 0:
-        return fallback
-    return parsed
+        return resolve_sandbox_mode(self.sandbox_mode)

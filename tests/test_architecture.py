@@ -341,6 +341,35 @@ def test_codex_app_server_event_mapper_stays_split_by_responsibility():
     assert dispatch_leaks == []
 
 
+def test_codex_app_server_client_stays_transport_focused():
+    codex_root = SRC_ROOT / "integrations/harnesses/codex"
+    app_server = codex_root / "app_server.py"
+    app_server_text = app_server.read_text(encoding="utf-8")
+    expected_modules = {
+        "responses.py",
+        "sandbox.py",
+        "turn_completion.py",
+        "run_result.py",
+        "timeouts.py",
+    }
+    forbidden_fragments = (
+        "class ServerResponse",
+        "def noninteractive_response(",
+        "def sandbox_policy(",
+        "def root_turn_completion(",
+        "def result_from_state(",
+        "def failed_result(",
+        "def env_milliseconds(",
+        "CODEX_APP_SERVER_SANDBOX_MODE_ENV",
+    )
+
+    assert expected_modules <= {path.name for path in codex_root.glob("*.py")}
+    assert len(app_server_text.splitlines()) <= 260
+    assert [
+        fragment for fragment in forbidden_fragments if fragment in app_server_text
+    ] == []
+
+
 def test_filesystem_source_runtime_stays_split_by_responsibility():
     filesystem_root = SRC_ROOT / "integrations/sources/filesystem"
     adapter = filesystem_root / "adapter.py"
