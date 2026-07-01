@@ -2156,3 +2156,29 @@ explicitly decided.
 Follow-up test:
 Any future `.github/` edit should keep `tests/test_public_contract.py` green
 and should not introduce npm/Node/npx language outside archived reference docs.
+
+## 2026-07-01 - GitHub Contract Tests Should Parse The Entry Point
+
+Old hypothesis:
+Text-fragment checks over `.github/` were enough to keep the GitHub surface
+aligned with the Python product.
+
+New hypothesis:
+The workflow files should also be parsed as YAML so the contract test proves
+the project entrypoint keeps a workflow-like shape before checking command
+fragments.
+
+Evidence that forced the change:
+After slice 93, `uv sync --locked` passed locally, but the test only searched
+raw text. The bug template also still had one stale "expected Almanac" sentence
+that the broad stale npm guard missed.
+
+Code or product assumption affected:
+Slice 94 imports `ruamel-yaml` in `tests/test_public_contract.py`, parses each
+workflow file, asserts `name`, `on`, and `jobs`, then checks the CI and package
+workflow commands. The template now uses CodeAlmanac for product behavior while
+still allowing "Almanac root" where it names the repo-local wiki root.
+
+Follow-up test:
+If a future change adds another workflow, update the parsed workflow list and
+include the intended gate commands in the public-contract test.

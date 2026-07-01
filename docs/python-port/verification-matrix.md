@@ -1074,3 +1074,16 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 311 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 94 GitHub Contract Proof
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Exact CI sync command | `uv sync --locked` | passed |
+| Focused public contract before steering updates | `uv run pytest tests/test_public_contract.py` | failed only because `next-agent-brief.md` still reported slice 93 as latest; 26 tests passed |
+| Focused public contract | `uv run pytest tests/test_public_contract.py` | passed; 27 tests |
+| Focused lint | `uv run ruff check tests/test_public_contract.py` | passed |
+| GitHub stale-surface search | `rg -n "expected Almanac to do\|npm\|npx\|Node\|NPM\|package-lock\|actions/setup-node" .github` | passed; no matches |
+| Full tests | `uv run pytest` | passed; 312 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |

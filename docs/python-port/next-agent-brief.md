@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 93 GitHub Python automation.
+- Latest implementation slice: slice 94 GitHub contract proof.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -181,6 +181,11 @@ Updated: 2026-07-01
   publish workflow names the future PyPI policy instead of npm tokens, GitHub
   issue/PR templates ask for Python/CodeAlmanac details, and public-contract
   tests reject npm-era `.github/` wording.
+- Slice 94 tightens the GitHub project-surface proof. `uv sync --locked`
+  passed locally, the bug-report template now says CodeAlmanac in its expected
+  behavior prompt, and public-contract tests parse `.github/workflows/*.yml`
+  with `ruamel-yaml` before asserting the CI/package-check Python gate
+  commands.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -754,6 +759,8 @@ Behavior:
   ruff, full pytest, full ruff, and diff check
 - Slice 93 GitHub Python automation, public-contract guards, package build
   artifact ignore, wheel build dogfood, full pytest, full ruff, and diff check
+- Slice 94 GitHub workflow parse/command contract guard, exact `uv sync
+  --locked` proof, focused/full pytest, focused/full ruff, and diff check
 
 ## Next Move
 

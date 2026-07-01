@@ -2,6 +2,7 @@ import tomllib
 from pathlib import Path
 
 import pytest
+from ruamel.yaml import YAML
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
@@ -90,6 +91,7 @@ GITHUB_REQUIRED_FRAGMENTS = (
     "uvx twine check dist/*",
     "CodeAlmanac version",
     "Python version",
+    "Describe what you expected CodeAlmanac to do.",
     "Install method: `uv tool`, `pip`, local checkout, or other",
 )
 
@@ -101,6 +103,7 @@ GITHUB_FORBIDDEN_FRAGMENTS = (
     "NPM_TOKEN",
     "npx",
     "Node version",
+    "expected Almanac to do",
     "actions/setup-node",
     "package-lock",
 )
@@ -290,6 +293,33 @@ def test_github_automation_and_templates_use_python_public_surface():
     ]
 
 
+def test_github_workflows_are_parseable_python_workflows():
+    yaml = YAML(typ="safe")
+    workflow_files = {
+        path.name: yaml.load(path.read_text(encoding="utf-8"))
+        for path in sorted((PROJECT_ROOT / ".github/workflows").glob("*.yml"))
+    }
+
+    assert sorted(workflow_files) == ["ci.yml", "pack-check.yml", "publish.yml"]
+
+    for workflow in workflow_files.values():
+        assert isinstance(workflow["name"], str)
+        assert "on" in workflow
+        assert isinstance(workflow["jobs"], dict)
+
+    ci_commands = workflow_run_commands(workflow_files["ci.yml"])
+    assert "uv sync --locked" in ci_commands
+    assert "uv run ruff check ." in ci_commands
+    assert "uv run pytest" in ci_commands
+    assert "uv run codealmanac --help" in ci_commands
+    assert "git diff --check" in ci_commands
+
+    package_commands = workflow_run_commands(workflow_files["pack-check.yml"])
+    assert "uv sync --locked" in package_commands
+    assert "uv build --out-dir dist" in package_commands
+    assert "uvx twine check dist/*" in package_commands
+
+
 def test_package_build_artifacts_are_ignored():
     gitignore = (PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8")
 
@@ -366,3 +396,19 @@ def markdown_table_first_column(markdown: str, heading: str) -> tuple[str, ...]:
             continue
         rows.append(first)
     return tuple(rows)
+
+
+def workflow_run_commands(workflow: dict[str, object]) -> tuple[str, ...]:
+    commands: list[str] = []
+    jobs = workflow["jobs"]
+    assert isinstance(jobs, dict)
+    for job in jobs.values():
+        assert isinstance(job, dict)
+        steps = job["steps"]
+        assert isinstance(steps, list)
+        for step in steps:
+            assert isinstance(step, dict)
+            command = step.get("run")
+            if isinstance(command, str):
+                commands.append(command)
+    return tuple(commands)

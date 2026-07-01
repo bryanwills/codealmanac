@@ -1073,3 +1073,8 @@ artifacts with `uv build --out-dir dist` and validates them with
 PyPI policy instead of npm tokens, the PR/issue templates ask for Python and
 CodeAlmanac details, `.gitignore` ignores package `build/`, and
 public-contract tests reject npm-era `.github/` language.
+Slice 94 tightens that public project-surface proof. The exact CI sync command
+`uv sync --locked` passed locally. The bug-report template now says
+CodeAlmanac in the expected-behavior prompt, and public-contract tests parse
+all `.github/workflows/*.yml` files with `ruamel-yaml` before asserting the
+CI and package-check Python gate commands.

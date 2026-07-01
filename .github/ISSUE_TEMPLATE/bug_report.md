@@ -12,7 +12,7 @@ Describe the behavior you saw.
 
 ## What did you expect?
 
-Describe what you expected Almanac to do.
+Describe what you expected CodeAlmanac to do.
 
 ## Reproduction
 
