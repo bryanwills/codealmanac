@@ -10,13 +10,21 @@ from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFa
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 from codealmanac.services.harnesses.models import (
+    HarnessActorConfidence,
+    HarnessActorRole,
+    HarnessAgentTrace,
     HarnessEvent,
     HarnessEventKind,
     HarnessKind,
     HarnessReadiness,
+    HarnessRunActor,
     HarnessRunResult,
     HarnessRunStatus,
+    HarnessToolDisplay,
+    HarnessToolDisplayKind,
+    HarnessToolStatus,
     HarnessTranscriptRef,
+    HarnessUsage,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
@@ -102,15 +110,54 @@ class EventfulHarnessAdapter(WritingHarnessAdapter):
                     HarnessEvent(
                         kind=HarnessEventKind.TEXT,
                         message="agent read source note",
+                        actor=HarnessRunActor(
+                            thread_id="root-thread",
+                            role=HarnessActorRole.ROOT,
+                            confidence=HarnessActorConfidence.PROVIDER,
+                            label="Main",
+                        ),
                     ),
                     HarnessEvent(
-                        kind=HarnessEventKind.TOOL_SUMMARY,
+                        kind=HarnessEventKind.TOOL_USE,
                         message="agent wrote almanac/pages/ingested-note.md",
+                        tool_id="tool-1",
+                        tool_name="fileChange",
+                        tool_display=HarnessToolDisplay(
+                            kind=HarnessToolDisplayKind.EDIT,
+                            title="Editing file",
+                            path="almanac/pages/ingested-note.md",
+                            status=HarnessToolStatus.COMPLETED,
+                            provider_thread_id="root-thread",
+                            provider_turn_id="turn-1",
+                        ),
+                    ),
+                    HarnessEvent(
+                        kind=HarnessEventKind.CONTEXT_USAGE,
+                        message="usage: 42 tokens",
+                        usage=HarnessUsage(
+                            input_tokens=30,
+                            output_tokens=12,
+                            total_tokens=42,
+                            max_tokens=200000,
+                        ),
+                    ),
+                    HarnessEvent(
+                        kind=HarnessEventKind.AGENT_SPAWNED,
+                        message="spawned helper",
+                        agent_trace=HarnessAgentTrace(
+                            parent_thread_id="root-thread",
+                            child_thread_id="helper-thread",
+                            prompt="Review the page.",
+                        ),
                     ),
                     HarnessEvent(
                         kind=HarnessEventKind.DONE,
                         status=HarnessRunStatus.SUCCEEDED,
                         message="codex succeeded: updated wiki",
+                        provider_session_id="root-thread",
+                        source_thread_id="root-thread",
+                        source_turn_id="turn-1",
+                        source_role=HarnessActorRole.ROOT,
                     ),
                 )
             }
@@ -295,12 +342,30 @@ def test_ingest_workflow_records_normalized_harness_events(
 
     log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
-    assert tuple((entry.kind, entry.message) for entry in log[-4:]) == (
+    assert tuple((entry.kind, entry.message) for entry in log[-6:]) == (
         (RunEventKind.OUTPUT, "agent read source note"),
         (RunEventKind.TOOL, "agent wrote almanac/pages/ingested-note.md"),
+        (RunEventKind.TOOL, "usage: 42 tokens"),
+        (RunEventKind.TOOL, "spawned helper"),
         (RunEventKind.OUTPUT, "codex succeeded: updated wiki"),
         (RunEventKind.STATUS, "done"),
     )
+    assert log[-6].harness_event is not None
+    assert log[-6].harness_event.actor is not None
+    assert log[-6].harness_event.actor.role == HarnessActorRole.ROOT
+    assert log[-5].harness_event is not None
+    assert log[-5].harness_event.tool_display is not None
+    assert log[-5].harness_event.tool_display.path == (
+        "almanac/pages/ingested-note.md"
+    )
+    assert log[-4].harness_event is not None
+    assert log[-4].harness_event.usage is not None
+    assert log[-4].harness_event.usage.total_tokens == 42
+    assert log[-3].harness_event is not None
+    assert log[-3].harness_event.agent_trace is not None
+    assert log[-3].harness_event.agent_trace.child_thread_id == "helper-thread"
+    assert log[-2].harness_event is not None
+    assert log[-2].harness_event.provider_session_id == "root-thread"
 
 
 def test_ingest_prompt_includes_git_source_runtime(

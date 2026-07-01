@@ -4,7 +4,7 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.harnesses.models import HarnessEvent, HarnessKind
 from codealmanac.services.runs.models import RunEventKind
 from codealmanac.workflows.page_run.models import PageRunContext
 
@@ -24,6 +24,7 @@ class PageRunRecordEventRequest(CodeAlmanacModel):
     context: PageRunContext
     kind: RunEventKind
     message: str
+    harness_event: HarnessEvent | None = None
 
     @field_validator("message")
     @classmethod

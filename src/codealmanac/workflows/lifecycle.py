@@ -110,7 +110,11 @@ def harness_run_event_kind(event: HarnessEvent) -> RunEventKind:
         HarnessEventKind.TOOL_RESULT,
         HarnessEventKind.TOOL_SUMMARY,
         HarnessEventKind.CONTEXT_USAGE,
+        HarnessEventKind.PROVIDER_SESSION,
         HarnessEventKind.WARNING,
+        HarnessEventKind.AGENT_SPAWNED,
+        HarnessEventKind.AGENT_WAIT_STARTED,
+        HarnessEventKind.AGENT_COMPLETED,
     }:
         return RunEventKind.TOOL
     return RunEventKind.OUTPUT

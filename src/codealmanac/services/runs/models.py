@@ -6,7 +6,11 @@ from pydantic import field_validator, model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
+from codealmanac.services.harnesses.models import (
+    HarnessEvent,
+    HarnessKind,
+    HarnessTranscriptRef,
+)
 
 
 class RunOperation(StrEnum):
@@ -72,6 +76,7 @@ class RunLogEvent(CodeAlmanacModel):
     timestamp: datetime
     kind: RunEventKind
     message: str
+    harness_event: HarnessEvent | None = None
 
     @field_validator("run_id")
     @classmethod

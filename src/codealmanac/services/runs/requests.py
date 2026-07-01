@@ -5,7 +5,7 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessTranscriptRef
+from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunOperation,
@@ -115,6 +115,7 @@ class RecordRunEventRequest(CodeAlmanacModel):
     kind: RunEventKind
     message: str
     wiki: str | None = None
+    harness_event: HarnessEvent | None = None
 
 
 class MarkRunRunningRequest(CodeAlmanacModel):

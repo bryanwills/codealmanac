@@ -66,6 +66,15 @@
   failures when overview and page requests refreshed the same wiki index at the
   same time. `connect_sqlite(...)` now sets a 30-second SQLite busy timeout
   before WAL mode, and `tests/test_database.py` guards the PRAGMA.
+- Added slice-82 rich harness event logs after comparing the current Python
+  display-only `HarnessEvent` with the archived Codex app-server event model.
+  `HarnessEvent` now carries structured tool display, actor attribution, usage,
+  provider session, failure metadata, agent trace, and raw JSON payload fields.
+  `RunLogEvent` persists the readable row plus optional nested `harness_event`
+  JSON, preserving text `jobs logs` while making JSON logs the CodeAlmanac-owned
+  inspectable transcript surface for future app-server and Claude SDK adapters.
+- Focused slice-82 tests cover structured event persistence through a real
+  ingest workflow and direct run-service logging.
 
 ## 2026-06-29
 

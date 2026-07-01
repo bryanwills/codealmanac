@@ -86,6 +86,7 @@ class PageRunWorkflow:
                 run_id=request.context.run_id,
                 kind=request.kind,
                 message=request.message,
+                harness_event=request.harness_event,
             )
         )
 
@@ -179,6 +180,7 @@ class PageRunWorkflow:
                     context=context,
                     kind=harness_run_event_kind(event),
                     message=event.message,
+                    harness_event=event,
                 )
             )
 

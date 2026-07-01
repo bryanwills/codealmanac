@@ -7,7 +7,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from codealmanac.core.errors import ConflictError, NotFoundError
-from codealmanac.services.harnesses.models import HarnessTranscriptRef
+from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
 from codealmanac.services.runs.models import (
     TERMINAL_RUN_STATUSES,
     QueuedRun,
@@ -151,6 +151,7 @@ class RunStore:
         run_id: str,
         kind: RunEventKind,
         message: str,
+        harness_event: HarnessEvent | None = None,
     ) -> RunLogEvent:
         record = self.read(almanac_path, run_id)
         event = RunLogEvent(
@@ -159,6 +160,7 @@ class RunStore:
             timestamp=datetime.now(UTC),
             kind=kind,
             message=message,
+            harness_event=harness_event,
         )
         append_event(almanac_path, event)
         write_record(
@@ -393,7 +395,7 @@ def append_event(almanac_path: Path, event: RunLogEvent) -> None:
     path = run_log_path(almanac_path, event.run_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as file:
-        file.write(event.model_dump_json())
+        file.write(event.model_dump_json(exclude_none=True))
         file.write("\n")
 
 

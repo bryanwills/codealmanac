@@ -8,7 +8,12 @@ from pydantic import ValidationError
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
-from codealmanac.services.harnesses.models import HarnessKind, HarnessTranscriptRef
+from codealmanac.services.harnesses.models import (
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessKind,
+    HarnessTranscriptRef,
+)
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunOperation,
@@ -63,6 +68,19 @@ def test_runs_service_records_job_and_events(
             message="read design note",
         )
     )
+    harness_log = app.runs.record_event(
+        RecordRunEventRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            kind=RunEventKind.TOOL,
+            message="codex provider session provider-thread-1",
+            harness_event=HarnessEvent(
+                kind=HarnessEventKind.PROVIDER_SESSION,
+                message="codex provider session provider-thread-1",
+                provider_session_id="provider-thread-1",
+            ),
+        )
+    )
     transcript = HarnessTranscriptRef(
         kind=HarnessKind.CODEX,
         session_id="codex-session-1",
@@ -91,6 +109,10 @@ def test_runs_service_records_job_and_events(
     assert running.status == RunStatus.RUNNING
     assert running.started_at is not None
     assert event.sequence == 3
+    assert event.harness_event is None
+    assert harness_log.sequence == 4
+    assert harness_log.harness_event is not None
+    assert harness_log.harness_event.provider_session_id == "provider-thread-1"
     assert attached.harness_transcript == transcript
     assert finished.status == RunStatus.DONE
     assert finished.started_at == running.started_at
@@ -103,8 +125,12 @@ def test_runs_service_records_job_and_events(
         RunEventKind.STATUS,
         RunEventKind.STATUS,
         RunEventKind.MESSAGE,
+        RunEventKind.TOOL,
         RunEventKind.STATUS,
     )
+    assert log[2].harness_event is None
+    assert log[3].harness_event is not None
+    assert log[3].harness_event.provider_session_id == "provider-thread-1"
     assert (repo / "almanac/jobs" / f"{record.run_id}.json").is_file()
     assert (repo / "almanac/jobs" / f"{record.run_id}.jsonl").is_file()
 

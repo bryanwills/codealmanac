@@ -119,6 +119,12 @@ It is the constraint document for future agents.
   expose them. Codex should use the Codex app-server harness, not `codex exec`,
   for the main lifecycle path. Claude should use the richer SDK/event harness,
   not only the one-shot CLI print path, when porting archive behavior.
+- 2026-07-01: The first rich event-log layer is implemented in Python:
+  `HarnessEvent` can carry structured tool display, actor attribution, usage,
+  provider session, failure metadata, agent trace, and raw JSON fields, and
+  `RunLogEvent` persists an optional nested `harness_event` payload beside the
+  readable log row. The Codex app-server adapter and richer Claude SDK adapter
+  remain required follow-up transport work.
 - 2026-07-01: The default lifecycle harness is Codex. Docs, config defaults,
   setup recommendations, and no-flag lifecycle behavior must agree on that.
 - 2026-06-29: Sync pending claims store the run id plus claimed byte/line

@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 81 multi-wiki serve.
+- Latest implementation slice: slice 82 rich harness event logs.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -103,6 +103,14 @@ Updated: 2026-07-01
   viewer routes accept a `wiki` query selector, the static sidebar switcher uses
   stable `workspace_id` values, unavailable registry entries are skipped without
   being dropped, and `serve --wiki` narrows the viewer to one workspace.
+- Slice 82 upgrades the Python harness event contract from display-only events
+  to structured normalized event payloads. `HarnessEvent` can now carry tool
+  display details, actor/root/helper attribution, usage counts, provider session
+  ids, failure metadata, agent trace records, and raw JSON debug payloads.
+  `RunLogEvent` stores the readable `kind`/`message` plus optional nested
+  `harness_event` JSON, so text `jobs logs` remains stable while JSON logs can
+  serve as the inspectable transcript surface. Codex app-server transport and
+  Claude SDK streaming are still the next harness parity work.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

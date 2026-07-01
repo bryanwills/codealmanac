@@ -1135,6 +1135,11 @@ def test_cli_jobs_inspects_local_run_records(
     assert "1\tstatus\tqueued ingest\n" in log_output.out
     assert "2\tmessage\tread note\n" in log_output.out
 
+    assert main(["jobs", "logs", record.run_id, "--json"]) == 0
+    logs_json_output = capsys.readouterr()
+    log_events = json.loads(logs_json_output.out)
+    assert "harness_event" not in log_events[0]
+
     assert main(["jobs", "attach", record.run_id]) == 0
     attach_output = capsys.readouterr()
     assert "1\tstatus\tqueued ingest\n" in attach_output.out

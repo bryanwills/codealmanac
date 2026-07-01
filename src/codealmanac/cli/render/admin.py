@@ -205,7 +205,7 @@ def render_run(record: RunRecord, json_output: bool) -> None:
 
 def render_run_log(events: tuple[RunLogEvent, ...], json_output: bool) -> None:
     if json_output:
-        data = [event.model_dump(mode="json") for event in events]
+        data = [event.model_dump(mode="json", exclude_none=True) for event in events]
         print(json.dumps(data, indent=2))
         return
     for event in events:

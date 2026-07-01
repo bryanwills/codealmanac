@@ -104,6 +104,7 @@ class RunsService:
             request.run_id,
             request.kind,
             request.message,
+            request.harness_event,
         )
 
     def mark_running(self, request: MarkRunRunningRequest) -> RunRecord:
