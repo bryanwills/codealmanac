@@ -1138,3 +1138,12 @@ architecture and read-model tests passed after the split. Public CLI dogfood
 initialized a temp repo, added a page, searched original text, edited the page,
 and searched changed text through implicit refresh. Full pytest, Ruff, and diff
 hygiene passed.
+Slice 103 keeps sync behavior unchanged while splitting deterministic sync
+policy behind `workflows/sync/policy.py`. `decisions.py` owns cursor and
+pending-run decisions, `entries.py` owns ledger-entry transitions,
+`identity.py` owns workspace/session/ledger identity helpers, `snapshots.py`
+owns transcript reading and hashes, `reporting.py` owns skip/start rows, and
+`guidance.py` owns generated Ingest guidance. Focused sync workflow and
+architecture tests passed. Public CLI dogfood initialized a temp repo, created
+a temp Codex transcript, and confirmed `sync status --json` reported scanned 1,
+eligible 1, and ready `codex-sync-103` lines 1-1.

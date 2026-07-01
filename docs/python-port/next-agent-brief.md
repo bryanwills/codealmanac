@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 102 index store boundaries.
+- Latest implementation slice: slice 103 sync policy boundaries.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -211,6 +211,11 @@ Updated: 2026-07-01
   transitions, pending-run reconciliation, skip rows, and generated cursor
   guidance. Architecture tests prevent the policy helpers from regrowing in
   `service.py` and prevent policy from importing orchestration services.
+- Slice 103 keeps `workflows/sync/policy.py` as that facade while splitting
+  deterministic policy by rule family: `decisions.py`, `entries.py`,
+  `identity.py`, `snapshots.py`, `reporting.py`, and `guidance.py`.
+  Architecture tests keep `SyncWorkflow` orchestration-only and keep the facade
+  small.
 - Slice 96 splits the filesystem source-runtime integration by responsibility.
   `integrations/sources/filesystem/adapter.py` remains the 191-line
   `SourceRuntimeAdapter` implementation, while `documents.py` owns text
@@ -320,6 +325,8 @@ Updated: 2026-07-01
   of the transport client.
 - Slice 102 keeps index behavior unchanged while splitting schema, source
   loading, and projection writes out of the `IndexStore` facade.
+- Slice 103 keeps sync behavior unchanged while splitting deterministic sync
+  policy behind the existing `workflows/sync/policy.py` facade.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,
@@ -844,6 +851,10 @@ Behavior:
 - Slice 102 index store boundary split, focused architecture/read-model tests,
   focused Ruff over index modules and architecture tests, then full pytest/full
   Ruff/diff check
+- Slice 103 sync policy boundary split, focused sync workflow and architecture
+  tests, focused Ruff over sync modules and architecture tests, public
+  `sync status --json` dogfood against a temp Codex transcript, then full
+  pytest/full Ruff/diff check
 
 ## Next Move
 

@@ -178,14 +178,14 @@ scopes them to the requested local wiki, loads run records and ledgers, starts
 foreground ingest or queues background ingest, spawns local workers, persists
 ledger changes, and assembles summaries.
 
-`workflows/sync/policy.py` owns deterministic sync ledger cursor and retry
-policy. It builds ledger keys, finds matching ledger entries, reads transcript
-snapshots, hashes cursor prefixes, writes pending/absorbed/failed entry
-transitions, reconciles terminal linked runs, treats active linked runs as
-skipped work, reports terminal linked runs as needs-reconcile during read-only
-status, increments failed attempts when transcript ingest fails, stops retrying
-when the failed-attempt budget is exhausted, and generates cursor guidance for
-Ingest. Scheduled sync uses the same workflow/policy split.
+`workflows/sync/policy.py` is the deterministic sync-policy facade imported by
+`SyncWorkflow`. `decisions.py` owns cursor decisions and pending-run
+reconciliation. `entries.py` owns pending/absorbed/failed ledger-entry
+transitions. `identity.py` owns workspace, session, run-record, and ledger-key
+identity helpers. `snapshots.py` owns transcript snapshot reading, line counts,
+and cursor-prefix hashes. `reporting.py` owns skipped/started summary rows.
+`guidance.py` owns generated cursor guidance for Ingest. Scheduled sync uses
+the same workflow/policy split.
 
 The same source service owns `SourceRuntimeAdapter`, the port used by Ingest to
 turn selected source refs into bounded readable material before harness

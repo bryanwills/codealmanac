@@ -2418,3 +2418,33 @@ Follow-up test:
 If future index work adds source filters, schema migrations, or projection
 tables, extend the named module that owns the reason to change instead of
 growing `store.py`.
+
+## 2026-07-01 - Sync Policy Needs Rule-Family Modules
+
+Old hypothesis:
+After slice 95, one `workflows/sync/policy.py` module could own all
+deterministic sync policy because `SyncWorkflow` had already been separated
+from ledger and cursor mechanics.
+
+New hypothesis:
+`policy.py` should be a facade, not the whole sync-policy implementation.
+Cursor decisions, ledger-entry transitions, identity matching, transcript
+snapshots, summary rows, and generated prompt guidance each have separate
+change triggers.
+
+Evidence that forced the change:
+After slice 102, `workflows/sync/policy.py` was the largest production module
+at 417 lines. It mixed transcript file IO, SHA-256 cursor hashing, ledger-key
+compatibility, pending/absorbed/failed transitions, retry-budget decisions,
+pending-run reconciliation, skip/start result construction, and prompt guidance.
+
+Code or product assumption affected:
+Slice 103 keeps the public workflow and service imports unchanged.
+`SyncWorkflow` still imports from `workflows/sync/policy.py`, while the facade
+delegates to `decisions.py`, `entries.py`, `identity.py`, `snapshots.py`,
+`reporting.py`, and `guidance.py`.
+
+Follow-up test:
+If a future sync feature adds new retry policy, source-app filtering, scheduler
+ownership, or prompt guidance, extend the module that owns that rule family and
+keep `service.py` orchestration-only.

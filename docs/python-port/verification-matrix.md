@@ -1029,6 +1029,17 @@ means the goal remains active.
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
 
+## Gates For Slice 103 Sync Policy Boundaries
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused sync/architecture tests | `uv run pytest tests/test_sync_workflow.py::test_sync_status_reports_ready_transcript_ranges tests/test_sync_workflow.py::test_sync_run_ingests_ready_transcripts_and_advances_ledger tests/test_sync_workflow.py::test_sync_background_queues_ingest_and_leaves_pending_claim tests/test_sync_workflow.py::test_sync_run_reconciles_done_pending_run_before_new_work tests/test_architecture.py::test_sync_workflow_policy_stays_out_of_service_orchestration -q` | passed; 5 tests |
+| Focused sync lint | `uv run ruff check src/codealmanac/workflows/sync tests/test_architecture.py` | passed |
+| Public CLI dogfood | isolated temp `HOME`; temp repo; `codealmanac init`; temp Codex transcript under `.codex/sessions`; `codealmanac sync --quiet 1s --from codex status --json` | passed; JSON reported scanned 1, eligible 1, ready `codex-sync-103` lines 1-1 |
+| Full tests | `uv run pytest` | passed; 325 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+
 ## Gates For Slice 84 Claude SDK Harness
 
 | Gate | Command | 2026-07-01 result |

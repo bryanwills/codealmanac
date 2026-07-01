@@ -453,9 +453,22 @@ def test_run_queue_workflow_stays_operation_dispatch_only():
 
 def test_sync_workflow_policy_stays_out_of_service_orchestration():
     service = SRC_ROOT / "workflows/sync/service.py"
-    policy = SRC_ROOT / "workflows/sync/policy.py"
+    sync_root = SRC_ROOT / "workflows/sync"
+    policy = sync_root / "policy.py"
+    policy_modules = (
+        policy,
+        sync_root / "decisions.py",
+        sync_root / "entries.py",
+        sync_root / "guidance.py",
+        sync_root / "identity.py",
+        sync_root / "reporting.py",
+        sync_root / "snapshots.py",
+    )
     service_text = service.read_text(encoding="utf-8")
     policy_text = policy.read_text(encoding="utf-8")
+    combined_policy_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in policy_modules
+    )
 
     forbidden_service_fragments = (
         "def evaluate_cursor(",
@@ -476,8 +489,9 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
         "codealmanac.services.workspaces.service",
     )
 
-    assert policy.is_file()
+    assert all(path.is_file() for path in policy_modules)
     assert len(service_text.splitlines()) <= 320
+    assert len(policy_text.splitlines()) <= 80
     assert [
         fragment
         for fragment in forbidden_service_fragments
@@ -486,8 +500,32 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
     assert [
         fragment
         for fragment in forbidden_policy_imports
-        if fragment in policy_text
+        if fragment in combined_policy_text
     ] == []
+    assert "from codealmanac.workflows.sync.decisions import" in policy_text
+    assert "from codealmanac.workflows.sync.entries import" in policy_text
+    assert "from codealmanac.workflows.sync.guidance import" in policy_text
+    assert "from codealmanac.workflows.sync.identity import" in policy_text
+    assert "from codealmanac.workflows.sync.reporting import" in policy_text
+    assert "from codealmanac.workflows.sync.snapshots import" in policy_text
+    assert "def evaluate_cursor(" in (
+        sync_root / "decisions.py"
+    ).read_text(encoding="utf-8")
+    assert "def pending_entry(" in (sync_root / "entries.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def ledger_key(" in (sync_root / "identity.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def read_transcript(" in (sync_root / "snapshots.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def sync_ingest_guidance(" in (sync_root / "guidance.py").read_text(
+        encoding="utf-8"
+    )
+    assert "def sync_started(" in (sync_root / "reporting.py").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_viewer_jobs_surface_stays_read_only():
