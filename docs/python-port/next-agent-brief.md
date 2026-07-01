@@ -131,6 +131,10 @@ Updated: 2026-07-01
   block mapping, and task lifecycle messages live in separate modules. An
   architecture test keeps Claude harness modules below 220 lines and prevents
   `events.py` from regrowing block mapping or raw conversion logic.
+- Slice 85 review removed the remaining `events.py` facade imports from
+  `ClaudeSdkClient`. The client now imports state, SDK-message helpers, and
+  result helpers from their owning modules; `events.py` only dispatches SDK
+  messages.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -700,6 +704,8 @@ Behavior:
   diff check
 - Slice 85 focused Claude adapter and architecture tests, focused ruff, full
   pytest, full ruff, and diff check
+- Slice 85 review fix focused Claude adapter and architecture tests, focused
+  ruff, full pytest, full ruff, and diff check
 
 ## Next Move
 

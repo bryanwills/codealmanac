@@ -16,17 +16,21 @@ from claude_agent_sdk import (
 )
 
 from codealmanac.integrations.harnesses.claude.events import (
-    ClaudeMessage,
-    ClaudeRunState,
-    done_event,
     map_claude_message,
-    provider_session_event,
-    result_from_state,
-    session_id_for_message,
 )
 from codealmanac.integrations.harnesses.claude.failures import (
     classify_claude_failure,
 )
+from codealmanac.integrations.harnesses.claude.result import (
+    done_event,
+    provider_session_event,
+    result_from_state,
+)
+from codealmanac.integrations.harnesses.claude.sdk_messages import (
+    ClaudeMessage,
+    session_id_for_message,
+)
+from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
 from codealmanac.services.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,

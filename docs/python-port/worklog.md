@@ -116,6 +116,10 @@
 - Added an architecture test that keeps Claude harness modules below 220 lines
   and prevents `events.py` from regrowing block mapping or raw conversion
   logic.
+- Slice-85 review found that `ClaudeSdkClient` still imported state and result
+  helpers through `events.py`. The review fix moved those imports to
+  `state.py`, `sdk_messages.py`, and `result.py`, and expanded the architecture
+  test so `events.py` remains dispatch-only.
 
 ## 2026-06-29
 

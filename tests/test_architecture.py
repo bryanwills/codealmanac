@@ -236,7 +236,10 @@ def test_claude_sdk_event_mapper_stays_split_by_responsibility():
             "ToolResultBlock",
             "TextBlock",
             "HarnessAgentTrace",
+            "done_event",
             "json_value",
+            "provider_session_event",
+            "result_from_state",
             "asdict",
         )
         if fragment in event_dispatch

@@ -37,6 +37,7 @@ means the goal remains active.
 | Full tests | `uv run pytest` | 293 passed |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+| Review fix | `uv run pytest tests/test_claude_adapter.py tests/test_architecture.py`; `uv run ruff check src/codealmanac/integrations/harnesses/claude tests/test_claude_adapter.py tests/test_architecture.py`; `uv run pytest`; `uv run ruff check .`; `git diff --check` | passed; 26 focused tests and 293 full tests |
 
 ## Gates For Slice-1 Review Fix
 
