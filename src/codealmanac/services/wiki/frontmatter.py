@@ -6,7 +6,11 @@ import frontmatter
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 from yaml import YAMLError
 
-from codealmanac.services.wiki.models import ParsedFrontmatter
+from codealmanac.services.wiki.models import (
+    PageSource,
+    PageSourceType,
+    ParsedFrontmatter,
+)
 
 
 def parse_frontmatter(raw: str) -> ParsedFrontmatter:
@@ -21,6 +25,7 @@ def parse_frontmatter(raw: str) -> ParsedFrontmatter:
         summary=fields.summary,
         topics=fields.topics,
         files=fields.files,
+        sources=fields.sources,
         archived_at=fields.archived_at,
         superseded_by=fields.superseded_by,
         body=post.content,
@@ -47,6 +52,7 @@ class FrontmatterFields(BaseModel):
     summary: str | None = None
     topics: tuple[str, ...] = ()
     files: tuple[str, ...] = ()
+    sources: tuple[PageSource, ...] = ()
     archived_at: int | None = None
     superseded_by: str | None = None
 
@@ -67,6 +73,18 @@ class FrontmatterFields(BaseModel):
             if isinstance(item, str) and item.strip():
                 values.append(item.strip())
         return tuple(values)
+
+    @field_validator("sources", mode="before")
+    @classmethod
+    def source_tuple(cls, value: Any) -> tuple[PageSource, ...]:
+        if not isinstance(value, list | tuple):
+            return ()
+        sources: list[PageSource] = []
+        for item in value:
+            source = parse_source_item(item)
+            if source is not None:
+                sources.append(source)
+        return tuple(sources)
 
     @field_validator("archived_at", mode="before")
     @classmethod
@@ -92,3 +110,72 @@ def timestamp_seconds(value: datetime) -> int:
     if value.tzinfo is None:
         value = value.replace(tzinfo=UTC)
     return int(value.timestamp())
+
+
+def parse_source_item(value: Any) -> PageSource | None:
+    if not isinstance(value, dict):
+        return None
+    source_id = text_field(value, "id")
+    raw_type = text_field(value, "type")
+    if source_id is None or raw_type is None:
+        return None
+    try:
+        source_type = PageSourceType(raw_type)
+    except ValueError:
+        return None
+    target = source_target(value, source_type)
+    return PageSource(
+        source_id=source_id,
+        source_type=source_type,
+        target=target,
+        title=text_field(value, "title"),
+        retrieved_at=scalar_text_field(value, "retrieved_at"),
+        note=text_field(value, "note"),
+    )
+
+
+def source_target(value: dict[Any, Any], source_type: PageSourceType) -> str | None:
+    fields_by_type = {
+        PageSourceType.FILE: ("path",),
+        PageSourceType.WEB: ("url",),
+        PageSourceType.COMMIT: ("commit", "sha", "ref"),
+        PageSourceType.PR: ("pr", "number", "url"),
+        PageSourceType.ISSUE: ("issue", "number", "url"),
+        PageSourceType.CONVERSATION: ("path", "run_id", "session_id"),
+        PageSourceType.WIKI: ("page", "slug", "path"),
+        PageSourceType.MANUAL: ("path", "page", "title"),
+    }
+    for field in fields_by_type[source_type]:
+        target = text_or_number_field(value, field)
+        if target is not None:
+            return target
+    return None
+
+
+def text_field(value: dict[Any, Any], key: str) -> str | None:
+    field = value.get(key)
+    if isinstance(field, str) and field.strip():
+        return field.strip()
+    return None
+
+
+def text_or_number_field(value: dict[Any, Any], key: str) -> str | None:
+    text = text_field(value, key)
+    if text is not None:
+        return text
+    field = value.get(key)
+    if isinstance(field, int | float):
+        return str(field)
+    return None
+
+
+def scalar_text_field(value: dict[Any, Any], key: str) -> str | None:
+    text = text_field(value, key)
+    if text is not None:
+        return text
+    field = value.get(key)
+    if isinstance(field, datetime | date):
+        return field.isoformat()
+    if isinstance(field, int | float):
+        return str(field)
+    return None

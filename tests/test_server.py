@@ -20,6 +20,7 @@ def test_server_serves_static_assets_and_viewer_api(
     topic = client.get("/api/topic/auth")
     javascript = client.get("/app.js")
     module = client.get("/assets/viewer/main.js")
+    renderers_module = client.get("/assets/viewer/renderers.js")
     api_module = client.get("/assets/viewer/api.js")
 
     assert index.status_code == 200
@@ -34,10 +35,14 @@ def test_server_serves_static_assets_and_viewer_api(
     assert module.headers["content-type"].startswith("text/javascript")
     assert 'from "./renderers.js"' in module.text
     assert "dataset.railKind" in module.text
+    assert renderers_module.status_code == 200
+    assert "Sources" in renderers_module.text
     assert api_module.status_code == 200
     assert "/api/file?path=" in api_module.text
     assert overview.json()["workspace"]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
+    assert page.json()["sources"][0]["source_id"] == "session-file"
+    assert page.json()["sources"][0]["target"] == "src/auth/session.py"
     assert '<a href="#/page/session-store">Session Store</a>' in page.json()["html"]
     assert [row["slug"] for row in search.json()["pages"]] == ["auth-flow"]
     assert file.json()["kind"] == "file"

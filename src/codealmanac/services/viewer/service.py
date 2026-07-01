@@ -11,6 +11,7 @@ from codealmanac.services.viewer.models import (
     ViewerFileReference,
     ViewerOverview,
     ViewerPage,
+    ViewerPageSource,
     ViewerPageSummary,
     ViewerSearch,
     ViewerTopic,
@@ -84,6 +85,17 @@ class ViewerService:
             file_refs=tuple(
                 ViewerFileReference(path=ref.path, is_dir=ref.is_dir)
                 for ref in page.file_refs
+            ),
+            sources=tuple(
+                ViewerPageSource(
+                    source_id=source.source_id,
+                    source_type=source.source_type.value,
+                    target=source.target,
+                    title=source.title,
+                    retrieved_at=source.retrieved_at,
+                    note=source.note,
+                )
+                for source in page.sources
             ),
             related_pages=related_pages,
         )

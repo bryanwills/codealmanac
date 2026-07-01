@@ -1962,3 +1962,29 @@ Slice 77 adds `SyncExecution` and `codealmanac sync --background`. Plain
 Follow-up test:
 If automation defaults change later, update the scheduler command contract,
 README/manual text, and sync ledger tests in the same slice.
+
+## 2026-07-01 - Page Sources Are Read-Model Provenance
+
+Old hypothesis:
+Structured page `sources:` could wait until a broader migration/source command
+surface existed.
+
+New hypothesis:
+Structured page `sources:` are a core read-model contract and should land before
+any migration command. The index can parse, project, display, and health-check
+source provenance without adding source snapshots or source-query machinery.
+
+Evidence that forced the change:
+The live agreement and repo wiki both define `sources:` as the page evidence
+model. The Python read model still derived file-aware search only from legacy
+`files:` and wikilinks, so canonical `sources[type=file]` entries were invisible
+to `search --mentions`, `show`, the viewer, and health.
+
+Code or product assumption affected:
+Slice 78 adds typed `PageSource` parsing, the `page_sources` SQLite projection,
+file-ref derivation from file sources, source readback, and source-health
+warnings. It does not add migration or source-catalog machinery.
+
+Follow-up test:
+When `migrate legacy-sources` is reopened, prove it rewrites frontmatter only
+and preserves body bytes; do not fold that migration into health or Garden.

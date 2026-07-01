@@ -66,6 +66,58 @@ Session persistence details.
     assert page.wikilinks_in == ("auth-flow",)
 
 
+def test_read_model_projects_structured_page_sources(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(
+        repo,
+        "source-backed.md",
+        """---
+title: Source Backed
+topics: [evidence]
+sources:
+  - id: service
+    type: file
+    path: src/auth/service.py
+    note: Defines the authentication service.
+  - id: provider-docs
+    type: web
+    url: https://example.com/provider
+    title: Provider docs
+    retrieved_at: 2026-07-01
+    note: Documents provider behavior.
+---
+# Source Backed
+
+The auth service checks provider behavior. [@service] [@provider-docs]
+""",
+    )
+
+    mentioned = app.search.search(
+        SearchPagesRequest(cwd=repo, mentions="src/auth/service.py")
+    )
+    page = app.pages.show(ShowPageRequest(cwd=repo, slug="source-backed"))
+
+    assert [row.slug for row in mentioned] == ["source-backed"]
+    assert [source.source_id for source in page.sources] == [
+        "service",
+        "provider-docs",
+    ]
+    assert page.sources[0].source_type == "file"
+    assert page.sources[0].target == "src/auth/service.py"
+    assert page.sources[1].source_type == "web"
+    assert page.sources[1].title == "Provider docs"
+    assert page.sources[1].retrieved_at == "2026-07-01"
+    assert [ref.path for ref in page.file_refs] == ["src/auth/service.py"]
+
+
 def test_search_auto_registers_existing_wiki(
     tmp_path: Path,
     isolated_home: Path,

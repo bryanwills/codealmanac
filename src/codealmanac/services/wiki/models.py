@@ -17,6 +17,26 @@ class FileReference(CodeAlmanacModel):
     is_dir: bool
 
 
+class PageSourceType(StrEnum):
+    FILE = "file"
+    WEB = "web"
+    COMMIT = "commit"
+    PR = "pr"
+    ISSUE = "issue"
+    CONVERSATION = "conversation"
+    WIKI = "wiki"
+    MANUAL = "manual"
+
+
+class PageSource(CodeAlmanacModel):
+    source_id: str
+    source_type: PageSourceType
+    target: str | None = None
+    title: str | None = None
+    retrieved_at: str | None = None
+    note: str | None = None
+
+
 class PageLink(CodeAlmanacModel):
     kind: WikilinkKind
     target: str
@@ -47,6 +67,7 @@ class ParsedFrontmatter(CodeAlmanacModel):
     summary: str | None = None
     topics: tuple[str, ...] = ()
     files: tuple[str, ...] = ()
+    sources: tuple[PageSource, ...] = ()
     archived_at: int | None = None
     superseded_by: str | None = None
     body: str
@@ -63,6 +84,7 @@ class PageDocument(CodeAlmanacModel):
     archived_at: int | None
     superseded_by: str | None
     topics: tuple[str, ...]
+    sources: tuple[PageSource, ...]
     file_refs: tuple[FileReference, ...]
     page_links: tuple[str, ...]
     cross_wiki_links: tuple[tuple[str, str], ...]

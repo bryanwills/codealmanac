@@ -8,6 +8,7 @@ import {
   pageSideLink,
   pageTitleBlock,
   sideSection,
+  sourceSideItem,
   statsGrid,
 } from "./components.js";
 
@@ -46,6 +47,7 @@ export async function renderPage(context, slug) {
   sidePanel.append(
     sideSection("Backlinks", page.backlinks.map((item) => pageSideLink(item, item))),
     sideSection("Files", page.file_refs.map((file) => fileSideLink(file.path))),
+    sideSection("Sources", page.sources.map((source) => sourceSideItem(source))),
     sideSection(
       "Related",
       page.related_pages.map((related) =>

@@ -34,6 +34,15 @@ class ViewerFileReference(CodeAlmanacModel):
     is_dir: bool
 
 
+class ViewerPageSource(CodeAlmanacModel):
+    source_id: str
+    source_type: str
+    target: str | None
+    title: str | None
+    retrieved_at: str | None
+    note: str | None
+
+
 class ViewerOverview(CodeAlmanacModel):
     workspace: ViewerWorkspace
     page_count: int
@@ -54,6 +63,7 @@ class ViewerPage(CodeAlmanacModel):
     backlinks: tuple[str, ...]
     outgoing_links: tuple[str, ...]
     file_refs: tuple[ViewerFileReference, ...]
+    sources: tuple[ViewerPageSource, ...]
     related_pages: tuple[ViewerPageSummary, ...]
 
 

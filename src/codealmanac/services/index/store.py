@@ -36,7 +36,7 @@ from codealmanac.services.wiki.models import PageDocument
 from codealmanac.services.wiki.topics import TopicDefinition, load_topics_yaml
 from codealmanac.services.workspaces.roots import is_initialized_almanac_root
 
-SCHEMA_VERSION = 20260630
+SCHEMA_VERSION = 20260701
 
 SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS pages (
@@ -79,6 +79,20 @@ CREATE TABLE IF NOT EXISTS file_refs (
 );
 CREATE INDEX IF NOT EXISTS idx_file_refs_path ON file_refs(path);
 
+CREATE TABLE IF NOT EXISTS page_sources (
+  page_slug    TEXT NOT NULL REFERENCES pages(slug) ON DELETE CASCADE,
+  source_order INTEGER NOT NULL,
+  source_id    TEXT NOT NULL,
+  source_type  TEXT NOT NULL,
+  target       TEXT,
+  title        TEXT,
+  retrieved_at TEXT,
+  note         TEXT,
+  PRIMARY KEY (page_slug, source_order)
+);
+CREATE INDEX IF NOT EXISTS idx_page_sources_id ON page_sources(page_slug, source_id);
+CREATE INDEX IF NOT EXISTS idx_page_sources_type ON page_sources(source_type);
+
 CREATE TABLE IF NOT EXISTS wikilinks (
   source_slug TEXT NOT NULL REFERENCES pages(slug) ON DELETE CASCADE,
   target_slug TEXT NOT NULL,
@@ -103,6 +117,7 @@ CREATE TABLE IF NOT EXISTS index_metadata (
 DROP_DERIVED_INDEX_DDL = """
 DROP TABLE IF EXISTS cross_wiki_links;
 DROP TABLE IF EXISTS wikilinks;
+DROP TABLE IF EXISTS page_sources;
 DROP TABLE IF EXISTS file_refs;
 DROP TABLE IF EXISTS page_topics;
 DROP TABLE IF EXISTS topic_parents;
@@ -362,6 +377,27 @@ def insert_document(connection: SQLiteConnection, document: PageDocument) -> Non
             VALUES (?, ?, ?, ?)
             """,
             (document.slug, ref.path, ref.original_path, int(ref.is_dir)),
+        )
+    for source_order, source in enumerate(document.sources):
+        connection.execute(
+            """
+            INSERT INTO page_sources
+              (
+                page_slug, source_order, source_id, source_type, target, title,
+                retrieved_at, note
+              )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                document.slug,
+                source_order,
+                source.source_id,
+                source.source_type.value,
+                source.target,
+                source.title,
+                source.retrieved_at,
+                source.note,
+            ),
         )
     for target in document.page_links:
         connection.execute(

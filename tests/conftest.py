@@ -33,10 +33,21 @@ def viewer_repo(tmp_path: Path, isolated_home: Path) -> tuple[Path, CodeAlmanac]
 title: Auth Flow
 summary: Login path.
 topics: [auth]
+sources:
+  - id: session-file
+    type: file
+    path: src/auth/session.py
+    note: Defines the session constant.
+  - id: provider-docs
+    type: web
+    url: https://example.com/provider
+    title: Provider docs
+    note: Documents provider behavior.
 ---
 # Auth Flow
 
 Login checks [[src/auth/session.py]] and [[session-store|Session Store]].
+[@session-file] [@provider-docs]
 
 Inline code keeps `[[session-store]]` as source text.
 

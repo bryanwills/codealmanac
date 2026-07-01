@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 77 sync background enqueue.
+- Latest implementation slice: slice 78 structured page sources read model.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -79,6 +79,12 @@ Updated: 2026-07-01
   `/assets/viewer/main.js`; nested modules split API calls, routes, shared DOM
   components, and screen renderers. The server validates nested static asset
   paths before serving them.
+- Structured page `sources:` are now part of the SQLite read model. The indexer
+  parses supported page provenance types, projects `page_sources`, derives
+  file refs from `sources[type=file]`, exposes sources through `show --meta`,
+  `show --json`, and viewer page APIs, and reports missing citations, unused
+  sources, and duplicate source ids through health. This is page evidence,
+  not the source-runtime input model.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy
@@ -139,6 +145,11 @@ Updated: 2026-07-01
   pending claim linked to the queued run id, and only then spawns a worker.
   Plain `sync` remains foreground, and local automation still schedules
   foreground sync until unattended background policy is reopened.
+- Slice 78 restores structured page source readback in the Python index. Page
+  frontmatter remains canonical, `PageSource` is normalized before SQLite,
+  `page_sources` is a derived projection, and source-health warnings stay
+  report-only. No migration command, source catalog, or web snapshot machinery
+  was added.
 - Filesystem directory runtime uses Git listing inside worktrees, then falls
   back to the bounded Python/pathspec walk outside Git.
 - Directory runtime ranks changed and untracked files before unchanged files,

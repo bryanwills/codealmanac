@@ -123,6 +123,21 @@ export function fileSideLink(path) {
   return sideLink(fileHref(path), path);
 }
 
+export function sourceSideItem(source) {
+  const label = sourceLabel(source);
+  if (source.source_type === "file" && source.target) {
+    return sideLink(fileHref(source.target), label);
+  }
+  if (source.source_type === "web" && source.target) {
+    const link = sideLink(source.target, label);
+    link.rel = "noreferrer";
+    return link;
+  }
+  const item = document.createElement("span");
+  item.textContent = label;
+  return item;
+}
+
 export function emptyState(title, body) {
   const box = document.createElement("section");
   box.className = "app-empty";
@@ -194,4 +209,9 @@ function sidebarEmpty() {
   const empty = document.createElement("span");
   empty.textContent = "None";
   return empty;
+}
+
+function sourceLabel(source) {
+  const target = source.target ? ` ${source.target}` : "";
+  return `${source.source_id} [${source.source_type}]${target}`;
 }

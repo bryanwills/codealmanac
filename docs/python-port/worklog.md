@@ -910,3 +910,16 @@ with a fake Codex transcript and project-pinned `uv run`; public
 worker, and the worker failed at non-Git preflight before any provider harness.
 A follow-up foreground sync reconciled the pending claim into an `ingest-failed`
 ledger entry.
+Slice 78 restores structured page `sources:` as read-model provenance. The wiki
+frontmatter parser now normalizes supported source entries into typed
+`PageSource` values, file sources derive file refs for `search --mentions`, the
+index projects `page_sources`, `show --meta` and viewer page APIs expose source
+records, and health reports missing citations, unused sources, and duplicate
+source ids. The slice deliberately skips migration commands, source snapshots,
+and source-catalog query machinery.
+Focused pytest passed with 78 targeted tests, full pytest passed with 273 tests,
+full Ruff passed, and `git diff --check` passed. Dogfood used an isolated HOME
+and temp repo: public `search --mentions src/auth/session.py` found a page
+through `sources[type=file]`, `show --meta` and `show --json` displayed file
+and web sources, and `health --json` reported no source warnings when citations
+matched source ids.

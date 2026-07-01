@@ -8,18 +8,23 @@ from codealmanac.services.index.models import (
     BrokenPageLink,
     CrossWikiReference,
     DeadFileReference,
+    DuplicatePageSource,
     EmptyPage,
     EmptyTopic,
     HealthReport,
     IndexCounts,
+    MissingSourceCitation,
     OrphanPage,
     PageFileReference,
+    PageSourceReference,
     PageView,
     SearchPageResult,
     TopicDetail,
     TopicSummary,
+    UnusedPageSource,
 )
 from codealmanac.services.index.requests import SearchIndexRequest
+from codealmanac.services.wiki.models import PageSourceType
 from codealmanac.services.wiki.paths import (
     escape_glob_meta,
     looks_like_dir,
@@ -119,6 +124,9 @@ def build_health_report(
         broken_xwiki=broken_cross_wiki_links(connection, registered_wikis),
         empty_topics=empty_topics(connection),
         empty_pages=empty_pages(connection),
+        missing_source_citations=missing_source_citations(connection),
+        unused_sources=unused_sources(connection),
+        duplicate_sources=duplicate_sources(connection),
     )
 
 
@@ -260,11 +268,38 @@ def page_view_from_row(connection: SQLiteConnection, row: SQLiteRow) -> PageView
         archived_at=row["archived_at"],
         superseded_by=row["superseded_by"],
         topics=topics_for_page(connection, slug),
+        sources=page_sources_for_page(connection, slug),
         file_refs=file_refs_for_page(connection, slug),
         wikilinks_out=wikilinks_out_for_page(connection, slug),
         wikilinks_in=wikilinks_in_for_page(connection, slug),
         cross_wiki_links=cross_wiki_for_page(connection, slug),
         body=row["body"],
+    )
+
+
+def page_sources_for_page(
+    connection: SQLiteConnection,
+    slug: str,
+) -> tuple[PageSourceReference, ...]:
+    rows = connection.execute(
+        """
+        SELECT source_id, source_type, target, title, retrieved_at, note
+        FROM page_sources
+        WHERE page_slug = ?
+        ORDER BY source_order
+        """,
+        (slug,),
+    ).fetchall()
+    return tuple(
+        PageSourceReference(
+            source_id=row["source_id"],
+            source_type=PageSourceType(row["source_type"]),
+            target=row["target"],
+            title=row["title"],
+            retrieved_at=row["retrieved_at"],
+            note=row["note"],
+        )
+        for row in rows
     )
 
 
@@ -513,6 +548,74 @@ def empty_pages(connection: SQLiteConnection) -> tuple[EmptyPage, ...]:
         for row in rows
         if not meaningful_body_text(row["body"])
     )
+
+
+def missing_source_citations(
+    connection: SQLiteConnection,
+) -> tuple[MissingSourceCitation, ...]:
+    findings: list[MissingSourceCitation] = []
+    for page in source_health_pages(connection):
+        cited_ids = citation_ids(page["body"])
+        if not cited_ids:
+            continue
+        source_ids = source_ids_for_page(connection, page["slug"])
+        for source_id in sorted(cited_ids - source_ids):
+            findings.append(
+                MissingSourceCitation(slug=page["slug"], source_id=source_id)
+            )
+    return tuple(findings)
+
+
+def unused_sources(connection: SQLiteConnection) -> tuple[UnusedPageSource, ...]:
+    findings: list[UnusedPageSource] = []
+    for page in source_health_pages(connection):
+        cited_ids = citation_ids(page["body"])
+        source_ids = source_ids_for_page(connection, page["slug"])
+        for source_id in sorted(source_ids - cited_ids):
+            findings.append(UnusedPageSource(slug=page["slug"], source_id=source_id))
+    return tuple(findings)
+
+
+def duplicate_sources(connection: SQLiteConnection) -> tuple[DuplicatePageSource, ...]:
+    rows = connection.execute(
+        """
+        SELECT p.slug, s.source_id
+        FROM page_sources s
+        JOIN pages p ON p.slug = s.page_slug
+        WHERE p.archived_at IS NULL
+        GROUP BY p.slug, s.source_id
+        HAVING COUNT(*) > 1
+        ORDER BY p.slug, s.source_id
+        """
+    ).fetchall()
+    return tuple(
+        DuplicatePageSource(slug=row["slug"], source_id=row["source_id"])
+        for row in rows
+    )
+
+
+def source_health_pages(connection: SQLiteConnection) -> tuple[SQLiteRow, ...]:
+    rows = connection.execute(
+        """
+        SELECT slug, body
+        FROM pages
+        WHERE archived_at IS NULL
+        ORDER BY slug
+        """
+    ).fetchall()
+    return tuple(rows)
+
+
+def source_ids_for_page(connection: SQLiteConnection, slug: str) -> set[str]:
+    rows = connection.execute(
+        "SELECT source_id FROM page_sources WHERE page_slug = ?",
+        (slug,),
+    ).fetchall()
+    return {row["source_id"] for row in rows}
+
+
+def citation_ids(body: str) -> set[str]:
+    return set(re.findall(r"\[@([A-Za-z0-9][A-Za-z0-9_.:-]*)\]", body))
 
 
 def meaningful_body_text(body: str) -> str:

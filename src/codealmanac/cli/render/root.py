@@ -141,6 +141,9 @@ def health_issue_count(report: HealthReport) -> int:
             report.broken_xwiki,
             report.empty_topics,
             report.empty_pages,
+            report.missing_source_citations,
+            report.unused_sources,
+            report.duplicate_sources,
         )
     )
 
@@ -200,6 +203,14 @@ def metadata_header(page: PageView) -> str:
         lines.append(f"summary: {page.summary}")
     if page.topics:
         lines.append(f"topics: {', '.join(page.topics)}")
+    if page.sources:
+        lines.append("sources:")
+        for source in page.sources:
+            target = f" {source.target}" if source.target else ""
+            note = f" - {source.note}" if source.note else ""
+            lines.append(
+                f"  {source.source_id} [{source.source_type.value}]{target}{note}"
+            )
     return "\n".join(lines)
 
 def first_paragraph(body: str) -> str:
@@ -294,6 +305,21 @@ def render_health(report: HealthReport, json_output: bool) -> None:
     render_health_section(
         "empty_pages",
         tuple(item.slug for item in report.empty_pages),
+    )
+    render_health_section(
+        "missing_source_citations",
+        tuple(
+            f"{item.slug}\t{item.source_id}"
+            for item in report.missing_source_citations
+        ),
+    )
+    render_health_section(
+        "unused_sources",
+        tuple(f"{item.slug}\t{item.source_id}" for item in report.unused_sources),
+    )
+    render_health_section(
+        "duplicate_sources",
+        tuple(f"{item.slug}\t{item.source_id}" for item in report.duplicate_sources),
     )
 
 def render_health_section(name: str, rows: tuple[str, ...]) -> None:

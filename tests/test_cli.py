@@ -1133,12 +1133,15 @@ def test_cli_search_and_show_read_current_repo_wiki(
         """---
 title: Auth Flow
 topics: [auth]
-files:
-  - src/auth/
+sources:
+  - id: auth-folder
+    type: file
+    path: src/auth/
+    note: Auth implementation folder.
 ---
 # Auth Flow
 
-Login reads [[src/auth/session.py]].
+Login reads [[src/auth/session.py]]. [@auth-folder]
 """,
         encoding="utf-8",
     )
@@ -1155,6 +1158,13 @@ Login reads [[src/auth/session.py]].
     assert main(["show", "auth-flow", "--body", "--meta"]) == 0
     body_output = capsys.readouterr()
     assert body_output.out.startswith("# Auth Flow\n\nLogin reads")
+
+    assert main(["show", "auth-flow", "--meta"]) == 0
+    meta_output = capsys.readouterr()
+    assert "sources:\n" in meta_output.out
+    assert "auth-folder [file] src/auth/ - Auth implementation folder." in (
+        meta_output.out
+    )
 
     assert main(["search", "missing"]) == 0
     empty_output = capsys.readouterr()

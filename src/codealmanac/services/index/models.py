@@ -2,6 +2,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.wiki.models import PageSourceType
 
 
 class HealthCategory(StrEnum):
@@ -11,6 +12,9 @@ class HealthCategory(StrEnum):
     BROKEN_XWIKI = "broken_xwiki"
     EMPTY_TOPICS = "empty_topics"
     EMPTY_PAGES = "empty_pages"
+    MISSING_SOURCE_CITATIONS = "missing_source_citations"
+    UNUSED_SOURCES = "unused_sources"
+    DUPLICATE_SOURCES = "duplicate_sources"
 
 
 class SearchPageResult(CodeAlmanacModel):
@@ -28,6 +32,15 @@ class PageFileReference(CodeAlmanacModel):
     is_dir: bool
 
 
+class PageSourceReference(CodeAlmanacModel):
+    source_id: str
+    source_type: PageSourceType
+    target: str | None
+    title: str | None
+    retrieved_at: str | None
+    note: str | None
+
+
 class CrossWikiReference(CodeAlmanacModel):
     wiki: str
     target: str
@@ -42,6 +55,7 @@ class PageView(CodeAlmanacModel):
     archived_at: int | None
     superseded_by: str | None
     topics: tuple[str, ...]
+    sources: tuple[PageSourceReference, ...]
     file_refs: tuple[PageFileReference, ...]
     wikilinks_out: tuple[str, ...]
     wikilinks_in: tuple[str, ...]
@@ -126,6 +140,21 @@ class EmptyPage(CodeAlmanacModel):
     slug: str
 
 
+class MissingSourceCitation(CodeAlmanacModel):
+    slug: str
+    source_id: str
+
+
+class UnusedPageSource(CodeAlmanacModel):
+    slug: str
+    source_id: str
+
+
+class DuplicatePageSource(CodeAlmanacModel):
+    slug: str
+    source_id: str
+
+
 class HealthReport(CodeAlmanacModel):
     orphans: tuple[OrphanPage, ...]
     dead_refs: tuple[DeadFileReference, ...]
@@ -133,3 +162,6 @@ class HealthReport(CodeAlmanacModel):
     broken_xwiki: tuple[BrokenCrossWikiLink, ...]
     empty_topics: tuple[EmptyTopic, ...]
     empty_pages: tuple[EmptyPage, ...]
+    missing_source_citations: tuple[MissingSourceCitation, ...] = ()
+    unused_sources: tuple[UnusedPageSource, ...] = ()
+    duplicate_sources: tuple[DuplicatePageSource, ...] = ()

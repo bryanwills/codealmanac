@@ -10,6 +10,8 @@ from codealmanac.services.wiki.models import (
     FolderLink,
     PageDocument,
     PageLink,
+    PageSource,
+    PageSourceType,
 )
 from codealmanac.services.wiki.paths import (
     looks_like_dir,
@@ -30,6 +32,7 @@ def load_page_document(page_path: Path, pages_path: Path) -> PageDocument | None
 
     title = frontmatter.title or first_h1(frontmatter.body) or page_path.stem
     file_refs = list(frontmatter_file_refs(frontmatter.files))
+    file_refs.extend(source_file_refs(frontmatter.sources))
     page_links: list[str] = []
     cross_wiki_links: list[tuple[str, str]] = []
 
@@ -52,6 +55,7 @@ def load_page_document(page_path: Path, pages_path: Path) -> PageDocument | None
         archived_at=frontmatter.archived_at,
         superseded_by=frontmatter.superseded_by,
         topics=tuple(to_kebab_case(topic) for topic in frontmatter.topics),
+        sources=frontmatter.sources,
         file_refs=dedupe_file_refs(file_refs),
         page_links=tuple(sorted(set(page_links))),
         cross_wiki_links=tuple(sorted(set(cross_wiki_links))),
@@ -65,6 +69,25 @@ def frontmatter_file_refs(files: tuple[str, ...]) -> tuple[FileReference, ...]:
         is_dir = looks_like_dir(raw)
         normalized = normalize_reference_path(raw, is_dir)
         original = normalize_reference_path_preserving_case(raw, is_dir)
+        if normalized:
+            refs.append(
+                FileReference(
+                    path=normalized,
+                    original_path=original,
+                    is_dir=is_dir,
+                )
+            )
+    return tuple(refs)
+
+
+def source_file_refs(sources: tuple[PageSource, ...]) -> tuple[FileReference, ...]:
+    refs: list[FileReference] = []
+    for source in sources:
+        if source.source_type != PageSourceType.FILE or source.target is None:
+            continue
+        is_dir = looks_like_dir(source.target)
+        normalized = normalize_reference_path(source.target, is_dir)
+        original = normalize_reference_path_preserving_case(source.target, is_dir)
         if normalized:
             refs.append(
                 FileReference(

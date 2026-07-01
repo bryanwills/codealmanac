@@ -41,6 +41,12 @@ def test_viewer_page_renders_markdown_and_reader_relationships(
     assert page.outgoing_links == ("session-store",)
     assert page.related_pages[0].slug == "session-store"
     assert [ref.path for ref in page.file_refs] == ["src/auth/session.py"]
+    assert [(source.source_id, source.source_type) for source in page.sources] == [
+        ("session-file", "file"),
+        ("provider-docs", "web"),
+    ]
+    assert page.sources[0].target == "src/auth/session.py"
+    assert page.sources[1].target == "https://example.com/provider"
     assert '<a href="#/page/session-store">Session Store</a>' in page.html
     assert "<code>src/auth/session.py</code>" in page.html
     assert "<code>[[session-store]]</code>" in page.html
