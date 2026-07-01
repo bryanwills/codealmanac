@@ -36,6 +36,7 @@ that root instead of constructing stores or adapters themselves.
 | `config` | user/project TOML parsing and precedence for local CLI defaults | lifecycle harness default and sync quiet window |
 | `diagnostics` | doctor checks and readiness reports | `doctor`, local install/wiki readiness |
 | `updates` | package update planning, installer metadata, supported foreground update methods | `codealmanac update`, `PackageInstallMetadataProvider`, `PackageCommandRunner` |
+| `setup` | setup/uninstall command requests, setup-owned agent instruction result models, and the instruction installer port | `codealmanac setup`, `codealmanac uninstall` |
 | `viewer` | read-only browser payloads, page/topic/search/file overview assembly, rendered markdown for the local viewer | `serve`, future non-CLI read adapter |
 
 ## Support Packages
@@ -80,6 +81,7 @@ integrations/
     web/
   automation/
     scheduler/
+  setup/
   updates/
 ```
 
@@ -174,6 +176,14 @@ execution ports. `integrations/updates/` reads `importlib.metadata` install
 metadata and runs foreground package-manager commands. The service decides
 whether an install is safe to update; the integration only reports metadata and
 executes the chosen command.
+
+`services/setup/ports.py` owns `InstructionInstaller`, the port used by setup
+and uninstall for global agent instruction artifacts. `integrations/setup/`
+translates that port into filesystem edits for Codex and Claude: a managed
+`codealmanac` AGENTS block for Codex, and a `~/.claude/codealmanac.md` guide
+plus `CLAUDE.md` import for Claude. The adapter removes only current
+setup-owned `codealmanac` artifacts; old `almanac` artifacts are outside
+Python v1 compatibility scope.
 
 `services/viewer` owns the local browser payload for file references. Its
 `file` verb delegates to the index's mentions query and returns matching wiki

@@ -897,3 +897,15 @@ means the goal remains active.
 | Full tests | `uv run pytest` | passed; 249 tests |
 | Full lint | `uv run ruff check .` | passed |
 | Diff hygiene | `git diff --check` | passed |
+
+## Gates For Slice 79 Setup/Uninstall Instruction Foundation
+
+| Gate | Command | 2026-07-01 result |
+|---|---|---|
+| Focused setup/CLI/architecture/public contract tests | `uv run pytest tests/test_setup_service.py tests/test_cli.py tests/test_architecture.py tests/test_public_contract.py` | passed; 79 tests |
+| Focused lint | `uv run ruff check src/codealmanac/services/setup src/codealmanac/integrations/setup src/codealmanac/app.py src/codealmanac/cli tests/test_setup_service.py tests/test_cli.py tests/test_architecture.py tests/test_public_contract.py` | passed |
+| Full tests | `uv run pytest` | passed; 281 tests |
+| Full lint | `uv run ruff check .` | passed |
+| Diff hygiene | `git diff --check` | passed |
+| Public CLI dogfood | isolated temp `HOME`; `uv run codealmanac setup --yes`; rerun `setup --yes --target codex`; inspect Codex block and Claude import; `uv run codealmanac uninstall --yes`; inspect removal | passed; setup installed Codex and Claude artifacts, rerun was idempotent for Codex, uninstall removed setup-owned artifacts |
+| Package resource proof | `uv build --out-dir <tmp>` and stdlib `zipfile` inspection | passed; wheel contains `codealmanac/services/setup/agent-guide.md` |

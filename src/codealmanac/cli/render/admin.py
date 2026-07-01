@@ -18,6 +18,7 @@ from codealmanac.services.runs.models import (
     RunLogEvent,
     RunRecord,
 )
+from codealmanac.services.setup.models import SetupResult, UninstallResult
 from codealmanac.services.updates.models import UpdatePlan, UpdateResult
 
 
@@ -33,6 +34,40 @@ def render_automation_install(
         print_automation_job(job)
     for job in result.disabled:
         print(f"  {job.task.value}: disabled")
+
+
+def render_setup_result(result: SetupResult, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+        return
+    print("codealmanac setup")
+    if result.skipped_instructions:
+        print("  instructions: skipped")
+        return
+    for change in result.changes:
+        status = "updated" if change.changed else "ok"
+        print(f"  {change.target.value}: {status} - {change.message}")
+        for path in change.paths:
+            print(f"    {path}")
+    print("")
+    print("next:")
+    print("  codealmanac init")
+    print("  codealmanac search \"your topic\"")
+
+
+def render_uninstall_result(result: UninstallResult, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(result.model_dump(mode="json"), indent=2))
+        return
+    print("codealmanac uninstall")
+    if result.kept_instructions:
+        print("  instructions: kept")
+        return
+    for change in result.changes:
+        status = "removed" if change.changed else "ok"
+        print(f"  {change.target.value}: {status} - {change.message}")
+        for path in change.paths:
+            print(f"    {path}")
 
 
 def render_automation_uninstall(

@@ -33,6 +33,19 @@
 - Ran an isolated CLI dogfood for `jobs attach` and `jobs cancel` against a
   temporary repo. Attach replayed the queued job log and current status; cancel
   marked the job `cancelled`; `jobs show` read back the cancelled record.
+- Added slice-79 setup/uninstall instruction foundation after rereading the
+  live agreement, `MANUAL.md`, Cosmic Python service/command/composition-root
+  chapters, and archived setup behavior. `SetupService` now owns setup verbs,
+  while `FileInstructionInstaller` owns Codex/Claude filesystem instruction
+  artifacts behind a service-owned port.
+- Python setup now installs a `codealmanac` managed Codex AGENTS block and a
+  Claude `~/.claude/codealmanac.md` guide plus `CLAUDE.md` import. Python
+  uninstall removes only current setup-owned `codealmanac` artifacts; old
+  `almanac` artifacts are not compatibility scope and may belong to a separate
+  product install.
+- Focused slice-79 tests cover idempotence, Codex override selection, Claude
+  import installation, uninstall preserving user content, CLI setup/uninstall,
+  and public-contract next-agent freshness.
 
 ## 2026-06-29
 

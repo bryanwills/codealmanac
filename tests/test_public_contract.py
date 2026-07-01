@@ -32,6 +32,7 @@ README_REQUIRED_FRAGMENTS = (
     "User state root: `~/.codealmanac/`",
     "Python 3.12+",
     "uv tool install codealmanac",
+    "codealmanac setup --yes",
     "codealmanac init",
     'codealmanac search "getting"',
     "codealmanac serve",
@@ -41,6 +42,7 @@ README_REQUIRED_FRAGMENTS = (
     "a folder counts as a CodeAlmanac wiki only when it has both",
     "`topics.yaml` and `pages/`",
     "Derived local state appears when commands need it:",
+    "codealmanac uninstall --yes",
     "No hosted login/connect/upload commands.",
 )
 

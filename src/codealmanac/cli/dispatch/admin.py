@@ -18,6 +18,8 @@ from codealmanac.cli.render.admin import (
     render_run_cancel,
     render_run_log,
     render_runs,
+    render_setup_result,
+    render_uninstall_result,
     render_update_plan,
     render_update_result,
 )
@@ -36,10 +38,14 @@ from codealmanac.services.runs.requests import (
     ReadRunLogRequest,
     ShowRunRequest,
 )
+from codealmanac.services.setup.models import SetupTarget
+from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 from codealmanac.services.updates.models import UpdateStatus
 from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
 
-ADMIN_COMMANDS = frozenset(("automation", "doctor", "jobs", "update"))
+ADMIN_COMMANDS = frozenset(
+    ("automation", "doctor", "jobs", "setup", "uninstall", "update")
+)
 
 
 def is_admin_command(command: str | None) -> bool:
@@ -47,6 +53,26 @@ def is_admin_command(command: str | None) -> bool:
 
 
 def dispatch_admin(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.command == "setup":
+        result = app.setup.run(
+            RunSetupRequest(
+                targets=parse_setup_targets(args.target),
+                yes=args.yes,
+                skip_instructions=args.skip_instructions,
+            )
+        )
+        render_setup_result(result, json_output=args.json)
+        return 0
+    if args.command == "uninstall":
+        result = app.setup.uninstall(
+            RunUninstallRequest(
+                targets=parse_setup_targets(args.target),
+                yes=args.yes,
+                keep_instructions=args.keep_instructions,
+            )
+        )
+        render_uninstall_result(result, json_output=args.json)
+        return 0
     if args.command == "doctor":
         report = app.diagnostics.check(DoctorRequest(cwd=Path.cwd(), wiki=args.wiki))
         render_doctor(report, json_output=args.json)
@@ -138,3 +164,9 @@ def parse_automation_tasks(values: Sequence[str]) -> tuple[AutomationTask, ...]:
         if task not in tasks:
             tasks.append(task)
     return tuple(tasks)
+
+
+def parse_setup_targets(value: str) -> tuple[SetupTarget, ...]:
+    if value == "all":
+        return (SetupTarget.CODEX, SetupTarget.CLAUDE)
+    return (SetupTarget(value),)

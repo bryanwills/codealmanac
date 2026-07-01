@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 78 structured page sources read model.
+- Latest implementation slice: slice 79 setup/uninstall instruction foundation.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -85,6 +85,14 @@ Updated: 2026-07-01
   `show --json`, and viewer page APIs, and reports missing citations, unused
   sources, and duplicate source ids through health. This is page evidence,
   not the source-runtime input model.
+- Slice 79 restores the first setup/uninstall layer. `SetupService` owns
+  setup/uninstall requests and results; `integrations/setup` installs/removes
+  Codex and Claude instruction artifacts behind `InstructionInstaller`.
+  `codealmanac setup --yes --target codex|claude|all` installs a current
+  `codealmanac` managed instruction block or Claude guide/import. `codealmanac
+  uninstall --yes --target ...` removes only those setup-owned artifacts.
+  Remaining setup work is terminal UX, target selection UI, default agent/model
+  selection, and local automation choices.
 - Source runtime covers filesystem paths, Git, GitHub, transcripts, and web
   URLs behind `services/sources/ports.py::SourceRuntimeAdapter`.
   `InspectSourceRuntimeRequest.context` carries workflow-owned runtime policy

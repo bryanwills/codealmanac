@@ -1988,3 +1988,33 @@ warnings. It does not add migration or source-catalog machinery.
 Follow-up test:
 When `migrate legacy-sources` is reopened, prove it rewrites frontmatter only
 and preserves body bytes; do not fold that migration into health or Garden.
+
+## 2026-07-01 - Setup Starts With Owned Instructions, Not Old Hosted Setup
+
+Old hypothesis:
+Restoring archived setup might mean porting the whole Node setup experience at
+once, including auto-update scheduling, hosted/self-managed branches, and
+legacy instruction cleanup.
+
+New hypothesis:
+Restore the setup-owned instruction contract first and keep the larger TUI,
+automation-choice, provider-selection, and auto-update decisions for later
+slices. The Python v1 command should use `codealmanac` markers and must not
+remove old `almanac` artifacts that may belong to another install.
+
+Evidence that forced the change:
+The live agreement says setup/uninstall are required, but also says scheduled
+update policy is not agreed and hosted setup wording is out of scope. The
+archive shows Codex inline AGENTS blocks and Claude guide imports as the stable
+instruction contract.
+
+Code or product assumption affected:
+Slice 79 adds `services/setup` plus `integrations/setup` and wires
+`codealmanac setup` / `codealmanac uninstall` through the admin CLI edge. It
+does not add raw-mode prompts, automation installation, provider model choice,
+or auto-update scheduling.
+
+Follow-up test:
+The next setup slice should dogfood the terminal UX in a real TTY and decide
+whether setup owns `automation install` choices directly or only presents
+explicit next-step commands.

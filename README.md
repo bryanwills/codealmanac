@@ -41,6 +41,25 @@ uv sync
 uv run codealmanac --help
 ```
 
+## Setup
+
+Install global agent instructions for the local tools you use:
+
+```bash
+codealmanac setup --yes
+codealmanac setup --yes --target codex
+codealmanac setup --yes --target claude
+```
+
+Setup currently installs only local agent instructions. It does not connect to
+a hosted service and it does not install scheduled automation.
+
+To remove setup-owned instruction artifacts:
+
+```bash
+codealmanac uninstall --yes
+```
+
 ## Quickstart
 
 Inside a repository:

@@ -6,6 +6,7 @@ from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.integrations.runs import SubprocessRunWorkerSpawner
+from codealmanac.integrations.setup import FileInstructionInstaller
 from codealmanac.integrations.sources import (
     default_source_runtime_adapters,
     default_transcript_discovery_adapters,
@@ -32,6 +33,8 @@ from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.search.service import SearchService
+from codealmanac.services.setup.ports import InstructionInstaller
+from codealmanac.services.setup.service import SetupService
 from codealmanac.services.sources.ports import (
     SourceRuntimeAdapter,
     TranscriptDiscoveryAdapter,
@@ -82,6 +85,7 @@ class CodeAlmanac:
     diagnostics: DiagnosticsService
     tagging: TaggingService
     updates: UpdatesService
+    setup: SetupService
     viewer: ViewerService
     runs: RunsService
     sources: SourcesService
@@ -100,6 +104,7 @@ def create_app(
     worker_spawner: RunWorkerSpawner | None = None,
     update_metadata: PackageInstallMetadataProvider | None = None,
     update_runner: PackageCommandRunner | None = None,
+    instruction_installer: InstructionInstaller | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -118,6 +123,7 @@ def create_app(
         update_metadata or InstalledPackageMetadataProvider(),
         update_runner or SubprocessPackageCommandRunner(),
     )
+    setup = SetupService(instruction_installer or FileInstructionInstaller())
     viewer = ViewerService(workspaces, index, MarkdownRenderer())
     runs = RunsService(workspaces, RunStore())
     sources = SourcesService(
@@ -187,6 +193,7 @@ def create_app(
         diagnostics=diagnostics,
         tagging=tagging,
         updates=updates,
+        setup=setup,
         viewer=viewer,
         runs=runs,
         sources=sources,

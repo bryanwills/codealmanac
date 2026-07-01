@@ -76,6 +76,7 @@ codealmanac = [
 ]
 "codealmanac.manual" = ["*.md"]
 "codealmanac.prompts" = ["base/*.md", "operations/*.md"]
+"codealmanac.services.setup" = ["*.md"]
 
 [tool.uv]
 package = true

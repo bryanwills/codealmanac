@@ -12,6 +12,7 @@ from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import normalize_path
+from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     ScheduledJob,
     ScheduledJobStatus,
@@ -235,6 +236,41 @@ def test_cli_init_accepts_configured_root(
     assert captured.out == "repo\n"
     assert str(repo / "docs/almanac") in captured.err
     assert (repo / "docs/almanac/pages/getting-started.md").is_file()
+
+
+def test_cli_setup_and_uninstall_codex_instructions(
+    isolated_home: Path,
+    capsys,
+):
+    exit_code = main(["setup", "--yes", "--target", "codex"])
+
+    captured = capsys.readouterr()
+    agents_path = isolated_home / ".codex/AGENTS.md"
+    assert exit_code == 0
+    assert "codealmanac setup" in captured.out
+    assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
+
+    second_exit = main(["setup", "--yes", "--target", "codex"])
+    second = capsys.readouterr()
+    assert second_exit == 0
+    assert "ok - Codex instructions already installed" in second.out
+
+    uninstall_exit = main(["uninstall", "--yes", "--target", "codex"])
+    uninstall = capsys.readouterr()
+    assert uninstall_exit == 0
+    assert "codealmanac uninstall" in uninstall.out
+    assert not agents_path.exists()
+
+
+def test_cli_setup_skip_instructions_json(capsys):
+    exit_code = main(["setup", "--yes", "--skip-instructions", "--json"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert json.loads(captured.out) == {
+        "skipped_instructions": True,
+        "changes": [],
+    }
 
 
 def test_cli_list_outputs_registered_wikis(
