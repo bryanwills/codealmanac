@@ -46,6 +46,20 @@ class AttachRunRequest(CodeAlmanacModel):
     wiki: str | None = None
 
 
+class StreamRunAttachRequest(CodeAlmanacModel):
+    cwd: Path
+    run_id: RunId
+    wiki: str | None = None
+    poll_interval_seconds: float = 0.5
+
+    @field_validator("poll_interval_seconds")
+    @classmethod
+    def positive_poll_interval(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("attach poll interval must be positive")
+        return value
+
+
 class CancelRunRequest(CodeAlmanacModel):
     cwd: Path
     run_id: RunId

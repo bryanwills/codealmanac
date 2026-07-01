@@ -10,7 +10,7 @@ Updated: 2026-07-01
   useful `../almanac` patterns until further cleanup is genuinely diminishing
   returns.
 - Branch: `dev`.
-- Latest implementation slice: slice 134 lifecycle helper boundaries.
+- Latest implementation slice: slice 135 streaming jobs attach.
 - Live contract: `docs/python-port-live-agreement.md`.
 - Public release gate: `docs/python-port/public-release-readiness.md`.
 - Public beta audit: `docs/python-port/public-beta-gate-audit.md`.
@@ -125,6 +125,14 @@ Updated: 2026-07-01
   mutation preflight, reported-change validation, path diffing, and Almanac-root
   safety checks; `lifecycle_harness.py` owns harness result validation,
   fallback terminal events, run-event classification, and first-line summaries.
+- Slice 135 makes `codealmanac jobs attach <run-id>` stream the durable run log
+  until the run reaches `done`, `failed`, or `cancelled`. `jobs logs` remains
+  the snapshot command; `services/runs/streaming.py` owns polling
+  `RunStore.attach(...)` and emitting only new events, while CLI rendering owns
+  text or JSON-line output. Focused service/CLI/architecture tests, full
+  `uv run pytest` (`353 passed`), full Ruff, and diff hygiene passed; temp-repo
+  dogfood confirmed attach replayed queued/message/done events and exited at
+  `status: done`.
 - Slice 99 makes page source target parsing tolerant at the frontmatter
   boundary: type-specific fields such as `path:` and `url:` remain preferred,
   and generic `target:` is a fallback that normalizes into

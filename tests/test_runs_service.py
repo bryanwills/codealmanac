@@ -1,6 +1,7 @@
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from threading import Event, Thread
 
 import pytest
 from pydantic import ValidationError
@@ -16,6 +17,7 @@ from codealmanac.services.harnesses.models import (
 )
 from codealmanac.services.runs.io import RunLedgerIO
 from codealmanac.services.runs.models import (
+    RunAttachSnapshot,
     RunEventKind,
     RunLogEvent,
     RunOperation,
@@ -38,8 +40,10 @@ from codealmanac.services.runs.requests import (
     RecordRunHarnessTranscriptRequest,
     ShowRunRequest,
     StartRunRequest,
+    StreamRunAttachRequest,
 )
 from codealmanac.services.runs.store import RunStore
+from codealmanac.services.runs.streaming import RunAttachStreamer
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
@@ -289,6 +293,122 @@ def test_runs_service_finish_preserves_cancelled_run(
         "running",
         "cancelled",
     )
+
+
+def test_runs_service_streams_attach_until_run_is_terminal(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
+    first_update_seen = Event()
+    updates = []
+    errors = []
+
+    def consume_attach() -> None:
+        try:
+            for update in app.runs.stream_attach(
+                StreamRunAttachRequest(
+                    cwd=repo,
+                    run_id=record.run_id,
+                    poll_interval_seconds=0.01,
+                )
+            ):
+                updates.append(update)
+                first_update_seen.set()
+        except Exception as error:
+            errors.append(error)
+
+    thread = Thread(target=consume_attach, daemon=True)
+    thread.start()
+
+    assert first_update_seen.wait(timeout=1)
+    app.runs.record_event(
+        RecordRunEventRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            kind=RunEventKind.MESSAGE,
+            message="read note",
+        )
+    )
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            status=RunStatus.DONE,
+            summary="complete",
+        )
+    )
+    thread.join(timeout=2)
+
+    assert thread.is_alive() is False
+    assert errors == []
+    assert tuple(
+        event.message for update in updates for event in update.events
+    ) == (
+        "queued ingest",
+        "read note",
+        "done",
+    )
+    assert updates[-1].terminal is True
+    assert updates[-1].record.status == RunStatus.DONE
+
+
+def test_run_attach_streamer_waits_for_terminal_status_event(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
+    done = record.model_copy(update={"status": RunStatus.DONE})
+    queued_event = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=record.run_id))[0]
+    terminal_event = queued_event.model_copy(
+        update={
+            "sequence": 2,
+            "kind": RunEventKind.STATUS,
+            "message": RunStatus.DONE.value,
+        }
+    )
+
+    class TerminalRaceStore:
+        def __init__(self):
+            self.calls = 0
+
+        def attach(self, _almanac_path: Path, _run_id: str) -> RunAttachSnapshot:
+            self.calls += 1
+            if self.calls == 1:
+                return RunAttachSnapshot(
+                    record=done,
+                    events=(queued_event,),
+                    terminal=True,
+                )
+            return RunAttachSnapshot(
+                record=done,
+                events=(queued_event, terminal_event),
+                terminal=True,
+            )
+
+    store = TerminalRaceStore()
+    updates = tuple(
+        RunAttachStreamer(store).stream(repo / "almanac", record.run_id, 0.01)
+    )
+
+    assert store.calls == 2
+    assert tuple(event.message for update in updates for event in update.events) == (
+        "queued ingest",
+        "done",
+    )
+    assert updates[-1].terminal is True
 
 
 def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(

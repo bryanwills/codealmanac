@@ -7,6 +7,7 @@ from codealmanac.cli.render.diagnostics import render_doctor
 from codealmanac.cli.render.jobs import (
     render_run,
     render_run_attach,
+    render_run_attach_stream,
     render_run_cancel,
     render_run_log,
     render_runs,
@@ -21,6 +22,7 @@ __all__ = [
     "render_doctor",
     "render_run",
     "render_run_attach",
+    "render_run_attach_stream",
     "render_run_cancel",
     "render_run_log",
     "render_runs",

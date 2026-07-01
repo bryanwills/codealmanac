@@ -1360,3 +1360,12 @@ facade, `health_graph_views.py` owns page/topic/link/file findings, and
 `health_source_views.py` owns sources/citations findings. Focused health and
 architecture tests passed, and real-checkout `codealmanac health --json`
 returned the existing issue counts through the split modules.
+Slice 135 changes `jobs attach` from a snapshot-style read into the streaming
+control verb described by the live agreement and archived CLI. `jobs logs`
+remains the snapshot command. `services/runs/streaming.py` owns polling
+`RunStore.attach(...)`, emits only unseen events, and stops at `done`, `failed`,
+or `cancelled`; `cli/render/jobs.py` owns text and JSON-line stream output.
+Focused service, CLI, architecture, and public-contract tests passed. Full
+`uv run pytest` reported `353 passed`; full Ruff and diff hygiene passed.
+Temp-repo CLI dogfood confirmed attach replayed queued/message/done events
+before exiting at `status: done`.

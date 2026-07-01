@@ -1,9 +1,11 @@
 import json
 import sys
+from collections.abc import Iterable
 
 from codealmanac.cli.render.common import print_json_model, print_json_rows
 from codealmanac.services.runs.models import (
     RunAttachSnapshot,
+    RunAttachUpdate,
     RunCancelResult,
     RunLogEvent,
     RunRecord,
@@ -59,7 +61,7 @@ def render_run_log(events: tuple[RunLogEvent, ...], json_output: bool) -> None:
         print(json.dumps(data, indent=2))
         return
     for event in events:
-        print(f"{event.sequence}\t{event.kind.value}\t{event.message}")
+        render_run_log_event(event)
 
 
 def render_run_attach(snapshot: RunAttachSnapshot, json_output: bool) -> None:
@@ -70,6 +72,30 @@ def render_run_attach(snapshot: RunAttachSnapshot, json_output: bool) -> None:
     if len(snapshot.events) == 0:
         print("no log events")
     print(f"status: {snapshot.record.status.value}")
+
+
+def render_run_attach_stream(
+    updates: Iterable[RunAttachUpdate],
+    json_output: bool,
+) -> None:
+    saw_event = False
+    for update in updates:
+        if json_output:
+            print(update.model_dump_json(exclude_none=True))
+            sys.stdout.flush()
+            continue
+        for event in update.events:
+            render_run_log_event(event)
+            saw_event = True
+        if update.terminal:
+            if not saw_event:
+                print("no log events")
+            print(f"status: {update.record.status.value}")
+        sys.stdout.flush()
+
+
+def render_run_log_event(event: RunLogEvent) -> None:
+    print(f"{event.sequence}\t{event.kind.value}\t{event.message}")
 
 
 def render_run_cancel(result: RunCancelResult, json_output: bool) -> None:

@@ -1724,12 +1724,15 @@ def test_run_ledger_persistence_stays_split_by_responsibility():
     io_text = (runs_root / "io.py").read_text(encoding="utf-8")
     locks_text = (runs_root / "locks.py").read_text(encoding="utf-8")
     queries_text = (runs_root / "queries.py").read_text(encoding="utf-8")
+    service_text = (runs_root / "service.py").read_text(encoding="utf-8")
+    streaming_text = (runs_root / "streaming.py").read_text(encoding="utf-8")
     transitions_text = (runs_root / "transitions.py").read_text(encoding="utf-8")
     forbidden_store_fragments = (
         "write_json_atomically",
         "model_validate_json",
         "worker_lock_owner_path",
         "os.kill",
+        "time.sleep",
         'open("a"',
         ".open(\"a\"",
         "RUN_ID_ADAPTER",
@@ -1746,6 +1749,7 @@ def test_run_ledger_persistence_stays_split_by_responsibility():
         "locks.py",
         "paths.py",
         "queries.py",
+        "streaming.py",
         "transitions.py",
     } <= module_names
     assert len(store_text.splitlines()) <= 240
@@ -1762,6 +1766,10 @@ def test_run_ledger_persistence_stays_split_by_responsibility():
     assert "def list_run_records(" in queries_text
     assert "def next_spec_backed_queued_run(" in queries_text
     assert "ledger.iter_records" in queries_text
+    assert "def stream_attach(" in service_text
+    assert "class RunAttachStreamer" in streaming_text
+    assert "time.sleep" in streaming_text
+    assert "store.attach" in streaming_text
     assert "write_record_with_event" in transitions_text
 
 

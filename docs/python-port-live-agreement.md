@@ -118,6 +118,10 @@ It is the constraint document for future agents.
   Terminal runs are cancel no-ops; queued or running runs append a `cancelled`
   status event. Terminal finish calls must preserve an already-cancelled run
   rather than rewriting it as done or failed.
+- 2026-07-01: Python `jobs attach` streams through a service-owned use case.
+  `services/runs/streaming.py` polls `RunStore.attach(...)`, emits only new log
+  events, and stops at `done`, `failed`, or `cancelled`; CLI rendering owns
+  text and JSON-line output. `jobs logs` remains the snapshot command.
 - 2026-07-01: Run ledger persistence is split by responsibility. `RunStore`
   remains the service-facing repository facade. `services/runs/paths.py` owns
   run-id validation and path construction; `io.py` owns JSON record/spec and

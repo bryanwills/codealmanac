@@ -1,10 +1,12 @@
 import os
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 
 from codealmanac.services.runs.models import (
     QueuedRun,
     RunAttachSnapshot,
+    RunAttachUpdate,
     RunCancelResult,
     RunLogEvent,
     RunRecord,
@@ -25,17 +27,25 @@ from codealmanac.services.runs.requests import (
     RecordRunHarnessTranscriptRequest,
     ShowRunRequest,
     StartRunRequest,
+    StreamRunAttachRequest,
 )
 from codealmanac.services.runs.store import RunStore, RunWorkerLease
+from codealmanac.services.runs.streaming import RunAttachStreamer
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
 
 
 class RunsService:
-    def __init__(self, workspaces: WorkspacesService, store: RunStore):
+    def __init__(
+        self,
+        workspaces: WorkspacesService,
+        store: RunStore,
+        streamer: RunAttachStreamer | None = None,
+    ):
         self.workspaces = workspaces
         self.store = store
+        self.streamer = streamer or RunAttachStreamer(store)
 
     def start(self, request: StartRunRequest) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
@@ -96,6 +106,17 @@ class RunsService:
     def attach(self, request: AttachRunRequest) -> RunAttachSnapshot:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.attach(workspace.almanac_path, request.run_id)
+
+    def stream_attach(
+        self,
+        request: StreamRunAttachRequest,
+    ) -> Iterator[RunAttachUpdate]:
+        workspace = self.resolve_workspace(request.cwd, request.wiki)
+        return self.streamer.stream(
+            workspace.almanac_path,
+            request.run_id,
+            request.poll_interval_seconds,
+        )
 
     def record_event(self, request: RecordRunEventRequest) -> RunLogEvent:
         workspace = self.resolve_workspace(request.cwd, request.wiki)

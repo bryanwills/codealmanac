@@ -108,6 +108,12 @@ class RunAttachSnapshot(CodeAlmanacModel):
     terminal: bool
 
 
+class RunAttachUpdate(CodeAlmanacModel):
+    record: RunRecord
+    events: tuple[RunLogEvent, ...]
+    terminal: bool
+
+
 class RunSpec(CodeAlmanacModel):
     version: int = 1
     operation: RunOperation

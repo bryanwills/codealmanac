@@ -33,6 +33,7 @@ from codealmanac.services.runs.models import (
     RunWorkerSpawnResult,
 )
 from codealmanac.services.runs.requests import (
+    FinishRunRequest,
     ListRunsRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
@@ -1212,25 +1213,44 @@ def test_cli_jobs_inspects_local_run_records(
     log_events = json.loads(logs_json_output.out)
     assert "harness_event" not in log_events[0]
 
+    app.runs.finish(
+        FinishRunRequest(
+            cwd=repo,
+            run_id=record.run_id,
+            status=RunStatus.DONE,
+            summary="digest complete",
+        )
+    )
+
     assert main(["jobs", "attach", record.run_id]) == 0
     attach_output = capsys.readouterr()
     assert "1\tstatus\tqueued ingest\n" in attach_output.out
     assert "2\tmessage\tread note\n" in attach_output.out
-    assert "status: queued\n" in attach_output.out
+    assert "3\tstatus\tdone\n" in attach_output.out
+    assert "status: done\n" in attach_output.out
 
-    assert main(["jobs", "cancel", record.run_id]) == 0
-    cancel_output = capsys.readouterr()
-    assert f"cancelled {record.run_id}\n" in cancel_output.out
-    assert app.runs.show(ShowRunRequest(cwd=repo, run_id=record.run_id)).status == (
-        RunStatus.CANCELLED
+    cancellable = app.runs.start(
+        StartRunRequest(
+            cwd=repo,
+            operation=RunOperation.GARDEN,
+            title="Garden later",
+        )
     )
+
+    assert main(["jobs", "cancel", cancellable.run_id]) == 0
+    cancel_output = capsys.readouterr()
+    assert f"cancelled {cancellable.run_id}\n" in cancel_output.out
+    cancelled_record = app.runs.show(
+        ShowRunRequest(cwd=repo, run_id=cancellable.run_id)
+    )
+    assert cancelled_record.status == RunStatus.CANCELLED
 
     assert main(["jobs", "--json"]) == 0
     json_output = capsys.readouterr()
     assert f'"run_id": "{record.run_id}"' in json_output.out
     assert '"session_id": "codex-job-session"' in json_output.out
 
-    assert main(["jobs", "cancel", record.run_id, "--json"]) == 0
+    assert main(["jobs", "cancel", cancellable.run_id, "--json"]) == 0
     cancel_json_output = capsys.readouterr()
     assert '"changed": false' in cancel_json_output.out
     assert '"status": "cancelled"' in cancel_json_output.out
