@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: pending after Slice 16 verification.
+Sent: 2026-07-02 after Slice 16 verification.
 
 Route:
 
