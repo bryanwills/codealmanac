@@ -61,6 +61,20 @@ Slice 54 executes the PyPI release path until the provider-side blocker:
 - PyPI rejected the upload with `invalid-publisher`; the trusted publisher
   entry is missing or does not match the GitHub OIDC claims
 
+Slice 55 improves hosted cloud setup:
+
+- `/setup` shows an ordered checklist for GitHub sign-in, GitHub App install,
+  repository selection, repository automation, and machine CLI setup
+- route guardrails pin the checklist, PyPI-shaped install command, and
+  GitHub-only copy
+- frontend route tests, frontend component tests, lint, and Next build passed
+- browser-harness proved unauthenticated `/setup` reaches GitHub-only login
+- hosted commit `49afdcebace71eefb45e004c403879aaae6b3e9f` is on the hosted
+  branch and hosted `main`
+- Vercel production deployment
+  `https://codealmanac-hosted-nhz0fnyqv-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -80,14 +94,14 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 53 commit: `8052be0`
+- current Slice 55 commit: `49afdce`
 - previous `origin/codex/workos-authkit-api-foundation` before Slice 51 push:
   `0683c78`
-- `origin/main`: `8052be0`; previous `origin/main` before Slice 53 was
-  `a8ebe9e`
-- production frontend: `https://www.codealmanac.com`
-- hosted main has the setup/auth hardening and route-test guardrails through
+- `origin/main`: `49afdce`; previous `origin/main` before Slice 55 was
   `8052be0`
+- production frontend: `https://www.codealmanac.com`
+- hosted main has the setup/auth hardening, route-test guardrails, and cloud
+  setup checklist through `49afdce`
 
 The local wiki command currently fails on this checkout with:
 
@@ -124,6 +138,16 @@ repaired.
 - Slice 54 GitHub publish run `28617914312` passed the workflow's build job:
   tests, lint, diff hygiene, artifact build, Twine checks, and artifact upload.
   It failed only at PyPI token exchange with `invalid-publisher`.
+- Slice 55 hosted frontend verification passed: `npm run test:routes`
+  (`27 passed`), `npm run test:frontend` (`52 passed`), `npm run lint`,
+  `npm run build`, and browser-harness unauthenticated `/setup` check.
+- Slice 55 Vercel production deployment passed:
+  `codealmanac-hosted-nhz0fnyqv-thealmanac.vercel.app` was aliased to
+  `www.codealmanac.com`; production `/`, `/login`, unauthenticated `/setup`,
+  and backend health smokes passed.
+- Slice 55 full local dev stack did not start because Doppler
+  `codealmanac/dev_personal` is missing `GITHUB_TOKEN_ENCRYPTION_KEYS`. This
+  blocks a signed-in local walkthrough, not the static route/build verification.
 
 ## Next Pressure Tests
 
@@ -140,6 +164,9 @@ repaired.
 - Do a real signed-in production browser pass through:
   `/login` -> GitHub AuthKit -> `/setup` -> GitHub App install/config ->
   repository settings.
+- Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
+  local signed-in setup walkthrough is needed; the backend currently refuses to
+  start without it.
 - Keep setup simple. The user should not see email verification, email/password,
   or generic SSO as part of launch.
 - Do not implement rate limits now unless Rohan explicitly reopens that work.

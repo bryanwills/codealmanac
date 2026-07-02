@@ -2,6 +2,41 @@
 
 ## 2026-07-02
 
+- Planned Slice 55 in
+  `docs/plans/2026-07-02-slice-55-cloud-setup-checklist.md`.
+- Updated hosted `/setup` so the browser-owned cloud setup hub shows an ordered
+  checklist: sign in with GitHub, install the GitHub App, choose repositories,
+  configure repository automation, and set up this machine.
+- Kept top-level setup facts limited to real `MeDTO` state: signed-in user,
+  connected GitHub accounts, installation ids, and repository selection. The
+  page does not invent repository count, branch trigger, delivery, or capture
+  status; those remain repository-settings facts.
+- Added hosted route guardrails so `/setup` keeps the checklist, PyPI-shaped
+  install command, maintained-branches/per-branch-delivery copy, and
+  GitHub-only auth language.
+- Verified Slice 55 with hosted `npm run test:routes` (`27 passed`),
+  `npm run test:frontend` (`52 passed`), `npm run lint`, and `npm run build`.
+- Browser-harness verified unauthenticated `http://localhost:3000/setup`
+  redirects into the GitHub-only login surface with `Continue with GitHub` and
+  no email/password path. The full dev stack could not start because
+  Doppler `codealmanac/dev_personal` is missing `GITHUB_TOKEN_ENCRYPTION_KEYS`;
+  signed-in local setup walkthrough remains open until that env is present.
+- Pushed hosted commit `49afdcebace71eefb45e004c403879aaae6b3e9f` to
+  `origin/codex/workos-authkit-api-foundation` and fast-forwarded hosted
+  `origin/main`.
+- Deployed the hosted frontend to Vercel production at
+  `https://codealmanac-hosted-nhz0fnyqv-thealmanac.vercel.app`; Vercel aliased
+  it to `https://www.codealmanac.com`.
+- Production smoke passed: `https://www.codealmanac.com` returned HTTP 200,
+  `https://www.codealmanac.com/login` returned HTTP 200,
+  unauthenticated `https://www.codealmanac.com/setup` redirected through
+  WorkOS/AuthKit, and
+  `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  `{"status":"ok"}`.
+- Sent the Slice 55 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 96%, CLI/public UX 95%,
+  CodeAlmanac-hosted backend/auth/API 96%, hosted frontend/onboarding 78%, and
+  infra/deploy rename 96%.
 - Planned Slice 54 in
   `docs/plans/2026-07-02-slice-54-pypi-release-execution.md`.
 - Triggered the first `publish` workflow run on GitHub `main` with

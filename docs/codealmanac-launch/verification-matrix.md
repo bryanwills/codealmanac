@@ -1021,3 +1021,24 @@ Current evidence:
 - Slice 54 confirmed PyPI still exposes only `codealmanac` `0.1.0.dev0`; fresh
   install from PyPI is blocked until the trusted publisher entry matches those
   claims.
+- Slice 55 updated hosted `/setup` with a real ordered cloud setup checklist:
+  GitHub sign-in, GitHub App installation, repository selection, repository
+  automation, and this-machine CLI setup.
+- Slice 55 kept top-level setup facts limited to `MeDTO` state and did not
+  invent repository count, branch trigger, delivery, or capture status.
+- Slice 55 hosted frontend verification passed with route tests (`27 passed`),
+  frontend component tests (`52 passed`), frontend lint, and Next build.
+- Slice 55 browser-harness verification proved unauthenticated
+  `http://localhost:3000/setup` redirects into the GitHub-only login surface
+  with `Continue with GitHub` and no email/password path. The local full dev
+  stack could not start because Doppler `codealmanac/dev_personal` is missing
+  `GITHUB_TOKEN_ENCRYPTION_KEYS`.
+- Slice 55 pushed hosted commit `49afdcebace71eefb45e004c403879aaae6b3e9f` to
+  the hosted launch branch and hosted `main`.
+- Slice 55 deployed the hosted frontend to Vercel production
+  `https://codealmanac-hosted-nhz0fnyqv-thealmanac.vercel.app`, and Vercel
+  aliased it to `https://www.codealmanac.com`.
+- Slice 55 production smoke passed: `https://www.codealmanac.com` HTTP 200,
+  `https://www.codealmanac.com/login` HTTP 200, unauthenticated
+  `https://www.codealmanac.com/setup` redirected through WorkOS/AuthKit, and
+  backend health returned `{"status":"ok"}`.

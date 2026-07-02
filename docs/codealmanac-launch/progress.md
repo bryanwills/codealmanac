@@ -8,7 +8,8 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 54 PyPI release execution.
+Sent: 2026-07-02 after Slice 55 cloud setup checklist verification and
+deployment.
 
 Route:
 
@@ -28,10 +29,10 @@ matching trusted publisher entry in the PyPI `codealmanac` project.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 95% | Slice 54 fixed a real run attach-stream terminal-event race and full local tests pass. |
-| CodeAlmanac CLI/public UX | 95% | 94% | The stable publish workflow now passes build/test/artifact gates on `main`; PyPI upload is blocked only by trusted publisher configuration. |
-| CodeAlmanac-hosted backend/auth/API | 96% | 96% | Hosted backend/auth/API unchanged in Slice 54. |
-| Hosted frontend/onboarding | 73% | 73% | Hosted frontend/onboarding unchanged in Slice 54; signed-in production walkthrough still remains. |
+| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 55. |
+| CodeAlmanac CLI/public UX | 95% | 95% | CLI/PyPI state unchanged in Slice 55; PyPI upload remains blocked by trusted publisher configuration. |
+| CodeAlmanac-hosted backend/auth/API | 96% | 96% | Hosted backend/auth/API unchanged in Slice 55. |
+| Hosted frontend/onboarding | 78% | 73% | Hosted `/setup` now has an ordered cloud setup checklist, route guardrails, passing frontend tests/build, and unauthenticated browser verification. |
 | Infra/deploy rename | 96% | 96% | CodeAlmanac and hosted branch/main convergence remains done; PyPI provider configuration and provider cleanup remain. |
 
 ## Update Rule
