@@ -2,6 +2,39 @@
 
 ## 2026-07-02
 
+- Planned Slice 46 in
+  `docs/plans/2026-07-02-slice-46-dashboard-run-actions.md`.
+- Added hosted dashboard run actions for repository activity rows.
+- Added `frontend/src/components/runs/run-actions.ts` so run-status action
+  policy has one source: `queued` and `running` show Cancel; `failed`, `stale`,
+  and `cancelled` show Retry; `delivered` stays read-only.
+- Updated `RunRow` to render icon+text action buttons, pending copy, disabled
+  state, and inline row errors.
+- Updated `RunsList` to call the existing BFF `cancelRun` and `retryRun`
+  commands, replace cancelled rows, insert/upsert retried runs at the top, and
+  preserve the existing active-run polling behavior.
+- Reused the shared `actionErrorMessage` helper so backend `ApiError` messages
+  show while generic exception details stay hidden.
+- Verified Slice 46 with hosted frontend route tests (`27 passed`), frontend
+  component tests (`50 passed`), `npm run lint`, `npm run build`, and
+  `git diff --check`. The frontend build retained the known CSS optimizer
+  warning about `m-* utility`.
+- Pushed hosted commit `7b35cc9 feat: add dashboard run actions` to
+  `origin/codex/workos-authkit-api-foundation` and fast-forwarded hosted
+  `main` to the same commit.
+- Deployed the hosted frontend to Vercel production. Vercel produced
+  `https://codealmanac-hosted-arnwuqgyo-thealmanac.vercel.app`, reported it
+  ready as deployment `dpl_7D22Df6y4Q1D5MM8eqLHnnf2Qekx`, and aliased it to
+  `https://www.codealmanac.com`.
+- Render auto-deployed service `srv-d8g8nb37uimc739vnnsg` at exact hosted
+  commit `7b35cc96b4afbacce376bfb4f0feca253b8d44e0`; deploy
+  `dep-d939m5cm0tmc73avfu50` finished `live`.
+- Verified production smoke: `https://www.codealmanac.com` returned HTTP 200
+  and `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  `{"status":"ok"}`.
+- Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 91%,
+  CodeAlmanac-hosted backend/auth/API 92%, hosted frontend/onboarding 52%, and
+  infra/deploy rename 86%.
 - Planned Slice 45 in
   `docs/plans/2026-07-02-slice-45-cloud-run-retry.md`.
 - Added hosted `UpdateRetry` and `Updates.retry_run(...)`.

@@ -10,56 +10,51 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 45 added real cloud run retry and exposed it through the CodeAlmanac CLI.
+Slice 46 made cloud run cancellation and retry visible in the hosted dashboard
+repository activity list.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- hosted backend has `UpdateRetry`, `Updates.retry_run(...)`, and
-  `POST /v1/runs/{run_id}/retry`
-- browser backend has `POST /api/runs/{run_id}/retry`
-- retry creates a new run, accepts `failed`, `stale`, and `cancelled`, rejects
-  active and delivered runs, refreshes current GitHub head, and preserves
-  conversation source refs by reference
-- hosted frontend BFF/server helpers and gateway allowlist accept retry
-- CodeAlmanac has `codealmanac runs retry <run-id>`
+- `frontend/src/components/runs/run-actions.ts` owns the run-status to action
+  rule: `queued` and `running` cancel; `failed`, `stale`, and `cancelled`
+  retry; `delivered` stays read-only
+- `frontend/src/components/runs/run-row.tsx` renders the row actions with
+  icon+text buttons, pending copy, disabled state, and inline errors
+- `frontend/src/components/runs/runs-list.tsx` executes BFF mutations, replaces
+  cancelled rows, inserts/upserts retried runs at the top, and leaves polling
+  unchanged
+- hosted commit `7b35cc9 feat: add dashboard run actions` is pushed to
+  `origin/codex/workos-authkit-api-foundation` and hosted `main`
 
 Verified:
 
 ```text
-cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest -q
-uv run ruff check .
-uv run python -m compileall src modal_app -q
-
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
 npm run test:routes
 npm run test:frontend
 npm run lint
 npm run build
-
-cd /Users/rohan/Desktop/Projects/codealmanac
-uv run pytest -q
-uv run ruff check .
-uv run python -m compileall src -q
 ```
 
-Counts so far: hosted backend `355 passed, 1 warning`; frontend routes
-`27 passed`; frontend components `44 passed`; CodeAlmanac `496 passed`.
-Frontend build retained the known CSS optimizer warning about `m-* utility`.
+Counts for Slice 46: frontend routes `27 passed`; frontend components
+`50 passed`. Frontend build retained the known CSS optimizer warning about
+`m-* utility`.
 
 ## Next Pressure Test
 
-Choose the next launch-hardening slice between visible run actions in the
-dashboard, richer repository setup UI, and remaining provider cleanup.
+Choose the next launch-hardening slice between richer repository setup UI,
+capture/setup visibility, and remaining provider cleanup.
 
 Pressure points:
 
-- visible retry/cancel buttons need a dashboard interaction design
 - browser setup/onboarding entrypoints now have stable redirect URLs and setup
   copy, but richer repository setup UI still needs product design
+- repository setup should make GitHub App installation, selected repos,
+  maintained branches, delivery mode, and capture status understandable without
+  relying on CLI output alone
 - old inline-message conversation routes should remain compatibility-only
 - old Modal app `usealmanac-updates` is still deployed; retire it only in an
   explicit provider cleanup step
@@ -98,9 +93,10 @@ pushed to origin at `a781e51 chore: align hosted product identity`; Slice 42 is
 pushed to origin at `97564f7 feat: publish terminal run checks`; Slice 43 is
 pushed to origin at `eafe60c feat: align cloud setup copy`; Slice 44 is pushed
 to origin at `0e17a34 feat: cancel cloud update runs`; Slice 45 is pushed to
-origin at `b3535cd feat: retry cloud update runs`. Hosted `main` is also
-fast-forwarded to `b3535cd`, Render service `srv-d8g8nb37uimc739vnnsg` is live
-on deploy `dep-d939gveq1p3s73d1dt30`, and Vercel production is live at
+origin at `b3535cd feat: retry cloud update runs`; Slice 46 is pushed to
+origin at `7b35cc9 feat: add dashboard run actions`. Hosted `main` is also
+fast-forwarded to `7b35cc9`, Render service `srv-d8g8nb37uimc739vnnsg` is live
+on deploy `dep-d939m5cm0tmc73avfu50`, and Vercel production is live at
 `https://www.codealmanac.com`.
 
 CodeAlmanac Slice 45 is pushed to `origin/dev` at

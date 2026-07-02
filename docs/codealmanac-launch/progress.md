@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 45 cloud run retry and production deploy.
+Sent: 2026-07-02 after Slice 46 dashboard run actions and production deploy.
 
 Route:
 
@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 95% | 95% | Slice 45 is cloud-run control; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 91% | 90% | `codealmanac runs retry <run-id>` is pushed to `origin/dev` at `af7953c6`. |
-| CodeAlmanac-hosted backend/auth/API | 92% | 90% | Hosted retry is pushed to the launch branch and hosted `main` at `b3535cd`. |
-| Hosted frontend/onboarding | 44% | 43% | Browser BFF/API helpers can retry runs; visible retry UI remains future work. |
-| Infra/deploy rename | 84% | 82% | Vercel production and Render backend are live on the Slice 45 code. |
+| CodeAlmanac backend/local | 95% | 95% | Slice 46 is hosted-frontend only; local worker behavior is unchanged. |
+| CodeAlmanac CLI/public UX | 91% | 91% | No CLI change after Slice 45 retry; dashboard now exposes the same run controls. |
+| CodeAlmanac-hosted backend/auth/API | 92% | 92% | No backend API change after Slice 45; Slice 46 consumes existing BFF commands. |
+| Hosted frontend/onboarding | 52% | 44% | Repository activity rows now expose cancel/retry with pending and inline-error states. |
+| Infra/deploy rename | 86% | 84% | Vercel production and Render backend are live on the Slice 46 commit. |
 
 ## Update Rule
 

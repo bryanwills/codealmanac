@@ -744,8 +744,23 @@ Current evidence:
   (`61 passed, 1 warning`), full backend tests (`355 passed, 1 warning`),
   route tests (`27 passed`), frontend component tests (`44 passed`), backend
   ruff/compileall, frontend lint/build, and `git diff --check`.
-- Remaining hosted worker risks: visible dashboard run actions and richer
-  production setup/onboarding screens still need launch-hardening.
+- Slice 46 added visible hosted dashboard run actions on repository activity
+  rows. Active runs show Cancel; failed, stale, and cancelled runs show Retry;
+  delivered runs stay read-only.
+- `frontend/src/components/runs/run-actions.ts` proves the action policy has a
+  single source, and `frontend/tests/frontend/run-actions.test.ts` pins the
+  status-to-action mapping and pending copy.
+- `frontend/src/components/runs/runs-list.tsx` calls the existing BFF
+  `cancelRun` and `retryRun` commands, replaces cancelled rows, inserts/upserts
+  retried runs at the top, and keeps polling limited to visible queued/running
+  rows.
+- `frontend/tests/frontend/run-row.test.tsx` proves action visibility, pending
+  state, and inline error rendering.
+- Slice 46 hosted frontend verification passed with route tests (`27 passed`),
+  frontend component tests (`50 passed`), `npm run lint`, `npm run build`, and
+  `git diff --check`.
+- Remaining hosted worker risks: richer production setup/onboarding screens
+  still need launch-hardening.
 
 ## Provider / Deployment
 
@@ -832,3 +847,17 @@ Current evidence:
   `{"status":"ok"}`, and unauthenticated
   `POST /v1/runs/00000000-0000-0000-0000-000000000000/retry` returned
   `401 not_authenticated`, proving the new retry route is mounted.
+- Slice 46 fast-forwarded hosted `main` to
+  `7b35cc96b4afbacce376bfb4f0feca253b8d44e0` so provider branch tracking uses
+  the launch code.
+- Slice 46 deployed the hosted frontend to Vercel production
+  `https://codealmanac-hosted-arnwuqgyo-thealmanac.vercel.app`, deployment id
+  `dpl_7D22Df6y4Q1D5MM8eqLHnnf2Qekx`; Vercel aliased it to
+  `https://www.codealmanac.com` and reported status `Ready`.
+- Slice 46 Render auto-deployed service `srv-d8g8nb37uimc739vnnsg` at exact
+  commit `7b35cc96b4afbacce376bfb4f0feca253b8d44e0`; deploy
+  `dep-d939m5cm0tmc73avfu50` finished `live`.
+- Slice 46 production smoke passed:
+  `https://www.codealmanac.com` returned HTTP 200 and
+  `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  `{"status":"ok"}`.
