@@ -185,6 +185,19 @@ Current evidence:
   applies a worker wiki patch to the checkout without moving HEAD.
 - `tests/test_architecture.py` proves local setup Git detection stays in
   `integrations/workspaces/git/repository.py`, not in the workflow or CLI.
+- Slice 18 added the public local read surface.
+- `tests/test_control_service.py` proves local repository lookup by root path,
+  branch lookup by repository/name, and filtered run listing by status, branch,
+  and limit.
+- `tests/test_local_status_workflow.py` proves local status reports configured
+  checkout branches, unconfigured branches, and unavailable Git checkouts.
+- `tests/test_cli.py` proves `codealmanac local status` renders the current
+  checkout, configured repository, branch trigger state, and delivery mode.
+- `tests/test_cli.py` proves `codealmanac local jobs list --json`,
+  `codealmanac local jobs show <run-id>`, and `codealmanac local jobs logs
+  <run-id>` read SQL-backed local run rows and run events.
+- `tests/test_architecture.py` continues to prove CLI parser/dispatch/render
+  boundaries stay split by command domain.
 
 Commands:
 

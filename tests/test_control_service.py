@@ -19,10 +19,13 @@ from codealmanac.services.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
+    FindBranchByNameRequest,
+    FindRepositoryByLocalRootRequest,
     GetControlRunRequest,
     LinkTurnBranchRequest,
     ListBranchSessionsRequest,
     ListControlRunEventsRequest,
+    ListControlRunsRequest,
     ListTriggerEventsRequest,
     ReadControlSchemaStatusRequest,
     RecordCurrentGitTriggerRequest,
@@ -231,6 +234,32 @@ def test_control_upserts_repository_and_branch_policy(
     assert branch.trigger_enabled is True
     assert branch.delivery_mode is ControlDeliveryMode.COMMIT
     assert branch.last_seen_head_sha == "abc123"
+
+
+def test_control_finds_repository_and_branch_for_local_checkout(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    app = control_app(isolated_home)
+    repo_path = tmp_path / "repo"
+    repository = register_repository(app, repo_path)
+    branch = app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+    )
+
+    found_repository = app.control.find_repository_by_local_root(
+        FindRepositoryByLocalRootRequest(root_path=repo_path / "src" / "..")
+    )
+    found_branch = app.control.find_branch_by_name(
+        FindBranchByNameRequest(repository_id=repository.id, name="dev")
+    )
+    missing_branch = app.control.find_branch_by_name(
+        FindBranchByNameRequest(repository_id=repository.id, name="main")
+    )
+
+    assert found_repository == repository
+    assert found_branch == branch
+    assert missing_branch is None
 
 
 def test_disabled_branch_does_not_record_trigger_event(
@@ -569,6 +598,46 @@ def test_control_run_ledger_creates_updates_and_logs_run_events(
     assert succeeded.commit_subject == "docs almanac: update dev wiki"
     assert succeeded.finished_at is not None
     assert tuple(event.sequence for event in events) == (1, 2)
+
+
+def test_control_lists_runs_with_filters_and_limit(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    app = control_app(isolated_home)
+    repository = register_repository(app, tmp_path / "repo")
+    dev = app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+    )
+    main = app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="main")
+    )
+    dev_run = app.control.create_run(
+        CreateControlRunRequest(repository_id=repository.id, branch_id=dev.id)
+    )
+    main_run = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=app.control.create_run(
+                CreateControlRunRequest(
+                    repository_id=repository.id,
+                    branch_id=main.id,
+                )
+            ).id,
+            status=ControlRunStatus.SUCCEEDED,
+        )
+    )
+
+    all_runs = app.control.list_runs(ListControlRunsRequest(limit=10))
+    queued_runs = app.control.list_runs(
+        ListControlRunsRequest(statuses=(ControlRunStatus.QUEUED,))
+    )
+    dev_runs = app.control.list_runs(ListControlRunsRequest(branch_id=dev.id))
+    limited = app.control.list_runs(ListControlRunsRequest(limit=1))
+
+    assert tuple(run.id for run in all_runs) == (main_run.id, dev_run.id)
+    assert tuple(run.id for run in queued_runs) == (dev_run.id,)
+    assert tuple(run.id for run in dev_runs) == (dev_run.id,)
+    assert len(limited) == 1
 
 
 def test_claim_next_trigger_returns_empty_result_without_pending_trigger(

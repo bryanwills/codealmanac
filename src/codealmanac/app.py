@@ -83,11 +83,13 @@ from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_engine import LocalEngineWorkflow
+from codealmanac.workflows.local_jobs import LocalJobsWorkflow
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
 from codealmanac.workflows.local_setup import (
     LocalRepositoryProbe,
     LocalSetupWorkflow,
 )
+from codealmanac.workflows.local_status import LocalStatusWorkflow
 from codealmanac.workflows.local_worker import LocalWorkerSpawner, LocalWorkerWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
@@ -103,6 +105,8 @@ class CodeAlmanacWorkflows:
     queue: RunQueueWorkflow
     local_runs: LocalRunPreparationWorkflow
     local_setup: LocalSetupWorkflow
+    local_status: LocalStatusWorkflow
+    local_jobs: LocalJobsWorkflow
     local_engine: LocalEngineWorkflow
     local_delivery: LocalDeliveryWorkflow
     local_worker: LocalWorkerWorkflow
@@ -246,11 +250,19 @@ def create_app(
         source_bundles,
         engine_runs,
     )
+    resolved_local_repository_probe = (
+        local_repository_probe or GitLocalRepositoryProbe()
+    )
     local_setup = LocalSetupWorkflow(
         control,
         local_hooks,
-        local_repository_probe or GitLocalRepositoryProbe(),
+        resolved_local_repository_probe,
     )
+    local_status = LocalStatusWorkflow(
+        control,
+        resolved_local_repository_probe,
+    )
+    local_jobs = LocalJobsWorkflow(control)
     local_engine = LocalEngineWorkflow(
         control,
         engine_runs,
@@ -280,6 +292,8 @@ def create_app(
         queue=queue,
         local_runs=local_runs,
         local_setup=local_setup,
+        local_status=local_status,
+        local_jobs=local_jobs,
         local_engine=local_engine,
         local_delivery=local_delivery,
         local_worker=local_worker,

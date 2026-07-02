@@ -20,15 +20,19 @@ from codealmanac.services.automation.models import (
 )
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
+    ControlRunEventKind,
     ControlRunStatus,
     LocalGitState,
     TriggerEventKind,
     TriggerEventStatus,
 )
 from codealmanac.services.control.requests import (
+    AppendControlRunEventRequest,
+    CreateControlRunRequest,
     ListTriggerEventsRequest,
     RecordTriggerEventRequest,
     SetBranchPolicyRequest,
+    UpdateControlRunRequest,
     UpsertRepositoryRequest,
 )
 from codealmanac.services.harnesses.models import (
@@ -345,6 +349,21 @@ class CliLocalDeliveryManager:
         )
 
 
+def local_repository_state(repo: Path) -> LocalRepositoryState:
+    return LocalRepositoryState(
+        cwd=repo,
+        available=True,
+        repository_root=repo,
+        branch_name="dev",
+        head_sha="head-1",
+        provider="github",
+        owner_login="AlmanacCode",
+        name="codealmanac",
+        full_name="AlmanacCode/codealmanac",
+        default_branch="main",
+    )
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -467,6 +486,111 @@ def test_cli_local_setup_registers_current_checkout(
     assert data["branch"]["delivery_mode"] == "working_tree"
     assert data["hooks"] is None
     assert probe.requests == [repo]
+
+
+def test_cli_local_status_reports_current_checkout(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    probe = CliLocalRepositoryProbe(local_repository_state(repo))
+    app = create_app(
+        AppConfig(control_db_path=isolated_home / ".codealmanac/control.sqlite"),
+        local_repository_probe=probe,
+    )
+    repository = app.control.upsert_repository(
+        UpsertRepositoryRequest(
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            almanac_root=Path("almanac"),
+            local_root_path=repo,
+        )
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["local", "status"]) == 0
+
+    output = capsys.readouterr()
+
+    assert "checkout: AlmanacCode/codealmanac dev head-1\n" in output.out
+    assert "repository: configured AlmanacCode/codealmanac\n" in output.out
+    assert "branch: configured dev\n" in output.out
+    assert "delivery: commit\n" in output.out
+
+
+def test_cli_local_jobs_list_show_and_logs(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(control_db_path=isolated_home / ".codealmanac/control.sqlite")
+    )
+    repository = app.control.upsert_repository(
+        UpsertRepositoryRequest(
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            almanac_root=Path("almanac"),
+            local_root_path=repo,
+        )
+    )
+    branch = app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+    )
+    run = app.control.create_run(
+        CreateControlRunRequest(
+            repository_id=repository.id,
+            branch_id=branch.id,
+            expected_head_sha="head-1",
+        )
+    )
+    succeeded = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=run.id,
+            status=ControlRunStatus.SUCCEEDED,
+            summary="updated local wiki",
+        )
+    )
+    app.control.append_run_event(
+        AppendControlRunEventRequest(
+            run_id=run.id,
+            kind=ControlRunEventKind.STATUS,
+            message="delivered local commit head-2",
+        )
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["local", "jobs", "list", "--json"]) == 0
+    list_output = capsys.readouterr()
+    list_data = json.loads(list_output.out)
+
+    assert list_data[0]["run"]["id"] == succeeded.id
+    assert list_data[0]["repository"]["full_name"] == "AlmanacCode/codealmanac"
+    assert list_data[0]["branch"]["name"] == "dev"
+
+    assert main(["local", "jobs", "show", run.id]) == 0
+    show_output = capsys.readouterr()
+    assert f"id: {run.id}\n" in show_output.out
+    assert "repo: AlmanacCode/codealmanac\n" in show_output.out
+    assert "summary: updated local wiki\n" in show_output.out
+
+    assert main(["local", "jobs", "logs", run.id]) == 0
+    logs_output = capsys.readouterr()
+    assert "1\tstatus\tdelivered local commit head-2\n" in logs_output.out
 
 
 def test_cli_setup_skip_instructions_json(capsys):

@@ -29,6 +29,10 @@ class GetRepositoryRequest(CodeAlmanacModel):
         return required_text(value, "repository id")
 
 
+class FindRepositoryByLocalRootRequest(CodeAlmanacModel):
+    root_path: Path
+
+
 class GetBranchRequest(CodeAlmanacModel):
     branch_id: str
 
@@ -36,6 +40,21 @@ class GetBranchRequest(CodeAlmanacModel):
     @classmethod
     def require_branch_id(cls, value: str) -> str:
         return required_text(value, "branch id")
+
+
+class FindBranchByNameRequest(CodeAlmanacModel):
+    repository_id: str
+    name: str
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "branch repository_id")
+
+    @field_validator("name")
+    @classmethod
+    def require_name(cls, value: str) -> str:
+        return required_text(value, "branch name")
 
 
 class GetControlRunRequest(CodeAlmanacModel):
@@ -327,6 +346,27 @@ class ListControlRunEventsRequest(CodeAlmanacModel):
     @classmethod
     def require_run_id(cls, value: str) -> str:
         return required_text(value, "run id")
+
+
+class ListControlRunsRequest(CodeAlmanacModel):
+    repository_id: str | None = None
+    branch_id: str | None = None
+    statuses: tuple[ControlRunStatus, ...] = Field(default_factory=tuple)
+    limit: int = 20
+
+    @field_validator("repository_id", "branch_id")
+    @classmethod
+    def require_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return required_text(value, "run list filter")
+
+    @field_validator("limit")
+    @classmethod
+    def require_valid_limit(cls, value: int) -> int:
+        if value < 1 or value > 100:
+            raise ValueError("run list limit must be between 1 and 100")
+        return value
 
 
 class ClaimNextTriggerRequest(CodeAlmanacModel):

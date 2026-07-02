@@ -16,6 +16,7 @@ Owns:
 - local query DB for wiki read/search
 - local capture storage
 - local Git hook dispatchers
+- local status and local job read surface
 - local worker workspace creation
 - local engine execution
 - local worker orchestration

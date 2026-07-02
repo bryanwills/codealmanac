@@ -3,9 +3,21 @@ from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.control.models import ControlDeliveryMode
+from codealmanac.cli.render.local import (
+    render_local_job,
+    render_local_job_logs,
+    render_local_jobs,
+    render_local_status,
+)
+from codealmanac.services.control.models import ControlDeliveryMode, ControlRunStatus
 from codealmanac.services.workspaces.roots import DEFAULT_ALMANAC_ROOT
+from codealmanac.workflows.local_jobs.requests import (
+    ListLocalJobsRequest,
+    ReadLocalJobLogsRequest,
+    ShowLocalJobRequest,
+)
 from codealmanac.workflows.local_setup.requests import RunLocalSetupRequest
+from codealmanac.workflows.local_status.requests import ReadLocalStatusRequest
 
 LOCAL_COMMANDS = frozenset(("local",))
 
@@ -15,9 +27,19 @@ def is_local_command(command: str | None) -> bool:
 
 
 def dispatch_local(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.local_command == "status":
+        return dispatch_local_status(args, app)
     if args.local_command == "setup":
         return dispatch_local_setup(args, app)
+    if args.local_command == "jobs":
+        return dispatch_local_jobs(args, app)
     raise AssertionError(f"unhandled local command: {args.local_command}")
+
+
+def dispatch_local_status(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    result = app.workflows.local_status.status(ReadLocalStatusRequest(cwd=Path.cwd()))
+    render_local_status(result, json_output=args.json)
+    return 0
 
 
 def dispatch_local_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
@@ -42,6 +64,31 @@ def dispatch_local_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
     )
     print(f"hooks: {hooks_status}")
     return 0
+
+
+def dispatch_local_jobs(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.jobs_command == "list":
+        jobs = app.workflows.local_jobs.list(
+            ListLocalJobsRequest(
+                repository_id=args.repository_id,
+                branch_id=args.branch_id,
+                statuses=tuple(ControlRunStatus(status) for status in args.status),
+                limit=args.limit,
+            )
+        )
+        render_local_jobs(jobs, json_output=args.json)
+        return 0
+    if args.jobs_command == "show":
+        job = app.workflows.local_jobs.show(ShowLocalJobRequest(run_id=args.run_id))
+        render_local_job(job, json_output=args.json)
+        return 0
+    if args.jobs_command == "logs":
+        result = app.workflows.local_jobs.logs(
+            ReadLocalJobLogsRequest(run_id=args.run_id)
+        )
+        render_local_job_logs(result, json_output=args.json)
+        return 0
+    raise AssertionError(f"unhandled local jobs command: {args.jobs_command}")
 
 
 def parse_almanac_root(value: str | None) -> Path:

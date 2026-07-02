@@ -357,3 +357,22 @@
   CodeAlmanac backend/local 76%, CLI/public UX 18%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 18 in
+  `docs/plans/2026-07-02-slice-18-local-status-and-jobs.md`.
+- Added optional control DB reads for repository-by-local-root,
+  branch-by-name, and filtered run listing.
+- Added `app.workflows.local_status.status(...)`.
+- Added `app.workflows.local_jobs` to wrap run rows with repository and branch
+  context for public output.
+- Added public `codealmanac local status`.
+- Added public `codealmanac local jobs list`, `show`, and `logs`.
+- Kept `local update` out of this slice so manual-trigger semantics can be
+  designed without overloading the read surface.
+- Verified Slice 18 focused behavior with
+  `uv run pytest tests/test_control_service.py tests/test_local_status_workflow.py tests/test_cli.py tests/test_architecture.py`.
+- Verified Slice 18 full gate with `uv run pytest` (`439 passed`),
+  `uv run ruff check .`, and `git diff --check`.
+- Pending Slice 18 RelayForge update records progress as:
+  CodeAlmanac backend/local 78%, CLI/public UX 22%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.

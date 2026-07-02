@@ -38,12 +38,15 @@ from codealmanac.services.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
+    FindBranchByNameRequest,
+    FindRepositoryByLocalRootRequest,
     GetBranchRequest,
     GetControlRunRequest,
     GetRepositoryRequest,
     LinkTurnBranchRequest,
     ListBranchSessionsRequest,
     ListControlRunEventsRequest,
+    ListControlRunsRequest,
     ListTriggerEventsRequest,
     RecordLocalTriggerRequest,
     RecordTriggerEventRequest,
@@ -84,9 +87,27 @@ class ControlStore:
         with connect_control(self.path) as connection:
             return self.repository_by_id(connection, request.repository_id)
 
+    def find_repository_by_local_root(
+        self,
+        request: FindRepositoryByLocalRootRequest,
+    ) -> RepositoryRecord | None:
+        with connect_control(self.path) as connection:
+            return self.repository_by_local_root_path(connection, request.root_path)
+
     def get_branch(self, request: GetBranchRequest) -> BranchRecord:
         with connect_control(self.path) as connection:
             return self.branch_by_id(connection, request.branch_id)
+
+    def find_branch_by_name(
+        self,
+        request: FindBranchByNameRequest,
+    ) -> BranchRecord | None:
+        with connect_control(self.path) as connection:
+            return self.branch_by_name(
+                connection,
+                request.repository_id,
+                request.name,
+            )
 
     def get_run(self, request: GetControlRunRequest) -> ControlRunRecord:
         with connect_control(self.path) as connection:
@@ -629,6 +650,37 @@ class ControlStore:
                 (request.run_id,),
             ).fetchall()
         return tuple(control_run_event_from_row(row) for row in rows)
+
+    def list_runs(
+        self,
+        request: ListControlRunsRequest,
+    ) -> tuple[ControlRunRecord, ...]:
+        clauses: list[str] = []
+        arguments: list[object] = []
+        if request.repository_id is not None:
+            clauses.append("repository_id = ?")
+            arguments.append(request.repository_id)
+        if request.branch_id is not None:
+            clauses.append("branch_id = ?")
+            arguments.append(request.branch_id)
+        if request.statuses:
+            placeholders = ", ".join("?" for _ in request.statuses)
+            clauses.append(f"status IN ({placeholders})")
+            arguments.extend(status.value for status in request.statuses)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        arguments.append(request.limit)
+        with connect_control(self.path) as connection:
+            rows = connection.execute(
+                f"""
+                SELECT *
+                FROM runs
+                {where}
+                ORDER BY created_at DESC, id DESC
+                LIMIT ?
+                """,
+                arguments,
+            ).fetchall()
+        return tuple(control_run_from_row(row) for row in rows)
 
     def claim_next_trigger(
         self,

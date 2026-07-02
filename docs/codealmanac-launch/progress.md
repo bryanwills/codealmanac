@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 17 verification.
+Pending: 2026-07-02 after Slice 18 verification.
 
 Route:
 
@@ -26,8 +26,8 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 76% | 72% | Slice 17 added local setup workflow, GitHub checkout detection, branch policy registration, hook installation, and working-tree delivery parity. |
-| CodeAlmanac CLI/public UX | 18% | 13% | `codealmanac local setup` is now a real public local command with JSON/text output. Broader launch CLI reshaping remains. |
+| CodeAlmanac backend/local | 78% | 76% | Slice 18 added local status composition, control DB run listing, and local job read models over SQL-backed runs/events. |
+| CodeAlmanac CLI/public UX | 22% | 18% | `codealmanac local status` and `codealmanac local jobs list/show/logs` are now public commands with text and JSON output. |
 | CodeAlmanac-hosted backend/auth/API | 8% | 8% | WorkOS/Doppler setup and hosted rename groundwork exist; public API migration is not implemented yet. |
 | Hosted frontend/onboarding | 5% | 5% | Existing frontend is deployed under CodeAlmanac; new onboarding/configuration screens are not implemented yet. |
 | Infra/deploy rename | 5% | 5% | GitHub rename, Modal, Render, Vercel production deploy, and health checks were exercised; durable cleanup remains. |
