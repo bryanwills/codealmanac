@@ -2,6 +2,23 @@
 
 ## 2026-07-02
 
+- Planned Slice 52 in
+  `docs/plans/2026-07-02-slice-52-pypi-trusted-publishing.md`.
+- Replaced the disabled CodeAlmanac `publish` workflow with a manual
+  PyPI Trusted Publishing workflow. The workflow publishes only from `main`,
+  requires `confirm_version` to match `pyproject.toml`, refuses pre-release
+  versions, builds/checks artifacts, and uploads through
+  `pypa/gh-action-pypi-publish@release/v1` using GitHub environment `pypi`.
+- Updated `RELEASE.md` with the exact PyPI trusted publisher setup:
+  project `codealmanac`, owner `AlmanacCode`, repository `codealmanac`,
+  workflow filename `publish.yml`, environment `pypi`.
+- Verified Slice 52 with focused public-contract tests (`25 passed`), full
+  `uv run pytest` (`496 passed`), `uv run ruff check .`, workflow YAML parsing,
+  `uv build --out-dir dist`, `uvx twine check dist/*`, and `git diff --check`.
+- Sent the Slice 52 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 95%, CLI/public UX 94%,
+  CodeAlmanac-hosted backend/auth/API 96%, hosted frontend/onboarding 72%, and
+  infra/deploy rename 95%.
 - Planned Slice 51 in
   `docs/plans/2026-07-02-slice-51-launch-state-reconciliation.md`.
 - Reconciled launch state after Slice 50 and the GitHub-only auth guard. The

@@ -90,6 +90,9 @@ GITHUB_REQUIRED_FRAGMENTS = (
     "git diff --check",
     "uv build --out-dir dist",
     "uvx twine check dist/*",
+    "pypa/gh-action-pypi-publish@release/v1",
+    "id-token: write",
+    "name: pypi",
     "CodeAlmanac version",
     "Python version",
     "Describe what you expected CodeAlmanac to do.",
@@ -295,9 +298,11 @@ def test_github_automation_and_templates_use_python_public_surface():
     assert "uv build --out-dir dist" in github_files[
         ".github/workflows/pack-check.yml"
     ]
-    assert "Local publish follows RELEASE.md with uv build and twine." in github_files[
-        ".github/workflows/publish.yml"
-    ]
+    publish_workflow = github_files[".github/workflows/publish.yml"]
+    assert "pypa/gh-action-pypi-publish@release/v1" in publish_workflow
+    assert "id-token: write" in publish_workflow
+    assert "name: pypi" in publish_workflow
+    assert "confirm_version" in publish_workflow
 
 
 def test_github_workflows_are_parseable_python_workflows():

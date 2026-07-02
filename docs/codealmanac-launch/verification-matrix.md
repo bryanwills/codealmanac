@@ -831,6 +831,34 @@ Current evidence:
   setup CTA refinement, provider-library alignment, and provider cleanup still
   need launch-hardening.
 
+## PyPI Release
+
+Must prove:
+
+- `codealmanac` release artifacts build from the release commit.
+- Built wheel and sdist pass Twine metadata validation.
+- The publish path uses PyPI Trusted Publishing, not a committed PyPI token.
+- The PyPI trusted publisher entry exists for the exact GitHub owner, repo,
+  workflow filename, and environment.
+- Fresh install from PyPI works after publication.
+
+Current evidence:
+
+- Slice 52 replaced the disabled publish workflow with a manual
+  trusted-publishing workflow on `.github/workflows/publish.yml`.
+- The workflow refuses non-`main` refs, requires `confirm_version` to match
+  `pyproject.toml`, refuses pre-release versions, runs pytest/ruff/diff
+  hygiene, builds artifacts, validates them with Twine, and publishes through
+  `pypa/gh-action-pypi-publish@release/v1`.
+- The workflow grants `id-token: write` only in the publish job and uses GitHub
+  environment `pypi`, matching the PyPI trusted publisher environment.
+- `RELEASE.md` records the exact PyPI trusted publisher setup:
+  project `codealmanac`, owner `AlmanacCode`, repository `codealmanac`,
+  workflow filename `publish.yml`, environment `pypi`.
+- Remaining evidence needed: create the PyPI trusted publisher entry, run the
+  workflow on `main`, confirm PyPI serves `0.1.0`, and run a fresh
+  `uv tool install codealmanac` from PyPI.
+
 ## Provider / Deployment
 
 Must prove:

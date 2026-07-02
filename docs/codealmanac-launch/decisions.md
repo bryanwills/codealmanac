@@ -100,6 +100,9 @@ Status: active.
   the renamed cloud product exists on real providers before deeper feature work.
 - Provider CLIs/APIs should be used where available for Vercel, Render,
   Supabase, Modal, Doppler, PostHog, Autumn, and GitHub.
+- CodeAlmanac PyPI publishing uses PyPI Trusted Publishing through GitHub
+  Actions and the official PyPA publish action. Do not add a PyPI token to
+  Doppler or GitHub secrets for the standard release path.
 - Supabase migrations can be rewritten/collapsed/repaired during this launch
   because there are no external customers yet.
 - Rate limits are postponed. They remain necessary before broad public scale,

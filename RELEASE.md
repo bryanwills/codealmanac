@@ -73,14 +73,43 @@ codealmanac serve --host 127.0.0.1 --port 49280
 
 Confirm `/api/overview` and `/app.js` respond from the local server.
 
+## One-Time PyPI Trusted Publisher Setup
+
+The release workflow uses PyPI Trusted Publishing. It does not require a PyPI
+API token in chat, Doppler, GitHub secrets, or a local `.pypirc`.
+
+Configure this once in the PyPI `codealmanac` project:
+
+```text
+Publisher: GitHub
+PyPI project: codealmanac
+Owner: AlmanacCode
+Repository name: codealmanac
+Workflow filename: publish.yml
+Environment name: pypi
+```
+
+The GitHub workflow uses the `pypi` environment. Configure protection rules on
+that GitHub environment if releases should require manual approval inside
+GitHub Actions.
+
 ## Publish
 
 Publish only after the checklist passes and the release commit is on the
 release branch.
 
-```bash
-uvx twine upload dist/*
-```
+Stable releases are published from `main` through the manual GitHub Actions
+workflow `.github/workflows/publish.yml`.
+
+1. Push the release commit to `main`.
+2. Open GitHub Actions -> `publish`.
+3. Run the workflow from branch `main`.
+4. Enter the exact version from `pyproject.toml` as `confirm_version`.
+
+The workflow refuses non-`main` refs, refuses version mismatches, refuses
+pre-release versions, runs pytest/ruff/diff hygiene, builds artifacts, checks
+them with Twine, then publishes with
+`pypa/gh-action-pypi-publish@release/v1`.
 
 Verify the uploaded version:
 
@@ -128,6 +157,10 @@ The published artifact must not introduce:
 
 ## Secrets
 
-PyPI upload credentials belong in the maintainer's local keyring, `.pypirc`, or
-environment. Do not commit tokens. Do not add a CI publish path until release
-provenance and token ownership are explicitly decided.
+Do not commit PyPI tokens. Do not add PyPI tokens to Doppler or GitHub secrets
+for the standard release path. PyPI Trusted Publishing uses GitHub OIDC through
+the official PyPA publishing action.
+
+If Trusted Publishing is unavailable during an incident, a maintainer may use a
+local token with `uvx twine upload dist/*` after the same release checklist
+passes. That is an emergency fallback, not the default release path.

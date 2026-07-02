@@ -34,14 +34,23 @@ Slice 51 reconciles launch state and guardrails:
 - rate limits are explicitly postponed; they remain future abuse-control work,
   not a current launch blocker
 
+Slice 52 adds PyPI Trusted Publishing readiness:
+
+- `.github/workflows/publish.yml` publishes from `main` through
+  `pypa/gh-action-pypi-publish@release/v1`
+- the workflow requires manual `confirm_version`, refuses non-`main` refs, and
+  refuses pre-release versions
+- the GitHub environment name is `pypi`
+- `RELEASE.md` documents the exact PyPI trusted publisher settings
+
 ## Current Repo State
 
 CodeAlmanac:
 
 - repo: `/Users/rohan/Desktop/Projects/codealmanac`
 - branch: `dev`
-- current Slice 51 docs commit: the commit containing this brief
-- previous `origin/dev` before Slice 51 push: `ae4f4c78`
+- current Slice 52 docs/workflow commit: the commit containing this brief
+- previous `origin/dev` before Slice 52 push: `8137a61b`
 - `origin/main`: `6d69c53b`
 - package version in `pyproject.toml`: `0.1.0`
 - PyPI live version checked on 2026-07-02: `0.1.0.dev0`
@@ -76,14 +85,21 @@ repaired.
 - Vercel production auth logs checked after latest deploy had no recent
   error-level entries; an older `/auth/callback` error from
   `2026-07-02T18:56:34Z` was from a pre-hardening deployment.
-- CodeAlmanac `0.1.0` artifacts were built and locally install-tested earlier,
-  but PyPI publish failed because no PyPI token/trusted publishing credential was
-  available.
+- CodeAlmanac `0.1.0` artifacts were built and locally install-tested earlier.
+  Slice 52 adds the trusted-publishing workflow; the PyPI project still needs a
+  trusted publisher entry before the workflow can upload.
+- Slice 52 package/release verification passed: focused public-contract tests
+  (`25 passed`), full `uv run pytest` (`496 passed`), `uv run ruff check .`,
+  workflow YAML parsing, `uv build --out-dir dist`, `uvx twine check dist/*`,
+  and `git diff --check`.
 
 ## Next Pressure Tests
 
-- Publish CodeAlmanac `0.1.0` to PyPI once a PyPI token or trusted publishing is
-  available, then test `uv tool install codealmanac` from PyPI.
+- Add the PyPI trusted publisher entry for project `codealmanac`, owner
+  `AlmanacCode`, repository `codealmanac`, workflow filename `publish.yml`,
+  environment `pypi`.
+- Publish CodeAlmanac `0.1.0` by running the `publish` workflow on `main` with
+  `confirm_version=0.1.0`, then test `uv tool install codealmanac` from PyPI.
 - Do a real signed-in production browser pass through:
   `/login` -> GitHub AuthKit -> `/setup` -> GitHub App install/config ->
   repository settings.
@@ -98,7 +114,8 @@ repaired.
 
 ## Remaining Launch Gaps
 
-- PyPI package publish and fresh install smoke from PyPI.
+- PyPI trusted publisher setup, package publish, and fresh install smoke from
+  PyPI.
 - Final provider cleanup and branch/main convergence for both repos.
 - Live production browser verification with a signed-in user.
 - Deeper browser UX for maintained branches, per-branch delivery, capture

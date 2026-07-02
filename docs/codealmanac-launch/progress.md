@@ -8,8 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 51 launch-state reconciliation and route-guard
-verification.
+Sent: 2026-07-02 after Slice 52 PyPI Trusted Publishing verification.
 
 Route:
 
@@ -20,19 +19,19 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: rate limits were postponed. PyPI publish is still blocked on a package
-token or trusted publishing setup; the built `0.1.0` artifacts were tested but
-PyPI still shows `0.1.0.dev0`.
+Note: rate limits were postponed. PyPI Trusted Publishing workflow is being
+added; the remaining external action is adding the trusted publisher entry in
+the PyPI `codealmanac` project.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 95% | 95% | Local engine and control surfaces are unchanged in Slice 51. |
-| CodeAlmanac CLI/public UX | 93% | 91% | `0.1.0` Python artifacts were built and locally install-tested; PyPI publish is still blocked on token/trusted publishing. |
-| CodeAlmanac-hosted backend/auth/API | 96% | 95% | WorkOS/AuthKit boundary, GitHub provider-token encryption, and callback hardening are implemented; rate limits are postponed. |
-| Hosted frontend/onboarding | 72% | 60% | `/setup` is the cloud setup hub, login is GitHub-only, and route guards cover setup/login copy. Deeper branch/delivery/capture consent UX remains. |
-| Infra/deploy rename | 94% | 90% | Render/Vercel are renamed/deployed for current hosted work; PyPI publish and final provider cleanup remain. |
+| CodeAlmanac backend/local | 95% | 95% | Local engine and control surfaces are unchanged in Slice 52. |
+| CodeAlmanac CLI/public UX | 94% | 93% | PyPI release workflow now has a trusted-publishing path; actual publish still requires PyPI project configuration and workflow run. |
+| CodeAlmanac-hosted backend/auth/API | 96% | 96% | Hosted backend/auth/API unchanged in Slice 52. |
+| Hosted frontend/onboarding | 72% | 72% | Hosted frontend unchanged in Slice 52. |
+| Infra/deploy rename | 95% | 94% | PyPI publishing moved from token-blocked to trusted-publishing-ready; final PyPI setup/run and provider cleanup remain. |
 
 ## Update Rule
 
