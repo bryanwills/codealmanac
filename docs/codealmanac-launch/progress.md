@@ -8,8 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 55 cloud setup checklist verification and
-deployment.
+Sent: 2026-07-02 after Slice 56 PyPI publish completion.
 
 Route:
 
@@ -20,20 +19,19 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: rate limits were postponed. PyPI Trusted Publishing workflow is on
-CodeAlmanac `main` and its build/test/artifact gates pass. PyPI upload is
-blocked by `invalid-publisher`; the remaining external action is adding the
-matching trusted publisher entry in the PyPI `codealmanac` project.
+Note: rate limits were postponed. PyPI Trusted Publishing is now working for
+CodeAlmanac `0.1.0`; the package is public on PyPI and the `uv tool install`
+smoke passed with Python 3.12.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 55. |
-| CodeAlmanac CLI/public UX | 95% | 95% | CLI/PyPI state unchanged in Slice 55; PyPI upload remains blocked by trusted publisher configuration. |
-| CodeAlmanac-hosted backend/auth/API | 96% | 96% | Hosted backend/auth/API unchanged in Slice 55. |
-| Hosted frontend/onboarding | 78% | 73% | Hosted `/setup` now has an ordered cloud setup checklist, route guardrails, passing frontend tests/build, and unauthenticated browser verification. |
-| Infra/deploy rename | 96% | 96% | CodeAlmanac and hosted branch/main convergence remains done; PyPI provider configuration and provider cleanup remain. |
+| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 56. |
+| CodeAlmanac CLI/public UX | 98% | 95% | PyPI `0.1.0` is published and `uv tool install --python 3.12 codealmanac==0.1.0` works from a fresh tool dir. |
+| CodeAlmanac-hosted backend/auth/API | 96% | 96% | Hosted backend/auth/API unchanged in Slice 56; AuthKit callback issue remains the next active pressure test. |
+| Hosted frontend/onboarding | 78% | 78% | Hosted `/setup` remains verified unauthenticated; signed-in production walkthrough remains open. |
+| Infra/deploy rename | 98% | 96% | PyPI Trusted Publishing provider setup is complete; remaining infra work is provider cleanup and auth/onboarding live verification. |
 
 ## Update Rule
 

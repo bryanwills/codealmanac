@@ -1,6 +1,6 @@
 # Slice 54: PyPI Release Execution
 
-Status: implemented with external provider blocker.
+Status: superseded by Slice 56 completion.
 Date: 2026-07-02.
 
 ## Scope
@@ -105,8 +105,12 @@ attach-stream race. Commit `a0c86bfe6bedfdd2cd7bd8ff21c252692a6c4eb6` fixes the
 race and is pushed to `dev` and `main`.
 
 Second workflow run `28617914312` passed the build job but failed in PyPI token
-exchange with `invalid-publisher`. PyPI still exposes only `0.1.0.dev0`, so the
-fresh install smoke is blocked until the PyPI trusted publisher entry matches:
+exchange with `invalid-publisher`. That blocker was resolved after the PyPI
+trusted publisher entry was added. Slice 56 reran the workflow as
+`28619144624`, published `codealmanac` `0.1.0`, and passed a fresh
+`uv tool install --python 3.12 codealmanac==0.1.0` smoke.
+
+The failed run's PyPI trusted-publisher claims were:
 
 ```text
 repository: AlmanacCode/codealmanac

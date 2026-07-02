@@ -1473,3 +1473,23 @@
 - Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 87%,
   CodeAlmanac-hosted backend/auth/API 85%, hosted frontend/onboarding 35%, and
   infra/deploy rename 15%.
+- Planned Slice 56 in
+  `docs/plans/2026-07-02-slice-56-pypi-publish-completion.md`.
+- Reran CodeAlmanac publish workflow `28619144624` on `main` at
+  `43ec4800311b2f66f6095bff231f5fde7740eb07` after the PyPI trusted publisher
+  entry was added.
+- Verified the workflow build job passed tests, lint, diff hygiene, artifact
+  build, Twine checks, and artifact upload.
+- Verified the workflow publish job passed through
+  `pypa/gh-action-pypi-publish@release/v1`.
+- Verified PyPI now serves `codealmanac` `0.1.0` through both the JSON API and
+  simple index; the simple index includes provenance links for the `0.1.0`
+  wheel and sdist.
+- Verified `uvx --python 3.12 codealmanac==0.1.0 --version` returns `0.1.0`.
+- Verified isolated public install with
+  `UV_TOOL_DIR=<tmp> UV_TOOL_BIN_DIR=<tmp> uv tool install --python 3.12 codealmanac==0.1.0`;
+  the installed executable returned `0.1.0` for `codealmanac --version` and
+  exposed the expected public command surface in `codealmanac --help`.
+- Recorded progress as: CodeAlmanac backend/local 96%, CLI/public UX 98%,
+  CodeAlmanac-hosted backend/auth/API 96%, hosted frontend/onboarding 78%, and
+  infra/deploy rename 98%.

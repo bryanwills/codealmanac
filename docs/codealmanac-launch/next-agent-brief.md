@@ -75,20 +75,26 @@ Slice 55 improves hosted cloud setup:
   `https://codealmanac-hosted-nhz0fnyqv-thealmanac.vercel.app` is aliased to
   `https://www.codealmanac.com`
 
+Slice 56 completes PyPI publishing:
+
+- trusted publisher entry was added for the PyPI `codealmanac` project
+- GitHub Actions publish run `28619144624` succeeded on `main` at
+  `43ec4800311b2f66f6095bff231f5fde7740eb07`
+- PyPI now serves `codealmanac` `0.1.0`
+- `uv tool install --python 3.12 codealmanac==0.1.0` works from a fresh tool dir
+
 ## Current Repo State
 
 CodeAlmanac:
 
 - repo: `/Users/rohan/Desktop/Projects/codealmanac`
 - branch: `dev`
-- current Slice 54 fix commit:
-  `a0c86bfe6bedfdd2cd7bd8ff21c252692a6c4eb6`
-- previous `origin/dev` before Slice 54 fix push:
-  `8e08deb88a15d712c2d7ce08bc48fd201d482b69`
-- `origin/main`: fast-forwarded during Slice 54 so the run-stream fix exists on
-  the release branch before publishing
+- current launch-docs commit before Slice 56 docs:
+  `43ec4800311b2f66f6095bff231f5fde7740eb07`
+- `origin/dev` and `origin/main` both point at
+  `43ec4800311b2f66f6095bff231f5fde7740eb07`
 - package version in `pyproject.toml`: `0.1.0`
-- PyPI live version checked on 2026-07-02: `0.1.0.dev0`
+- PyPI live version checked on 2026-07-02: `0.1.0`
 
 Hosted:
 
@@ -148,19 +154,14 @@ repaired.
 - Slice 55 full local dev stack did not start because Doppler
   `codealmanac/dev_personal` is missing `GITHUB_TOKEN_ENCRYPTION_KEYS`. This
   blocks a signed-in local walkthrough, not the static route/build verification.
+- Slice 56 PyPI verification passed: publish workflow run `28619144624`
+  succeeded, PyPI JSON and simple index expose `0.1.0`, `uvx --python 3.12
+  codealmanac==0.1.0 --version` returned `0.1.0`, and isolated `uv tool install
+  --python 3.12 codealmanac==0.1.0` installed an executable that returned
+  `0.1.0`.
 
 ## Next Pressure Tests
 
-- Add the PyPI trusted publisher entry for project `codealmanac`, owner
-  `AlmanacCode`, repository `codealmanac`, workflow filename `publish.yml`,
-  environment `pypi`.
-  The failed run's claims were
-  `sub=repo:AlmanacCode/codealmanac:environment:pypi`,
-  `repository=AlmanacCode/codealmanac`,
-  `workflow_ref=AlmanacCode/codealmanac/.github/workflows/publish.yml@refs/heads/main`,
-  `ref=refs/heads/main`, and `environment=pypi`.
-- Publish CodeAlmanac `0.1.0` by running the `publish` workflow on `main` with
-  `confirm_version=0.1.0`, then test `uv tool install codealmanac` from PyPI.
 - Do a real signed-in production browser pass through:
   `/login` -> GitHub AuthKit -> `/setup` -> GitHub App install/config ->
   repository settings.
@@ -178,9 +179,6 @@ repaired.
 
 ## Remaining Launch Gaps
 
-- PyPI trusted publisher setup, package publish, and fresh install smoke from
-  PyPI. The workflow build job is clean; PyPI currently rejects upload with
-  `invalid-publisher`.
 - Final provider cleanup. CodeAlmanac and hosted branch/main convergence are
   done as of Slice 53.
 - Live production browser verification with a signed-in user.

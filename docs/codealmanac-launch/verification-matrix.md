@@ -855,9 +855,18 @@ Current evidence:
 - `RELEASE.md` records the exact PyPI trusted publisher setup:
   project `codealmanac`, owner `AlmanacCode`, repository `codealmanac`,
   workflow filename `publish.yml`, environment `pypi`.
-- Remaining evidence needed: create the PyPI trusted publisher entry, run the
-  workflow on `main`, confirm PyPI serves `0.1.0`, and run a fresh
-  `uv tool install codealmanac` from PyPI.
+- Slice 56 completed the trusted-publishing path. GitHub Actions run
+  `28619144624` succeeded on `main` at
+  `43ec4800311b2f66f6095bff231f5fde7740eb07`.
+- The Slice 56 publish run passed tests, lint, diff hygiene, artifact build,
+  Twine checks, artifact upload, and PyPI upload through
+  `pypa/gh-action-pypi-publish@release/v1`.
+- PyPI now serves `codealmanac` `0.1.0` in the JSON API and simple index; the
+  simple index includes provenance links for the `0.1.0` wheel and sdist.
+- Fresh install smoke passed with
+  `UV_TOOL_DIR=<tmp> UV_TOOL_BIN_DIR=<tmp> uv tool install --python 3.12 codealmanac==0.1.0`;
+  the installed executable returned `0.1.0` for `codealmanac --version` and
+  exposed the expected public command surface in `codealmanac --help`.
 
 ## Provider / Deployment
 
@@ -1028,6 +1037,13 @@ Current evidence:
   invent repository count, branch trigger, delivery, or capture status.
 - Slice 55 hosted frontend verification passed with route tests (`27 passed`),
   frontend component tests (`52 passed`), frontend lint, and Next build.
+- Slice 56 reran CodeAlmanac publish workflow `28619144624` after the PyPI
+  trusted publisher entry was added. The run succeeded, and PyPI now serves
+  `codealmanac` `0.1.0`.
+- Slice 56 verified public installation with
+  `UV_TOOL_DIR=<tmp> UV_TOOL_BIN_DIR=<tmp> uv tool install --python 3.12 codealmanac==0.1.0`,
+  then ran the installed `codealmanac --version` (`0.1.0`) and
+  `codealmanac --help`.
 - Slice 55 browser-harness verification proved unauthenticated
   `http://localhost:3000/setup` redirects into the GitHub-only login surface
   with `Continue with GitHub` and no email/password path. The local full dev
