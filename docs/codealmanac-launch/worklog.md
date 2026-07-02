@@ -353,7 +353,7 @@
   `uv run pytest tests/test_local_setup_workflow.py tests/test_cli.py tests/test_git_local_repository_probe.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_architecture.py`.
 - Verified Slice 17 full gate with `uv run pytest` (`432 passed`),
   `uv run ruff check .`, and `git diff --check`.
-- Pending Slice 17 RelayForge update records progress as:
+- Sent the Slice 17 RelayForge update and recorded progress as:
   CodeAlmanac backend/local 76%, CLI/public UX 18%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
