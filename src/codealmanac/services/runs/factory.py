@@ -12,13 +12,13 @@ def new_run_id(operation: RunOperation, now: datetime) -> str:
 
 
 def new_run_record(
-    almanac_root: Path,
+    run_id: str,
     workspace_id: str,
     operation: RunOperation,
     title: str | None,
     now: datetime,
+    log_reference_dir: Path,
 ) -> RunRecord:
-    run_id = new_run_id(operation, now)
     return RunRecord(
         run_id=run_id,
         workspace_id=workspace_id,
@@ -27,5 +27,5 @@ def new_run_record(
         title=title,
         created_at=now,
         updated_at=now,
-        log_path=run_log_reference_path(almanac_root, run_id),
+        log_path=run_log_reference_path(log_reference_dir, run_id),
     )

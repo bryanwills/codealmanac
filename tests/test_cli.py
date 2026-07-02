@@ -11,7 +11,7 @@ from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
 from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import normalize_path
+from codealmanac.core.paths import default_jobs_path, normalize_path
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     AutomationTask,
@@ -65,6 +65,7 @@ from codealmanac.services.updates.models import (
     PackageInstallMetadata,
 )
 from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.services.workspaces.identity import workspace_id_for
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 from codealmanac.workflows.local_delivery.models import (
@@ -281,6 +282,14 @@ class CliUpdateRunner:
     def run(self, command: tuple[str, ...]) -> PackageCommandResult:
         self.commands.append(command)
         return self.result
+
+
+def workspace_jobs_path(repo: Path) -> Path:
+    return default_jobs_path() / workspace_id_for(repo)
+
+
+def sync_ledger_path(repo: Path) -> Path:
+    return workspace_jobs_path(repo) / "sync-ledger.json"
 
 
 class CliLocalGitStateProbe:
@@ -1406,7 +1415,7 @@ def test_cli_dev_ingest_background_queues_run_and_spawns_worker(
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+    assert (workspace_jobs_path(repo) / f"{run.run_id}.spec.json").is_file()
 
 
 def test_cli_dev_garden_runs_workflow_with_selected_harness(
@@ -1941,7 +1950,7 @@ def test_cli_sync_status_uses_retry_budget_flags(
         transcript_discovery_adapters=(adapter,),
     )
     app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
-    ledger_path = repo / "almanac/jobs/sync-ledger.json"
+    ledger_path = sync_ledger_path(repo)
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger = SyncLedger(
         version=1,
@@ -2029,7 +2038,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
     assert "started codex codex-session: ingest-" in output.out
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
     assert f"transcript:{transcript}" in harness.requests[0].prompt
-    assert (repo / "almanac/jobs/sync-ledger.json").is_file()
+    assert sync_ledger_path(repo).is_file()
 
 
 def test_cli_sync_background_queues_ingest_for_ready_transcripts(
@@ -2090,7 +2099,7 @@ def test_cli_sync_background_queues_ingest_for_ready_transcripts(
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+    assert (workspace_jobs_path(repo) / f"{run.run_id}.spec.json").is_file()
 
 
 def test_cli_automation_install_status_and_uninstall(

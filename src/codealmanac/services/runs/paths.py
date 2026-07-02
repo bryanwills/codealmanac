@@ -8,7 +8,7 @@ RUN_ID_ADAPTER = TypeAdapter(RunId)
 
 
 def runs_dir(almanac_path: Path) -> Path:
-    return almanac_path / "jobs"
+    return almanac_path
 
 
 def run_record_path(almanac_path: Path, run_id: str) -> Path:
@@ -26,9 +26,9 @@ def run_log_path(almanac_path: Path, run_id: str) -> Path:
     return runs_dir(almanac_path) / f"{run_id}.jsonl"
 
 
-def run_log_reference_path(almanac_root: Path, run_id: str) -> Path:
+def run_log_reference_path(log_reference_dir: Path, run_id: str) -> Path:
     run_id = validate_run_id(run_id)
-    return almanac_root / "jobs" / f"{run_id}.jsonl"
+    return log_reference_dir / f"{run_id}.jsonl"
 
 
 def worker_lock_path(almanac_path: Path) -> Path:

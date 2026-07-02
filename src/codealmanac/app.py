@@ -200,7 +200,7 @@ def create_app(
         instruction_installer or FileInstructionInstaller(),
         automation,
     )
-    runs = RunsService(workspaces, RunStore())
+    runs = RunsService(workspaces, RunStore(), jobs_path=app_config.jobs_path)
     viewer = ViewerService(workspaces, index, runs, MarkdownRenderer())
     sources = SourcesService(
         default_transcript_discovery_adapters()
@@ -315,7 +315,14 @@ def create_app(
     resolved_local_worker_spawner = (
         local_worker_spawner or SubprocessLocalWorkerSpawner()
     )
-    sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
+    sync = SyncWorkflow(
+        workspaces,
+        sources,
+        runs,
+        ingest,
+        queue,
+        SyncLedgerStore(app_config.jobs_path),
+    )
     workflows = CodeAlmanacWorkflows(
         init=init,
         ingest=ingest,

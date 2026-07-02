@@ -16,19 +16,19 @@ class RunTransitionWriter:
 
     def write_queued_record(
         self,
-        almanac_path: Path,
+        run_dir: Path,
         record: RunRecord,
         timestamp: datetime,
     ) -> None:
         event = self.new_event(
-            almanac_path,
+            run_dir,
             record.run_id,
             timestamp,
             RunEventKind.STATUS,
             f"queued {record.operation.value}",
         )
         self.write_record_with_event(
-            almanac_path,
+            run_dir,
             previous=None,
             record=record,
             event=event,
@@ -36,21 +36,21 @@ class RunTransitionWriter:
 
     def write_status_transition(
         self,
-        almanac_path: Path,
+        run_dir: Path,
         previous: RunRecord,
         record: RunRecord,
         timestamp: datetime,
         message: str,
     ) -> None:
         event = self.new_event(
-            almanac_path,
+            run_dir,
             record.run_id,
             timestamp,
             RunEventKind.STATUS,
             message,
         )
         self.write_record_with_event(
-            almanac_path,
+            run_dir,
             previous=previous,
             record=record,
             event=event,
@@ -58,21 +58,21 @@ class RunTransitionWriter:
 
     def write_record_with_event(
         self,
-        almanac_path: Path,
+        run_dir: Path,
         previous: RunRecord | None,
         record: RunRecord,
         event: RunLogEvent,
     ) -> None:
-        self.ledger.write_record(almanac_path, record)
+        self.ledger.write_record(run_dir, record)
         try:
-            self.ledger.append_event(almanac_path, event)
+            self.ledger.append_event(run_dir, event)
         except Exception:
-            self.restore_record(almanac_path, previous, record.run_id)
+            self.restore_record(run_dir, previous, record.run_id)
             raise
 
     def new_event(
         self,
-        almanac_path: Path,
+        run_dir: Path,
         run_id: str,
         timestamp: datetime,
         kind: RunEventKind,
@@ -81,7 +81,7 @@ class RunTransitionWriter:
     ) -> RunLogEvent:
         return RunLogEvent(
             run_id=run_id,
-            sequence=self.ledger.next_sequence(almanac_path, run_id),
+            sequence=self.ledger.next_sequence(run_dir, run_id),
             timestamp=timestamp,
             kind=kind,
             message=message,
@@ -90,11 +90,11 @@ class RunTransitionWriter:
 
     def restore_record(
         self,
-        almanac_path: Path,
+        run_dir: Path,
         previous: RunRecord | None,
         run_id: str,
     ) -> None:
         if previous is None:
-            self.ledger.delete_record(almanac_path, run_id)
+            self.ledger.delete_record(run_dir, run_id)
             return
-        self.ledger.write_record(almanac_path, previous)
+        self.ledger.write_record(run_dir, previous)

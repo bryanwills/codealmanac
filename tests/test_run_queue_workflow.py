@@ -3,6 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.core.paths import default_jobs_path
 from codealmanac.integrations.runs.process import worker_command
 from codealmanac.services.harnesses.models import (
     HarnessKind,
@@ -19,6 +20,7 @@ from codealmanac.services.runs.requests import (
     SpawnRunWorkerRequest,
 )
 from codealmanac.services.search.requests import SearchPagesRequest
+from codealmanac.services.workspaces.identity import workspace_id_for
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 from codealmanac.workflows.run_queue import DrainRunQueueRequest
@@ -76,6 +78,10 @@ class FakeWorkerSpawner:
         )
 
 
+def workspace_jobs_path(repo: Path) -> Path:
+    return default_jobs_path() / workspace_id_for(repo)
+
+
 def test_run_queue_background_start_persists_spec_and_spawns_worker(
     tmp_path: Path,
     isolated_home: Path,
@@ -104,7 +110,7 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
     assert result.run.status == RunStatus.QUEUED
     assert runs[0].run_id == result.run.run_id
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{result.run.run_id}.spec.json").is_file()
+    assert (workspace_jobs_path(repo) / f"{result.run.run_id}.spec.json").is_file()
 
 
 def test_run_queue_drains_persisted_ingest_spec(
@@ -148,7 +154,7 @@ def test_run_queue_drains_persisted_ingest_spec(
         "queued ingest",
         "running",
     )
-    assert not (repo / "almanac/jobs/worker.lock").exists()
+    assert not (workspace_jobs_path(repo) / "worker.lock").exists()
 
 
 def test_run_queue_skips_cancelled_queued_runs(

@@ -199,7 +199,7 @@ Derived local state appears when commands need it:
 almanac/index.db
 almanac/index.db-wal
 almanac/index.db-shm
-almanac/jobs/
+~/.codealmanac/jobs/<workspace-id>/
 ```
 
 Those runtime files are rebuildable local machine state and should stay out of

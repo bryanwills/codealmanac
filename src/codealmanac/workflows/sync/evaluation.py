@@ -130,7 +130,7 @@ class SyncEvaluator:
             )
         ledger = ledgers.setdefault(
             candidate.repo_root,
-            self.ledger_store.load(candidate.almanac_path),
+            self.ledger_store.load(candidate.repo_root, candidate.almanac_path),
         )
         snapshot = read_transcript(candidate)
         if snapshot is None:
@@ -145,6 +145,7 @@ class SyncEvaluator:
             if reconciled != entry:
                 ledger.sessions[key] = reconciled
                 ledger = self.ledger_store.save(
+                    candidate.repo_root,
                     candidate.almanac_path,
                     ledger,
                     current_time,

@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
+from codealmanac.core.paths import default_jobs_path
 from codealmanac.services.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
@@ -44,7 +45,12 @@ from codealmanac.services.runs.requests import (
 )
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.runs.streaming import RunAttachStreamer
+from codealmanac.services.workspaces.identity import workspace_id_for
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+
+
+def workspace_jobs_path(repo: Path) -> Path:
+    return default_jobs_path() / workspace_id_for(repo)
 
 
 class FailingAppendLedger(RunLedgerIO):
@@ -138,7 +144,8 @@ def test_runs_service_records_job_and_events(
     assert finished.summary == "updated wiki"
     assert [run.run_id for run in listed] == [record.run_id]
     assert shown.status == RunStatus.DONE
-    assert shown.log_path == Path("almanac/jobs") / f"{record.run_id}.jsonl"
+    jobs_path = workspace_jobs_path(repo)
+    assert shown.log_path == jobs_path / f"{record.run_id}.jsonl"
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.STATUS,
@@ -149,8 +156,9 @@ def test_runs_service_records_job_and_events(
     assert log[2].harness_event is None
     assert log[3].harness_event is not None
     assert log[3].harness_event.provider_session_id == "provider-thread-1"
-    assert (repo / "almanac/jobs" / f"{record.run_id}.json").is_file()
-    assert (repo / "almanac/jobs" / f"{record.run_id}.jsonl").is_file()
+    assert (jobs_path / f"{record.run_id}.json").is_file()
+    assert (jobs_path / f"{record.run_id}.jsonl").is_file()
+    assert not (repo / "almanac/jobs" / f"{record.run_id}.json").exists()
 
 
 def test_runs_service_targets_registered_wiki(
@@ -175,7 +183,7 @@ def test_runs_service_targets_registered_wiki(
         StartRunRequest(cwd=second, wiki="first", operation=RunOperation.GARDEN)
     )
 
-    assert (first / "almanac/jobs" / f"{record.run_id}.json").is_file()
+    assert (workspace_jobs_path(first) / f"{record.run_id}.json").is_file()
     assert app.runs.list(ListRunsRequest(cwd=second, wiki="first"))[0].run_id == (
         record.run_id
     )
@@ -536,20 +544,21 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     assert recovered.owner.owner == "second-worker"
 
     first.release()
-    assert (repo / "almanac/jobs/worker.lock").is_dir()
+    jobs_path = workspace_jobs_path(repo)
+    assert (jobs_path / "worker.lock").is_dir()
     recovered.release()
-    assert not (repo / "almanac/jobs/worker.lock").exists()
+    assert not (jobs_path / "worker.lock").exists()
 
 
 def test_run_store_restores_previous_record_when_status_event_append_fails(
     tmp_path: Path,
 ):
-    almanac_path = tmp_path / "almanac"
+    run_dir = tmp_path / "jobs"
     ledger = FailingAppendLedger()
     store = RunStore(ledger=ledger)
     record = store.create(
-        almanac_path,
-        Path("almanac"),
+        run_dir,
+        Path("jobs"),
         "workspace",
         RunOperation.INGEST,
         title=None,
@@ -557,10 +566,10 @@ def test_run_store_restores_previous_record_when_status_event_append_fails(
 
     ledger.fail_append = True
     with pytest.raises(OSError, match="cannot append event"):
-        store.mark_running(almanac_path, record.run_id)
+        store.mark_running(run_dir, record.run_id)
 
-    restored = store.read(almanac_path, record.run_id)
-    log = store.log(almanac_path, record.run_id)
+    restored = store.read(run_dir, record.run_id)
+    log = store.log(run_dir, record.run_id)
 
     assert restored.status == RunStatus.QUEUED
     assert restored.started_at is None
@@ -570,7 +579,7 @@ def test_run_store_restores_previous_record_when_status_event_append_fails(
 def test_run_store_removes_queue_spec_when_initial_event_append_fails(
     tmp_path: Path,
 ):
-    almanac_path = tmp_path / "almanac"
+    run_dir = tmp_path / "jobs"
     ledger = FailingAppendLedger()
     store = RunStore(ledger=ledger)
     spec = RunSpec(
@@ -583,15 +592,15 @@ def test_run_store_removes_queue_spec_when_initial_event_append_fails(
     ledger.fail_append = True
     with pytest.raises(OSError, match="cannot append event"):
         store.queue(
-            almanac_path,
-            Path("almanac"),
+            run_dir,
+            Path("jobs"),
             "workspace",
             spec,
             title=None,
         )
 
-    assert store.list(almanac_path, limit=None) == ()
-    assert list((almanac_path / "jobs").glob("*.spec.json")) == []
+    assert store.list(run_dir, limit=None) == ()
+    assert list(run_dir.glob("*.spec.json")) == []
 
 
 def test_finish_run_request_requires_terminal_status(tmp_path: Path):
@@ -649,12 +658,12 @@ def test_run_records_and_events_reject_unsafe_run_ids(tmp_path: Path):
 
 def test_run_store_rejects_unsafe_run_ids_before_path_access(tmp_path: Path):
     store = RunStore()
-    almanac_path = tmp_path / "almanac"
-    bad_record = almanac_path / "jobs/run.json.json"
+    run_dir = tmp_path / "jobs"
+    bad_record = run_dir / "run.json.json"
     bad_record.parent.mkdir(parents=True)
     bad_record.write_text("{}", encoding="utf-8")
 
     with pytest.raises(ValidationError, match="String should match pattern"):
-        store.read(almanac_path, "../secret")
+        store.read(run_dir, "../secret")
 
-    assert store.list(almanac_path, limit=None) == ()
+    assert store.list(run_dir, limit=None) == ()

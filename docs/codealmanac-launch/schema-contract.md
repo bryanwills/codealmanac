@@ -49,6 +49,17 @@ Local run artifacts:
   artifacts/
 ```
 
+Local lifecycle job state:
+
+```text
+~/.codealmanac/jobs/<workspace-id>/
+  <run-id>.json
+  <run-id>.jsonl
+  <run-id>.spec.json
+  worker.lock/
+  sync-ledger.json
+```
+
 Local worker workspaces:
 
 ```text
@@ -60,9 +71,10 @@ Local worker workspaces:
   run/
 ```
 
-The current repo-local `.almanac/jobs/*.json` and `.jsonl` run ledger should
-move or bridge into `~/.codealmanac/control.sqlite` plus
-`~/.codealmanac/runs/<run-id>/`.
+Repo-local `<almanac-root>/jobs/` files are legacy lifecycle job state. New
+job records, event logs, queued specs, worker locks, and sync ledgers belong in
+`~/.codealmanac/jobs/<workspace-id>/`, with read compatibility for older
+repo-local files.
 
 ## Local Query DB
 

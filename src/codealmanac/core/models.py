@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from codealmanac.core.paths import (
     default_config_path,
     default_control_db_path,
+    default_jobs_path,
     default_registry_path,
     default_run_artifacts_path,
     default_worker_workspaces_path,
@@ -20,6 +21,7 @@ class AppConfig(CodeAlmanacModel):
     config_path: Path = Field(default_factory=default_config_path)
     control_db_path: Path = Field(default_factory=default_control_db_path)
     run_artifacts_path: Path = Field(default_factory=default_run_artifacts_path)
+    jobs_path: Path = Field(default_factory=default_jobs_path)
     worker_workspaces_path: Path = Field(
         default_factory=default_worker_workspaces_path
     )

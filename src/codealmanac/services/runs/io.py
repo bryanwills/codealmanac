@@ -13,24 +13,24 @@ from codealmanac.services.runs.paths import (
 
 
 class RunLedgerIO:
-    def write_record(self, almanac_path: Path, record: RunRecord) -> None:
-        path = run_record_path(almanac_path, record.run_id)
+    def write_record(self, run_dir: Path, record: RunRecord) -> None:
+        path = run_record_path(run_dir, record.run_id)
         write_json_atomically(path, record.model_dump_json(indent=2))
 
-    def delete_record(self, almanac_path: Path, run_id: str) -> None:
-        path = run_record_path(almanac_path, run_id)
+    def delete_record(self, run_dir: Path, run_id: str) -> None:
+        path = run_record_path(run_dir, run_id)
         path.unlink(missing_ok=True)
 
-    def write_spec(self, almanac_path: Path, run_id: str, spec: RunSpec) -> None:
-        path = run_spec_path(almanac_path, run_id)
+    def write_spec(self, run_dir: Path, run_id: str, spec: RunSpec) -> None:
+        path = run_spec_path(run_dir, run_id)
         write_json_atomically(path, spec.model_dump_json(indent=2))
 
-    def delete_spec(self, almanac_path: Path, run_id: str) -> None:
-        path = run_spec_path(almanac_path, run_id)
+    def delete_spec(self, run_dir: Path, run_id: str) -> None:
+        path = run_spec_path(run_dir, run_id)
         path.unlink(missing_ok=True)
 
-    def read_record(self, almanac_path: Path, run_id: str) -> RunRecord | None:
-        path = run_record_path(almanac_path, run_id)
+    def read_record(self, run_dir: Path, run_id: str) -> RunRecord | None:
+        path = run_record_path(run_dir, run_id)
         if not path.is_file():
             return None
         try:
@@ -38,8 +38,8 @@ class RunLedgerIO:
         except (OSError, ValidationError, ValueError):
             return None
 
-    def read_spec(self, almanac_path: Path, run_id: str) -> RunSpec | None:
-        path = run_spec_path(almanac_path, run_id)
+    def read_spec(self, run_dir: Path, run_id: str) -> RunSpec | None:
+        path = run_spec_path(run_dir, run_id)
         if not path.is_file():
             return None
         try:
@@ -47,8 +47,8 @@ class RunLedgerIO:
         except (OSError, ValidationError, ValueError):
             return None
 
-    def iter_records(self, almanac_path: Path) -> tuple[RunRecord, ...]:
-        directory = runs_dir(almanac_path)
+    def iter_records(self, run_dir: Path) -> tuple[RunRecord, ...]:
+        directory = runs_dir(run_dir)
         if not directory.is_dir():
             return ()
         records: list[RunRecord] = []
@@ -56,22 +56,22 @@ class RunLedgerIO:
             if path.name.endswith(".spec.json"):
                 continue
             try:
-                record = self.read_record(almanac_path, path.stem)
+                record = self.read_record(run_dir, path.stem)
             except ValidationError:
                 continue
             if record is not None:
                 records.append(record)
         return tuple(records)
 
-    def append_event(self, almanac_path: Path, event: RunLogEvent) -> None:
-        path = run_log_path(almanac_path, event.run_id)
+    def append_event(self, run_dir: Path, event: RunLogEvent) -> None:
+        path = run_log_path(run_dir, event.run_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as file:
             file.write(event.model_dump_json(exclude_none=True))
             file.write("\n")
 
-    def iter_events(self, almanac_path: Path, run_id: str) -> tuple[RunLogEvent, ...]:
-        path = run_log_path(almanac_path, run_id)
+    def iter_events(self, run_dir: Path, run_id: str) -> tuple[RunLogEvent, ...]:
+        path = run_log_path(run_dir, run_id)
         if not path.is_file():
             return ()
         try:
@@ -88,8 +88,8 @@ class RunLedgerIO:
                 continue
         return tuple(events)
 
-    def next_sequence(self, almanac_path: Path, run_id: str) -> int:
-        return len(self.iter_events(almanac_path, run_id)) + 1
+    def next_sequence(self, run_dir: Path, run_id: str) -> int:
+        return len(self.iter_events(run_dir, run_id)) + 1
 
 
 def write_json_atomically(path: Path, payload: str) -> None:

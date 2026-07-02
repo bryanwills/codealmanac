@@ -95,7 +95,12 @@ class SyncRunExecutor:
         ledger = ledgers[item.candidate.repo_root]
         pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
         ledger.sessions[item.ledger_key] = pending
-        ledger = self.ledger_store.save(item.candidate.almanac_path, ledger, now)
+        ledger = self.ledger_store.save(
+            item.candidate.repo_root,
+            item.candidate.almanac_path,
+            ledger,
+            now,
+        )
         ledgers[item.candidate.repo_root] = ledger
         try:
             self.queue.spawn_worker(item.candidate.repo_root, request.wiki)
@@ -110,7 +115,12 @@ class SyncRunExecutor:
                 )
             )
             ledger.sessions[item.ledger_key] = failed_entry(pending, error, run.run_id)
-            ledger = self.ledger_store.save(item.candidate.almanac_path, ledger, now)
+            ledger = self.ledger_store.save(
+                item.candidate.repo_root,
+                item.candidate.almanac_path,
+                ledger,
+                now,
+            )
             ledgers[item.candidate.repo_root] = ledger
             return SyncItemExecutionResult(
                 ledgers=ledgers,
@@ -134,7 +144,12 @@ class SyncRunExecutor:
         ledger = ledgers[item.candidate.repo_root]
         pending = pending_entry(item.entry, item, now, claim_owner, run.run_id)
         ledger.sessions[item.ledger_key] = pending
-        ledger = self.ledger_store.save(item.candidate.almanac_path, ledger, now)
+        ledger = self.ledger_store.save(
+            item.candidate.repo_root,
+            item.candidate.almanac_path,
+            ledger,
+            now,
+        )
         ledgers[item.candidate.repo_root] = ledger
         item = item.model_copy(update={"entry": pending})
         try:
@@ -155,7 +170,12 @@ class SyncRunExecutor:
                 error,
                 run.run_id,
             )
-            ledger = self.ledger_store.save(item.candidate.almanac_path, ledger, now)
+            ledger = self.ledger_store.save(
+                item.candidate.repo_root,
+                item.candidate.almanac_path,
+                ledger,
+                now,
+            )
             ledgers[item.candidate.repo_root] = ledger
             return SyncItemExecutionResult(
                 ledgers=ledgers,
@@ -168,6 +188,7 @@ class SyncRunExecutor:
             now,
         )
         ledgers[item.candidate.repo_root] = self.ledger_store.save(
+            item.candidate.repo_root,
             item.candidate.almanac_path,
             ledger,
             now,

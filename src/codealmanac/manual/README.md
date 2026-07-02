@@ -46,8 +46,8 @@ Runtime state is local and rebuildable:
 <almanac-root>/index.db
 <almanac-root>/index.db-wal
 <almanac-root>/index.db-shm
-<almanac-root>/jobs/
+~/.codealmanac/jobs/<workspace-id>/
 ```
 
-`jobs/` contains foreground run logs, queued background specs, worker locks,
-and sync ledger state. It is not wiki source.
+`~/.codealmanac/jobs/<workspace-id>/` contains foreground run logs, queued
+background specs, worker locks, and sync ledger state. It is not wiki source.
