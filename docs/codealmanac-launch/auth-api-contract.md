@@ -368,6 +368,18 @@ GET /v1/runs/{run_id}
 GET /v1/runs/{run_id}/events
 ```
 
+Slice 38 implemented the browser-session repository resolve route used by
+hosted redirectors opened from the CLI:
+
+```text
+POST /api/repositories/resolve  # body carries fullName
+```
+
+This route uses WorkOS/AuthKit browser session bearer auth, not the stored CLI
+token. It resolves the current browser user against the repository service with
+`Action.VIEW_REPO` and returns the same `repoId`, `accountId`, `fullName`, and
+`defaultBranch` shape as the `/v1` CLI-token route.
+
 Branch names are body fields, not path segments, so slash branches such as
 `release/1.4` are preserved.
 

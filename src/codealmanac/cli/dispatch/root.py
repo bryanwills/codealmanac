@@ -8,10 +8,19 @@ from codealmanac.cli.dispatch.lifecycle import (
     is_lifecycle_command,
 )
 from codealmanac.cli.dispatch.local import dispatch_local, is_local_command
+from codealmanac.cli.dispatch.open import (
+    dispatch_default_open,
+    dispatch_open,
+    is_open_command,
+)
 from codealmanac.cli.dispatch.wiki import dispatch_wiki, is_wiki_command
 
 
 def dispatch(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.command is None:
+        return dispatch_default_open(args, app)
+    if is_open_command(args.command):
+        return dispatch_open(args, app)
     if is_lifecycle_command(args.command):
         return dispatch_lifecycle(args, app)
     if is_dev_command(args.command):

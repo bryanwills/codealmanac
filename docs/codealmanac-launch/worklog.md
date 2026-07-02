@@ -2,6 +2,37 @@
 
 ## 2026-07-02
 
+- Planned Slice 38 in
+  `docs/plans/2026-07-02-slice-38-cloud-open-handoff.md`.
+- Added hosted browser-session repository resolution:
+  `POST /api/repositories/resolve`.
+- Added hosted redirector routes:
+  `/wiki/github/[owner]/[repo]` and `/setup/repo`.
+- Added frontend route builders for CLI-opened cloud URLs while preserving the
+  existing account-scoped dashboard routes.
+- Added CodeAlmanac `CloudOpenWorkflow`, `DEFAULT_CLOUD_APP_URL`, and URL
+  construction for wiki, repo activity, setup, settings, direct GitHub, and
+  GitHub App targets.
+- Added public browser-handoff commands:
+  `codealmanac`, `codealmanac open`, `codealmanac repo setup`, and
+  `codealmanac repo open [activity|settings|github|github-app]`.
+- Verified Slice 38 focused hosted backend gate with
+  `uv run pytest tests/test_repositories_api_contract.py
+  tests/test_cli_repositories_api_contract.py -q` (`13 passed, 1 warning`).
+- Verified Slice 38 hosted route gate with `npm run test:routes`
+  (`27 passed`).
+- Verified Slice 38 focused CodeAlmanac gate with
+  `uv run pytest tests/test_cloud_open_workflow.py tests/test_cli.py
+  tests/test_architecture.py -q` (`125 passed`).
+- Verified Slice 38 CodeAlmanac full/hygiene gates with
+  `uv run pytest -q` (`496 passed`), `uv run ruff check .`,
+  `uv run python -m compileall src -q`, and `git diff --check`.
+- Verified Slice 38 hosted backend full/hygiene gates with
+  `uv run pytest -q` (`327 passed, 1 warning`), `uv run ruff check .`,
+  `uv run python -m compileall src modal_app -q`, and `git diff --check`.
+- Verified Slice 38 hosted frontend gates with `npm run lint`,
+  `npm run test:frontend` (`44 passed`), and `npm run build`. Build passed
+  with the known CSS optimizer warning about `m-* utility`.
 - Planned Slice 37 in
   `docs/plans/2026-07-02-slice-37-cloud-runs-cli.md`.
 - Added hosted CLI run read routes:

@@ -101,6 +101,7 @@ from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.cloud_login import CloudLoginWorkflow
 from codealmanac.workflows.cloud_login.ports import BrowserOpener
+from codealmanac.workflows.cloud_open import CloudOpenWorkflow
 from codealmanac.workflows.cloud_repo import CloudRepoWorkflow
 from codealmanac.workflows.cloud_runs import CloudRunsWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
@@ -129,6 +130,7 @@ from codealmanac.workflows.sync.store import SyncLedgerStore
 @dataclass(frozen=True)
 class CodeAlmanacWorkflows:
     cloud_login: CloudLoginWorkflow
+    cloud_open: CloudOpenWorkflow
     cloud_repo: CloudRepoWorkflow
     cloud_runs: CloudRunsWorkflow
     init: InitWorkflow
@@ -259,9 +261,10 @@ def create_app(
         update_metadata or InstalledPackageMetadataProvider(),
         update_runner or SubprocessPackageCommandRunner(),
     )
+    resolved_browser_opener = browser_opener or WebBrowserOpener()
     cloud_login = CloudLoginWorkflow(
         cloud_auth,
-        browser_opener or WebBrowserOpener(),
+        resolved_browser_opener,
     )
     setup = SetupService(
         instruction_installer or FileInstructionInstaller(),
@@ -352,6 +355,10 @@ def create_app(
         cloud_repositories,
         resolved_local_repository_probe,
     )
+    cloud_open = CloudOpenWorkflow(
+        resolved_local_repository_probe,
+        resolved_browser_opener,
+    )
     cloud_runs_workflow = CloudRunsWorkflow(
         cloud_runs,
         cloud_repo,
@@ -401,6 +408,7 @@ def create_app(
     )
     workflows = CodeAlmanacWorkflows(
         cloud_login=cloud_login,
+        cloud_open=cloud_open,
         cloud_repo=cloud_repo,
         cloud_runs=cloud_runs_workflow,
         init=init,

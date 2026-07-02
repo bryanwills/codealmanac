@@ -104,6 +104,12 @@ Current evidence:
 - `backend/tests/test_cli_runs_api_contract.py` proves those routes
   authenticate with the CLI token, return page/detail/event DTOs, and preserve
   run-event payloads by reference.
+- Slice 38 added browser-session repo resolution:
+  `POST /api/repositories/resolve`.
+- `backend/tests/test_repositories_api_contract.py` proves the route
+  authenticates with the browser session, resolves by `fullName`, uses
+  `Action.VIEW_REPO`, and returns `repoId`, `accountId`, `fullName`, and
+  `defaultBranch`.
 
 ## CodeAlmanac Local Repo
 
@@ -391,10 +397,25 @@ Current evidence:
   over workflows and request models, not a CLI or integration wrapper.
 - Slice 31 full CodeAlmanac verification passed with `uv run pytest -q`
   (`484 passed`), `uv run ruff check .`, and `git diff --check`.
+- Slice 38 added `CloudOpenWorkflow`, `DEFAULT_CLOUD_APP_URL`, and public
+  browser-handoff commands:
+  `codealmanac`, `codealmanac open`, `codealmanac repo setup`, and
+  `codealmanac repo open`.
+- `tests/test_cloud_open_workflow.py` proves current GitHub checkout URL
+  construction, no-browser mode, browser invocation, direct GitHub URLs, and
+  unavailable-checkout failures.
+- `tests/test_cli.py` proves bare `codealmanac`, `open`, `repo setup`, and
+  `repo open` use the current checkout and render human/JSON output.
+- `tests/test_architecture.py` proves browser handoff is a workflow boundary
+  and that `open` is a top-level parser/dispatch domain.
+- Slice 38 full CodeAlmanac verification passed with `uv run pytest -q`
+  (`496 passed`), `uv run ruff check .`,
+  `uv run python -m compileall src -q`, and `git diff --check`.
 
 Commands:
 
 ```bash
+uv run pytest tests/test_cloud_open_workflow.py tests/test_cli.py tests/test_architecture.py -q
 uv run pytest tests/test_runs_service.py tests/test_run_queue_workflow.py tests/test_sync_workflow.py tests/test_cli.py tests/test_public_contract.py tests/test_architecture.py -q
 uv run pytest
 uv run ruff check .
@@ -562,9 +583,22 @@ Current evidence:
   `npm run lint`, `npm run test:frontend` (`44 passed`),
   `npm run test:routes` (`26 passed`), and `npm run build`. Build passed with
   the known CSS optimizer warning about `m-* utility`.
+- Slice 38 added hosted redirector routes for terminal handoff:
+  `/wiki/github/[owner]/[repo]` and `/setup/repo`.
+- `frontend/tests/routes.test.mjs` proves CLI-opened URLs resolve through
+  `resolveRepositoryByFullName`, redirect into existing account-scoped
+  dashboard routes, and use GitHub-owned URLs for repository and GitHub App
+  configuration.
+- Slice 38 hosted verification passed with backend repo API tests
+  (`13 passed, 1 warning`), full hosted backend tests
+  (`327 passed, 1 warning`), frontend route tests (`27 passed`),
+  `npm run test:frontend` (`44 passed`), `npm run lint`, `npm run build`,
+  `uv run ruff check .`, `uv run python -m compileall src modal_app -q`, and
+  `git diff --check`. Build passed with the known CSS optimizer warning about
+  `m-* utility`.
 - Remaining hosted worker risks: terminal failed/stale GitHub check fanout,
-  CLI trigger mirrors, and production setup/onboarding entrypoints still need
-  launch-hardening.
+  cloud run start/cancel/retry, and richer production setup/onboarding screens
+  still need launch-hardening.
 
 ## Provider / Deployment
 

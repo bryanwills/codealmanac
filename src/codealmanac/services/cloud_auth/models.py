@@ -8,6 +8,7 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 
 DEFAULT_CLOUD_API_URL = "https://codealmanac-backend-docker.onrender.com"
+DEFAULT_CLOUD_APP_URL = "https://codealmanac.com"
 
 CloudLoginStatus = Literal["pending", "authorized", "complete", "expired"]
 CloudLoginResultStatus = Literal[
@@ -99,4 +100,11 @@ def normalize_api_url(value: str) -> str:
     text = required_text(value, "cloud API URL").rstrip("/")
     if not text.startswith(("https://", "http://")):
         raise ValueError("cloud API URL must start with http:// or https://")
+    return text
+
+
+def normalize_app_url(value: str) -> str:
+    text = required_text(value, "cloud app URL").rstrip("/")
+    if not text.startswith(("https://", "http://")):
+        raise ValueError("cloud app URL must start with http:// or https://")
     return text

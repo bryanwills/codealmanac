@@ -10,61 +10,67 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 37 added cloud run CLI mirrors.
+Slice 38 added cloud open handoff.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- hosted CLI-token run read routes:
-  `GET /v1/repositories/{repo_id}/runs`,
-  `GET /v1/runs/{run_id}`, and
-  `GET /v1/runs/{run_id}/events`
-- CodeAlmanac `cloud_runs` service and typed HTTP adapter methods
-- current-checkout cloud run workflow for listing repo runs
-- run-id-only cloud run detail and log workflows
+- hosted browser-session repository resolve route:
+  `POST /api/repositories/resolve`
+- hosted redirector routes:
+  `/wiki/github/[owner]/[repo]` and `/setup/repo`
+- CodeAlmanac `CloudOpenWorkflow`
+- `DEFAULT_CLOUD_APP_URL = "https://codealmanac.com"`
 - public CLI commands:
-  `codealmanac runs list`,
-  `codealmanac runs show <run-id>`, and
-  `codealmanac runs logs <run-id>`
+  `codealmanac`, `codealmanac open`, `codealmanac repo setup`, and
+  `codealmanac repo open [activity|settings|github|github-app]`
 - pushed hosted commit
-  `168f9b2 feat: add CLI run read routes`
-- pushed CodeAlmanac commit
-  `bc177cf2 feat: inspect cloud runs from CLI`
+  `ed7e765 feat: add cloud route handoff`
+- CodeAlmanac commit: pending
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_cli_runs_api_contract.py tests/test_repositories_api_contract.py tests/test_updates_contract.py -q
+uv run pytest tests/test_repositories_api_contract.py tests/test_cli_repositories_api_contract.py -q
 uv run ruff check .
 uv run python -m compileall src modal_app -q
 uv run pytest -q
 
+cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
+npm run test:routes
+npm run test:frontend
+npm run lint
+npm run build
+
 cd /Users/rohan/Desktop/Projects/codealmanac
-uv run pytest tests/test_cloud_runs_service.py tests/test_cloud_runs_workflow.py tests/test_cli.py tests/test_architecture.py -q
+uv run pytest tests/test_cloud_open_workflow.py tests/test_cli.py tests/test_architecture.py -q
 uv run ruff check .
 uv run python -m compileall src -q
 uv run pytest -q
 ```
 
-Counts: hosted backend focused `40 passed, 1 warning`; hosted backend full
-`326 passed, 1 warning`; CodeAlmanac focused `121 passed`; CodeAlmanac full
-`490 passed`.
+Counts so far: hosted backend focused `13 passed, 1 warning`; hosted
+backend full `327 passed, 1 warning`; hosted frontend route tests `27 passed`;
+hosted frontend component tests `44 passed`; CodeAlmanac focused `125 passed`;
+CodeAlmanac full `496 passed`. Hosted build passed with the known CSS optimizer
+warning about `m-* utility`.
 
 ## Next Pressure Test
 
 Choose the next launch-hardening slice between terminal run fanout,
-setup/onboarding entrypoints, cloud run start/cancel/retry semantics, and
-frontend onboarding changes.
+cloud run start/cancel/retry semantics, richer frontend onboarding pages, and
+deployment/provider rename checks.
 
 Pressure points:
 
 - terminal failed/stale runs still do not have a dedicated `RunFailed` or
   `RunStale` domain-event fanout for GitHub check updates
 - CLI commands list/show/log cloud runs, but do not start/cancel/retry them
-- browser setup/onboarding entrypoints still need the new cloud setup flow
+- browser setup/onboarding entrypoints now have stable redirect URLs, but
+  richer onboarding screens still need product UI
 - old inline-message conversation routes should remain compatibility-only
 
 ## Known Repo State

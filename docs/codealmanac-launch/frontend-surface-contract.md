@@ -54,6 +54,18 @@ The exact route names may change, but these surfaces must exist.
 `/wiki/github/<owner>/<repo>` is the stable resolver that bare `codealmanac`
 can open. The frontend can redirect it to the actual dashboard route.
 
+Implemented in Slice 38:
+
+```text
+/wiki/github/<owner>/<repo>
+/setup/repo?provider=github&owner=<owner>&repo=<repo>&target=activity|settings|github|github-app|wiki
+```
+
+Both are redirector routes. They use browser auth, resolve `owner/repo` through
+the backend, and redirect into the existing account-scoped dashboard routes.
+`target=github` redirects directly to the GitHub repository. `target=github-app`
+resolves the account and redirects to GitHub's installation settings page.
+
 ## Repo Settings
 
 Each maintained branch has one policy row:

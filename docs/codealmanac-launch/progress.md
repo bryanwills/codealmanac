@@ -8,7 +8,8 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 37 cloud runs CLI.
+Pending: Slice 38 cloud open handoff. Send after verification, commit, and
+push.
 
 Route:
 
@@ -26,10 +27,10 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 94% | 93% | Slice 37 adds the typed `cloud_runs` service/workflow in the local package; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 78% | 72% | CLI now mirrors cloud run list/detail/log inspection from the terminal. |
-| CodeAlmanac-hosted backend/auth/API | 80% | 78% | Hosted now exposes CLI-token `/v1` run read routes. |
-| Hosted frontend/onboarding | 28% | 28% | Slice 36 does not change browser UI. |
+| CodeAlmanac backend/local | 95% | 94% | Slice 38 adds the typed `cloud_open` workflow and app URL defaults; local worker behavior is unchanged. |
+| CodeAlmanac CLI/public UX | 84% | 78% | Bare `codealmanac`, `open`, `repo setup`, and `repo open` now hand off to cloud pages from the current checkout. |
+| CodeAlmanac-hosted backend/auth/API | 81% | 80% | Hosted adds browser-session repo resolve for redirector routes. |
+| Hosted frontend/onboarding | 35% | 28% | Stable `/wiki/github/...` and `/setup/repo` redirectors now exist for CLI/browser handoff, but richer onboarding screens remain. |
 | Infra/deploy rename | 15% | 15% | Slice 35 changes Supabase schema but does not change provider deployment naming/configuration. |
 
 ## Update Rule

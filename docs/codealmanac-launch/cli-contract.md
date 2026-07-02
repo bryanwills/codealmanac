@@ -31,6 +31,16 @@ codealmanac serve
 `codealmanac` and `codealmanac open` resolve the current checkout's GitHub
 remote and open the cloud wiki route. The browser owns the final redirect.
 
+Implemented in Slice 38:
+
+```text
+codealmanac
+codealmanac open [--app-url URL] [--no-browser] [--json]
+```
+
+These commands do not require a stored CLI token. They detect the current
+GitHub checkout and open `/wiki/github/<owner>/<repo>` on the hosted app.
+
 ## Cloud Setup And Identity
 
 ```text
@@ -97,6 +107,18 @@ codealmanac repo delivery set --branch <branch> --mode pr|commit
 These commands resolve the current checkout's GitHub `origin`, authenticate
 with the stored cloud CLI token, and call `/v1` cloud repository routes. Users
 do not pass account IDs.
+
+Implemented in Slice 38:
+
+```text
+codealmanac repo setup [--app-url URL] [--no-browser] [--json]
+codealmanac repo open [activity|settings|github|github-app] [--app-url URL] [--no-browser] [--json]
+```
+
+These commands are browser handoffs and do not require a stored CLI token.
+`repo open` defaults to `activity`. `repo open github` opens the GitHub
+repository directly; the other targets open hosted resolver URLs and let the
+browser dashboard handle account scope and onboarding state.
 
 ## Cloud Runs
 

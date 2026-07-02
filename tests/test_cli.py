@@ -695,6 +695,97 @@ def local_repository_state(repo: Path) -> LocalRepositoryState:
     )
 
 
+def test_cli_open_commands_use_current_checkout_and_browser_handoff(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    browser = CliBrowserOpener()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
+        browser_opener=browser,
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["open", "--app-url", "https://app.example.test", "--no-browser"]) == 0
+    open_output = capsys.readouterr()
+    assert (
+        "url: https://app.example.test/wiki/github/AlmanacCode/codealmanac\n"
+        in open_output.out
+    )
+    assert browser.opened == []
+
+    assert main([]) == 0
+    bare_output = capsys.readouterr()
+    assert (
+        "opened: https://codealmanac.com/wiki/github/AlmanacCode/codealmanac\n"
+        in bare_output.out
+    )
+    assert browser.opened == [
+        "https://codealmanac.com/wiki/github/AlmanacCode/codealmanac"
+    ]
+
+    assert (
+        main(
+            [
+                "repo",
+                "setup",
+                "--app-url",
+                "https://app.example.test",
+                "--no-browser",
+            ]
+        )
+        == 0
+    )
+    setup_output = capsys.readouterr()
+    assert (
+        "url: https://app.example.test/setup/repo?"
+        "provider=github&owner=AlmanacCode&repo=codealmanac\n"
+        in setup_output.out
+    )
+
+    assert (
+        main(
+            [
+                "repo",
+                "open",
+                "settings",
+                "--app-url",
+                "https://app.example.test",
+                "--no-browser",
+            ]
+        )
+        == 0
+    )
+    settings_output = capsys.readouterr()
+    assert (
+        "url: https://app.example.test/setup/repo?"
+        "provider=github&owner=AlmanacCode&repo=codealmanac&target=settings\n"
+        in settings_output.out
+    )
+
+    assert (
+        main(
+            [
+                "repo",
+                "open",
+                "github",
+                "--no-browser",
+                "--json",
+            ]
+        )
+        == 0
+    )
+    github_output = json.loads(capsys.readouterr().out)
+    assert github_output["url"] == "https://github.com/AlmanacCode/codealmanac"
+    assert github_output["opened"] is False
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,

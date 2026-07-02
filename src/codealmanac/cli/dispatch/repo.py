@@ -2,12 +2,15 @@ import argparse
 from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
+from codealmanac.cli.render.cloud_open import render_cloud_open
 from codealmanac.cli.render.repo import (
     render_cloud_repo_status,
     render_cloud_repo_trigger_policies,
     render_cloud_repo_trigger_policy,
 )
 from codealmanac.services.cloud_repositories.models import CloudDeliveryMode
+from codealmanac.workflows.cloud_open.models import CloudOpenTarget
+from codealmanac.workflows.cloud_open.requests import OpenCloudTargetRequest
 from codealmanac.workflows.cloud_repo.requests import (
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,
@@ -23,6 +26,28 @@ def is_repo_command(command: str | None) -> bool:
 
 
 def dispatch_repo(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.repo_command == "setup":
+        result = app.workflows.cloud_open.open(
+            OpenCloudTargetRequest(
+                cwd=Path.cwd(),
+                app_url=args.app_url,
+                target="setup",
+                no_browser=args.no_browser,
+            )
+        )
+        render_cloud_open(result, json_output=args.json)
+        return 0
+    if args.repo_command == "open":
+        result = app.workflows.cloud_open.open(
+            OpenCloudTargetRequest(
+                cwd=Path.cwd(),
+                app_url=args.app_url,
+                target=parse_cloud_open_target(args.target),
+                no_browser=args.no_browser,
+            )
+        )
+        render_cloud_open(result, json_output=args.json)
+        return 0
     if args.repo_command == "status":
         result = app.workflows.cloud_repo.status(
             ReadCloudRepoStatusRequest(cwd=Path.cwd(), api_url=args.api_url)
@@ -86,3 +111,11 @@ def parse_cloud_delivery_mode(value: str) -> CloudDeliveryMode:
     if value not in ("commit", "pr"):
         raise AssertionError(f"unhandled cloud delivery mode: {value}")
     return value
+
+
+def parse_cloud_open_target(value: str) -> CloudOpenTarget:
+    if value == "activity":
+        return "repo"
+    if value in ("settings", "github", "github-app"):
+        return value
+    raise AssertionError(f"unhandled cloud open target: {value}")

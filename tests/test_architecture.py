@@ -212,6 +212,28 @@ def test_local_setup_workflow_keeps_git_detection_in_integration():
     assert "\"remote\", \"get-url\", \"origin\"" in integration_text
 
 
+def test_cloud_open_workflow_keeps_browser_handoff_out_of_cli():
+    workflow_root = SRC_ROOT / "workflows/cloud_open"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    requests_text = (workflow_root / "requests.py").read_text(encoding="utf-8")
+    render_text = (SRC_ROOT / "cli/render/cloud_open.py").read_text(encoding="utf-8")
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert "repository_probe.read" in service_text
+    assert "browser.open" in service_text
+    assert "DEFAULT_CLOUD_APP_URL" in requests_text
+    assert "codealmanac.integrations" not in service_text
+    assert "webbrowser" not in service_text
+    assert "subprocess" not in service_text
+    assert "print_json_model" in render_text
+
+
 def test_local_run_preparation_workflow_only_orchestrates_services():
     workflow_root = SRC_ROOT / "workflows/local_runs"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
@@ -870,6 +892,7 @@ def test_cli_parser_is_split_by_command_domain():
         "jobs.py",
         "lifecycle.py",
         "local.py",
+        "open.py",
         "repo.py",
         "root.py",
         "runs.py",
@@ -879,6 +902,7 @@ def test_cli_parser_is_split_by_command_domain():
     }
     assert len(root.splitlines()) <= 80
     assert "add_lifecycle_commands(subcommands)" in root
+    assert "add_open_commands(subcommands)" in root
     assert "add_dev_commands(subcommands)" in root
     assert "add_local_commands(subcommands)" in root
     assert "add_wiki_commands(subcommands)" in root
@@ -1153,6 +1177,8 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
     assert len(dispatch_root.splitlines()) <= 80
     assert len(dispatch_wiki.splitlines()) <= 130
     assert "dispatch_lifecycle(args, app)" in dispatch_root
+    assert "dispatch_default_open(args, app)" in dispatch_root
+    assert "dispatch_open(args, app)" in dispatch_root
     assert "dispatch_dev(args, app)" in dispatch_root
     assert "dispatch_wiki(args, app)" in dispatch_root
     assert "dispatch_admin(args, app)" in dispatch_root
