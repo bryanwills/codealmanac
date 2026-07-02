@@ -173,6 +173,11 @@ storage backend can change while preserving the public `cap_...` contract.
 
 ## GitHub OAuth Through WorkOS
 
+Launch sign-in should be GitHub-only in AuthKit. Email/password, magic auth,
+and generic SSO should remain disabled unless explicitly reopened; repository
+access still comes from the GitHub App installation token, not broad user OAuth
+scopes.
+
 Enable WorkOS' GitHub OAuth token return setting. In the AuthKit callback,
 persist upstream `oauthTokens` from `handleAuth({ onSuccess })` when present.
 This replaces the old Supabase callback behavior where `provider_token` and

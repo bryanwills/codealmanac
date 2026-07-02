@@ -2,9 +2,12 @@
 
 This file describes the Python package release flow for `codealmanac`.
 
-CodeAlmanac v1 is local-only. A release publishes the Python CLI package; it
-does not publish a hosted service, hosted capture path, SDK, MCP package, npm
-package, or compatibility alias.
+A release publishes the Python CLI package to PyPI. The hosted web/backend
+service is deployed from `codealmanac-hosted`; this repo publishes the user
+machine CLI that can talk to cloud and can also run local wiki workflows.
+
+This release does not publish an SDK, MCP package, JavaScript package, or
+compatibility alias.
 
 ## Release Channels
 
@@ -23,8 +26,8 @@ python -m pip install codealmanac
 Dev users must opt into a pre-release:
 
 ```bash
-uv tool install "codealmanac==0.1.0.dev0"
-python -m pip install "codealmanac==0.1.0.dev0"
+uv tool install "codealmanac==0.1.1.dev0"
+python -m pip install "codealmanac==0.1.1.dev0"
 ```
 
 ## Pre-Release Checklist
@@ -101,7 +104,7 @@ Do not reuse a published version number.
 
 ## Package Surface
 
-The package must expose exactly one public command:
+The package must expose exactly one public executable:
 
 ```text
 codealmanac
@@ -120,7 +123,6 @@ The published artifact must include:
 The published artifact must not introduce:
 
 - public `almanac` or `alm` commands
-- public `capture`, `login`, `connect`, or `upload` commands
 - public SDK or MCP modules
 - npm, Node, or hosted-dashboard install instructions
 

@@ -20,8 +20,10 @@ Status: active.
 - WorkOS uses one production environment for now. Do not design separate
   WorkOS dev/staging/prod environments until that is explicitly reopened.
 - Confirmed WorkOS callback targets are
-  `https://codealmanac.com/auth/callback` and
+  `https://www.codealmanac.com/auth/callback` and
   `http://localhost:3000/auth/callback`.
+- Launch AuthKit should present GitHub login only. Email/password, magic auth,
+  and generic SSO should stay disabled unless explicitly reopened.
 - Canonical wiki content lives in the repository.
 - Query DB and control DB are separate.
 - Cross-wiki links are sunset for cloud and local.
