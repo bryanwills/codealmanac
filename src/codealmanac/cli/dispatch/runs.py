@@ -11,6 +11,7 @@ from codealmanac.workflows.cloud_runs.requests import (
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,
     ShowCloudRunRequest,
+    StartCloudRunRequest,
 )
 
 
@@ -25,6 +26,16 @@ def dispatch_runs(args: argparse.Namespace, app: CodeAlmanac) -> int:
             )
         )
         render_cloud_runs(result, json_output=args.json)
+        return 0
+    if args.runs_command == "start":
+        result = app.workflows.cloud_runs.start(
+            StartCloudRunRequest(
+                cwd=Path.cwd(),
+                api_url=args.api_url,
+                branch=args.branch,
+            )
+        )
+        render_cloud_run(result, json_output=args.json)
         return 0
     if args.runs_command == "show":
         result = app.workflows.cloud_runs.show(

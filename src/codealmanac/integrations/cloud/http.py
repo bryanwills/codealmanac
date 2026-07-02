@@ -181,6 +181,22 @@ class HttpCloudAuthClient:
         )
         return cloud_run_page(data)
 
+    def start_repository_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+    ) -> CloudRun:
+        data = self._request(
+            "POST",
+            f"{api_url}/v1/repositories/{repo_id}/runs",
+            token=cli_token,
+            json_body={"branch": branch},
+        )
+        return cloud_run(data)
+
     def read_run(
         self,
         *,

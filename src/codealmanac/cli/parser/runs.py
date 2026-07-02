@@ -13,6 +13,11 @@ def add_runs_commands(subcommands: argparse._SubParsersAction) -> None:
     add_api_url(runs_list)
     runs_list.add_argument("--json", action="store_true")
 
+    runs_start = runs_subcommands.add_parser("start", help="start a cloud run")
+    runs_start.add_argument("--branch", required=True)
+    add_api_url(runs_start)
+    runs_start.add_argument("--json", action="store_true")
+
     runs_show = runs_subcommands.add_parser("show", help="show one cloud run")
     runs_show.add_argument("run_id")
     add_api_url(runs_show)

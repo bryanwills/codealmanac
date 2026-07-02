@@ -16,6 +16,7 @@ from codealmanac.services.cloud_runs.requests import (
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
+    StartCloudRunForRepoRequest,
 )
 from codealmanac.services.cloud_runs.service import CloudRunsService
 
@@ -33,6 +34,13 @@ def test_cloud_runs_service_uses_stored_cli_token(tmp_path: Path) -> None:
             cursor="2026-07-02T12:00:00+00:00",
         )
     )
+    started = service.start_for_repo(
+        StartCloudRunForRepoRequest(
+            api_url="https://api.example.test",
+            repo_id=1,
+            branch="release/1.4",
+        )
+    )
     run = service.read(
         ReadCloudRunRequest(
             api_url="https://api.example.test",
@@ -48,10 +56,12 @@ def test_cloud_runs_service_uses_stored_cli_token(tmp_path: Path) -> None:
 
     assert page.items[0].run_id == UUID(int=1)
     assert page.next_cursor == "next"
+    assert started.source.label == "branch release/1.4"
     assert run.run_id == run_id
     assert events[0].message == "running"
     assert client.calls == [
         ("list", "alm_secret", 1, 5, "2026-07-02T12:00:00+00:00"),
+        ("start", "alm_secret", 1, "release/1.4"),
         ("read", "alm_secret", run_id),
         ("events", "alm_secret", run_id),
     ]
@@ -128,6 +138,22 @@ class FakeCloudRunsClient:
     ) -> CloudRun:
         self.calls.append(("read", cli_token, run_id))
         return cloud_run(run_id)
+
+    def start_repository_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+    ) -> CloudRun:
+        self.calls.append(("start", cli_token, repo_id, branch))
+        return CloudRun(
+            run_id=UUID(int=3),
+            repo_id=repo_id,
+            source=CloudRunSource(kind="branch", label=f"branch {branch}"),
+            status="running",
+        )
 
     def list_run_events(
         self,

@@ -6,6 +6,7 @@ from codealmanac.services.cloud_runs.requests import (
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
+    StartCloudRunForRepoRequest,
 )
 
 
@@ -22,6 +23,15 @@ class CloudRunsService:
             repo_id=request.repo_id,
             limit=request.limit,
             cursor=request.cursor,
+        )
+
+    def start_for_repo(self, request: StartCloudRunForRepoRequest) -> CloudRun:
+        state = self.auth.require_state(CloudStatusRequest(api_url=request.api_url))
+        return self.client.start_repository_run(
+            api_url=request.api_url,
+            cli_token=state.token,
+            repo_id=request.repo_id,
+            branch=request.branch,
         )
 
     def read(self, request: ReadCloudRunRequest) -> CloudRun:

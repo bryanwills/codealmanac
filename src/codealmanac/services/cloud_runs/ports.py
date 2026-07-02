@@ -20,6 +20,16 @@ class CloudRunsClient(Protocol):
     ) -> CloudRunPage:
         pass
 
+    def start_repository_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+    ) -> CloudRun:
+        pass
+
     def read_run(
         self,
         *,

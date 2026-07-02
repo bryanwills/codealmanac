@@ -23,6 +23,7 @@ from codealmanac.workflows.cloud_runs.requests import (
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,
     ShowCloudRunRequest,
+    StartCloudRunRequest,
 )
 from codealmanac.workflows.cloud_runs.service import CloudRunsWorkflow
 from codealmanac.workflows.local_setup.models import LocalRepositoryState
@@ -48,6 +49,13 @@ def test_cloud_runs_workflow_lists_current_repo_and_reads_run_by_id(
             limit=10,
         )
     )
+    started = workflow.start(
+        StartCloudRunRequest(
+            cwd=tmp_path / "repo",
+            api_url="https://api.example.test",
+            branch="release/1.4",
+        )
+    )
     detail = workflow.show(
         ShowCloudRunRequest(
             api_url="https://api.example.test",
@@ -64,10 +72,12 @@ def test_cloud_runs_workflow_lists_current_repo_and_reads_run_by_id(
     assert page.status.repository is not None
     assert page.status.repository.full_name == "AlmanacCode/codealmanac"
     assert page.page.items[0].run_id == UUID(int=1)
+    assert started.run.source.label == "branch release/1.4"
     assert detail.run.run_id == run_id
     assert log.events[0].message == "running"
     assert runs_client.calls == [
         ("list", 1, 10, None),
+        ("start", 1, "release/1.4"),
         ("read", run_id),
         ("events", run_id),
     ]
@@ -204,6 +214,22 @@ class FakeCloudRunsClient:
     ) -> CloudRun:
         self.calls.append(("read", run_id))
         return cloud_run(run_id)
+
+    def start_repository_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+    ) -> CloudRun:
+        self.calls.append(("start", repo_id, branch))
+        return CloudRun(
+            run_id=UUID(int=3),
+            repo_id=repo_id,
+            source=CloudRunSource(kind="branch", label=f"branch {branch}"),
+            status="running",
+        )
 
     def list_run_events(
         self,

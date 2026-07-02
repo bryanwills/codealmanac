@@ -476,6 +476,7 @@ class CliCloudRepositoriesClient:
 class CliCloudRunsClient:
     def __init__(self):
         self.lists: list[tuple[int, int | None, str | None]] = []
+        self.starts: list[tuple[int, str]] = []
         self.reads: list[UUID] = []
         self.logs: list[UUID] = []
 
@@ -493,6 +494,25 @@ class CliCloudRunsClient:
         return CloudRunPage(
             items=(cloud_run(UUID(int=1)),),
             next_cursor="next",
+        )
+
+    def start_repository_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+    ) -> CloudRun:
+        assert cli_token == "alm_secret"
+        self.starts.append((repo_id, branch))
+        return CloudRun(
+            run_id=UUID(int=3),
+            repo_id=repo_id,
+            source=CloudRunSource(kind="branch", label=f"branch {branch}"),
+            status="running",
+            summary="queued manual branch update",
+            created_at=datetime(2026, 7, 2, 12, tzinfo=UTC),
         )
 
     def read_run(
@@ -1320,6 +1340,24 @@ def test_cli_cloud_runs_list_show_and_logs(
         main(
             [
                 "runs",
+                "start",
+                "--branch",
+                "release/1.4",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    started = capsys.readouterr()
+    assert f"id: {UUID(int=3)}\n" in started.out
+    assert "status: running\n" in started.out
+    assert "source: branch release/1.4\n" in started.out
+
+    assert (
+        main(
+            [
+                "runs",
                 "show",
                 str(UUID(int=2)),
                 "--api-url",
@@ -1350,6 +1388,7 @@ def test_cli_cloud_runs_list_show_and_logs(
 
     assert events[0]["message"] == "running"
     assert runs_client.lists == [(1, 5, None)]
+    assert runs_client.starts == [(1, "release/1.4")]
     assert runs_client.reads == [UUID(int=2)]
     assert runs_client.logs == [UUID(int=2)]
 

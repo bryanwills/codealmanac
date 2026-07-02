@@ -2,6 +2,7 @@ from codealmanac.services.cloud_runs.requests import (
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
+    StartCloudRunForRepoRequest,
 )
 from codealmanac.services.cloud_runs.service import CloudRunsService
 from codealmanac.workflows.cloud_repo.requests import ReadCloudRepoStatusRequest
@@ -18,6 +19,7 @@ from codealmanac.workflows.cloud_runs.requests import (
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,
     ShowCloudRunRequest,
+    StartCloudRunRequest,
 )
 
 
@@ -45,6 +47,21 @@ class CloudRunsWorkflow:
             )
         )
         return CloudRunListResult(status=status, page=page)
+
+    def start(self, request: StartCloudRunRequest) -> CloudRunDetailResult:
+        status = self.cloud_repo.status(
+            ReadCloudRepoStatusRequest(cwd=request.cwd, api_url=request.api_url)
+        )
+        if status.repository is None:
+            raise unavailable_checkout(status)
+        run = self.cloud_runs.start_for_repo(
+            StartCloudRunForRepoRequest(
+                api_url=request.api_url,
+                repo_id=status.repository.repo_id,
+                branch=request.branch,
+            )
+        )
+        return CloudRunDetailResult(run=run)
 
     def show(self, request: ShowCloudRunRequest) -> CloudRunDetailResult:
         run = self.cloud_runs.read(
