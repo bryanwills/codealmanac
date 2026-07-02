@@ -43,6 +43,13 @@ Slice 52 adds PyPI Trusted Publishing readiness:
 - the GitHub environment name is `pypi`
 - `RELEASE.md` documents the exact PyPI trusted publisher settings
 
+Slice 53 converges hosted `main`:
+
+- hosted branch `codex/workos-authkit-api-foundation` and hosted `main` both
+  point at `8052be0`
+- hosted route tests and lint passed before the fast-forward
+- public production frontend and backend smokes passed after the fast-forward
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -61,13 +68,14 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 51 commit: `8052be0`
+- current Slice 53 commit: `8052be0`
 - previous `origin/codex/workos-authkit-api-foundation` before Slice 51 push:
   `0683c78`
-- `origin/main`: `a8ebe9e`
+- `origin/main`: `8052be0`; previous `origin/main` before Slice 53 was
+  `a8ebe9e`
 - production frontend: `https://www.codealmanac.com`
-- hosted main has the setup/auth hardening through `a8ebe9e`; Slice 51's hosted
-  change is test-only
+- hosted main has the setup/auth hardening and route-test guardrails through
+  `8052be0`
 
 The local wiki command currently fails on this checkout with:
 
@@ -94,6 +102,10 @@ repaired.
   (`25 passed`), full `uv run pytest` (`496 passed`), `uv run ruff check .`,
   workflow YAML parsing, `uv build --out-dir dist`, `uvx twine check dist/*`,
   and `git diff --check`.
+- Slice 53 hosted verification passed: hosted `npm run test:routes`
+  (`27 passed`), hosted `npm run lint`, hosted remote refs both at `8052be0`,
+  `https://www.codealmanac.com` HTTP 200, `https://www.codealmanac.com/login`
+  HTTP 200, and backend health returned `{"status":"ok"}`.
 
 ## Next Pressure Tests
 
@@ -118,7 +130,8 @@ repaired.
 
 - PyPI trusted publisher setup, package publish, and fresh install smoke from
   PyPI.
-- Final provider cleanup and branch/main convergence for both repos.
+- Final provider cleanup. CodeAlmanac and hosted branch/main convergence are
+  done as of Slice 53.
 - Live production browser verification with a signed-in user.
 - Deeper browser UX for maintained branches, per-branch delivery, capture
   consent, and billing/plan gates.
