@@ -177,10 +177,39 @@ def test_local_delivery_workflow_keeps_git_mechanics_in_integration():
     assert "git_delivery.read_head" in service_text
     assert "git_delivery.collect_patch" in service_text
     assert "git_delivery.apply_patch_and_commit" in service_text
+    assert "git_delivery.apply_patch_to_working_tree" in service_text
     assert "codealmanac.integrations" not in service_text
     assert "subprocess" not in service_text
     assert "\"apply\", \"--index\", \"-\"" in integration_text
+    assert "\"apply\", \"-\"" in integration_text
     assert "\"commit\", \"--only\"" in integration_text
+
+
+def test_local_setup_workflow_keeps_git_detection_in_integration():
+    workflow_root = SRC_ROOT / "workflows/local_setup"
+    git_repository = SRC_ROOT / "integrations/workspaces/git/repository.py"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    ports_text = (workflow_root / "ports.py").read_text(encoding="utf-8")
+    integration_text = git_repository.read_text(encoding="utf-8")
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "ports.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 120
+    assert "LocalRepositoryProbe" in ports_text
+    assert "repository_probe.read" in service_text
+    assert "control.upsert_repository" in service_text
+    assert "control.set_branch_policy" in service_text
+    assert "local_hooks.install" in service_text
+    assert "codealmanac.integrations" not in service_text
+    assert "subprocess" not in service_text
+    assert "\"rev-parse\", \"--show-toplevel\"" in integration_text
+    assert "\"remote\", \"get-url\", \"origin\"" in integration_text
 
 
 def test_local_run_preparation_workflow_only_orchestrates_services():
@@ -751,6 +780,7 @@ def test_cli_parser_is_split_by_command_domain():
         "diagnostics.py",
         "jobs.py",
         "lifecycle.py",
+        "local.py",
         "root.py",
         "setup.py",
         "updates.py",
@@ -758,6 +788,7 @@ def test_cli_parser_is_split_by_command_domain():
     }
     assert len(root.splitlines()) <= 80
     assert "add_lifecycle_commands(subcommands)" in root
+    assert "add_local_commands(subcommands)" in root
     assert "add_wiki_commands(subcommands)" in root
     assert "add_admin_commands(subcommands)" in root
     assert "add_parser(" not in root
@@ -811,6 +842,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "parser/automation.py").is_file()
     assert (cli_root / "parser/diagnostics.py").is_file()
     assert (cli_root / "parser/jobs.py").is_file()
+    assert (cli_root / "parser/local.py").is_file()
     assert (cli_root / "parser/setup.py").is_file()
     assert (cli_root / "parser/updates.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
@@ -821,6 +853,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/diagnostics.py").is_file()
     assert (cli_root / "dispatch/jobs.py").is_file()
     assert (cli_root / "dispatch/lifecycle.py").is_file()
+    assert (cli_root / "dispatch/local.py").is_file()
     assert (cli_root / "dispatch/local_trigger.py").is_file()
     assert (cli_root / "dispatch/serve.py").is_file()
     assert (cli_root / "dispatch/setup.py").is_file()

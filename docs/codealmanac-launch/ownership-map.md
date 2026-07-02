@@ -11,6 +11,7 @@ Owns:
 - engine request/result models
 - source bundle contract
 - local setup
+- local GitHub checkout detection
 - local control DB at `~/.codealmanac/control.sqlite`
 - local query DB for wiki read/search
 - local capture storage

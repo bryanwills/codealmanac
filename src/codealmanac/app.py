@@ -22,6 +22,7 @@ from codealmanac.integrations.workspaces.git import (
     FileLocalGitHookManager,
     GitDetachedWorktreeManager,
     GitLocalDeliveryManager,
+    GitLocalRepositoryProbe,
     GitLocalStateProbe,
     GitWorkspaceChangeProbe,
 )
@@ -83,6 +84,10 @@ from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_engine import LocalEngineWorkflow
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
+from codealmanac.workflows.local_setup import (
+    LocalRepositoryProbe,
+    LocalSetupWorkflow,
+)
 from codealmanac.workflows.local_worker import LocalWorkerSpawner, LocalWorkerWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
@@ -97,6 +102,7 @@ class CodeAlmanacWorkflows:
     garden: GardenWorkflow
     queue: RunQueueWorkflow
     local_runs: LocalRunPreparationWorkflow
+    local_setup: LocalSetupWorkflow
     local_engine: LocalEngineWorkflow
     local_delivery: LocalDeliveryWorkflow
     local_worker: LocalWorkerWorkflow
@@ -147,6 +153,7 @@ def create_app(
     instruction_installer: InstructionInstaller | None = None,
     local_git_state_probe: LocalGitStateProbe | None = None,
     local_git_hook_manager: LocalGitHookManager | None = None,
+    local_repository_probe: LocalRepositoryProbe | None = None,
     git_worktree_manager: GitWorktreeManager | None = None,
     git_delivery_manager: LocalGitDeliveryManager | None = None,
 ) -> CodeAlmanac:
@@ -239,6 +246,11 @@ def create_app(
         source_bundles,
         engine_runs,
     )
+    local_setup = LocalSetupWorkflow(
+        control,
+        local_hooks,
+        local_repository_probe or GitLocalRepositoryProbe(),
+    )
     local_engine = LocalEngineWorkflow(
         control,
         engine_runs,
@@ -267,6 +279,7 @@ def create_app(
         garden=garden,
         queue=queue,
         local_runs=local_runs,
+        local_setup=local_setup,
         local_engine=local_engine,
         local_delivery=local_delivery,
         local_worker=local_worker,

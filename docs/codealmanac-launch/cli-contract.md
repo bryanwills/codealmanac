@@ -111,6 +111,11 @@ codealmanac local jobs logs <job-id>
 
 Local uses `jobs` because execution happens on the user's machine.
 
+`local setup` detects the current GitHub checkout, stores the repository and
+selected branch policy in `~/.codealmanac/control.sqlite`, and installs local
+Git trigger hooks unless `--skip-hooks` is passed. The default delivery mode is
+`commit`; `working-tree` is the explicit no-commit mode.
+
 `local update` runs the local update pipeline now. It uses local capture and git
 state, builds a source bundle, runs the shared engine, and delivers locally.
 

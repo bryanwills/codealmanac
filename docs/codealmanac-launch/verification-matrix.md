@@ -168,11 +168,29 @@ Current evidence:
   `--spawn-worker`.
 - `tests/test_local_worker_spawner.py` proves the subprocess command targets
   the hidden `__run-local-worker` CLI with repository and branch filters.
+- Slice 17 added `app.workflows.local_setup.setup(...)` and public
+  `codealmanac local setup`.
+- `tests/test_local_setup_workflow.py` proves local setup registers the GitHub
+  checkout, enables the selected branch trigger policy, records the default
+  commit delivery mode, installs hooks, supports `--skip-hooks`, and supports
+  `working_tree` delivery mode.
+- `tests/test_git_local_repository_probe.py` proves the concrete Git probe
+  reads repository root, branch, HEAD SHA, and GitHub `origin` identity from a
+  real temporary Git checkout.
+- `tests/test_cli.py` proves `codealmanac local setup --delivery working-tree
+  --skip-hooks --json` records the local checkout and emits typed JSON.
+- `tests/test_local_delivery_workflow.py` proves working-tree delivery applies
+  a worker patch without creating a commit SHA.
+- `tests/test_git_local_delivery.py` proves the native Git delivery adapter
+  applies a worker wiki patch to the checkout without moving HEAD.
+- `tests/test_architecture.py` proves local setup Git detection stays in
+  `integrations/workspaces/git/repository.py`, not in the workflow or CLI.
 
 Commands:
 
 ```bash
 uv run pytest
+uv run ruff check .
 git diff --check
 ```
 

@@ -3,6 +3,7 @@ from pathlib import Path
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.services.control.models import (
+    ControlDeliveryMode,
     ControlRunEventKind,
     ControlRunStatus,
 )
@@ -25,6 +26,7 @@ from codealmanac.workflows.local_delivery.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
+    LocalDeliveryWorkingTree,
 )
 from codealmanac.workflows.local_delivery.requests import DeliverLocalRunRequest
 
@@ -41,6 +43,7 @@ class FakeGitDeliveryManager:
         self.commit = commit or LocalDeliveryCommit(commit_sha="head-2")
         self.collect_calls: list[tuple[Path, Path]] = []
         self.apply_calls: list[tuple[Path, Path, str, str, str | None]] = []
+        self.working_tree_calls: list[tuple[Path, Path, str]] = []
 
     def read_head(self, repo_path: Path) -> LocalDeliveryHead:
         return self.head
@@ -65,6 +68,17 @@ class FakeGitDeliveryManager:
             (repo_path, almanac_root, patch_text, commit_subject, commit_body)
         )
         return self.commit
+
+    def apply_patch_to_working_tree(
+        self,
+        repo_path: Path,
+        almanac_root: Path,
+        patch_text: str,
+    ) -> LocalDeliveryWorkingTree:
+        self.working_tree_calls.append((repo_path, almanac_root, patch_text))
+        return LocalDeliveryWorkingTree(
+            changed_paths=(Path("almanac/pages/a.md"),),
+        )
 
 
 def test_local_delivery_applies_patch_and_marks_run_succeeded(
@@ -129,6 +143,48 @@ def test_local_delivery_marks_run_stale_when_branch_head_moved(
     assert fake_git.apply_calls == []
 
 
+def test_local_delivery_can_apply_patch_to_working_tree(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    fake_git = FakeGitDeliveryManager(
+        head=LocalDeliveryHead(branch_name="dev", head_sha="head-1"),
+        patch=LocalDeliveryPatch(
+            patch_text="diff --git a/almanac/pages/a.md b/almanac/pages/a.md\n",
+            changed_paths=(Path("almanac/pages/a.md"),),
+        ),
+    )
+    app, run, repo_path = local_delivery_app(
+        tmp_path,
+        isolated_home,
+        fake_git,
+        delivery_mode=ControlDeliveryMode.WORKING_TREE,
+    )
+    write_engine_result(app, run.id)
+
+    result = app.workflows.local_delivery.deliver(
+        DeliverLocalRunRequest(run_id=run.id)
+    )
+    events = app.control.list_run_events(ListControlRunEventsRequest(run_id=run.id))
+
+    assert result.delivered is True
+    assert result.commit_sha is None
+    assert result.run.status is ControlRunStatus.SUCCEEDED
+    assert result.delivery.status is DeliveryStatus.SUCCEEDED
+    assert result.delivery.commit_sha is None
+    assert result.delivery.delivered_head_sha == "head-1"
+    assert fake_git.apply_calls == []
+    assert fake_git.working_tree_calls == [
+        (
+            repo_path,
+            Path("almanac"),
+            "diff --git a/almanac/pages/a.md b/almanac/pages/a.md\n",
+        )
+    ]
+    assert tuple(event.kind for event in events) == (ControlRunEventKind.STATUS,)
+    assert events[0].message == "delivered local working tree changes"
+
+
 def test_local_delivery_skips_empty_worker_diff(
     tmp_path: Path,
     isolated_home: Path,
@@ -152,7 +208,12 @@ def test_local_delivery_skips_empty_worker_diff(
     assert fake_git.apply_calls == []
 
 
-def local_delivery_app(tmp_path: Path, isolated_home: Path, fake_git):
+def local_delivery_app(
+    tmp_path: Path,
+    isolated_home: Path,
+    fake_git,
+    delivery_mode: ControlDeliveryMode = ControlDeliveryMode.COMMIT,
+):
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
@@ -175,7 +236,11 @@ def local_delivery_app(tmp_path: Path, isolated_home: Path, fake_git):
         )
     )
     branch = app.control.set_branch_policy(
-        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            delivery_mode=delivery_mode,
+        )
     )
     run = app.control.create_run(
         CreateControlRunRequest(

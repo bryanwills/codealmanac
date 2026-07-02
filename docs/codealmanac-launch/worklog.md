@@ -337,3 +337,23 @@
   CodeAlmanac backend/local 72%, CLI/public UX 13%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 17 in
+  `docs/plans/2026-07-02-slice-17-local-setup-command.md`.
+- Added `app.workflows.local_setup.setup(...)`.
+- Added `GitLocalRepositoryProbe`, which reads the current Git checkout,
+  current branch, HEAD SHA, and GitHub `origin` identity.
+- Added public `codealmanac local setup` with `--branch`, `--delivery
+  commit|working-tree`, `--root`, `--skip-hooks`, and `--json`.
+- Local setup now writes the repository row and branch trigger policy into
+  `~/.codealmanac/control.sqlite` and installs local trigger hooks unless
+  `--skip-hooks` is passed.
+- Added real `working-tree` local delivery support alongside commit delivery.
+  It applies the worker patch to the checkout without creating a commit.
+- Verified Slice 17 focused behavior with
+  `uv run pytest tests/test_local_setup_workflow.py tests/test_cli.py tests/test_git_local_repository_probe.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_architecture.py`.
+- Verified Slice 17 full gate with `uv run pytest` (`432 passed`),
+  `uv run ruff check .`, and `git diff --check`.
+- Pending Slice 17 RelayForge update records progress as:
+  CodeAlmanac backend/local 76%, CLI/public UX 18%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.

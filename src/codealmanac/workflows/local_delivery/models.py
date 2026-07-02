@@ -44,6 +44,18 @@ class LocalDeliveryCommit(CodeAlmanacModel):
         return required_text(value, "local delivery commit sha")
 
 
+class LocalDeliveryWorkingTree(CodeAlmanacModel):
+    changed_paths: tuple[Path, ...] = ()
+
+    @field_validator("changed_paths")
+    @classmethod
+    def require_relative_paths(cls, value: tuple[Path, ...]) -> tuple[Path, ...]:
+        for path in value:
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError("working tree delivery paths must be relative")
+        return value
+
+
 class LocalDeliveryResult(CodeAlmanacModel):
     delivered: bool
     reason: str | None = None

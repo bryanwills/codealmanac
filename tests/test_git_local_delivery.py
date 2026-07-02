@@ -35,6 +35,31 @@ def test_git_local_delivery_applies_worker_wiki_patch_as_commit(tmp_path: Path):
     )
 
 
+def test_git_local_delivery_applies_worker_wiki_patch_to_working_tree(
+    tmp_path: Path,
+):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for this integration test")
+    repo = create_repo(tmp_path / "repo")
+    worker = tmp_path / "worker"
+    original_head = git_stdout(repo, "rev-parse", "HEAD")
+    run_git(repo, "worktree", "add", "--detach", str(worker), "HEAD")
+    (worker / "almanac/pages/index.md").write_text("updated\n", encoding="utf-8")
+    manager = GitLocalDeliveryManager()
+
+    patch = manager.collect_patch(worker, Path("almanac"))
+    result = manager.apply_patch_to_working_tree(
+        repo,
+        Path("almanac"),
+        patch.patch_text,
+    )
+
+    assert (repo / "almanac/pages/index.md").read_text(encoding="utf-8") == "updated\n"
+    assert git_stdout(repo, "rev-parse", "HEAD") == original_head
+    assert result.changed_paths == (Path("almanac/pages/index.md"),)
+    assert git_stdout(repo, "status", "--short") == "M almanac/pages/index.md"
+
+
 def test_git_local_delivery_rejects_worker_changes_outside_almanac_root(
     tmp_path: Path,
 ):

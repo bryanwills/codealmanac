@@ -39,6 +39,9 @@ Status: active.
 - Bare `codealmanac` opens the cloud wiki for the current checkout.
 - `codealmanac setup` is cloud onboarding.
 - `codealmanac local setup` is local maintenance setup.
+- `codealmanac local setup` detects the current GitHub checkout, writes the
+  repository and branch trigger policy to the local control DB, and installs
+  local Git trigger hooks unless explicitly skipped.
 - Browser onboarding owns product consent and repo policy.
 - CLI owns local machine installation, provider probing, and capture hooks.
 - Capture consent happens in browser; capture installation happens in CLI.

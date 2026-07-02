@@ -67,7 +67,9 @@ from codealmanac.workflows.local_delivery.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
+    LocalDeliveryWorkingTree,
 )
+from codealmanac.workflows.local_setup.models import LocalRepositoryState
 from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
 from codealmanac.workflows.sync.models import (
     SyncLedger,
@@ -247,6 +249,16 @@ class CliLocalGitStateProbe:
         return self.state
 
 
+class CliLocalRepositoryProbe:
+    def __init__(self, state: LocalRepositoryState):
+        self.state = state
+        self.requests: list[Path] = []
+
+    def read(self, cwd: Path) -> LocalRepositoryState:
+        self.requests.append(cwd)
+        return self.state
+
+
 class CliLocalWorkerHarnessAdapter:
     kind = HarnessKind.CODEX
 
@@ -293,6 +305,7 @@ class CliLocalDeliveryManager:
         self.head = LocalDeliveryHead(branch_name="dev", head_sha="head-1")
         self.commit = LocalDeliveryCommit(commit_sha="head-2")
         self.apply_calls: list[tuple[Path, Path, str, str, str | None]] = []
+        self.working_tree_calls: list[tuple[Path, Path, str]] = []
 
     def read_head(self, repo_path: Path) -> LocalDeliveryHead:
         return self.head
@@ -319,6 +332,17 @@ class CliLocalDeliveryManager:
             (repo_path, almanac_root, patch_text, commit_subject, commit_body)
         )
         return self.commit
+
+    def apply_patch_to_working_tree(
+        self,
+        repo_path: Path,
+        almanac_root: Path,
+        patch_text: str,
+    ) -> LocalDeliveryWorkingTree:
+        self.working_tree_calls.append((repo_path, almanac_root, patch_text))
+        return LocalDeliveryWorkingTree(
+            changed_paths=(Path("almanac/pages/a.md"),),
+        )
 
 
 def test_cli_init_creates_wiki_and_prints_name(
@@ -387,6 +411,62 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "CodeAlmanac uninstall" in uninstall.out
     assert "Removed artifacts" in uninstall.out
     assert not agents_path.exists()
+
+
+def test_cli_local_setup_registers_current_checkout(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    probe = CliLocalRepositoryProbe(
+        LocalRepositoryState(
+            cwd=repo,
+            available=True,
+            repository_root=repo,
+            branch_name="dev",
+            head_sha="head-1",
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            default_branch="main",
+        )
+    )
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            control_db_path=isolated_home / ".codealmanac/control.sqlite",
+        ),
+        local_repository_probe=probe,
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "local",
+                "setup",
+                "--delivery",
+                "working-tree",
+                "--skip-hooks",
+                "--json",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr()
+    data = json.loads(output.out)
+
+    assert data["repository"]["full_name"] == "AlmanacCode/codealmanac"
+    assert data["branch"]["name"] == "dev"
+    assert data["branch"]["delivery_mode"] == "working_tree"
+    assert data["hooks"] is None
+    assert probe.requests == [repo]
 
 
 def test_cli_setup_skip_instructions_json(capsys):

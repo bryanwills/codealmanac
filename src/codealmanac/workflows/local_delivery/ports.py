@@ -5,6 +5,7 @@ from codealmanac.workflows.local_delivery.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
+    LocalDeliveryWorkingTree,
 )
 
 
@@ -28,3 +29,11 @@ class LocalGitDeliveryManager(Protocol):
         commit_body: str | None,
     ) -> LocalDeliveryCommit:
         """Apply a validated patch and commit only the Almanac root."""
+
+    def apply_patch_to_working_tree(
+        self,
+        repo_path: Path,
+        almanac_root: Path,
+        patch_text: str,
+    ) -> LocalDeliveryWorkingTree:
+        """Apply a validated patch to the real checkout without committing."""

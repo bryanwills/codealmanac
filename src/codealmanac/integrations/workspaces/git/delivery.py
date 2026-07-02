@@ -11,6 +11,7 @@ from codealmanac.workflows.local_delivery.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
+    LocalDeliveryWorkingTree,
 )
 
 GIT_DELIVERY_TIMEOUT_SECONDS = 60
@@ -93,6 +94,27 @@ class GitLocalDeliveryManager:
         self._git(repo_path, (*commit_args, "--", almanac_root.as_posix()))
         commit_sha = self._git(repo_path, ("rev-parse", "HEAD")).stdout.strip()
         return LocalDeliveryCommit(commit_sha=commit_sha)
+
+    def apply_patch_to_working_tree(
+        self,
+        repo_path: Path,
+        almanac_root: Path,
+        patch_text: str,
+    ) -> LocalDeliveryWorkingTree:
+        if patch_text.strip() == "":
+            raise ValidationFailed("delivery patch is empty")
+        self.validate_almanac_root_clean(repo_path, almanac_root)
+        self._git(repo_path, ("apply", "-"), stdin=patch_text)
+        status = self._git(
+            repo_path,
+            ("status", "--porcelain=v1", "-z", "--", almanac_root.as_posix()),
+        ).stdout
+        changed_paths = tuple(change.path for change in parse_git_status(status))
+        return LocalDeliveryWorkingTree(
+            changed_paths=tuple(
+                sorted(changed_paths, key=lambda item: item.as_posix())
+            )
+        )
 
     def validate_almanac_root_clean(self, repo_path: Path, almanac_root: Path) -> None:
         status = self._git(

@@ -70,7 +70,7 @@ class LocalDeliveryWorkflow:
                 raise ValueError("repository local_root_path is required")
             if run.expected_head_sha is None:
                 raise ValueError("run expected_head_sha is required")
-            if branch.delivery_mode is not ControlDeliveryMode.COMMIT:
+            if branch.delivery_mode is ControlDeliveryMode.PR:
                 raise ValueError(
                     f"unsupported local delivery mode: {branch.delivery_mode.value}"
                 )
@@ -109,6 +109,27 @@ class LocalDeliveryWorkflow:
                     reason="no_wiki_changes",
                     run=updated,
                     delivery=skipped,
+                )
+            if branch.delivery_mode is ControlDeliveryMode.WORKING_TREE:
+                self.git_delivery.apply_patch_to_working_tree(
+                    repository.local_root_path,
+                    repository.almanac_root,
+                    patch.patch_text,
+                )
+                delivered = self.deliveries.update(
+                    UpdateDeliveryRequest(
+                        delivery_id=delivery.id,
+                        status=DeliveryStatus.SUCCEEDED,
+                        delivered_head_sha=head.head_sha,
+                        summary=engine.summary,
+                    )
+                )
+                updated = self.finish_run(run, engine)
+                self.append_status(run.id, "delivered local working tree changes")
+                return LocalDeliveryResult(
+                    delivered=True,
+                    run=updated,
+                    delivery=delivered,
                 )
             commit = self.git_delivery.apply_patch_and_commit(
                 repository.local_root_path,
