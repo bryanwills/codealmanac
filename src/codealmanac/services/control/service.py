@@ -38,6 +38,12 @@ class ControlService:
     ) -> m.BranchRecord | None:
         return self.store.find_branch_by_name(request)
 
+    def list_branches(
+        self,
+        request: r.ListBranchesRequest,
+    ) -> tuple[m.BranchRecord, ...]:
+        return self.store.list_branches(request)
+
     def get_run(self, request: r.GetControlRunRequest) -> m.ControlRunRecord:
         return self.store.get_run(request)
 

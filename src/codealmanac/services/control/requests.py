@@ -57,6 +57,15 @@ class FindBranchByNameRequest(CodeAlmanacModel):
         return required_text(value, "branch name")
 
 
+class ListBranchesRequest(CodeAlmanacModel):
+    repository_id: str
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "branch repository_id")
+
+
 class GetControlRunRequest(CodeAlmanacModel):
     run_id: str
 

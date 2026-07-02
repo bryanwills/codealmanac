@@ -212,6 +212,19 @@ Current evidence:
 - `tests/test_architecture.py` proves local update only composes local status,
   control trigger recording, and the local worker; it does not import Git,
   harness, delivery, subprocess, or SQL internals directly.
+- Slice 20 added local trigger and delivery policy commands.
+- `tests/test_control_service.py` proves configured branch policy rows can be
+  listed by repository in branch-name order.
+- `tests/test_local_policy_workflow.py` proves local policy listing, trigger
+  enable, trigger disable, delivery mode changes, delivery-mode preservation,
+  trigger-state preservation, and configured-repository validation.
+- `tests/test_cli.py` proves `codealmanac local triggers list`,
+  `codealmanac local triggers enable <branch> --delivery ...`,
+  `codealmanac local triggers disable <branch>`, and
+  `codealmanac local delivery set --branch ... --mode ...`.
+- `tests/test_architecture.py` proves local policy only composes local status
+  and control policy methods; it does not import integrations, SQL,
+  subprocesses, workers, harnesses, or delivery mechanics.
 
 Commands:
 

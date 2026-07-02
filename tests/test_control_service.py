@@ -23,6 +23,7 @@ from codealmanac.services.control.requests import (
     FindRepositoryByLocalRootRequest,
     GetControlRunRequest,
     LinkTurnBranchRequest,
+    ListBranchesRequest,
     ListBranchSessionsRequest,
     ListControlRunEventsRequest,
     ListControlRunsRequest,
@@ -260,6 +261,44 @@ def test_control_finds_repository_and_branch_for_local_checkout(
     assert found_repository == repository
     assert found_branch == branch
     assert missing_branch is None
+
+
+def test_control_lists_repository_branches_in_name_order(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    app = control_app(isolated_home)
+    repository = register_repository(app, tmp_path / "repo")
+    other = register_repository(
+        app,
+        tmp_path / "other",
+        name="other",
+        full_name="AlmanacCode/other",
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="main")
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            delivery_mode=ControlDeliveryMode.WORKING_TREE,
+        )
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=other.id, name="other")
+    )
+
+    branches = app.control.list_branches(
+        ListBranchesRequest(repository_id=repository.id)
+    )
+
+    assert tuple(branch.name for branch in branches) == ("dev", "main")
+    assert tuple(branch.repository_id for branch in branches) == (
+        repository.id,
+        repository.id,
+    )
+    assert branches[0].delivery_mode is ControlDeliveryMode.WORKING_TREE
 
 
 def test_disabled_branch_does_not_record_trigger_event(
@@ -923,14 +962,20 @@ def control_app(isolated_home: Path, probe=None):
     )
 
 
-def register_repository(app, repo_path: Path):
+def register_repository(
+    app,
+    repo_path: Path,
+    *,
+    name: str = "codealmanac",
+    full_name: str = "AlmanacCode/codealmanac",
+):
     repo_path.mkdir(exist_ok=True)
     return app.control.upsert_repository(
         UpsertRepositoryRequest(
             provider="github",
             owner_login="AlmanacCode",
-            name="codealmanac",
-            full_name="AlmanacCode/codealmanac",
+            name=name,
+            full_name=full_name,
             default_branch="dev",
             almanac_root=Path("almanac"),
             local_root_path=repo_path,

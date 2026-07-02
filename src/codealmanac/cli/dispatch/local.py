@@ -8,6 +8,8 @@ from codealmanac.cli.render.local import (
     render_local_job_logs,
     render_local_jobs,
     render_local_status,
+    render_local_trigger_policies,
+    render_local_trigger_policy,
     render_local_update,
 )
 from codealmanac.services.control.models import ControlDeliveryMode, ControlRunStatus
@@ -17,6 +19,11 @@ from codealmanac.workflows.local_jobs.requests import (
     ListLocalJobsRequest,
     ReadLocalJobLogsRequest,
     ShowLocalJobRequest,
+)
+from codealmanac.workflows.local_policy.requests import (
+    ListLocalTriggerPoliciesRequest,
+    SetLocalDeliveryPolicyRequest,
+    UpdateLocalTriggerPolicyRequest,
 )
 from codealmanac.workflows.local_setup.requests import RunLocalSetupRequest
 from codealmanac.workflows.local_status.requests import ReadLocalStatusRequest
@@ -36,6 +43,10 @@ def dispatch_local(args: argparse.Namespace, app: CodeAlmanac) -> int:
         return dispatch_local_update(args, app)
     if args.local_command == "setup":
         return dispatch_local_setup(args, app)
+    if args.local_command == "triggers":
+        return dispatch_local_triggers(args, app)
+    if args.local_command == "delivery":
+        return dispatch_local_delivery(args, app)
     if args.local_command == "jobs":
         return dispatch_local_jobs(args, app)
     raise AssertionError(f"unhandled local command: {args.local_command}")
@@ -82,6 +93,49 @@ def dispatch_local_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
     return 0
 
 
+def dispatch_local_triggers(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.triggers_command == "list":
+        result = app.workflows.local_policy.list_triggers(
+            ListLocalTriggerPoliciesRequest(cwd=Path.cwd())
+        )
+        render_local_trigger_policies(result, json_output=args.json)
+        return 0
+    if args.triggers_command == "enable":
+        result = app.workflows.local_policy.enable_trigger(
+            UpdateLocalTriggerPolicyRequest(
+                cwd=Path.cwd(),
+                branch_name=args.branch,
+                delivery_mode=parse_optional_delivery_mode(args.delivery),
+            )
+        )
+        render_local_trigger_policy(result, json_output=args.json)
+        return 0
+    if args.triggers_command == "disable":
+        result = app.workflows.local_policy.disable_trigger(
+            UpdateLocalTriggerPolicyRequest(
+                cwd=Path.cwd(),
+                branch_name=args.branch,
+            )
+        )
+        render_local_trigger_policy(result, json_output=args.json)
+        return 0
+    raise AssertionError(f"unhandled local triggers command: {args.triggers_command}")
+
+
+def dispatch_local_delivery(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.delivery_command == "set":
+        result = app.workflows.local_policy.set_delivery(
+            SetLocalDeliveryPolicyRequest(
+                cwd=Path.cwd(),
+                branch_name=args.branch,
+                delivery_mode=parse_delivery_mode(args.mode),
+            )
+        )
+        render_local_trigger_policy(result, json_output=args.json)
+        return 0
+    raise AssertionError(f"unhandled local delivery command: {args.delivery_command}")
+
+
 def dispatch_local_jobs(args: argparse.Namespace, app: CodeAlmanac) -> int:
     if args.jobs_command == "list":
         jobs = app.workflows.local_jobs.list(
@@ -115,6 +169,12 @@ def parse_almanac_root(value: str | None) -> Path:
 
 def parse_delivery_mode(value: str) -> ControlDeliveryMode:
     return ControlDeliveryMode(value.replace("-", "_"))
+
+
+def parse_optional_delivery_mode(value: str | None) -> ControlDeliveryMode | None:
+    if value is None:
+        return None
+    return parse_delivery_mode(value)
 
 
 def format_delivery_mode(mode: ControlDeliveryMode) -> str:

@@ -44,6 +44,7 @@ from codealmanac.services.control.requests import (
     GetControlRunRequest,
     GetRepositoryRequest,
     LinkTurnBranchRequest,
+    ListBranchesRequest,
     ListBranchSessionsRequest,
     ListControlRunEventsRequest,
     ListControlRunsRequest,
@@ -108,6 +109,23 @@ class ControlStore:
                 request.repository_id,
                 request.name,
             )
+
+    def list_branches(
+        self,
+        request: ListBranchesRequest,
+    ) -> tuple[BranchRecord, ...]:
+        with connect_control(self.path) as connection:
+            self.repository_by_id(connection, request.repository_id)
+            rows = connection.execute(
+                """
+                SELECT *
+                FROM branches
+                WHERE repository_id = ?
+                ORDER BY name
+                """,
+                (request.repository_id,),
+            ).fetchall()
+        return tuple(branch_from_row(row) for row in rows)
 
     def get_run(self, request: GetControlRunRequest) -> ControlRunRecord:
         with connect_control(self.path) as connection:

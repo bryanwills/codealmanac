@@ -44,6 +44,52 @@ def add_local_commands(subcommands: argparse._SubParsersAction) -> None:
     )
     setup.add_argument("--json", action="store_true")
 
+    triggers = local_subcommands.add_parser(
+        "triggers",
+        help="manage local branch trigger policy",
+    )
+    triggers_subcommands = triggers.add_subparsers(
+        dest="triggers_command",
+        required=True,
+    )
+
+    triggers_list = triggers_subcommands.add_parser(
+        "list",
+        help="list local branch trigger policies",
+    )
+    triggers_list.add_argument("--json", action="store_true")
+
+    triggers_enable = triggers_subcommands.add_parser(
+        "enable",
+        help="enable local updates for a branch",
+    )
+    triggers_enable.add_argument("branch")
+    triggers_enable.add_argument("--delivery", choices=LOCAL_DELIVERY_CHOICES)
+    triggers_enable.add_argument("--json", action="store_true")
+
+    triggers_disable = triggers_subcommands.add_parser(
+        "disable",
+        help="disable local updates for a branch",
+    )
+    triggers_disable.add_argument("branch")
+    triggers_disable.add_argument("--json", action="store_true")
+
+    delivery = local_subcommands.add_parser(
+        "delivery",
+        help="manage local delivery policy",
+    )
+    delivery_subcommands = delivery.add_subparsers(
+        dest="delivery_command",
+        required=True,
+    )
+    delivery_set = delivery_subcommands.add_parser(
+        "set",
+        help="set local delivery mode for a branch",
+    )
+    delivery_set.add_argument("--branch", required=True)
+    delivery_set.add_argument("--mode", choices=LOCAL_DELIVERY_CHOICES, required=True)
+    delivery_set.add_argument("--json", action="store_true")
+
     jobs = local_subcommands.add_parser("jobs", help="inspect local jobs")
     jobs_subcommands = jobs.add_subparsers(dest="jobs_command", required=True)
 

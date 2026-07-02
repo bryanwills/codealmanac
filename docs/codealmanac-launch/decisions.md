@@ -60,6 +60,11 @@ Status: active.
   material can change without a Git commit.
 - Manual local update does not start a second job when the same branch already
   has a queued or running local job.
+- Local trigger policy commands are repo-scoped to the current configured
+  checkout and branch-targeted by argument.
+- Local trigger policy commands mutate local control DB branch rows only; they
+  do not install hooks, spawn workers, or run updates.
+- Local delivery policy changes preserve trigger enabled/disabled state.
 - CLI auto-update should happen without asking, using a safe background/next-run
   model.
 - Existing Python auto-update libraries must be researched before custom update

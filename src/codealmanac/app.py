@@ -84,6 +84,7 @@ from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_engine import LocalEngineWorkflow
 from codealmanac.workflows.local_jobs import LocalJobsWorkflow
+from codealmanac.workflows.local_policy import LocalPolicyWorkflow
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
 from codealmanac.workflows.local_setup import (
     LocalRepositoryProbe,
@@ -108,6 +109,7 @@ class CodeAlmanacWorkflows:
     local_setup: LocalSetupWorkflow
     local_status: LocalStatusWorkflow
     local_jobs: LocalJobsWorkflow
+    local_policy: LocalPolicyWorkflow
     local_engine: LocalEngineWorkflow
     local_delivery: LocalDeliveryWorkflow
     local_worker: LocalWorkerWorkflow
@@ -265,6 +267,10 @@ def create_app(
         resolved_local_repository_probe,
     )
     local_jobs = LocalJobsWorkflow(control)
+    local_policy = LocalPolicyWorkflow(
+        control,
+        local_status,
+    )
     local_engine = LocalEngineWorkflow(
         control,
         engine_runs,
@@ -301,6 +307,7 @@ def create_app(
         local_setup=local_setup,
         local_status=local_status,
         local_jobs=local_jobs,
+        local_policy=local_policy,
         local_engine=local_engine,
         local_delivery=local_delivery,
         local_worker=local_worker,

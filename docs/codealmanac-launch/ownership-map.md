@@ -17,6 +17,7 @@ Owns:
 - local capture storage
 - local Git hook dispatchers
 - local status and local job read surface
+- local trigger and delivery policy commands
 - local worker workspace creation
 - local engine execution
 - local worker orchestration

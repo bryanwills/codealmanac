@@ -527,6 +527,120 @@ def test_cli_local_status_reports_current_checkout(
     assert "delivery: commit\n" in output.out
 
 
+def test_cli_local_triggers_list_and_enable(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(control_db_path=isolated_home / ".codealmanac/control.sqlite"),
+        local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
+    )
+    repository = app.control.upsert_repository(
+        UpsertRepositoryRequest(
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            almanac_root=Path("almanac"),
+            local_root_path=repo,
+        )
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            trigger_enabled=False,
+            delivery_mode=ControlDeliveryMode.WORKING_TREE,
+        )
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["local", "triggers", "list"]) == 0
+    list_output = capsys.readouterr()
+    assert "dev\tdisabled\tworking-tree\n" in list_output.out
+
+    assert (
+        main(
+            [
+                "local",
+                "triggers",
+                "enable",
+                "main",
+                "--delivery",
+                "working-tree",
+                "--json",
+            ]
+        )
+        == 0
+    )
+    enable_output = capsys.readouterr()
+    data = json.loads(enable_output.out)
+
+    assert data["branch"]["name"] == "main"
+    assert data["branch"]["trigger_enabled"] is True
+    assert data["branch"]["delivery_mode"] == "working_tree"
+
+
+def test_cli_local_delivery_set_and_trigger_disable(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(control_db_path=isolated_home / ".codealmanac/control.sqlite"),
+        local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
+    )
+    repository = app.control.upsert_repository(
+        UpsertRepositoryRequest(
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            almanac_root=Path("almanac"),
+            local_root_path=repo,
+        )
+    )
+    app.control.set_branch_policy(
+        SetBranchPolicyRequest(repository_id=repository.id, name="dev")
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "local",
+                "delivery",
+                "set",
+                "--branch",
+                "dev",
+                "--mode",
+                "working-tree",
+            ]
+        )
+        == 0
+    )
+    delivery_output = capsys.readouterr()
+    assert "branch: dev\n" in delivery_output.out
+    assert "triggers: enabled\n" in delivery_output.out
+    assert "delivery: working-tree\n" in delivery_output.out
+
+    assert main(["local", "triggers", "disable", "dev", "--json"]) == 0
+    disable_output = capsys.readouterr()
+    data = json.loads(disable_output.out)
+
+    assert data["branch"]["trigger_enabled"] is False
+    assert data["branch"]["delivery_mode"] == "working_tree"
+
+
 def test_cli_local_jobs_list_show_and_logs(
     tmp_path: Path,
     isolated_home: Path,

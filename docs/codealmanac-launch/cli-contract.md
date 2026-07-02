@@ -125,6 +125,16 @@ local delivery. Manual update can rerun on the same HEAD after a completed job
 because source/capture material can change without a code commit. It refuses to
 start when the branch already has a queued or running local job.
 
+`local triggers list|enable|disable` and `local delivery set` mutate branch
+policy rows in the local control DB for the current checkout's configured
+repository. They do not install hooks, spawn workers, or run updates.
+
+`local triggers enable <branch>` preserves the existing delivery mode when the
+branch row already exists and `--delivery` is omitted; otherwise it defaults to
+`commit`. `local triggers disable <branch>` preserves the existing delivery mode.
+`local delivery set --branch <branch> --mode ...` requires an existing branch
+policy row and preserves the branch trigger state.
+
 ## Hidden / Private
 
 Internal entrypoints may keep `ingest`, `garden`, provider diagnostics, and

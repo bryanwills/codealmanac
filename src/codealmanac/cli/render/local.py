@@ -5,6 +5,10 @@ from codealmanac.workflows.local_jobs.models import (
     LocalJobLogsResult,
     LocalJobSummary,
 )
+from codealmanac.workflows.local_policy.models import (
+    LocalTriggerPoliciesResult,
+    LocalTriggerPolicyResult,
+)
 from codealmanac.workflows.local_status.models import LocalStatusResult
 from codealmanac.workflows.local_update.models import LocalUpdateResult
 
@@ -29,7 +33,38 @@ def render_local_status(result: LocalStatusResult, json_output: bool) -> None:
         return
     print(f"branch: configured {result.branch.name}")
     print(f"triggers: {'enabled' if result.branch.trigger_enabled else 'disabled'}")
-    print(f"delivery: {result.branch.delivery_mode.value}")
+    print(f"delivery: {format_delivery_mode(result.branch.delivery_mode.value)}")
+
+
+def render_local_trigger_policies(
+    result: LocalTriggerPoliciesResult,
+    json_output: bool,
+) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    if len(result.branches) == 0:
+        print("# 0 local triggers", file=sys.stderr)
+        return
+    for branch in result.branches:
+        trigger = "enabled" if branch.trigger_enabled else "disabled"
+        delivery = format_delivery_mode(branch.delivery_mode.value)
+        print(f"{branch.name}\t{trigger}\t{delivery}")
+
+
+def render_local_trigger_policy(
+    result: LocalTriggerPolicyResult,
+    json_output: bool,
+) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    branch = result.branch
+    trigger = "enabled" if branch.trigger_enabled else "disabled"
+    delivery = format_delivery_mode(branch.delivery_mode.value)
+    print(f"branch: {branch.name}")
+    print(f"triggers: {trigger}")
+    print(f"delivery: {delivery}")
 
 
 def render_local_jobs(
@@ -101,3 +136,7 @@ def render_local_update(result: LocalUpdateResult, json_output: bool) -> None:
     print(f"local update: {result.worker.run.status.value} {result.worker.run.id}")
     if result.worker.run.summary is not None:
         print(f"summary: {result.worker.run.summary}")
+
+
+def format_delivery_mode(value: str) -> str:
+    return value.replace("_", "-")
