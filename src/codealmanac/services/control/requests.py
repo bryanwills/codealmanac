@@ -13,10 +13,6 @@ from codealmanac.services.control.models import (
 )
 
 
-class EnsureControlSchemaRequest(CodeAlmanacModel):
-    pass
-
-
 class ReadControlSchemaStatusRequest(CodeAlmanacModel):
     ensure: bool = True
 
@@ -37,6 +33,15 @@ class GetBranchRequest(CodeAlmanacModel):
     @classmethod
     def require_branch_id(cls, value: str) -> str:
         return required_text(value, "branch id")
+
+
+class GetControlRunRequest(CodeAlmanacModel):
+    run_id: str
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "run id")
 
 
 class UpsertRepositoryRequest(CodeAlmanacModel):

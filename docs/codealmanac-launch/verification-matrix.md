@@ -104,6 +104,13 @@ Current evidence:
 - `tests/test_architecture.py` proves the local run preparation workflow
   orchestrates services without importing integrations, SQL, or subprocess
   mechanics.
+- Slice 10 added branch-head staling during trigger recording.
+- `tests/test_control_service.py` proves a newer trigger marks older queued and
+  running runs on the same branch as `stale`.
+- `tests/test_control_service.py` proves terminal runs and same-head queued
+  runs are preserved.
+- `tests/test_control_service.py` proves stale runs receive normalized status
+  run events.
 
 Commands:
 

@@ -210,3 +210,18 @@
   `uv run pytest tests/test_local_run_preparation_workflow.py tests/test_control_service.py tests/test_architecture.py`.
 - Verified Slice 9 full gate with `uv run pytest` (`393 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 9 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 47%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
+- Planned Slice 10 in
+  `docs/plans/2026-07-02-slice-10-branch-head-staling.md`.
+- Added `app.control.get_run(...)`.
+- Added branch-head staling inside trigger recording: newer configured
+  triggers mark queued/running runs for older expected heads as `stale`.
+- Added normalized status run events for stale runs.
+- Removed unused `EnsureControlSchemaRequest`.
+- Verified Slice 10 focused behavior with
+  `uv run pytest tests/test_control_service.py tests/test_architecture.py`.
+- Verified Slice 10 full gate with `uv run pytest` (`394 passed`),
+  `uv run ruff check .`, and `git diff --check`.

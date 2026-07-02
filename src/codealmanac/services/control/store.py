@@ -7,6 +7,7 @@ from codealmanac.database import SQLiteConnection, user_version
 from codealmanac.services.control.models import (
     BranchRecord,
     ClaimNextTriggerResult,
+    ControlRunEventKind,
     ControlRunEventRecord,
     ControlRunRecord,
     ControlRunStatus,
@@ -32,6 +33,7 @@ from codealmanac.services.control.requests import (
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
     GetBranchRequest,
+    GetControlRunRequest,
     GetRepositoryRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,
@@ -75,6 +77,10 @@ class ControlStore:
     def get_branch(self, request: GetBranchRequest) -> BranchRecord:
         with connect_control(self.path) as connection:
             return self.branch_by_id(connection, request.branch_id)
+
+    def get_run(self, request: GetControlRunRequest) -> ControlRunRecord:
+        with connect_control(self.path) as connection:
+            return self.run_by_id(connection, request.run_id)
 
     def upsert_repository(
         self,
@@ -266,6 +272,12 @@ class ControlStore:
                 TriggerEventStatus.PENDING.value,
                 request.head_sha,
             ),
+        )
+        self.mark_stale_runs_for_branch(
+            connection,
+            branch.id,
+            request.head_sha,
+            now,
         )
         event_id = trigger_event_id()
         connection.execute(
@@ -682,6 +694,80 @@ class ControlStore:
             """,
             (head_sha, updated_at, branch_id),
         )
+
+    def mark_stale_runs_for_branch(
+        self,
+        connection: SQLiteConnection,
+        branch_id: str,
+        new_head_sha: str,
+        now: str,
+    ) -> None:
+        rows = connection.execute(
+            """
+            SELECT id
+            FROM runs
+            WHERE branch_id = ?
+              AND status IN (?, ?)
+              AND (
+                expected_head_sha IS NULL
+                OR expected_head_sha != ?
+              )
+            ORDER BY created_at, id
+            """,
+            (
+                branch_id,
+                ControlRunStatus.QUEUED.value,
+                ControlRunStatus.RUNNING.value,
+                new_head_sha,
+            ),
+        ).fetchall()
+        message = f"branch advanced to {new_head_sha}; run marked stale"
+        for row in rows:
+            run_id = row["id"]
+            connection.execute(
+                """
+                UPDATE runs
+                SET status = ?,
+                    error = ?,
+                    finished_at = COALESCE(finished_at, ?),
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    ControlRunStatus.STALE.value,
+                    message,
+                    now,
+                    now,
+                    run_id,
+                ),
+            )
+            sequence_row = connection.execute(
+                """
+                SELECT COALESCE(MAX(sequence), 0) + 1
+                FROM run_events
+                WHERE run_id = ?
+                """,
+                (run_id,),
+            ).fetchone()
+            connection.execute(
+                """
+                INSERT INTO run_events (
+                  run_id,
+                  sequence,
+                  timestamp,
+                  kind,
+                  message
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    int(sequence_row[0]),
+                    now,
+                    ControlRunEventKind.STATUS.value,
+                    message,
+                ),
+            )
 
 
 def control_tables(connection: SQLiteConnection) -> tuple[str, ...]:

@@ -18,6 +18,7 @@ from codealmanac.services.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
+    GetControlRunRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     ReadControlSchemaStatusRequest,
@@ -630,6 +631,99 @@ def test_claim_next_trigger_marks_trigger_claimed_and_creates_queued_run(
     assert claim.run.request_ref == "file:///request.json"
     assert second.claimed is False
     assert tuple(event.id for event in claimed_events) == (trigger.id,)
+
+
+def test_new_trigger_marks_active_runs_for_old_head_stale(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    app = control_app(isolated_home)
+    repository = register_repository(app, tmp_path / "repo")
+    branch = app.control.set_branch_policy(
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            trigger_enabled=True,
+            delivery_mode=ControlDeliveryMode.COMMIT,
+        )
+    )
+    queued = app.control.create_run(
+        CreateControlRunRequest(
+            repository_id=repository.id,
+            branch_id=branch.id,
+            expected_head_sha="head-1",
+        )
+    )
+    running = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=app.control.create_run(
+                CreateControlRunRequest(
+                    repository_id=repository.id,
+                    branch_id=branch.id,
+                    expected_head_sha="head-1",
+                )
+            ).id,
+            status=ControlRunStatus.RUNNING,
+        )
+    )
+    same_head = app.control.create_run(
+        CreateControlRunRequest(
+            repository_id=repository.id,
+            branch_id=branch.id,
+            expected_head_sha="head-2",
+        )
+    )
+    terminal = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=app.control.create_run(
+                CreateControlRunRequest(
+                    repository_id=repository.id,
+                    branch_id=branch.id,
+                    expected_head_sha="head-1",
+                )
+            ).id,
+            status=ControlRunStatus.SUCCEEDED,
+        )
+    )
+
+    app.control.record_trigger_event(
+        RecordTriggerEventRequest(
+            repository_id=repository.id,
+            branch_name="dev",
+            kind=TriggerEventKind.LOCAL_POST_COMMIT,
+            head_sha="head-2",
+        )
+    )
+
+    stale_queued = app.control.get_run(GetControlRunRequest(run_id=queued.id))
+    stale_running = app.control.get_run(GetControlRunRequest(run_id=running.id))
+    preserved_same_head = app.control.get_run(
+        GetControlRunRequest(run_id=same_head.id)
+    )
+    preserved_terminal = app.control.get_run(GetControlRunRequest(run_id=terminal.id))
+    queued_events = app.control.list_run_events(
+        ListControlRunEventsRequest(run_id=queued.id)
+    )
+    running_events = app.control.list_run_events(
+        ListControlRunEventsRequest(run_id=running.id)
+    )
+
+    assert stale_queued.status is ControlRunStatus.STALE
+    assert stale_running.status is ControlRunStatus.STALE
+    assert stale_queued.finished_at is not None
+    assert stale_running.finished_at is not None
+    assert stale_queued.error == "branch advanced to head-2; run marked stale"
+    assert stale_running.error == "branch advanced to head-2; run marked stale"
+    assert preserved_same_head.status is ControlRunStatus.QUEUED
+    assert preserved_terminal.status is ControlRunStatus.SUCCEEDED
+    assert tuple(event.kind for event in queued_events) == (
+        ControlRunEventKind.STATUS,
+    )
+    assert tuple(event.kind for event in running_events) == (
+        ControlRunEventKind.STATUS,
+    )
+    assert queued_events[0].message == "branch advanced to head-2; run marked stale"
+    assert running_events[0].message == "branch advanced to head-2; run marked stale"
 
 
 def control_app(isolated_home: Path, probe=None):

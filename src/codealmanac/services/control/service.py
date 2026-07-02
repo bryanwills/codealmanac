@@ -13,8 +13,8 @@ from codealmanac.services.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
-    EnsureControlSchemaRequest,
     GetBranchRequest,
+    GetControlRunRequest,
     GetRepositoryRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,
@@ -34,10 +34,7 @@ class ControlService:
         self.store = store
         self.local_git_state = local_git_state
 
-    def ensure_ready(
-        self,
-        request: EnsureControlSchemaRequest | None = None,
-    ) -> ControlSchemaStatus:
+    def ensure_ready(self) -> ControlSchemaStatus:
         return self.store.ensure_ready()
 
     def status(
@@ -52,6 +49,9 @@ class ControlService:
 
     def get_branch(self, request: GetBranchRequest) -> BranchRecord:
         return self.store.get_branch(request)
+
+    def get_run(self, request: GetControlRunRequest) -> ControlRunRecord:
+        return self.store.get_run(request)
 
     def upsert_repository(
         self,
