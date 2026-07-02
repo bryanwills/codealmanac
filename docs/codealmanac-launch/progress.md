@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 12 verification.
+Sent: pending after Slice 13 verification.
 
 Route:
 
@@ -26,7 +26,7 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 58% | 53% | Slice 12 added deterministic local commit delivery from worker repo patches with expected-head checks. |
+| CodeAlmanac backend/local | 63% | 58% | Slice 13 added local engine execution from prepared request/source/workspace artifacts through the harness boundary. |
 | CodeAlmanac CLI/public UX | 10% | 10% | Hidden trigger command exists; launch public CLI surface is not rebuilt yet. |
 | CodeAlmanac-hosted backend/auth/API | 8% | 8% | WorkOS/Doppler setup and hosted rename groundwork exist; public API migration is not implemented yet. |
 | Hosted frontend/onboarding | 5% | 5% | Existing frontend is deployed under CodeAlmanac; new onboarding/configuration screens are not implemented yet. |

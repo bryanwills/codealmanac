@@ -16,6 +16,7 @@ Owns:
 - local capture storage
 - local Git hook dispatchers
 - local worker workspace creation
+- local engine execution
 - deterministic local delivery
 - auto-update client behavior
 
@@ -74,4 +75,3 @@ engine result
 ```
 
 Both cloud and local workers call this boundary.
-

@@ -132,6 +132,16 @@ Current evidence:
   root.
 - `tests/test_architecture.py` proves Git delivery mechanics stay in
   `integrations/workspaces/git/delivery.py`, not in the workflow.
+- Slice 13 added local engine execution.
+- `tests/test_local_engine_workflow.py` proves the workflow reads a prepared
+  engine request, runs the harness in the worker repo, writes `result.json`,
+  stores `result_ref`, and records normalized run events.
+- `tests/test_local_engine_workflow.py` proves failed harness runs mark the
+  control run `failed` and write a failed engine result.
+- `tests/test_local_engine_workflow.py` proves a missing prepared request fails
+  the control run without invoking the harness.
+- `tests/test_architecture.py` proves local engine execution stays separate
+  from Git delivery, subprocess mechanics, SQL, and CLI strings.
 
 Commands:
 

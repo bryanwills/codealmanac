@@ -7,3 +7,4 @@ class PromptName(StrEnum):
     BASE_SYNTAX = "base/syntax.md"
     OPERATION_INGEST = "operations/ingest.md"
     OPERATION_GARDEN = "operations/garden.md"
+    OPERATION_UPDATE = "operations/update.md"

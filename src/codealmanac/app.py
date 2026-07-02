@@ -78,6 +78,7 @@ from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
+from codealmanac.workflows.local_engine import LocalEngineWorkflow
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
@@ -92,6 +93,7 @@ class CodeAlmanacWorkflows:
     garden: GardenWorkflow
     queue: RunQueueWorkflow
     local_runs: LocalRunPreparationWorkflow
+    local_engine: LocalEngineWorkflow
     local_delivery: LocalDeliveryWorkflow
     sync: SyncWorkflow
 
@@ -230,6 +232,12 @@ def create_app(
         source_bundles,
         engine_runs,
     )
+    local_engine = LocalEngineWorkflow(
+        control,
+        engine_runs,
+        harnesses,
+        prompts,
+    )
     local_delivery = LocalDeliveryWorkflow(
         control,
         deliveries,
@@ -244,6 +252,7 @@ def create_app(
         garden=garden,
         queue=queue,
         local_runs=local_runs,
+        local_engine=local_engine,
         local_delivery=local_delivery,
         sync=sync,
     )

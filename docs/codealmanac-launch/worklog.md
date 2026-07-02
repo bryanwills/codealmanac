@@ -261,3 +261,23 @@
   `uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py`.
 - Verified Slice 12 full gate with `uv run pytest` (`407 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 12 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 58%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
+- Planned Slice 13 in
+  `docs/plans/2026-07-02-slice-13-local-engine-execution.md`.
+- Added `app.workflows.local_engine.execute(...)`.
+- Added `src/codealmanac/workflows/local_engine/` with request/result models,
+  update prompt rendering, deterministic result helpers, and run-event
+  recording helpers.
+- Added `src/codealmanac/prompts/operations/update.md`.
+- Wired local engine execution through the existing harness seam:
+  `RunHarnessRequest(kind, cwd, prompt, title)`.
+- The local engine now reads prepared `request.json`, runs the model in the
+  worker repo, writes `result.json`, stores `result_ref`, and leaves delivery
+  to `app.workflows.local_delivery`.
+- Verified Slice 13 focused behavior with
+  `uv run pytest tests/test_local_engine_workflow.py tests/test_engine_runs_service.py tests/test_architecture.py`.
+- Verified Slice 13 full gate with `uv run pytest` (`411 passed`),
+  `uv run ruff check .`, and `git diff --check`.

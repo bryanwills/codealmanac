@@ -10,22 +10,23 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 12 added deterministic local commit delivery.
+Slice 13 added local engine execution.
 
 Implemented:
 
-- `app.deliveries`
-- `app.workflows.local_delivery.deliver(...)`
-- native Git delivery adapter for expected-head reads, wiki-only patch
-  collection, patch application, and commit creation
-- moved-head handling: skip delivery and mark the run `stale`
-- empty-diff handling: skip delivery and mark the run `succeeded`
-- worker workspace path lookup by run id
+- `app.workflows.local_engine.execute(...)`
+- update-operation prompt at `src/codealmanac/prompts/operations/update.md`
+- local engine result helpers for deterministic `docs almanac:` subjects
+- normalized run-event recording for harness events
+- success path: request artifact -> harness run in worker repo -> result
+  artifact -> `result_ref` on the control run
+- failure path: failed harness or missing prepared request -> failed control
+  run and failed engine result when possible
 
 Verified:
 
 ```text
-uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py
+uv run pytest tests/test_local_engine_workflow.py tests/test_engine_runs_service.py tests/test_architecture.py
 uv run pytest
 uv run ruff check .
 git diff --check
@@ -38,7 +39,9 @@ Choose the next substantial slice from the launch plan. Good candidates:
 - local trigger event recording through Git hooks
 - public or hidden setup command that calls `app.local_hooks`
 - local run storage bridge from repo-local job files to the control DB
-- local model worker execution from prepared `EngineRunRequest`
+- local worker orchestration that chains prepare -> engine -> delivery
+- prompt restoration / first-build `init` path from
+  `docs/codealmanac-launch/init-first-build-prompt-restoration.md`
 
 Before coding, write the next slice plan under `docs/plans/`, then implement
 the full slice, update this brief, update `progress.md`, send a RelayForge
@@ -46,8 +49,8 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The branch is `dev`. At the start of Slice 12 it was clean and even with
-`origin/dev`.
+The branch is `dev`. At the end of Slice 13 verification it was ready to
+commit on top of `origin/dev`.
 
 The local wiki command currently fails on this checkout with:
 

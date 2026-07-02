@@ -205,6 +205,37 @@ def test_local_run_preparation_workflow_only_orchestrates_services():
     assert "subprocess" not in service_text
 
 
+def test_local_engine_workflow_only_runs_harness_and_records_artifacts():
+    workflow_root = SRC_ROOT / "workflows/local_engine"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    prompt_text = (workflow_root / "prompt.py").read_text(encoding="utf-8")
+    result_text = (workflow_root / "result.py").read_text(encoding="utf-8")
+    operation_prompt = SRC_ROOT / "prompts/operations/update.md"
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "prompt.py",
+        "requests.py",
+        "result.py",
+        "service.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 170
+    assert "harnesses.run" in service_text
+    assert "engine_runs.write_result" in service_text
+    assert "UpdateControlRunRequest" in service_text
+    assert "RenderPromptRequest" in prompt_text
+    assert "OPERATION_UPDATE" in prompt_text
+    assert "COMMIT_SUBJECT_PREFIX" in result_text
+    assert operation_prompt.is_file()
+    assert "codealmanac.integrations" not in service_text
+    assert "connect_control" not in service_text
+    assert "subprocess" not in service_text
+    assert "git_delivery" not in service_text
+    assert "apply_patch" not in service_text
+
+
 def test_config_service_owns_toml_imports():
     offenders = [
         path

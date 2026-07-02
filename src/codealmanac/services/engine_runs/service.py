@@ -1,5 +1,6 @@
 from codealmanac.core.errors import NotFoundError
 from codealmanac.services.engine_runs.models import (
+    EngineRunArtifactPaths,
     EngineRunRequest,
     EngineRunResult,
     PreparedEngineRun,
@@ -15,6 +16,9 @@ from codealmanac.services.engine_runs.store import EngineRunsStore
 class EngineRunsService:
     def __init__(self, store: EngineRunsStore):
         self.store = store
+
+    def paths(self, run_id: str) -> EngineRunArtifactPaths:
+        return self.store.paths(run_id)
 
     def prepare(self, request: PrepareEngineRunRequest) -> PreparedEngineRun:
         paths = self.store.paths(request.run_id)
