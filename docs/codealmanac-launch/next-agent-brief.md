@@ -10,22 +10,23 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 4 added local Git hook installation and removal.
+Slice 5 added SQL-backed control run records and ordered run events.
 
 Implemented:
 
-- `app.local_hooks.install(InstallLocalHooksRequest(...))`
-- `app.local_hooks.uninstall(UninstallLocalHooksRequest(...))`
-- Git adapter that resolves hook paths through
-  `git rev-parse --git-path hooks/<hook>`
-- managed hook blocks for `post-commit`, `post-merge`, and `post-rewrite`
-- hook commands call `codealmanac __record-local-trigger`
-- user hook content is preserved and reinstall is idempotent
+- `app.control.create_run(...)`
+- `app.control.update_run(...)`
+- `app.control.append_run_event(...)`
+- `app.control.list_run_events(...)`
+- launch run statuses: `queued`, `running`, `succeeded`, `failed`, `stale`,
+  `cancelled`
+- launch run event kinds: `status`, `message`, `tool`, `output`, `error`
+- ordered per-run event sequences starting at `1`
 
 Verified:
 
 ```text
-uv run pytest tests/test_local_hooks.py tests/test_architecture.py
+uv run pytest tests/test_control_service.py tests/test_architecture.py
 uv run ruff check .
 git diff --check
 ```
@@ -37,6 +38,7 @@ Choose the next substantial slice from the launch plan. Good candidates:
 - local trigger event recording through Git hooks
 - public or hidden setup command that calls `app.local_hooks`
 - local run storage bridge from repo-local job files to the control DB
+- trigger-event claim/lock behavior that creates or starts run rows
 - engine request/result models used by local and hosted workers
 
 Before coding, write the next slice plan under `docs/plans/`, then implement

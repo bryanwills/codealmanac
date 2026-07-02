@@ -8,16 +8,22 @@ from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_control_db_path
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
+    ControlRunEventKind,
+    ControlRunStatus,
     LocalGitState,
     TriggerEventKind,
     TriggerEventStatus,
 )
 from codealmanac.services.control.requests import (
+    AppendControlRunEventRequest,
+    CreateControlRunRequest,
+    ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     ReadControlSchemaStatusRequest,
     RecordCurrentGitTriggerRequest,
     RecordTriggerEventRequest,
     SetBranchPolicyRequest,
+    UpdateControlRunRequest,
     UpsertRepositoryRequest,
 )
 from codealmanac.services.control.schema import (
@@ -470,6 +476,92 @@ def test_record_current_git_trigger_noops_when_repo_is_not_configured(
     assert result.recorded is False
     assert result.reason == "repository_not_configured"
     assert app.control.list_trigger_events() == ()
+
+
+def test_control_run_ledger_creates_updates_and_logs_run_events(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    app = control_app(isolated_home)
+    repository = register_repository(app, tmp_path / "repo")
+    branch = app.control.set_branch_policy(
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            trigger_enabled=True,
+            delivery_mode=ControlDeliveryMode.COMMIT,
+        )
+    )
+    trigger_result = app.control.record_trigger_event(
+        RecordTriggerEventRequest(
+            repository_id=repository.id,
+            branch_name="dev",
+            kind=TriggerEventKind.LOCAL_POST_COMMIT,
+            head_sha="head-1",
+        )
+    )
+    assert trigger_result.event is not None
+
+    run = app.control.create_run(
+        CreateControlRunRequest(
+            repository_id=repository.id,
+            branch_id=branch.id,
+            trigger_event_id=trigger_result.event.id,
+            expected_head_sha="head-1",
+            source_bundle_ref="file:///bundle",
+            request_ref="file:///request.json",
+        )
+    )
+    first = app.control.append_run_event(
+        AppendControlRunEventRequest(
+            run_id=run.id,
+            kind=ControlRunEventKind.STATUS,
+            message="queued update",
+        )
+    )
+    second = app.control.append_run_event(
+        AppendControlRunEventRequest(
+            run_id=run.id,
+            kind=ControlRunEventKind.MESSAGE,
+            message="selected sources",
+            event_json='{"sources": 3}',
+            artifact_ref="file:///events/2.json",
+        )
+    )
+    running = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=run.id,
+            status=ControlRunStatus.RUNNING,
+        )
+    )
+    succeeded = app.control.update_run(
+        UpdateControlRunRequest(
+            run_id=run.id,
+            status=ControlRunStatus.SUCCEEDED,
+            result_ref="file:///result.json",
+            summary="updated wiki",
+            commit_subject="docs almanac: update dev wiki",
+            commit_body="Refresh pages from the trigger bundle.",
+        )
+    )
+    events = app.control.list_run_events(ListControlRunEventsRequest(run_id=run.id))
+
+    assert run.id.startswith("run_")
+    assert run.status is ControlRunStatus.QUEUED
+    assert run.trigger_event_id == trigger_result.event.id
+    assert run.expected_head_sha == "head-1"
+    assert first.sequence == 1
+    assert second.sequence == 2
+    assert second.event_json == '{"sources": 3}'
+    assert second.artifact_ref == "file:///events/2.json"
+    assert running.status is ControlRunStatus.RUNNING
+    assert running.started_at is not None
+    assert succeeded.status is ControlRunStatus.SUCCEEDED
+    assert succeeded.result_ref == "file:///result.json"
+    assert succeeded.summary == "updated wiki"
+    assert succeeded.commit_subject == "docs almanac: update dev wiki"
+    assert succeeded.finished_at is not None
+    assert tuple(event.sequence for event in events) == (1, 2)
 
 
 def control_app(isolated_home: Path, probe=None):

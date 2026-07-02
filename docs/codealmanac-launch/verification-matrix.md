@@ -56,6 +56,11 @@ Current evidence:
 - `tests/test_local_hooks.py` proves hook installation for `post-commit`,
   `post-merge`, and `post-rewrite`, reinstall idempotency, executable hook
   files, user hook preservation, and managed-block uninstall.
+- Slice 5 added `app.control.create_run`, `app.control.update_run`,
+  `app.control.append_run_event`, and `app.control.list_run_events`.
+- `tests/test_control_service.py` proves SQL-backed run rows, launch run
+  statuses, run references, terminal timestamps, and ordered run event
+  sequencing.
 
 Commands:
 

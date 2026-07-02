@@ -1,6 +1,10 @@
 from codealmanac.services.control.models import (
     BranchRecord,
     ControlDeliveryMode,
+    ControlRunEventKind,
+    ControlRunEventRecord,
+    ControlRunRecord,
+    ControlRunStatus,
     ControlSchemaStatus,
     LocalGitState,
     RecordTriggerEventResult,
@@ -15,6 +19,10 @@ from codealmanac.services.control.store import ControlStore
 __all__ = [
     "BranchRecord",
     "ControlDeliveryMode",
+    "ControlRunEventKind",
+    "ControlRunEventRecord",
+    "ControlRunRecord",
+    "ControlRunStatus",
     "ControlSchemaStatus",
     "ControlService",
     "ControlStore",

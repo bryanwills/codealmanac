@@ -6,6 +6,8 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
+    ControlRunEventKind,
+    ControlRunStatus,
     TriggerEventKind,
     TriggerEventStatus,
 )
@@ -123,3 +125,71 @@ class RecordCurrentGitTriggerRequest(CodeAlmanacModel):
     kind: TriggerEventKind
     previous_head_sha: str | None = None
     payload_ref: str | None = None
+
+
+class CreateControlRunRequest(CodeAlmanacModel):
+    repository_id: str
+    branch_id: str
+    operation: str = "update"
+    status: ControlRunStatus = ControlRunStatus.QUEUED
+    trigger_event_id: str | None = None
+    expected_head_sha: str | None = None
+    source_bundle_ref: str | None = None
+    request_ref: str | None = None
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "run repository_id")
+
+    @field_validator("branch_id")
+    @classmethod
+    def require_branch_id(cls, value: str) -> str:
+        return required_text(value, "run branch_id")
+
+    @field_validator("operation")
+    @classmethod
+    def require_operation(cls, value: str) -> str:
+        return required_text(value, "run operation")
+
+
+class UpdateControlRunRequest(CodeAlmanacModel):
+    run_id: str
+    status: ControlRunStatus | None = None
+    result_ref: str | None = None
+    summary: str | None = None
+    commit_subject: str | None = None
+    commit_body: str | None = None
+    error: str | None = None
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "run id")
+
+
+class AppendControlRunEventRequest(CodeAlmanacModel):
+    run_id: str
+    kind: ControlRunEventKind
+    message: str
+    event_json: str | None = None
+    artifact_ref: str | None = None
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "run event run_id")
+
+    @field_validator("message")
+    @classmethod
+    def require_message(cls, value: str) -> str:
+        return required_text(value, "run event message")
+
+
+class ListControlRunEventsRequest(CodeAlmanacModel):
+    run_id: str
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "run id")

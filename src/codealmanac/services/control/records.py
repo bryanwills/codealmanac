@@ -4,6 +4,8 @@ from uuid import uuid4
 from codealmanac.database import SQLiteRow
 from codealmanac.services.control.models import (
     BranchRecord,
+    ControlRunEventRecord,
+    ControlRunRecord,
     RepositoryRecord,
     TriggerEventRecord,
 )
@@ -21,6 +23,10 @@ def trigger_event_id() -> str:
     return f"trigger_{uuid4().hex}"
 
 
+def control_run_id() -> str:
+    return f"run_{uuid4().hex}"
+
+
 def stable_control_id(prefix: str, *parts: str) -> str:
     digest = sha256("\0".join(part.casefold() for part in parts).encode()).hexdigest()
     return f"{prefix}_{digest[:16]}"
@@ -36,3 +42,11 @@ def branch_from_row(row: SQLiteRow) -> BranchRecord:
 
 def trigger_event_from_row(row: SQLiteRow) -> TriggerEventRecord:
     return TriggerEventRecord.model_validate(dict(row))
+
+
+def control_run_from_row(row: SQLiteRow) -> ControlRunRecord:
+    return ControlRunRecord.model_validate(dict(row))
+
+
+def control_run_event_from_row(row: SQLiteRow) -> ControlRunEventRecord:
+    return ControlRunEventRecord.model_validate(dict(row))

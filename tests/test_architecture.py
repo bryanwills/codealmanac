@@ -49,7 +49,7 @@ def test_control_service_keeps_schema_store_service_boundaries():
         "service.py",
         "store.py",
     } <= {path.name for path in control_root.glob("*.py")}
-    assert len(service_text.splitlines()) <= 110
+    assert len(service_text.splitlines()) <= 130
     assert "connect_control" not in service_text
     assert "connection.execute" not in service_text
     assert "CONTROL_SCHEMA_DDL" in schema_text

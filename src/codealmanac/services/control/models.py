@@ -29,6 +29,23 @@ class TriggerEventStatus(StrEnum):
     SUPERSEDED = "superseded"
 
 
+class ControlRunStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    STALE = "stale"
+    CANCELLED = "cancelled"
+
+
+class ControlRunEventKind(StrEnum):
+    STATUS = "status"
+    MESSAGE = "message"
+    TOOL = "tool"
+    OUTPUT = "output"
+    ERROR = "error"
+
+
 class RepositoryRecord(CodeAlmanacModel):
     id: str
     provider: str
@@ -142,6 +159,67 @@ class LocalGitState(CodeAlmanacModel):
     branch_name: str | None = None
     head_sha: str | None = None
     unavailable_reason: str | None = None
+
+
+class ControlRunRecord(CodeAlmanacModel):
+    id: str
+    repository_id: str
+    branch_id: str
+    trigger_event_id: str | None = None
+    operation: str
+    status: ControlRunStatus
+    expected_head_sha: str | None = None
+    source_bundle_ref: str | None = None
+    request_ref: str | None = None
+    result_ref: str | None = None
+    summary: str | None = None
+    commit_subject: str | None = None
+    commit_body: str | None = None
+    error: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    @field_validator("id")
+    @classmethod
+    def require_id(cls, value: str) -> str:
+        return required_text(value, "run id")
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "run repository_id")
+
+    @field_validator("branch_id")
+    @classmethod
+    def require_branch_id(cls, value: str) -> str:
+        return required_text(value, "run branch_id")
+
+    @field_validator("operation")
+    @classmethod
+    def require_operation(cls, value: str) -> str:
+        return required_text(value, "run operation")
+
+
+class ControlRunEventRecord(CodeAlmanacModel):
+    run_id: str
+    sequence: int
+    timestamp: datetime
+    kind: ControlRunEventKind
+    message: str
+    event_json: str | None = None
+    artifact_ref: str | None = None
+
+    @field_validator("run_id")
+    @classmethod
+    def require_run_id(cls, value: str) -> str:
+        return required_text(value, "run event run_id")
+
+    @field_validator("message")
+    @classmethod
+    def require_message(cls, value: str) -> str:
+        return required_text(value, "run event message")
 
 
 class ControlSchemaStatus(CodeAlmanacModel):

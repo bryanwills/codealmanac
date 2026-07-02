@@ -1,5 +1,7 @@
 from codealmanac.services.control.models import (
     BranchRecord,
+    ControlRunEventRecord,
+    ControlRunRecord,
     ControlSchemaStatus,
     RecordTriggerEventResult,
     RepositoryRecord,
@@ -7,13 +9,17 @@ from codealmanac.services.control.models import (
 )
 from codealmanac.services.control.ports import LocalGitStateProbe
 from codealmanac.services.control.requests import (
+    AppendControlRunEventRequest,
+    CreateControlRunRequest,
     EnsureControlSchemaRequest,
+    ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     ReadControlSchemaStatusRequest,
     RecordCurrentGitTriggerRequest,
     RecordLocalTriggerRequest,
     RecordTriggerEventRequest,
     SetBranchPolicyRequest,
+    UpdateControlRunRequest,
     UpsertRepositoryRequest,
 )
 from codealmanac.services.control.store import ControlStore
@@ -88,3 +94,21 @@ class ControlService:
     ) -> tuple[TriggerEventRecord, ...]:
         resolved = request or ListTriggerEventsRequest()
         return self.store.list_trigger_events(resolved)
+
+    def create_run(self, request: CreateControlRunRequest) -> ControlRunRecord:
+        return self.store.create_run(request)
+
+    def update_run(self, request: UpdateControlRunRequest) -> ControlRunRecord:
+        return self.store.update_run(request)
+
+    def append_run_event(
+        self,
+        request: AppendControlRunEventRequest,
+    ) -> ControlRunEventRecord:
+        return self.store.append_run_event(request)
+
+    def list_run_events(
+        self,
+        request: ListControlRunEventsRequest,
+    ) -> tuple[ControlRunEventRecord, ...]:
+        return self.store.list_run_events(request)

@@ -150,3 +150,11 @@
 - Verified Slice 4 focused behavior with
   `uv run pytest tests/test_local_hooks.py tests/test_architecture.py`,
   `uv run ruff check .`, and `git diff --check`.
+- Planned Slice 5 in
+  `docs/plans/2026-07-02-slice-5-control-run-ledger.md`.
+- Added SQL-backed control run methods:
+  `create_run`, `update_run`, `append_run_event`, and `list_run_events`.
+- Added launch run statuses and run event kinds to the control service models.
+- Verified Slice 5 focused behavior with
+  `uv run pytest tests/test_control_service.py tests/test_architecture.py`,
+  `uv run ruff check .`, and `git diff --check`.

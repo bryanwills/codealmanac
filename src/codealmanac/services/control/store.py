@@ -6,6 +6,9 @@ from codealmanac.core.paths import normalize_path
 from codealmanac.database import SQLiteConnection, user_version
 from codealmanac.services.control.models import (
     BranchRecord,
+    ControlRunEventRecord,
+    ControlRunRecord,
+    ControlRunStatus,
     ControlSchemaStatus,
     RecordTriggerEventResult,
     RepositoryRecord,
@@ -15,16 +18,23 @@ from codealmanac.services.control.models import (
 from codealmanac.services.control.records import (
     branch_from_row,
     branch_id_for,
+    control_run_event_from_row,
+    control_run_from_row,
+    control_run_id,
     repository_from_row,
     repository_id_for,
     trigger_event_from_row,
     trigger_event_id,
 )
 from codealmanac.services.control.requests import (
+    AppendControlRunEventRequest,
+    CreateControlRunRequest,
+    ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     RecordLocalTriggerRequest,
     RecordTriggerEventRequest,
     SetBranchPolicyRequest,
+    UpdateControlRunRequest,
     UpsertRepositoryRequest,
 )
 from codealmanac.services.control.schema import CONTROL_TABLES, connect_control
@@ -317,6 +327,144 @@ class ControlStore:
             ).fetchall()
         return tuple(trigger_event_from_row(row) for row in rows)
 
+    def create_run(self, request: CreateControlRunRequest) -> ControlRunRecord:
+        run_id = control_run_id()
+        now = current_timestamp()
+        with connect_control(self.path) as connection:
+            self.repository_by_id(connection, request.repository_id)
+            self.branch_by_id(connection, request.branch_id)
+            connection.execute(
+                """
+                INSERT INTO runs (
+                  id,
+                  repository_id,
+                  branch_id,
+                  trigger_event_id,
+                  operation,
+                  status,
+                  expected_head_sha,
+                  source_bundle_ref,
+                  request_ref,
+                  started_at,
+                  created_at,
+                  updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    request.repository_id,
+                    request.branch_id,
+                    request.trigger_event_id,
+                    request.operation,
+                    request.status.value,
+                    request.expected_head_sha,
+                    request.source_bundle_ref,
+                    request.request_ref,
+                    now if request.status is ControlRunStatus.RUNNING else None,
+                    now,
+                    now,
+                ),
+            )
+            return self.run_by_id(connection, run_id)
+
+    def update_run(self, request: UpdateControlRunRequest) -> ControlRunRecord:
+        now = current_timestamp()
+        with connect_control(self.path) as connection:
+            existing = self.run_by_id(connection, request.run_id)
+            status = request.status or existing.status
+            started_at = existing.started_at
+            if started_at is None and status is ControlRunStatus.RUNNING:
+                started_at = datetime.fromisoformat(now)
+            finished_at = existing.finished_at
+            if status in TERMINAL_RUN_STATUSES and finished_at is None:
+                finished_at = datetime.fromisoformat(now)
+            connection.execute(
+                """
+                UPDATE runs
+                SET status = ?,
+                    result_ref = COALESCE(?, result_ref),
+                    summary = COALESCE(?, summary),
+                    commit_subject = COALESCE(?, commit_subject),
+                    commit_body = COALESCE(?, commit_body),
+                    error = COALESCE(?, error),
+                    started_at = ?,
+                    finished_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    status.value,
+                    request.result_ref,
+                    request.summary,
+                    request.commit_subject,
+                    request.commit_body,
+                    request.error,
+                    started_at.isoformat() if started_at is not None else None,
+                    finished_at.isoformat() if finished_at is not None else None,
+                    now,
+                    request.run_id,
+                ),
+            )
+            return self.run_by_id(connection, request.run_id)
+
+    def append_run_event(
+        self,
+        request: AppendControlRunEventRequest,
+    ) -> ControlRunEventRecord:
+        now = current_timestamp()
+        with connect_control(self.path) as connection:
+            self.run_by_id(connection, request.run_id)
+            row = connection.execute(
+                """
+                SELECT COALESCE(MAX(sequence), 0) + 1
+                FROM run_events
+                WHERE run_id = ?
+                """,
+                (request.run_id,),
+            ).fetchone()
+            sequence = int(row[0])
+            connection.execute(
+                """
+                INSERT INTO run_events (
+                  run_id,
+                  sequence,
+                  timestamp,
+                  kind,
+                  message,
+                  event_json,
+                  artifact_ref
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    request.run_id,
+                    sequence,
+                    now,
+                    request.kind.value,
+                    request.message,
+                    request.event_json,
+                    request.artifact_ref,
+                ),
+            )
+            return self.run_event_by_sequence(connection, request.run_id, sequence)
+
+    def list_run_events(
+        self,
+        request: ListControlRunEventsRequest,
+    ) -> tuple[ControlRunEventRecord, ...]:
+        with connect_control(self.path) as connection:
+            rows = connection.execute(
+                """
+                SELECT *
+                FROM run_events
+                WHERE run_id = ?
+                ORDER BY sequence
+                """,
+                (request.run_id,),
+            ).fetchall()
+        return tuple(control_run_event_from_row(row) for row in rows)
+
     def repository_by_id(
         self,
         connection: SQLiteConnection,
@@ -392,6 +540,38 @@ class ControlStore:
             raise NotFoundError("trigger event", event_id)
         return trigger_event_from_row(row)
 
+    def run_by_id(
+        self,
+        connection: SQLiteConnection,
+        run_id: str,
+    ) -> ControlRunRecord:
+        row = connection.execute(
+            "SELECT * FROM runs WHERE id = ?",
+            (run_id,),
+        ).fetchone()
+        if row is None:
+            raise NotFoundError("run", run_id)
+        return control_run_from_row(row)
+
+    def run_event_by_sequence(
+        self,
+        connection: SQLiteConnection,
+        run_id: str,
+        sequence: int,
+    ) -> ControlRunEventRecord:
+        row = connection.execute(
+            """
+            SELECT *
+            FROM run_events
+            WHERE run_id = ?
+              AND sequence = ?
+            """,
+            (run_id, sequence),
+        ).fetchone()
+        if row is None:
+            raise NotFoundError("run event", f"{run_id}:{sequence}")
+        return control_run_event_from_row(row)
+
     def update_branch_last_seen(
         self,
         connection: SQLiteConnection,
@@ -426,3 +606,13 @@ def control_tables(connection: SQLiteConnection) -> tuple[str, ...]:
 
 def current_timestamp() -> str:
     return datetime.now(UTC).isoformat()
+
+
+TERMINAL_RUN_STATUSES = frozenset(
+    (
+        ControlRunStatus.SUCCEEDED,
+        ControlRunStatus.FAILED,
+        ControlRunStatus.STALE,
+        ControlRunStatus.CANCELLED,
+    )
+)
