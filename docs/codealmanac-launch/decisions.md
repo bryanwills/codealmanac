@@ -51,6 +51,8 @@ Status: active.
 - Cloud default delivery mode is commit.
 - Local default delivery mode is commit.
 - Public launch CLI should not expose `ingest` or `garden`.
+- Manual `ingest` and `garden` remain available under the hidden
+  `codealmanac dev` namespace for maintainers and agents.
 - Local public maintenance command is `codealmanac local update`.
 - `codealmanac local update` is a foreground manual update for the current
   configured checkout and branch.

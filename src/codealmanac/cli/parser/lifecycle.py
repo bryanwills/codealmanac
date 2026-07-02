@@ -22,33 +22,6 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     init.add_argument("--guidance")
     init.add_argument("--json", action="store_true")
 
-    ingest = subcommands.add_parser("ingest", help="ingest local material")
-    ingest.add_argument("inputs", nargs="+")
-    ingest.add_argument("--wiki")
-    ingest.add_argument(
-        "--using",
-        choices=tuple(kind.value for kind in HarnessKind),
-    )
-    ingest.add_argument("--title")
-    ingest.add_argument("--guidance")
-    ingest_mode = ingest.add_mutually_exclusive_group()
-    ingest_mode.add_argument("--background", action="store_true")
-    ingest_mode.add_argument("--foreground", action="store_true")
-    ingest.add_argument("--json", action="store_true")
-
-    garden = subcommands.add_parser("garden", help="garden the local wiki")
-    garden.add_argument("--wiki")
-    garden.add_argument(
-        "--using",
-        choices=tuple(kind.value for kind in HarnessKind),
-    )
-    garden.add_argument("--title")
-    garden.add_argument("--guidance")
-    garden_mode = garden.add_mutually_exclusive_group()
-    garden_mode.add_argument("--background", action="store_true")
-    garden_mode.add_argument("--foreground", action="store_true")
-    garden.add_argument("--json", action="store_true")
-
     worker = subcommands.add_parser("__run-worker", help=argparse.SUPPRESS)
     worker.add_argument("--cwd", required=True)
     worker.add_argument("--wiki")

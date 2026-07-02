@@ -255,6 +255,16 @@ Current evidence:
 - `tests/test_runs_service.py` proves init run specs accept init payload and
   reject source inputs.
 - `tests/test_architecture.py` proves init dispatch replaces build dispatch.
+- Slice 23 moved manual `ingest` and `garden` entrypoints under hidden
+  `codealmanac dev`.
+- `tests/test_cli.py` proves top-level help excludes `ingest`, `garden`, and
+  `dev`, top-level `ingest`/`garden` are rejected, and
+  `dev ingest`/`dev garden` preserve the existing foreground/background
+  behavior.
+- `tests/test_public_contract.py` proves README update examples use public
+  local commands instead of top-level ingest/garden.
+- `tests/test_architecture.py` proves `dev` is a separate CLI parser/dispatch
+  domain and lifecycle dispatch no longer owns manual ingest/garden commands.
 
 Commands:
 
@@ -263,7 +273,8 @@ uv run pytest
 uv run ruff check .
 git diff --check
 uv run codealmanac --help
-uv run codealmanac init --help
+uv run codealmanac dev ingest --help
+uv run codealmanac dev garden --help
 ```
 
 ## CodeAlmanac Hosted Repo

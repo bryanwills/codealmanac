@@ -103,34 +103,31 @@ commands resolve the nearest repository wiki from the current directory.
 
 ## Updating The Wiki
 
-Lifecycle commands can ask a configured local agent harness to edit wiki pages.
-They only allow changes under the configured Almanac root.
+Local update commands can ask a configured agent harness to edit wiki pages.
+They only allow changes under the configured Almanac root. Configure the
+current checkout and maintained branch first:
 
 ```bash
-codealmanac ingest README.md --using codex
-codealmanac ingest github:pr:123 --using claude
-codealmanac ingest README.md --using codex --background
-codealmanac garden --using codex
-codealmanac garden --using codex --background
+codealmanac local setup --branch main
+codealmanac local update --using codex
+codealmanac local triggers enable dev --delivery commit
+codealmanac local jobs list
 ```
 
-`ingest` folds selected local material into the wiki. Inputs can include files,
-directories, Git diffs, commit ranges, GitHub PRs or issues, URLs, and local
-agent transcripts.
+`local setup` stores repository and branch policy in
+`~/.codealmanac/control.sqlite` and installs local Git trigger hooks unless
+`--skip-hooks` is passed.
 
-`garden` improves the existing wiki graph: stale pages, links, topics, weak
-leads, duplicate pages, and unsupported claims.
+`local update` records a manual trigger for the current configured branch and
+runs the same local worker path used by Git hooks.
 
-No-op is valid. If the material adds no durable wiki knowledge, the harness
-should leave the wiki unchanged.
-
-Add `--background` to queue an `ingest` or `garden` run and start a detached
-local worker. Plain `ingest` and `garden` run in the foreground.
+No-op is valid. If the available source material adds no durable wiki
+knowledge, the harness should leave the wiki unchanged.
 
 ## Sync And Automation
 
 `sync` scans local Claude and Codex transcript stores, waits for quiet sessions,
-and runs ordinary local ingest for eligible transcript ranges.
+and runs ordinary local lifecycle jobs for eligible transcript ranges.
 
 ```bash
 codealmanac sync status --from codex
@@ -140,8 +137,8 @@ codealmanac automation install sync --every 5h --quiet 30m
 codealmanac automation status
 ```
 
-Scheduled automation launches foreground `sync` or `garden` commands with
-explicit unattended policy. It is local scheduler state, not cloud sync.
+Scheduled automation launches foreground `sync` and local maintenance commands
+with explicit unattended policy. It is local scheduler state, not cloud sync.
 Use `sync --background` for manual queue-and-worker execution.
 
 ## Jobs

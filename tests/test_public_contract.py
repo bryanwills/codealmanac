@@ -4,11 +4,8 @@ from pathlib import Path
 import pytest
 from ruamel.yaml import YAML
 
-from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
 from codealmanac.core.models import AppConfig
-from codealmanac.services.sources.models import SourceKind
-from codealmanac.services.sources.requests import ResolveSourcesRequest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src/codealmanac"
@@ -39,8 +36,10 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac init",
     'codealmanac search "getting"',
     "codealmanac serve",
-    "codealmanac ingest README.md --using codex",
-    "codealmanac ingest github:pr:123 --using claude",
+    "codealmanac local setup --branch main",
+    "codealmanac local update --using codex",
+    "codealmanac local triggers enable dev --delivery commit",
+    "codealmanac local jobs list",
     "## What Gets Created By Init",
     "a folder counts as a CodeAlmanac wiki only when it has both",
     "`topics.yaml` and `pages/`",
@@ -203,27 +202,28 @@ def test_readme_quickstart_uses_search_that_works_after_init():
     assert 'codealmanac search "auth"' not in quickstart
 
 
-def test_readme_lifecycle_examples_parse_and_resolve_public_sources():
+def test_readme_lifecycle_examples_parse_public_local_commands():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     updating = readme_section(readme, "## Updating The Wiki")
     parser = build_parser()
 
-    parser.parse_args(("ingest", "README.md", "--using", "codex"))
-    parser.parse_args(("ingest", "github:pr:123", "--using", "claude"))
-    parser.parse_args(("garden", "--using", "codex"))
-
-    assert "docs/adr.md" not in updating
-
-    file_brief, pr_brief = create_app().sources.resolve(
-        ResolveSourcesRequest(
-            cwd=PROJECT_ROOT,
-            inputs=("README.md", "github:pr:123"),
+    parser.parse_args(("local", "setup", "--branch", "main"))
+    parser.parse_args(("local", "update", "--using", "codex"))
+    parser.parse_args(
+        (
+            "local",
+            "triggers",
+            "enable",
+            "dev",
+            "--delivery",
+            "commit",
         )
     )
-    assert file_brief.ref.kind == SourceKind.PATH_FILE
-    assert file_brief.ref.exists is True
-    assert pr_brief.ref.kind == SourceKind.GITHUB_PULL_REQUEST
-    assert pr_brief.ref.number == 123
+    parser.parse_args(("local", "jobs", "list"))
+
+    assert "docs/adr.md" not in updating
+    assert "codealmanac ingest" not in updating
+    assert "codealmanac garden" not in updating
 
 
 def test_next_agent_brief_tracks_latest_python_port_slice():

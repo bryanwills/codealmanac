@@ -146,6 +146,14 @@ policy row and preserves the branch trigger state.
 ## Hidden / Private
 
 Internal entrypoints may keep provider diagnostics and engine execution
-commands. `ingest` and `garden` are still visible in the Python CLI after Slice
-22, but the launch contract still says they should move out of normal public
-help before the launch surface is complete.
+commands.
+
+```text
+codealmanac dev ingest <inputs...>
+codealmanac dev garden
+```
+
+`dev` is a hidden maintenance namespace. It is not shown in normal top-level
+help. `dev ingest` and `dev garden` keep the existing local lifecycle behavior
+reachable for maintainers and agents without teaching those verbs as launch
+commands.

@@ -1253,13 +1253,34 @@ def test_cli_help_includes_serve(capsys):
     assert exit_info.value.code == 0
     assert "serve" in output.out
     assert "jobs" in output.out
-    assert "ingest" in output.out
-    assert "garden" in output.out
     assert "sync" in output.out
     assert "automation" in output.out
+    assert "ingest" not in output.out
+    assert "garden" not in output.out
+    assert "dev" not in output.out
 
 
-def test_cli_ingest_runs_workflow_with_selected_harness(
+def test_cli_lifecycle_dev_commands_are_hidden_from_public_parser():
+    parser = build_parser()
+
+    with pytest.raises(SystemExit) as ingest_exit:
+        parser.parse_args(["ingest", "note.md"])
+    with pytest.raises(SystemExit) as garden_exit:
+        parser.parse_args(["garden"])
+
+    ingest_args = parser.parse_args(["dev", "ingest", "note.md"])
+    garden_args = parser.parse_args(["dev", "garden"])
+
+    assert ingest_exit.value.code == 2
+    assert garden_exit.value.code == 2
+    assert ingest_args.command == "dev"
+    assert ingest_args.dev_command == "ingest"
+    assert ingest_args.inputs == ["note.md"]
+    assert garden_args.command == "dev"
+    assert garden_args.dev_command == "garden"
+
+
+def test_cli_dev_ingest_runs_workflow_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1282,6 +1303,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     assert (
         main(
             [
+                "dev",
                 "ingest",
                 "note.md",
                 "--using",
@@ -1305,7 +1327,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
-def test_cli_ingest_uses_configured_default_harness(
+def test_cli_dev_ingest_uses_configured_default_harness(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1332,7 +1354,7 @@ default = "codex"
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["ingest", "note.md"]) == 0
+    assert main(["dev", "ingest", "note.md"]) == 0
 
     output = capsys.readouterr()
     assert "ingested " in output.out
@@ -1340,7 +1362,7 @@ default = "codex"
     assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 
 
-def test_cli_ingest_background_queues_run_and_spawns_worker(
+def test_cli_dev_ingest_background_queues_run_and_spawns_worker(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1361,7 +1383,17 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert (
-        main(["ingest", "note.md", "--using", "codex", "--background", "--json"])
+        main(
+            [
+                "dev",
+                "ingest",
+                "note.md",
+                "--using",
+                "codex",
+                "--background",
+                "--json",
+            ]
+        )
         == 0
     )
 
@@ -1377,7 +1409,7 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
     assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
 
 
-def test_cli_garden_runs_workflow_with_selected_harness(
+def test_cli_dev_garden_runs_workflow_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1399,6 +1431,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     assert (
         main(
             [
+                "dev",
                 "garden",
                 "--using",
                 "codex",
@@ -1421,7 +1454,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     assert (repo / "almanac/pages/cli-garden-note.md").is_file()
 
 
-def test_cli_garden_background_plain_output(
+def test_cli_dev_garden_background_plain_output(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1440,7 +1473,7 @@ def test_cli_garden_background_plain_output(
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["garden", "--using", "codex", "--background"]) == 0
+    assert main(["dev", "garden", "--using", "codex", "--background"]) == 0
 
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(cwd=repo))[0]

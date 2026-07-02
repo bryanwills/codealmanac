@@ -839,6 +839,7 @@ def test_cli_parser_is_split_by_command_domain():
         "__init__.py",
         "admin.py",
         "automation.py",
+        "dev.py",
         "diagnostics.py",
         "jobs.py",
         "lifecycle.py",
@@ -850,6 +851,7 @@ def test_cli_parser_is_split_by_command_domain():
     }
     assert len(root.splitlines()) <= 80
     assert "add_lifecycle_commands(subcommands)" in root
+    assert "add_dev_commands(subcommands)" in root
     assert "add_local_commands(subcommands)" in root
     assert "add_wiki_commands(subcommands)" in root
     assert "add_admin_commands(subcommands)" in root
@@ -902,6 +904,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
 
     assert (cli_root / "parser/root.py").is_file()
     assert (cli_root / "parser/automation.py").is_file()
+    assert (cli_root / "parser/dev.py").is_file()
     assert (cli_root / "parser/diagnostics.py").is_file()
     assert (cli_root / "parser/jobs.py").is_file()
     assert (cli_root / "parser/local.py").is_file()
@@ -910,6 +913,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/automation.py").is_file()
+    assert (cli_root / "dispatch/dev.py").is_file()
     assert (cli_root / "dispatch/init.py").is_file()
     assert not (cli_root / "dispatch/build.py").exists()
     assert (cli_root / "dispatch/config.py").is_file()
@@ -1097,6 +1101,7 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
     assert len(dispatch_root.splitlines()) <= 80
     assert len(dispatch_wiki.splitlines()) <= 130
     assert "dispatch_lifecycle(args, app)" in dispatch_root
+    assert "dispatch_dev(args, app)" in dispatch_root
     assert "dispatch_wiki(args, app)" in dispatch_root
     assert "dispatch_admin(args, app)" in dispatch_root
     assert "RunIngestRequest" not in dispatch_root
@@ -1273,8 +1278,8 @@ def test_cli_lifecycle_dispatch_stays_split_by_command_family():
     ] == []
     assert "dispatch_init(args, app)" in lifecycle
     assert "dispatch_build(args, app)" not in lifecycle
-    assert "dispatch_ingest(args, app)" in lifecycle
-    assert "dispatch_garden(args, app)" in lifecycle
+    assert "dispatch_ingest(args, app)" not in lifecycle
+    assert "dispatch_garden(args, app)" not in lifecycle
     assert "dispatch_sync(args, app)" in lifecycle
     assert "dispatch_run_worker(args, app)" in lifecycle
     assert oversized == []
