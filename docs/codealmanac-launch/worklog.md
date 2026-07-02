@@ -519,3 +519,23 @@
   CodeAlmanac backend/local 88%, CLI/public UX 40%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 25 in
+  `docs/plans/2026-07-02-slice-25-hosted-baseline-convergence.md`.
+- Created clean hosted worktree
+  `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
+  from current `origin/main`.
+- Created and pushed hosted branch `codex/hosted-baseline-convergence`.
+- Reapplied the small CodeAlmanac-hosted rename/deploy-surface change on top
+  of current hosted main without merging the older divergent
+  `codex/cli-hosted-redesign-docs` branch.
+- Preserved newer hosted conversation-sync work from `origin/main`.
+- Pushed hosted commit `1d237db chore: rename hosted deploy surfaces`.
+- Verified hosted backend with `uv run pytest` (`290 passed`),
+  `uv run ruff check .`, `uv run ruff format --check .`, and
+  `uv run pytest tests/test_modal_worker_contract.py` (`9 passed`).
+- Verified hosted frontend with `npm run test:routes` (`26 passed`),
+  `npm run test:frontend` (`41 passed`), and `npm run build`.
+- Sent the Slice 25 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 88%, CLI/public UX 40%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 10%.

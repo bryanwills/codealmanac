@@ -315,6 +315,28 @@ make smoke-backend
 make smoke-modal
 ```
 
+Current evidence:
+
+- Slice 25 created hosted branch `codex/hosted-baseline-convergence` from
+  current `origin/main` and pushed commit
+  `1d237db chore: rename hosted deploy surfaces`.
+- Slice 25 reapplied the rename/deploy-surface changes without replacing the
+  newer hosted conversation-sync work already on `origin/main`.
+- Changed hosted package/deploy defaults include:
+  `.github/workflows/deploy.yml`, `backend/modal_app/runtime.py`,
+  `backend/pyproject.toml`, `backend/src/almanac/settings.py`,
+  `backend/tests/test_modal_worker_contract.py`, `backend/uv.lock`,
+  `frontend/package.json`, and `frontend/package-lock.json`.
+- Hosted backend verification on the Slice 25 worktree:
+  `uv run pytest` (`290 passed`), `uv run ruff check .`,
+  `uv run ruff format --check .`, and
+  `uv run pytest tests/test_modal_worker_contract.py` (`9 passed`).
+- Hosted frontend verification on the Slice 25 worktree:
+  `npm run test:routes` (`26 passed`), `npm run test:frontend`
+  (`41 passed`), and `npm run build`.
+- This evidence is branch-level. Slice 25 did not promote production
+  deployment and did not implement WorkOS/AuthKit, public APIs, or onboarding.
+
 ## Provider / Deployment
 
 Must prove:
@@ -326,3 +348,13 @@ Must prove:
   tables, `run_events`, `deliveries`, and storage refs.
 - GitHub App callback/webhook URLs point at the launch domain.
 - Doppler, PostHog, and Autumn visible names are consistent with CodeAlmanac.
+
+Current evidence:
+
+- Earlier launch setup renamed the GitHub repo to
+  `AlmanacCode/codealmanac-hosted` and updated the local hosted origin.
+- Earlier launch setup deployed Modal app `codealmanac-hosted-updates`,
+  verified Render health, and verified Vercel serving
+  `https://www.codealmanac.com`.
+- Slice 25 makes the hosted rename/deploy-surface changes available on a clean
+  current-main branch before the WorkOS/AuthKit and public API slices.
