@@ -76,8 +76,9 @@ The CodeAlmanac branch is `dev`. Slice 31 is pushed to `origin/dev` at
 origin at `8ca50e0f feat: mirror cloud repository triggers in CLI`; Slice 37
 is pushed to origin at `bc177cf2 feat: inspect cloud runs from CLI`; Slice 38
 is pushed to origin at `117b36db feat: open cloud pages from CLI`; Slice 39
-is pushed to origin at `0e3879e1 feat: start cloud runs from CLI`. Slice 44 is
-implemented locally and should be committed/pushed as the current slice.
+is pushed to origin at `0e3879e1 feat: start cloud runs from CLI`; Slice 44 is
+pushed to origin at `a7cbc7d5 feat: cancel cloud runs from CLI`; the latest
+docs-only launch state commit is `726e3fe6 docs: record slice 44 deployment`.
 
 The hosted auth branch is
 `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
