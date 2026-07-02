@@ -358,6 +358,15 @@ Current evidence:
 - `tests/test_architecture.py` proves the run store remains split across
   factory, IO, locks, queries, streaming, transitions, and service path
   selection.
+- Slice 31 added `codealmanac.maintenance` as the package API for non-CLI
+  callers.
+- `tests/test_maintenance_api.py` proves typed maintenance requests route to
+  the real init and ingest workflows, preserve run metadata, and reject
+  operation-specific invalid fields.
+- `tests/test_architecture.py` proves the maintenance API is a package edge
+  over workflows and request models, not a CLI or integration wrapper.
+- Slice 31 full CodeAlmanac verification passed with `uv run pytest -q`
+  (`484 passed`), `uv run ruff check .`, and `git diff --check`.
 
 Commands:
 
@@ -450,9 +459,23 @@ Current evidence:
 - Slice 30 full hosted backend verification passed with `uv run pytest -q`
   (`301 passed, 1 warning`), `uv run ruff check .`,
   `uv run ruff format --check .`, and `git diff --check`.
-- Remaining hosted worker risk: the worker still calls CodeAlmanac through a
-  subprocess bridge. A later slice should import and call the Python
-  engine/model API directly.
+- Slice 31 added `backend/modal_app/codealmanac_engine.py` as the hosted
+  adapter from typed hosted runs to `codealmanac.maintenance`.
+- `backend/tests/test_modal_worker_contract.py` proves PR sources map to
+  `ingest github:pr:<n>`, conversation batches map to the materialized source
+  folder, and branch sources map to `init`.
+- `backend/tests/test_modal_worker_contract.py` proves the production update
+  worker calls the package API adapter and does not import `modal_app.commands`,
+  `run_command`, or `codealmanac_command`.
+- `backend/tests/test_architecture_contract.py` proves the `github:pr:` source
+  context now lives in the Modal CodeAlmanac engine adapter rather than the
+  GitHub integration model layer.
+- Slice 31 full hosted backend verification passed with `uv run pytest -q`
+  (`303 passed, 1 warning`), `uv run ruff check .`,
+  `uv run ruff format --check .`, `python -m compileall backend/src
+  backend/modal_app -q`, and `git diff --check`.
+- Remaining hosted worker risks: expected-head delivery maturity and cloud SQL
+  run-event/source-artifact storage still need launch-hardening.
 
 ## Provider / Deployment
 

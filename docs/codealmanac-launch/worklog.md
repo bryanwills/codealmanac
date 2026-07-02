@@ -2,6 +2,38 @@
 
 ## 2026-07-02
 
+- Planned Slice 31 in
+  `docs/plans/2026-07-02-slice-31-hosted-direct-maintenance-api.md`.
+- Added `codealmanac.maintenance` as the package API for non-CLI callers.
+  It routes typed `init` and `ingest` maintenance requests into the existing
+  CodeAlmanac workflows and returns run id, run status, harness status,
+  summary, and output text.
+- Verified the local maintenance API with
+  `uv run pytest tests/test_maintenance_api.py tests/test_public_contract.py tests/test_architecture.py -q`
+  (`91 passed`), `uv run ruff check .`, and `git diff --check`.
+- Verified the full CodeAlmanac suite with `uv run pytest -q`
+  (`484 passed`).
+- Pushed CodeAlmanac commit
+  `f20e928d feat: expose maintenance package api` to `origin/dev`.
+- Replaced the hosted Modal worker's public-CLI subprocess bridge with
+  `backend/modal_app/codealmanac_engine.py`, which maps hosted
+  `PullRequestSource`, `ConversationBatchSource`, and `BranchSource` runs to
+  `codealmanac.maintenance` requests.
+- Deleted the hosted `backend/src/almanac/services/updates/codealmanac.py`
+  command builder. The production update worker no longer imports
+  `modal_app.commands`, `run_command`, or `codealmanac_command`.
+- Updated the hosted Modal image `CODEALMANAC_GIT_REF` to
+  `f20e928d5a62a1bb8b45ad670b90eac000011444`.
+- Verified the hosted focused gate with
+  `uv run pytest tests/test_modal_worker_contract.py tests/test_architecture_contract.py -q`
+  (`81 passed`), `uv run ruff check .`, `uv run ruff format --check .`, and
+  `git diff --check`.
+- Verified hosted compile/full backend gates with
+  `python -m compileall backend/src backend/modal_app -q` and
+  `uv run pytest -q` (`303 passed, 1 warning`).
+- Pushed hosted commit
+  `51c2cb2 feat: call codealmanac maintenance api` to
+  `origin/codex/workos-authkit-api-foundation`.
 - Planned Slice 30 in
   `docs/plans/2026-07-02-slice-30-cloud-source-bundle-materialization.md`.
 - Changed hosted conversation-batch update runs to store source artifact refs,
