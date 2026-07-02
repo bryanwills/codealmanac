@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 28 cloud capture install.
+Sent: 2026-07-02 after Slice 30 cloud source-bundle materialization.
 
 Route:
 
@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 90% | 88% | Slice 29 makes local capture hooks upload transcript artifacts and metadata; local trigger/run/workspace/delivery maturity is unchanged. |
-| CodeAlmanac CLI/public UX | 64% | 62% | Hidden capture hook now performs cloud upload, while repo, runs, status, and open commands remain. |
-| CodeAlmanac-hosted backend/auth/API | 45% | 40% | Hosted now accepts capture-token artifact and turn uploads; repo API, run storage, worker source-bundle materialization, and rate limits remain. |
-| Hosted frontend/onboarding | 15% | 15% | Slice 28 added DTO parity only; browser onboarding/configuration screens are still not implemented. |
-| Infra/deploy rename | 10% | 10% | Slice 29 changed capture/API/CLI only. |
+| CodeAlmanac backend/local | 90% | 90% | Slice 30 changed hosted worker/source-bundle behavior only; local trigger/run/workspace/delivery maturity is unchanged. |
+| CodeAlmanac CLI/public UX | 64% | 64% | Slice 30 does not add public CLI commands; cloud capture hook upload remains the latest CLI movement. |
+| CodeAlmanac-hosted backend/auth/API | 52% | 45% | Hosted conversation ingest now requires source refs, exposes internal artifact reads, materializes worker `sources/`, and passes the folder to CodeAlmanac. |
+| Hosted frontend/onboarding | 15% | 15% | Browser onboarding/configuration screens are still not implemented. |
+| Infra/deploy rename | 12% | 10% | Modal runtime now installs the Python CodeAlmanac package from a pinned git ref instead of the old npm package. |
 
 ## Update Rule
 

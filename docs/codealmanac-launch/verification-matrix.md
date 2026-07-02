@@ -78,6 +78,19 @@ Current evidence:
   hosted backend capture/conversation/architecture tests (`88 passed, 1
   warning`), hosted ruff, local capture/CLI/public/architecture tests
   (`147 passed`), and local ruff.
+- Slice 30 added internal source-artifact reads:
+  `GET /api/internal/source-artifacts?ref=...`.
+- `backend/tests/test_internal_route_contract.py` proves the source-artifact
+  read route rejects missing internal secrets and returns raw bytes, content
+  type, source-ref, sha256, and byte-length headers when authenticated.
+- Slice 30 changed hosted conversation ingest to require captured source refs
+  before scheduling worker runs.
+- `backend/tests/test_capture_upload_api_contract.py` proves capture-token turn
+  upload stores `source_ref` and schedules ingest state once the turn is
+  completed, routable, and ref-backed.
+- `backend/tests/test_conversation_ingest_scheduler.py` proves run source JSON
+  contains source refs and no inline `source_text`, and proves turns without
+  source refs are not scheduled.
 
 ## CodeAlmanac Local Repo
 
@@ -421,6 +434,25 @@ Current evidence:
   a comment containing `m-* utility`.
 - Slice 26 does not implement versioned public API, CLI login/capture
   credentials, onboarding configuration screens, or hosted worker/run storage.
+- Slice 30 materialized cloud source-artifact refs in the Modal worker into
+  `.codealmanac-worker/sources/<batch-id>/manifest.json` and
+  `sessions/<provider>/<provider-session-id>-<hash>.jsonl`.
+- `backend/tests/test_modal_worker_contract.py` proves conversation batch runs
+  pass the materialized source folder to
+  `codealmanac dev ingest <sources-dir> --foreground --using codex`.
+- `backend/tests/test_modal_worker_contract.py` proves PR and branch update
+  commands use the current Python CodeAlmanac CLI bridge:
+  `codealmanac dev ingest github:pr:<n> --foreground --using codex` and
+  `codealmanac init --using codex --yes`.
+- `backend/tests/test_modal_worker_contract.py` proves the Modal image installs
+  Python CodeAlmanac from a pinned git ref and no longer installs the old npm
+  package.
+- Slice 30 full hosted backend verification passed with `uv run pytest -q`
+  (`301 passed, 1 warning`), `uv run ruff check .`,
+  `uv run ruff format --check .`, and `git diff --check`.
+- Remaining hosted worker risk: the worker still calls CodeAlmanac through a
+  subprocess bridge. A later slice should import and call the Python
+  engine/model API directly.
 
 ## Provider / Deployment
 

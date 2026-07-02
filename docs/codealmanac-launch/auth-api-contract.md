@@ -285,6 +285,17 @@ not echo transcript text. `POST /v1/capture/turns` accepts normalized routing
 metadata plus `artifactRef`. SQL stores refs and metadata, not copied transcript
 content.
 
+Implemented Slice 30 internal worker artifact read route:
+
+```text
+GET /api/internal/source-artifacts?ref=<source-artifacts-ref>
+```
+
+The route authenticates with `X-Internal-Secret`, returns raw artifact bytes,
+and includes source ref, sha256, and byte length headers. It is intentionally
+not a public `/v1` route. Hosted workers use it to materialize source refs into
+worker-local `sources/` folders.
+
 Implemented Slice 28 local capture state:
 
 ```text
@@ -312,6 +323,8 @@ POST /v1/capture/credentials/revoke
 POST /v1/capture/artifacts
 POST /v1/capture/turns
 POST /v1/auth/token/refresh
+
+GET  /api/internal/source-artifacts?ref=<source-artifacts-ref>
 
 GET  /v1/repositories
 GET  /v1/repositories/resolve?provider=github&owner=<owner>&repo=<repo>

@@ -32,6 +32,26 @@ The capture-token path stores raw transcript bytes in the source-artifact store
 and stores `source_ref` plus routing metadata in SQL. It does not write
 conversation message content into `conversation_messages`.
 
+Slice 30 makes cloud conversation update runs ref-backed:
+
+```text
+runs.source_json.source_refs[]
+```
+
+`ConversationBatchSource` contains `batch_id` and source artifact refs. It does
+not contain rendered conversation markdown, transcript text, or copied session
+payloads. The hosted worker reads refs through the internal artifact edge and
+materializes a temporary worker-local folder:
+
+```text
+<checkout>/.codealmanac-worker/sources/<batch-id>/
+  manifest.json
+  sessions/<provider>/<provider-session-id>-<sha-prefix>.jsonl
+```
+
+That folder is an execution input, not durable product state. Durable state is
+the SQL batch/run rows plus source-artifact refs.
+
 ## Local Storage
 
 Local control DB:

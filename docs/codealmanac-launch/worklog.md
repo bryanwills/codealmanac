@@ -2,6 +2,38 @@
 
 ## 2026-07-02
 
+- Planned Slice 30 in
+  `docs/plans/2026-07-02-slice-30-cloud-source-bundle-materialization.md`.
+- Changed hosted conversation-batch update runs to store source artifact refs,
+  not rendered conversation text, in `ConversationBatchSource`.
+- Added hosted source-artifact reads through the service/store port and
+  protected internal route:
+  `GET /api/internal/source-artifacts?ref=...`.
+- Changed the hosted conversation ingest scheduler to select only captured
+  turns with non-null `source_ref` values and to schedule ingest when capture
+  uploads a completed routable turn with a source ref.
+- Added Modal worker source materialization:
+  `.codealmanac-worker/sources/<batch-id>/manifest.json` plus
+  `sessions/<provider>/<provider-session-id>-<hash>.jsonl`.
+- Updated hosted worker command construction to use the current Python
+  CodeAlmanac maintenance surfaces:
+  `codealmanac dev ingest <sources-dir> --foreground --using codex`,
+  `codealmanac dev ingest github:pr:<n> --foreground --using codex`, and
+  `codealmanac init --using codex --yes`.
+- Changed the Modal image to install Python CodeAlmanac from a pinned git ref
+  instead of installing the old npm `codealmanac@latest` package.
+- Kept the hosted worker on a process bridge for this slice. The next worker
+  slice should replace the process command with a direct Python engine/model API
+  call.
+- Verified Slice 30 focused hosted backend gates with
+  `uv run pytest tests/test_conversation_ingest_scheduler.py
+  tests/test_capture_upload_api_contract.py tests/test_internal_route_contract.py
+  tests/test_modal_worker_contract.py tests/test_updates_contract.py
+  tests/test_architecture_contract.py -q` (`119 passed, 1 warning`).
+- Verified Slice 30 full hosted backend with `uv run pytest -q`
+  (`301 passed, 1 warning`).
+- Verified Slice 30 hosted lint/format/diff gates with `uv run ruff check .`,
+  `uv run ruff format --check .`, and `git diff --check`.
 - Planned Slice 29 in
   `docs/plans/2026-07-02-slice-29-capture-transcript-upload.md`.
 - Added hosted source-artifact service seam with a filesystem-backed
