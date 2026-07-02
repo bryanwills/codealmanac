@@ -20,6 +20,12 @@ from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
     CloudRepositoryTriggerPolicy,
 )
+from codealmanac.services.cloud_runs.models import (
+    CloudRun,
+    CloudRunEvent,
+    CloudRunPage,
+    CloudRunSource,
+)
 
 
 class HttpCloudAuthClient:
@@ -153,6 +159,56 @@ class HttpCloudAuthClient:
         )
         return cloud_repository_trigger_policy(data)
 
+    def list_repository_runs(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRunPage:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._request(
+            "GET",
+            f"{api_url}/v1/repositories/{repo_id}/runs",
+            token=cli_token,
+            params=params or None,
+        )
+        return cloud_run_page(data)
+
+    def read_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> CloudRun:
+        data = self._request(
+            "GET",
+            f"{api_url}/v1/runs/{run_id}",
+            token=cli_token,
+        )
+        return cloud_run(data)
+
+    def list_run_events(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> tuple[CloudRunEvent, ...]:
+        data = self._request(
+            "GET",
+            f"{api_url}/v1/runs/{run_id}/events",
+            token=cli_token,
+        )
+        return tuple(cloud_run_event(item) for item in require_list_response(data))
+
     def upload_capture_artifact(
         self,
         *,
@@ -208,6 +264,7 @@ class HttpCloudAuthClient:
         token: str | None = None,
         headers: dict[str, str] | None = None,
         json_body: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
         content: bytes | None = None,
     ) -> dict[str, Any]:
         request_headers = dict(headers or {})
@@ -219,6 +276,7 @@ class HttpCloudAuthClient:
                     method,
                     url,
                     headers=request_headers or None,
+                    params=params,
                     json=json_body,
                     content=content,
                 )
@@ -287,6 +345,49 @@ def cloud_repository_trigger_policy(
         branch=str(data["branch"]),
         enabled=bool(data["enabled"]),
         delivery_mode=data["deliveryMode"],
+    )
+
+
+def cloud_run_page(data: dict[str, Any]) -> CloudRunPage:
+    return CloudRunPage(
+        items=tuple(cloud_run(item) for item in data.get("items", [])),
+        next_cursor=data.get("nextCursor"),
+    )
+
+
+def cloud_run(data: dict[str, Any]) -> CloudRun:
+    return CloudRun(
+        run_id=UUID(str(data["runId"])),
+        repo_id=int(data["repoId"]),
+        source=cloud_run_source(data["source"]),
+        status=data["status"],
+        summary=data.get("summary"),
+        files_changed=tuple(str(path) for path in data.get("filesChanged", [])),
+        commit_sha=data.get("commitSha"),
+        created_at=parse_datetime(data.get("createdAt")),
+        finished_at=parse_datetime(data.get("finishedAt")),
+    )
+
+
+def cloud_run_source(data: dict[str, Any]) -> CloudRunSource:
+    return CloudRunSource(
+        kind=str(data["kind"]),
+        label=str(data["label"]),
+        url=data.get("url"),
+    )
+
+
+def cloud_run_event(data: dict[str, Any]) -> CloudRunEvent:
+    timestamp = parse_datetime(data.get("timestamp"))
+    if timestamp is None:
+        raise ExecutionFailed("cloud returned invalid run event timestamp")
+    return CloudRunEvent(
+        run_id=UUID(str(data["runId"])),
+        sequence=int(data["sequence"]),
+        timestamp=timestamp,
+        kind=data["kind"],
+        message=str(data["message"]),
+        payload=data.get("payload"),
     )
 
 

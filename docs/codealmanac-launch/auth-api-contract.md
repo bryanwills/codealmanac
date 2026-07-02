@@ -359,6 +359,15 @@ GET  /v1/repositories/{repo_id}/triggers
 PUT  /v1/repositories/{repo_id}/triggers  # body carries branch, enabled, deliveryMode
 ```
 
+Slice 37 implemented the CLI-token run read routes used by
+`codealmanac runs ...`:
+
+```text
+GET /v1/repositories/{repo_id}/runs
+GET /v1/runs/{run_id}
+GET /v1/runs/{run_id}/events
+```
+
 Branch names are body fields, not path segments, so slash branches such as
 `release/1.4` are preserved.
 

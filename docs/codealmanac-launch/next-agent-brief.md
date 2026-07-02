@@ -10,64 +10,58 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 36 added cloud repository trigger CLI mirrors.
+Slice 37 added cloud run CLI mirrors.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- hosted CLI-token routes:
-  `POST /v1/repositories/resolve`,
-  `GET /v1/repositories/{repo_id}/triggers`, and
-  `PUT /v1/repositories/{repo_id}/triggers`
-- direct repo-id repository trigger service methods for CLI auth
-- CodeAlmanac `cloud_repositories` service and typed HTTP adapter methods
-- current-checkout `cloud_repo` workflow that resolves GitHub `origin`
+- hosted CLI-token run read routes:
+  `GET /v1/repositories/{repo_id}/runs`,
+  `GET /v1/runs/{run_id}`, and
+  `GET /v1/runs/{run_id}/events`
+- CodeAlmanac `cloud_runs` service and typed HTTP adapter methods
+- current-checkout cloud run workflow for listing repo runs
+- run-id-only cloud run detail and log workflows
 - public CLI commands:
-  `codealmanac repo status`,
-  `codealmanac repo triggers list`,
-  `codealmanac repo triggers enable <branch> --delivery pr|commit`,
-  `codealmanac repo triggers disable <branch>`, and
-  `codealmanac repo delivery set --branch <branch> --mode pr|commit`
+  `codealmanac runs list`,
+  `codealmanac runs show <run-id>`, and
+  `codealmanac runs logs <run-id>`
 - pushed hosted commit
-  `fbf8b5a feat: add CLI repository trigger routes`
-- pushed CodeAlmanac commit
-  `8ca50e0f feat: mirror cloud repository triggers in CLI`
+  `168f9b2 feat: add CLI run read routes`
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_cli_repositories_api_contract.py tests/test_repositories_api_contract.py tests/test_repositories_contract.py -q
+uv run pytest tests/test_cli_runs_api_contract.py tests/test_repositories_api_contract.py tests/test_updates_contract.py -q
 uv run ruff check .
-uv run ruff format --check src/almanac/services/repositories/service.py src/almanac/server/app.py src/almanac/server/cli_repositories_router.py tests/test_cli_repositories_api_contract.py tests/test_repositories_contract.py
 uv run python -m compileall src modal_app -q
 uv run pytest -q
 
 cd /Users/rohan/Desktop/Projects/codealmanac
-uv run pytest tests/test_cloud_repositories_service.py tests/test_cloud_repo_workflow.py tests/test_cli.py -q
+uv run pytest tests/test_cloud_runs_service.py tests/test_cloud_runs_workflow.py tests/test_cli.py tests/test_architecture.py -q
 uv run ruff check .
-uv run ruff format --check src/codealmanac/app.py src/codealmanac/cli/dispatch/admin.py src/codealmanac/cli/dispatch/repo.py src/codealmanac/cli/parser/admin.py src/codealmanac/cli/parser/repo.py src/codealmanac/cli/render/repo.py src/codealmanac/integrations/cloud/http.py src/codealmanac/services/cloud_repositories tests/test_cloud_repositories_service.py tests/test_cloud_repo_workflow.py tests/test_cli.py tests/test_architecture.py
 uv run python -m compileall src -q
 uv run pytest -q
 ```
 
-Counts: hosted backend focused `23 passed, 1 warning`; hosted backend full
-`324 passed, 1 warning`; CodeAlmanac focused `57 passed`; CodeAlmanac full
-`487 passed`.
+Counts: hosted backend focused `40 passed, 1 warning`; hosted backend full
+`326 passed, 1 warning`; CodeAlmanac focused `121 passed`; CodeAlmanac full
+`490 passed`.
 
 ## Next Pressure Test
 
 Choose the next launch-hardening slice between terminal run fanout,
-setup/onboarding entrypoints, cloud run CLI mirrors, and full verification for
-the new CLI routes.
+setup/onboarding entrypoints, cloud run start/cancel/retry semantics, and
+frontend onboarding changes.
 
 Pressure points:
 
 - terminal failed/stale runs still do not have a dedicated `RunFailed` or
   `RunStale` domain-event fanout for GitHub check updates
-- CLI commands do not yet list/start/cancel/retry cloud runs
+- CLI commands list/show/log cloud runs, but do not start/cancel/retry them
 - browser setup/onboarding entrypoints still need the new cloud setup flow
 - old inline-message conversation routes should remain compatibility-only
 
@@ -89,7 +83,8 @@ origin at `12cfc08 feat: persist hosted run events`; Slice 33 is pushed to
 origin at `9098b65 feat: record stale delivery outcomes`; Slice 34 is pushed
 to origin at `4e4c94b feat: expose run event timeline`; Slice 35 is pushed to
 origin at `1b00b63 feat: add repository trigger policies`; Slice 36 is pushed
-to origin at `fbf8b5a feat: add CLI repository trigger routes`.
+to origin at `fbf8b5a feat: add CLI repository trigger routes`; Slice 37 is
+pushed to origin at `168f9b2 feat: add CLI run read routes`.
 
 The local wiki command currently fails on this checkout with:
 

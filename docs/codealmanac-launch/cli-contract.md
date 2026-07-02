@@ -111,6 +111,19 @@ codealmanac runs start --branch <branch>
 
 Cloud uses `runs` because execution happens in the cloud control plane.
 
+Implemented in Slice 37:
+
+```text
+codealmanac runs list
+codealmanac runs show <run-id>
+codealmanac runs logs <run-id>
+```
+
+`runs list` resolves the current checkout's GitHub `origin` before asking the
+cloud for that repository's runs. `runs show` and `runs logs` use the run id and
+do not need a current checkout. `runs start`, `runs cancel`, and `runs retry`
+are deferred until cloud worker queue semantics are explicit.
+
 ## Cloud Capture
 
 ```text

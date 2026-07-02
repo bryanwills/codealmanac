@@ -98,6 +98,12 @@ Current evidence:
 - `backend/tests/test_cli_repositories_api_contract.py` proves those routes
   authenticate with the CLI token, resolve from `fullName`, preserve slash
   branches in the JSON body, and call the repository service.
+- Slice 37 added hosted CLI-token run read routes:
+  `GET /v1/repositories/{repo_id}/runs`, `GET /v1/runs/{run_id}`, and
+  `GET /v1/runs/{run_id}/events`.
+- `backend/tests/test_cli_runs_api_contract.py` proves those routes
+  authenticate with the CLI token, return page/detail/event DTOs, and preserve
+  run-event payloads by reference.
 
 ## CodeAlmanac Local Repo
 

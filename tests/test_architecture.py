@@ -872,6 +872,7 @@ def test_cli_parser_is_split_by_command_domain():
         "local.py",
         "repo.py",
         "root.py",
+        "runs.py",
         "setup.py",
         "updates.py",
         "wiki.py",
@@ -898,6 +899,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
         "diagnostics.py": ('add_parser("doctor"', "def add_diagnostics_commands("),
         "jobs.py": ('add_parser("jobs"', "def add_jobs_commands("),
         "repo.py": ('add_parser("repo"', "def add_repo_commands("),
+        "runs.py": ('add_parser("runs"', "def add_runs_commands("),
         "setup.py": ('add_parser("setup"', "def add_setup_commands("),
         "updates.py": ('add_parser("update"', "def add_update_commands("),
     }
@@ -928,6 +930,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
     assert "add_cloud_auth_commands(subcommands)" in admin
     assert "add_capture_commands(subcommands)" in admin
     assert "add_repo_commands(subcommands)" in admin
+    assert "add_runs_commands(subcommands)" in admin
     assert "add_diagnostics_commands(subcommands)" in admin
     assert "add_update_commands(subcommands)" in admin
     assert "add_jobs_commands(subcommands)" in admin
@@ -946,6 +949,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "parser/jobs.py").is_file()
     assert (cli_root / "parser/local.py").is_file()
     assert (cli_root / "parser/repo.py").is_file()
+    assert (cli_root / "parser/runs.py").is_file()
     assert (cli_root / "parser/setup.py").is_file()
     assert (cli_root / "parser/updates.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
@@ -962,6 +966,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/local.py").is_file()
     assert (cli_root / "dispatch/local_trigger.py").is_file()
     assert (cli_root / "dispatch/repo.py").is_file()
+    assert (cli_root / "dispatch/runs.py").is_file()
     assert (cli_root / "dispatch/serve.py").is_file()
     assert (cli_root / "dispatch/setup.py").is_file()
     assert (cli_root / "dispatch/sync.py").is_file()
@@ -973,6 +978,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/automation.py").is_file()
     assert (cli_root / "render/capture.py").is_file()
+    assert (cli_root / "render/cloud_runs.py").is_file()
     assert (cli_root / "render/common.py").is_file()
     assert (cli_root / "render/diagnostics.py").is_file()
     assert (cli_root / "render/health.py").is_file()
@@ -1044,6 +1050,7 @@ def test_cli_admin_render_stays_split_by_output_family():
     admin = (render_path / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("AutomationInstallResult", "def render_automation_install("),
+        "cloud_runs.py": ("CloudRunListResult", "def render_cloud_runs("),
         "diagnostics.py": ("DoctorReport", "def render_doctor("),
         "jobs.py": ("RunRecord", "def render_runs("),
         "repo.py": ("CloudRepoStatusResult", "def render_cloud_repo_status("),
@@ -1179,6 +1186,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
         "diagnostics.py": ("DoctorRequest", "def dispatch_doctor("),
         "jobs.py": ("ShowRunRequest", "def dispatch_jobs("),
         "repo.py": ("ReadCloudRepoStatusRequest", "def dispatch_repo("),
+        "runs.py": ("ListCloudRunsRequest", "def dispatch_runs("),
         "setup.py": ("RunSetupRequest", "def dispatch_setup("),
         "updates.py": ("RunUpdateRequest", "def dispatch_update("),
     }
@@ -1212,6 +1220,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     assert "dispatch_setup(args, app)" in admin
     assert "dispatch_capture(args, app)" in admin
     assert "dispatch_repo(args, app)" in admin
+    assert "dispatch_runs(args, app)" in admin
     assert "dispatch_uninstall(args, app)" in admin
     assert "dispatch_jobs(args, app)" in admin
     assert "dispatch_automation(args, app)" in admin

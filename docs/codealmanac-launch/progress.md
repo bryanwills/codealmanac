@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 36 cloud repo trigger CLI.
+Pending: 2026-07-02 after Slice 37 cloud runs CLI.
 
 Route:
 
@@ -26,9 +26,9 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 93% | 92% | Slice 36 adds cloud repository service/workflow seams in the local package; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 72% | 64% | CLI now mirrors dashboard trigger policy reads/writes for the current GitHub checkout. |
-| CodeAlmanac-hosted backend/auth/API | 78% | 74% | Hosted now exposes CLI-token `/v1` repository resolve and trigger policy routes. |
+| CodeAlmanac backend/local | 94% | 93% | Slice 37 adds the typed `cloud_runs` service/workflow in the local package; local worker behavior is unchanged. |
+| CodeAlmanac CLI/public UX | 78% | 72% | CLI now mirrors cloud run list/detail/log inspection from the terminal. |
+| CodeAlmanac-hosted backend/auth/API | 80% | 78% | Hosted now exposes CLI-token `/v1` run read routes. |
 | Hosted frontend/onboarding | 28% | 28% | Slice 36 does not change browser UI. |
 | Infra/deploy rename | 15% | 15% | Slice 35 changes Supabase schema but does not change provider deployment naming/configuration. |
 

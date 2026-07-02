@@ -34,6 +34,12 @@ from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
     CloudRepositoryTriggerPolicy,
 )
+from codealmanac.services.cloud_runs.models import (
+    CloudRun,
+    CloudRunEvent,
+    CloudRunPage,
+    CloudRunSource,
+)
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -465,6 +471,72 @@ class CliCloudRepositoriesClient:
             enabled=enabled if enabled is not None else True,
             delivery_mode=delivery_mode if delivery_mode is not None else "commit",
         )
+
+
+class CliCloudRunsClient:
+    def __init__(self):
+        self.lists: list[tuple[int, int | None, str | None]] = []
+        self.reads: list[UUID] = []
+        self.logs: list[UUID] = []
+
+    def list_repository_runs(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRunPage:
+        assert cli_token == "alm_secret"
+        self.lists.append((repo_id, limit, cursor))
+        return CloudRunPage(
+            items=(cloud_run(UUID(int=1)),),
+            next_cursor="next",
+        )
+
+    def read_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> CloudRun:
+        assert cli_token == "alm_secret"
+        self.reads.append(run_id)
+        return cloud_run(run_id)
+
+    def list_run_events(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> tuple[CloudRunEvent, ...]:
+        assert cli_token == "alm_secret"
+        self.logs.append(run_id)
+        return (
+            CloudRunEvent(
+                run_id=run_id,
+                sequence=1,
+                timestamp=datetime(2026, 7, 2, 12, tzinfo=UTC),
+                kind="status",
+                message="running",
+                payload={"worker_call_id": "call-1"},
+            ),
+        )
+
+
+def cloud_run(run_id: UUID) -> CloudRun:
+    return CloudRun(
+        run_id=run_id,
+        repo_id=1,
+        source=CloudRunSource(kind="branch", label="branch main"),
+        status="running",
+        summary="updating wiki",
+        files_changed=("almanac/pages/api.md",),
+        created_at=datetime(2026, 7, 2, 12, tzinfo=UTC),
+    )
 
 
 def capture_credential(*, name: str) -> CaptureCredential:
@@ -1097,6 +1169,98 @@ def test_cli_repo_status_triggers_and_delivery(
         (1, "release/1.4", False, None),
         (1, "release/1.4", None, "commit"),
     ]
+
+
+def test_cli_cloud_runs_list_show_and_logs(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    auth_client = CliCloudAuthClient()
+    repositories_client = CliCloudRepositoriesClient()
+    runs_client = CliCloudRunsClient()
+    app = create_app(
+        AppConfig(auth_path=isolated_home / ".codealmanac/auth.json"),
+        cloud_auth_client=auth_client,
+        cloud_repositories_client=repositories_client,
+        cloud_runs_client=runs_client,
+        local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "login",
+                "--api-url",
+                "https://api.example.test",
+                "--timeout",
+                "0",
+                "--poll-every",
+                "0",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "runs",
+                "list",
+                "--limit",
+                "5",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    listed = capsys.readouterr()
+    assert f"{UUID(int=1)}\trunning\tbranch main\tupdating wiki\n" in listed.out
+    assert "next_cursor: next\n" in listed.err
+
+    assert (
+        main(
+            [
+                "runs",
+                "show",
+                str(UUID(int=2)),
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    detail = capsys.readouterr()
+    assert f"id: {UUID(int=2)}\n" in detail.out
+    assert "status: running\n" in detail.out
+    assert "- almanac/pages/api.md\n" in detail.out
+
+    assert (
+        main(
+            [
+                "runs",
+                "logs",
+                str(UUID(int=2)),
+                "--api-url",
+                "https://api.example.test",
+                "--json",
+            ]
+        )
+        == 0
+    )
+    events = json.loads(capsys.readouterr().out)
+
+    assert events[0]["message"] == "running"
+    assert runs_client.lists == [(1, 5, None)]
+    assert runs_client.reads == [UUID(int=2)]
+    assert runs_client.logs == [UUID(int=2)]
 
 
 def test_cli_local_setup_registers_current_checkout(

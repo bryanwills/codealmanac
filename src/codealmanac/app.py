@@ -51,6 +51,8 @@ from codealmanac.services.cloud_capture.service import CloudCaptureService
 from codealmanac.services.cloud_capture.store import CaptureStateStore
 from codealmanac.services.cloud_repositories.ports import CloudRepositoriesClient
 from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
+from codealmanac.services.cloud_runs.ports import CloudRunsClient
+from codealmanac.services.cloud_runs.service import CloudRunsService
 from codealmanac.services.config.service import ConfigService
 from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.control.ports import LocalGitStateProbe
@@ -100,6 +102,7 @@ from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.cloud_login import CloudLoginWorkflow
 from codealmanac.workflows.cloud_login.ports import BrowserOpener
 from codealmanac.workflows.cloud_repo import CloudRepoWorkflow
+from codealmanac.workflows.cloud_runs import CloudRunsWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.service import InitWorkflow
@@ -127,6 +130,7 @@ from codealmanac.workflows.sync.store import SyncLedgerStore
 class CodeAlmanacWorkflows:
     cloud_login: CloudLoginWorkflow
     cloud_repo: CloudRepoWorkflow
+    cloud_runs: CloudRunsWorkflow
     init: InitWorkflow
     ingest: IngestWorkflow
     garden: GardenWorkflow
@@ -148,6 +152,7 @@ class CodeAlmanac:
     automation: AutomationService
     cloud_auth: CloudAuthService
     capture: CloudCaptureService
+    cloud_runs: CloudRunsService
     cloud_repositories: CloudRepositoriesService
     config: ConfigService
     control: ControlService
@@ -190,6 +195,7 @@ def create_app(
     instruction_installer: InstructionInstaller | None = None,
     cloud_auth_client: CloudAuthClient | None = None,
     cloud_capture_client: CloudCaptureClient | None = None,
+    cloud_runs_client: CloudRunsClient | None = None,
     cloud_repositories_client: CloudRepositoriesClient | None = None,
     capture_hook_manager: CaptureHookManager | None = None,
     capture_transcript_parser: CaptureTranscriptParser | None = None,
@@ -220,6 +226,10 @@ def create_app(
     cloud_repositories = CloudRepositoriesService(
         cloud_auth,
         cloud_repositories_client or HttpCloudAuthClient(),
+    )
+    cloud_runs = CloudRunsService(
+        cloud_auth,
+        cloud_runs_client or HttpCloudAuthClient(),
     )
     control = ControlService(
         ControlStore(app_config.control_db_path),
@@ -342,6 +352,10 @@ def create_app(
         cloud_repositories,
         resolved_local_repository_probe,
     )
+    cloud_runs_workflow = CloudRunsWorkflow(
+        cloud_runs,
+        cloud_repo,
+    )
     local_status = LocalStatusWorkflow(
         control,
         resolved_local_repository_probe,
@@ -388,6 +402,7 @@ def create_app(
     workflows = CodeAlmanacWorkflows(
         cloud_login=cloud_login,
         cloud_repo=cloud_repo,
+        cloud_runs=cloud_runs_workflow,
         init=init,
         ingest=ingest,
         garden=garden,
@@ -407,6 +422,7 @@ def create_app(
         automation=automation,
         cloud_auth=cloud_auth,
         capture=capture,
+        cloud_runs=cloud_runs,
         cloud_repositories=cloud_repositories,
         config=config_service,
         control=control,

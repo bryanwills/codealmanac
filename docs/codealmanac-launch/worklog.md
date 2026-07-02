@@ -2,6 +2,33 @@
 
 ## 2026-07-02
 
+- Planned Slice 37 in
+  `docs/plans/2026-07-02-slice-37-cloud-runs-cli.md`.
+- Added hosted CLI run read routes:
+  `GET /v1/repositories/{repo_id}/runs`, `GET /v1/runs/{run_id}`, and
+  `GET /v1/runs/{run_id}/events`.
+- Added CodeAlmanac `cloud_runs` service, typed cloud run/run-event models,
+  HTTP adapter methods, and cloud run workflow.
+- Added public cloud run commands:
+  `codealmanac runs list`, `codealmanac runs show <run-id>`, and
+  `codealmanac runs logs <run-id>`.
+- Verified Slice 37 focused hosted backend gate with
+  `uv run pytest tests/test_cli_runs_api_contract.py
+  tests/test_repositories_api_contract.py tests/test_updates_contract.py -q`
+  (`40 passed, 1 warning`).
+- Verified Slice 37 focused CodeAlmanac gate with
+  `uv run pytest tests/test_cloud_runs_service.py
+  tests/test_cloud_runs_workflow.py tests/test_cli.py tests/test_architecture.py -q`
+  (`121 passed`).
+- Verified Slice 37 CodeAlmanac hygiene with `uv run ruff check .` and
+  `uv run python -m compileall src -q`.
+- Verified Slice 37 hosted backend hygiene with `uv run ruff check .`,
+  `uv run python -m compileall src modal_app -q`, and `git diff --check`.
+- Verified Slice 37 full gates with CodeAlmanac `uv run pytest -q`
+  (`490 passed`) and hosted backend `uv run pytest -q`
+  (`326 passed, 1 warning`).
+- Pushed hosted commit `168f9b2 feat: add CLI run read routes` to
+  `origin/codex/workos-authkit-api-foundation`.
 - Planned Slice 36 in
   `docs/plans/2026-07-02-slice-36-cloud-repo-trigger-cli.md`.
 - Added hosted CLI repository routes:
