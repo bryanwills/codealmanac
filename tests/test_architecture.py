@@ -312,6 +312,30 @@ def test_local_update_workflow_only_records_manual_trigger_and_runs_worker():
     assert "git_delivery" not in service_text
 
 
+def test_maintenance_api_is_a_package_edge_over_workflows():
+    maintenance_root = SRC_ROOT / "maintenance"
+    service_text = (maintenance_root / "service.py").read_text(encoding="utf-8")
+    request_text = (maintenance_root / "requests.py").read_text(encoding="utf-8")
+    module_names = {path.name for path in maintenance_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert "app.workflows.init.run" in service_text
+    assert "app.workflows.ingest.run" in service_text
+    assert "RunInitRequest" in service_text
+    assert "RunIngestRequest" in service_text
+    assert "MaintenanceOperation" in request_text
+    for path in maintenance_root.glob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        assert "codealmanac.cli" not in text
+        assert "codealmanac.integrations" not in text
+        assert "subprocess" not in text
+
+
 def test_local_policy_workflow_only_updates_control_policy():
     workflow_root = SRC_ROOT / "workflows/local_policy"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
