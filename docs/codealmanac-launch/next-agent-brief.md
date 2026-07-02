@@ -10,21 +10,22 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 18 added public local status and local jobs reads.
+Slice 19 added public manual local update.
 
 Implemented:
 
-- optional control DB reads for repository-by-local-root, branch-by-name, and
-  filtered runs
-- `app.workflows.local_status.status(...)`
-- `app.workflows.local_jobs`
-- public `codealmanac local status`
-- public `codealmanac local jobs list|show|logs`
+- `app.workflows.local_update.update(...)`
+- public `codealmanac local update`
+- manual trigger recording for the current configured checkout and branch
+- same-head manual reruns after completed jobs
+- duplicate active-job refusal when the branch already has a queued/running job
+- manual pending-trigger replacement without changing normal hook duplicate
+  behavior
 
 Verified:
 
 ```text
-uv run pytest tests/test_control_service.py tests/test_local_status_workflow.py tests/test_cli.py tests/test_architecture.py
+uv run pytest tests/test_control_service.py tests/test_local_update_workflow.py tests/test_cli.py tests/test_architecture.py
 uv run pytest
 uv run ruff check .
 git diff --check
@@ -34,7 +35,9 @@ git diff --check
 
 Choose the next substantial slice from the launch plan. Good candidates:
 
-- public `codealmanac local update` manual-trigger semantics
+- local trigger policy commands:
+  `codealmanac local triggers list|enable|disable` and
+  `codealmanac local delivery set`
 - local run storage bridge from repo-local job files to the control DB, if
   needed for compatibility
 - prompt restoration / first-build `init` path from
@@ -47,7 +50,7 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The branch is `dev`. At the end of Slice 18 verification it was ready to
+The branch is `dev`. At the end of Slice 19 verification it was ready to
 commit on top of `origin/dev`.
 
 The local wiki command currently fails on this checkout with:

@@ -376,3 +376,24 @@
   CodeAlmanac backend/local 78%, CLI/public UX 22%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 19 in
+  `docs/plans/2026-07-02-slice-19-local-update-command.md`.
+- Added `app.workflows.local_update.update(...)`.
+- Added public `codealmanac local update` with `--using` and `--json`.
+- `local update` now requires the current checkout and branch to be configured
+  by local setup, creates a `manual` trigger event for the current HEAD, and
+  runs the same local worker path used by Git hooks.
+- Manual triggers may rerun on the same HEAD because local capture/source
+  material can change without a code commit.
+- `local update` refuses to start when the branch already has a queued or
+  running local job.
+- Manual trigger recording can replace older pending branch triggers while
+  keeping normal duplicate hook-trigger behavior unchanged.
+- Verified Slice 19 focused behavior with
+  `uv run pytest tests/test_control_service.py tests/test_local_update_workflow.py tests/test_cli.py tests/test_architecture.py`.
+- Verified Slice 19 full gate with `uv run pytest` (`446 passed`),
+  `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 19 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 81%, CLI/public UX 26%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
