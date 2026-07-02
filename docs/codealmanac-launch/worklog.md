@@ -15,6 +15,8 @@
   callback hardening was active.
 - Verified with browser-harness that `https://www.codealmanac.com/login`
   renders only `Continue with GitHub` and no email/password inputs.
+- Added a hosted route regression guard so the login surface cannot reintroduce
+  password, magic-link, or email-verification copy.
 - Planned Slice 49 in
   `docs/plans/2026-07-02-slice-49-token-storage-hardening.md`.
 - Hardened hosted GitHub provider token storage. `users.oauth_token` and
