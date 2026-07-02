@@ -67,13 +67,13 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The CodeAlmanac branch is `dev`. Slice 27 is implemented locally and should be
-pushed to `origin/dev` after final documentation commit.
+The CodeAlmanac branch is `dev`. Slice 27 is pushed to `origin/dev` at
+`494e5694 feat: add cloud CLI auth`.
 
 The hosted auth branch is
 `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
-on `codex/workos-authkit-api-foundation`. Slice 27 is implemented locally and
-should be pushed to origin after final documentation commit.
+on `codex/workos-authkit-api-foundation`, pushed to origin at
+`c91e162 feat: add v1 CLI auth routes`.
 
 Slice 25 hosted convergence branch `codex/hosted-baseline-convergence` is
 pushed to origin at commit `1d237db`.

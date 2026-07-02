@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Pending send: 2026-07-02 after Slice 27 cloud CLI auth.
+Sent: 2026-07-02 after Slice 27 cloud CLI auth.
 
 Route:
 
