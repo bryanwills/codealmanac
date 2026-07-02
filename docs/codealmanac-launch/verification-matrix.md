@@ -154,6 +154,12 @@ Current evidence:
 - `tests/test_architecture.py` proves the local worker only composes the local
   workflows and does not import harness, delivery, SQL, subprocess, or
   integration mechanics directly.
+- Slice 15 added the hidden local worker CLI command.
+- `tests/test_cli.py` proves `codealmanac __run-local-worker --json` returns a
+  typed no-op when no pending trigger exists.
+- `tests/test_cli.py` proves `codealmanac __run-local-worker --repository-id
+  ... --branch-id ... --json` processes one trigger through preparation,
+  engine execution, and delivery.
 
 Commands:
 

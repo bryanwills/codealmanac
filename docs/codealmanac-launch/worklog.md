@@ -302,3 +302,15 @@
   CodeAlmanac backend/local 67%, CLI/public UX 10%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 15 in
+  `docs/plans/2026-07-02-slice-15-hidden-local-worker-cli.md`.
+- Added hidden CLI command `codealmanac __run-local-worker`.
+- The hidden command calls `app.workflows.local_worker.run_next(...)`, can
+  filter by `repository_id` and `branch_id`, accepts `--using`, and emits the
+  typed workflow result with `--json`.
+- Default command output stays quiet so a future hook or background spawner can
+  call it without noisy terminal output.
+- Verified Slice 15 focused behavior with
+  `uv run pytest tests/test_cli.py tests/test_local_worker_workflow.py tests/test_architecture.py`.
+- Verified Slice 15 full gate with `uv run pytest` (`419 passed`),
+  `uv run ruff check .`, and `git diff --check`.

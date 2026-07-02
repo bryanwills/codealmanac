@@ -47,6 +47,21 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     worker.add_argument("--cwd", required=True)
     worker.add_argument("--wiki")
 
+    local_worker = subcommands.add_parser(
+        "__run-local-worker",
+        help=argparse.SUPPRESS,
+    )
+    local_worker.add_argument("--repository-id")
+    local_worker.add_argument("--branch-id")
+    local_worker.add_argument("--operation", default="update")
+    local_worker.add_argument(
+        "--using",
+        default=HarnessKind.CODEX.value,
+        choices=tuple(kind.value for kind in HarnessKind),
+    )
+    local_worker.add_argument("--title")
+    local_worker.add_argument("--json", action="store_true")
+
     local_trigger = subcommands.add_parser(
         "__record-local-trigger",
         help=argparse.SUPPRESS,

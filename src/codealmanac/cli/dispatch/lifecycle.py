@@ -3,6 +3,7 @@ import argparse
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.dispatch.build import dispatch_build, dispatch_init
 from codealmanac.cli.dispatch.local_trigger import dispatch_record_local_trigger
+from codealmanac.cli.dispatch.local_worker import dispatch_run_local_worker
 from codealmanac.cli.dispatch.operations import dispatch_garden, dispatch_ingest
 from codealmanac.cli.dispatch.sync import dispatch_sync
 from codealmanac.cli.dispatch.worker import dispatch_run_worker
@@ -10,6 +11,7 @@ from codealmanac.cli.dispatch.worker import dispatch_run_worker
 LIFECYCLE_COMMANDS = frozenset(
     (
         "__record-local-trigger",
+        "__run-local-worker",
         "__run-worker",
         "build",
         "garden",
@@ -35,6 +37,8 @@ def dispatch_lifecycle(args: argparse.Namespace, app: CodeAlmanac) -> int:
         return dispatch_garden(args, app)
     if args.command == "__run-worker":
         return dispatch_run_worker(args, app)
+    if args.command == "__run-local-worker":
+        return dispatch_run_local_worker(args, app)
     if args.command == "__record-local-trigger":
         return dispatch_record_local_trigger(args, app)
     if args.command == "sync":

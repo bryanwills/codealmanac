@@ -20,11 +20,14 @@ from codealmanac.services.automation.models import (
 )
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
+    ControlRunStatus,
     LocalGitState,
+    TriggerEventKind,
     TriggerEventStatus,
 )
 from codealmanac.services.control.requests import (
     ListTriggerEventsRequest,
+    RecordTriggerEventRequest,
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
 )
@@ -57,8 +60,14 @@ from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
 )
+from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.workflows.local_delivery.models import (
+    LocalDeliveryCommit,
+    LocalDeliveryHead,
+    LocalDeliveryPatch,
+)
 from codealmanac.workflows.sync.models import (
     SyncLedger,
     SyncLedgerEntry,
@@ -223,6 +232,80 @@ class CliLocalGitStateProbe:
     def read(self, cwd: Path) -> LocalGitState:
         self.requests.append(cwd)
         return self.state
+
+
+class CliLocalWorkerHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        page = request.cwd / "almanac/pages/local-worker-note.md"
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text("# Local Worker\n", encoding="utf-8")
+        return HarnessRunResult(
+            kind=HarnessKind.CODEX,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="Update local worker note",
+            summary="Update local worker note",
+            changed_files=(Path("almanac/pages/local-worker-note.md"),),
+        )
+
+
+class CliGitWorktreeManager:
+    def add_detached(
+        self,
+        source_repo_path: Path,
+        worktree_path: Path,
+        commit_sha: str,
+    ) -> GitWorktreeCheckout:
+        worktree_path.mkdir(parents=True)
+        return GitWorktreeCheckout(repo_path=worktree_path, head_sha=commit_sha)
+
+    def remove(self, source_repo_path: Path, worktree_path: Path) -> None:
+        return None
+
+
+class CliLocalDeliveryManager:
+    def __init__(self):
+        self.head = LocalDeliveryHead(branch_name="dev", head_sha="head-1")
+        self.commit = LocalDeliveryCommit(commit_sha="head-2")
+        self.apply_calls: list[tuple[Path, Path, str, str, str | None]] = []
+
+    def read_head(self, repo_path: Path) -> LocalDeliveryHead:
+        return self.head
+
+    def collect_patch(
+        self,
+        worker_repo_path: Path,
+        almanac_root: Path,
+    ) -> LocalDeliveryPatch:
+        return LocalDeliveryPatch(
+            patch_text="diff --git a/almanac/pages/a.md b/almanac/pages/a.md\n",
+            changed_paths=(Path("almanac/pages/a.md"),),
+        )
+
+    def apply_patch_and_commit(
+        self,
+        repo_path: Path,
+        almanac_root: Path,
+        patch_text: str,
+        commit_subject: str,
+        commit_body: str | None,
+    ) -> LocalDeliveryCommit:
+        self.apply_calls.append(
+            (repo_path, almanac_root, patch_text, commit_subject, commit_body)
+        )
+        return self.commit
 
 
 def test_cli_init_creates_wiki_and_prints_name(
@@ -931,6 +1014,109 @@ def test_cli_hidden_record_local_trigger_records_pending_event(
     assert data["event"]["head_sha"] == "head-1"
     assert tuple(event.head_sha for event in pending) == ("head-1",)
     assert probe.requests == [repo / "src"]
+
+
+def test_cli_hidden_run_local_worker_returns_json_noop(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            control_db_path=isolated_home / ".codealmanac/control.sqlite",
+        )
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["__run-local-worker", "--json"]) == 0
+
+    output = capsys.readouterr()
+    data = json.loads(output.out)
+
+    assert data["processed"] is False
+    assert data["reason"] == "no_pending_trigger"
+    assert data["run"] is None
+
+
+def test_cli_hidden_run_local_worker_processes_one_trigger(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    harness = CliLocalWorkerHarnessAdapter()
+    delivery = CliLocalDeliveryManager()
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            control_db_path=isolated_home / ".codealmanac/control.sqlite",
+            run_artifacts_path=isolated_home / ".codealmanac/runs",
+            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+        ),
+        git_worktree_manager=CliGitWorktreeManager(),
+        harness_adapters=(harness,),
+        git_delivery_manager=delivery,
+    )
+    repository = app.control.upsert_repository(
+        UpsertRepositoryRequest(
+            provider="github",
+            owner_login="AlmanacCode",
+            name="codealmanac",
+            full_name="AlmanacCode/codealmanac",
+            default_branch="dev",
+            almanac_root=Path("almanac"),
+            local_root_path=repo,
+        )
+    )
+    branch = app.control.set_branch_policy(
+        SetBranchPolicyRequest(
+            repository_id=repository.id,
+            name="dev",
+            trigger_enabled=True,
+            delivery_mode=ControlDeliveryMode.COMMIT,
+        )
+    )
+    app.control.record_trigger_event(
+        RecordTriggerEventRequest(
+            repository_id=repository.id,
+            branch_name="dev",
+            kind=TriggerEventKind.LOCAL_POST_COMMIT,
+            head_sha="head-1",
+        )
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "__run-local-worker",
+                "--repository-id",
+                repository.id,
+                "--branch-id",
+                branch.id,
+                "--json",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr()
+    data = json.loads(output.out)
+
+    assert data["processed"] is True
+    assert data["run"]["status"] == ControlRunStatus.SUCCEEDED.value
+    assert data["engine"]["executed"] is True
+    assert data["delivery"]["delivered"] is True
+    assert harness.requests[0].cwd == (
+        isolated_home
+        / ".codealmanac/workspaces"
+        / data["run"]["id"]
+        / "repo"
+    )
+    assert delivery.apply_calls[0][3] == "docs almanac: update local worker note"
 
 
 def test_cli_sync_status_reports_ready_transcripts(
