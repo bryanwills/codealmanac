@@ -86,6 +86,33 @@ def test_engine_runs_service_keeps_worker_contract_boundary():
     assert "codealmanac.services.control" not in store_text
 
 
+def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
+    worker_root = SRC_ROOT / "services/worker_workspaces"
+    git_worktree = SRC_ROOT / "integrations/workspaces/git/worktree.py"
+    module_names = {path.name for path in worker_root.glob("*.py")}
+    service_text = (worker_root / "service.py").read_text(encoding="utf-8")
+    store_text = (worker_root / "store.py").read_text(encoding="utf-8")
+    ports_text = (worker_root / "ports.py").read_text(encoding="utf-8")
+    integration_text = git_worktree.read_text(encoding="utf-8")
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "ports.py",
+        "requests.py",
+        "service.py",
+        "store.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 90
+    assert "GitWorktreeManager" in ports_text
+    assert "subprocess" not in service_text
+    assert "subprocess" not in store_text
+    assert "worktree add" not in service_text
+    assert "worktree" not in store_text
+    assert "codealmanac.integrations" not in service_text
+    assert "worktree\", \"add\", \"--detach\"" in integration_text
+
+
 def test_config_service_owns_toml_imports():
     offenders = [
         path

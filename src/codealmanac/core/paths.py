@@ -29,5 +29,9 @@ def default_run_artifacts_path() -> Path:
     return global_state_dir() / "runs"
 
 
+def default_worker_workspaces_path() -> Path:
+    return global_state_dir() / "workspaces"
+
+
 def normalize_path(path: Path) -> Path:
     return path.expanduser().resolve(strict=False)

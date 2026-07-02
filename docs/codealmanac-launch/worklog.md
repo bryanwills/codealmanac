@@ -178,3 +178,19 @@
   `uv run pytest tests/test_engine_runs_service.py tests/test_architecture.py`.
 - Verified Slice 7 full gate with `uv run pytest` (`383 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 7 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 38%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
+- Planned Slice 8 in
+  `docs/plans/2026-07-02-slice-8-worker-workspaces.md`.
+- Added `app.worker_workspaces` with a local worker workspace layout under
+  `~/.codealmanac/workspaces/<run-id>/`.
+- Added `src/codealmanac/services/worker_workspaces/` with typed paths,
+  request objects, a Git worktree port, filesystem store, and service verbs.
+- Added `GitDetachedWorktreeManager`, which creates detached worktrees at the
+  expected head SHA using `git worktree add --detach`.
+- Verified Slice 8 focused behavior with
+  `uv run pytest tests/test_worker_workspaces_service.py tests/test_architecture.py`.
+- Verified Slice 8 full gate with `uv run pytest` (`389 passed`),
+  `uv run ruff check .`, and `git diff --check`.

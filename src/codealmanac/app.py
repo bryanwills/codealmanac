@@ -17,6 +17,7 @@ from codealmanac.integrations.updates import (
 )
 from codealmanac.integrations.workspaces.git import (
     FileLocalGitHookManager,
+    GitDetachedWorktreeManager,
     GitLocalStateProbe,
     GitWorkspaceChangeProbe,
 )
@@ -61,6 +62,9 @@ from codealmanac.services.updates.service import UpdatesService
 from codealmanac.services.viewer.renderer import MarkdownRenderer
 from codealmanac.services.viewer.service import ViewerService
 from codealmanac.services.wiki.service import WikiService
+from codealmanac.services.worker_workspaces.ports import GitWorktreeManager
+from codealmanac.services.worker_workspaces.service import WorkerWorkspacesService
+from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.build.service import BuildWorkflow
@@ -89,6 +93,7 @@ class CodeAlmanac:
     control: ControlService
     engine_runs: EngineRunsService
     local_hooks: LocalHooksService
+    worker_workspaces: WorkerWorkspacesService
     workspaces: WorkspacesService
     wiki: WikiService
     index: IndexService
@@ -121,6 +126,7 @@ def create_app(
     instruction_installer: InstructionInstaller | None = None,
     local_git_state_probe: LocalGitStateProbe | None = None,
     local_git_hook_manager: LocalGitHookManager | None = None,
+    git_worktree_manager: GitWorktreeManager | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -132,6 +138,10 @@ def create_app(
     engine_runs = EngineRunsService(EngineRunsStore(app_config.run_artifacts_path))
     local_hooks = LocalHooksService(
         local_git_hook_manager or FileLocalGitHookManager(),
+    )
+    worker_workspaces = WorkerWorkspacesService(
+        WorkerWorkspacesStore(app_config.worker_workspaces_path),
+        git_worktree_manager or GitDetachedWorktreeManager(),
     )
     automation = AutomationService(workspaces, scheduler or LaunchdSchedulerAdapter())
     manual = ManualLibrary()
@@ -213,6 +223,7 @@ def create_app(
         control=control,
         engine_runs=engine_runs,
         local_hooks=local_hooks,
+        worker_workspaces=worker_workspaces,
         workspaces=workspaces,
         wiki=wiki,
         index=index,

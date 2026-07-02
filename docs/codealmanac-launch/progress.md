@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 7 verification.
+Sent: 2026-07-02 after Slice 8 verification.
 
 Route:
 
@@ -26,7 +26,7 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 38% | 35% | Slice 7 added the shared engine run request/result artifact seam under `~/.codealmanac/runs/<run-id>/`. |
+| CodeAlmanac backend/local | 42% | 38% | Slice 8 added deterministic local worker workspaces under `~/.codealmanac/workspaces/<run-id>/` backed by detached Git worktrees. |
 | CodeAlmanac CLI/public UX | 10% | 10% | Hidden trigger command exists; launch public CLI surface is not rebuilt yet. |
 | CodeAlmanac-hosted backend/auth/API | 8% | 8% | WorkOS/Doppler setup and hosted rename groundwork exist; public API migration is not implemented yet. |
 | Hosted frontend/onboarding | 5% | 5% | Existing frontend is deployed under CodeAlmanac; new onboarding/configuration screens are not implemented yet. |

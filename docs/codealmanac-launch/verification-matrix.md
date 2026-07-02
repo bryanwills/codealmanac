@@ -28,6 +28,8 @@ Must prove:
 - Local worker uses the engine contract, not public CLI strings.
 - Local run metadata is stored in `~/.codealmanac/control.sqlite`.
 - Local run artifacts are stored in `~/.codealmanac/runs/<run-id>/`.
+- Local worker workspaces are stored in
+  `~/.codealmanac/workspaces/<run-id>/`.
 - Auto-update does not replace the current running process.
 
 Current evidence:
@@ -78,6 +80,18 @@ Current evidence:
   the `docs almanac:` style.
 - `tests/test_architecture.py` proves `engine_runs` stays separate from CLI,
   control DB, and integration concerns.
+- Slice 8 added `app.worker_workspaces` and
+  `src/codealmanac/services/worker_workspaces/`.
+- `AppConfig.worker_workspaces_path` defaults to
+  `~/.codealmanac/workspaces`.
+- `tests/test_worker_workspaces_service.py` proves the worker workspace layout:
+  `repo/`, `sources/`, and `run/`.
+- `tests/test_worker_workspaces_service.py` proves existing run workspaces
+  raise a conflict instead of being silently removed.
+- `tests/test_worker_workspaces_service.py` proves the concrete Git adapter
+  creates a detached worktree at the expected head SHA.
+- `tests/test_architecture.py` proves Git/subprocess mechanics stay in the Git
+  integration, not the worker workspace service/store.
 
 Commands:
 
