@@ -10,59 +10,74 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 48 aligned the hosted WorkOS/AuthKit API boundary with provider
-documentation and the launch hierarchy rule.
+Slice 49 hardened hosted GitHub provider-token storage.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- `backend/src/almanac/server/deps.py` uses FastAPI `HTTPBearer` for bearer
-  parsing instead of hand-rolled `Authorization` header string parsing
-- `backend/src/almanac/integrations/workos/client.py` documents why this
-  boundary uses WorkOS JWKS + PyJWT rather than WorkOS Python sealed-session
-  helpers
-- `WorkOSClaims` mirrors the documented AuthKit access-token shape for
-  organization, role, permissions, entitlements, and feature flags
-- architecture tests now prevent regression to custom bearer parsing
-- hosted commit `c68d448 refactor: align workos auth boundary` is pushed to
-  `origin/codex/workos-authkit-api-foundation` and hosted `main`
+- `users.oauth_token` / `users.refresh_token` became
+  `oauth_token_ciphertext` / `refresh_token_ciphertext`
+- `backend/src/almanac/services/identity/users/secrets.py` defines the
+  Fernet/MultiFernet token-cipher boundary
+- `UsersStore` encrypts provider tokens on write and decrypts them when
+  hydrating the domain `User`
+- `backend/src/almanac/app.py` wires the concrete cipher from
+  `Settings.github_token_encryption_keys`
+- WorkOS issuer normalization now uses the documented slash form
+  `https://api.workos.com/`
+- Supabase migrations invalidate/drop legacy plaintext token columns instead
+  of renaming them into ciphertext columns
+- Modal Doppler hydration and `frontend/package.json` backend smoke both know
+  `GITHUB_TOKEN_ENCRYPTION_KEYS`
+- production Doppler `codealmanac/prd` has `GITHUB_TOKEN_ENCRYPTION_KEYS`
+  created; the key value was not printed
+- hosted commit `0f9850c refactor: encrypt github provider tokens` is pushed to
+  `origin/codex/workos-authkit-api-foundation`
+- hosted `main` was not fast-forwarded and no deploy was triggered for Slice 49
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_identity_auth_contract.py tests/test_api_error_contract.py tests/test_architecture_contract.py -q
+uv run pytest tests/test_capture_upload_api_contract.py tests/test_hosted_conversation_sync_contract.py tests/test_identity_auth_contract.py tests/test_store_timestamps_contract.py tests/test_architecture_contract.py -q
 uv run ruff check .
 uv run pytest -q
 uv run python -m compileall src modal_app -q
+uv run ruff format --check <touched Python files>
 
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
 npm run test:routes
 npm run lint
-npm run build
+npm run backend:smoke
 ```
 
-Counts for Slice 48: focused backend tests `86 passed, 1 warning`; full backend
-tests `357 passed, 1 warning`; frontend routes `27 passed`. Frontend build
-retained the known CSS optimizer warning about `m-* utility`.
+Counts for Slice 49: focused backend tests `99 passed, 1 warning`; full
+backend tests `361 passed, 1 warning`; frontend routes `27 passed`; focused
+Modal hydration test `1 passed`; backend smoke succeeded. Full repo
+`uv run ruff format --check .` still reports a pre-existing unrelated format
+drift in `src/almanac/services/updates/service.py`; touched Python files pass
+format check.
 
 ## Next Pressure Test
 
-Choose the next launch-hardening slice between setup CTA refinement, real
-authenticated browser verification, provider cleanup, and token-storage
-hardening.
+Choose a coherent next batch before any deploy. Good candidates are real
+authenticated browser verification, provider cleanup, Supabase migration
+application plus Render/Vercel deployment, or setup CTA refinement.
 
 Pressure points:
 
+- Do not apply the Slice 49 Supabase migration without deploying the backend
+  that understands `oauth_token_ciphertext`; migration and backend rollout
+  should land in the same batched deploy gate.
+- Rohan explicitly asked not to deploy too frequently. Deploy after a larger
+  verified infrastructure/functionality batch, not after every small fix.
 - new steering rule: concept hierarchy and dependency direction are part of
   correctness; do not flatten browser sessions, API bearer tokens, CLI tokens,
   and capture credentials into one vague auth bucket
 - the repository setup summary is live, but it has not been exercised through a
   real signed-in production browser session in this slice
-- GitHub OAuth/user tokens are still stored as product DB columns; token
-  storage hardening is a launch security pressure point
 - setup CTAs may need one more pass so browser setup and CLI setup do not feel
   like competing paths
 - old inline-message conversation routes should remain compatibility-only
@@ -106,8 +121,9 @@ to origin at `0e17a34 feat: cancel cloud update runs`; Slice 45 is pushed to
 origin at `b3535cd feat: retry cloud update runs`; Slice 46 is pushed to
 origin at `7b35cc9 feat: add dashboard run actions`; Slice 47 is pushed to
 origin at `2102d38 feat: add repository setup summary`; Slice 48 is pushed to
-origin at `c68d448 refactor: align workos auth boundary`. Hosted `main` is
-also fast-forwarded to `c68d448`, Render service
+origin at `c68d448 refactor: align workos auth boundary`; Slice 49 is pushed
+to origin at `0f9850c refactor: encrypt github provider tokens`. Hosted `main`
+is still fast-forwarded only to `c68d448`, Render service
 `srv-d8g8nb37uimc739vnnsg` is live on deploy
 `dep-d93a2c6k1jcs73ab8qg0`, and Vercel production is live at
 `https://www.codealmanac.com` from deployment

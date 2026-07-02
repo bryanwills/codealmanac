@@ -81,6 +81,26 @@ Current evidence:
   (`86 passed, 1 warning`), full backend tests (`357 passed, 1 warning`),
   route tests (`27 passed`), backend ruff/compileall, frontend lint/build, and
   `git diff --check`.
+- Slice 49 encrypted hosted GitHub provider tokens at rest with a
+  Fernet/MultiFernet store boundary. `UsersStore` now writes
+  `oauth_token_ciphertext` and `refresh_token_ciphertext`; the domain `User`
+  still exposes decrypted provider tokens only after the store boundary.
+- Slice 49 uses `Settings.github_token_encryption_keys` and wires the concrete
+  cipher in `backend/src/almanac/app.py`. Decrypt failures are mapped by the
+  users service to provider-unavailable auth errors instead of leaking crypto
+  details to API callers.
+- Slice 49 migration guards prove legacy plaintext `oauth_token` and
+  `refresh_token` columns are invalidated/dropped, not renamed into ciphertext
+  columns.
+- Slice 49 verification passed with focused backend auth/storage tests
+  (`99 passed, 1 warning`), full hosted backend tests
+  (`361 passed, 1 warning`), backend `uv run ruff check .`, backend
+  `uv run python -m compileall src modal_app -q`, hosted frontend route tests
+  (`27 passed`), focused Modal hydration test (`1 passed`), and
+  `npm run backend:smoke`.
+- Slice 49 set `GITHUB_TOKEN_ENCRYPTION_KEYS` in Doppler `codealmanac/prd`.
+  Supabase migration application and Render/Vercel deploy were intentionally
+  deferred to the next batched deploy gate.
 - Slice 29 added capture-token upload routes:
   `POST /v1/capture/artifacts` and `POST /v1/capture/turns`.
 - `backend/tests/test_capture_upload_api_contract.py` proves capture tokens can

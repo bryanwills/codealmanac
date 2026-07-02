@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 48 WorkOS auth-boundary alignment and production deploy.
+Sent: 2026-07-02 after Slice 49 token-storage hardening local verification.
 
 Route:
 
@@ -19,18 +19,19 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: `DISCORD_BOT_TOKEN` is currently present in Doppler `almanac/dev`.
-It was not present in `codealmanac/prd` when checked.
+Note: Slice 49 was not deployed immediately. Deployment is intentionally
+batched with the next infrastructure/deploy gate so database migration and
+backend rollout happen together.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 95% | 95% | Slice 48 is hosted auth-boundary work; local worker behavior is unchanged. |
+| CodeAlmanac backend/local | 95% | 95% | Slice 49 is hosted token-storage work; local worker behavior is unchanged. |
 | CodeAlmanac CLI/public UX | 91% | 91% | No CLI change after Slice 45 retry. |
-| CodeAlmanac-hosted backend/auth/API | 94% | 93% | API bearer parsing now uses FastAPI `HTTPBearer`; WorkOS claims mirror documented AuthKit access-token shape. |
+| CodeAlmanac-hosted backend/auth/API | 95% | 94% | GitHub provider tokens are encrypted at rest with Fernet/MultiFernet, store/service decrypt failures are mapped, and migration guards prevent plaintext rename into ciphertext. |
 | Hosted frontend/onboarding | 60% | 60% | No frontend behavior change after Slice 47 setup summary. |
-| Infra/deploy rename | 89% | 88% | Vercel production and Render backend are live on the Slice 48 commit. |
+| Infra/deploy rename | 90% | 89% | `GITHUB_TOKEN_ENCRYPTION_KEYS` is set in Doppler `codealmanac/prd`; migration/deploy intentionally deferred for a batched rollout. |
 
 ## Update Rule
 

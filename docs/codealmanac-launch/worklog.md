@@ -2,6 +2,46 @@
 
 ## 2026-07-02
 
+- Planned Slice 49 in
+  `docs/plans/2026-07-02-slice-49-token-storage-hardening.md`.
+- Hardened hosted GitHub provider token storage. `users.oauth_token` and
+  `users.refresh_token` became `oauth_token_ciphertext` and
+  `refresh_token_ciphertext`.
+- Added `backend/src/almanac/services/identity/users/secrets.py` with a
+  Fernet/MultiFernet `TokenCipher` boundary. `UsersStore` encrypts tokens on
+  upsert and decrypts them when hydrating the domain `User`.
+- Wired the token cipher in `backend/src/almanac/app.py` from
+  `Settings.github_token_encryption_keys`, keeping concrete secret machinery
+  in the composition root.
+- Kept WorkOS Vault out of this slice because WorkOS Vault is
+  organization-scoped and the current CodeAlmanac product hierarchy does not
+  make WorkOS organizations own all GitHub accounts/repositories.
+- Normalized WorkOS issuer handling to the documented slash form
+  `https://api.workos.com/`.
+- Updated Supabase migrations so clean databases use ciphertext columns and
+  legacy plaintext columns are invalidated/dropped, not renamed as ciphertext.
+- Added architecture coverage that prevents plaintext token columns and
+  prevents migrations from renaming `oauth_token` or `refresh_token` into
+  ciphertext columns.
+- Updated Modal Doppler hydration and the frontend-owned backend smoke command
+  so the required `GITHUB_TOKEN_ENCRYPTION_KEYS` setting is present at runtime.
+- Created `GITHUB_TOKEN_ENCRYPTION_KEYS` in Doppler `codealmanac/prd` without
+  printing the generated Fernet key.
+- Verified Slice 49 with hosted focused backend tests (`99 passed, 1 warning`),
+  full hosted backend tests (`361 passed, 1 warning`), backend
+  `uv run ruff check .`, backend
+  `uv run python -m compileall src modal_app -q`, hosted frontend route tests
+  (`27 passed`), focused Modal hydration test (`1 passed`), and
+  `npm run backend:smoke`.
+- Pushed hosted commit `0f9850c refactor: encrypt github provider tokens` to
+  `origin/codex/workos-authkit-api-foundation`.
+- Did not apply Supabase migrations or deploy after Slice 49. Per Rohan's
+  deployment-cadence instruction, deployment should be batched after another
+  coherent infrastructure slice so DB migration and backend rollout happen
+  together.
+- Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 91%,
+  CodeAlmanac-hosted backend/auth/API 95%, hosted frontend/onboarding 60%, and
+  infra/deploy rename 90%.
 - Planned Slice 48 in
   `docs/plans/2026-07-02-slice-48-workos-library-auth-boundary.md`.
 - Tightened the hosted WorkOS/AuthKit auth hierarchy. Browser sessions remain

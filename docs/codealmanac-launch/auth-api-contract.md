@@ -215,6 +215,54 @@ and a refresh token is present, attempt refresh and persist the rotated token
 even when `token_expires_at` is null. The current old backend only refreshes
 when an expiry timestamp is set, which misses invalid no-expiry tokens.
 
+## GitHub Provider Token Storage
+
+GitHub provider OAuth tokens are stored as ciphertext in cloud SQL:
+
+```text
+users.oauth_token_ciphertext
+users.refresh_token_ciphertext
+```
+
+The domain `User` model still carries decrypted `oauth_token` and
+`refresh_token` after crossing the `UsersStore` boundary because downstream
+GitHub integrations need bearer strings for provider calls. Raw database rows
+must not expose plaintext provider tokens.
+
+Slice 49 launch implementation:
+
+```text
+primitive: cryptography Fernet / MultiFernet
+setting: GITHUB_TOKEN_ENCRYPTION_KEYS
+composition root: backend/src/almanac/app.py
+store boundary: backend/src/almanac/services/identity/users/store.py
+secret module: backend/src/almanac/services/identity/users/secrets.py
+```
+
+Key format:
+
+```text
+comma-separated Fernet keys
+first key encrypts
+all listed keys decrypt
+```
+
+This supports rotation by prepending a new key while keeping old keys for
+decrypt. Re-encryption/rotation machinery is deferred until there are real
+tokens that need migration.
+
+WorkOS Vault is not used in Slice 49. WorkOS Vault is scoped around WorkOS
+organizations, while the current CodeAlmanac product hierarchy does not make
+WorkOS organizations own every GitHub account/repository whose user OAuth
+token may be stored. Use the local Fernet boundary until the product hierarchy
+has an organization-owned secret model.
+
+Legacy plaintext token columns cannot be safely encrypted in SQL because the
+Fernet key lives in the backend environment. Launch migrations invalidate and
+drop legacy plaintext `oauth_token` / `refresh_token` columns instead of
+renaming them to ciphertext. The launch assumption is that there are no real
+users to preserve before production rollout.
+
 ## Public API
 
 The browser, CLI, capture hooks, and future SDK-like clients need a versioned

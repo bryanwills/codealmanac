@@ -44,6 +44,16 @@ Status: active.
 - GitHub OAuth scopes stay narrow by default. `user:email` is required for
   sign-in identity; repo read/write operations should use GitHub App
   installation tokens and app permissions instead of broad user OAuth scopes.
+- GitHub provider OAuth tokens are encrypted at rest in cloud SQL using
+  `cryptography` Fernet/MultiFernet behind the `UsersStore` boundary.
+- WorkOS Vault is deferred until CodeAlmanac has a product hierarchy where
+  WorkOS organizations clearly own the GitHub accounts/repositories whose
+  secrets are stored.
+- Legacy plaintext GitHub provider-token columns are invalidated and dropped
+  during launch migrations. They must not be renamed into ciphertext columns.
+- Do not deploy after every small verified fix. Batch deploys after coherent
+  infrastructure/functionality slices, especially when a Supabase migration and
+  backend rollout must happen together.
 - The public CLI is not the worker API.
 - Bare `codealmanac` opens the cloud wiki for the current checkout.
 - `codealmanac setup` is cloud onboarding.

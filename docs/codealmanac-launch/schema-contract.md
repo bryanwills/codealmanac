@@ -394,6 +394,13 @@ Notes:
 - Autumn remains the billing source of truth where possible.
 - Billing mirrors should store only the product state needed for dashboard,
   gating, and reconciliation.
+- `users` stores WorkOS-linked GitHub identity and encrypted GitHub provider
+  tokens. Provider token columns are named `oauth_token_ciphertext` and
+  `refresh_token_ciphertext`; plaintext `oauth_token` and `refresh_token`
+  columns are forbidden in cloud SQL.
+- Legacy plaintext provider-token columns must be invalidated and dropped
+  during launch migrations. Do not rename plaintext columns into ciphertext
+  columns.
 - `webhook_deliveries` is cloud-only because local does not receive GitHub
   webhooks.
 - Local does not need `users`, `accounts`, `memberships`, or
