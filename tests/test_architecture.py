@@ -376,6 +376,27 @@ def test_topics_service_keeps_graph_and_workspace_boundaries():
     assert "codealmanac.services.index" not in workspace_text
 
 
+def test_local_hooks_service_keeps_file_writes_in_git_integration():
+    service_root = SRC_ROOT / "services/local_hooks"
+    git_hooks = SRC_ROOT / "integrations/workspaces/git/hooks.py"
+    service_text = (service_root / "service.py").read_text(encoding="utf-8")
+    hooks_text = git_hooks.read_text(encoding="utf-8")
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "ports.py",
+        "requests.py",
+        "service.py",
+    } <= {path.name for path in service_root.glob("*.py")}
+    assert "write_text" not in service_text
+    assert "chmod" not in service_text
+    assert "subprocess" not in service_text
+    assert "LocalGitHookManager" in service_text
+    assert "git\", \"rev-parse\", \"--git-path\"" in hooks_text
+    assert "__record-local-trigger" in hooks_text
+
+
 def test_wiki_topics_yaml_stays_split_by_read_and_mutation():
     wiki_root = SRC_ROOT / "services/wiki"
     facade_text = (wiki_root / "topics.py").read_text(encoding="utf-8")

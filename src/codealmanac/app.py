@@ -16,6 +16,7 @@ from codealmanac.integrations.updates import (
     SubprocessPackageCommandRunner,
 )
 from codealmanac.integrations.workspaces.git import (
+    FileLocalGitHookManager,
     GitLocalStateProbe,
     GitWorkspaceChangeProbe,
 )
@@ -34,6 +35,8 @@ from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.index.store import IndexStore
+from codealmanac.services.local_hooks.ports import LocalGitHookManager
+from codealmanac.services.local_hooks.service import LocalHooksService
 from codealmanac.services.pages.service import PagesService
 from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
@@ -82,6 +85,7 @@ class CodeAlmanac:
     automation: AutomationService
     config: ConfigService
     control: ControlService
+    local_hooks: LocalHooksService
     workspaces: WorkspacesService
     wiki: WikiService
     index: IndexService
@@ -113,6 +117,7 @@ def create_app(
     update_runner: PackageCommandRunner | None = None,
     instruction_installer: InstructionInstaller | None = None,
     local_git_state_probe: LocalGitStateProbe | None = None,
+    local_git_hook_manager: LocalGitHookManager | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -120,6 +125,9 @@ def create_app(
     control = ControlService(
         ControlStore(app_config.control_db_path),
         local_git_state_probe or GitLocalStateProbe(),
+    )
+    local_hooks = LocalHooksService(
+        local_git_hook_manager or FileLocalGitHookManager(),
     )
     automation = AutomationService(workspaces, scheduler or LaunchdSchedulerAdapter())
     manual = ManualLibrary()
@@ -199,6 +207,7 @@ def create_app(
         automation=automation,
         config=config_service,
         control=control,
+        local_hooks=local_hooks,
         workspaces=workspaces,
         wiki=wiki,
         index=index,

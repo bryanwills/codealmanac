@@ -140,3 +140,13 @@
 - Verified Slice 3 focused behavior with
   `uv run pytest tests/test_control_service.py tests/test_git_workspace_probe.py tests/test_cli.py tests/test_architecture.py`,
   `uv run ruff check .`, and `git diff --check`.
+- Planned Slice 4 in
+  `docs/plans/2026-07-02-slice-4-local-git-hooks.md`.
+- Added `app.local_hooks` with install/uninstall service methods.
+- Added the Git hook file adapter for `post-commit`, `post-merge`, and
+  `post-rewrite`.
+- Hook blocks call `codealmanac __record-local-trigger`, preserve existing user
+  hook content, redirect output, and end with `|| true`.
+- Verified Slice 4 focused behavior with
+  `uv run pytest tests/test_local_hooks.py tests/test_architecture.py`,
+  `uv run ruff check .`, and `git diff --check`.

@@ -52,6 +52,10 @@ Current evidence:
   root, branch, and HEAD SHA from a real temporary Git repository.
 - `tests/test_cli.py` proves the hidden dispatcher records a pending trigger
   event through the control DB and is JSON-renderable for debugging.
+- Slice 4 added `app.local_hooks.install()` and `app.local_hooks.uninstall()`.
+- `tests/test_local_hooks.py` proves hook installation for `post-commit`,
+  `post-merge`, and `post-rewrite`, reinstall idempotency, executable hook
+  files, user hook preservation, and managed-block uninstall.
 
 Commands:
 
