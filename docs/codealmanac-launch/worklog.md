@@ -243,3 +243,21 @@
   `uv run pytest tests/test_control_service.py tests/test_source_bundles_service.py tests/test_local_run_preparation_workflow.py tests/test_architecture.py`.
 - Verified Slice 11 full gate with `uv run pytest` (`398 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 11 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 53%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
+- Planned Slice 12 in
+  `docs/plans/2026-07-02-slice-12-deterministic-local-delivery.md`.
+- Added `app.deliveries` over the existing control DB `deliveries` table.
+- Added `app.workflows.local_delivery.deliver(...)`.
+- Added `GitLocalDeliveryManager` for expected-head reads, wiki-only patch
+  collection, patch application, and `docs almanac:` commit delivery.
+- Added worker workspace path lookup by run id.
+- Verified moved-head behavior: delivery is skipped and the run is marked
+  `stale`.
+- Verified empty worker diffs skip delivery and mark the run `succeeded`.
+- Verified Slice 12 focused behavior with
+  `uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py`.
+- Verified Slice 12 full gate with `uv run pytest` (`407 passed`),
+  `uv run ruff check .`, and `git diff --check`.

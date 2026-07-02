@@ -11,6 +11,7 @@ from codealmanac.core.paths import default_worker_workspaces_path
 from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.services.worker_workspaces.requests import (
     PrepareWorkerWorkspaceRequest,
+    ReadWorkerWorkspaceRequest,
     RemoveWorkerWorkspaceRequest,
 )
 
@@ -124,6 +125,24 @@ def test_worker_workspace_remove_delegates_git_and_removes_tree(
 
     assert fake_git.remove_calls == [(repo, prepared.paths.repo_path)]
     assert not prepared.paths.root_path.exists()
+
+
+def test_worker_workspace_paths_returns_typed_layout(
+    isolated_home: Path,
+):
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+        )
+    )
+
+    paths = app.worker_workspaces.paths(ReadWorkerWorkspaceRequest(run_id="run-1"))
+
+    assert paths.root_path == isolated_home / ".codealmanac/workspaces/run-1"
+    assert paths.repo_path == paths.root_path / "repo"
+    assert paths.sources_path == paths.root_path / "sources"
+    assert paths.run_path == paths.root_path / "run"
 
 
 def test_git_detached_worktree_manager_creates_expected_head_worktree(

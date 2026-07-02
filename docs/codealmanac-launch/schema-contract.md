@@ -285,22 +285,24 @@ Important fields:
 ```text
 id
 run_id
-repository_id
-branch_id
 mode                   # pr | commit | working_tree
-status                 # pending | running | succeeded | failed | stale | skipped
+status                 # pending | succeeded | failed | skipped
+target_ref
 expected_head_sha
-delivered_commit_sha
-pull_request_url
-files_changed_json
+delivered_head_sha
+commit_sha
+pr_url
+summary
 error
 created_at
+updated_at
 finished_at
 ```
 
 Delivery must check the expected head before writing. If the branch moved,
-delivery becomes `stale` and a new trigger should be created for the current
-head.
+the delivery is skipped, the run becomes `stale`, and a new trigger should be
+created for the current head. Repository and branch identity are reached through
+the delivery's `run_id`.
 
 ## Cloud-Only Tables
 

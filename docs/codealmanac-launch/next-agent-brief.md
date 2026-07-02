@@ -10,22 +10,22 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 11 added source bundle materialization.
+Slice 12 added deterministic local commit delivery.
 
 Implemented:
 
-- control DB verbs for sessions, turns, turn-branch links, and branch session
-  selection
-- `app.source_bundles`
-- `sources/manifest.json`
-- copied full session files under `sources/sessions/<provider>/`
-- local run preparation that materializes source bundles before writing
-  `request.json`
+- `app.deliveries`
+- `app.workflows.local_delivery.deliver(...)`
+- native Git delivery adapter for expected-head reads, wiki-only patch
+  collection, patch application, and commit creation
+- moved-head handling: skip delivery and mark the run `stale`
+- empty-diff handling: skip delivery and mark the run `succeeded`
+- worker workspace path lookup by run id
 
 Verified:
 
 ```text
-uv run pytest tests/test_control_service.py tests/test_source_bundles_service.py tests/test_local_run_preparation_workflow.py tests/test_architecture.py
+uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py
 uv run pytest
 uv run ruff check .
 git diff --check
@@ -39,7 +39,6 @@ Choose the next substantial slice from the launch plan. Good candidates:
 - public or hidden setup command that calls `app.local_hooks`
 - local run storage bridge from repo-local job files to the control DB
 - local model worker execution from prepared `EngineRunRequest`
-- delivery commit application from `EngineRunResult`
 
 Before coding, write the next slice plan under `docs/plans/`, then implement
 the full slice, update this brief, update `progress.md`, send a RelayForge
@@ -47,7 +46,7 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The branch is `dev`. At the start of Slice 11 it was clean and even with
+The branch is `dev`. At the start of Slice 12 it was clean and even with
 `origin/dev`.
 
 The local wiki command currently fails on this checkout with:

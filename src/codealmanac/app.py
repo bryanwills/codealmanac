@@ -18,6 +18,7 @@ from codealmanac.integrations.updates import (
 from codealmanac.integrations.workspaces.git import (
     FileLocalGitHookManager,
     GitDetachedWorktreeManager,
+    GitLocalDeliveryManager,
     GitLocalStateProbe,
     GitWorkspaceChangeProbe,
 )
@@ -30,6 +31,8 @@ from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.control.ports import LocalGitStateProbe
 from codealmanac.services.control.service import ControlService
 from codealmanac.services.control.store import ControlStore
+from codealmanac.services.deliveries.service import DeliveriesService
+from codealmanac.services.deliveries.store import DeliveriesStore
 from codealmanac.services.diagnostics.service import DiagnosticsService
 from codealmanac.services.engine_runs.service import EngineRunsService
 from codealmanac.services.engine_runs.store import EngineRunsStore
@@ -73,6 +76,8 @@ from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
+from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
+from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
@@ -87,6 +92,7 @@ class CodeAlmanacWorkflows:
     garden: GardenWorkflow
     queue: RunQueueWorkflow
     local_runs: LocalRunPreparationWorkflow
+    local_delivery: LocalDeliveryWorkflow
     sync: SyncWorkflow
 
 
@@ -95,6 +101,7 @@ class CodeAlmanac:
     automation: AutomationService
     config: ConfigService
     control: ControlService
+    deliveries: DeliveriesService
     engine_runs: EngineRunsService
     local_hooks: LocalHooksService
     source_bundles: SourceBundlesService
@@ -132,6 +139,7 @@ def create_app(
     local_git_state_probe: LocalGitStateProbe | None = None,
     local_git_hook_manager: LocalGitHookManager | None = None,
     git_worktree_manager: GitWorktreeManager | None = None,
+    git_delivery_manager: LocalGitDeliveryManager | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -140,6 +148,7 @@ def create_app(
         ControlStore(app_config.control_db_path),
         local_git_state_probe or GitLocalStateProbe(),
     )
+    deliveries = DeliveriesService(DeliveriesStore(app_config.control_db_path))
     engine_runs = EngineRunsService(EngineRunsStore(app_config.run_artifacts_path))
     source_bundles = SourceBundlesService(SourceBundlesStore())
     local_hooks = LocalHooksService(
@@ -221,6 +230,13 @@ def create_app(
         source_bundles,
         engine_runs,
     )
+    local_delivery = LocalDeliveryWorkflow(
+        control,
+        deliveries,
+        engine_runs,
+        worker_workspaces,
+        git_delivery_manager or GitLocalDeliveryManager(),
+    )
     sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
         build=build,
@@ -228,12 +244,14 @@ def create_app(
         garden=garden,
         queue=queue,
         local_runs=local_runs,
+        local_delivery=local_delivery,
         sync=sync,
     )
     return CodeAlmanac(
         automation=automation,
         config=config_service,
         control=control,
+        deliveries=deliveries,
         engine_runs=engine_runs,
         local_hooks=local_hooks,
         source_bundles=source_bundles,

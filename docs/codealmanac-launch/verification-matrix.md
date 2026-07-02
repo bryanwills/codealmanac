@@ -120,6 +120,18 @@ Current evidence:
   materializes the source bundle before writing the engine request.
 - `tests/test_architecture.py` proves source-bundle materialization remains a
   separate service boundary.
+- Slice 12 added deterministic local commit delivery.
+- `tests/test_deliveries_service.py` proves delivery rows are created and
+  updated against the existing control DB `deliveries` table.
+- `tests/test_local_delivery_workflow.py` proves successful delivery commits a
+  worker wiki patch, moved heads mark runs `stale` and skip delivery, and empty
+  worker diffs skip delivery while marking the run `succeeded`.
+- `tests/test_git_local_delivery.py` proves the native Git delivery adapter
+  collects wiki-only patches, applies them to the real checkout, commits with
+  `docs almanac:`, and rejects worker changes outside the configured Almanac
+  root.
+- `tests/test_architecture.py` proves Git delivery mechanics stay in
+  `integrations/workspaces/git/delivery.py`, not in the workflow.
 
 Commands:
 

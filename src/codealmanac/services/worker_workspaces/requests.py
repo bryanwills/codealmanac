@@ -18,6 +18,10 @@ class PrepareWorkerWorkspaceRequest(CodeAlmanacModel):
         return required_text(value, "worker workspace expected_head_sha")
 
 
+class ReadWorkerWorkspaceRequest(CodeAlmanacModel):
+    run_id: RunId
+
+
 class RemoveWorkerWorkspaceRequest(CodeAlmanacModel):
     run_id: RunId
     repository_root_path: Path

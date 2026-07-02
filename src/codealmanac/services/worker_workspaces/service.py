@@ -1,8 +1,12 @@
 from codealmanac.core.errors import ConflictError
-from codealmanac.services.worker_workspaces.models import PreparedWorkerWorkspace
+from codealmanac.services.worker_workspaces.models import (
+    PreparedWorkerWorkspace,
+    WorkerWorkspacePaths,
+)
 from codealmanac.services.worker_workspaces.ports import GitWorktreeManager
 from codealmanac.services.worker_workspaces.requests import (
     PrepareWorkerWorkspaceRequest,
+    ReadWorkerWorkspaceRequest,
     RemoveWorkerWorkspaceRequest,
 )
 from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
@@ -35,6 +39,9 @@ class WorkerWorkspacesService:
             self.store.remove_tree(paths)
             raise
         return PreparedWorkerWorkspace(paths=paths, checkout=checkout)
+
+    def paths(self, request: ReadWorkerWorkspaceRequest) -> WorkerWorkspacePaths:
+        return self.store.paths(request.run_id)
 
     def remove(self, request: RemoveWorkerWorkspaceRequest) -> None:
         paths = self.store.paths(request.run_id)

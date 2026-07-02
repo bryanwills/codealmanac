@@ -136,6 +136,53 @@ def test_source_bundles_service_keeps_bundle_materialization_boundary():
     assert "codealmanac.cli" not in service_text
 
 
+def test_deliveries_service_keeps_ledger_boundary():
+    deliveries_root = SRC_ROOT / "services/deliveries"
+    module_names = {path.name for path in deliveries_root.glob("*.py")}
+    service_text = (deliveries_root / "service.py").read_text(encoding="utf-8")
+    store_text = (deliveries_root / "store.py").read_text(encoding="utf-8")
+    models_text = (deliveries_root / "models.py").read_text(encoding="utf-8")
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "requests.py",
+        "service.py",
+        "store.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 40
+    assert "DeliveryStatus" in models_text
+    assert "connect_control" in store_text
+    assert "connection.execute" in store_text
+    assert "subprocess" not in service_text
+    assert "codealmanac.integrations" not in service_text
+
+
+def test_local_delivery_workflow_keeps_git_mechanics_in_integration():
+    workflow_root = SRC_ROOT / "workflows/local_delivery"
+    git_delivery = SRC_ROOT / "integrations/workspaces/git/delivery.py"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    ports_text = (workflow_root / "ports.py").read_text(encoding="utf-8")
+    integration_text = git_delivery.read_text(encoding="utf-8")
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "ports.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert "LocalGitDeliveryManager" in ports_text
+    assert "git_delivery.read_head" in service_text
+    assert "git_delivery.collect_patch" in service_text
+    assert "git_delivery.apply_patch_and_commit" in service_text
+    assert "codealmanac.integrations" not in service_text
+    assert "subprocess" not in service_text
+    assert "\"apply\", \"--index\", \"-\"" in integration_text
+    assert "\"commit\", \"--only\"" in integration_text
+
+
 def test_local_run_preparation_workflow_only_orchestrates_services():
     workflow_root = SRC_ROOT / "workflows/local_runs"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
