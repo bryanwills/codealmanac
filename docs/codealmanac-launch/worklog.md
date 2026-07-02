@@ -2,6 +2,30 @@
 
 ## 2026-07-02
 
+- Planned Slice 32 in
+  `docs/plans/2026-07-02-slice-32-hosted-run-events.md`.
+- Added hosted SQL-backed `run_events` with ordered `(run_id, sequence)`
+  storage, event kind, message, timestamp, and optional normalized
+  `payload_json`.
+- Added hosted `RunEventKind` and `RunEvent` models, `RunEventRow`, and
+  `run_event_from_row`.
+- Wired `UpdatesStore` transitions to append lifecycle status events for
+  queued, running, delivered, and failed runs in the same transaction as the
+  run status update.
+- Kept event payloads limited to metadata such as `worker_call_id`,
+  `commit_sha`, `files_changed`, `summary`, and `error`; source and model
+  transcript bodies still stay out of run events.
+- Added `run_events` to the launch Supabase init migration.
+- Verified Slice 32 focused hosted gate with
+  `uv run pytest tests/test_update_run_events_contract.py tests/test_updates_contract.py tests/test_architecture_contract.py -q`
+  (`93 passed`), `uv run ruff check .`, `uv run ruff format --check .`, and
+  `git diff --check`.
+- Verified hosted compile/full backend gates with
+  `python -m compileall backend/src backend/modal_app -q` and
+  `uv run pytest -q` (`306 passed, 1 warning`).
+- Pushed hosted commit
+  `12cfc08 feat: persist hosted run events` to
+  `origin/codex/workos-authkit-api-foundation`.
 - Planned Slice 31 in
   `docs/plans/2026-07-02-slice-31-hosted-direct-maintenance-api.md`.
 - Added `codealmanac.maintenance` as the package API for non-CLI callers.

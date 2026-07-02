@@ -474,8 +474,18 @@ Current evidence:
   (`303 passed, 1 warning`), `uv run ruff check .`,
   `uv run ruff format --check .`, `python -m compileall backend/src
   backend/modal_app -q`, and `git diff --check`.
-- Remaining hosted worker risks: expected-head delivery maturity and cloud SQL
-  run-event/source-artifact storage still need launch-hardening.
+- Slice 32 added hosted SQL-backed `run_events` with `(run_id, sequence)`,
+  timestamp, event kind, message, and optional normalized payload JSON.
+- `backend/tests/test_update_run_events_contract.py` proves ordered run-event
+  append/list behavior and migration coverage.
+- `backend/tests/test_architecture_contract.py` proves run-event persistence
+  remains table/store owned inside the updates package.
+- Slice 32 full hosted backend verification passed with `uv run pytest -q`
+  (`306 passed, 1 warning`), `uv run ruff check .`,
+  `uv run ruff format --check .`, `python -m compileall backend/src
+  backend/modal_app -q`, and `git diff --check`.
+- Remaining hosted worker risks: expected-head delivery maturity and frontend
+  run-event display still need launch-hardening.
 
 ## Provider / Deployment
 
