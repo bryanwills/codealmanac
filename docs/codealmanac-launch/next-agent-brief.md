@@ -10,45 +10,54 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 40 added hosted terminal run events.
+Slice 41 converged hosted product identity and provider deployment naming.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- hosted `RunFailed` domain event
-- hosted `RunStale` domain event
-- `UpdateCompletion` dispatches `RunFailed` after failed or blocked worker
-  completion
-- `UpdateCompletion` dispatches `RunStale` after delivery detects that the
-  expected branch head moved
-- failed/stale run events carry repo id, account id, repo full name, source
-  head sha, and reason; stale events also carry expected and actual head shas
-- pushed hosted commit
-  `8795849 feat: emit terminal run events`
-- CodeAlmanac product code was unchanged; local launch docs record this slice
-  in a follow-up docs commit.
+- active hosted identity strings now say `codealmanac-hosted` in agent docs,
+  FastAPI metadata, loggers, domain-event session keys, frontend support
+  defaults, and the clean-slate Supabase migration comment
+- Vercel project id `prj_sBOdSIF82roDGnkFeYrh5qdg6epp` was renamed from
+  `thealmanac/usealmanac` to `thealmanac/codealmanac-hosted`
+- clean hosted frontend checkout was linked to the renamed Vercel project
+- hosted commit `a781e51 chore: align hosted product identity` was pushed
+- Vercel production deployed
+  `https://codealmanac-hosted-lasush9ur-thealmanac.vercel.app` and aliased it
+  to `https://www.codealmanac.com`
+- Render service `srv-d8g8nb37uimc739vnnsg` deployed exact commit
+  `a781e5189da4403bcf8b31d7fb9129b3779aec01`; deploy
+  `dep-d938j4km0tmc73d6p3sg` is live
+- production smoke passed for `https://www.codealmanac.com` and
+  `https://codealmanac-backend-docker.onrender.com/api/health`
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_events_contract.py tests/test_updates_contract.py tests/test_architecture_contract.py -q
+uv run pytest tests/test_events_contract.py tests/test_identity_auth_contract.py tests/test_architecture_contract.py -q
 uv run ruff check .
 uv run python -m compileall src modal_app -q
 uv run pytest -q
 git diff --check
+cd ../frontend
+npm run test:routes
+npm run test:frontend
+npm run lint
+npm run build
 ```
 
-Counts so far: hosted backend focused `108 passed`; hosted backend full
-`334 passed, 1 warning`; hosted ruff, compileall, and diff-check passed.
+Counts so far: hosted backend focused `85 passed`; hosted backend full
+`334 passed, 1 warning`; frontend routes `27 passed`; frontend components
+`44 passed`; hosted ruff, compileall, lint, build, and diff-check passed.
 
 ## Next Pressure Test
 
 Choose the next launch-hardening slice between terminal run fanout,
 cloud run cancel/retry semantics, richer frontend onboarding pages, and
-deployment/provider rename checks.
+remaining provider cleanup.
 
 Pressure points:
 
@@ -61,6 +70,10 @@ Pressure points:
 - browser setup/onboarding entrypoints now have stable redirect URLs, but
   richer onboarding screens still need product UI
 - old inline-message conversation routes should remain compatibility-only
+- old Modal app `usealmanac-updates` is still deployed; retire it only in an
+  explicit provider cleanup step
+- dirty `/Users/rohan/Desktop/Projects/usealmanac` still exists and should not
+  be used for launch work until cleaned or renamed
 
 ## Known Repo State
 
@@ -87,7 +100,8 @@ to origin at `fbf8b5a feat: add CLI repository trigger routes`; Slice 37 is
 pushed to origin at `168f9b2 feat: add CLI run read routes`; Slice 38 is
 pushed to origin at `ed7e765 feat: add cloud route handoff`; Slice 39 is
 pushed to origin at `14caf8b feat: start cloud runs from CLI`; Slice 40 is
-pushed to origin at `8795849 feat: emit terminal run events`.
+pushed to origin at `8795849 feat: emit terminal run events`; Slice 41 is
+pushed to origin at `a781e51 chore: align hosted product identity`.
 
 The local wiki command currently fails on this checkout with:
 

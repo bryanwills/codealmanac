@@ -635,6 +635,16 @@ Current evidence:
 - Slice 40 hosted verification passed with focused tests (`108 passed`), full
   hosted backend tests (`334 passed, 1 warning`), `uv run ruff check .`,
   `uv run python -m compileall src modal_app -q`, and `git diff --check`.
+- Slice 41 aligned active hosted product identity with `codealmanac-hosted`.
+  `CLAUDE.md`, `MANUAL.md`, FastAPI app metadata, logger names, event
+  dispatcher session keys, frontend support defaults, and the clean-slate
+  Supabase migration comment no longer use active `usealmanac` naming.
+- Slice 41 hosted verification passed with backend focused tests
+  (`85 passed`), full backend tests (`334 passed, 1 warning`),
+  `uv run ruff check .`, `uv run python -m compileall src modal_app -q`,
+  frontend route tests (`27 passed`), frontend component tests (`44 passed`),
+  `npm run lint`, `npm run build`, and `git diff --check`. The frontend build
+  retained the known non-blocking CSS optimizer warning about `m-* utility`.
 - Remaining hosted worker risks: terminal failed/stale GitHub check subscriber,
   cloud run cancel/retry, and richer production setup/onboarding screens
   still need launch-hardening.
@@ -660,3 +670,29 @@ Current evidence:
   `https://www.codealmanac.com`.
 - Slice 25 makes the hosted rename/deploy-surface changes available on a clean
   current-main branch before the WorkOS/AuthKit and public API slices.
+- Slice 41 verified GitHub repo `AlmanacCode/codealmanac-hosted`, default
+  branch `main`, and clean hosted worktree origin
+  `https://github.com/AlmanacCode/codealmanac-hosted.git`.
+- Slice 41 renamed Vercel project id `prj_sBOdSIF82roDGnkFeYrh5qdg6epp` from
+  `thealmanac/usealmanac` to `thealmanac/codealmanac-hosted` through the
+  documented `PATCH /v9/projects/{idOrName}` API. `vercel project inspect
+  codealmanac-hosted --scope thealmanac` succeeds; inspecting `usealmanac`
+  fails with no project.
+- Slice 41 deployed the hosted frontend to production. Vercel build
+  `https://codealmanac-hosted-lasush9ur-thealmanac.vercel.app` was aliased to
+  `https://www.codealmanac.com`, and `curl` returned HTTP 200.
+- Slice 41 deployed Render service `srv-d8g8nb37uimc739vnnsg` at exact commit
+  `a781e5189da4403bcf8b31d7fb9129b3779aec01`. Deploy
+  `dep-d938j4km0tmc73d6p3sg` finished `live`, and
+  `https://codealmanac-backend-docker.onrender.com/api/health` returned HTTP
+  200 with `{"status":"ok"}`.
+- Slice 41 verified Doppler project `codealmanac` configs
+  `dev`, `dev_personal`, `stg`, and `prd`; `codealmanac/prd` has no secret
+  names matching `usealmanac` or `USEALMANAC`.
+- Slice 41 verified Modal contains deployed `codealmanac-hosted-updates`.
+  The old `usealmanac-updates` app is still deployed and should be cleaned up
+  only in an explicit provider-retirement step.
+- Slice 41 verified `posthog-cli api` is available and that Autumn billing
+  verification passes through `make billing-verify` with Doppler
+  `codealmanac/dev_personal`. Raw `npm run billing:verify` fails without
+  `AUTUMN_SECRET_KEY`, which is expected outside Doppler.

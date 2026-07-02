@@ -2,6 +2,44 @@
 
 ## 2026-07-02
 
+- Planned Slice 41 in
+  `docs/plans/2026-07-02-slice-41-hosted-rename-provider-convergence.md`.
+- Updated active hosted identity references from `usealmanac` to
+  `codealmanac-hosted` in `CLAUDE.md`, `MANUAL.md`, FastAPI app metadata,
+  logger names, event-dispatch session keys, frontend support defaults, and the
+  clean-slate Supabase migration comment.
+- Renamed Vercel project `prj_sBOdSIF82roDGnkFeYrh5qdg6epp` from
+  `thealmanac/usealmanac` to `thealmanac/codealmanac-hosted` through Vercel's
+  documented project update API.
+- Linked the clean hosted frontend checkout to `thealmanac/codealmanac-hosted`
+  for production deployment commands.
+- Pushed hosted commit `a781e51 chore: align hosted product identity` to
+  `origin/codex/workos-authkit-api-foundation`.
+- Deployed the hosted frontend to Vercel production. Vercel produced
+  `https://codealmanac-hosted-lasush9ur-thealmanac.vercel.app` and aliased it
+  to `https://www.codealmanac.com`.
+- Deployed Render service `srv-d8g8nb37uimc739vnnsg` at exact hosted commit
+  `a781e5189da4403bcf8b31d7fb9129b3779aec01`; deploy
+  `dep-d938j4km0tmc73d6p3sg` finished `live`.
+- Verified production smoke: `https://www.codealmanac.com` returned HTTP 200
+  and `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  HTTP 200 with `{"status":"ok"}`.
+- Verified provider state: GitHub repo `AlmanacCode/codealmanac-hosted`,
+  Vercel project `thealmanac/codealmanac-hosted`, Render service
+  `codealmanac-backend`, Doppler project `codealmanac`, Modal app
+  `codealmanac-hosted-updates`, PostHog CLI API availability, and Autumn
+  billing via `make billing-verify`.
+- Direct `npm run billing:verify` failed without `AUTUMN_SECRET_KEY`; rerunning
+  through `make billing-verify` passed for free, pro, and scale plans.
+- Verified Slice 41 backend gates with focused pytest (`85 passed`), full
+  pytest (`334 passed, 1 warning`), `uv run ruff check .`,
+  `uv run python -m compileall src modal_app -q`, and `git diff --check`.
+- Verified Slice 41 frontend gates with `npm run test:routes` (`27 passed`),
+  `npm run test:frontend` (`44 passed`), `npm run lint`, and `npm run build`.
+  The build retained the known CSS optimizer warning about `m-* utility`.
+- Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 87%,
+  CodeAlmanac-hosted backend/auth/API 86%, hosted frontend/onboarding 35%, and
+  infra/deploy rename 70%.
 - Planned Slice 38 in
   `docs/plans/2026-07-02-slice-38-cloud-open-handoff.md`.
 - Added hosted browser-session repository resolution:

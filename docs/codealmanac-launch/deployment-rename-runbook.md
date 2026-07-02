@@ -1,6 +1,7 @@
 # Deployment Rename Runbook
 
-Status: partially executed.
+Status: partially executed; primary GitHub, Vercel, Render, Doppler, and Modal
+target names are verified under CodeAlmanac.
 Purpose: rename `usealmanac` to `codealmanac-hosted` and redeploy the cloud
 product without leaving provider state split across old and new names.
 
@@ -57,6 +58,11 @@ After GitHub remote is correct and local worktree is clean:
 /Users/rohan/Desktop/Projects/usealmanac
   -> /Users/rohan/Desktop/Projects/codealmanac-hosted
 ```
+
+Not executed as of Slice 41. The dirty
+`/Users/rohan/Desktop/Projects/usealmanac` checkout remains in place. Active
+launch work is using the clean hosted worktree at
+`/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`.
 
 ## 4. Repository Text And Package Names
 
@@ -142,6 +148,36 @@ Verified:
 https://www.codealmanac.com -> HTTP 200
 ```
 
+Executed on 2026-07-02 in Slice 41:
+
+```text
+PATCH https://api.vercel.com/v9/projects/prj_sBOdSIF82roDGnkFeYrh5qdg6epp?teamId=team_bAf9K1EW16Pkf6bysSN8PMXy
+body: {"name":"codealmanac-hosted"}
+```
+
+Verified:
+
+```text
+vercel project inspect codealmanac-hosted --scope thealmanac -> found
+vercel project inspect usealmanac --scope thealmanac -> no project
+```
+
+Executed on 2026-07-02 in Slice 41:
+
+```bash
+cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
+vercel link --yes --project codealmanac-hosted --scope thealmanac
+vercel deploy --prod --scope thealmanac --yes
+```
+
+Verified:
+
+```text
+production: https://codealmanac-hosted-lasush9ur-thealmanac.vercel.app
+alias: https://www.codealmanac.com
+curl https://www.codealmanac.com -> HTTP 200
+```
+
 ## 6. Render
 
 Use Render CLI/API or dashboard.
@@ -197,6 +233,20 @@ Verified deploy:
 dep-d930nheh2hms73d259s0 -> live
 ```
 
+Executed on 2026-07-02 in Slice 41:
+
+```bash
+render deploys create srv-d8g8nb37uimc739vnnsg --commit a781e51 --wait --confirm --output json
+```
+
+Verified:
+
+```text
+dep-d938j4km0tmc73d6p3sg -> live
+commit -> a781e5189da4403bcf8b31d7fb9129b3779aec01
+https://codealmanac-backend-docker.onrender.com/api/health -> HTTP 200 {"status":"ok"}
+```
+
 ## 7. Modal
 
 Use Modal CLI.
@@ -228,6 +278,10 @@ Verified deployed Modal app:
 ```text
 codealmanac-hosted-updates
 ```
+
+Slice 41 verified that both `codealmanac-hosted-updates` and the old
+`usealmanac-updates` app are still deployed. Do not delete the old app except
+as an explicit provider-retirement operation.
 
 ## 8. Supabase
 
@@ -313,6 +367,11 @@ USEALMANAC
 usealmanac
 ```
 
+Slice 41 verified `doppler secrets --project codealmanac --config prd
+--only-names | rg 'USEALMANAC|usealmanac'` returns no matches. The same config
+still contains expected active names such as `MODAL_APP_NAME`,
+`FRONTEND_BASE_URL`, `BACKEND_BASE_URL`, WorkOS keys, and GitHub App keys.
+
 ## 11. PostHog
 
 Use PostHog UI/API/tooling. The official npm package is `@posthog/cli`, whose
@@ -326,6 +385,9 @@ Verify:
 - backend event capture points at the intended project
 - signup/onboarding events still arrive
 - run/delivery events still arrive
+
+Slice 41 verified `posthog-cli api --help` exposes the agent API surface. No
+PostHog mutation was performed in this slice.
 
 ## 12. Autumn
 
@@ -342,6 +404,11 @@ Verify:
 ```bash
 make billing-verify
 ```
+
+Slice 41 verified `make billing-verify` through Doppler
+`codealmanac/dev_personal`; free, pro, and scale plans match expected pricing.
+Running raw `npm run billing:verify` without Doppler fails because
+`AUTUMN_SECRET_KEY` is absent, which is expected outside provider-backed env.
 
 ## 13. Final Smoke Checks
 

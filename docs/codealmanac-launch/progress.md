@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 40 terminal run events.
+Sent: 2026-07-02 after Slice 41 hosted rename/provider convergence.
 
 Route:
 
@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 95% | 95% | Slice 40 is hosted-only; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 87% | 87% | Slice 40 adds no public CLI verbs. |
-| CodeAlmanac-hosted backend/auth/API | 85% | 84% | Hosted now emits typed `RunFailed` and `RunStale` domain events for terminal run fanout. |
-| Hosted frontend/onboarding | 35% | 35% | Slice 40 does not change hosted UI; richer onboarding screens remain. |
-| Infra/deploy rename | 15% | 15% | Slice 35 changes Supabase schema but does not change provider deployment naming/configuration. |
+| CodeAlmanac backend/local | 95% | 95% | Slice 41 is hosted/provider-only; local worker behavior is unchanged. |
+| CodeAlmanac CLI/public UX | 87% | 87% | Slice 41 adds no public CLI verbs. |
+| CodeAlmanac-hosted backend/auth/API | 86% | 85% | Active hosted runtime identity now says `codealmanac-hosted`; the exact commit is deployed on Render. |
+| Hosted frontend/onboarding | 35% | 35% | Slice 41 changes support defaults and deploy identity, not onboarding screens. |
+| Infra/deploy rename | 70% | 15% | GitHub repo, Vercel project, Render service, Doppler project, Modal target, production frontend, and backend health are verified under CodeAlmanac names. |
 
 ## Update Rule
 
