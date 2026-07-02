@@ -31,6 +31,8 @@ from codealmanac.services.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
+    GetBranchRequest,
+    GetRepositoryRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     RecordLocalTriggerRequest,
@@ -65,6 +67,14 @@ class ControlStore:
                 user_version=user_version(connection),
                 tables=control_tables(connection),
             )
+
+    def get_repository(self, request: GetRepositoryRequest) -> RepositoryRecord:
+        with connect_control(self.path) as connection:
+            return self.repository_by_id(connection, request.repository_id)
+
+    def get_branch(self, request: GetBranchRequest) -> BranchRecord:
+        with connect_control(self.path) as connection:
+            return self.branch_by_id(connection, request.branch_id)
 
     def upsert_repository(
         self,
@@ -385,6 +395,8 @@ class ControlStore:
                 """
                 UPDATE runs
                 SET status = ?,
+                    source_bundle_ref = COALESCE(?, source_bundle_ref),
+                    request_ref = COALESCE(?, request_ref),
                     result_ref = COALESCE(?, result_ref),
                     summary = COALESCE(?, summary),
                     commit_subject = COALESCE(?, commit_subject),
@@ -397,6 +409,8 @@ class ControlStore:
                 """,
                 (
                     status.value,
+                    request.source_bundle_ref,
+                    request.request_ref,
                     request.result_ref,
                     request.summary,
                     request.commit_subject,

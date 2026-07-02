@@ -21,6 +21,24 @@ class ReadControlSchemaStatusRequest(CodeAlmanacModel):
     ensure: bool = True
 
 
+class GetRepositoryRequest(CodeAlmanacModel):
+    repository_id: str
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "repository id")
+
+
+class GetBranchRequest(CodeAlmanacModel):
+    branch_id: str
+
+    @field_validator("branch_id")
+    @classmethod
+    def require_branch_id(cls, value: str) -> str:
+        return required_text(value, "branch id")
+
+
 class UpsertRepositoryRequest(CodeAlmanacModel):
     provider: str
     owner_login: str
@@ -156,6 +174,8 @@ class CreateControlRunRequest(CodeAlmanacModel):
 class UpdateControlRunRequest(CodeAlmanacModel):
     run_id: str
     status: ControlRunStatus | None = None
+    source_bundle_ref: str | None = None
+    request_ref: str | None = None
     result_ref: str | None = None
     summary: str | None = None
     commit_subject: str | None = None
@@ -166,6 +186,21 @@ class UpdateControlRunRequest(CodeAlmanacModel):
     @classmethod
     def require_run_id(cls, value: str) -> str:
         return required_text(value, "run id")
+
+    @field_validator(
+        "source_bundle_ref",
+        "request_ref",
+        "result_ref",
+        "summary",
+        "commit_subject",
+        "commit_body",
+        "error",
+    )
+    @classmethod
+    def require_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return required_text(value, "run update text")
 
 
 class AppendControlRunEventRequest(CodeAlmanacModel):

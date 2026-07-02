@@ -113,6 +113,27 @@ def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
     assert "worktree\", \"add\", \"--detach\"" in integration_text
 
 
+def test_local_run_preparation_workflow_only_orchestrates_services():
+    workflow_root = SRC_ROOT / "workflows/local_runs"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 150
+    assert "claim_next_trigger" in service_text
+    assert "worker_workspaces.prepare" in service_text
+    assert "engine_runs.prepare" in service_text
+    assert "update_run" in service_text
+    assert "codealmanac.integrations" not in service_text
+    assert "connect_control" not in service_text
+    assert "subprocess" not in service_text
+
+
 def test_config_service_owns_toml_imports():
     offenders = [
         path

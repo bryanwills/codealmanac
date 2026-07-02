@@ -14,6 +14,8 @@ from codealmanac.services.control.requests import (
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
     EnsureControlSchemaRequest,
+    GetBranchRequest,
+    GetRepositoryRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,
     ReadControlSchemaStatusRequest,
@@ -36,7 +38,6 @@ class ControlService:
         self,
         request: EnsureControlSchemaRequest | None = None,
     ) -> ControlSchemaStatus:
-        _ = request or EnsureControlSchemaRequest()
         return self.store.ensure_ready()
 
     def status(
@@ -45,6 +46,12 @@ class ControlService:
     ) -> ControlSchemaStatus:
         resolved = request or ReadControlSchemaStatusRequest()
         return self.store.status(resolved.ensure)
+
+    def get_repository(self, request: GetRepositoryRequest) -> RepositoryRecord:
+        return self.store.get_repository(request)
+
+    def get_branch(self, request: GetBranchRequest) -> BranchRecord:
+        return self.store.get_branch(request)
 
     def upsert_repository(
         self,

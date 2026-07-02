@@ -92,6 +92,18 @@ Current evidence:
   creates a detached worktree at the expected head SHA.
 - `tests/test_architecture.py` proves Git/subprocess mechanics stay in the Git
   integration, not the worker workspace service/store.
+- Slice 9 added `app.workflows.local_runs.prepare_next`.
+- `tests/test_local_run_preparation_workflow.py` proves a pending trigger is
+  claimed, a worker workspace is created, an engine `request.json` is written,
+  `source_bundle_ref` and `request_ref` are stored on the control run, and a
+  normalized run event is appended.
+- `tests/test_local_run_preparation_workflow.py` proves no pending trigger
+  returns a typed no-op.
+- `tests/test_local_run_preparation_workflow.py` proves a claimed run is marked
+  `failed` with a normalized error when the repository has no local root path.
+- `tests/test_architecture.py` proves the local run preparation workflow
+  orchestrates services without importing integrations, SQL, or subprocess
+  mechanics.
 
 Commands:
 

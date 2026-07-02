@@ -71,6 +71,7 @@ from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
+from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
 from codealmanac.workflows.sync.service import SyncWorkflow
@@ -83,6 +84,7 @@ class CodeAlmanacWorkflows:
     ingest: IngestWorkflow
     garden: GardenWorkflow
     queue: RunQueueWorkflow
+    local_runs: LocalRunPreparationWorkflow
     sync: SyncWorkflow
 
 
@@ -209,12 +211,18 @@ def create_app(
         garden,
         worker_spawner or SubprocessRunWorkerSpawner(),
     )
+    local_runs = LocalRunPreparationWorkflow(
+        control,
+        worker_workspaces,
+        engine_runs,
+    )
     sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
         build=build,
         ingest=ingest,
         garden=garden,
         queue=queue,
+        local_runs=local_runs,
         sync=sync,
     )
     return CodeAlmanac(

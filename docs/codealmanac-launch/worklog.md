@@ -194,3 +194,19 @@
   `uv run pytest tests/test_worker_workspaces_service.py tests/test_architecture.py`.
 - Verified Slice 8 full gate with `uv run pytest` (`389 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 8 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 42%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
+- Planned Slice 9 in
+  `docs/plans/2026-07-02-slice-9-local-run-preparation.md`.
+- Added control read seams for repositories and branches.
+- Extended control run updates to store `source_bundle_ref` and `request_ref`.
+- Added `app.workflows.local_runs.prepare_next(...)`, which claims a pending
+  trigger, prepares a local worker workspace, creates an engine request
+  artifact, stores refs on the control run, and appends a run event.
+- Added failure handling for claimed runs that cannot be prepared.
+- Verified Slice 9 focused behavior with
+  `uv run pytest tests/test_local_run_preparation_workflow.py tests/test_control_service.py tests/test_architecture.py`.
+- Verified Slice 9 full gate with `uv run pytest` (`393 passed`),
+  `uv run ruff check .`, and `git diff --check`.

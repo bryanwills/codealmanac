@@ -10,24 +10,23 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 8 added local worker workspace preparation.
+Slice 9 added local run preparation.
 
 Implemented:
 
-- `AppConfig.worker_workspaces_path`, defaulting to
-  `~/.codealmanac/workspaces`
-- `app.worker_workspaces`
-- `src/codealmanac/services/worker_workspaces/`
-- typed worker workspace paths for `repo/`, `sources/`, and `run/`
-- `GitWorktreeManager` port
-- `GitDetachedWorktreeManager` integration using
-  `git worktree add --detach`
-- conflict behavior for duplicate run workspace paths
+- control read seams for repositories and branches
+- control run updates for `source_bundle_ref` and `request_ref`
+- `app.workflows.local_runs.prepare_next(...)`
+- trigger claiming into prepared local runs
+- local worker workspace creation for claimed runs
+- engine request artifact creation for claimed runs
+- normalized preparation run events
+- failure handling for claimed runs that cannot be prepared
 
 Verified:
 
 ```text
-uv run pytest tests/test_worker_workspaces_service.py tests/test_architecture.py
+uv run pytest tests/test_local_run_preparation_workflow.py tests/test_control_service.py tests/test_architecture.py
 uv run pytest
 uv run ruff check .
 git diff --check
@@ -42,8 +41,7 @@ Choose the next substantial slice from the launch plan. Good candidates:
 - local run storage bridge from repo-local job files to the control DB
 - active-run cancellation/staling when branch head changes
 - source bundle selection materialization for claimed runs
-- local run preparation workflow combining `claim_next_trigger`,
-  `worker_workspaces`, source bundle refs, and `engine_runs`
+- local model worker execution from prepared `EngineRunRequest`
 - delivery commit application from `EngineRunResult`
 
 Before coding, write the next slice plan under `docs/plans/`, then implement
@@ -52,7 +50,7 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The branch is `dev`. At the start of Slice 8 it was clean and even with
+The branch is `dev`. At the start of Slice 9 it was clean and even with
 `origin/dev`.
 
 The local wiki command currently fails on this checkout with:
