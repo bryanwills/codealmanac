@@ -419,3 +419,26 @@
   CodeAlmanac backend/local 83%, CLI/public UX 30%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 21 in
+  `docs/plans/2026-07-02-slice-21-prompt-manual-restoration.md`.
+- Added `PromptName.OPERATION_INIT`.
+- Added packaged prompt resource
+  `src/codealmanac/prompts/operations/init.md`.
+- Expanded base prompt resources for purpose, notability, and syntax from the
+  archive doctrine while adapting them to configured Almanac roots,
+  `codealmanac` naming, structured `sources:`, and no new cross-wiki links.
+- Expanded ingest and garden operation prompts without restoring the old public
+  `absorb` name.
+- Replaced bundled `manual/build.md` with `manual/init.md`.
+- Updated `ManualDocumentName` so workspace manual installation copies
+  `init.md`.
+- Kept public `build` command removal and agent-backed `init` runtime behavior
+  out of this slice.
+- Verified Slice 21 focused behavior with
+  `uv run pytest tests/test_ingest_workflow.py::test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index tests/test_prompts.py tests/test_manual.py tests/test_build_workflow.py tests/test_architecture.py`.
+- Verified Slice 21 full gate with `uv run pytest` (`458 passed`),
+  `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 21 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 84%, CLI/public UX 30%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
