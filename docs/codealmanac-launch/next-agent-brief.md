@@ -10,51 +10,56 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 26 implemented the hosted WorkOS/AuthKit API foundation.
+Slice 27 implemented cloud CLI auth over the hosted WorkOS/AuthKit foundation.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- Next.js AuthKit session ownership through `AuthKitProvider`, AuthKit proxy
-  composition, `/sign-in`, `handleAuth(...)` callback, and POST server-action
-  sign-out
-- frontend server auth helpers that forward WorkOS access tokens to FastAPI
-- backend WorkOS bearer-token verification through JWKS
-- hosted user ids stored as `workos_user_id text` instead of
-  `supabase_user_id uuid`
-- CLI token, conversation-source, events, analytics, and migration surfaces
-  updated to use WorkOS user ids
-- active Supabase Auth helper/client paths removed from hosted auth wiring
+- hosted `/v1` CLI auth aliases over the existing CLI token service:
+  `/v1/auth/cli/start`, `/v1/auth/cli/sessions/{session_id}`,
+  `/v1/auth/cli/sessions/{session_id}/complete`,
+  `/v1/auth/cli/sessions/{session_id}/poll`, `/v1/me`, and
+  `/v1/auth/logout`
+- legacy `/api/cli/...` routes preserved for dashboard compatibility
+- `codealmanac` cloud auth state, HTTP client, store, browser opener port, and
+  browser login workflow
+- public cloud identity commands: `codealmanac login`,
+  `codealmanac whoami`, and `codealmanac logout`
+- cloud-first `codealmanac setup`; local setup remains
+  `codealmanac local setup`
+- local CLI auth state stored at `~/.codealmanac/auth.json` mode `0600` with
+  only the issued hosted CLI token
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest
+uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
-uv run pytest tests/test_identity_auth_contract.py tests/test_identity_api_contract.py tests/test_hosted_conversation_sync_contract.py tests/test_store_timestamps_contract.py tests/test_analytics_contract.py -q
-uv run pytest tests/test_architecture_contract.py tests/test_repositories_api_contract.py tests/test_wiki_api_contract.py tests/test_repositories_contract.py tests/test_updates_contract.py tests/test_wiki_contract.py -q
 
-cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
-npm run test:routes
-npm run test:frontend
-npm run build
+cd /Users/rohan/Desktop/Projects/codealmanac
+uv run pytest -q
+uv run ruff check .
+git diff --check
+uv run codealmanac login --help
+uv run codealmanac setup --help
+uv run codealmanac whoami --help
+uv run codealmanac logout --help
 ```
 
-`npm run build` still prints the known non-blocking CSS optimizer warning about
-a comment containing `m-* utility`.
+Counts: hosted backend `289 passed, 1 warning`; codealmanac `474 passed`.
 
 ## Next Pressure Test
 
 The next substantial slice should either:
 
-- build the versioned public API and CLI login/capture credential flow on top
-  of the WorkOS bearer-token foundation, or
-- build hosted worker/run storage parity: SQL-backed `runs`, `run_events`,
-  bundle/result storage by reference, and cloud/local naming parity.
+- implement capture installation/status/repair and the narrow capture
+  credential flow, or
+- build hosted repo/run API parity: repositories, branch trigger policy, SQL
+  `runs`, `run_events`, bundle/result storage by reference, and delivery state.
 
 Before coding, write the next slice plan under `docs/plans/`, then implement
 the full slice, update this brief, update `progress.md`, send a RelayForge
@@ -62,14 +67,13 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The CodeAlmanac branch is `dev`. Slice 24 implementation commit `38423978`,
-Slice 24 bookkeeping commit `d9a55b9e`, and Slice 25 bookkeeping commit
-`ad5792d7` are pushed to `origin/dev`.
+The CodeAlmanac branch is `dev`. Slice 27 is implemented locally and should be
+pushed to `origin/dev` after final documentation commit.
 
 The hosted auth branch is
 `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
-on `codex/workos-authkit-api-foundation`, pushed to origin at commit
-`5858ae1 feat: migrate hosted auth to WorkOS`.
+on `codex/workos-authkit-api-foundation`. Slice 27 is implemented locally and
+should be pushed to origin after final documentation commit.
 
 Slice 25 hosted convergence branch `codex/hosted-baseline-convergence` is
 pushed to origin at commit `1d237db`.

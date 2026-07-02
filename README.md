@@ -1,6 +1,6 @@
 # CodeAlmanac
 
-CodeAlmanac is a local codebase wiki maintained by AI coding agents.
+CodeAlmanac is a codebase wiki maintained by AI coding agents.
 
 It keeps durable project knowledge next to the code: decisions, workflows,
 invariants, incidents, gotchas, and context from real engineering sessions.
@@ -9,8 +9,9 @@ fast search.
 
 ## Current Status
 
-This Python rewrite is usable as a local alpha. It is not the old Node CLI and
-it does not require a hosted service.
+This Python rewrite is usable as a local alpha. It is not the old Node CLI.
+Cloud setup is the default CLI path; local setup remains available under the
+`local` namespace.
 
 - Public command: `codealmanac`
 - Default repo wiki root: `almanac/`
@@ -43,18 +44,22 @@ uv run codealmanac --help
 
 ## Setup
 
-Install global agent instructions for the local tools you use:
+Sign in to CodeAlmanac cloud and install global agent instructions for the
+local tools you use:
 
 ```bash
 codealmanac setup --yes
 codealmanac setup --yes --target codex
 codealmanac setup --yes --target claude
+codealmanac login
+codealmanac whoami
 ```
 
-Plain setup installs only local agent instructions and does not connect to a
-hosted service. Scheduled automation is explicit:
+Use `--skip-login` when you only want local instruction files. Scheduled
+automation is explicit:
 
 ```bash
+codealmanac setup --yes --skip-login
 codealmanac setup --yes --install-automation
 codealmanac setup --yes --sync-every 5h --sync-quiet 45m
 codealmanac setup --yes --install-automation --garden-off
@@ -67,6 +72,7 @@ also opts into automation installation.
 To remove setup-owned instruction artifacts and scheduled automation:
 
 ```bash
+codealmanac logout
 codealmanac uninstall --yes
 codealmanac uninstall --yes --keep-automation
 ```
@@ -244,13 +250,13 @@ narrow the viewer to one wiki.
 
 ## Public Contract
 
-This rewrite is local-only for now.
+This rewrite has two public surfaces:
 
-- No hosted login/connect/upload commands.
+- Cloud commands: `setup`, `login`, `whoami`, `logout`.
+- Local commands: `local setup`, `local update`, `local triggers`, `local jobs`.
 - No public SDK or MCP package.
 - No compatibility aliases.
 - No hidden cloud write path.
 - No second wiki command name.
 
-Hosted integration can be added later around the same repo-owned wiki artifact,
-but it is not part of this release surface.
+Cloud setup uses hosted CLI auth. Local setup uses local Git checkout state.

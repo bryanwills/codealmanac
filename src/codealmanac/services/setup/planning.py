@@ -108,6 +108,7 @@ def next_commands(
         )
     )
     return (
+        SetupCommand(label="Check cloud login", command=("codealmanac", "whoami")),
         SetupCommand(label="Initialize this repo", command=("codealmanac", "init")),
         SetupCommand(
             label="Read the starter page",

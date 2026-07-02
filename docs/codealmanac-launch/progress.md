@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 26 WorkOS/AuthKit API foundation.
+Pending send: 2026-07-02 after Slice 27 cloud CLI auth.
 
 Route:
 
@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 88% | 88% | Slice 26 changed hosted auth only. |
-| CodeAlmanac CLI/public UX | 40% | 40% | Slice 26 changed hosted auth only. |
-| CodeAlmanac-hosted backend/auth/API | 28% | 8% | WorkOS/AuthKit frontend session handling and FastAPI bearer-token verification are implemented; public API, CLI auth, capture credentials, worker/run storage, and onboarding APIs still remain. |
-| Hosted frontend/onboarding | 15% | 5% | AuthKit login/callback/session plumbing is implemented; browser onboarding/configuration screens are still not implemented. |
-| Infra/deploy rename | 10% | 10% | Slice 26 changed hosted auth only. |
+| CodeAlmanac backend/local | 88% | 88% | Slice 27 changed cloud auth/CLI surface only; local trigger, run, workspace, delivery, init/update surfaces remain at prior maturity. |
+| CodeAlmanac CLI/public UX | 52% | 40% | `setup`, `login`, `whoami`, and `logout` now exist for cloud auth; repo, capture, runs, status, and open commands remain. |
+| CodeAlmanac-hosted backend/auth/API | 34% | 28% | `/v1` CLI auth aliases now exist on top of the WorkOS/AuthKit foundation; capture credentials, repo API, run storage, and worker APIs still remain. |
+| Hosted frontend/onboarding | 15% | 15% | Slice 27 changed backend/CLI auth only; browser onboarding/configuration screens are still not implemented. |
+| Infra/deploy rename | 10% | 10% | Slice 27 changed auth/API/CLI only. |
 
 ## Update Rule
 

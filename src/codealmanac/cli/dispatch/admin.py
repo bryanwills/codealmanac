@@ -2,13 +2,28 @@ import argparse
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.dispatch.automation import dispatch_automation
+from codealmanac.cli.dispatch.cloud_auth import (
+    dispatch_login,
+    dispatch_logout,
+    dispatch_whoami,
+)
 from codealmanac.cli.dispatch.diagnostics import dispatch_doctor
 from codealmanac.cli.dispatch.jobs import dispatch_jobs
 from codealmanac.cli.dispatch.setup import dispatch_setup, dispatch_uninstall
 from codealmanac.cli.dispatch.updates import dispatch_update
 
 ADMIN_COMMANDS = frozenset(
-    ("automation", "doctor", "jobs", "setup", "uninstall", "update")
+    (
+        "automation",
+        "doctor",
+        "jobs",
+        "login",
+        "logout",
+        "setup",
+        "uninstall",
+        "update",
+        "whoami",
+    )
 )
 
 
@@ -17,6 +32,12 @@ def is_admin_command(command: str | None) -> bool:
 
 
 def dispatch_admin(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.command == "login":
+        return dispatch_login(args, app)
+    if args.command == "whoami":
+        return dispatch_whoami(args, app)
+    if args.command == "logout":
+        return dispatch_logout(args, app)
     if args.command == "setup":
         return dispatch_setup(args, app)
     if args.command == "uninstall":

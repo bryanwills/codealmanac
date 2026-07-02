@@ -2,6 +2,26 @@
 
 ## 2026-07-02
 
+- Planned Slice 27 in
+  `docs/plans/2026-07-02-slice-27-cloud-cli-auth.md`.
+- Added hosted `/v1` CLI auth aliases over the existing CLI token service:
+  `/v1/auth/cli/start`, `/v1/auth/cli/sessions/{session_id}`,
+  `/v1/auth/cli/sessions/{session_id}/complete`,
+  `/v1/auth/cli/sessions/{session_id}/poll`, `/v1/me`, and
+  `/v1/auth/logout`.
+- Added `codealmanac` cloud auth state, typed HTTP client, token store,
+  browser opener port, and browser login workflow.
+- Added public cloud identity commands:
+  `codealmanac login`, `codealmanac whoami`, and `codealmanac logout`.
+- Made `codealmanac setup` cloud-first and not repo-scoped; local-only setup
+  remains under `codealmanac local setup`.
+- Stored only the issued hosted CLI token in `~/.codealmanac/auth.json` with
+  mode `0600`; WorkOS browser tokens are not stored by the local CLI.
+- Verified Slice 27 hosted backend with `uv run pytest -q` (`289 passed`),
+  `uv run ruff check .`, and `uv run ruff format --check .`.
+- Verified Slice 27 `codealmanac` with `uv run pytest -q` (`474 passed`),
+  `uv run ruff check .`, `git diff --check`, and help checks for
+  `login`, `setup`, `whoami`, and `logout`.
 - Created launch plan at
   `docs/plans/2026-07-02-codealmanac-cloud-local-launch.md`.
 - Added CLI/onboarding launch note at

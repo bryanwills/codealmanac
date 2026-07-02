@@ -11,6 +11,7 @@ from codealmanac.services.automation.models import (
     AutomationUninstallResult,
 )
 from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.workflows.cloud_login.models import CloudLoginWorkflowResult
 
 
 class SetupTarget(StrEnum):
@@ -89,6 +90,7 @@ class SetupPlan(CodeAlmanacModel):
 
 class SetupResult(CodeAlmanacModel):
     plan: SetupPlan
+    cloud_login: CloudLoginWorkflowResult | None = None
     skipped_instructions: bool = False
     changes: tuple[InstructionChange, ...] = ()
     automation_install: AutomationInstallResult | None = None

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
+from codealmanac.integrations.browser import WebBrowserOpener
+from codealmanac.integrations.cloud import HttpCloudAuthClient
 from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.integrations.runs import (
     SubprocessLocalWorkerSpawner,
@@ -30,6 +32,9 @@ from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
 from codealmanac.services.automation.service import AutomationService
+from codealmanac.services.cloud_auth.ports import CloudAuthClient
+from codealmanac.services.cloud_auth.service import CloudAuthService
+from codealmanac.services.cloud_auth.store import CloudAuthStore
 from codealmanac.services.config.service import ConfigService
 from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.control.ports import LocalGitStateProbe
@@ -76,6 +81,8 @@ from codealmanac.services.worker_workspaces.service import WorkerWorkspacesServi
 from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
+from codealmanac.workflows.cloud_login import CloudLoginWorkflow
+from codealmanac.workflows.cloud_login.ports import BrowserOpener
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.service import InitWorkflow
@@ -101,6 +108,7 @@ from codealmanac.workflows.sync.store import SyncLedgerStore
 
 @dataclass(frozen=True)
 class CodeAlmanacWorkflows:
+    cloud_login: CloudLoginWorkflow
     init: InitWorkflow
     ingest: IngestWorkflow
     garden: GardenWorkflow
@@ -120,6 +128,7 @@ class CodeAlmanacWorkflows:
 @dataclass(frozen=True)
 class CodeAlmanac:
     automation: AutomationService
+    cloud_auth: CloudAuthService
     config: ConfigService
     control: ControlService
     deliveries: DeliveriesService
@@ -159,6 +168,8 @@ def create_app(
     update_metadata: PackageInstallMetadataProvider | None = None,
     update_runner: PackageCommandRunner | None = None,
     instruction_installer: InstructionInstaller | None = None,
+    cloud_auth_client: CloudAuthClient | None = None,
+    browser_opener: BrowserOpener | None = None,
     local_git_state_probe: LocalGitStateProbe | None = None,
     local_git_hook_manager: LocalGitHookManager | None = None,
     local_repository_probe: LocalRepositoryProbe | None = None,
@@ -168,6 +179,10 @@ def create_app(
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
     config_service = ConfigService(workspaces, ConfigStore(), app_config.config_path)
+    cloud_auth = CloudAuthService(
+        CloudAuthStore(app_config.auth_path),
+        cloud_auth_client or HttpCloudAuthClient(),
+    )
     control = ControlService(
         ControlStore(app_config.control_db_path),
         local_git_state_probe or GitLocalStateProbe(),
@@ -196,9 +211,14 @@ def create_app(
         update_metadata or InstalledPackageMetadataProvider(),
         update_runner or SubprocessPackageCommandRunner(),
     )
+    cloud_login = CloudLoginWorkflow(
+        cloud_auth,
+        browser_opener or WebBrowserOpener(),
+    )
     setup = SetupService(
         instruction_installer or FileInstructionInstaller(),
         automation,
+        cloud_login,
     )
     runs = RunsService(workspaces, RunStore(), jobs_path=app_config.jobs_path)
     viewer = ViewerService(workspaces, index, runs, MarkdownRenderer())
@@ -324,6 +344,7 @@ def create_app(
         SyncLedgerStore(app_config.jobs_path),
     )
     workflows = CodeAlmanacWorkflows(
+        cloud_login=cloud_login,
         init=init,
         ingest=ingest,
         garden=garden,
@@ -341,6 +362,7 @@ def create_app(
     )
     return CodeAlmanac(
         automation=automation,
+        cloud_auth=cloud_auth,
         config=config_service,
         control=control,
         deliveries=deliveries,

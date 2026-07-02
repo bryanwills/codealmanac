@@ -44,6 +44,8 @@ def render_setup_text(result: SetupResult) -> None:
         )
     )
     console.print(plan_panel(result))
+    if result.cloud_login is not None:
+        console.print(cloud_login_panel(result.cloud_login))
     if result.skipped_instructions:
         console.print(status_panel("Instructions skipped", "No files changed."))
     else:
@@ -117,6 +119,21 @@ def plan_panel(result: SetupResult) -> Panel:
     return Panel(
         Group(Text("Setup plan", style="bold"), table),
         border_style="blue",
+        padding=(1, 2),
+    )
+
+
+def cloud_login_panel(result) -> Panel:
+    table = Table.grid(padding=(0, 2))
+    table.add_column("label", style="bold")
+    table.add_column("value")
+    table.add_row("cloud", result.api_url)
+    table.add_row("status", result.status)
+    if result.github_login is not None:
+        table.add_row("user", result.github_login)
+    return Panel(
+        Group(Text("Cloud", style="bold"), table),
+        border_style="green",
         padding=(1, 2),
     )
 

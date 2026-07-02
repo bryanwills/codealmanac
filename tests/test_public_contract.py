@@ -14,7 +14,6 @@ FORBIDDEN_TOP_LEVEL_COMMANDS = (
     "absorb",
     "capture",
     "connect",
-    "login",
     "mcp",
     "sdk",
     "source",
@@ -31,6 +30,8 @@ README_REQUIRED_FRAGMENTS = (
     "Python 3.12+",
     "uv tool install codealmanac",
     "codealmanac setup --yes",
+    "codealmanac login",
+    "codealmanac whoami",
     "codealmanac setup --yes --install-automation",
     "codealmanac setup --yes --sync-every 5h --sync-quiet 45m",
     "codealmanac init",
@@ -46,7 +47,7 @@ README_REQUIRED_FRAGMENTS = (
     "Derived local state appears when commands need it:",
     "codealmanac uninstall --yes",
     "codealmanac uninstall --yes --keep-automation",
-    "No hosted login/connect/upload commands.",
+    "Cloud commands: `setup`, `login`, `whoami`, `logout`.",
 )
 
 README_FORBIDDEN_FRAGMENTS = (
@@ -143,6 +144,7 @@ def test_default_user_state_paths_are_product_specific(isolated_home: Path):
 
     assert config.registry_path == isolated_home / ".codealmanac/registry.json"
     assert config.config_path == isolated_home / ".codealmanac/config.toml"
+    assert config.auth_path == isolated_home / ".codealmanac/auth.json"
 
 
 def test_readme_documents_python_local_public_surface():

@@ -21,6 +21,10 @@ def default_config_path() -> Path:
     return global_state_dir() / "config.toml"
 
 
+def default_auth_path() -> Path:
+    return global_state_dir() / "auth.json"
+
+
 def default_control_db_path() -> Path:
     return global_state_dir() / "control.sqlite"
 

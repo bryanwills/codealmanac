@@ -36,14 +36,29 @@ remote and open the cloud wiki route. The browser owns the final redirect.
 ```text
 codealmanac setup
 codealmanac status
-codealmanac login
-codealmanac logout
-codealmanac whoami
+codealmanac login [--api-url URL] [--no-browser] [--timeout SECONDS] [--poll-every SECONDS] [--force]
+codealmanac whoami [--api-url URL]
+codealmanac logout [--api-url URL]
 ```
 
-`setup` opens browser onboarding, stores local cloud auth, installs local support
-files, probes supported agent providers, and installs capture only after browser
-consent says it should.
+Implemented in Slice 27:
+
+```text
+codealmanac setup
+codealmanac login
+codealmanac whoami
+codealmanac logout
+```
+
+`setup` is cloud-first and not repo-scoped. It logs in through the hosted
+browser flow when needed, stores the issued CLI token under
+`~/.codealmanac/auth.json`, and installs local support files.
+
+`setup --skip-login` is reserved for local-only support-file installation and
+CI. It is not the default user path.
+
+Browser onboarding, capture consent, provider probing, and repo configuration
+remain dashboard/API work after this slice.
 
 `setup` does not run a wiki update.
 

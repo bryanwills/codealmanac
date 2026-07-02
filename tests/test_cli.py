@@ -4,6 +4,7 @@ import subprocess
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -18,6 +19,7 @@ from codealmanac.services.automation.models import (
     ScheduledJob,
     ScheduledJobStatus,
 )
+from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -264,6 +266,55 @@ class CliSchedulerAdapter:
             installed=False,
             loaded=False,
         )
+
+
+class CliBrowserOpener:
+    def __init__(self):
+        self.opened: list[str] = []
+
+    def open(self, url: str) -> bool:
+        self.opened.append(url)
+        return True
+
+
+class CliCloudAuthClient:
+    def __init__(self):
+        self.session_id = uuid4()
+        self.started = 0
+        self.polled: list[UUID] = []
+        self.seen_tokens: list[str] = []
+
+    def start_login(self, *, api_url: str) -> CloudLoginSession:
+        self.started += 1
+        return CloudLoginSession(
+            session_id=self.session_id,
+            user_code="ABCD2345",
+            verification_url="https://app.example.test/cli-login",
+            expires_at=datetime(2026, 7, 2, 12, 10, tzinfo=UTC),
+            status="pending",
+        )
+
+    def poll_login(self, *, api_url: str, session_id: UUID) -> CloudLoginSession:
+        self.polled.append(session_id)
+        return CloudLoginSession(
+            session_id=session_id,
+            user_code="ABCD2345",
+            verification_url="https://app.example.test/cli-login",
+            expires_at=datetime(2026, 7, 2, 12, 10, tzinfo=UTC),
+            status="complete",
+            token="alm_secret",
+        )
+
+    def me(self, *, api_url: str, token: str) -> CloudIdentity:
+        self.seen_tokens.append(token)
+        return CloudIdentity(
+            api_url=api_url,
+            github_user_id=10,
+            github_login="rohans0509",
+        )
+
+    def logout(self, *, api_url: str, token: str) -> CloudIdentity:
+        return self.me(api_url=api_url, token=token)
 
 
 class CliUpdateMetadataProvider:
@@ -527,7 +578,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     isolated_home: Path,
     capsys,
 ):
-    exit_code = main(["setup", "--yes", "--target", "codex"])
+    exit_code = main(["setup", "--yes", "--skip-login", "--target", "codex"])
 
     captured = capsys.readouterr()
     agents_path = isolated_home / ".codex/AGENTS.md"
@@ -543,7 +594,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     )
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
 
-    second_exit = main(["setup", "--yes", "--target", "codex"])
+    second_exit = main(["setup", "--yes", "--skip-login", "--target", "codex"])
     second = capsys.readouterr()
     assert second_exit == 0
     assert "Codex instructions already installed" in second.out
@@ -554,6 +605,89 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "CodeAlmanac uninstall" in uninstall.out
     assert "Removed artifacts" in uninstall.out
     assert not agents_path.exists()
+
+
+def test_cli_cloud_login_whoami_and_logout(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    client = CliCloudAuthClient()
+    app = create_app(
+        AppConfig(auth_path=isolated_home / ".codealmanac/auth.json"),
+        cloud_auth_client=client,
+        browser_opener=CliBrowserOpener(),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    login_exit = main(
+        [
+            "login",
+            "--api-url",
+            "https://api.example.test",
+            "--timeout",
+            "0",
+            "--poll-every",
+            "0",
+        ]
+    )
+    login = capsys.readouterr()
+
+    whoami_exit = main(["whoami", "--api-url", "https://api.example.test"])
+    whoami = capsys.readouterr()
+
+    logout_exit = main(["logout", "--api-url", "https://api.example.test"])
+    logout = capsys.readouterr()
+
+    assert login_exit == 0
+    assert "Signed in as rohans0509" in login.out
+    assert whoami_exit == 0
+    assert "Signed in as rohans0509" in whoami.out
+    assert logout_exit == 0
+    assert "Signed out rohans0509" in logout.out
+    assert client.started == 1
+    assert client.polled == [client.session_id]
+    assert client.seen_tokens == ["alm_secret", "alm_secret", "alm_secret"]
+
+
+def test_cli_setup_is_cloud_first_without_repo_detection(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    outside_repo = tmp_path / "outside"
+    outside_repo.mkdir()
+    client = CliCloudAuthClient()
+    app = create_app(
+        AppConfig(auth_path=isolated_home / ".codealmanac/auth.json"),
+        cloud_auth_client=client,
+        browser_opener=CliBrowserOpener(),
+    )
+    monkeypatch.chdir(outside_repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    exit_code = main(
+        [
+            "setup",
+            "--yes",
+            "--api-url",
+            "https://api.example.test",
+            "--login-timeout",
+            "0",
+            "--login-poll-every",
+            "0",
+            "--target",
+            "codex",
+        ]
+    )
+
+    output = capsys.readouterr()
+    assert exit_code == 0
+    assert "Cloud" in output.out
+    assert "rohans0509" in output.out
+    assert "Agent instructions" in output.out
+    assert client.started == 1
 
 
 def test_cli_local_setup_registers_current_checkout(
@@ -893,7 +1027,9 @@ def test_cli_local_update_runs_manual_local_worker(
 
 
 def test_cli_setup_skip_instructions_json(capsys):
-    exit_code = main(["setup", "--yes", "--skip-instructions", "--json"])
+    exit_code = main(
+        ["setup", "--yes", "--skip-login", "--skip-instructions", "--json"]
+    )
 
     captured = capsys.readouterr()
     assert exit_code == 0
@@ -936,6 +1072,7 @@ def test_cli_setup_installs_automation_with_explicit_flags(
             [
                 "setup",
                 "--yes",
+                "--skip-login",
                 "--target",
                 "codex",
                 "--install-automation",

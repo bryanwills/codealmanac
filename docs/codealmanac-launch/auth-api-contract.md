@@ -103,12 +103,12 @@ Flow:
 
 ```text
 CLI -> POST /v1/auth/cli/start
-API -> WorkOS/AuthKit device or CLI auth start
+API -> creates a hosted CLI login session
 CLI -> opens verification URL and prints fallback code
 user -> approves in browser
-CLI -> polls POST /v1/auth/cli/finish
-API -> returns credential result
-CLI -> stores local auth state
+CLI -> polls POST /v1/auth/cli/sessions/{session_id}/poll
+API -> returns the issued CLI token once
+CLI -> stores local CLI token state
 ```
 
 Local auth state lives under `~/.codealmanac/`.
@@ -126,16 +126,23 @@ Fallback storage:
 ~/.codealmanac/auth.json mode 0600
 ```
 
+Implemented Slice 27 storage:
+
+```text
+~/.codealmanac/auth.json mode 0600
+```
+
 Stored state:
 
 ```text
 api_url
-user id/email/display
-active WorkOS organization id
-active GitHub account/repo context only when relevant
-access token or credential reference
-refresh token only if WorkOS flow requires it
+github_user_id
+github_login
+issued CLI token
+logged_in_at
 ```
+
+The local CLI does not store WorkOS browser session tokens.
 
 ## Capture Credentials
 
@@ -214,16 +221,43 @@ Hosted user primary key: `workos_user_id text`
 Supabase role: database, migrations, storage only
 ```
 
-This foundation does not yet expose the full public `/v1` API surface, CLI
-login/device auth, capture machine credentials, or onboarding configuration
-screens.
+This foundation does not yet expose the full public `/v1` API surface, capture
+machine credentials, or onboarding configuration screens.
+
+Implemented Slice 27 CLI auth routes:
+
+```text
+POST /v1/auth/cli/start
+GET  /v1/auth/cli/sessions/{session_id}
+POST /v1/auth/cli/sessions/{session_id}/complete
+POST /v1/auth/cli/sessions/{session_id}/poll
+GET  /v1/me
+POST /v1/auth/logout
+```
+
+The older dashboard-compatible routes still exist:
+
+```text
+POST /api/cli/auth/sessions
+GET  /api/cli/auth/sessions/{session_id}
+POST /api/cli/auth/sessions/{session_id}/complete
+POST /api/cli/auth/sessions/{session_id}/poll
+GET  /api/cli/me
+POST /api/cli/logout
+```
+
+`/v1/me` and `/v1/auth/logout` authenticate with the hosted CLI token issued by
+the poll response. The CLI must never print that token in text or JSON output.
 
 Core endpoints:
 
 ```text
 GET  /v1/me
 POST /v1/auth/cli/start
-POST /v1/auth/cli/finish
+GET  /v1/auth/cli/sessions/{session_id}
+POST /v1/auth/cli/sessions/{session_id}/complete
+POST /v1/auth/cli/sessions/{session_id}/poll
+POST /v1/auth/logout
 POST /v1/auth/token/refresh
 
 GET  /v1/repositories

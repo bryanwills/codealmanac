@@ -15,6 +15,33 @@ Must prove:
 - Capture hooks use a narrow capture credential, not an unrestricted human
   token.
 
+Current evidence:
+
+- Slice 26 implemented hosted WorkOS/AuthKit browser session handling and
+  FastAPI bearer-token verification.
+- Slice 27 added hosted `/v1` CLI auth aliases:
+  `/v1/auth/cli/start`, `/v1/auth/cli/sessions/{session_id}`,
+  `/v1/auth/cli/sessions/{session_id}/complete`,
+  `/v1/auth/cli/sessions/{session_id}/poll`, `/v1/me`, and
+  `/v1/auth/logout`.
+- `backend/tests/test_cli_auth_api_contract.py` proves `/v1` CLI login start,
+  one-time token polling, `/v1/me`, `/v1/auth/logout`, and legacy `/api`
+  compatibility.
+- Slice 27 added `codealmanac login`, `codealmanac whoami`, and
+  `codealmanac logout`.
+- `tests/test_cloud_auth_service.py` proves `~/.codealmanac/auth.json`
+  save/load/delete behavior, mode `0600`, malformed-file recovery, identity
+  fetch, and logout.
+- `tests/test_cloud_login_workflow.py` proves browser login opens the hosted
+  verification URL, no-browser mode does not open a browser, successful polling
+  stores the hosted CLI token, and timeout does not store a token.
+- `tests/test_cli.py` proves cloud login, `whoami`, `logout`, and cloud-first
+  `setup` work from outside a Git repo.
+- Slice 27 full gates passed:
+  hosted backend `uv run pytest -q` (`289 passed`), hosted ruff and format
+  checks, `codealmanac` `uv run pytest -q` (`474 passed`), `codealmanac` ruff,
+  `git diff --check`, and `login/setup/whoami/logout --help`.
+
 ## CodeAlmanac Local Repo
 
 Must prove:

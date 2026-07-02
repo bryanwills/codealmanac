@@ -5,6 +5,10 @@ from pydantic import Field, field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.services.automation.models import AutomationTask
+from codealmanac.services.cloud_auth.models import (
+    DEFAULT_CLOUD_API_URL,
+    normalize_api_url,
+)
 from codealmanac.services.setup.models import SetupTarget
 
 DEFAULT_SETUP_TARGETS = (SetupTarget.CODEX, SetupTarget.CLAUDE)
@@ -14,6 +18,11 @@ class RunSetupRequest(CodeAlmanacModel):
     cwd: Path = Field(default_factory=Path.cwd)
     targets: tuple[SetupTarget, ...] = DEFAULT_SETUP_TARGETS
     yes: bool = False
+    api_url: str = DEFAULT_CLOUD_API_URL
+    no_browser: bool = False
+    login_timeout_seconds: float = 120.0
+    login_poll_interval_seconds: float = 2.0
+    skip_login: bool = False
     skip_instructions: bool = False
     home: Path | None = None
     install_automation: bool = False
@@ -40,6 +49,11 @@ class RunSetupRequest(CodeAlmanacModel):
         value: tuple[AutomationTask, ...],
     ) -> tuple[AutomationTask, ...]:
         return unique_tasks(value)
+
+    @field_validator("api_url")
+    @classmethod
+    def validate_api_url(cls, value: str) -> str:
+        return normalize_api_url(value)
 
     @field_validator("sync_every", "sync_quiet", "garden_every")
     @classmethod

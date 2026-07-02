@@ -23,6 +23,8 @@ from codealmanac.services.automation.requests import (
 from codealmanac.services.setup.models import SetupTarget
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 from codealmanac.services.setup.service import SetupService
+from codealmanac.workflows.cloud_login.models import CloudLoginWorkflowResult
+from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
 
 
 def test_setup_installs_codex_block_idempotently(home: Path):
@@ -194,7 +196,22 @@ def setup_service(
     return SetupService(
         FileInstructionInstaller(home),
         automation or FakeSetupAutomationManager(home),
+        FakeSetupCloudLogin(),
     )
+
+
+class FakeSetupCloudLogin:
+    def __init__(self) -> None:
+        self.requests: list[RunCloudLoginRequest] = []
+
+    def run(self, request: RunCloudLoginRequest) -> CloudLoginWorkflowResult:
+        self.requests.append(request)
+        return CloudLoginWorkflowResult(
+            api_url=request.api_url,
+            status="signed_in",
+            github_user_id=10,
+            github_login="rohans0509",
+        )
 
 
 class FakeSetupAutomationManager:

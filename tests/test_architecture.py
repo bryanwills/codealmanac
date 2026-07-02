@@ -839,6 +839,7 @@ def test_cli_parser_is_split_by_command_domain():
         "__init__.py",
         "admin.py",
         "automation.py",
+        "cloud_auth.py",
         "dev.py",
         "diagnostics.py",
         "jobs.py",
@@ -863,6 +864,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
     admin = (parser_root / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("AutomationTask", "def add_automation_commands("),
+        "cloud_auth.py": ('add_parser("login"', "def add_cloud_auth_commands("),
         "diagnostics.py": ('add_parser("doctor"', "def add_diagnostics_commands("),
         "jobs.py": ('add_parser("jobs"', "def add_jobs_commands("),
         "setup.py": ('add_parser("setup"', "def add_setup_commands("),
@@ -892,6 +894,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
         fragment for fragment in forbidden_admin_fragments if fragment in admin
     ] == []
     assert "add_setup_commands(subcommands)" in admin
+    assert "add_cloud_auth_commands(subcommands)" in admin
     assert "add_diagnostics_commands(subcommands)" in admin
     assert "add_update_commands(subcommands)" in admin
     assert "add_jobs_commands(subcommands)" in admin
