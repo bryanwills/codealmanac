@@ -80,6 +80,7 @@ from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_engine import LocalEngineWorkflow
 from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
+from codealmanac.workflows.local_worker import LocalWorkerWorkflow
 from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
 from codealmanac.workflows.sync.service import SyncWorkflow
@@ -95,6 +96,7 @@ class CodeAlmanacWorkflows:
     local_runs: LocalRunPreparationWorkflow
     local_engine: LocalEngineWorkflow
     local_delivery: LocalDeliveryWorkflow
+    local_worker: LocalWorkerWorkflow
     sync: SyncWorkflow
 
 
@@ -245,6 +247,11 @@ def create_app(
         worker_workspaces,
         git_delivery_manager or GitLocalDeliveryManager(),
     )
+    local_worker = LocalWorkerWorkflow(
+        local_runs,
+        local_engine,
+        local_delivery,
+    )
     sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
         build=build,
@@ -254,6 +261,7 @@ def create_app(
         local_runs=local_runs,
         local_engine=local_engine,
         local_delivery=local_delivery,
+        local_worker=local_worker,
         sync=sync,
     )
     return CodeAlmanac(

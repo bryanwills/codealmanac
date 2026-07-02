@@ -285,3 +285,16 @@
   CodeAlmanac backend/local 63%, CLI/public UX 10%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 14 in
+  `docs/plans/2026-07-02-slice-14-local-worker-orchestration.md`.
+- Added `app.workflows.local_worker.run_next(...)`.
+- Added `src/codealmanac/workflows/local_worker/` with typed request/result
+  models and orchestration over local preparation, engine execution, and local
+  delivery.
+- The worker returns a no-op when no pending trigger exists, returns a processed
+  failed result for preparation or engine failure, and skips delivery if a run
+  becomes `stale` while the engine is running.
+- Verified Slice 14 focused behavior with
+  `uv run pytest tests/test_local_worker_workflow.py tests/test_local_run_preparation_workflow.py tests/test_local_engine_workflow.py tests/test_local_delivery_workflow.py tests/test_architecture.py`.
+- Verified Slice 14 full gate with `uv run pytest` (`417 passed`),
+  `uv run ruff check .`, and `git diff --check`.

@@ -142,6 +142,18 @@ Current evidence:
   the control run without invoking the harness.
 - `tests/test_architecture.py` proves local engine execution stays separate
   from Git delivery, subprocess mechanics, SQL, and CLI strings.
+- Slice 14 added local worker orchestration.
+- `tests/test_local_worker_workflow.py` proves one pending trigger can be
+  prepared, executed by the local engine, and delivered through the local
+  delivery workflow.
+- `tests/test_local_worker_workflow.py` proves no pending trigger is a typed
+  no-op, preparation failure stops before engine execution, and engine failure
+  stops before delivery.
+- `tests/test_local_worker_workflow.py` proves delivery is skipped when a newer
+  trigger marks the run `stale` while the engine is running.
+- `tests/test_architecture.py` proves the local worker only composes the local
+  workflows and does not import harness, delivery, SQL, subprocess, or
+  integration mechanics directly.
 
 Commands:
 

@@ -236,6 +236,29 @@ def test_local_engine_workflow_only_runs_harness_and_records_artifacts():
     assert "apply_patch" not in service_text
 
 
+def test_local_worker_workflow_only_composes_local_workflows():
+    workflow_root = SRC_ROOT / "workflows/local_worker"
+    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    module_names = {path.name for path in workflow_root.glob("*.py")}
+
+    assert {
+        "__init__.py",
+        "models.py",
+        "requests.py",
+        "service.py",
+    } <= module_names
+    assert len(service_text.splitlines()) <= 90
+    assert "local_runs.prepare_next" in service_text
+    assert "local_engine.execute" in service_text
+    assert "local_delivery.deliver" in service_text
+    assert "codealmanac.integrations" not in service_text
+    assert "connect_control" not in service_text
+    assert "subprocess" not in service_text
+    assert "RunHarnessRequest" not in service_text
+    assert "WriteEngineRunResultRequest" not in service_text
+    assert "CreateDeliveryRequest" not in service_text
+
+
 def test_config_service_owns_toml_imports():
     offenders = [
         path

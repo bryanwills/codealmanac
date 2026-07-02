@@ -10,23 +10,24 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 13 added local engine execution.
+Slice 14 added local worker orchestration.
 
 Implemented:
 
-- `app.workflows.local_engine.execute(...)`
-- update-operation prompt at `src/codealmanac/prompts/operations/update.md`
-- local engine result helpers for deterministic `docs almanac:` subjects
-- normalized run-event recording for harness events
-- success path: request artifact -> harness run in worker repo -> result
-  artifact -> `result_ref` on the control run
-- failure path: failed harness or missing prepared request -> failed control
-  run and failed engine result when possible
+- `app.workflows.local_worker.run_next(...)`
+- a typed local worker result containing preparation, engine, delivery, and
+  final run records
+- one-call success path: prepare one pending trigger, run the local engine, then
+  deliver if the run is still `running`
+- no-op path for no pending trigger
+- failure paths for preparation failure and engine failure
+- stale path where delivery is skipped if a newer trigger stales the run during
+  engine execution
 
 Verified:
 
 ```text
-uv run pytest tests/test_local_engine_workflow.py tests/test_engine_runs_service.py tests/test_architecture.py
+uv run pytest tests/test_local_worker_workflow.py tests/test_local_run_preparation_workflow.py tests/test_local_engine_workflow.py tests/test_local_delivery_workflow.py tests/test_architecture.py
 uv run pytest
 uv run ruff check .
 git diff --check
@@ -39,7 +40,7 @@ Choose the next substantial slice from the launch plan. Good candidates:
 - local trigger event recording through Git hooks
 - public or hidden setup command that calls `app.local_hooks`
 - local run storage bridge from repo-local job files to the control DB
-- local worker orchestration that chains prepare -> engine -> delivery
+- a hidden or internal CLI worker command that calls `app.workflows.local_worker`
 - prompt restoration / first-build `init` path from
   `docs/codealmanac-launch/init-first-build-prompt-restoration.md`
 
@@ -49,7 +50,7 @@ progress update, commit, and push.
 
 ## Known Repo State
 
-The branch is `dev`. At the end of Slice 13 verification it was ready to
+The branch is `dev`. At the end of Slice 14 verification it was ready to
 commit on top of `origin/dev`.
 
 The local wiki command currently fails on this checkout with:

@@ -17,6 +17,7 @@ Owns:
 - local Git hook dispatchers
 - local worker workspace creation
 - local engine execution
+- local worker orchestration
 - deterministic local delivery
 - auto-update client behavior
 
