@@ -76,7 +76,7 @@ def test_automation_install_plans_sync_and_garden(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     result = app.automation.install(
         InstallAutomationRequest(

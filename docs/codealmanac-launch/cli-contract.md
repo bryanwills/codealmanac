@@ -97,6 +97,7 @@ Codex/Claude hooks.
 ## Local
 
 ```text
+codealmanac init [path] --using codex|claude [--background|--foreground] [--force]
 codealmanac local setup
 codealmanac local status
 codealmanac local update
@@ -110,6 +111,13 @@ codealmanac local jobs logs <job-id>
 ```
 
 Local uses `jobs` because execution happens on the user's machine.
+
+`init` is the local first-build lifecycle command. It creates or refreshes the
+configured Almanac root, installs manual files, runs the init prompt through the
+shared page-run lifecycle, records a local run, and refreshes the read index.
+It refuses populated wikis unless `--force` is passed. `init --background`
+queues a durable job and starts the same hidden worker used by other local
+lifecycle jobs.
 
 `local setup` detects the current GitHub checkout, stores the repository and
 selected branch policy in `~/.codealmanac/control.sqlite`, and installs local
@@ -137,5 +145,7 @@ policy row and preserves the branch trigger state.
 
 ## Hidden / Private
 
-Internal entrypoints may keep `ingest`, `garden`, provider diagnostics, and
-engine execution commands. They are not part of the public launch CLI.
+Internal entrypoints may keep provider diagnostics and engine execution
+commands. `ingest` and `garden` are still visible in the Python CLI after Slice
+22, but the launch contract still says they should move out of normal public
+help before the launch surface is complete.

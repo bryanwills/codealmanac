@@ -27,6 +27,11 @@ from codealmanac.workflows.ingest.requests import (
     RunIngestWithRunRequest,
 )
 from codealmanac.workflows.ingest.service import IngestWorkflow
+from codealmanac.workflows.init.requests import (
+    RunInitRequest,
+    RunInitWithRunRequest,
+)
+from codealmanac.workflows.init.service import InitWorkflow
 from codealmanac.workflows.run_queue.models import RunQueueStartResult
 from codealmanac.workflows.run_queue.requests import DrainRunQueueRequest
 
@@ -35,14 +40,41 @@ class RunQueueWorkflow:
     def __init__(
         self,
         runs: RunsService,
+        init: InitWorkflow,
         ingest: IngestWorkflow,
         garden: GardenWorkflow,
         spawner: RunWorkerSpawner,
     ):
         self.runs = runs
+        self.init = init
         self.ingest = ingest
         self.garden = garden
         self.spawner = spawner
+
+    def queue_init(self, request: RunInitRequest) -> RunRecord:
+        prepared = self.init.prepare(request, enforce_force=True)
+        return self.runs.queue(
+            QueueRunRequest(
+                cwd=prepared.workspace.root_path,
+                title=request.title or "Initialize wiki",
+                spec=RunSpec(
+                    operation=RunOperation.INIT,
+                    cwd=prepared.workspace.root_path,
+                    harness=request.harness,
+                    almanac_root=prepared.workspace.almanac_root,
+                    workspace_name=prepared.workspace.name,
+                    description=prepared.workspace.description,
+                    title=request.title,
+                    guidance=request.guidance,
+                    force=request.force,
+                ),
+            )
+        )
+
+    def start_init_background(self, request: RunInitRequest) -> RunQueueStartResult:
+        run = self.queue_init(request)
+        worker = self.spawn_worker(request.path, None)
+        return RunQueueStartResult(run=run, worker=worker)
 
     def queue_ingest(self, request: RunIngestRequest) -> RunRecord:
         return self.runs.queue(
@@ -137,6 +169,21 @@ class RunQueueWorkflow:
                     error="queued run is missing its durable spec",
                 )
             )
+        if spec.operation == RunOperation.INIT:
+            result = self.init.run_with_run(
+                RunInitWithRunRequest(
+                    path=spec.cwd,
+                    harness=spec.harness,
+                    almanac_root=spec.almanac_root,
+                    name=spec.workspace_name,
+                    description=spec.description,
+                    title=spec.title,
+                    guidance=spec.guidance,
+                    force=spec.force,
+                    run_id=queued.record.run_id,
+                )
+            )
+            return result.run
         if spec.operation == RunOperation.INGEST:
             result = self.ingest.run_with_run(
                 RunIngestWithRunRequest(

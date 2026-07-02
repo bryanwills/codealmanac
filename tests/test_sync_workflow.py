@@ -110,9 +110,7 @@ class LedgerObservingHarnessAdapter(SyncWritingHarnessAdapter):
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         ledger = SyncLedger.model_validate_json(
-            (request.cwd / "almanac/jobs/sync-ledger.json").read_text(
-                encoding="utf-8"
-            )
+            (request.cwd / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
         )
         self.observed_entry = ledger.sessions[sync_ledger_key(self.candidate)]
         return super().run(request)
@@ -142,7 +140,7 @@ def test_sync_status_reports_ready_transcript_ranges(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     summary = app.workflows.sync.status(
         RunSyncStatusRequest(
@@ -182,7 +180,7 @@ def test_sync_status_passes_configured_roots_to_discovery(
         almanac_path=repo / "docs/almanac",
     )
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=repo, almanac_root=Path("docs/almanac"))
     )
 
@@ -223,7 +221,7 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = SyncWritingHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -281,7 +279,7 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
         harness=harness,
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     summary = app.workflows.sync.run(
         RunSyncRequest(
@@ -331,7 +329,7 @@ def test_sync_background_spawn_failure_marks_run_and_ledger_failed(
         harness=SyncWritingHarnessAdapter(),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     summary = app.workflows.sync.run(
         RunSyncRequest(
@@ -370,7 +368,7 @@ def test_sync_run_writes_pending_claim_before_ingest(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = LedgerObservingHarnessAdapter(candidate)
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -419,7 +417,9 @@ def test_sync_run_records_failed_attempt_after_ingest_failure(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = FailedSyncHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -435,9 +435,7 @@ def test_sync_run_records_failed_attempt_after_ingest_failure(
     )
 
     ledger = SyncLedger.model_validate_json(
-        (workspace.almanac_path / "jobs/sync-ledger.json").read_text(
-            encoding="utf-8"
-        )
+        (workspace.almanac_path / "jobs/sync-ledger.json").read_text(encoding="utf-8")
     )
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.started == ()
@@ -458,7 +456,9 @@ def test_sync_status_skips_active_pending_ledger_entry(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,
@@ -496,7 +496,9 @@ def test_sync_status_reports_stale_pending_ledger_entry(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,
@@ -534,7 +536,9 @@ def test_sync_status_skips_active_pending_run(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     run = app.runs.start(
         StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
     )
@@ -579,7 +583,9 @@ def test_sync_status_reports_done_pending_run_needs_reconcile(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     run = app.runs.start(
         StartRunRequest(cwd=repo, operation=RunOperation.INGEST, title="Sync ingest")
     )
@@ -634,7 +640,9 @@ def test_sync_run_reconciles_done_pending_run_before_new_work(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = SyncWritingHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     run = app.runs.start(
@@ -700,7 +708,9 @@ def test_sync_run_reconciles_failed_pending_run_and_retries(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = SyncWritingHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     run = app.runs.start(
@@ -755,7 +765,9 @@ def test_sync_status_reports_exhausted_retry_budget(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,
@@ -796,7 +808,9 @@ def test_sync_status_matches_normalized_transcript_ledger_key(
         modified_at=old_time(),
     )
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,
@@ -837,7 +851,9 @@ def test_sync_status_matches_ledger_entry_by_normalized_identity(
     linked_transcript = transcript_link_root / transcript.name
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,
@@ -877,7 +893,7 @@ def test_sync_status_skips_internal_lifecycle_transcripts_by_session(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
@@ -919,7 +935,7 @@ def test_sync_status_skips_internal_lifecycle_transcripts_by_path(
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
@@ -962,7 +978,7 @@ def test_sync_status_applies_quiet_window(
     transcript = write_transcript(tmp_path, "one\n")
     candidate = transcript_candidate(repo, transcript, modified_at=current_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     summary = app.workflows.sync.status(
         RunSyncStatusRequest(
@@ -986,7 +1002,9 @@ def test_sync_status_reports_prefix_mismatch_from_ledger(
     transcript = write_transcript(tmp_path, "new prefix\nmore\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     app = app_with_candidates(isolated_home, (candidate,))
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_sync_ledger(
         workspace.almanac_path,
         candidate,

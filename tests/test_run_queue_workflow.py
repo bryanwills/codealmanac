@@ -89,7 +89,7 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
         harness_adapters=(QueueWritingHarnessAdapter(),),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     result = app.workflows.queue.start_ingest_background(
         RunIngestRequest(
@@ -119,7 +119,7 @@ def test_run_queue_drains_persisted_ingest_spec(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(harness,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
@@ -163,7 +163,7 @@ def test_run_queue_skips_cancelled_queued_runs(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(harness,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     queued = app.workflows.queue.queue_ingest(
         RunIngestRequest(
             cwd=repo,

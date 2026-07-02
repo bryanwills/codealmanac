@@ -237,6 +237,24 @@ Current evidence:
   `manual/init.md`.
 - `tests/test_architecture.py` proves prompt/manual first-build resources use
   init naming and no longer package `operations/build.md` or `manual/build.md`.
+- Slice 22 added `app.workflows.init` and removed `app.workflows.build`.
+- `src/codealmanac/workflows/init/` owns scaffold-only initialization plus
+  agent-backed first-build runs.
+- `codealmanac init` now accepts `--using`, `--background`, `--force`,
+  `--verbose`, and `--json`; public `codealmanac build` is not parsed.
+- `RunOperation.INIT` and init queue specs are durable under the existing
+  file-backed run store.
+- `RunQueueWorkflow.start_init_background(...)` queues init work and the hidden
+  worker drains it through `InitWorkflow.run_with_run(...)`.
+- `LifecycleMutationPolicy(require_clean_almanac=False)` lets init create its
+  starter root while preserving the outside-Almanac mutation safety check.
+- `tests/test_init_workflow.py` proves foreground init, populated-wiki refusal,
+  `--force`, and background queue draining.
+- `tests/test_cli.py` proves foreground/background `codealmanac init` behavior
+  and public `build` parser removal.
+- `tests/test_runs_service.py` proves init run specs accept init payload and
+  reject source inputs.
+- `tests/test_architecture.py` proves init dispatch replaces build dispatch.
 
 Commands:
 
@@ -244,6 +262,8 @@ Commands:
 uv run pytest
 uv run ruff check .
 git diff --check
+uv run codealmanac --help
+uv run codealmanac init --help
 ```
 
 ## CodeAlmanac Hosted Repo

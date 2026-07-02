@@ -70,10 +70,7 @@ class PageRunWorkflow:
             PageRunRecordEventRequest(
                 context=context,
                 kind=RunEventKind.MESSAGE,
-                message=(
-                    "verified clean "
-                    f"{context.workspace.almanac_root.as_posix()} preflight"
-                ),
+                message=self.mutation_policy.preflight_message(context.workspace),
             )
         )
         return context.model_copy(update={"preflight": preflight})

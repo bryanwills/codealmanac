@@ -87,8 +87,9 @@ Status: active.
   the hosted architecture cleaner.
 - First-build prompt and manual resources use `init` naming:
   `operations/init.md` and `manual/init.md`.
-- Public `build` command removal and agent-backed `init` runtime behavior are
-  separate follow-up work from prompt/manual resource restoration.
+- Public `codealmanac init` is the agent-backed first-build command.
+- Public `codealmanac build` is removed from the launch CLI surface.
+- Internal scaffold-only setup uses `app.workflows.init.initialize_workspace`.
 
 ## Naming
 

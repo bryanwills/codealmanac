@@ -103,7 +103,9 @@ def test_server_viewer_api_switches_between_registered_wikis(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    other = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=other_repo)
+    )
     write_server_page(
         other_repo,
         "ops-note.md",
@@ -140,8 +142,7 @@ Tracks operational decisions.
     assert locked_overview.status_code == 200
     assert locked_overview.json()["workspace"]["workspace_id"] == other.workspace_id
     locked_workspace_ids = [
-        workspace["workspace_id"]
-        for workspace in locked_overview.json()["workspaces"]
+        workspace["workspace_id"] for workspace in locked_overview.json()["workspaces"]
     ]
     assert locked_workspace_ids == [other.workspace_id]
     assert locked_page.status_code == 200

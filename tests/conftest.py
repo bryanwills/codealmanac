@@ -23,7 +23,7 @@ def viewer_repo(tmp_path: Path, isolated_home: Path) -> tuple[Path, CodeAlmanac]
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     (repo / "src/auth").mkdir(parents=True)
     (repo / "src/auth/session.py").write_text("SESSION = True\n", encoding="utf-8")
     write_page(

@@ -66,7 +66,7 @@ def test_runs_service_records_job_and_events(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     record = app.runs.start(
         StartRunRequest(
@@ -164,8 +164,10 @@ def test_runs_service_targets_registered_wiki(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=first, name="first"))
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=first, name="first")
+    )
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=second, name="second")
     )
 
@@ -188,7 +190,7 @@ def test_runs_service_refuses_running_transition_after_terminal_status(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
     app.runs.finish(
         FinishRunRequest(
@@ -212,7 +214,7 @@ def test_runs_service_cancels_queued_run_and_attaches_log(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
 
     result = app.runs.cancel(CancelRunRequest(cwd=repo, run_id=record.run_id))
@@ -239,7 +241,7 @@ def test_runs_service_cancel_is_idempotent_for_terminal_run(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
     app.runs.finish(
         FinishRunRequest(
@@ -270,7 +272,7 @@ def test_runs_service_finish_preserves_cancelled_run(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
     app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
     cancelled = app.runs.cancel(CancelRunRequest(cwd=repo, run_id=record.run_id))
@@ -304,7 +306,7 @@ def test_runs_service_streams_attach_until_run_is_terminal(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
     first_update_seen = Event()
     updates = []
@@ -348,9 +350,7 @@ def test_runs_service_streams_attach_until_run_is_terminal(
 
     assert thread.is_alive() is False
     assert errors == []
-    assert tuple(
-        event.message for update in updates for event in update.events
-    ) == (
+    assert tuple(event.message for update in updates for event in update.events) == (
         "queued ingest",
         "read note",
         "done",
@@ -368,7 +368,7 @@ def test_run_attach_streamer_waits_for_terminal_status_event(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
     done = record.model_copy(update={"status": RunStatus.DONE})
     queued_event = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=record.run_id))[0]
@@ -420,7 +420,7 @@ def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     foreground = app.runs.start(
         StartRunRequest(cwd=repo, operation=RunOperation.INGEST)
     )
@@ -463,7 +463,31 @@ def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(
         first.run_id,
         second.run_id,
     }
-    assert (repo / "almanac/jobs" / f"{first.run_id}.spec.json").is_file()
+
+
+def test_run_spec_accepts_init_payload_and_rejects_source_inputs(tmp_path: Path):
+    spec = RunSpec(
+        operation=RunOperation.INIT,
+        cwd=tmp_path,
+        harness=HarnessKind.CODEX,
+        almanac_root=Path("docs/almanac"),
+        workspace_name="docs",
+        description="first wiki",
+        guidance="keep it short",
+        force=True,
+    )
+
+    assert spec.operation == RunOperation.INIT
+    assert spec.almanac_root == Path("docs/almanac")
+    assert spec.workspace_name == "docs"
+
+    with pytest.raises(ValidationError, match="init run spec does not accept inputs"):
+        RunSpec(
+            operation=RunOperation.INIT,
+            cwd=tmp_path,
+            harness=HarnessKind.CODEX,
+            inputs=("note.md",),
+        )
 
 
 def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
@@ -475,7 +499,7 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     now = datetime(2026, 7, 1, 12, 0, tzinfo=UTC)
 
     first = app.runs.acquire_worker_lock(

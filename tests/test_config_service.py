@@ -49,7 +49,7 @@ quiet = "30m"
             config_path=user_config,
         )
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     (repo / "almanac/config.toml").write_text(
         """
 [sync]
@@ -75,8 +75,8 @@ def test_config_service_uses_explicit_wiki_project_config(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=first))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=second))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=first))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=second))
     (second / "almanac/config.toml").write_text(
         """
 [harness]

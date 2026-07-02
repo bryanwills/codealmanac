@@ -42,7 +42,7 @@ def test_doctor_does_not_materialize_missing_registered_wiki(
 
     checks = {check.key: check for check in report.wiki}
     assert checks["wiki.registered"].status == DoctorStatus.PROBLEM
-    assert checks["wiki.registered"].fix == "run: codealmanac build"
+    assert checks["wiki.registered"].fix == "run: codealmanac init"
     assert not (repo / "almanac").exists()
 
 
@@ -55,7 +55,10 @@ def test_doctor_reports_index_and_health_for_selected_wiki(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
+    app.index.ensure_fresh(workspace.workspace_id)
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path, wiki="repo"))
 
@@ -79,7 +82,10 @@ def test_doctor_reports_missing_workspace_manual(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
+    app.index.ensure_fresh(workspace.workspace_id)
     (repo / "almanac/manual/pages.md").unlink()
 
     report = app.diagnostics.check(DoctorRequest(cwd=repo))
@@ -87,7 +93,7 @@ def test_doctor_reports_missing_workspace_manual(
     checks = {check.key: check for check in report.wiki}
     assert checks["wiki.manual"].status == DoctorStatus.PROBLEM
     assert checks["wiki.manual"].message == "manual missing: pages.md"
-    assert checks["wiki.manual"].fix == "run: codealmanac build"
+    assert checks["wiki.manual"].fix == "run: codealmanac init --force"
 
 
 def test_doctor_reports_changed_workspace_manual(
@@ -99,7 +105,10 @@ def test_doctor_reports_changed_workspace_manual(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
+    app.index.ensure_fresh(workspace.workspace_id)
     (repo / "almanac/manual/README.md").write_text(
         "local manual edit\n",
         encoding="utf-8",
@@ -112,5 +121,5 @@ def test_doctor_reports_changed_workspace_manual(
     assert checks["wiki.manual"].message == "manual differs: README.md"
     assert (
         checks["wiki.manual"].fix
-        == "review local manual files; codealmanac build preserves existing files"
+        == "review local manual files; codealmanac init --force refreshes the wiki"
     )

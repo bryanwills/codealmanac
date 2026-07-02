@@ -115,7 +115,7 @@ def manual_workspace_check(
             key="wiki.manual",
             status=DoctorStatus.PROBLEM,
             message=f"manual unavailable: {first_line(str(error))}",
-            fix="run: codealmanac build",
+            fix="run: codealmanac init",
         )
     if status.complete:
         if len(status.changed) > 0:
@@ -126,7 +126,7 @@ def manual_workspace_check(
                 message=f"manual differs: {changed}",
                 fix=(
                     "review local manual files; "
-                    "codealmanac build preserves existing files"
+                    "codealmanac init --force refreshes the wiki"
                 ),
             )
         return DoctorCheck(
@@ -139,7 +139,7 @@ def manual_workspace_check(
         key="wiki.manual",
         status=DoctorStatus.PROBLEM,
         message=f"manual missing: {missing}",
-        fix="run: codealmanac build",
+        fix="run: codealmanac init --force",
     )
 
 
@@ -192,5 +192,5 @@ def registered_check(
         key="wiki.registered",
         status=DoctorStatus.PROBLEM,
         message=f"{registered}, but Almanac root is missing: {workspace.almanac_path}",
-        fix="run: codealmanac build",
+        fix="run: codealmanac init",
     )

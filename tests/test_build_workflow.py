@@ -27,7 +27,7 @@ def test_initialize_creates_almanac_wiki_and_registry(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
 
-    workspace = app.workflows.build.initialize(
+    workspace = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=repo, description="test wiki")
     )
 
@@ -52,7 +52,7 @@ def test_initialize_starter_wiki_has_no_health_noise(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
 
     report = app.health.check(HealthCheckRequest(cwd=repo))
 
@@ -71,7 +71,7 @@ def test_initialize_supports_configured_almanac_root(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
 
-    workspace = app.workflows.build.initialize(
+    workspace = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(
             path=repo,
             almanac_root=Path("docs/almanac"),
@@ -87,7 +87,7 @@ def test_initialize_supports_configured_almanac_root(
     assert app.workspaces.resolve(repo / "src").almanac_path == repo / "docs/almanac"
 
 
-def test_build_without_root_preserves_registered_almanac_root(
+def test_initialize_without_root_preserves_registered_almanac_root(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -96,7 +96,7 @@ def test_build_without_root_preserves_registered_almanac_root(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(
             path=repo,
             almanac_root=Path("docs/almanac"),
@@ -105,12 +105,14 @@ def test_build_without_root_preserves_registered_almanac_root(
         )
     )
 
-    result = app.workflows.build.build(InitializeWorkspaceRequest(path=repo / "src"))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo / "src")
+    )
 
-    assert result.workspace.name == "docs-root"
-    assert result.workspace.description == "configured docs root"
-    assert result.workspace.almanac_root == Path("docs/almanac")
-    assert result.workspace.almanac_path == repo / "docs/almanac"
+    assert workspace.name == "docs-root"
+    assert workspace.description == "configured docs root"
+    assert workspace.almanac_root == Path("docs/almanac")
+    assert workspace.almanac_path == repo / "docs/almanac"
     assert not (repo / "almanac").exists()
 
 
@@ -124,7 +126,7 @@ def test_initialize_allows_explicit_dot_almanac_root(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
 
-    workspace = app.workflows.build.initialize(
+    workspace = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(
             path=repo,
             almanac_root=Path(".almanac"),
@@ -233,7 +235,7 @@ def test_initialize_rejects_roots_outside_repo(
     )
 
     with pytest.raises(ValueError):
-        app.workflows.build.initialize(
+        app.workflows.init.initialize_workspace(
             InitializeWorkspaceRequest(
                 path=repo,
                 almanac_root=root,
@@ -251,13 +253,15 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
     readme = repo / "almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
     manual_readme = repo / "almanac/manual/README.md"
     manual_readme.write_text("local manual edit\n", encoding="utf-8")
 
-    workspace = app.workflows.build.initialize(
+    workspace = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=repo / "src", name="renamed")
     )
 
@@ -267,7 +271,7 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     assert manual_readme.read_text(encoding="utf-8") == "local manual edit\n"
 
 
-def test_build_refreshes_wiki_and_rebuilds_index(
+def test_initialize_workspace_refreshes_wiki_and_rebuilds_index(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -277,13 +281,14 @@ def test_build_refreshes_wiki_and_rebuilds_index(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
 
-    result = app.workflows.build.build(
+    workspace = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=repo, name="repo")
     )
+    index = app.index.ensure_fresh(workspace.workspace_id)
 
-    assert result.workspace.name == "repo"
-    assert result.index.pages_indexed == 1
-    assert result.index.files_seen == 1
+    assert workspace.name == "repo"
+    assert index.pages_indexed == 1
+    assert index.files_seen == 1
     assert (repo / "almanac/index.db").is_file()
 
 
@@ -296,7 +301,9 @@ def test_workspace_selection_supports_name_id_and_path(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
 
     by_name = app.workspaces.select(SelectWorkspaceRequest(selector="repo"))
 
@@ -318,13 +325,13 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=live_repo, name="live")
     )
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=missing_repo, name="missing")
     )
-    app.workflows.build.initialize(
+    app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=missing_almanac, name="missing-almanac")
     )
     app.workspaces.register(
@@ -365,7 +372,9 @@ def test_workspace_registry_drops_selected_wiki(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo, name="repo")
+    )
 
     result = app.workspaces.drop(DropWorkspaceRequest(selector="repo"))
 

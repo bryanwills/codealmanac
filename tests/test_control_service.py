@@ -198,7 +198,7 @@ def test_control_db_is_separate_from_workspace_query_index(
         )
     )
 
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     workspace = app.workspaces.resolve(repo)
     control_status = app.control.ensure_ready()
 

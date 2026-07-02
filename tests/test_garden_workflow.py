@@ -95,7 +95,7 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -153,7 +153,7 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(DirtyAppGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -181,7 +181,7 @@ def test_garden_workflow_records_failed_harness_output_before_error(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(FailedGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 

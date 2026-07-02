@@ -910,7 +910,8 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/root.py").is_file()
     assert (cli_root / "dispatch/admin.py").is_file()
     assert (cli_root / "dispatch/automation.py").is_file()
-    assert (cli_root / "dispatch/build.py").is_file()
+    assert (cli_root / "dispatch/init.py").is_file()
+    assert not (cli_root / "dispatch/build.py").exists()
     assert (cli_root / "dispatch/config.py").is_file()
     assert (cli_root / "dispatch/diagnostics.py").is_file()
     assert (cli_root / "dispatch/jobs.py").is_file()
@@ -1236,13 +1237,12 @@ def test_cli_lifecycle_dispatch_stays_split_by_command_family():
     dispatch_path = SRC_ROOT / "cli/dispatch"
     lifecycle = (dispatch_path / "lifecycle.py").read_text(encoding="utf-8")
     module_expectations = {
-        "build.py": ("InitializeWorkspaceRequest", "def dispatch_build("),
+        "init.py": ("RunInitRequest", "def dispatch_init("),
         "operations.py": ("RunIngestRequest", "def dispatch_ingest("),
         "sync.py": ("RunSyncRequest", "def dispatch_sync("),
         "worker.py": ("DrainRunQueueRequest", "def dispatch_run_worker("),
     }
     forbidden_lifecycle_fragments = (
-        "InitializeWorkspaceRequest",
         "RunIngestRequest",
         "RunGardenRequest",
         "RunSyncRequest",
@@ -1272,7 +1272,7 @@ def test_cli_lifecycle_dispatch_stays_split_by_command_family():
         if fragment in lifecycle
     ] == []
     assert "dispatch_init(args, app)" in lifecycle
-    assert "dispatch_build(args, app)" in lifecycle
+    assert "dispatch_build(args, app)" not in lifecycle
     assert "dispatch_ingest(args, app)" in lifecycle
     assert "dispatch_garden(args, app)" in lifecycle
     assert "dispatch_sync(args, app)" in lifecycle

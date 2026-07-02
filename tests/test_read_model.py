@@ -24,7 +24,7 @@ def test_search_indexes_pages_topics_mentions_and_links(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     write_page(
         repo,
         "auth-flow.md",
@@ -75,7 +75,7 @@ def test_read_model_projects_structured_page_sources(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     write_page(
         repo,
         "source-backed.md",
@@ -127,7 +127,7 @@ def test_read_model_projects_generic_source_targets(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     write_page(
         repo,
         "target-backed.md",
@@ -200,7 +200,7 @@ def test_search_rebuilds_stale_existing_index_schema(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nStaleSchemaNeedle context.\n")
     db_path = repo / "almanac/index.db"
     with sqlite3.connect(db_path) as connection:
@@ -221,7 +221,7 @@ def test_rebuild_removes_stale_topic_rows(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     page_path = repo / "almanac/pages/note.md"
     page_path.write_text("---\ntopics: [old]\n---\n# Note\n", encoding="utf-8")
     app.search.search(SearchPagesRequest(cwd=repo, query="note"))
@@ -245,7 +245,9 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=repo)
+    )
     write_page(repo, "note.md", "# Note\n\nOriginalNeedle.\n")
 
     first = app.index.ensure_fresh(workspace.workspace_id)
@@ -288,7 +290,7 @@ def test_reindex_forces_projection_rebuild_when_index_is_fresh(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     write_page(repo, "note.md", "# Note\n\nForceNeedle.\n")
     app.search.search(SearchPagesRequest(cwd=repo, query="forceneedle"))
 

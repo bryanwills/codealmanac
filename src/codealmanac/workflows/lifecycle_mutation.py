@@ -22,29 +22,43 @@ class LifecycleMutationReport(CodeAlmanacModel):
 
 
 class LifecycleMutationPolicy:
-    def __init__(self, probe: WorkspaceChangeProbe, operation: str):
+    def __init__(
+        self,
+        probe: WorkspaceChangeProbe,
+        operation: str,
+        *,
+        require_clean_almanac: bool = True,
+    ):
         self.probe = probe
         self.operation = operation
+        self.require_clean_almanac = require_clean_almanac
 
     def preflight(self, workspace: Workspace) -> LifecycleMutationPreflight:
         before = self.probe.snapshot(workspace.root_path)
         validate_snapshot_available(before, self.operation)
         almanac_prefix = almanac_relative_path(workspace)
-        dirty_almanac = tuple(
-            change.path
-            for change in before.changes
-            if path_is_under(change.path, almanac_prefix)
-        )
-        if dirty_almanac:
-            almanac_label = almanac_prefix.as_posix()
-            raise ValidationFailed(
-                f"{self.operation} requires a clean {almanac_label} before running: "
-                f"{format_paths(dirty_almanac)}"
+        if self.require_clean_almanac:
+            dirty_almanac = tuple(
+                change.path
+                for change in before.changes
+                if path_is_under(change.path, almanac_prefix)
             )
+            if dirty_almanac:
+                almanac_label = almanac_prefix.as_posix()
+                raise ValidationFailed(
+                    f"{self.operation} requires a clean {almanac_label} "
+                    f"before running: {format_paths(dirty_almanac)}"
+                )
         return LifecycleMutationPreflight(
             before=before,
             almanac_prefix=almanac_prefix,
         )
+
+    def preflight_message(self, workspace: Workspace) -> str:
+        almanac_label = almanac_relative_path(workspace).as_posix()
+        if self.require_clean_almanac:
+            return f"verified clean {almanac_label} preflight"
+        return f"verified {almanac_label} mutation boundary preflight"
 
     def validate(
         self,

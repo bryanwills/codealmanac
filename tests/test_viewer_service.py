@@ -55,7 +55,9 @@ def test_viewer_overview_lists_available_registered_wikis(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    other = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=other_repo)
+    )
     write_viewer_page(
         other_repo,
         "ops-note.md",
@@ -70,7 +72,7 @@ Tracks operational decisions.
     )
     missing_repo = tmp_path / "missing"
     missing_repo.mkdir()
-    missing = app.workflows.build.initialize(
+    missing = app.workflows.init.initialize_workspace(
         InitializeWorkspaceRequest(path=missing_repo)
     )
     shutil.rmtree(missing_repo)
@@ -97,7 +99,9 @@ def test_viewer_overview_can_be_narrowed_to_one_wiki(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    other = app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=other_repo)
+    )
 
     overview = app.viewer.overview(
         ViewerOverviewRequest(

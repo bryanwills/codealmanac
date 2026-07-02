@@ -1,15 +1,24 @@
 import json
 
 from codealmanac.cli.render.common import index_summary, print_json_model
-from codealmanac.services.index.models import HealthReport, IndexRefreshResult
+from codealmanac.services.index.models import HealthReport
 from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.ingest.models import IngestResult
+from codealmanac.workflows.init.models import InitResult
 from codealmanac.workflows.run_queue.models import RunQueueStartResult
 from codealmanac.workflows.sync.models import SyncMode, SyncSummary
 
 
-def render_build(workspace_name: str, result: IndexRefreshResult) -> None:
-    print(f"built {workspace_name}: {index_summary(result)}")
+def render_init(result: InitResult, *, verbose: bool = False) -> None:
+    print(f"initialized {result.workspace.name}: {result.run.status.value}")
+    print(f"run: {result.run.run_id}")
+    print(f"wiki_changes: {len(result.safety.changed_files)}")
+    print(f"index: {index_summary(result.index)}")
+    if result.run.summary is not None:
+        print(f"summary: {result.run.summary}")
+    if verbose:
+        print(f"almanac_root: {result.workspace.almanac_path}")
+        print(f"existing_pages: {result.existing_page_count}")
 
 
 def render_ingest(result: IngestResult) -> None:

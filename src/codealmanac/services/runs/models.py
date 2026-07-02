@@ -12,6 +12,7 @@ from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessTranscriptRef,
 )
+from codealmanac.services.workspaces.roots import validate_almanac_root_field
 
 RUN_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
 RunId = Annotated[
@@ -21,7 +22,7 @@ RunId = Annotated[
 
 
 class RunOperation(StrEnum):
-    BUILD = "build"
+    INIT = "init"
     INGEST = "ingest"
     SYNC = "sync"
     GARDEN = "garden"
@@ -121,8 +122,12 @@ class RunSpec(CodeAlmanacModel):
     harness: HarnessKind
     wiki: str | None = None
     inputs: tuple[str, ...] = ()
+    almanac_root: Path | None = None
+    workspace_name: str | None = None
+    description: str = ""
     title: str | None = None
     guidance: str | None = None
+    force: bool = False
 
     @field_validator("inputs")
     @classmethod
@@ -131,7 +136,14 @@ class RunSpec(CodeAlmanacModel):
             required_text(item, "run spec input")
         return value
 
-    @field_validator("title", "guidance")
+    @field_validator("almanac_root")
+    @classmethod
+    def validate_almanac_root(cls, value: Path | None) -> Path | None:
+        if value is None:
+            return None
+        return validate_almanac_root_field(value)
+
+    @field_validator("workspace_name", "title", "guidance")
     @classmethod
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:
@@ -142,13 +154,35 @@ class RunSpec(CodeAlmanacModel):
     def validate_operation_payload(self) -> "RunSpec":
         if self.version != 1:
             raise ValueError("run spec version must be 1")
+        if self.operation == RunOperation.INIT:
+            if len(self.inputs) > 0:
+                raise ValueError("init run spec does not accept inputs")
+            if self.wiki is not None:
+                raise ValueError("init run spec does not accept wiki selector")
+            return self
         if self.operation == RunOperation.INGEST:
             if len(self.inputs) == 0:
                 raise ValueError("ingest run spec requires inputs")
+            if self.almanac_root is not None:
+                raise ValueError("ingest run spec does not accept almanac_root")
+            if self.workspace_name is not None:
+                raise ValueError("ingest run spec does not accept workspace_name")
+            if self.description:
+                raise ValueError("ingest run spec does not accept description")
+            if self.force:
+                raise ValueError("ingest run spec does not accept force")
             return self
         if self.operation == RunOperation.GARDEN:
             if len(self.inputs) > 0:
                 raise ValueError("garden run spec does not accept inputs")
+            if self.almanac_root is not None:
+                raise ValueError("garden run spec does not accept almanac_root")
+            if self.workspace_name is not None:
+                raise ValueError("garden run spec does not accept workspace_name")
+            if self.description:
+                raise ValueError("garden run spec does not accept description")
+            if self.force:
+                raise ValueError("garden run spec does not accept force")
             return self
         raise ValueError(f"unsupported queued run operation: {self.operation.value}")
 

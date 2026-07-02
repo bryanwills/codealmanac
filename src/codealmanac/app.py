@@ -76,9 +76,9 @@ from codealmanac.services.worker_workspaces.service import WorkerWorkspacesServi
 from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
-from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
+from codealmanac.workflows.init.service import InitWorkflow
 from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
@@ -101,7 +101,7 @@ from codealmanac.workflows.sync.store import SyncLedgerStore
 
 @dataclass(frozen=True)
 class CodeAlmanacWorkflows:
-    build: BuildWorkflow
+    init: InitWorkflow
     ingest: IngestWorkflow
     garden: GardenWorkflow
     queue: RunQueueWorkflow
@@ -214,7 +214,17 @@ def create_app(
     harnesses = HarnessesService(
         default_harness_adapters() if harness_adapters is None else harness_adapters
     )
-    build = BuildWorkflow(workspaces, wiki, index)
+    init_page_runs = PageRunWorkflow(
+        workspaces,
+        harnesses,
+        runs,
+        index,
+        LifecycleMutationPolicy(
+            GitWorkspaceChangeProbe(),
+            operation="init",
+            require_clean_almanac=False,
+        ),
+    )
     ingest_page_runs = PageRunWorkflow(
         workspaces,
         harnesses,
@@ -228,6 +238,13 @@ def create_app(
         runs,
         index,
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
+    )
+    init = InitWorkflow(
+        workspaces,
+        wiki,
+        runs,
+        init_page_runs,
+        prompts,
     )
     ingest = IngestWorkflow(
         sources,
@@ -244,6 +261,7 @@ def create_app(
     )
     queue = RunQueueWorkflow(
         runs,
+        init,
         ingest,
         garden,
         worker_spawner or SubprocessRunWorkerSpawner(),
@@ -299,7 +317,7 @@ def create_app(
     )
     sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
     workflows = CodeAlmanacWorkflows(
-        build=build,
+        init=init,
         ingest=ingest,
         garden=garden,
         queue=queue,

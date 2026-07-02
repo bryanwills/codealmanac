@@ -34,7 +34,7 @@ Those two entries are the source markers for an initialized CodeAlmanac wiki.
 
 Read `manual/README.md` before creating, reorganizing, or substantially
 rewriting pages. The manual is bundled with CodeAlmanac and copied here by
-`codealmanac init` and `codealmanac build`.
+`codealmanac init`.
 
 ## Links
 

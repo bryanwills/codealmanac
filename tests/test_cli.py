@@ -119,6 +119,46 @@ The public CLI ingested bounded source material.
         )
 
 
+class CliInitHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        almanac_root = request.cwd / "almanac"
+        if (request.cwd / "docs/almanac/pages").is_dir():
+            almanac_root = request.cwd / "docs/almanac"
+        page = almanac_root / "pages/cli-init-note.md"
+        page.write_text(
+            """---
+title: CLI Init Note
+topics: [concepts]
+sources: []
+---
+# CLI Init Note
+
+The public CLI initialized the first wiki.
+""",
+            encoding="utf-8",
+        )
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="initialized through CLI",
+            summary="initialized through CLI",
+            changed_files=(page,),
+        )
+
+
 class CliGardenHarnessAdapter:
     kind = HarnessKind.CODEX
 
@@ -367,36 +407,111 @@ def local_repository_state(repo: Path) -> LocalRepositoryState:
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     repo = tmp_path / "My Repo"
     repo.mkdir()
+    initialize_git(repo)
+    adapter = CliInitHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    exit_code = main(["init", str(repo), "--description", "cli test"])
+    exit_code = main(
+        [
+            "init",
+            str(repo),
+            "--description",
+            "cli test",
+            "--using",
+            "codex",
+            "--guidance",
+            "Make one page.",
+        ]
+    )
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == "my-repo\n"
-    assert "initialized" in captured.err
-    assert (repo / "almanac/pages/getting-started.md").is_file()
+    assert "initialized my-repo: done\n" in captured.out
+    assert "summary: initialized through CLI\n" in captured.out
+    assert "Make one page." in adapter.requests[0].prompt
+    assert (repo / "almanac/pages/cli-init-note.md").is_file()
     assert (isolated_home / ".codealmanac/registry.json").is_file()
 
 
 def test_cli_init_accepts_configured_root(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
+    adapter = CliInitHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    exit_code = main(["init", str(repo), "--root", "docs/almanac"])
+    exit_code = main(
+        ["init", str(repo), "--root", "docs/almanac", "--using", "codex"]
+    )
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == "repo\n"
-    assert str(repo / "docs/almanac") in captured.err
+    assert "initialized repo: done\n" in captured.out
+    assert "index: 2 pages" in captured.out
+    assert adapter.requests[0].cwd == repo
     assert (repo / "docs/almanac/pages/getting-started.md").is_file()
+
+
+def test_cli_init_background_queues_run_and_spawns_worker(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    initialize_git(repo)
+    harness = CliInitHarnessAdapter()
+    spawner = CliWorkerSpawner()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(harness,),
+        worker_spawner=spawner,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(["init", str(repo), "--using", "codex", "--background", "--json"])
+        == 0
+    )
+
+    output = capsys.readouterr()
+    data = json.loads(output.out)
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=data["run_id"]))
+
+    assert data["status"] == "queued"
+    assert data["child_pid"] == 5151
+    assert run.operation == RunOperation.INIT
+    assert run.status == RunStatus.QUEUED
+    assert harness.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+
+
+def test_cli_build_command_is_not_public():
+    parser = build_parser()
+
+    with pytest.raises(SystemExit) as exit_info:
+        parser.parse_args(["build"])
+
+    assert exit_info.value.code == 2
 
 
 def test_cli_setup_and_uninstall_codex_instructions(
@@ -803,7 +918,7 @@ def test_cli_setup_installs_automation_with_explicit_flags(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -849,13 +964,16 @@ def test_cli_setup_installs_automation_with_explicit_flags(
 def test_cli_list_outputs_registered_wikis(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-
-    assert main(["init", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     exit_code = main(["list"])
 
@@ -867,12 +985,16 @@ def test_cli_list_outputs_registered_wikis(
 def test_cli_list_json_reports_registry_status(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["init", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert main(["list", "--json"]) == 0
 
@@ -885,12 +1007,16 @@ def test_cli_list_json_reports_registry_status(
 def test_cli_list_drop_removes_selected_wiki(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["init", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert main(["list", "--drop", "repo"]) == 0
     drop_output = capsys.readouterr()
@@ -904,16 +1030,23 @@ def test_cli_list_drop_removes_selected_wiki(
 def test_cli_list_drop_missing_removes_unreachable_wikis(
     tmp_path: Path,
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
     live_repo = tmp_path / "live"
     missing_repo = tmp_path / "missing"
     live_repo.mkdir()
     missing_repo.mkdir()
-    assert main(["init", str(live_repo), "--name", "live"]) == 0
-    capsys.readouterr()
-    assert main(["init", str(missing_repo), "--name", "missing"]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=live_repo, name="live")
+    )
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=missing_repo, name="missing")
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
     shutil.rmtree(missing_repo)
 
     assert main(["list", "--drop-missing"]) == 0
@@ -925,7 +1058,7 @@ def test_cli_list_drop_missing_removes_unreachable_wikis(
     assert list_output.out == f"live\t{live_repo}\talmanac\n"
 
 
-def test_cli_build_and_reindex_commands(
+def test_cli_reindex_command(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -933,10 +1066,13 @@ def test_cli_build_and_reindex_commands(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    app.index.ensure_fresh(app.workspaces.resolve(repo).workspace_id)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["build", str(repo)]) == 0
-    build_output = capsys.readouterr()
-    assert build_output.out == "built repo: 1 page (1 updated, 0 removed)\n"
     assert (repo / "almanac/index.db").is_file()
 
     (repo / "almanac/pages/note.md").write_text(
@@ -964,11 +1100,17 @@ def test_cli_reindex_can_target_registered_wiki(
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=first, name="first")
+    )
+    app.workflows.init.initialize_workspace(
+        InitializeWorkspaceRequest(path=second, name="second")
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["build", str(first), "--name", "first"]) == 0
-    capsys.readouterr()
-    assert main(["build", str(second), "--name", "second"]) == 0
-    capsys.readouterr()
     (first / "almanac/pages/remote.md").write_text(
         "# Remote\n\nTargeted reindex.\n",
         encoding="utf-8",
@@ -989,8 +1131,12 @@ def test_cli_doctor_reports_local_state(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["build", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    app.index.ensure_fresh(app.workspaces.resolve(repo).workspace_id)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
     monkeypatch.chdir(repo)
 
     assert main(["doctor"]) == 0
@@ -1012,8 +1158,12 @@ def test_cli_doctor_reports_manual_drift(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["build", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    app.index.ensure_fresh(app.workspaces.resolve(repo).workspace_id)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
     (repo / "almanac/manual/README.md").write_text(
         "local manual edit\n",
         encoding="utf-8",
@@ -1024,7 +1174,7 @@ def test_cli_doctor_reports_manual_drift(
 
     output = capsys.readouterr()
     assert "info manual differs: README.md" in output.out
-    assert "codealmanac build preserves existing files" in output.out
+    assert "codealmanac init --force refreshes the wiki" in output.out
 
 
 def test_cli_help_includes_update():
@@ -1123,7 +1273,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1169,7 +1319,7 @@ def test_cli_ingest_uses_configured_default_harness(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     (repo / "almanac/config.toml").write_text(
         """
 [harness]
@@ -1206,7 +1356,7 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1240,7 +1390,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1286,7 +1436,7 @@ def test_cli_garden_background_plain_output(
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1316,7 +1466,7 @@ def test_cli_hidden_run_worker_drains_queued_run(
         harness_adapters=(harness,),
         worker_spawner=CliWorkerSpawner(),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
@@ -1675,7 +1825,7 @@ def test_cli_sync_status_reports_ready_transcripts(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1714,7 +1864,7 @@ def test_cli_sync_status_uses_configured_quiet_window(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     (repo / "almanac/config.toml").write_text(
         """
 [sync]
@@ -1757,7 +1907,7 @@ def test_cli_sync_status_uses_retry_budget_flags(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     ledger_path = repo / "almanac/jobs/sync-ledger.json"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger = SyncLedger(
@@ -1830,7 +1980,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
         harness_adapters=(harness,),
         transcript_discovery_adapters=(transcript_adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1878,7 +2028,7 @@ def test_cli_sync_background_queues_ingest_for_ready_transcripts(
         transcript_discovery_adapters=(transcript_adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1923,7 +2073,7 @@ def test_cli_automation_install_status_and_uninstall(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1971,7 +2121,7 @@ def test_cli_jobs_inspects_local_run_records(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
@@ -2080,8 +2230,11 @@ def test_cli_search_and_show_read_current_repo_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["init", str(repo)]) == 0
-    capsys.readouterr()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.init.initialize_workspace(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
     page_path = repo / "almanac/pages/auth-flow.md"
     page_path.write_text(
         """---
