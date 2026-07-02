@@ -13,7 +13,7 @@ class ManualDocumentName(StrEnum):
     EVIDENCE = "evidence.md"
     STYLE = "style.md"
     SOURCES = "sources.md"
-    BUILD = "build.md"
+    INIT = "init.md"
     INGEST = "ingest.md"
     GARDEN = "garden.md"
 
@@ -24,7 +24,7 @@ MANUAL_DOCUMENTS: tuple[ManualDocumentName, ...] = (
     ManualDocumentName.EVIDENCE,
     ManualDocumentName.STYLE,
     ManualDocumentName.SOURCES,
-    ManualDocumentName.BUILD,
+    ManualDocumentName.INIT,
     ManualDocumentName.INGEST,
     ManualDocumentName.GARDEN,
 )

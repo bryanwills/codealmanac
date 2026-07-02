@@ -24,6 +24,9 @@ def test_manual_library_reads_all_bundled_documents():
     assert "Page links are for real wiki nodes" in ManualLibrary().read(
         ManualReadRequest(document=ManualDocumentName.PAGES)
     ).body
+    assert "first substantial wiki" in ManualLibrary().read(
+        ManualReadRequest(document=ManualDocumentName.INIT)
+    ).body
 
 
 def test_manual_read_request_requires_known_document():
@@ -42,6 +45,7 @@ def test_manual_install_missing_preserves_existing_files(tmp_path: Path):
     assert existing.read_text(encoding="utf-8") == "local edit\n"
     assert "README.md" in result.existing
     assert "pages.md" in result.copied
+    assert (target / "init.md").is_file()
     assert (target / "ingest.md").is_file()
     assert ManualLibrary().workspace_status(target).complete
 

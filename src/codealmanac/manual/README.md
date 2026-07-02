@@ -16,7 +16,7 @@ Read the relevant page before editing:
 - `evidence.md`: how claims stay grounded and how conflicts are handled.
 - `style.md`: how CodeAlmanac prose should read.
 - `sources.md`: how raw material relates to wiki synthesis.
-- `build.md`: how to create the first useful wiki.
+- `init.md`: how to create the first useful wiki.
 - `ingest.md`: how to fold new material into an existing wiki.
 - `garden.md`: how to improve an existing wiki graph.
 

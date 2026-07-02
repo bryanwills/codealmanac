@@ -225,6 +225,18 @@ Current evidence:
 - `tests/test_architecture.py` proves local policy only composes local status
   and control policy methods; it does not import integrations, SQL,
   subprocesses, workers, harnesses, or delivery mechanics.
+- Slice 21 restored prompt and manual resources for init-first-build.
+- `src/codealmanac/prompts/operations/init.md` is now the packaged first-build
+  operation prompt, and `PromptName.OPERATION_INIT` resolves it.
+- `src/codealmanac/manual/init.md` replaced the bundled `build.md` manual
+  teaching surface.
+- `tests/test_prompts.py` proves every packaged prompt enum can be rendered,
+  including init, ingest, garden, and update operation prompts.
+- `tests/test_manual.py` proves bundled manual inventory installs `init.md`.
+- `tests/test_build_workflow.py` proves initialized workspaces receive
+  `manual/init.md`.
+- `tests/test_architecture.py` proves prompt/manual first-build resources use
+  init naming and no longer package `operations/build.md` or `manual/build.md`.
 
 Commands:
 

@@ -85,6 +85,10 @@ Status: active.
   deliberate product/design decision changes it.
 - Internal frontend structure may be refactored during the rename if it makes
   the hosted architecture cleaner.
+- First-build prompt and manual resources use `init` naming:
+  `operations/init.md` and `manual/init.md`.
+- Public `build` command removal and agent-backed `init` runtime behavior are
+  separate follow-up work from prompt/manual resource restoration.
 
 ## Naming
 

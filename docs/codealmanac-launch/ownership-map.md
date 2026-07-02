@@ -10,6 +10,7 @@ Owns:
 - shared update engine
 - engine request/result models
 - source bundle contract
+- prompt and manual resources for wiki-writing operations
 - local setup
 - local GitHub checkout detection
 - local control DB at `~/.codealmanac/control.sqlite`

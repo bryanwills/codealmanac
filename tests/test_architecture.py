@@ -805,6 +805,20 @@ def test_diagnostics_service_stays_facade():
     assert "def health_problem_count(" in messages_text
 
 
+def test_init_first_build_resources_use_init_naming():
+    prompt_models = (SRC_ROOT / "prompts/models.py").read_text(encoding="utf-8")
+    manual_models = (SRC_ROOT / "manual/models.py").read_text(encoding="utf-8")
+
+    assert (SRC_ROOT / "prompts/operations/init.md").is_file()
+    assert not (SRC_ROOT / "prompts/operations/build.md").exists()
+    assert (SRC_ROOT / "manual/init.md").is_file()
+    assert not (SRC_ROOT / "manual/build.md").exists()
+    assert "OPERATION_INIT" in prompt_models
+    assert "OPERATION_BUILD" not in prompt_models
+    assert "INIT = \"init.md\"" in manual_models
+    assert "BUILD = \"build.md\"" not in manual_models
+
+
 def test_cli_main_stays_as_thin_entrypoint():
     main = SRC_ROOT / "cli/main.py"
     text = main.read_text(encoding="utf-8")
