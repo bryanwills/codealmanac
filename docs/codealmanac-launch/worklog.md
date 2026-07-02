@@ -281,3 +281,7 @@
   `uv run pytest tests/test_local_engine_workflow.py tests/test_engine_runs_service.py tests/test_architecture.py`.
 - Verified Slice 13 full gate with `uv run pytest` (`411 passed`),
   `uv run ruff check .`, and `git diff --check`.
+- Sent the Slice 13 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 63%, CLI/public UX 10%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.
