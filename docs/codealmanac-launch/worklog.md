@@ -2,6 +2,19 @@
 
 ## 2026-07-02
 
+- Rechecked the cloud login decision after a cofounder hit an email-style
+  verification path. Launch login remains GitHub-only: `codealmanac setup`
+  opens browser login, the user continues with GitHub, then installs/configures
+  the GitHub App. Email/password, magic auth, and email verification are
+  misconfigured WorkOS/AuthKit paths because they do not return GitHub provider
+  OAuth tokens to the AuthKit callback.
+- Pulled Vercel production auth logs from the linked frontend project. Recent
+  production auth logs after the latest deployment had no error-level entries;
+  the relevant older `/auth/callback` error at `2026-07-02T18:56:34Z` was
+  `WorkOS GitHub OAuth tokens were missing`, from a deployment before the
+  callback hardening was active.
+- Verified with browser-harness that `https://www.codealmanac.com/login`
+  renders only `Continue with GitHub` and no email/password inputs.
 - Planned Slice 49 in
   `docs/plans/2026-07-02-slice-49-token-storage-hardening.md`.
 - Hardened hosted GitHub provider token storage. `users.oauth_token` and

@@ -24,6 +24,10 @@ Status: active.
   `http://localhost:3000/auth/callback`.
 - Launch AuthKit should present GitHub login only. Email/password, magic auth,
   and generic SSO should stay disabled unless explicitly reopened.
+- Email verification is not part of launch login. If a user reaches an email
+  verification or email/password path, treat it as a WorkOS/AuthKit
+  configuration bug because CodeAlmanac requires GitHub OAuth to return GitHub
+  provider tokens.
 - Canonical wiki content lives in the repository.
 - Query DB and control DB are separate.
 - Cross-wiki links are sunset for cloud and local.

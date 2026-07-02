@@ -80,18 +80,18 @@ it in the current launch contract.
 Confirmed callback targets:
 
 ```text
-production: https://codealmanac.com/auth/callback
+production: https://www.codealmanac.com/auth/callback
 local: http://localhost:3000/auth/callback
 ```
 
 Configured WorkOS application settings:
 
 ```text
-redirect URI: https://codealmanac.com/auth/callback
+redirect URI: https://www.codealmanac.com/auth/callback
 redirect URI: http://localhost:3000/auth/callback
-CORS origin: https://codealmanac.com
+CORS origin: https://www.codealmanac.com
 CORS origin: http://localhost:3000
-homepage URL: https://codealmanac.com
+homepage URL: https://www.codealmanac.com
 ```
 
 ## CLI Login
@@ -177,6 +177,14 @@ Launch sign-in should be GitHub-only in AuthKit. Email/password, magic auth,
 and generic SSO should remain disabled unless explicitly reopened; repository
 access still comes from the GitHub App installation token, not broad user OAuth
 scopes.
+
+Email verification is not a supported launch step. A successful CodeAlmanac
+cloud login must go through GitHub OAuth because the AuthKit callback needs
+WorkOS' returned GitHub provider tokens to link the user to GitHub and to
+hydrate the product identity. Email/password or magic-auth callbacks can create
+a WorkOS browser session but do not provide those GitHub provider tokens, so
+they are treated as misconfigured auth paths rather than alternate sign-in
+methods.
 
 Enable WorkOS' GitHub OAuth token return setting. In the AuthKit callback,
 persist upstream `oauthTokens` from `handleAuth({ onSuccess })` when present.
