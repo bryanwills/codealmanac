@@ -2,6 +2,36 @@
 
 ## 2026-07-02
 
+- Planned Slice 33 in
+  `docs/plans/2026-07-02-slice-33-hosted-delivery-stale-outcome.md`.
+- Added hosted `RunStatus.STALE` and `UpdateResult.stale(...)` for runs whose
+  target branch moved before delivery.
+- Replaced raw GitHub commit-head drift `ValueError` with typed
+  `GitHubBranchHeadChanged`.
+- Added product-level `StaleDelivery` in hosted delivery, with preflight branch
+  head checks for `CommitToBranch` and `OpenWikiPullRequest`, while keeping the
+  commit-time expected-head check as defense in depth.
+- Added `UpdatesStore.mark_stale(...)`, storing terminal stale run state,
+  stale reason, finished timestamp, and a `run_events` status payload with
+  expected and actual head SHAs.
+- Made completion catch stale delivery, skip billing and `RunDelivered`
+  dispatch, and clear conversation ingest state with a stale status.
+- Added backend/API/frontend status parity for `stale`, including run DTOs,
+  conversation source summaries, frontend DTOs, status labels, and status icon
+  rendering.
+- Verified Slice 33 focused hosted backend gate with
+  `uv run pytest tests/test_updates_contract.py
+  tests/test_update_run_events_contract.py tests/test_github_git_contract.py
+  tests/test_repositories_api_contract.py -q` (`38 passed, 1 warning`).
+- Verified Slice 33 frontend status gates with `npm run test:frontend`
+  (`41 passed`) and `npm run test:routes` (`26 passed`).
+- Verified Slice 33 hosted hygiene/full backend gates with
+  `uv run ruff check .`, `uv run ruff format --check .`,
+  `python -m compileall src modal_app -q`, `git diff --check`, `npm run lint`,
+  and `uv run pytest -q` (`311 passed, 1 warning`).
+- Pushed hosted commit
+  `9098b65 feat: record stale delivery outcomes` to
+  `origin/codex/workos-authkit-api-foundation`.
 - Planned Slice 32 in
   `docs/plans/2026-07-02-slice-32-hosted-run-events.md`.
 - Added hosted SQL-backed `run_events` with ordered `(run_id, sequence)`

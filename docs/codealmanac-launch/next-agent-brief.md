@@ -10,50 +10,57 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 32 added SQL-backed hosted run events.
+Slice 33 added hosted stale delivery outcomes for expected-head drift.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- hosted `RunEventKind` and `RunEvent` models
-- hosted `RunEventRow` SQLModel table and `run_events` Supabase migration
-  table
-- hosted `run_event_from_row` conversion helper
-- `UpdatesStore.append_run_event(...)` and
-  `UpdatesStore.list_run_events(...)`
-- automatic lifecycle events from `create_run`, `mark_running`,
-  `mark_delivered`, and `mark_failed`
-- event payloads limited to normalized metadata such as `worker_call_id`,
-  `commit_sha`, `files_changed`, `summary`, and `error`
-- pushed hosted commit `12cfc08 feat: persist hosted run events`
+- `RunStatus.STALE` and `UpdateResult.stale(...)`
+- typed `GitHubBranchHeadChanged` from GitHub commit expected-head drift
+- product `StaleDelivery` in `services/updates/delivery.py`
+- branch-head preflight checks for `CommitToBranch` and `OpenWikiPullRequest`
+- `UpdatesStore.mark_stale(...)`, including a `run_events` status payload with
+  expected and actual head SHAs
+- completion handling that marks stale, skips billing, skips `RunDelivered`,
+  and clears conversation-ingest active state
+- backend/API/frontend DTO parity for the `stale` status
+- frontend status metadata/icon rendering for stale runs
+- pushed hosted commit `9098b65 feat: record stale delivery outcomes`
 
 Verified:
 
 ```text
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_update_run_events_contract.py tests/test_updates_contract.py tests/test_architecture_contract.py -q
+uv run pytest tests/test_updates_contract.py tests/test_update_run_events_contract.py tests/test_github_git_contract.py tests/test_repositories_api_contract.py -q
 uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
+python -m compileall src modal_app -q
 
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence
-python -m compileall backend/src backend/modal_app -q
 git diff --check
+
+cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
+npm run lint
+npm run test:frontend
+npm run test:routes
 ```
 
-Counts: hosted focused `93 passed`; hosted full `306 passed, 1 warning`.
+Counts: hosted backend focused `38 passed, 1 warning`; hosted backend full
+`311 passed, 1 warning`; hosted frontend `41 passed` and route tests
+`26 passed`.
 
 ## Next Pressure Test
 
-Harden expected-head delivery and expose useful run-event visibility.
+Expose useful run-event visibility and terminal failure/stale check surfaces.
 
 Pressure points:
 
-- hosted delivery still needs the expected-head check and commit/PR delivery
-  policy path
 - dashboard/API still does not expose run-event logs
+- terminal failed/stale runs still do not have a dedicated `RunFailed` or
+  `RunStale` domain-event fanout for GitHub check updates
 - old inline-message conversation routes should remain compatibility-only
 
 ## Known Repo State
@@ -69,7 +76,8 @@ on `codex/workos-authkit-api-foundation`. Slice 27 is pushed to origin at
 `5644a65 feat: add capture transcript upload`; Slice 30 is pushed to origin at
 `191d8d8 feat: materialize capture source refs`; Slice 31 is pushed to origin
 at `51c2cb2 feat: call codealmanac maintenance api`; Slice 32 is pushed to
-origin at `12cfc08 feat: persist hosted run events`.
+origin at `12cfc08 feat: persist hosted run events`; Slice 33 is pushed to
+origin at `9098b65 feat: record stale delivery outcomes`.
 
 The local wiki command currently fails on this checkout with:
 

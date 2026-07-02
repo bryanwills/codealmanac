@@ -484,8 +484,26 @@ Current evidence:
   (`306 passed, 1 warning`), `uv run ruff check .`,
   `uv run ruff format --check .`, `python -m compileall backend/src
   backend/modal_app -q`, and `git diff --check`.
-- Remaining hosted worker risks: expected-head delivery maturity and frontend
-  run-event display still need launch-hardening.
+- Slice 33 added hosted `RunStatus.STALE` for expected-head drift during
+  delivery.
+- `backend/tests/test_github_git_contract.py` proves Git commit delivery raises
+  typed `GitHubBranchHeadChanged` when the branch ref no longer matches the
+  expected head.
+- `backend/tests/test_updates_contract.py` proves stale delivery marks the run
+  `stale`, records no commit, skips billing, skips `RunDelivered`, rejects
+  moved open-wiki bases before branch creation, and clears stale conversation
+  ingest state.
+- `backend/tests/test_update_run_events_contract.py` proves the launch migration
+  includes the `stale` run status alongside `run_events`.
+- Hosted frontend DTO/status tests prove `stale` is part of the mirrored status
+  surface and renders through the shared status metadata/icon path.
+- Slice 33 full hosted backend verification passed with `uv run pytest -q`
+  (`311 passed, 1 warning`), `uv run ruff check .`,
+  `uv run ruff format --check .`, `python -m compileall src modal_app -q`,
+  `git diff --check`, `npm run lint`, `npm run test:frontend` (`41 passed`),
+  and `npm run test:routes` (`26 passed`).
+- Remaining hosted worker risks: frontend run-event display and terminal
+  failure/stale GitHub check fanout still need launch-hardening.
 
 ## Provider / Deployment
 
