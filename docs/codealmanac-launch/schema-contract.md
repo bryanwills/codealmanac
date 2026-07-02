@@ -22,6 +22,16 @@ CodeAlmanac-hosted cloud state.
   storage keys, and artifact refs. They do not store full copied conversation
   sessions or source bundles as inline value payloads.
 
+Slice 29 adds the first hosted source-artifact ref path:
+
+```text
+conversation_sources.source_ref
+```
+
+The capture-token path stores raw transcript bytes in the source-artifact store
+and stores `source_ref` plus routing metadata in SQL. It does not write
+conversation message content into `conversation_messages`.
+
 ## Local Storage
 
 Local control DB:
@@ -352,6 +362,10 @@ run-artifacts
 
 `source-artifacts` stores captured sessions, source bundles, webhook payloads
 when needed, and other input evidence.
+
+Current hosted development storage uses a filesystem-backed artifact store under
+`/tmp/codealmanac-source-artifacts` through the same service seam. Production can
+replace that adapter with Supabase Storage without changing capture routes.
 
 `run-artifacts` stores engine requests, engine results, patches, raw provider
 events, and large worker logs.

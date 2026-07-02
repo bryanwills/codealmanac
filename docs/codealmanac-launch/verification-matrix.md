@@ -63,6 +63,21 @@ Current evidence:
   `npm run test:frontend` (`41 passed`), hosted `npm run build`,
   `codealmanac` `uv run pytest -q` (`477 passed`), `codealmanac` ruff,
   `git diff --check`, and capture help checks.
+- Slice 29 added capture-token upload routes:
+  `POST /v1/capture/artifacts` and `POST /v1/capture/turns`.
+- `backend/tests/test_capture_upload_api_contract.py` proves capture tokens can
+  upload raw transcript artifacts, CLI tokens cannot upload artifacts, artifact
+  responses do not echo transcript text, turn metadata carries `artifactRef`,
+  and SQL stores `source_ref` without `conversation_messages`.
+- Slice 29 added local hook transcript upload through the existing hidden
+  `codealmanac __capture-hook --provider codex|claude` command.
+- `tests/test_capture_transcript_upload.py` proves Codex hook payloads preserve
+  hook turn IDs, Claude payloads get deterministic fallback turn IDs, missing
+  transcript paths record skipped events, and no provider work is blocked.
+- Slice 29 focused gates passed:
+  hosted backend capture/conversation/architecture tests (`88 passed, 1
+  warning`), hosted ruff, local capture/CLI/public/architecture tests
+  (`147 passed`), and local ruff.
 
 ## CodeAlmanac Local Repo
 

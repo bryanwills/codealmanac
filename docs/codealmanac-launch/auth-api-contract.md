@@ -268,8 +268,22 @@ POST /v1/capture/credentials/revoke
 
 Credential issue/status/revoke authenticate with the CLI token. Issue returns
 the raw `cap_...` token once. Status returns summaries only and never returns
-raw token material. Future upload endpoints authenticate with the capture token,
-not the human CLI token.
+raw token material. Upload endpoints authenticate with the capture token, not
+the human CLI token.
+
+Implemented Slice 29 capture upload routes:
+
+```text
+POST /v1/capture/artifacts
+POST /v1/capture/turns
+```
+
+`POST /v1/capture/artifacts` accepts raw transcript bytes with
+`Authorization: Bearer cap_...`, `X-CodeAlmanac-Provider`, and
+`X-CodeAlmanac-Provider-Session-Id`. It returns a source-artifact ref and does
+not echo transcript text. `POST /v1/capture/turns` accepts normalized routing
+metadata plus `artifactRef`. SQL stores refs and metadata, not copied transcript
+content.
 
 Implemented Slice 28 local capture state:
 
@@ -279,8 +293,9 @@ Implemented Slice 28 local capture state:
 ```
 
 `capture.json` stores the capture token separately from
-`~/.codealmanac/auth.json`. Hook diagnostics are local event records only until
-the transcript upload slice lands.
+`~/.codealmanac/auth.json`. Hook diagnostics are local event records with
+upload status. The hidden hook uploads raw transcript artifacts and normalized
+turn metadata when transcript evidence is available.
 
 Core endpoints:
 
@@ -294,6 +309,8 @@ POST /v1/auth/logout
 POST /v1/capture/credentials
 GET  /v1/capture/status
 POST /v1/capture/credentials/revoke
+POST /v1/capture/artifacts
+POST /v1/capture/turns
 POST /v1/auth/token/refresh
 
 GET  /v1/repositories
@@ -311,10 +328,6 @@ GET  /v1/runs/{run_id}
 GET  /v1/runs/{run_id}/events
 POST /v1/runs/{run_id}/cancel
 POST /v1/runs/{run_id}/retry
-
-POST /v1/capture/sessions
-POST /v1/capture/turns
-GET  /v1/capture/status
 
 GET  /v1/repositories/{repo_id}/wiki
 GET  /v1/repositories/{repo_id}/wiki/pages

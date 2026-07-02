@@ -22,9 +22,13 @@ from codealmanac.services.automation.models import (
 )
 from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
 from codealmanac.services.cloud_capture.models import (
+    CaptureArtifact,
+    CaptureArtifactUpload,
     CaptureCloudStatus,
     CaptureCredential,
     CaptureCredentialIssue,
+    CaptureTranscriptUpload,
+    CaptureTurnUploadResult,
 )
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
@@ -327,6 +331,8 @@ class CliCloudCaptureClient:
     def __init__(self):
         self.issued: list[str] = []
         self.revoked: list[str] = []
+        self.artifacts: list[CaptureArtifactUpload] = []
+        self.turns: list[CaptureTranscriptUpload] = []
 
     def issue_capture_credential(
         self,
@@ -363,6 +369,38 @@ class CliCloudCaptureClient:
         assert cli_token == "alm_secret"
         self.revoked.append(capture_token)
         return True
+
+    def upload_capture_artifact(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        artifact: CaptureArtifactUpload,
+    ) -> CaptureArtifact:
+        assert capture_token == "cap_secret"
+        self.artifacts.append(artifact)
+        return CaptureArtifact(
+            ref="source-artifacts://capture/cli-test.jsonl",
+            sha256="0" * 64,
+            size_bytes=len(artifact.body),
+            content_type=artifact.content_type,
+        )
+
+    def upload_capture_turn(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        turn: CaptureTranscriptUpload,
+    ) -> CaptureTurnUploadResult:
+        assert capture_token == "cap_secret"
+        self.turns.append(turn)
+        return CaptureTurnUploadResult(
+            accepted=True,
+            routed=False,
+            routing_status=turn.routing_status,
+            message_count=0,
+        )
 
 
 def capture_credential(*, name: str) -> CaptureCredential:
@@ -575,9 +613,7 @@ def test_cli_init_accepts_configured_root(
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    exit_code = main(
-        ["init", str(repo), "--root", "docs/almanac", "--using", "codex"]
-    )
+    exit_code = main(["init", str(repo), "--root", "docs/almanac", "--using", "codex"])
 
     captured = capsys.readouterr()
     assert exit_code == 0
@@ -605,10 +641,7 @@ def test_cli_init_background_queues_run_and_spawns_worker(
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert (
-        main(["init", str(repo), "--using", "codex", "--background", "--json"])
-        == 0
-    )
+    assert main(["init", str(repo), "--using", "codex", "--background", "--json"]) == 0
 
     output = capsys.readouterr()
     data = json.loads(output.out)
@@ -823,14 +856,25 @@ def test_cli_capture_enable_status_hook_and_disable(
     assert status["hooks"][0]["installed"] is True
     assert status["cloud_credentials"][0]["name"] == "CodeAlmanac capture"
 
+    transcript = isolated_home / "codex-session.jsonl"
+    transcript.write_text(
+        json.dumps(
+            {
+                "timestamp": "2026-07-02T12:00:00Z",
+                "payload": {"id": "sess_1", "cwd": str(isolated_home)},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     monkeypatch.setattr(
         "sys.stdin",
         StringIO(
             json.dumps(
                 {
                     "session_id": "sess_1",
-                    "transcript_path": "/tmp/transcript.jsonl",
-                    "cwd": "/tmp/repo",
+                    "transcript_path": str(transcript),
+                    "cwd": str(isolated_home),
                     "hook_event_name": "Stop",
                     "turn_id": "turn_1",
                 }
@@ -842,6 +886,13 @@ def test_cli_capture_enable_status_hook_and_disable(
     hook = json.loads(capsys.readouterr().out)
 
     assert hook["session_id"] == "sess_1"
+    assert hook["upload_status"] == "uploaded"
+    assert capture_client.artifacts[0].body == transcript.read_bytes()
+    assert (
+        capture_client.turns[0].artifact_ref
+        == "source-artifacts://capture/cli-test.jsonl"
+    )
+    assert capture_client.turns[0].routing_status == "missing_repo"
     assert (isolated_home / ".codealmanac/capture-events/events.jsonl").is_file()
 
     assert (
@@ -1193,10 +1244,7 @@ def test_cli_local_update_runs_manual_local_worker(
     assert data["worker"]["processed"] is True
     assert data["worker"]["run"]["status"] == "succeeded"
     assert harness.requests[0].cwd == (
-        isolated_home
-        / ".codealmanac/workspaces"
-        / data["worker"]["run"]["id"]
-        / "repo"
+        isolated_home / ".codealmanac/workspaces" / data["worker"]["run"]["id"] / "repo"
     )
     assert delivery.apply_calls[0][3] == "docs almanac: update local worker note"
 
@@ -2146,10 +2194,7 @@ def test_cli_hidden_run_local_worker_processes_one_trigger(
     assert data["engine"]["executed"] is True
     assert data["delivery"]["delivered"] is True
     assert harness.requests[0].cwd == (
-        isolated_home
-        / ".codealmanac/workspaces"
-        / data["run"]["id"]
-        / "repo"
+        isolated_home / ".codealmanac/workspaces" / data["run"]["id"] / "repo"
     )
     assert delivery.apply_calls[0][3] == "docs almanac: update local worker note"
 

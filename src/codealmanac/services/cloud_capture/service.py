@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 
 from codealmanac.core.errors import ExecutionFailed
 from codealmanac.services.cloud_auth.requests import CloudStatusRequest
@@ -13,6 +14,8 @@ from codealmanac.services.cloud_capture.models import (
 )
 from codealmanac.services.cloud_capture.ports import (
     CaptureHookManager,
+    CaptureRepositoryProbe,
+    CaptureTranscriptParser,
     CloudCaptureClient,
 )
 from codealmanac.services.cloud_capture.requests import (
@@ -34,12 +37,16 @@ class CloudCaptureService:
         events: CaptureEventStore,
         client: CloudCaptureClient,
         hooks: CaptureHookManager,
+        parser: CaptureTranscriptParser,
+        repository_probe: CaptureRepositoryProbe,
     ):
         self.auth = auth
         self.store = store
         self.events = events
         self.client = client
         self.hooks = hooks
+        self.parser = parser
+        self.repository_probe = repository_probe
 
     def status(self, request: CaptureStatusRequest) -> CaptureStatus:
         auth_status = self.auth.status(
@@ -152,7 +159,8 @@ class CloudCaptureService:
         )
 
     def record_hook(self, request: CaptureHookRequest) -> CaptureHookEvent:
-        if self.store.load() is None:
+        state = self.store.load()
+        if state is None:
             raise ExecutionFailed("capture is not enabled")
         payload = request.payload
         event = CaptureHookEvent(
@@ -164,9 +172,73 @@ class CloudCaptureService:
             turn_id=string_value(payload.get("turn_id")),
             received_at=datetime.now(UTC),
         )
+        artifact_upload = self.parser.artifact(
+            provider=request.provider,
+            payload=payload,
+        )
+        if artifact_upload is None:
+            event = event.model_copy(
+                update={
+                    "upload_status": "skipped",
+                    "upload_error": "missing transcript evidence",
+                }
+            )
+            self.events.append(event)
+            return event
+        try:
+            artifact = self.client.upload_capture_artifact(
+                api_url=state.api_url,
+                capture_token=state.token,
+                artifact=artifact_upload,
+            )
+            repository = self.repository_probe.read(Path(artifact_upload.first_cwd))
+            turn = self.parser.normalize(
+                provider=request.provider,
+                payload=payload,
+                artifact=artifact,
+                repository=repository,
+            )
+            if turn is None:
+                event = event.model_copy(
+                    update={
+                        "upload_status": "skipped",
+                        "upload_error": "missing transcript metadata",
+                        "artifact_ref": artifact.ref,
+                    }
+                )
+                self.events.append(event)
+                return event
+            result = self.client.upload_capture_turn(
+                api_url=state.api_url,
+                capture_token=state.token,
+                turn=turn,
+            )
+            event = event.model_copy(
+                update={
+                    "upload_status": "uploaded",
+                    "artifact_ref": artifact.ref,
+                    "repo_full_name": turn.repo_full_name,
+                    "branch": turn.branch,
+                    "routing_status": result.routing_status,
+                }
+            )
+        except Exception as error:
+            event = event.model_copy(
+                update={
+                    "upload_status": "failed",
+                    "upload_error": error_message(error),
+                }
+            )
         self.events.append(event)
         return event
 
 
 def string_value(value: object) -> str | None:
     return value if isinstance(value, str) and value != "" else None
+
+
+def error_message(error: Exception) -> str:
+    message = str(error).strip()
+    if message == "":
+        message = error.__class__.__name__
+    return message[:500]

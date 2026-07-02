@@ -5,7 +5,11 @@ from codealmanac import __version__
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.browser import WebBrowserOpener
-from codealmanac.integrations.capture import FileCaptureHookManager
+from codealmanac.integrations.capture import (
+    CaptureTranscriptNormalizer,
+    FileCaptureHookManager,
+    GitCaptureRepositoryProbe,
+)
 from codealmanac.integrations.cloud import HttpCloudAuthClient
 from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.integrations.runs import (
@@ -39,6 +43,8 @@ from codealmanac.services.cloud_auth.store import CloudAuthStore
 from codealmanac.services.cloud_capture.event_store import CaptureEventStore
 from codealmanac.services.cloud_capture.ports import (
     CaptureHookManager,
+    CaptureRepositoryProbe,
+    CaptureTranscriptParser,
     CloudCaptureClient,
 )
 from codealmanac.services.cloud_capture.service import CloudCaptureService
@@ -180,6 +186,8 @@ def create_app(
     cloud_auth_client: CloudAuthClient | None = None,
     cloud_capture_client: CloudCaptureClient | None = None,
     capture_hook_manager: CaptureHookManager | None = None,
+    capture_transcript_parser: CaptureTranscriptParser | None = None,
+    capture_repository_probe: CaptureRepositoryProbe | None = None,
     browser_opener: BrowserOpener | None = None,
     local_git_state_probe: LocalGitStateProbe | None = None,
     local_git_hook_manager: LocalGitHookManager | None = None,
@@ -200,6 +208,8 @@ def create_app(
         events=CaptureEventStore(app_config.capture_events_path),
         client=cloud_capture_client or HttpCloudAuthClient(),
         hooks=capture_hook_manager or FileCaptureHookManager(),
+        parser=capture_transcript_parser or CaptureTranscriptNormalizer(),
+        repository_probe=capture_repository_probe or GitCaptureRepositoryProbe(),
     )
     control = ControlService(
         ControlStore(app_config.control_db_path),

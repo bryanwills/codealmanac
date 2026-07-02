@@ -126,8 +126,12 @@ installs selected provider Stop hooks. `status` is local by default and only
 calls the cloud when `--check-cloud` is passed. `disable` removes selected hooks
 and revokes the stored credential unless `--keep-credential` is passed.
 
-The hidden hook records a local diagnostic event and exits quickly. It does not
-upload transcripts or run the model in Slice 28.
+The hidden hook exits quickly and never runs the model. In Slice 29 it reads the
+hook-provided transcript path, uploads the raw transcript bytes to the cloud
+artifact endpoint with the stored `cap_...` credential, uploads normalized turn
+routing metadata with `artifactRef`, then records one local event with
+`upload_status`. Missing transcripts and upload failures are recorded locally
+and still exit `0` so Codex/Claude work is not blocked.
 
 ## Local
 

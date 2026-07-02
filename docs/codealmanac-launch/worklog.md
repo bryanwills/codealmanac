@@ -2,6 +2,33 @@
 
 ## 2026-07-02
 
+- Planned Slice 29 in
+  `docs/plans/2026-07-02-slice-29-capture-transcript-upload.md`.
+- Added hosted source-artifact service seam with a filesystem-backed
+  development store and `source-artifacts://...` refs.
+- Added hosted capture upload routes:
+  `POST /v1/capture/artifacts` and `POST /v1/capture/turns`.
+- Added `conversation_sources.source_ref` and migration
+  `20260702000000_conversation_source_refs.sql`.
+- Added local transcript normalization for Codex and Claude hook payloads,
+  including deterministic fallback turn IDs.
+- Extended `codealmanac __capture-hook --provider codex|claude` to upload raw
+  transcript artifacts with the stored `cap_...` credential, then upload
+  normalized turn metadata with `artifactRef`.
+- Kept the old inline-message conversation ingest scheduler unchanged. The
+  capture-token path stores refs and metadata but does not enqueue empty
+  message-based ingest runs in this slice.
+- Verified Slice 29 focused hosted backend gates with
+  `uv run pytest tests/test_capture_tokens_api_contract.py
+  tests/test_capture_upload_api_contract.py
+  tests/test_hosted_conversation_sync_contract.py
+  tests/test_conversation_ingest_scheduler.py
+  tests/test_architecture_contract.py -q` (`88 passed, 1 warning`) and
+  `uv run ruff check .`.
+- Verified Slice 29 focused local gates with
+  `uv run pytest tests/test_capture_transcript_upload.py
+  tests/test_cloud_capture_service.py tests/test_cli.py tests/test_public_contract.py
+  tests/test_architecture.py -q` (`147 passed`) and `uv run ruff check .`.
 - Planned Slice 28 in
   `docs/plans/2026-07-02-slice-28-cloud-capture-install.md`.
 - Added hosted `capture_tokens` service/store/table boundary and `/v1`

@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 88% | 88% | Slice 28 added cloud capture state and hooks, but local trigger/run/workspace/delivery maturity stays unchanged. |
-| CodeAlmanac CLI/public UX | 62% | 52% | `capture status/enable/repair/disable` now exists; repo, runs, status, and open commands remain. |
-| CodeAlmanac-hosted backend/auth/API | 40% | 34% | Hosted now issues, lists, and revokes narrow capture credentials; repo API, run storage, worker APIs, and rate limits remain. |
+| CodeAlmanac backend/local | 90% | 88% | Slice 29 makes local capture hooks upload transcript artifacts and metadata; local trigger/run/workspace/delivery maturity is unchanged. |
+| CodeAlmanac CLI/public UX | 64% | 62% | Hidden capture hook now performs cloud upload, while repo, runs, status, and open commands remain. |
+| CodeAlmanac-hosted backend/auth/API | 45% | 40% | Hosted now accepts capture-token artifact and turn uploads; repo API, run storage, worker source-bundle materialization, and rate limits remain. |
 | Hosted frontend/onboarding | 15% | 15% | Slice 28 added DTO parity only; browser onboarding/configuration screens are still not implemented. |
-| Infra/deploy rename | 10% | 10% | Slice 28 changed capture/API/CLI only. |
+| Infra/deploy rename | 10% | 10% | Slice 29 changed capture/API/CLI only. |
 
 ## Update Rule
 

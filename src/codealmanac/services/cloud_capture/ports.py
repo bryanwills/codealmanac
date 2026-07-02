@@ -1,11 +1,17 @@
+from pathlib import Path
 from typing import Protocol
 
 from codealmanac.services.cloud_capture.models import (
+    CaptureArtifact,
+    CaptureArtifactUpload,
     CaptureCloudStatus,
     CaptureCredentialIssue,
     CaptureHookChange,
     CaptureHookStatus,
     CaptureProvider,
+    CaptureRepositoryState,
+    CaptureTranscriptUpload,
+    CaptureTurnUploadResult,
 )
 
 
@@ -31,6 +37,49 @@ class CloudCaptureClient(Protocol):
     ) -> bool:
         pass
 
+    def upload_capture_artifact(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        artifact: CaptureArtifactUpload,
+    ) -> CaptureArtifact:
+        pass
+
+    def upload_capture_turn(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        turn: CaptureTranscriptUpload,
+    ) -> CaptureTurnUploadResult:
+        pass
+
+
+class CaptureRepositoryProbe(Protocol):
+    def read(self, cwd: Path) -> CaptureRepositoryState:
+        pass
+
+
+class CaptureTranscriptParser(Protocol):
+    def artifact(
+        self,
+        *,
+        provider: CaptureProvider,
+        payload: dict[str, object],
+    ) -> CaptureArtifactUpload | None:
+        pass
+
+    def normalize(
+        self,
+        *,
+        provider: CaptureProvider,
+        payload: dict[str, object],
+        artifact: CaptureArtifact,
+        repository: CaptureRepositoryState,
+    ) -> CaptureTranscriptUpload | None:
+        pass
+
 
 class CaptureHookManager(Protocol):
     def install(self, provider: CaptureProvider) -> CaptureHookChange:
@@ -41,4 +90,3 @@ class CaptureHookManager(Protocol):
 
     def status(self, provider: CaptureProvider) -> CaptureHookStatus:
         pass
-

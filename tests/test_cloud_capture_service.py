@@ -2,7 +2,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from codealmanac.integrations.capture.hooks import FileCaptureHookManager
+from codealmanac.integrations.capture import (
+    CaptureTranscriptNormalizer,
+    FileCaptureHookManager,
+    GitCaptureRepositoryProbe,
+)
 from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
 from codealmanac.services.cloud_auth.requests import SaveCloudTokenRequest
 from codealmanac.services.cloud_auth.service import CloudAuthService
@@ -144,6 +148,8 @@ def capture_service(
         events=CaptureEventStore(tmp_path / "capture-events"),
         client=client,
         hooks=FileCaptureHookManager(tmp_path),
+        parser=CaptureTranscriptNormalizer(),
+        repository_probe=GitCaptureRepositoryProbe(),
     )
 
 

@@ -7,9 +7,13 @@ import httpx
 from codealmanac.core.errors import ExecutionFailed
 from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
 from codealmanac.services.cloud_capture.models import (
+    CaptureArtifact,
+    CaptureArtifactUpload,
     CaptureCloudStatus,
     CaptureCredential,
     CaptureCredentialIssue,
+    CaptureTranscriptUpload,
+    CaptureTurnUploadResult,
 )
 
 
@@ -87,22 +91,74 @@ class HttpCloudAuthClient:
         )
         return bool(data.get("revoked"))
 
+    def upload_capture_artifact(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        artifact: CaptureArtifactUpload,
+    ) -> CaptureArtifact:
+        data = self._request(
+            "POST",
+            f"{api_url}/v1/capture/artifacts",
+            token=capture_token,
+            headers={
+                "Content-Type": artifact.content_type,
+                "X-CodeAlmanac-Provider": artifact.provider,
+                "X-CodeAlmanac-Provider-Session-Id": artifact.provider_session_id,
+            },
+            content=artifact.body,
+        )
+        return CaptureArtifact(
+            ref=str(data["ref"]),
+            sha256=str(data["sha256"]),
+            size_bytes=int(data["sizeBytes"]),
+            content_type=str(data["contentType"]),
+        )
+
+    def upload_capture_turn(
+        self,
+        *,
+        api_url: str,
+        capture_token: str,
+        turn: CaptureTranscriptUpload,
+    ) -> CaptureTurnUploadResult:
+        data = self._request(
+            "POST",
+            f"{api_url}/v1/capture/turns",
+            token=capture_token,
+            json_body=capture_turn_body(turn),
+        )
+        return CaptureTurnUploadResult(
+            accepted=bool(data["accepted"]),
+            routed=bool(data["routed"]),
+            routing_status=data["routingStatus"],
+            source_id=data.get("sourceId"),
+            turn_id=data.get("turnId"),
+            message_count=int(data["messageCount"]),
+        )
+
     def _request(
         self,
         method: str,
         url: str,
         *,
         token: str | None = None,
+        headers: dict[str, str] | None = None,
         json_body: dict[str, Any] | None = None,
+        content: bytes | None = None,
     ) -> dict[str, Any]:
-        headers = {"Authorization": f"Bearer {token}"} if token is not None else None
+        request_headers = dict(headers or {})
+        if token is not None:
+            request_headers["Authorization"] = f"Bearer {token}"
         try:
             with httpx.Client(timeout=self.timeout) as client:
                 response = client.request(
                     method,
                     url,
-                    headers=headers,
+                    headers=request_headers or None,
                     json=json_body,
+                    content=content,
                 )
         except httpx.HTTPError as error:
             raise ExecutionFailed(f"cloud request failed: {error}") from error
@@ -148,6 +204,26 @@ def capture_credential(data: dict[str, Any]) -> CaptureCredential:
         created_at=parse_datetime(data.get("createdAt")),
         last_used_at=parse_datetime(data.get("lastUsedAt")),
     )
+
+
+def capture_turn_body(turn: CaptureTranscriptUpload) -> dict[str, Any]:
+    return {
+        "provider": turn.provider,
+        "providerSessionId": turn.provider_session_id,
+        "providerTurnId": turn.provider_turn_id,
+        "transcriptPathHash": turn.transcript_path_hash,
+        "firstCwd": turn.first_cwd,
+        "repoFullName": turn.repo_full_name,
+        "branch": turn.branch,
+        "branchSource": turn.branch_source,
+        "routingStatus": turn.routing_status,
+        "headSha": turn.head_sha,
+        "startedAt": turn.started_at.isoformat(),
+        "completedAt": (
+            turn.completed_at.isoformat() if turn.completed_at is not None else None
+        ),
+        "artifactRef": turn.artifact_ref,
+    }
 
 
 def parse_datetime(value: Any) -> datetime | None:
