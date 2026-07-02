@@ -15,6 +15,11 @@ from codealmanac.services.cloud_capture.models import (
     CaptureTranscriptUpload,
     CaptureTurnUploadResult,
 )
+from codealmanac.services.cloud_repositories.models import (
+    CloudDeliveryMode,
+    CloudRepository,
+    CloudRepositoryTriggerPolicy,
+)
 
 
 class HttpCloudAuthClient:
@@ -90,6 +95,63 @@ class HttpCloudAuthClient:
             json_body={"token": capture_token},
         )
         return bool(data.get("revoked"))
+
+    def resolve_repository(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        full_name: str,
+    ) -> CloudRepository:
+        data = self._request(
+            "POST",
+            f"{api_url}/v1/repositories/resolve",
+            token=cli_token,
+            json_body={"fullName": full_name},
+        )
+        return cloud_repository(data)
+
+    def list_repository_triggers(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+    ) -> tuple[CloudRepositoryTriggerPolicy, ...]:
+        data = self._request(
+            "GET",
+            f"{api_url}/v1/repositories/{repo_id}/triggers",
+            token=cli_token,
+        )
+        if not isinstance(data.get("items"), list):
+            return tuple(
+                cloud_repository_trigger_policy(item)
+                for item in require_list_response(data)
+            )
+        return tuple(cloud_repository_trigger_policy(item) for item in data["items"])
+
+    def upsert_repository_trigger(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+        enabled: bool | None = None,
+        delivery_mode: CloudDeliveryMode | None = None,
+    ) -> CloudRepositoryTriggerPolicy:
+        body: dict[str, Any] = {"branch": branch}
+        if enabled is not None:
+            body["enabled"] = enabled
+        if delivery_mode is not None:
+            body["deliveryMode"] = delivery_mode
+        data = self._request(
+            "PUT",
+            f"{api_url}/v1/repositories/{repo_id}/triggers",
+            token=cli_token,
+            json_body=body,
+        )
+        return cloud_repository_trigger_policy(data)
 
     def upload_capture_artifact(
         self,
@@ -171,9 +233,11 @@ class HttpCloudAuthClient:
             payload = response.json()
         except ValueError as error:
             raise ExecutionFailed("cloud returned invalid JSON") from error
-        if not isinstance(payload, dict):
-            raise ExecutionFailed("cloud returned invalid JSON")
-        return payload
+        if isinstance(payload, dict):
+            return payload
+        if isinstance(payload, list):
+            return {"_root": payload}
+        raise ExecutionFailed("cloud returned invalid JSON")
 
 
 def login_session(data: dict[str, Any]) -> CloudLoginSession:
@@ -204,6 +268,32 @@ def capture_credential(data: dict[str, Any]) -> CaptureCredential:
         created_at=parse_datetime(data.get("createdAt")),
         last_used_at=parse_datetime(data.get("lastUsedAt")),
     )
+
+
+def cloud_repository(data: dict[str, Any]) -> CloudRepository:
+    return CloudRepository(
+        repo_id=int(data["repoId"]),
+        account_id=int(data["accountId"]),
+        full_name=str(data["fullName"]),
+        default_branch=str(data["defaultBranch"]),
+    )
+
+
+def cloud_repository_trigger_policy(
+    data: dict[str, Any],
+) -> CloudRepositoryTriggerPolicy:
+    return CloudRepositoryTriggerPolicy(
+        repo_id=int(data["repoId"]),
+        branch=str(data["branch"]),
+        enabled=bool(data["enabled"]),
+        delivery_mode=data["deliveryMode"],
+    )
+
+
+def require_list_response(data: dict[str, Any]) -> list[Any]:
+    if list(data.keys()) == ["_root"] and isinstance(data["_root"], list):
+        return data["_root"]
+    raise ExecutionFailed("cloud returned invalid JSON")
 
 
 def capture_turn_body(turn: CaptureTranscriptUpload) -> dict[str, Any]:

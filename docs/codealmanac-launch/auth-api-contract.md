@@ -327,13 +327,12 @@ POST /v1/auth/token/refresh
 GET  /api/internal/source-artifacts?ref=<source-artifacts-ref>
 
 GET  /v1/repositories
-GET  /v1/repositories/resolve?provider=github&owner=<owner>&repo=<repo>
+POST /v1/repositories/resolve
 GET  /v1/repositories/{repo_id}
 GET  /v1/repositories/{repo_id}/branches
 
 GET  /v1/repositories/{repo_id}/triggers
-PUT  /v1/repositories/{repo_id}/triggers/{branch}
-DELETE /v1/repositories/{repo_id}/triggers/{branch}
+PUT  /v1/repositories/{repo_id}/triggers
 
 GET  /v1/repositories/{repo_id}/runs
 POST /v1/repositories/{repo_id}/runs
@@ -350,6 +349,18 @@ GET  /v1/repositories/{repo_id}/wiki/search
 
 Browser-only dashboard BFF routes may exist, but they should call this backend
 contract or a closely matching service layer.
+
+Slice 36 implemented the CLI-token repository routes used by
+`codealmanac repo ...`:
+
+```text
+POST /v1/repositories/resolve       # body carries fullName
+GET  /v1/repositories/{repo_id}/triggers
+PUT  /v1/repositories/{repo_id}/triggers  # body carries branch, enabled, deliveryMode
+```
+
+Branch names are body fields, not path segments, so slash branches such as
+`release/1.4` are preserved.
 
 ## Internal API
 

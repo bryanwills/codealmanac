@@ -2,6 +2,43 @@
 
 ## 2026-07-02
 
+- Planned Slice 36 in
+  `docs/plans/2026-07-02-slice-36-cloud-repo-trigger-cli.md`.
+- Added hosted CLI repository routes:
+  `POST /v1/repositories/resolve`,
+  `GET /v1/repositories/{repo_id}/triggers`, and
+  `PUT /v1/repositories/{repo_id}/triggers`.
+- Added direct repo-id trigger policy service methods for CLI-token routes.
+  Browser routes remain account-scoped.
+- Added CodeAlmanac `cloud_repositories` service, typed cloud repository
+  models, HTTP adapter methods, and current-checkout cloud repo workflow.
+- Added public cloud repo commands:
+  `codealmanac repo status`,
+  `codealmanac repo triggers list`,
+  `codealmanac repo triggers enable <branch> --delivery pr|commit`,
+  `codealmanac repo triggers disable <branch>`, and
+  `codealmanac repo delivery set --branch <branch> --mode pr|commit`.
+- Verified Slice 36 focused hosted backend gate with
+  `uv run pytest tests/test_cli_repositories_api_contract.py
+  tests/test_repositories_api_contract.py tests/test_repositories_contract.py -q`
+  (`23 passed, 1 warning`).
+- Verified Slice 36 focused CodeAlmanac gate with
+  `uv run pytest tests/test_cloud_repositories_service.py
+  tests/test_cloud_repo_workflow.py tests/test_cli.py -q` (`57 passed`).
+- Verified Slice 36 CodeAlmanac hygiene/full gates with
+  `uv run ruff check .`, touched-file `uv run ruff format --check ...`,
+  `uv run python -m compileall src -q`, `uv run pytest -q`
+  (`487 passed`), and `git diff --check`.
+- Verified Slice 36 hosted backend hygiene/full gates with
+  `uv run ruff check .`, touched-file `uv run ruff format --check ...`,
+  `uv run python -m compileall src modal_app -q`, `uv run pytest -q`
+  (`324 passed, 1 warning`), and `git diff --check`.
+- Pushed hosted commit
+  `fbf8b5a feat: add CLI repository trigger routes` to
+  `origin/codex/workos-authkit-api-foundation`.
+- Committed CodeAlmanac Slice 36 as
+  `feat: mirror cloud repository triggers in CLI`; record the final pushed hash
+  after push because amending this file changes the commit hash.
 - Planned Slice 35 in
   `docs/plans/2026-07-02-slice-35-hosted-trigger-policies.md`.
 - Added hosted `repository_trigger_policies`, keyed by `(repo_id, branch)`,

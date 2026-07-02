@@ -30,6 +30,10 @@ from codealmanac.services.cloud_capture.models import (
     CaptureTranscriptUpload,
     CaptureTurnUploadResult,
 )
+from codealmanac.services.cloud_repositories.models import (
+    CloudRepository,
+    CloudRepositoryTriggerPolicy,
+)
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -400,6 +404,66 @@ class CliCloudCaptureClient:
             routed=False,
             routing_status=turn.routing_status,
             message_count=0,
+        )
+
+
+class CliCloudRepositoriesClient:
+    def __init__(self):
+        self.resolves: list[str] = []
+        self.lists: list[int] = []
+        self.upserts: list[tuple[int, str, bool | None, str | None]] = []
+
+    def resolve_repository(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        full_name: str,
+    ) -> CloudRepository:
+        assert cli_token == "alm_secret"
+        self.resolves.append(full_name)
+        return CloudRepository(
+            repo_id=1,
+            account_id=10,
+            full_name=full_name,
+            default_branch="main",
+        )
+
+    def list_repository_triggers(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+    ) -> tuple[CloudRepositoryTriggerPolicy, ...]:
+        assert cli_token == "alm_secret"
+        self.lists.append(repo_id)
+        return (
+            CloudRepositoryTriggerPolicy(
+                repo_id=repo_id,
+                branch="main",
+                enabled=True,
+                delivery_mode="commit",
+            ),
+        )
+
+    def upsert_repository_trigger(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        repo_id: int,
+        branch: str,
+        enabled: bool | None = None,
+        delivery_mode=None,
+    ) -> CloudRepositoryTriggerPolicy:
+        assert cli_token == "alm_secret"
+        self.upserts.append((repo_id, branch, enabled, delivery_mode))
+        return CloudRepositoryTriggerPolicy(
+            repo_id=repo_id,
+            branch=branch,
+            enabled=enabled if enabled is not None else True,
+            delivery_mode=delivery_mode if delivery_mode is not None else "commit",
         )
 
 
@@ -914,6 +978,125 @@ def test_cli_capture_enable_status_hook_and_disable(
     assert disabled["credential_removed"] is True
     assert disabled["revoked_remote"] is True
     assert capture_client.revoked == ["cap_secret"]
+
+
+def test_cli_repo_status_triggers_and_delivery(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    auth_client = CliCloudAuthClient()
+    repositories_client = CliCloudRepositoriesClient()
+    app = create_app(
+        AppConfig(auth_path=isolated_home / ".codealmanac/auth.json"),
+        cloud_auth_client=auth_client,
+        cloud_repositories_client=repositories_client,
+        local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert (
+        main(
+            [
+                "login",
+                "--api-url",
+                "https://api.example.test",
+                "--timeout",
+                "0",
+                "--poll-every",
+                "0",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert main(["repo", "status", "--api-url", "https://api.example.test"]) == 0
+    status = capsys.readouterr()
+    assert "checkout: AlmanacCode/codealmanac dev head-1\n" in status.out
+    assert "cloud repository: AlmanacCode/codealmanac\n" in status.out
+    assert "triggers: 1\n" in status.out
+
+    assert (
+        main(
+            [
+                "repo",
+                "triggers",
+                "list",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    listed = capsys.readouterr()
+    assert "main\tenabled\tcommit\n" in listed.out
+
+    assert (
+        main(
+            [
+                "repo",
+                "triggers",
+                "enable",
+                "release/1.4",
+                "--delivery",
+                "pr",
+                "--api-url",
+                "https://api.example.test",
+                "--json",
+            ]
+        )
+        == 0
+    )
+    enabled = json.loads(capsys.readouterr().out)
+    assert enabled["trigger"]["branch"] == "release/1.4"
+    assert enabled["trigger"]["enabled"] is True
+    assert enabled["trigger"]["delivery_mode"] == "pr"
+
+    assert (
+        main(
+            [
+                "repo",
+                "triggers",
+                "disable",
+                "release/1.4",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    disabled = capsys.readouterr()
+    assert "branch: release/1.4\n" in disabled.out
+    assert "triggers: disabled\n" in disabled.out
+
+    assert (
+        main(
+            [
+                "repo",
+                "delivery",
+                "set",
+                "--branch",
+                "release/1.4",
+                "--mode",
+                "commit",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    delivery = capsys.readouterr()
+    assert "delivery: commit\n" in delivery.out
+    assert repositories_client.upserts == [
+        (1, "release/1.4", True, "pr"),
+        (1, "release/1.4", False, None),
+        (1, "release/1.4", None, "commit"),
+    ]
 
 
 def test_cli_local_setup_registers_current_checkout(

@@ -84,6 +84,20 @@ remote to open the matching browser setup page. It does not run an update.
 Trigger policy is branch-scoped. Delivery mode is configured per maintained
 branch.
 
+Implemented in Slice 36:
+
+```text
+codealmanac repo status
+codealmanac repo triggers list
+codealmanac repo triggers enable <branch> --delivery pr|commit
+codealmanac repo triggers disable <branch>
+codealmanac repo delivery set --branch <branch> --mode pr|commit
+```
+
+These commands resolve the current checkout's GitHub `origin`, authenticate
+with the stored cloud CLI token, and call `/v1` cloud repository routes. Users
+do not pass account IDs.
+
 ## Cloud Runs
 
 ```text

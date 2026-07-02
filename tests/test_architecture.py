@@ -870,6 +870,7 @@ def test_cli_parser_is_split_by_command_domain():
         "jobs.py",
         "lifecycle.py",
         "local.py",
+        "repo.py",
         "root.py",
         "setup.py",
         "updates.py",
@@ -896,6 +897,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
         "cloud_auth.py": ('add_parser("login"', "def add_cloud_auth_commands("),
         "diagnostics.py": ('add_parser("doctor"', "def add_diagnostics_commands("),
         "jobs.py": ('add_parser("jobs"', "def add_jobs_commands("),
+        "repo.py": ('add_parser("repo"', "def add_repo_commands("),
         "setup.py": ('add_parser("setup"', "def add_setup_commands("),
         "updates.py": ('add_parser("update"', "def add_update_commands("),
     }
@@ -925,6 +927,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
     assert "add_setup_commands(subcommands)" in admin
     assert "add_cloud_auth_commands(subcommands)" in admin
     assert "add_capture_commands(subcommands)" in admin
+    assert "add_repo_commands(subcommands)" in admin
     assert "add_diagnostics_commands(subcommands)" in admin
     assert "add_update_commands(subcommands)" in admin
     assert "add_jobs_commands(subcommands)" in admin
@@ -942,6 +945,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "parser/diagnostics.py").is_file()
     assert (cli_root / "parser/jobs.py").is_file()
     assert (cli_root / "parser/local.py").is_file()
+    assert (cli_root / "parser/repo.py").is_file()
     assert (cli_root / "parser/setup.py").is_file()
     assert (cli_root / "parser/updates.py").is_file()
     assert (cli_root / "dispatch/root.py").is_file()
@@ -957,6 +961,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/lifecycle.py").is_file()
     assert (cli_root / "dispatch/local.py").is_file()
     assert (cli_root / "dispatch/local_trigger.py").is_file()
+    assert (cli_root / "dispatch/repo.py").is_file()
     assert (cli_root / "dispatch/serve.py").is_file()
     assert (cli_root / "dispatch/setup.py").is_file()
     assert (cli_root / "dispatch/sync.py").is_file()
@@ -974,6 +979,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/jobs.py").is_file()
     assert (cli_root / "render/lifecycle.py").is_file()
     assert (cli_root / "render/pages.py").is_file()
+    assert (cli_root / "render/repo.py").is_file()
     assert (cli_root / "render/search.py").is_file()
     assert (cli_root / "render/tagging.py").is_file()
     assert (cli_root / "render/topics.py").is_file()
@@ -1011,6 +1017,7 @@ def test_cli_render_root_stays_facade():
         "health.py",
         "jobs.py",
         "pages.py",
+        "repo.py",
         "search.py",
         "setup.py",
         "tagging.py",
@@ -1039,6 +1046,7 @@ def test_cli_admin_render_stays_split_by_output_family():
         "automation.py": ("AutomationInstallResult", "def render_automation_install("),
         "diagnostics.py": ("DoctorReport", "def render_doctor("),
         "jobs.py": ("RunRecord", "def render_runs("),
+        "repo.py": ("CloudRepoStatusResult", "def render_cloud_repo_status("),
         "setup.py": ("SetupResult", "def render_setup_result("),
         "updates.py": ("UpdatePlan", "def render_update_plan("),
     }
@@ -1170,6 +1178,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
         "capture.py": ("CaptureStatusRequest", "def dispatch_capture("),
         "diagnostics.py": ("DoctorRequest", "def dispatch_doctor("),
         "jobs.py": ("ShowRunRequest", "def dispatch_jobs("),
+        "repo.py": ("ReadCloudRepoStatusRequest", "def dispatch_repo("),
         "setup.py": ("RunSetupRequest", "def dispatch_setup("),
         "updates.py": ("RunUpdateRequest", "def dispatch_update("),
     }
@@ -1202,6 +1211,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     ] == []
     assert "dispatch_setup(args, app)" in admin
     assert "dispatch_capture(args, app)" in admin
+    assert "dispatch_repo(args, app)" in admin
     assert "dispatch_uninstall(args, app)" in admin
     assert "dispatch_jobs(args, app)" in admin
     assert "dispatch_automation(args, app)" in admin

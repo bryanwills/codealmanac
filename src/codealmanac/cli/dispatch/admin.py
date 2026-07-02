@@ -10,6 +10,7 @@ from codealmanac.cli.dispatch.cloud_auth import (
 )
 from codealmanac.cli.dispatch.diagnostics import dispatch_doctor
 from codealmanac.cli.dispatch.jobs import dispatch_jobs
+from codealmanac.cli.dispatch.repo import dispatch_repo
 from codealmanac.cli.dispatch.setup import dispatch_setup, dispatch_uninstall
 from codealmanac.cli.dispatch.updates import dispatch_update
 
@@ -22,6 +23,7 @@ ADMIN_COMMANDS = frozenset(
         "jobs",
         "login",
         "logout",
+        "repo",
         "setup",
         "uninstall",
         "update",
@@ -43,6 +45,8 @@ def dispatch_admin(args: argparse.Namespace, app: CodeAlmanac) -> int:
         return dispatch_logout(args, app)
     if args.command == "capture":
         return dispatch_capture(args, app)
+    if args.command == "repo":
+        return dispatch_repo(args, app)
     if args.command == "__capture-hook":
         return dispatch_capture_hook(args, app)
     if args.command == "setup":

@@ -91,6 +91,13 @@ Current evidence:
 - `backend/tests/test_conversation_ingest_scheduler.py` proves run source JSON
   contains source refs and no inline `source_text`, and proves turns without
   source refs are not scheduled.
+- Slice 36 added hosted CLI-token repository routes:
+  `POST /v1/repositories/resolve`,
+  `GET /v1/repositories/{repo_id}/triggers`, and
+  `PUT /v1/repositories/{repo_id}/triggers`.
+- `backend/tests/test_cli_repositories_api_contract.py` proves those routes
+  authenticate with the CLI token, resolve from `fullName`, preserve slash
+  branches in the JSON body, and call the repository service.
 
 ## CodeAlmanac Local Repo
 
@@ -275,6 +282,17 @@ Current evidence:
   <run-id>` read SQL-backed local run rows and run events.
 - `tests/test_architecture.py` continues to prove CLI parser/dispatch/render
   boundaries stay split by command domain.
+- Slice 36 added typed `cloud_repositories` service models, requests, ports,
+  and service methods over the hosted `/v1` repository trigger routes.
+- `tests/test_cloud_repositories_service.py` proves the service uses the
+  stored hosted CLI token and passes branch, enabled, and delivery-mode data to
+  the cloud client without inline auth handling in commands.
+- `tests/test_cloud_repo_workflow.py` proves the current GitHub checkout is
+  resolved before trigger reads/writes and that enable/disable/delivery changes
+  call the cloud service with the expected branch policy patch.
+- `tests/test_cli.py` proves `codealmanac repo status`,
+  `codealmanac repo triggers list`, `repo triggers enable`, `repo triggers
+  disable`, and `repo delivery set` work through the public CLI.
 - Slice 19 added public manual local update.
 - `tests/test_control_service.py` proves manual trigger events can replace a
   pending same-head branch trigger without changing normal duplicate
