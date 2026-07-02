@@ -19,6 +19,9 @@
   CodeAlmanac backend/local 95%, CLI/public UX 94%,
   CodeAlmanac-hosted backend/auth/API 96%, hosted frontend/onboarding 72%, and
   infra/deploy rename 95%.
+- Pushed Slice 52 to `origin/dev` and fast-forwarded `origin/main` so the
+  manual trusted-publishing workflow exists on the release branch. The workflow
+  is manual-only and does not publish automatically.
 - Planned Slice 51 in
   `docs/plans/2026-07-02-slice-51-launch-state-reconciliation.md`.
 - Reconciled launch state after Slice 50 and the GitHub-only auth guard. The

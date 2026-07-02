@@ -51,7 +51,9 @@ CodeAlmanac:
 - branch: `dev`
 - current Slice 52 docs/workflow commit: the commit containing this brief
 - previous `origin/dev` before Slice 52 push: `8137a61b`
-- `origin/main`: `6d69c53b`
+- `origin/main`: fast-forwarded during Slice 52 so the manual publish workflow
+  exists on the release branch; previous `origin/main` before Slice 52 was
+  `6d69c53b`
 - package version in `pyproject.toml`: `0.1.0`
 - PyPI live version checked on 2026-07-02: `0.1.0.dev0`
 
