@@ -265,10 +265,27 @@ Current evidence:
   local commands instead of top-level ingest/garden.
 - `tests/test_architecture.py` proves `dev` is a separate CLI parser/dispatch
   domain and lifecycle dispatch no longer owns manual ingest/garden commands.
+- Slice 24 moved file-backed lifecycle job state from repo-local
+  `<almanac-root>/jobs/` to `~/.codealmanac/jobs/<workspace-id>/`.
+- `AppConfig.jobs_path` defaults to `~/.codealmanac/jobs`.
+- `RunsService` now writes new run records, event logs, queue specs, and
+  worker locks to the user-level workspace jobs directory while reading
+  legacy repo-local run records when needed.
+- `SyncLedgerStore` now writes `sync-ledger.json` under the same user-level
+  workspace jobs directory while reading legacy repo-local ledgers for
+  compatibility.
+- `tests/test_runs_service.py`, `tests/test_run_queue_workflow.py`,
+  `tests/test_sync_workflow.py`, and `tests/test_cli.py` prove new jobs paths,
+  legacy read fallback, sync-ledger migration behavior, and background queue
+  specs.
+- `tests/test_architecture.py` proves the run store remains split across
+  factory, IO, locks, queries, streaming, transitions, and service path
+  selection.
 
 Commands:
 
 ```bash
+uv run pytest tests/test_runs_service.py tests/test_run_queue_workflow.py tests/test_sync_workflow.py tests/test_cli.py tests/test_public_contract.py tests/test_architecture.py -q
 uv run pytest
 uv run ruff check .
 git diff --check

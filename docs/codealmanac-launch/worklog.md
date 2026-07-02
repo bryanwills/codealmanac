@@ -496,3 +496,26 @@
   CodeAlmanac backend/local 87%, CLI/public UX 40%,
   CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
   infra/deploy rename 5%.
+- Planned Slice 24 in
+  `docs/plans/2026-07-02-slice-24-user-level-jobs-state.md`.
+- Added `AppConfig.jobs_path`, defaulting to `~/.codealmanac/jobs`.
+- Moved new file-backed lifecycle job records, logs, queue specs, worker locks,
+  and sync ledgers to `~/.codealmanac/jobs/<workspace-id>/`.
+- Preserved read compatibility for legacy repo-local `<almanac-root>/jobs/`
+  run records, logs, queue specs, and sync ledgers.
+- Kept `<almanac-root>/jobs/` in new scaffold `.gitignore` blocks as a
+  compatibility guard so old legacy files do not dirty preflight checks.
+- Updated README, bundled manual, and launch schema docs to teach
+  `~/.codealmanac/jobs/<workspace-id>/` as the active lifecycle job state
+  location.
+- Verified Slice 24 focused behavior with
+  `uv run pytest tests/test_runs_service.py tests/test_run_queue_workflow.py tests/test_sync_workflow.py tests/test_cli.py tests/test_public_contract.py tests/test_architecture.py -q`
+  (`181 passed`).
+- Verified Slice 24 full gate with `uv run pytest` (`466 passed`),
+  `uv run ruff check .`, `git diff --check`, `uv run codealmanac --help`,
+  `uv run codealmanac dev ingest --help`, and
+  `uv run codealmanac dev garden --help`.
+- Sent the Slice 24 RelayForge update and recorded progress as:
+  CodeAlmanac backend/local 88%, CLI/public UX 40%,
+  CodeAlmanac-hosted backend/auth/API 8%, hosted frontend/onboarding 5%, and
+  infra/deploy rename 5%.

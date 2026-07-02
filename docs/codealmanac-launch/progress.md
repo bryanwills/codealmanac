@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 23 verification.
+Sent: 2026-07-02 after Slice 24 verification.
 
 Route:
 
@@ -26,8 +26,8 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 87% | 87% | Slice 23 did not change local worker/control architecture. |
-| CodeAlmanac CLI/public UX | 40% | 35% | Slice 23 removed top-level `ingest`/`garden` from public help and moved the manual lifecycle surface under hidden `codealmanac dev`. |
+| CodeAlmanac backend/local | 88% | 87% | Slice 24 moved file-backed lifecycle job state to `~/.codealmanac/jobs/<workspace-id>/` with legacy repo-local read compatibility. |
+| CodeAlmanac CLI/public UX | 40% | 40% | Slice 24 changed storage internals but not the public CLI surface. |
 | CodeAlmanac-hosted backend/auth/API | 8% | 8% | WorkOS/Doppler setup and hosted rename groundwork exist; public API migration is not implemented yet. |
 | Hosted frontend/onboarding | 5% | 5% | Existing frontend is deployed under CodeAlmanac; new onboarding/configuration screens are not implemented yet. |
 | Infra/deploy rename | 5% | 5% | GitHub rename, Modal, Render, Vercel production deploy, and health checks were exercised; durable cleanup remains. |
