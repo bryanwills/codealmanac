@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 44 cloud run cancellation.
+Sent: 2026-07-02 after Slice 44 cloud run cancellation and production deploy.
 
 Route:
 
@@ -27,10 +27,10 @@ It was not present in `codealmanac/prd` when checked.
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
 | CodeAlmanac backend/local | 95% | 95% | Slice 44 is cloud-run control; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 90% | 88% | `codealmanac runs cancel <run-id>` now exists alongside list/show/logs/start. |
-| CodeAlmanac-hosted backend/auth/API | 90% | 88% | Hosted runs now support real cancellation through SQL state plus Modal function-call cancellation. |
-| Hosted frontend/onboarding | 43% | 42% | Frontend DTOs, status metadata, and BFF allowlist now understand `cancelled` runs, though no visible cancel button has been added. |
-| Infra/deploy rename | 72% | 72% | Slice 44 has not yet changed provider naming; deploy state will be updated after this slice lands. |
+| CodeAlmanac CLI/public UX | 90% | 90% | `codealmanac runs cancel <run-id>` is pushed to `origin/dev` at `a7cbc7d5`. |
+| CodeAlmanac-hosted backend/auth/API | 90% | 90% | Hosted cancellation is pushed to the launch branch and fast-forwarded to hosted `main` at `0e17a34`. |
+| Hosted frontend/onboarding | 43% | 43% | Frontend DTOs, status metadata, and BFF allowlist understand `cancelled`; visible cancel UI remains future work. |
+| Infra/deploy rename | 82% | 72% | Vercel production and Render backend are live on the Slice 44 code; hosted `main` now matches the launch branch. |
 
 ## Update Rule
 

@@ -776,3 +776,17 @@ Current evidence:
 - Slice 43 deployed the hosted frontend to Vercel production
   `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app`, aliased it to
   `https://www.codealmanac.com`, and verified HTTP 200.
+- Slice 44 fast-forwarded hosted `main` to
+  `0e17a34c56be5e839e01a163bb2ca4ef8cc46fd7` so provider branch tracking uses
+  the launch code.
+- Slice 44 deployed the hosted frontend to Vercel production
+  `https://codealmanac-hosted-ce944e0r5-thealmanac.vercel.app`, aliased it to
+  `https://www.codealmanac.com`, and verified HTTP 200.
+- Slice 44 deployed Render service `srv-d8g8nb37uimc739vnnsg` at exact commit
+  `0e17a34c56be5e839e01a163bb2ca4ef8cc46fd7`; deploy
+  `dep-d93997dosiuc73cd9fig` finished `live`.
+- Slice 44 backend production smoke passed:
+  `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  `{"status":"ok"}`, and unauthenticated
+  `POST /v1/runs/00000000-0000-0000-0000-000000000000/cancel` returned
+  `401 not_authenticated`, proving the new cancel route is mounted.

@@ -31,6 +31,27 @@
 - Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 90%,
   CodeAlmanac-hosted backend/auth/API 90%, hosted frontend/onboarding 43%, and
   infra/deploy rename 72%.
+- Pushed hosted commit `0e17a34 feat: cancel cloud update runs` to
+  `origin/codex/workos-authkit-api-foundation`.
+- Fast-forwarded hosted `main` from `3010001` to `0e17a34` so Render's normal
+  branch tracking points at the launch code instead of an older baseline.
+- Pushed CodeAlmanac commit `a7cbc7d5 feat: cancel cloud runs from CLI` to
+  `origin/dev`.
+- Deployed the hosted frontend to Vercel production. Vercel produced
+  `https://codealmanac-hosted-ce944e0r5-thealmanac.vercel.app` and aliased it
+  to `https://www.codealmanac.com`.
+- Deployed Render service `srv-d8g8nb37uimc739vnnsg` at exact hosted commit
+  `0e17a34c56be5e839e01a163bb2ca4ef8cc46fd7`; final auto-deploy
+  `dep-d93997dosiuc73cd9fig` finished `live`.
+- Verified production smoke: `https://www.codealmanac.com` returned HTTP 200,
+  `https://codealmanac-backend-docker.onrender.com/api/health` returned
+  `{"status":"ok"}`, and unauthenticated
+  `POST /v1/runs/00000000-0000-0000-0000-000000000000/cancel` returned the
+  expected `401 not_authenticated`, proving the cancel route is live.
+- Sent the Slice 44 RelayForge update and recorded deploy-adjusted progress as:
+  CodeAlmanac backend/local 95%, CLI/public UX 90%,
+  CodeAlmanac-hosted backend/auth/API 90%, hosted frontend/onboarding 43%, and
+  infra/deploy rename 82%.
 - Planned Slice 43 in
   `docs/plans/2026-07-02-slice-43-cloud-setup-copy.md`.
 - Verified the production GitHub App through the App API. App slug

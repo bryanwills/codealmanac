@@ -98,8 +98,14 @@ pushed to origin at `14caf8b feat: start cloud runs from CLI`; Slice 40 is
 pushed to origin at `8795849 feat: emit terminal run events`; Slice 41 is
 pushed to origin at `a781e51 chore: align hosted product identity`; Slice 42 is
 pushed to origin at `97564f7 feat: publish terminal run checks`; Slice 43 is
-pushed to origin at `eafe60c feat: align cloud setup copy`. Slice 44 is
-implemented locally and should be committed/pushed as the current slice.
+pushed to origin at `eafe60c feat: align cloud setup copy`; Slice 44 is pushed
+to origin at `0e17a34 feat: cancel cloud update runs`. Hosted `main` is also
+fast-forwarded to `0e17a34`, Render service `srv-d8g8nb37uimc739vnnsg` is live
+on deploy `dep-d93997dosiuc73cd9fig`, and Vercel production is live at
+`https://www.codealmanac.com`.
+
+CodeAlmanac Slice 44 is pushed to `origin/dev` at
+`a7cbc7d5 feat: cancel cloud runs from CLI`.
 
 The local wiki command currently fails on this checkout with:
 
