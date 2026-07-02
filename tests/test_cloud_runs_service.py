@@ -13,6 +13,7 @@ from codealmanac.services.cloud_runs.models import (
     CloudRunSource,
 )
 from codealmanac.services.cloud_runs.requests import (
+    CancelCloudRunRequest,
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
@@ -47,6 +48,12 @@ def test_cloud_runs_service_uses_stored_cli_token(tmp_path: Path) -> None:
             run_id=run_id,
         )
     )
+    cancelled = service.cancel(
+        CancelCloudRunRequest(
+            api_url="https://api.example.test",
+            run_id=run_id,
+        )
+    )
     events = service.list_events(
         ListCloudRunEventsRequest(
             api_url="https://api.example.test",
@@ -58,11 +65,13 @@ def test_cloud_runs_service_uses_stored_cli_token(tmp_path: Path) -> None:
     assert page.next_cursor == "next"
     assert started.source.label == "branch release/1.4"
     assert run.run_id == run_id
+    assert cancelled.status == "cancelled"
     assert events[0].message == "running"
     assert client.calls == [
         ("list", "alm_secret", 1, 5, "2026-07-02T12:00:00+00:00"),
         ("start", "alm_secret", 1, "release/1.4"),
         ("read", "alm_secret", run_id),
+        ("cancel", "alm_secret", run_id),
         ("events", "alm_secret", run_id),
     ]
 
@@ -153,6 +162,22 @@ class FakeCloudRunsClient:
             repo_id=repo_id,
             source=CloudRunSource(kind="branch", label=f"branch {branch}"),
             status="running",
+        )
+
+    def cancel_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> CloudRun:
+        self.calls.append(("cancel", cli_token, run_id))
+        return CloudRun(
+            run_id=run_id,
+            repo_id=1,
+            source=CloudRunSource(kind="branch", label="branch main"),
+            status="cancelled",
+            finished_at=datetime(2026, 7, 2, 12, 30, tzinfo=UTC),
         )
 
     def list_run_events(

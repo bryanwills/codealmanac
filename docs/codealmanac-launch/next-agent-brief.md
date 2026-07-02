@@ -10,53 +10,56 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 43 aligned cloud setup/onboarding copy with the CodeAlmanac CLI contract.
+Slice 44 added real cloud run cancellation and exposed it through the
+CodeAlmanac CLI.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- `/dashboard/local-agent-access` now presents only
-  `npx codealmanac@latest setup`
-- setup copy now says the command signs in through the browser, connects the
-  machine to cloud, and asks before installing Claude/Codex capture
-- `/cli-login` now says `codealmanac login` for expired login links and
-  `CodeAlmanac CLI` in visible copy
-- GitHub App install and repository access copy now uses `CodeAlmanac` for the
-  hosted product setup surface
-- production GitHub App permission read confirms `checks: write`
-- hosted commit `eafe60c feat: align cloud setup copy` was pushed
-- Vercel production deployed
-  `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app` and aliased it
-  to `https://www.codealmanac.com`
-- production frontend smoke returned HTTP 200
+- hosted backend has `RunStatus.CANCELLED`, `UpdateCancellation`,
+  `Updates.cancel_run(...)`, and `POST /v1/runs/{run_id}/cancel`
+- browser backend has `POST /api/runs/{run_id}/cancel`
+- Modal cancellation uses the stored `worker_call_id` through
+  `modal.FunctionCall.from_id(call_id).cancel(terminate_containers=False)`
+- terminal `RunCancelled` events publish GitHub Checks with conclusion
+  `cancelled`
+- hosted frontend DTOs, status metadata, and BFF gateway accept `cancelled`
+  runs
+- CodeAlmanac has `codealmanac runs cancel <run-id>`
 
 Verified:
 
 ```text
+cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
+uv run pytest -q
+uv run ruff check .
+uv run python -m compileall src modal_app -q
+
 cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
 npm run test:routes
 npm run test:frontend
 npm run lint
 npm run build
-git diff --check
+
+cd /Users/rohan/Desktop/Projects/codealmanac
+uv run pytest -q
+uv run ruff check .
+uv run python -m compileall src -q
 ```
 
-Counts so far: frontend routes `27 passed`; frontend components `44 passed`;
-lint, build, and diff-check passed. Build retained the known CSS optimizer
-warning about `m-* utility`.
+Counts so far: hosted backend `348 passed, 1 warning`; frontend routes
+`27 passed`; frontend components `44 passed`; CodeAlmanac `496 passed`.
+Frontend build retained the known CSS optimizer warning about `m-* utility`.
 
 ## Next Pressure Test
 
-Choose the next launch-hardening slice between cloud run cancel/retry
-semantics, richer repository setup UI, and remaining provider cleanup.
+Choose the next launch-hardening slice between cloud run retry semantics,
+richer repository setup UI, and remaining provider cleanup.
 
 Pressure points:
 
-- CLI commands list/show/log/start cloud runs, but do not cancel/retry them
-- `runs cancel` needs a real Modal/provider cancellation primitive before it
-  should be public
 - `runs retry` needs an explicit failed/stale source-head policy
 - browser setup/onboarding entrypoints now have stable redirect URLs and setup
   copy, but richer repository setup UI still needs product design
@@ -73,7 +76,8 @@ The CodeAlmanac branch is `dev`. Slice 31 is pushed to `origin/dev` at
 origin at `8ca50e0f feat: mirror cloud repository triggers in CLI`; Slice 37
 is pushed to origin at `bc177cf2 feat: inspect cloud runs from CLI`; Slice 38
 is pushed to origin at `117b36db feat: open cloud pages from CLI`; Slice 39
-is pushed to origin at `0e3879e1 feat: start cloud runs from CLI`.
+is pushed to origin at `0e3879e1 feat: start cloud runs from CLI`. Slice 44 is
+implemented locally and should be committed/pushed as the current slice.
 
 The hosted auth branch is
 `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
@@ -94,7 +98,8 @@ pushed to origin at `14caf8b feat: start cloud runs from CLI`; Slice 40 is
 pushed to origin at `8795849 feat: emit terminal run events`; Slice 41 is
 pushed to origin at `a781e51 chore: align hosted product identity`; Slice 42 is
 pushed to origin at `97564f7 feat: publish terminal run checks`; Slice 43 is
-pushed to origin at `eafe60c feat: align cloud setup copy`.
+pushed to origin at `eafe60c feat: align cloud setup copy`. Slice 44 is
+implemented locally and should be committed/pushed as the current slice.
 
 The local wiki command currently fails on this checkout with:
 

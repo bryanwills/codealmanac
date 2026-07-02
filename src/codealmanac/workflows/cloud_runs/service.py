@@ -1,4 +1,5 @@
 from codealmanac.services.cloud_runs.requests import (
+    CancelCloudRunRequest,
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
@@ -16,6 +17,7 @@ from codealmanac.workflows.cloud_runs.models import (
     CloudRunLogResult,
 )
 from codealmanac.workflows.cloud_runs.requests import (
+    CancelCloudRunWorkflowRequest,
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,
     ShowCloudRunRequest,
@@ -66,6 +68,12 @@ class CloudRunsWorkflow:
     def show(self, request: ShowCloudRunRequest) -> CloudRunDetailResult:
         run = self.cloud_runs.read(
             ReadCloudRunRequest(api_url=request.api_url, run_id=request.run_id)
+        )
+        return CloudRunDetailResult(run=run)
+
+    def cancel(self, request: CancelCloudRunWorkflowRequest) -> CloudRunDetailResult:
+        run = self.cloud_runs.cancel(
+            CancelCloudRunRequest(api_url=request.api_url, run_id=request.run_id)
         )
         return CloudRunDetailResult(run=run)
 

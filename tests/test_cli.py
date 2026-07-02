@@ -478,6 +478,7 @@ class CliCloudRunsClient:
         self.lists: list[tuple[int, int | None, str | None]] = []
         self.starts: list[tuple[int, str]] = []
         self.reads: list[UUID] = []
+        self.cancels: list[UUID] = []
         self.logs: list[UUID] = []
 
     def list_repository_runs(
@@ -525,6 +526,25 @@ class CliCloudRunsClient:
         assert cli_token == "alm_secret"
         self.reads.append(run_id)
         return cloud_run(run_id)
+
+    def cancel_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> CloudRun:
+        assert cli_token == "alm_secret"
+        self.cancels.append(run_id)
+        return CloudRun(
+            run_id=run_id,
+            repo_id=1,
+            source=CloudRunSource(kind="branch", label="branch main"),
+            status="cancelled",
+            summary="cancelled by user",
+            created_at=datetime(2026, 7, 2, 12, tzinfo=UTC),
+            finished_at=datetime(2026, 7, 2, 12, 30, tzinfo=UTC),
+        )
 
     def list_run_events(
         self,
@@ -1282,7 +1302,7 @@ def test_cli_repo_status_triggers_and_delivery(
     ]
 
 
-def test_cli_cloud_runs_list_show_and_logs(
+def test_cli_cloud_runs_list_show_cancel_and_logs(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1375,6 +1395,23 @@ def test_cli_cloud_runs_list_show_and_logs(
         main(
             [
                 "runs",
+                "cancel",
+                str(UUID(int=2)),
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    cancelled = capsys.readouterr()
+    assert f"id: {UUID(int=2)}\n" in cancelled.out
+    assert "status: cancelled\n" in cancelled.out
+    assert "summary: cancelled by user\n" in cancelled.out
+
+    assert (
+        main(
+            [
+                "runs",
                 "logs",
                 str(UUID(int=2)),
                 "--api-url",
@@ -1390,6 +1427,7 @@ def test_cli_cloud_runs_list_show_and_logs(
     assert runs_client.lists == [(1, 5, None)]
     assert runs_client.starts == [(1, "release/1.4")]
     assert runs_client.reads == [UUID(int=2)]
+    assert runs_client.cancels == [UUID(int=2)]
     assert runs_client.logs == [UUID(int=2)]
 
 

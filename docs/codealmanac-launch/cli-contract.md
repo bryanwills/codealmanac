@@ -157,8 +157,19 @@ run. The branch head is read by the hosted service from GitHub; the local
 checkout SHA is not sent as source truth. The returned run is rendered through
 the same detail view as `runs show`.
 
-`runs cancel` and `runs retry` are still deferred. `cancel` needs a real worker
-provider cancellation primitive, and `retry` needs an explicit failed/stale
+Implemented in Slice 44:
+
+```text
+codealmanac runs cancel <run-id>
+```
+
+`runs cancel` uses the run id and does not need a current checkout. The hosted
+service authorizes the user through the run's repository, cancels queued runs in
+SQL, cancels running runs through the stored Modal function-call id, marks the
+run `cancelled`, records a run event, and returns the same detail view as
+`runs show`.
+
+`runs retry` is still deferred. Retry needs an explicit failed/stale
 source-head policy.
 
 ## Cloud Capture

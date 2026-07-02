@@ -339,7 +339,6 @@ POST /v1/repositories/{repo_id}/runs
 GET  /v1/runs/{run_id}
 GET  /v1/runs/{run_id}/events
 POST /v1/runs/{run_id}/cancel
-POST /v1/runs/{run_id}/retry
 
 GET  /v1/repositories/{repo_id}/wiki
 GET  /v1/repositories/{repo_id}/wiki/pages
@@ -380,6 +379,18 @@ the current GitHub branch head, creates a `BranchSource` run, selects delivery
 from the branch trigger policy when present, defaults to `commit` otherwise,
 and starts the hosted worker. Disabled trigger policy does not block manual
 start; trigger `enabled` controls automatic runs only.
+
+Slice 44 implemented the CLI-token cloud run cancellation route used by
+`codealmanac runs cancel <run-id>`:
+
+```text
+POST /v1/runs/{run_id}/cancel
+```
+
+Cancellation requires `Action.APPROVE_UPDATE` on the run's repository. Queued
+runs are marked `cancelled` directly. Running runs call Modal through the stored
+`worker_call_id`, then become `cancelled`. Delivered, failed, and stale runs
+return conflict.
 
 Slice 38 implemented the browser-session repository resolve route used by
 hosted redirectors opened from the CLI:

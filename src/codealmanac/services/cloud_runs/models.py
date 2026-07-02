@@ -7,7 +7,14 @@ from pydantic import Field, field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 
-CloudRunStatus = Literal["queued", "running", "delivered", "failed", "stale"]
+CloudRunStatus = Literal[
+    "queued",
+    "running",
+    "delivered",
+    "failed",
+    "stale",
+    "cancelled",
+]
 CloudRunEventKind = Literal["status", "message", "tool", "output", "error"]
 
 

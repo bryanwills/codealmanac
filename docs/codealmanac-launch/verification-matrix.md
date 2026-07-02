@@ -430,6 +430,17 @@ Current evidence:
   (`496 passed`), focused cloud-runs/CLI/architecture tests (`123 passed`),
   `uv run ruff check .`, `uv run python -m compileall src -q`, and
   `git diff --check`.
+- Slice 44 added `codealmanac runs cancel <run-id>`.
+- `tests/test_cloud_runs_service.py` proves cancellation uses the stored CLI
+  token and calls the cloud run cancellation client method.
+- `tests/test_cloud_runs_workflow.py` proves cancellation is run-id scoped and
+  does not require current-checkout repository resolution.
+- `tests/test_cli.py` proves the public CLI command renders a cancelled cloud
+  run.
+- Slice 44 full CodeAlmanac verification passed with `uv run pytest -q`
+  (`496 passed`), focused cloud-runs/CLI/architecture tests (`123 passed`),
+  `uv run ruff check .`, `uv run python -m compileall src -q`, and
+  `git diff --check`.
 
 Commands:
 
@@ -685,7 +696,27 @@ Current evidence:
   (`114 passed`), full backend tests (`340 passed, 1 warning`),
   `uv run ruff check .`, `uv run python -m compileall src modal_app -q`, and
   `git diff --check`.
-- Remaining hosted worker risks: cloud run cancel/retry and richer production
+- Slice 44 added hosted cloud run cancellation. Queued runs cancel in SQL;
+  running runs cancel through the stored Modal function-call id; already
+  delivered, failed, or stale runs return conflict.
+- `backend/tests/test_updates_contract.py` proves queued cancellation, running
+  Modal cancellation, idempotent already-cancelled behavior, terminal conflict,
+  missing-worker-call conflict, authorization through `Action.APPROVE_UPDATE`,
+  run-event writing, and `run_cancelled` event dispatch.
+- `backend/tests/test_cli_runs_api_contract.py` and
+  `backend/tests/test_repositories_api_contract.py` prove CLI-token and
+  browser-session cancellation routes call the same update service.
+- `backend/tests/test_modal_worker_contract.py` proves the Modal adapter calls
+  `FunctionCall.from_id(call_id).cancel(terminate_containers=False)`.
+- `backend/tests/test_github_checks_fanout.py` proves cancelled runs publish a
+  GitHub Check conclusion of `cancelled`.
+- Hosted frontend DTO/status tests prove `cancelled` is part of the mirrored
+  status set and the BFF allowlist accepts `POST /api/dashboard/runs/<uuid>/cancel`.
+- Slice 44 hosted verification passed with focused backend tests
+  (`75 passed, 1 warning`), full backend tests (`348 passed, 1 warning`),
+  route tests (`27 passed`), frontend component tests (`44 passed`), backend
+  ruff/compileall, frontend lint/build, and `git diff --check`.
+- Remaining hosted worker risks: cloud run retry and richer production
   setup/onboarding screens still need launch-hardening.
 
 ## Provider / Deployment

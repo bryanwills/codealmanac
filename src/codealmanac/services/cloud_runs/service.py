@@ -3,6 +3,7 @@ from codealmanac.services.cloud_auth.service import CloudAuthService
 from codealmanac.services.cloud_runs.models import CloudRun, CloudRunEvent, CloudRunPage
 from codealmanac.services.cloud_runs.ports import CloudRunsClient
 from codealmanac.services.cloud_runs.requests import (
+    CancelCloudRunRequest,
     ListCloudRunEventsRequest,
     ListCloudRunsForRepoRequest,
     ReadCloudRunRequest,
@@ -37,6 +38,14 @@ class CloudRunsService:
     def read(self, request: ReadCloudRunRequest) -> CloudRun:
         state = self.auth.require_state(CloudStatusRequest(api_url=request.api_url))
         return self.client.read_run(
+            api_url=request.api_url,
+            cli_token=state.token,
+            run_id=request.run_id,
+        )
+
+    def cancel(self, request: CancelCloudRunRequest) -> CloudRun:
+        state = self.auth.require_state(CloudStatusRequest(api_url=request.api_url))
+        return self.client.cancel_run(
             api_url=request.api_url,
             cli_token=state.token,
             run_id=request.run_id,

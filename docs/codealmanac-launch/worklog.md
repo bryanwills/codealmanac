@@ -2,6 +2,35 @@
 
 ## 2026-07-02
 
+- Planned Slice 44 in
+  `docs/plans/2026-07-02-slice-44-cloud-run-cancel.md`.
+- Added hosted `RunStatus.CANCELLED`, `UpdatesStore.mark_cancelled(...)`,
+  `UpdateCancellation`, and `Updates.cancel_run(...)`.
+- Added Modal worker cancellation through
+  `modal.FunctionCall.from_id(call_id).cancel(terminate_containers=False)`.
+- Added browser and CLI-token cancellation routes:
+  `POST /api/runs/{run_id}/cancel` and `POST /v1/runs/{run_id}/cancel`.
+- Added typed `RunCancelled` events and GitHub Checks fanout with conclusion
+  `cancelled`.
+- Updated hosted frontend DTO/status metadata and the BFF gateway so cancelled
+  runs render cleanly and browser clients can call
+  `POST /api/dashboard/runs/<uuid>/cancel`.
+- Added CodeAlmanac `codealmanac runs cancel <run-id>`, backed by the stored
+  CLI token and the cloud `/v1/runs/{run_id}/cancel` route.
+- Verified Slice 44 focused hosted gates with backend cancellation/event/check
+  tests (`75 passed, 1 warning`), frontend route tests (`27 passed`), and
+  frontend component tests (`44 passed`).
+- Verified Slice 44 full/hygiene gates with hosted backend `uv run pytest -q`
+  (`348 passed, 1 warning`), hosted backend `uv run ruff check .`, hosted
+  backend `uv run python -m compileall src modal_app -q`, CodeAlmanac
+  `uv run pytest -q` (`496 passed`), CodeAlmanac `uv run ruff check .`,
+  CodeAlmanac `uv run python -m compileall src -q`, hosted frontend
+  `npm run lint`, hosted frontend `npm run build`, and both `git diff --check`
+  commands. The frontend build retained the known CSS optimizer warning about
+  `m-* utility`.
+- Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 90%,
+  CodeAlmanac-hosted backend/auth/API 90%, hosted frontend/onboarding 43%, and
+  infra/deploy rename 72%.
 - Planned Slice 43 in
   `docs/plans/2026-07-02-slice-43-cloud-setup-copy.md`.
 - Verified the production GitHub App through the App API. App slug

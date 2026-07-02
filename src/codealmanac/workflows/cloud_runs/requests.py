@@ -40,6 +40,11 @@ class ShowCloudRunRequest(CodeAlmanacModel):
     run_id: UUID
 
 
+class CancelCloudRunWorkflowRequest(CodeAlmanacModel):
+    api_url: str = Field(min_length=1)
+    run_id: UUID
+
+
 class ReadCloudRunLogRequest(CodeAlmanacModel):
     api_url: str = Field(min_length=1)
     run_id: UUID

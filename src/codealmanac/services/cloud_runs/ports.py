@@ -39,6 +39,15 @@ class CloudRunsClient(Protocol):
     ) -> CloudRun:
         pass
 
+    def cancel_run(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        run_id: UUID,
+    ) -> CloudRun:
+        pass
+
     def list_run_events(
         self,
         *,
