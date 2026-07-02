@@ -10,21 +10,21 @@ verification, launch-folder updates, commit, and push.
 
 ## Last Completed Slice
 
-Slice 1 created the local control DB foundation in `codealmanac`.
+Slice 2 made local trigger policy writable in the control DB.
 
 Implemented:
 
-- `~/.codealmanac/control.sqlite` as `AppConfig.control_db_path`
-- `app.control` in the composition root
-- `src/codealmanac/services/control/`
-- launch control tables for repositories, branches, sessions, turns,
-  turn-branch joins, trigger events, runs, run events, and deliveries
-- focused control DB and architecture tests
+- repository upsert through `app.control.upsert_repository`
+- branch policy through `app.control.set_branch_policy`
+- local trigger event recording through `app.control.record_trigger_event`
+- trigger event listing through `app.control.list_trigger_events`
+- disabled or unknown branches write no trigger event rows
+- newer pending heads supersede older pending trigger events for the same branch
 
 Verified:
 
 ```text
-uv run pytest tests/test_control_service.py tests/test_database.py tests/test_architecture.py
+uv run pytest tests/test_control_service.py tests/test_architecture.py
 git diff --check
 ```
 

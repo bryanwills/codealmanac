@@ -118,3 +118,14 @@
 - Verified Slice 1 with
   `uv run pytest tests/test_control_service.py tests/test_database.py tests/test_architecture.py`
   and `git diff --check`.
+- Planned Slice 2 in
+  `docs/plans/2026-07-02-slice-2-local-trigger-events.md`.
+- Added writable local control service verbs for repository upsert, branch
+  trigger policy, trigger event recording, and trigger event listing.
+- Implemented branch filtering for local triggers: disabled or unknown branches
+  do not write `trigger_events` rows.
+- Implemented pending-trigger supersession: when a newer head is recorded for a
+  branch, older pending trigger events for that branch become `superseded`.
+- Verified Slice 2 focused behavior with
+  `uv run pytest tests/test_control_service.py tests/test_architecture.py` and
+  `git diff --check`.

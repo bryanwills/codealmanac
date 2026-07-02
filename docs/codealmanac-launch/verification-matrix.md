@@ -40,6 +40,12 @@ Current evidence:
   launch vocabulary constraints, and separation from the per-repo query DB.
 - `tests/test_architecture.py` now checks that the control schema, store, and
   service facade stay split.
+- Slice 2 added `app.control.upsert_repository`,
+  `app.control.set_branch_policy`, `app.control.record_trigger_event`, and
+  `app.control.list_trigger_events`.
+- `tests/test_control_service.py` proves disabled branches write no trigger
+  rows, enabled branches create pending trigger rows, duplicate heads are
+  ignored, and newer pending heads supersede older pending trigger rows.
 
 Commands:
 
