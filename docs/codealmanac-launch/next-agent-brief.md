@@ -10,45 +10,47 @@ verification, launch-folder updates, commit, push, and RelayForge update.
 
 ## Last Completed Slice
 
-Slice 42 added GitHub Check fanout for terminal hosted run outcomes.
+Slice 43 aligned cloud setup/onboarding copy with the CodeAlmanac CLI contract.
 
 Implemented:
 
 - hosted worktree at
   `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - hosted branch `codex/workos-authkit-api-foundation`
-- typed GitHub Check Run models, resource adapter, and `checks` capability
-- `GitHubChecksFanout` in `backend/src/almanac/wiring/fanout/github_checks.py`
-- fanout subscription for `RunDelivered`, `RunFailed`, and `RunStale`
-- check conclusions: changed delivered runs `success`, unchanged delivered runs
-  `neutral`, failed runs `failure`, stale-head runs `action_required`
-- check details URL points to the existing hosted repository page because no
-  run-detail page exists yet
-- hosted commit `97564f7 feat: publish terminal run checks` was pushed
-- Render service `srv-d8g8nb37uimc739vnnsg` deployed exact commit
-  `97564f7ea00c74614f8c45c081430e73bbd38090`; deploy
-  `dep-d938q30js32c73eqj80g` is live
-- production backend health returned HTTP 200 with `{"status":"ok"}`
+- `/dashboard/local-agent-access` now presents only
+  `npx codealmanac@latest setup`
+- setup copy now says the command signs in through the browser, connects the
+  machine to cloud, and asks before installing Claude/Codex capture
+- `/cli-login` now says `codealmanac login` for expired login links and
+  `CodeAlmanac CLI` in visible copy
+- GitHub App install and repository access copy now uses `CodeAlmanac` for the
+  hosted product setup surface
+- production GitHub App permission read confirms `checks: write`
+- hosted commit `eafe60c feat: align cloud setup copy` was pushed
+- Vercel production deployed
+  `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app` and aliased it
+  to `https://www.codealmanac.com`
+- production frontend smoke returned HTTP 200
 
 Verified:
 
 ```text
-cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/backend
-uv run pytest tests/test_github_checks_contract.py tests/test_github_checks_fanout.py tests/test_events_contract.py tests/test_updates_contract.py tests/test_architecture_contract.py -q
-uv run ruff check .
-uv run python -m compileall src modal_app -q
-uv run pytest -q
+cd /Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence/frontend
+npm run test:routes
+npm run test:frontend
+npm run lint
+npm run build
 git diff --check
 ```
 
-Counts so far: hosted backend focused `114 passed`; hosted backend full
-`340 passed, 1 warning`; hosted ruff, compileall, and diff-check passed.
+Counts so far: frontend routes `27 passed`; frontend components `44 passed`;
+lint, build, and diff-check passed. Build retained the known CSS optimizer
+warning about `m-* utility`.
 
 ## Next Pressure Test
 
 Choose the next launch-hardening slice between cloud run cancel/retry
-semantics, richer frontend onboarding pages, live GitHub App check smoke, and
-remaining provider cleanup.
+semantics, richer repository setup UI, and remaining provider cleanup.
 
 Pressure points:
 
@@ -56,8 +58,8 @@ Pressure points:
 - `runs cancel` needs a real Modal/provider cancellation primitive before it
   should be public
 - `runs retry` needs an explicit failed/stale source-head policy
-- browser setup/onboarding entrypoints now have stable redirect URLs, but
-  richer onboarding screens still need product UI
+- browser setup/onboarding entrypoints now have stable redirect URLs and setup
+  copy, but richer repository setup UI still needs product design
 - old inline-message conversation routes should remain compatibility-only
 - old Modal app `usealmanac-updates` is still deployed; retire it only in an
   explicit provider cleanup step
@@ -91,7 +93,8 @@ pushed to origin at `ed7e765 feat: add cloud route handoff`; Slice 39 is
 pushed to origin at `14caf8b feat: start cloud runs from CLI`; Slice 40 is
 pushed to origin at `8795849 feat: emit terminal run events`; Slice 41 is
 pushed to origin at `a781e51 chore: align hosted product identity`; Slice 42 is
-pushed to origin at `97564f7 feat: publish terminal run checks`.
+pushed to origin at `97564f7 feat: publish terminal run checks`; Slice 43 is
+pushed to origin at `eafe60c feat: align cloud setup copy`.
 
 The local wiki command currently fails on this checkout with:
 

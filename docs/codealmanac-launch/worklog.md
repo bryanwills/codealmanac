@@ -2,6 +2,34 @@
 
 ## 2026-07-02
 
+- Planned Slice 43 in
+  `docs/plans/2026-07-02-slice-43-cloud-setup-copy.md`.
+- Verified the production GitHub App through the App API. App slug
+  `almanac-bot` owned by `AlmanacCode` has `checks: write`, `contents: write`,
+  and `pull_requests: write`, so Slice 42's Check Runs fanout has the required
+  app permission.
+- Updated hosted setup copy so `/dashboard/local-agent-access` presents a
+  single command: `npx codealmanac@latest setup`.
+- Removed the outdated `almanac login` quickstart from hosted browser
+  onboarding. Setup copy now says setup signs in through the browser, connects
+  the machine to cloud, and asks before installing Claude/Codex capture.
+- Updated `/cli-login` error/success copy to use `codealmanac login` and
+  `CodeAlmanac CLI`.
+- Updated the GitHub App install prompt and repository access copy to say
+  `CodeAlmanac` where the setup flow is naming the hosted product.
+- Verified Slice 43 frontend gates with `npm run test:routes` (`27 passed`),
+  `npm run test:frontend` (`44 passed`), `npm run lint`, `npm run build`, and
+  `git diff --check`. The build retained the known CSS optimizer warning about
+  `m-* utility`.
+- Pushed hosted commit `eafe60c feat: align cloud setup copy` to
+  `origin/codex/workos-authkit-api-foundation`.
+- Deployed the hosted frontend to Vercel production. Vercel produced
+  `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app` and aliased it
+  to `https://www.codealmanac.com`.
+- Verified production smoke: `https://www.codealmanac.com` returned HTTP 200.
+- Recorded progress as: CodeAlmanac backend/local 95%, CLI/public UX 88%,
+  CodeAlmanac-hosted backend/auth/API 88%, hosted frontend/onboarding 42%, and
+  infra/deploy rename 72%.
 - Planned Slice 42 in
   `docs/plans/2026-07-02-slice-42-github-check-fanout.md`.
 - Added hosted typed GitHub Check Run models, resource adapter, and `checks`

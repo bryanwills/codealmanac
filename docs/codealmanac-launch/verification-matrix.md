@@ -115,6 +115,9 @@ Current evidence:
 - `backend/tests/test_cli_runs_api_contract.py` proves the route
   authenticates with the CLI token, accepts branch names in the JSON body, and
   returns a `RunDTO`.
+- Slice 43 verified production GitHub App permissions through GitHub's App
+  API. App slug `almanac-bot` owned by `AlmanacCode` has `checks: write`,
+  `contents: write`, and `pull_requests: write`.
 
 ## CodeAlmanac Local Repo
 
@@ -645,6 +648,22 @@ Current evidence:
   frontend route tests (`27 passed`), frontend component tests (`44 passed`),
   `npm run lint`, `npm run build`, and `git diff --check`. The frontend build
   retained the known non-blocking CSS optimizer warning about `m-* utility`.
+- Slice 43 aligned hosted setup copy with the cloud-first CLI contract:
+  `/dashboard/local-agent-access` presents `npx codealmanac@latest setup`,
+  explains browser sign-in and capture consent, and no longer advertises
+  `almanac login`.
+- Slice 43 updated `/cli-login` to use `codealmanac login` for expired login
+  links and `CodeAlmanac CLI` in the visible page copy.
+- `frontend/tests/routes.test.mjs` proves the setup page, CLI login page, and
+  GitHub App install prompt use the new setup vocabulary.
+- Slice 43 hosted frontend verification passed with route tests (`27 passed`),
+  frontend component tests (`44 passed`), `npm run lint`, `npm run build`, and
+  `git diff --check`. The build retained the known non-blocking CSS optimizer
+  warning about `m-* utility`.
+- Slice 43 pushed hosted commit `eafe60c feat: align cloud setup copy`,
+  deployed Vercel production
+  `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app`, aliased it to
+  `https://www.codealmanac.com`, and verified HTTP 200 from the production URL.
 - Slice 42 added typed hosted GitHub Check Run models, resource adapter, and
   `checks` capability backed by GitHub App installation tokens.
 - Slice 42 added `GitHubChecksFanout`, subscribing to `RunDelivered`,
@@ -721,3 +740,8 @@ Current evidence:
   verification passes through `make billing-verify` with Doppler
   `codealmanac/dev_personal`. Raw `npm run billing:verify` fails without
   `AUTUMN_SECRET_KEY`, which is expected outside Doppler.
+- Slice 43 verified the live GitHub App exposes `checks: write`, `contents:
+  write`, and `pull_requests: write`.
+- Slice 43 deployed the hosted frontend to Vercel production
+  `https://codealmanac-hosted-2ld7otxqz-thealmanac.vercel.app`, aliased it to
+  `https://www.codealmanac.com`, and verified HTTP 200.

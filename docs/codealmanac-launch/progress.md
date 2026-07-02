@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 42 GitHub Check fanout.
+Sent: 2026-07-02 after Slice 43 cloud setup copy.
 
 Route:
 
@@ -26,11 +26,11 @@ It was not present in `codealmanac/prd` when checked.
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 95% | 95% | Slice 42 is hosted-only; local worker behavior is unchanged. |
-| CodeAlmanac CLI/public UX | 87% | 87% | Slice 42 adds no public CLI verbs. |
-| CodeAlmanac-hosted backend/auth/API | 88% | 86% | Terminal hosted run outcomes now fan out to GitHub Check Runs through typed GitHub App integration. |
-| Hosted frontend/onboarding | 35% | 35% | Slice 42 points checks at the existing repo activity page; it adds no new onboarding screens. |
-| Infra/deploy rename | 70% | 70% | Slice 42 does not change provider naming or deployment topology. |
+| CodeAlmanac backend/local | 95% | 95% | Slice 43 is hosted frontend copy only; local worker behavior is unchanged. |
+| CodeAlmanac CLI/public UX | 88% | 87% | Browser setup now presents the single cloud setup command and no longer advertises `almanac login`. |
+| CodeAlmanac-hosted backend/auth/API | 88% | 88% | Slice 43 changes no backend API; Slice 42 Check Runs remain deployed. |
+| Hosted frontend/onboarding | 42% | 35% | GitHub App install, CLI setup, capture-consent copy, and repo settings handoff now align with the cloud-first setup model. |
+| Infra/deploy rename | 72% | 70% | Production Vercel deploy is live after the setup-copy change, and the GitHub App was verified with `checks: write`. |
 
 ## Update Rule
 
