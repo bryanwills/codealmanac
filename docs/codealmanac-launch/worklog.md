@@ -2568,3 +2568,49 @@
   (`96 passed`).
 - Full Slice 86 verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`514 passed`), and `git diff --check`.
+
+## 2026-07-03 Slice 87 Hosted Package And Worker Namespace
+
+- Slice 87 renamed hosted backend package ownership from `almanac` to
+  `codealmanac_hosted`.
+- Slice 87 moved Modal worker code from `backend/modal_app/` to
+  `backend/src/codealmanac_hosted/worker/`.
+- Docker, Makefile, Render, Modal, live-audit scripts, tests, and docs now use
+  `codealmanac_hosted`.
+- Modal smoke now has a real remote `smoke_worker` entrypoint.
+- Focused hosted verification passed with architecture and Modal-worker
+  contract tests (`92 passed`).
+- Full hosted backend verification passed with `uv run ruff check .`,
+  `uv run ruff format --check .`, `python -m compileall src -q`, and
+  `uv run pytest -q` (`396 passed, 1 warning`).
+- Render deploy `dep-d941j7m7r5hc73cd5ij0` is live on hosted commit
+  `89d97c3`.
+- Modal `codealmanac-hosted-updates` deployed successfully from the new worker
+  path.
+
+## 2026-07-03 Slice 88 Hosted Updates Domain Split
+
+- Slice 88 split hosted update internals into explicit pipeline packages:
+  `triggers/`, `runs/`, and `delivery/`.
+- `services/updates/triggers/` now owns PR, branch, manual, initial wiki, and
+  conversation-ingest run starters.
+- `services/updates/runs/` now owns queueing, persistence, tables, records,
+  queries, cancellation, retry, completion, and worker invocation.
+- `services/updates/delivery/` now owns delivery application plus bundle/path
+  validation helpers.
+- `services/updates/service.py` remains the public facade; API behavior and DTOs
+  did not change.
+- Architecture tests now assert the new update package axes.
+- Focused hosted verification passed:
+  `uv run pytest tests/test_architecture_contract.py tests/test_updates_contract.py
+  tests/test_modal_worker_contract.py tests/test_update_run_events_contract.py -q`
+  (`147 passed`).
+- Full hosted backend verification passed with `uv run ruff check .`,
+  `uv run ruff format --check .`, `python -m compileall src -q`, and
+  `uv run pytest -q` (`397 passed, 1 warning`).
+- Hosted commit `1d7b80e` was pushed to `origin/main`.
+- Render deploy `dep-d941qkl8nd3s73chs3fg` is live on commit `1d7b80e`.
+- Modal `codealmanac-hosted-updates` deployed successfully after the worker
+  import-path split.
+- Backend health returned `{"status":"ok"}` from
+  `https://api.codealmanac.com/api/health`.

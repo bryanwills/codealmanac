@@ -25,12 +25,11 @@ direction.
 ## Current Verified State
 
 - Hosted `main` includes
-  `89d97c3 refactor(hosted): rename backend package`.
+  `1d7b80e refactor(hosted): split updates domain`.
 - Render service `srv-d8g8nb37uimc739vnnsg` is live on deploy
-  `dep-d941j7m7r5hc73cd5ij0` for commit `89d97c3`.
-- Modal app `codealmanac-hosted-updates` was redeployed from
-  `backend/src/codealmanac_hosted/worker/updates_worker.py` after the hosted
-  package rename. Modal image logs showed `codealmanac 0.1.9`.
+  `dep-d941qkl8nd3s73chs3fg` for commit `1d7b80e`.
+- Modal app `codealmanac-hosted-updates` was redeployed after the hosted
+  updates package split. Modal image logs showed `codealmanac 0.1.9`.
 - Vercel production is linked to project `thealmanac/codealmanac-hosted`.
   Production deployment
   `https://codealmanac-hosted-mad8d5dhz-thealmanac.vercel.app` is aliased to
@@ -109,13 +108,36 @@ direction.
 - Slice 87 renamed hosted backend package ownership:
   `backend/src/almanac/` -> `backend/src/codealmanac_hosted/`, and
   `backend/modal_app/` -> `backend/src/codealmanac_hosted/worker/`.
-- The remaining cleanup is now mostly hosted-facing domain/edge work or
+- Slice 88 split hosted update internals into
+  `services/updates/triggers/`, `services/updates/runs/`, and
+  `services/updates/delivery/` while preserving the public `Updates` facade.
+  Render and Modal are live on this split.
+- The remaining cleanup is now mostly hosted-facing edge/event/database work or
   package-resource judgment: decide whether hosted `server/` should become
-  `web/`, split hosted `services/updates`, decide whether CodeAlmanac
-  `prompts/` / `manual/` should stay root package resources, and continue the
-  database cleanup.
+  `web/`, decide whether source-bundle ownership needs a first-class hosted
+  update source package, decide whether CodeAlmanac `prompts/` / `manual/`
+  should stay root package resources, and continue the database cleanup.
 
 ## Last Completed Work
+
+Slice 88 creates the hosted updates domain split:
+
+- `backend/src/codealmanac_hosted/services/updates/triggers/` owns update
+  starters: branch pushes, pull requests, manual branch runs, initial wiki runs,
+  and conversation-ingest scheduling
+- `backend/src/codealmanac_hosted/services/updates/runs/` owns durable run
+  lifecycle and persistence: queueing, store/tables/records, queries,
+  cancellation, retry, completion, and worker invocation
+- `backend/src/codealmanac_hosted/services/updates/delivery/` owns bundle/path
+  validation and GitHub delivery application
+- `backend/src/codealmanac_hosted/services/updates/service.py` remains the
+  public use-case facade
+- focused verification passed (`147 passed`)
+- full hosted backend verification passed (`397 passed, 1 warning`)
+- Render deploy `dep-d941qkl8nd3s73chs3fg` is live on commit `1d7b80e`
+- Modal `codealmanac-hosted-updates` deployed successfully after the worker
+  import-path split
+- backend health returned `{"status":"ok"}`
 
 Slice 87 creates the hosted package and worker namespace:
 

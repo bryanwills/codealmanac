@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 87 hosted package/worker namespace.
+Sent: pending after Slice 88 hosted updates domain split.
 
 Route:
 
@@ -27,6 +27,16 @@ architecture/worker focused tests (`92 passed`), full backend tests
 (`396 passed, 1 warning`), `make smoke-backend`, `make smoke-modal`, and
 `git diff --check`. Render deploy `dep-d941j7m7r5hc73cd5ij0` is live on commit
 `89d97c3`; Modal app `codealmanac-hosted-updates` deployed successfully.
+
+Slice 88 split hosted update internals into explicit pipeline axes:
+`services/updates/triggers/`, `services/updates/runs/`, and
+`services/updates/delivery/`. The public `Updates` facade and API behavior did
+not change. Verification passed with backend ruff, format check, compileall,
+focused architecture/update/worker/run-event tests (`147 passed`), and the full
+backend suite (`397 passed, 1 warning`). Render deploy
+`dep-d941qkl8nd3s73chs3fg` is live on commit `1d7b80e`; Modal
+`codealmanac-hosted-updates` deployed successfully from the split worker import
+path.
 
 ## Latest Local Notes
 
@@ -63,6 +73,11 @@ architecture/worker focused tests (`92 passed`), full backend tests
   code is now `backend/src/codealmanac_hosted/worker/`, Render is live on
   commit `89d97c3`, and Modal `codealmanac-hosted-updates` deployed at the new
   path.
+- Slice 88 implemented the hosted updates domain split:
+  update triggers, run lifecycle/persistence, and delivery helpers now have
+  separate homes under `backend/src/codealmanac_hosted/services/updates/`.
+  Render is live on commit `1d7b80e`; Modal was redeployed after the worker
+  import-path move.
 
 ## Percentages
 
@@ -70,9 +85,9 @@ architecture/worker focused tests (`92 passed`), full backend tests
 | --- | ---: | ---: | --- |
 | CodeAlmanac backend/local | 100% | 100% | No CodeAlmanac runtime change in Slice 87; Slice 86 remains the latest local backend evidence. |
 | CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
-| CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 87 renamed the hosted backend package to `codealmanac_hosted`, moved the worker under it, and passed full backend tests plus Render/Modal live checks. |
+| CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 88 split hosted update internals into trigger, run, and delivery packages while preserving the public facade; focused and full backend tests pass. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |
-| Infra/deploy rename | 100% | 100% | Vercel targets `thealmanac/codealmanac-hosted`, Render deploy `dep-d941j7m7r5hc73cd5ij0` is live on `89d97c3`, and Modal `codealmanac-hosted-updates` deployed from the new worker path. |
+| Infra/deploy rename | 100% | 100% | Vercel targets `thealmanac/codealmanac-hosted`, Render deploy `dep-d941qkl8nd3s73chs3fg` is live on `1d7b80e`, and Modal `codealmanac-hosted-updates` deployed after the worker import-path split. |
 
 ## Update Rule
 

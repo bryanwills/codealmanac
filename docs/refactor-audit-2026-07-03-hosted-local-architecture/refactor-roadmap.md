@@ -57,6 +57,8 @@ Tests:
 
 ## Slice C: Hosted `updates` Split
 
+Status: partially complete.
+
 Goal:
 
 ```text
@@ -70,6 +72,24 @@ services/updates ->
 Do this after the package rename, not before, to avoid moving the same files twice.
 
 Use a Unit of Work if one API/webhook action writes multiple tables together.
+
+Completed in Slice 88:
+
+- `services/updates/triggers/` owns update starters: branch pushes, pull
+  requests, manual branch runs, initial wiki runs, and conversation-ingest
+  scheduling.
+- `services/updates/runs/` owns durable run lifecycle and persistence: queueing,
+  tables, records, store, queries, cancellation, retry, completion, and worker
+  invocation.
+- `services/updates/delivery/` owns delivery application and bundle/path
+  validation.
+- `services/updates/service.py` remains the public use-case facade.
+
+Remaining:
+
+- decide whether source-bundle ownership should move into a first-class hosted
+  update `sources/` package or remain owned by the existing conversations
+  domain until a second source type forces the seam
 
 ## Slice D: Hosted Events Rename
 
