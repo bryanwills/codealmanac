@@ -154,6 +154,11 @@ Status: active.
 - Public `codealmanac init` is the agent-backed first-build command.
 - Public `codealmanac build` is removed from the launch CLI surface.
 - Internal scaffold-only setup uses `app.workflows.init.initialize_workspace`.
+- Render production backend secrets come from Doppler project `codealmanac`,
+  config `prd`.
+- RelayForge Discord updates use Doppler project `almanac`, config `dev`.
+- Do not mix those Doppler targets when testing internal production API
+  endpoints; the wrong internal secret should return `401`.
 
 ## Naming
 

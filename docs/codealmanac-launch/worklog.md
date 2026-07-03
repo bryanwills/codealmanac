@@ -1853,3 +1853,22 @@
 - Chrome verified both source CLI and published PyPI CLI setup handoffs:
   `/cli-login` approved the one-time session, setup exited signed in as
   `rohans0509`, and `whoami` returned cloud `https://api.codealmanac.com`.
+- Slice 66 re-ran published PyPI CLI setup from a fresh temp HOME through real
+  Chrome. The CLI printed a production `/cli-login` URL, Chrome showed
+  `CLI login approved` for code `2XFTF7KK`, setup finished signed in as
+  `rohans0509`, and `whoami` returned cloud `https://api.codealmanac.com`.
+- Slice 66 verified production capture upload end to end: `capture enable`
+  issued cloud credential `ba28b4ec-611e-4549-b6d1-6d0f21fef810`, wrote
+  temp `capture.json` with mode `0600`, installed the temp Codex Stop hook, and
+  `__capture-hook` uploaded a synthetic transcript with
+  `upload_status: uploaded`, `repo_full_name: AlmanacCode/codealmanac`,
+  `branch: dev`, and `routing_status: routable`.
+- Slice 66 verified the uploaded source artifact can be read back through
+  production `GET /api/internal/source-artifacts`. The correct production
+  secret source is Render's Doppler target `codealmanac/prd`; using the
+  RelayForge target `almanac/dev` gives `401`, as expected.
+- Slice 66 revoked the production capture credential and verified final
+  `capture status --check-cloud --json` returned no local credential, no hooks,
+  and no cloud credentials.
+- Slice 66 focused tests passed in CodeAlmanac (`7 passed`) and hosted backend
+  capture/internal API tests (`14 passed`, `1` Starlette warning).

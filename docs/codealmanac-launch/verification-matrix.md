@@ -1236,3 +1236,31 @@ Current evidence:
   - Chrome verified source CLI and PyPI CLI `/cli-login` handoffs; both saved
     auth and `whoami` returned `rohans0509` with cloud
     `https://api.codealmanac.com`.
+
+## Slice 66 Capture Upload Production Pressure Test
+
+- Fresh PyPI CLI setup was re-run from a new temp HOME with `--no-browser`.
+  Chrome opened the printed production `/cli-login` URL and showed
+  `CLI login approved`; the CLI completed as `rohans0509`, and `whoami`
+  returned `https://api.codealmanac.com`.
+- Production capture credential lifecycle passed:
+  - initial `capture status --check-cloud --json`: no local credential, no
+    cloud credentials
+  - `capture enable --target codex`: credential issued, temp `capture.json`
+    mode `0600`, temp Codex Stop hook installed
+  - `capture disable --target codex`: credential revoked, temp config removed,
+    temp hook file reduced to `{}`
+  - final `capture status --check-cloud --json`: no local credential, no hooks,
+    no cloud credentials
+- Synthetic transcript upload passed through the published CLI's
+  `__capture-hook`: `upload_status: uploaded`, repo
+  `AlmanacCode/codealmanac`, branch `dev`, and `routing_status: routable`.
+- Production internal artifact read-back passed using Render's production
+  Doppler target `codealmanac/prd`: `HTTP/2 200`, `122` bytes, SHA-256
+  `dd2fe50510ad2cc3a664d840f9e5431e265c6e3d47f6a19ff4f98f3e5b7de32e`.
+- Focused local tests passed:
+  `uv run pytest tests/test_capture_transcript_upload.py tests/test_cloud_capture_service.py tests/test_cli.py -k capture`
+  (`7 passed`).
+- Focused hosted tests passed:
+  `uv run pytest tests/test_capture_upload_api_contract.py tests/test_capture_tokens_api_contract.py tests/test_internal_route_contract.py`
+  (`14 passed`, `1` Starlette warning).

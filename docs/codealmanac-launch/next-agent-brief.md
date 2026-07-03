@@ -218,9 +218,30 @@ Slice 65 adds the public installer and curl-first onboarding:
 - production homepage, signed-in `/setup`, and signed-in
   `/dashboard/local-agent-access` now show the curl installer and no stale
   `npx`, old backend host, or Vercel URL strings
-- source CLI and published PyPI CLI setup handoffs were verified in Chrome:
-  `/cli-login` approved the one-time session, setup exited signed in as
-  `rohans0509`, and `whoami` returned cloud `https://api.codealmanac.com`
+
+Slice 66 pressure-tests production capture upload:
+
+- fresh PyPI CLI setup was re-run through real Chrome from a new temp HOME
+- Chrome showed `CLI login approved`, setup completed as `rohans0509`, and
+  `whoami` returned `https://api.codealmanac.com`
+- `capture enable --target codex` issued a production capture credential,
+  wrote temp `capture.json` with mode `0600`, and installed the temp Codex Stop
+  hook
+- synthetic `__capture-hook` upload returned `upload_status: uploaded`,
+  `AlmanacCode/codealmanac`, branch `dev`, and `routing_status: routable`
+- production internal artifact read-back returned `HTTP/2 200` using Render's
+  production Doppler target `codealmanac/prd`
+- `capture disable --target codex` revoked the credential and left no local or
+  cloud capture credential
+- focused CodeAlmanac capture tests passed (`7 passed`)
+- focused hosted capture/internal API tests passed (`14 passed`, `1` warning)
+
+Important provider note:
+
+- Render production backend secrets come from Doppler `codealmanac/prd`.
+- RelayForge Discord updates use Doppler `almanac/dev`.
+- Do not use the RelayForge Doppler target to test production internal API
+  secrets; it correctly returns `401`.
 
 ## Current Repo State
 
