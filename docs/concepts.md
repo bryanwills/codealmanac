@@ -93,10 +93,12 @@ Command groups:
 |---|---|---|
 | Read | `list`, `search`, `show`, `topics`, `health`, `serve` | No |
 | Organize | `tag`, `untag`, `topics create/rename/delete/link` | No |
-| Lifecycle | `init`, `build`, `ingest`, `garden`, `sync`, `jobs` | `ingest`, `garden`, and write-capable `sync` |
-| Admin | `setup`, `login`, `whoami`, `logout`, `capture`, `uninstall`, `doctor`, `update`, `automation`, `reindex` | No |
+| Lifecycle | `init`, `sync`, `local update`, `jobs`, `local jobs` | `init`, `sync`, and `local update` |
+| Cloud | `setup`, `login`, `whoami`, `logout`, `capture`, `repo`, `runs`, `open` | No |
+| Admin | `local setup`, `local triggers`, `automation`, `uninstall`, `doctor`, `update`, `reindex` | No |
 
 Scheduled automation is local scheduler state. It runs ordinary `codealmanac
-sync` or `codealmanac garden` commands; it is not hosted sync.
-`codealmanac setup --install-automation` can install those scheduler entries,
-and `codealmanac uninstall --keep-automation` leaves them in place.
+sync` jobs; it is not hosted sync. Root `codealmanac setup` is cloud setup and
+agent instructions only. Local schedules stay behind explicit local or
+automation commands, and `codealmanac uninstall --keep-automation` leaves them
+in place.

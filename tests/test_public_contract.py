@@ -41,7 +41,7 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac local update --using codex",
     "codealmanac local triggers enable dev --delivery commit",
     "codealmanac local jobs list",
-    "## What Gets Created By Init",
+    "## What gets created",
     "A folder counts as a CodeAlmanac wiki only when it has both",
     "`topics.yaml` and `pages/`",
     "Derived local state appears when commands need it:",
@@ -155,7 +155,7 @@ def test_default_user_state_paths_are_product_specific(isolated_home: Path):
     )
 
 
-def test_readme_documents_python_local_public_surface():
+def test_readme_documents_python_cloud_first_public_surface():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
     for fragment in README_REQUIRED_FRAGMENTS:
@@ -178,7 +178,7 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
     assert "uv sync" in docs["CONTRIBUTING.md"]
     assert "uv run pytest" in docs["CONTRIBUTING.md"]
     assert "codealmanac init --root <path>" in docs["docs/concepts.md"]
-    assert "codealmanac setup --install-automation" in docs["docs/concepts.md"]
+    assert "Root `codealmanac setup` is cloud setup" in docs["docs/concepts.md"]
     assert "codealmanac uninstall --keep-automation" in docs["docs/concepts.md"]
     for body in docs.values():
         assert "npm install" not in body
@@ -191,7 +191,7 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
 def test_readme_keeps_init_scaffold_separate_from_runtime_state():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
-    init_section = readme_section(readme, "## What Gets Created By Init")
+    init_section = readme_section(readme, "## What gets created")
 
     assert "|   |-- README.md" in init_section
     assert "|   |-- topics.yaml" in init_section
@@ -205,7 +205,7 @@ def test_readme_keeps_init_scaffold_separate_from_runtime_state():
 def test_readme_quickstart_uses_search_that_works_after_init():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
-    quickstart = readme_section(readme, "## Quickstart")
+    quickstart = readme_section(readme, "## Get started")
 
     assert 'codealmanac search "getting"' in quickstart
     assert "codealmanac show getting-started" in quickstart
@@ -214,7 +214,7 @@ def test_readme_quickstart_uses_search_that_works_after_init():
 
 def test_readme_lifecycle_examples_parse_public_local_commands():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    updating = readme_section(readme, "## Updating The Wiki")
+    commands = readme_section(readme, "## Commands")
     parser = build_parser()
 
     parser.parse_args(("local", "setup", "--branch", "main"))
@@ -231,9 +231,9 @@ def test_readme_lifecycle_examples_parse_public_local_commands():
     )
     parser.parse_args(("local", "jobs", "list"))
 
-    assert "docs/adr.md" not in updating
-    assert "codealmanac ingest" not in updating
-    assert "codealmanac garden" not in updating
+    assert "docs/adr.md" not in commands
+    assert "codealmanac ingest" not in commands
+    assert "codealmanac garden" not in commands
 
 
 def test_next_agent_brief_tracks_latest_python_port_slice():

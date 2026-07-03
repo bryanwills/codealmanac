@@ -18,6 +18,15 @@ dead-ends inside them never compile into anything the next session can
 reference. CodeAlmanac is that reference layer: a wiki that lives in your
 repository, written for your agents, and kept up to date from the work itself.
 
+## At a glance
+
+- Public command: `codealmanac`
+- Python 3.12+
+- Default repo wiki root: `almanac/`
+- Custom repo wiki roots: any safe repo-relative directory via `--root`
+- User state root: `~/.codealmanac/`
+- Cloud commands: `setup`, `login`, `whoami`, `logout`, `capture`.
+
 ## Get started
 
 Install the CLI (Python 3.12+):
@@ -32,6 +41,8 @@ uv tool install codealmanac
 ```bash
 codealmanac init            # build the first wiki for this repo
 codealmanac local setup     # keep it updating from your commits
+codealmanac search "getting"
+codealmanac show getting-started
 ```
 
 **With your team (cloud)** — one shared wiki, updated from everyone's
@@ -55,10 +66,11 @@ your-repo/
 |-- almanac/
 |   |-- README.md          # this repo's notability bar and conventions
 |   |-- topics.yaml        # topic graph
-|   `-- pages/
-|       |-- checkout-flow.md
-|       |-- stripe-webhook-deadlock.md
-|       `-- jwt-vs-sessions.md
+|   |-- manual/            # packaged guidance copied for agents
+|   |-- pages/
+|   |   |-- checkout-flow.md
+|   |   |-- stripe-webhook-deadlock.md
+|   |   `-- jwt-vs-sessions.md
 |-- src/
 `-- ...
 ```
@@ -66,6 +78,10 @@ your-repo/
 Every page is one stable concept — a flow, a decision, a gotcha — linked into
 a topic graph with `[[wikilinks]]`. Browse it locally with `codealmanac
 serve`, or in the cloud with `codealmanac open`.
+
+A folder counts as a CodeAlmanac wiki only when it has both `topics.yaml` and `pages/`.
+Derived local state appears when commands need it: `index.db` and
+user-level job records are runtime state, not part of the init scaffold.
 
 ## Principles
 
@@ -104,17 +120,27 @@ model and need no credentials.
 |---|---|
 | `codealmanac init` | Build the first wiki for the current repo. |
 | `codealmanac local setup` | Configure local self-updating: branch policy + git hooks. |
+| `codealmanac local setup --branch main` | Configure a specific maintained branch locally. |
 | `codealmanac local update` | Run a local wiki update now. |
+| `codealmanac local update --using codex` | Run a local update with Codex. |
+| `codealmanac local triggers enable dev --delivery commit` | Maintain a branch locally. |
+| `codealmanac local jobs list` | Inspect local update jobs. |
 | `codealmanac search` / `show` / `topics` / `health` | Query the wiki. |
 | `codealmanac serve` | Local wiki viewer. |
 | `codealmanac setup` | Cloud sign-in plus agent instructions. |
-| `codealmanac capture enable\|status\|disable` | Manage session capture. |
+| `codealmanac login` / `whoami` / `logout` | Manage cloud auth. |
+| `codealmanac capture status` | Show capture status. |
+| `codealmanac capture enable --target codex` | Enable Codex session capture. |
+| `codealmanac capture disable` | Disable capture hooks. |
 | `codealmanac repo triggers enable <branch> --delivery pr\|commit` | Choose how cloud updates land. |
 | `codealmanac runs list\|show\|logs` | Inspect cloud update runs. |
 | `codealmanac doctor` | Check install, auth, and wiki health. |
 
 Run `codealmanac <command> --help` for the full flag surface.
-`codealmanac uninstall --yes` removes setup-owned local artifacts.
+Local schedules stay behind explicit local or automation commands.
+`codealmanac uninstall --yes` removes setup-owned local artifacts;
+`codealmanac uninstall --yes --keep-automation` leaves local scheduled
+automation in place.
 
 ## Privacy
 
