@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 62 branch-trigger delivery guard.
+Sent: 2026-07-03 after Slice 63 production setup pressure test.
 
 Route:
 
@@ -19,21 +19,21 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: hosted branch-push updates now ignore non-truncated `.almanac/`-only
-pushes before policy lookup so CodeAlmanac delivery commits do not loop into
-new runs. Delivery commits and PRs now use `docs almanac: <summary>`. Production
-Render deploy `dep-d93mceekanas73aeia30` is live on commit `fdad34d`; both
-canonical API and Render health checks returned `{"status":"ok"}`.
+Note: production Chrome verified setup, repository list, repository settings,
+reversible branch trigger/delivery save, and the CLI setup guide. Hosted
+frontend commit `47b1ada` is deployed to Vercel production at
+`codealmanac-hosted-gutvigm88-thealmanac.vercel.app` and aliased to
+`https://www.codealmanac.com`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 62. |
-| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.1` remains published and install-smoked; no CLI code changed in Slice 62. |
-| CodeAlmanac-hosted backend/auth/API | 99% | 99% | Branch-trigger loop guard and deterministic `docs almanac:` delivery messages are implemented, tested, pushed, and deployed. |
-| Hosted frontend/onboarding | 92% | 92% | Frontend unchanged in Slice 62; repository settings remained verified in Slice 60 and auth/setup in Chrome after Slice 61. |
-| Infra/deploy rename | 99% | 99% | Render is live on `fdad34d`; Vercel/frontend unchanged for this backend-only slice. |
+| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 63. |
+| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.1` remains published and install-smoked; setup guide remains PyPI-shaped in production. |
+| CodeAlmanac-hosted backend/auth/API | 99% | 99% | Backend unchanged in Slice 63; production BFF trigger reads/writes succeeded through the frontend session. |
+| Hosted frontend/onboarding | 95% | 92% | Production Chrome verified setup, repository list, settings, live settings summary, reversible branch trigger save/restore, and CLI setup guide after Vercel deploy. |
+| Infra/deploy rename | 99% | 99% | Vercel production is live on `47b1ada`; Render remains live on `fdad34d`. |
 
 ## Update Rule
 

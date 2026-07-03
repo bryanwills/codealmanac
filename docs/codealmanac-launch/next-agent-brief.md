@@ -168,6 +168,21 @@ Slice 62 hardens branch-trigger delivery:
 - hosted commit `fdad34d4297c969d3d7779250f67c94a60903c27` is deployed live on
   Render deploy `dep-d93mceekanas73aeia30`
 
+Slice 63 pressure-tests production setup and repository settings:
+
+- signed-in Chrome verified `https://www.codealmanac.com/setup`,
+  repository list, repository activity, repository settings, and
+  `/dashboard/local-agent-access`
+- repository settings now keep the setup summary live after branch/delivery
+  saves instead of needing a refresh
+- dashboard page/header sizing now uses border-box sizing so repository-list
+  actions do not crop at the 1290px Chrome viewport
+- Vercel production deployment
+  `https://codealmanac-hosted-gutvigm88-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`
+- the temporary production mutation was restored: `main` is disabled and its
+  delivery mode is `commit`
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -191,15 +206,15 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 62 artifact commit:
-  `fdad34d4297c969d3d7779250f67c94a60903c27`
+- current Slice 63 artifact commit:
+  `47b1ada536b27a13b10eebe0878180542a01f8ba`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `fdad34d4297c969d3d7779250f67c94a60903c27`
+  `47b1ada536b27a13b10eebe0878180542a01f8ba`
 - production frontend: `https://www.codealmanac.com`
 - hosted main has setup/auth hardening, route-test guardrails, cloud setup
   checklist, production WorkOS identity schema repair, and capture-token
-  storage repair, GitHub webhook event-header routing, and branch-trigger
-  delivery loop protection through `fdad34d`.
+  storage repair, GitHub webhook event-header routing, branch-trigger delivery
+  loop protection, and Slice 63 frontend production fixes through `47b1ada`.
 
 The local wiki command currently fails on this checkout with:
 
@@ -290,11 +305,17 @@ repaired.
   (`375 passed, 1 warning`), hosted ruff, compileall, `git diff --check`,
   Render deploy `dep-d93mceekanas73aeia30` live on commit `fdad34d`, and
   backend health `{"status":"ok"}` on both canonical API and Render URLs.
+- Slice 63 production frontend verification passed: frontend tests
+  (`52 passed`), route tests (`27 passed`), frontend lint, Next build,
+  `git diff --check`, Vercel deploy
+  `codealmanac-hosted-gutvigm88-thealmanac.vercel.app`, production Chrome setup
+  and settings checks, live settings summary check, and restored trigger state
+  `main enabled=false deliveryMode=commit`.
 
 ## Next Pressure Tests
 
-- Continue the real signed-in production browser pass from repository settings
-  into branch trigger configuration, capture consent, and run visibility.
+- Continue the real signed-in production browser pass into capture install,
+  source capture, and actual run creation/delivery.
 - Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
   local signed-in setup walkthrough is needed; the backend currently refuses to
   start without it.

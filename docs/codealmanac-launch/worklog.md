@@ -108,6 +108,35 @@
 - Production synthetic branch-push smoke was intentionally skipped because
   fake `push` events also feed the wiki tracker; a fake `.almanac/` path could
   mark an import state even though the update service correctly ignores it.
+- Planned Slice 63 in hosted
+  `docs/plans/2026-07-03-slice-63-production-setup-pressure-test.md`.
+- Browser-harness/Chrome verified signed-in production setup, repository list,
+  repository activity, repository settings, reversible maintained-branch
+  configuration, and the CLI setup guide for `rohans0509`.
+- Fixed repository settings so branch and delivery changes update the
+  readiness summary from client state immediately after a successful save
+  instead of requiring a page refresh.
+- Fixed dashboard page/header sizing so repository-list actions no longer crop
+  at a 1290px Chrome viewport. The stale page measured
+  `.dashboard-page-body` at `right=1378`; after reload on the Slice 63 Vercel
+  deployment it measured `right=1290` and the row action measured
+  `right=1221`.
+- Verified Slice 63 frontend locally with frontend tests (`52 passed`), route
+  tests (`27 passed`), frontend lint, Next build, and `git diff --check`.
+- Pushed hosted commit
+  `47b1ada536b27a13b10eebe0878180542a01f8ba fix(frontend): keep repository settings feedback live`
+  to `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Deployed the hosted frontend to Vercel production at
+  `https://codealmanac-hosted-gutvigm88-thealmanac.vercel.app`; Vercel aliased
+  it to `https://www.codealmanac.com`.
+- Production Chrome verification after the Vercel deploy passed:
+  `https://www.codealmanac.com/setup` rendered the connected cloud setup for
+  `rohans0509`; the repository list no longer overflowed; the settings page
+  updated summary text live from `No maintained branch enabled` to `main` plus
+  `Open pull requests`; the dashboard BFF returned
+  `[{"repoId":1212149375,"branch":"main","enabled":true,"deliveryMode":"pr"}]`
+  during the reversible mutation; the page and backend were restored to
+  `enabled=false`, `deliveryMode="commit"` afterward.
 
 ## 2026-07-02
 
