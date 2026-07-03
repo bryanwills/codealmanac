@@ -211,10 +211,15 @@ CodeAlmanac:
   binary printed a `https://www.codealmanac.com/cli-login` approval URL, Chrome
   approved it, and `whoami` returned `rohans0509` with cloud
   `https://api.codealmanac.com`.
+- Fresh PyPI `0.1.2` `setup` was retested in Chrome on 2026-07-03 from an
+  isolated `uv tool install --refresh --no-cache` binary and temp `HOME`.
+  Chrome rendered `CLI login approved`; setup exited signed in as `rohans0509`;
+  `whoami` and `capture status --check-cloud --json` both reached production.
 - The machine PATH currently resolves an old Node-era `codealmanac` first:
   `/Users/rohan/.nvm/versions/node/v21.7.3/bin/codealmanac` reports `0.2.26`.
-  Use `uv run codealmanac` inside this repo or a fresh `uv tool install`
-  binary when verifying the Python package.
+  `/Users/rohan/.local/bin/codealmanac` also reports stale `0.1.0.dev0` without
+  cloud `setup`. Use `uv run codealmanac` inside this repo or a fresh
+  `uv tool install` binary when verifying the Python package.
 - Local working tree note at handoff: a large `README.md` rewrite,
   `docs/assets/`, and
   `docs/plans/2026-07-03-github-webhook-contract-hardening.md` were

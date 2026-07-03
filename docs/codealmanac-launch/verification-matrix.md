@@ -193,6 +193,12 @@ Current evidence:
   `01c8463`, backend health `{"status":"ok"}`, Vercel production Ready, and
   browser-harness signed-in `/setup` rendering `rohans0509`, `ReverieOne`, and
   `AlmanacCode`.
+- A fresh isolated PyPI `codealmanac==0.1.2` install was retested through
+  Chrome on 2026-07-03. `codealmanac setup --no-browser --skip-instructions`
+  printed a `www.codealmanac.com/cli-login` URL, Chrome rendered
+  `CLI login approved`, setup exited signed in as `rohans0509`, `whoami`
+  returned `https://api.codealmanac.com`, and
+  `capture status --check-cloud --json` reached production.
 - Slice 60 repaired capture credential schema drift. The backend already
   queried `CaptureTokenRow`, but production Supabase lacked
   `public.capture_tokens`, causing signed-in repository settings to fail at

@@ -137,6 +137,18 @@
   `[{"repoId":1212149375,"branch":"main","enabled":true,"deliveryMode":"pr"}]`
   during the reversible mutation; the page and backend were restored to
   `enabled=false`, `deliveryMode="commit"` afterward.
+- Retried the public PyPI `0.1.2` setup path in Chrome from an isolated
+  `uv tool install --refresh --no-cache` binary and temp `HOME`. The CLI
+  printed a `https://www.codealmanac.com/cli-login` approval URL, Chrome showed
+  `CLI login approved`, setup exited signed in as `rohans0509`, `whoami`
+  returned `Cloud: https://api.codealmanac.com`, and
+  `capture status --check-cloud --json` reached production successfully.
+- Confirmed the local machine still has stale PATH entries: plain
+  `codealmanac` resolves to the old Node binary at
+  `/Users/rohan/.nvm/versions/node/v21.7.3/bin/codealmanac` (`0.2.26`), and
+  `/Users/rohan/.local/bin/codealmanac` reports `0.1.0.dev0` without cloud
+  `setup`. Product verification should use a fresh `uv tool install` binary or
+  `uv run codealmanac` until PATH cleanup is done.
 
 ## 2026-07-02
 
