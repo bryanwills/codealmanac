@@ -481,18 +481,17 @@ repaired.
 
 ## Current Slice 69 Handoff
 
-- Do not chase WorkOS for the latest CLI issue. Chrome already verifies the
+- Do not chase WorkOS for the latest CLI issue. Chrome verifies the
   signed-in dashboard wiki route.
-- The concrete bug is public CLI `0.1.2`: `codealmanac open` prints
+- The concrete bug was public CLI `0.1.2`: `codealmanac open` printed
   `/wiki/github/AlmanacCode/codealmanac`, which is an obsolete cloud route.
-- Source `0.1.3` fixes this by resolving the current checkout through the cloud
+- Published CLI `0.1.3` fixes this by resolving the current checkout through the cloud
   repositories API, then opening
   `/dashboard/accounts/{account_id}/repositories/{repo_id}/wiki`.
-- Before calling Slice 69 complete, publish `0.1.3` to PyPI, reinstall with
-  `uv tool install --python 3.12 --upgrade --force --refresh codealmanac`, and
-  verify:
-  - `codealmanac --version` prints `0.1.3`
-  - `codealmanac open --no-browser` prints the dashboard wiki URL
-  - Chrome opens that URL without GitHub OAuth bounce
+- PyPI `0.1.3` is live. Fresh default install with
+  `uv tool install --python 3.12 --upgrade --force --refresh codealmanac`
+  installed `0.1.3`.
+- Installed `codealmanac open` opened Chrome to the dashboard wiki URL without
+  a GitHub OAuth bounce.
 - Keep the user-facing explanation short: old npm shadow was local and fixed;
   stale `open` route was public and fixed in `0.1.3`.

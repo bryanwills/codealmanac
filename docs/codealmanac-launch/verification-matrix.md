@@ -1355,3 +1355,11 @@ Known residue:
 - Full local gates passed:
   `uv run pytest` (`501 passed`), `uv run ruff check .`, `git diff --check`,
   `uv build --out-dir dist`, and `uvx twine check dist/*`.
+- GitHub Actions publish run `28659205416` passed and PyPI accepted
+  `codealmanac-0.1.3`.
+- Fresh default PyPI install passed:
+  `uv tool install --python 3.12 --upgrade --force --refresh codealmanac`
+  installed `0.1.3`.
+- Installed `codealmanac open` passed the browser contract: it opened Chrome to
+  the dashboard wiki URL, not the obsolete `/wiki/github/...` URL, and Chrome
+  rendered `AlmanacCode/codealmanac` with `Default branch / 62 pages`.

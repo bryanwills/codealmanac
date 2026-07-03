@@ -1939,3 +1939,15 @@
 - Source `codealmanac setup --yes --json` stayed cloud-only and idempotent:
   it reported `already_signed_in`, installed no local automation, and found the
   Codex and Claude instruction files already installed.
+- GitHub Actions publish run `28659205416` succeeded on `main` at
+  `21d3b988`; the workflow built and published
+  `codealmanac-0.1.3-py3-none-any.whl` and `codealmanac-0.1.3.tar.gz`.
+- PyPI exposed `0.1.3` through both the version-specific JSON endpoint and the
+  package latest JSON endpoint.
+- Fresh public install with
+  `uv tool install --python 3.12 --upgrade --force --refresh codealmanac`
+  installed `0.1.3`.
+- Installed `codealmanac open` opened
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/wiki`.
+  Chrome verified the signed-in wiki page with `AlmanacCode/codealmanac` and
+  `Default branch / 62 pages`.
