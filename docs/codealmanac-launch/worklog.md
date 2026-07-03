@@ -2057,3 +2057,31 @@
   `codealmanac --version` printed `0.1.5`, and
   `codealmanac setup --yes --skip-login --skip-instructions --json` returned
   cloud setup next commands without root automation fields.
+
+## Slice 73 Hosted Setup Copy
+
+- Chrome production retry found stale hosted setup copy: `/setup` still said
+  `codealmanac setup` asks before installing Claude/Codex capture.
+- Hosted frontend copy now mirrors published CLI `0.1.5`: `codealmanac setup`
+  signs in and installs Codex/Claude instruction files; source capture is the
+  separate explicit `codealmanac capture enable` command.
+- Updated `/setup`, `/dashboard/local-agent-access`, the account banner, and
+  repository readiness empty-capture text.
+- Route/component tests now assert the new setup/capture split and reject the
+  stale "setup installs capture" wording.
+- Verification passed:
+  - `npm run test:routes` (`28 passed`)
+  - `npm run test:frontend` (`52 passed`)
+  - `npm run lint`
+  - `npm run build`
+- Hosted commit `af0d7da0be82ccc226b2a4a76f58d9e794f71178` was pushed to
+  hosted `origin/codex/slice-73-onboarding-cli-copy` and hosted `origin/main`.
+- Vercel production deploy
+  `https://codealmanac-hosted-g4nbt7h36-thealmanac.vercel.app` completed and
+  was aliased to `https://www.codealmanac.com`.
+- Chrome verified production `/setup?smoke=slice73` contains the instruction
+  copy and `codealmanac capture enable`, and no longer contains stale setup
+  capture-install wording.
+- Chrome verified production
+  `/dashboard/local-agent-access?smoke=slice73` contains the same corrected
+  setup/capture split.

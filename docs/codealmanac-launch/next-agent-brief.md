@@ -14,13 +14,16 @@ cloud setup flow.
 
 ## Current Verified State
 
-- Hosted repo branch `codex/workos-authkit-api-foundation` and hosted `main`
-  both include `eb8dba042c80ed573ad53399f002126d2e14bc29`.
+- Hosted `main` includes
+  `af0d7da0be82ccc226b2a4a76f58d9e794f71178`.
 - Render service `srv-d8g8nb37uimc739vnnsg` is live on deploy
   `dep-d93pp0eq1p3s73cuomp0`.
 - Modal app `codealmanac-hosted-updates` was redeployed after `eb8dba0`.
-- Chrome verified signed-in production `/setup` and the production repository
-  dashboard for `AlmanacCode/codealmanac`.
+- Vercel production deploy
+  `https://codealmanac-hosted-g4nbt7h36-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`.
+- Chrome verified signed-in production `/setup`, `/dashboard/local-agent-access`,
+  and the production repository dashboard for `AlmanacCode/codealmanac`.
 - Fresh production branch push created run
   `773da5fb-9871-4f83-8797-ddf651c635ce`; it delivered with summary
   `No wiki changes made.`
@@ -559,3 +562,13 @@ repaired.
 - PyPI `0.1.5` is live from GitHub Actions publish run `28662835062`.
 - Fresh isolated public install of `codealmanac==0.1.5` passed, and installed
   setup JSON showed the cloud setup plan without root automation fields.
+
+## Current Slice 73 Handoff
+
+- Hosted `/setup` and `/dashboard/local-agent-access` now describe the same
+  public CLI contract shipped in `0.1.5`.
+- `codealmanac setup` signs in and installs Codex/Claude instruction files.
+- `codealmanac capture enable` is the explicit command for cloud source
+  capture.
+- Production Chrome verified stale setup-capture wording is gone from both
+  pages.

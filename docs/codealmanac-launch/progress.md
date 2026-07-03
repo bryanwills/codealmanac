@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 72 cloud setup CLI polish.
+Sent: 2026-07-03 after Slice 73 hosted setup copy deploy.
 
 Route:
 
@@ -19,19 +19,20 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: published CLI `0.1.5` setup is now cloud-first and no longer exposes
-local scheduled automation in the root setup path. Chrome also verified the
-production dashboard and `/setup` route as signed-in `rohans0509`.
+Note: hosted production now matches published CLI `0.1.5`: `codealmanac setup`
+does cloud login plus agent instructions, and capture is the separate explicit
+`codealmanac capture enable` step. Chrome verified `/setup` and
+`/dashboard/local-agent-access` on `https://www.codealmanac.com`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | Local/backend unchanged in Slice 72; root setup no longer leaks local scheduler concepts. |
-| CodeAlmanac CLI/public UX | 100% | 99% | Published CLI `0.1.5` renders the bannered cloud setup flow, rejects old scheduler fields, and points to cloud/capture/repo/open next commands. |
-| CodeAlmanac-hosted backend/auth/API | 100% | 100% | Unchanged in Slice 72; live trigger path was already verified in Slice 71. |
-| Hosted frontend/onboarding | 98% | 98% | Chrome verified production `/setup`, connected GitHub account state, repository dashboard, and activity feed. |
-| Infra/deploy rename | 99% | 99% | Render is live on `eb8dba0`; Modal app `codealmanac-hosted-updates` is redeployed; Vercel frontend unchanged. |
+| CodeAlmanac backend/local | 96% | 96% | Local/backend unchanged in Slice 73. |
+| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.5` remains the source of truth for setup/capture commands. |
+| CodeAlmanac-hosted backend/auth/API | 100% | 100% | Unchanged in Slice 73; live trigger path was already verified in Slice 71. |
+| Hosted frontend/onboarding | 99% | 98% | Production setup and CLI guide copy now match the public CLI; Chrome verified stale setup-capture wording is gone. |
+| Infra/deploy rename | 99% | 99% | Hosted frontend deployed to Vercel production at `af0d7da` and aliased to `https://www.codealmanac.com`. |
 
 ## Update Rule
 

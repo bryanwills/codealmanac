@@ -1454,3 +1454,23 @@ Known residue:
   - installed `codealmanac --version` printed `0.1.5`
   - installed `codealmanac setup --yes --skip-login --skip-instructions --json`
     returned the cloud setup plan without root automation fields
+
+## Slice 73 Hosted Setup Copy
+
+- Hosted frontend production copy now matches the published CLI contract:
+  `codealmanac setup` is cloud login plus Codex/Claude instructions, while
+  `codealmanac capture enable` is the explicit source-capture step.
+- Local verification passed:
+  - `npm run test:routes` (`28 passed`)
+  - `npm run test:frontend` (`52 passed`)
+  - `npm run lint`
+  - `npm run build`
+- Hosted commit `af0d7da0be82ccc226b2a4a76f58d9e794f71178` is on hosted
+  `origin/main`.
+- Vercel production deployment
+  `https://codealmanac-hosted-g4nbt7h36-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`.
+- Chrome verified both `/setup?smoke=slice73` and
+  `/dashboard/local-agent-access?smoke=slice73` contain
+  `codealmanac capture enable` and do not contain stale setup-capture install
+  wording.
