@@ -216,6 +216,23 @@ Current evidence:
   returned `{"status":"ok"}`;
   `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
   (`76 passed, 1 warning`) and `uv run ruff check .`.
+- Slice 61 hardened GitHub webhook intake against provider schema drift.
+  `services/github` now routes parsing by `X-GitHub-Event`; unsupported event
+  families stay ignored even when their payload includes `repository` or
+  `installation` objects.
+- Slice 61 corrected installation actions to GitHub's schema names:
+  `suspend` and `unsuspend`. The old `suspended` and `unsuspended` strings are
+  ignored.
+- Slice 61 changed `installation_repositories.added` and `.removed` messages to
+  carry parent account and installation snapshots. Identity fanout upserts those
+  parents before repository fanout syncs repository scope.
+- Slice 61 hosted verification passed: focused webhook/fanout tests
+  (`23 passed`), adjacent repository/update tests (`55 passed`), full backend
+  suite (`370 passed, 1 warning`), `uv run ruff check .`, Render deploy
+  `dep-d93lvet7vvec73fpsag0` live on commit `c9b0da1`, backend health
+  `{"status":"ok"}`, and production signed-webhook smoke persisted
+  `smoke-slice61-1783062568` as `event=check_run`, `action=requested_action`,
+  `status=ignored`.
 
 ## CodeAlmanac Local Repo
 

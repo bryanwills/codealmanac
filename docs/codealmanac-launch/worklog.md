@@ -56,6 +56,29 @@
   maintained branches, and delivery controls.
 - Render logs after the live deploy showed fresh
   `GET /api/capture/status HTTP/1.1` requests returning `200 OK`.
+- Planned Slice 61 in hosted
+  `docs/plans/2026-07-03-slice-61-github-webhook-contract-hardening.md`.
+- Hardened hosted GitHub webhook intake so parsing is routed by
+  `X-GitHub-Event`, not guessed from payload shape.
+- Corrected GitHub installation actions to `suspend` and `unsuspend`. The old
+  non-schema `suspended` and `unsuspended` strings are now ignored.
+- Split `installation_repositories.added` and `.removed` into their own event
+  family mapper.
+- Changed installation repository delta messages to carry parent account and
+  installation snapshots so identity fanout can upsert parent rows before
+  repository fanout syncs repository scope.
+- Verified Slice 61 with hosted backend focused tests
+  `tests/test_github_service_contract.py tests/test_installations_contract.py`
+  (`23 passed`), adjacent repository/update tests (`55 passed`), full backend
+  suite (`370 passed, 1 warning`), and `uv run ruff check .`.
+- Pushed hosted commit
+  `c9b0da10cad6f21f28fce72eabebcb7fde38f7a4 fix(github): route webhooks by event contract`
+  to `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Render deployed hosted commit `c9b0da1` live as deploy
+  `dep-d93lvet7vvec73fpsag0`; backend health returned `{"status":"ok"}`.
+- Production signed-webhook smoke posted a synthetic `check_run` delivery and
+  the DB recorded it as `event=check_run`, `action=requested_action`,
+  `status=ignored`.
 
 ## 2026-07-02
 

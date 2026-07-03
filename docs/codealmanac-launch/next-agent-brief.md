@@ -144,6 +144,18 @@ Slice 60 repairs capture-token schema drift in production:
   and Render logs show fresh `/api/capture/status` `200 OK` entries
 - hosted focused tests and ruff passed for the slice
 
+Slice 61 hardens GitHub webhook intake:
+
+- webhook parsing now routes by `X-GitHub-Event`, not payload shape
+- `installation.suspend` and `installation.unsuspend` match GitHub schema
+- `installation_repositories.added` and `.removed` are parsed as their own
+  event family
+- repository delta messages carry parent account and installation snapshots
+- identity fanout upserts those parent rows before repository fanout syncs
+  repository scope
+- production signed-webhook smoke recorded a synthetic `check_run` delivery as
+  `ignored`, proving unsupported event-header routing is live
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -167,14 +179,14 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 60 artifact commit:
-  `5220adf8de537111beb7383761cfe82eb87b0a38`
+- current Slice 61 artifact commit:
+  `c9b0da10cad6f21f28fce72eabebcb7fde38f7a4`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `5220adf8de537111beb7383761cfe82eb87b0a38`
+  `c9b0da10cad6f21f28fce72eabebcb7fde38f7a4`
 - production frontend: `https://www.codealmanac.com`
 - hosted main has setup/auth hardening, route-test guardrails, cloud setup
   checklist, production WorkOS identity schema repair, and capture-token
-  storage repair through `5220adf`.
+  storage repair plus GitHub webhook event-header routing through `c9b0da1`.
 
 The local wiki command currently fails on this checkout with:
 
@@ -254,6 +266,12 @@ repaired.
   `5220adf`, signed-in production repository settings loads in Chrome, Render
   logs show post-deploy `/api/capture/status` `200 OK`, hosted focused tests
   reported `76 passed`, and hosted ruff passed.
+- Slice 61 hosted verification passed: focused webhook/fanout tests
+  (`23 passed`), adjacent repository/update tests (`55 passed`), full hosted
+  backend suite (`370 passed, 1 warning`), hosted ruff, Render deploy
+  `dep-d93lvet7vvec73fpsag0` live on commit `c9b0da1`, backend health
+  `{"status":"ok"}`, and production signed-webhook smoke persisted a synthetic
+  `check_run` delivery as `ignored`.
 
 ## Next Pressure Tests
 
