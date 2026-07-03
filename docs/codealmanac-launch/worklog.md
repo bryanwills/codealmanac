@@ -41,6 +41,14 @@
   - `uv run pytest` (`508 passed`)
   - `uv run ruff check .`
   - `git diff --check`
+- Published `codealmanac` `0.1.8` to PyPI through GitHub Actions run
+  `28671661249`. The run passed full tests, lint, diff hygiene, build, Twine
+  checks, artifact upload, and PyPI upload.
+- Fresh public install smoke passed after waiting for PyPI index propagation:
+  `uv tool install --python 3.12 --refresh --no-cache --force
+  codealmanac==0.1.8`. The installed binary returned version `0.1.8`, showed
+  root `status` in cloud-first help, and rendered signed-out human and JSON
+  `codealmanac status` output.
 
 ## 2026-07-03 Slice 77: CLI launch surface polish
 

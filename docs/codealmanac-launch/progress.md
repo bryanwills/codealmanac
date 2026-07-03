@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 77 CLI launch-surface publish and smoke.
+Sent: 2026-07-03 after Slice 78 root status publish and smoke.
 
 Route:
 
@@ -19,19 +19,19 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Published CLI `0.1.7` makes root help cloud-first, hides stale root
-compatibility entrypoints, keeps `setup --yes` from silently opening a browser,
-and uses the OpenAlmanac-style setup output. Chrome verified the live
-production CLI-login loop and `/setup` page from an isolated temp `HOME`.
-Fresh public PyPI install smoke passed after bypassing the immediate resolver
-cache with `--no-cache`.
+Published CLI `0.1.8` adds root `codealmanac status` as the one-command
+cloud diagnostic for identity, current checkout repository, triggers, and
+capture state. GitHub Actions publish run `28671661249` passed full tests,
+lint, diff hygiene, build, Twine checks, artifact upload, and PyPI upload.
+Fresh public PyPI install smoke passed after index propagation with
+`--no-cache`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
 | CodeAlmanac backend/local | 97% | 97% | No local engine change in Slice 77; previous full suite passed with the repo-list service/workflow additions. |
-| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.7` passed public install smoke, root help/setup output smoke, and Chrome verified CLI login plus repo status against production. |
+| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.8` passed public install smoke; root `status` now reports cloud identity, current repo, trigger count, and capture state. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |
 | Infra/deploy rename | 99% | 99% | Hosted frontend deployed to Vercel production at `bff009b` and aliased to `https://www.codealmanac.com`. |
