@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 69 CLI open-route fix.
+Sent: 2026-07-03 after Slice 70 CLI open fallback publish.
 
 Route:
 
