@@ -2362,3 +2362,25 @@
 - The same clean Chrome setup `HOME` passed production CLI smoke:
   `codealmanac whoami`, `codealmanac repo list`, `codealmanac repo status`, and
   `codealmanac capture status`.
+
+## 2026-07-03 Provider Target Correction And Refactor Audit
+
+- Verified canonical Vercel project `thealmanac/codealmanac-hosted` exists.
+- Corrected the clean hosted frontend checkout's Vercel link from the accidental
+  `frontend` project back to `codealmanac-hosted`.
+- Deployed Vercel production and confirmed `https://www.codealmanac.com` serves
+  deployment `dpl_BNAWQDiWydrtXUXfM1D4f61FiwCB`.
+- Verified `https://api.codealmanac.com/api/health` returns `{"status":"ok"}`.
+- Confirmed Modal app `codealmanac-hosted-updates` is the hosted update worker.
+- Updated hosted `backend/modal_app/runtime.py` so the Modal image installs the
+  current `codealmanac` git SHA.
+- Deployed Modal with Doppler-backed production secrets. Modal image logs
+  showed `codealmanac 0.1.9`.
+- Modal smoke command completed through `modal_app/dev.py::smoke`.
+- Hosted commit `cbe7ba5 fix(modal): run current codealmanac engine` was pushed
+  to hosted `origin/main`.
+- Created `docs/refactor-audit-2026-07-03-hosted-local-architecture/` with
+  source map, research notes, target architecture, roadmap, and worklog.
+- Refactor direction captured there: hosted should split into
+  `web / worker / domains / events / integrations`; local should split into
+  `cloud / local / wiki / engine / integrations`.

@@ -15,12 +15,15 @@ cloud setup flow.
 ## Current Verified State
 
 - Hosted `main` includes
-  `bff009bf7181b32a13a89aaf16aa683837207b09`.
+  `cbe7ba5 fix(modal): run current codealmanac engine`.
 - Render service `srv-d8g8nb37uimc739vnnsg` is live on deploy
   `dep-d93s4im7r5hc73c8hh00`.
-- Modal app `codealmanac-hosted-updates` was redeployed after `eb8dba0`.
-- Vercel production deploy
-  `https://codealmanac-hosted-jgak4853w-thealmanac.vercel.app` is aliased to
+- Modal app `codealmanac-hosted-updates` was redeployed after updating
+  `CODEALMANAC_GIT_REF` to the current `codealmanac` SHA. Modal image logs
+  showed `codealmanac 0.1.9`.
+- Vercel production is linked to project `thealmanac/codealmanac-hosted`.
+  Production deployment
+  `https://codealmanac-hosted-mad8d5dhz-thealmanac.vercel.app` is aliased to
   `https://www.codealmanac.com`.
 - Chrome verified signed-in production `/setup`, `/dashboard/local-agent-access`,
   and the production repository dashboard for `AlmanacCode/codealmanac`.
@@ -68,6 +71,11 @@ cloud setup flow.
 - The old conversation-batch run
   `aeb55370-cbdd-4ded-af6a-5e0e22f0ef0a` still appears `running` from a stale
   pre-fix Modal worker image.
+- Refactor audit notes now live in
+  `docs/refactor-audit-2026-07-03-hosted-local-architecture/`. The proposed
+  direction is product-area-first: hosted becomes
+  `web / worker / domains / events / integrations`; local becomes
+  `cloud / local / wiki / engine / integrations`.
 
 ## Last Completed Work
 

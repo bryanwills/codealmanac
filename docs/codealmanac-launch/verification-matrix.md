@@ -1602,3 +1602,25 @@ Known residue:
   `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`.
   The page rendered the new readiness actions, missing-capture CLI handoff,
   per-branch delivery controls, and had no console errors.
+
+## 2026-07-03 Provider Target Correction
+
+- Vercel project target verified:
+  `vercel project ls --scope thealmanac` showed project
+  `codealmanac-hosted`.
+- Vercel local link corrected:
+  `.vercel/project.json` now points to project name `codealmanac-hosted`.
+- Vercel production deploy completed:
+  `https://codealmanac-hosted-mad8d5dhz-thealmanac.vercel.app` aliased to
+  `https://www.codealmanac.com`.
+- Production HTML smoke showed deployment id
+  `dpl_BNAWQDiWydrtXUXfM1D4f61FiwCB`.
+- Backend health smoke passed:
+  `curl -fsS https://api.codealmanac.com/api/health` returned
+  `{"status":"ok"}`.
+- Modal app list showed `codealmanac-hosted-updates` deployed.
+- Hosted Modal worker was redeployed through Doppler-backed Modal CLI after
+  updating the pinned `codealmanac` git SHA.
+- Modal image build logs showed `codealmanac 0.1.9`.
+- Modal smoke command completed:
+  `doppler run --project codealmanac --config prd -- uv run modal run modal_app/dev.py::smoke`.

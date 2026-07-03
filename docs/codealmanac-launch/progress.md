@@ -26,6 +26,18 @@ install smoke passed with `--refresh --no-cache`: root uninstall no longer
 shows `--keep-automation` or automation JSON fields, and explicit
 `codealmanac automation uninstall` remains available.
 
+## Latest Local Notes
+
+2026-07-03 provider correction:
+
+- Vercel production was re-linked to project `thealmanac/codealmanac-hosted`
+  and redeployed. `https://www.codealmanac.com` now serves deployment
+  `dpl_BNAWQDiWydrtXUXfM1D4f61FiwCB`.
+- Hosted Modal app `codealmanac-hosted-updates` was redeployed with the current
+  `codealmanac` git SHA. Modal image logs showed `codealmanac 0.1.9`.
+- Architecture cleanup notes now live under
+  `docs/refactor-audit-2026-07-03-hosted-local-architecture/`.
+
 ## Percentages
 
 | Area | Latest | Previous | Basis |
@@ -34,7 +46,7 @@ shows `--keep-automation` or automation JSON fields, and explicit
 | CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |
-| Infra/deploy rename | 99% | 99% | Hosted frontend deployed to Vercel production at `bff009b` and aliased to `https://www.codealmanac.com`. |
+| Infra/deploy rename | 100% | 99% | Vercel now targets `thealmanac/codealmanac-hosted`, Render health is live, and Modal `codealmanac-hosted-updates` was redeployed with current `codealmanac` `0.1.9` engine logs. |
 
 ## Update Rule
 
