@@ -2,6 +2,45 @@
 
 ## 2026-07-03
 
+## 2026-07-03 Slice 76: Hosted repository settings UX
+
+- Planned Slice 76 in
+  `docs/plans/2026-07-03-slice-76-hosted-settings-ux.md`.
+- Aligned the hosted frontend `RepositoryListItemDTO` with the backend DTO:
+  repository list items now carry `repoId`, `accountId`, `fullName`, and
+  `defaultBranch`.
+- Updated the design-lab Atlas mock data so it mirrors the live repository-list
+  DTO instead of the stale `repoId + fullName` shape.
+- Polished repository readiness copy:
+  - `GitHub settings` is the GitHub App configuration action.
+  - `CLI guide` is the machine setup handoff.
+  - Missing capture now says `Setup needed` and points to
+    `codealmanac capture enable` after CLI setup, without implying browser-side
+    hook installation.
+- Polished maintained-branch rows so each branch policy shows branch name,
+  default/SHA detail, `Maintained` or `Ignored`, and an explicit per-branch
+  delivery selector.
+- Local hosted frontend verification passed with bundled Node `v24.14.0`:
+  - `npm run test:frontend` (`52 passed`)
+  - `npm run test:routes` (`28 passed`)
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+- Hosted commit `bff009bf7181b32a13a89aaf16aa683837207b09` was pushed to
+  hosted `origin/codex/slice-74-github-rate-limit` and hosted `origin/main`.
+- Vercel production deployment
+  `https://codealmanac-hosted-jgak4853w-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`.
+- Chrome verified the live production settings page at
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`.
+  The page rendered `Repository readiness`, `GitHub settings`, `CLI guide`,
+  `Run codealmanac capture enable after CLI setup.`, branch rows with
+  `Commit` / `Pull request`, and no console errors.
+- The first `npm run test:frontend` failed before reaching code because this
+  worktree had no `node_modules`; `npm ci` installed dependencies from
+  `package-lock.json`. Subsequent gates used the bundled Node runtime because
+  the shell's Node `v21.7.3` is below the WorkOS/Next engine requirement.
+
 - Planned Slice 59 in
   `docs/plans/2026-07-02-slice-59-cli-auth-setup-contract.md`.
 - Made root `codealmanac setup` cloud-first only. It no longer exposes

@@ -15,15 +15,20 @@ cloud setup flow.
 ## Current Verified State
 
 - Hosted `main` includes
-  `af0d7da0be82ccc226b2a4a76f58d9e794f71178`.
+  `bff009bf7181b32a13a89aaf16aa683837207b09`.
 - Render service `srv-d8g8nb37uimc739vnnsg` is live on deploy
-  `dep-d93pp0eq1p3s73cuomp0`.
+  `dep-d93s4im7r5hc73c8hh00`.
 - Modal app `codealmanac-hosted-updates` was redeployed after `eb8dba0`.
 - Vercel production deploy
-  `https://codealmanac-hosted-g4nbt7h36-thealmanac.vercel.app` is aliased to
+  `https://codealmanac-hosted-jgak4853w-thealmanac.vercel.app` is aliased to
   `https://www.codealmanac.com`.
 - Chrome verified signed-in production `/setup`, `/dashboard/local-agent-access`,
   and the production repository dashboard for `AlmanacCode/codealmanac`.
+- Chrome verified signed-in production repository settings at
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`
+  after the Slice 76 Vercel deployment. The page shows repository readiness,
+  GitHub settings, CLI guide, capture handoff, branch rows, delivery controls,
+  and no console errors.
 - Fresh production branch push created run
   `773da5fb-9871-4f83-8797-ddf651c635ce`; it delivered with summary
   `No wiki changes made.`
@@ -572,3 +577,20 @@ repaired.
   capture.
 - Production Chrome verified stale setup-capture wording is gone from both
   pages.
+
+## Current Slice 76 Handoff
+
+- Hosted repository settings now match the cloud setup model:
+  GitHub App access, explicit capture handoff, maintained branches, and
+  per-branch delivery.
+- Repository list DTOs now carry `repoId`, `accountId`, `fullName`, and
+  `defaultBranch` on both backend and frontend surfaces.
+- Production Vercel deploy
+  `https://codealmanac-hosted-jgak4853w-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`.
+- Chrome verified the signed-in production settings page for
+  `AlmanacCode/codealmanac`; it rendered the new copy and controls with no
+  console errors.
+- Next useful work is not another settings-copy slice. Prefer either real
+  GitHub App onboarding/install-path pressure testing or the larger codebase
+  sharpening pass Rohan requested.

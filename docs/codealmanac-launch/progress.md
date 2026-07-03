@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 75 cloud repo-list release verification.
+Sent: 2026-07-03 after Slice 76 hosted repository-settings UX verification.
 
 Route:
 
@@ -20,18 +20,18 @@ doppler run --project almanac --config dev -- \
 ```
 
 Published CLI `0.1.6` includes the canonical `codealmanac repo list` command,
-production `/v1/repositories` works, and Chrome verified fresh setup from a
-clean `HOME`.
+production `/v1/repositories` works, and Chrome verified the live hosted
+repository settings page after the Vercel deployment.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 97% | 96% | Full local suite passed with the repo-list service/workflow additions. |
-| CodeAlmanac CLI/public UX | 100% | 98% | Published CLI `0.1.6` setup/whoami/repo list/repo status/capture status passed against production from a clean Chrome-approved HOME. |
+| CodeAlmanac backend/local | 97% | 97% | No local engine change in Slice 76; previous full suite passed with the repo-list service/workflow additions. |
+| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.6` setup/whoami/repo list/repo status/capture status passed against production from a clean Chrome-approved HOME. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
-| Hosted frontend/onboarding | 99% | 98% | Production setup and CLI guide copy now match the public CLI; Chrome verified stale setup-capture wording is gone. |
-| Infra/deploy rename | 99% | 99% | Hosted frontend deployed to Vercel production at `af0d7da` and aliased to `https://www.codealmanac.com`. |
+| Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |
+| Infra/deploy rename | 99% | 99% | Hosted frontend deployed to Vercel production at `bff009b` and aliased to `https://www.codealmanac.com`. |
 
 ## Update Rule
 

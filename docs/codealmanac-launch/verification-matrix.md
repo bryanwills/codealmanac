@@ -1525,3 +1525,34 @@ Known residue:
   `/cli-login` page rendered `CLI login approved`, the terminal saved the CLI
   token, and the same clean `HOME` passed `whoami`, `repo list`, `repo status`,
   and `capture status` against production.
+
+## Slice 76 Hosted Repository Settings UX
+
+- Frontend repository-list DTO parity:
+  `frontend/src/lib/api/dto/repositories.ts` now mirrors backend
+  `RepositoryListItemDTO` with `repoId`, `accountId`, `fullName`, and
+  `defaultBranch`.
+- Design-lab mock parity:
+  `frontend/src/app/design-lab/_experiments/atlas/mock.ts` now satisfies the
+  same DTO shape, so preview data cannot teach stale list fields.
+- Repository readiness summary:
+  missing capture renders `Setup needed`, links to the CLI guide, and says
+  `Run codealmanac capture enable after CLI setup`.
+- Maintained branch settings:
+  each branch row renders branch identity, `Maintained` / `Ignored`, and a
+  labelled per-branch delivery selector.
+- Local hosted frontend verification passed with bundled Node `v24.14.0`:
+  - `npm run test:frontend` (`52 passed`)
+  - `npm run test:routes` (`28 passed`)
+  - `npm run lint`
+  - `npm run build`
+  - `git diff --check`
+- Hosted commit `bff009bf7181b32a13a89aaf16aa683837207b09` is on hosted
+  `origin/main`.
+- Vercel production deployment
+  `https://codealmanac-hosted-jgak4853w-thealmanac.vercel.app` is aliased to
+  `https://www.codealmanac.com`.
+- Chrome verified signed-in production repository settings at
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`.
+  The page rendered the new readiness actions, missing-capture CLI handoff,
+  per-branch delivery controls, and had no console errors.
