@@ -11,10 +11,14 @@ sources:
     type: file
     path: docs/plans/2026-07-03-slice-85-job-ledger-naming.md
     note: Records the accepted Slice 85 boundary: lifecycle records are jobs, cloud/local trigger executions remain runs.
+  - id: slice-86-plan
+    type: file
+    path: docs/plans/2026-07-03-slice-86-engine-runs-and-workspaces.md
+    note: Records the accepted Slice 86 boundary: engine request/result artifacts and detached workspaces are engine-owned runtime infrastructure.
   - id: app-composition
     type: file
     path: src/codealmanac/app.py
-    note: Wires `JobLedgerService` and `JobQueueWorkflow` through the composition root as `app.jobs` and `app.workflows.queue`.
+    note: Wires `JobLedgerService`, `JobQueueWorkflow`, and the `CodeAlmanacEngine` facade through the composition root.
   - id: job-models
     type: file
     path: src/codealmanac/jobs/ledger/models.py
@@ -59,6 +63,14 @@ sources:
     type: file
     path: src/codealmanac/local/runs/
     note: Shows branch-triggered local control-plane executions keep the run noun outside the repo-local lifecycle job ledger.
+  - id: engine-runs
+    type: file
+    path: src/codealmanac/engine/runs/
+    note: Owns file-backed engine request and result artifacts under the engine package.
+  - id: engine-workspaces
+    type: file
+    path: src/codealmanac/engine/workspaces/
+    note: Owns detached per-run engine workspace paths and the Git worktree port.
   - id: engine-run-ids
     type: file
     path: src/codealmanac/engine/run_ids.py
@@ -73,7 +85,7 @@ verified: 2026-07-03
 
 # Lifecycle Job Ledger
 
-Repo-local lifecycle work in the Python codebase is a job ledger, not a run subsystem. `init`, `ingest`, `garden`, and sync-started ingest work produce `JobRecord` entries with `job_id` values, event logs, durable queued specs, cancellation, attach streaming, and worker locking under `src/codealmanac/jobs/`. Cloud runs and branch-triggered local control-plane runs remain separate concepts under `src/codealmanac/cloud/runs/` and `src/codealmanac/local/runs/`. [@slice-85-plan] [@job-models] [@cloud-runs] [@local-runs]
+Repo-local lifecycle work in the Python codebase is a job ledger, not a run subsystem. `init`, `ingest`, `garden`, and sync-started ingest work produce `JobRecord` entries with `job_id` values, event logs, durable queued specs, cancellation, attach streaming, and worker locking under `src/codealmanac/jobs/`. Cloud runs and branch-triggered local control-plane runs remain separate concepts under `src/codealmanac/cloud/runs/` and `src/codealmanac/local/runs/`. Engine run artifacts and engine workspaces are a third runtime-infrastructure domain under `src/codealmanac/engine/`, exposed through `app.engine`. [@slice-85-plan] [@slice-86-plan] [@job-models] [@cloud-runs] [@local-runs] [@engine-runs] [@engine-workspaces]
 
 The page slug is historical. Treat this page as the current home for lifecycle jobs, not as evidence that new repo-local lifecycle code should use run-shaped names.
 
@@ -83,7 +95,15 @@ The page slug is historical. Treat this page as the current home for lifecycle j
 
 The composition root wires `JobLedgerService` as `app.jobs` and passes that service to the viewer, init, ingest, garden, page-run workflow, sync workflow, and queue workflow. There is no current `app.runs` facade for this repo-local lifecycle surface. [@app-composition]
 
-The run noun is still correct for two other domains. Cloud runs are hosted or cloud-parallel executions started through `codealmanac runs ...`; local runs are trigger-created branch executions managed by the local control plane. Engine run artifacts are request/result material for one engine execution and now validate their IDs through `src/codealmanac/engine/run_ids.py`, so engine storage does not import local control-plane ID types. [@cloud-runs] [@local-runs] [@engine-run-ids]
+The run noun is still correct for three other domains. Cloud runs are hosted or cloud-parallel executions started through `codealmanac runs ...`; local runs are trigger-created branch executions managed by the local control plane; engine runs are request/result material for one model-worker execution. Engine run artifacts validate IDs through `src/codealmanac/engine/run_ids.py`, so engine storage does not import local control-plane ID types. [@cloud-runs] [@local-runs] [@engine-runs] [@engine-run-ids]
+
+## Engine Runtime Boundary
+
+`CodeAlmanacEngine` is the composition-root facade for reusable model-runtime services: harnesses, source discovery, source bundles, engine run artifacts, and engine workspaces. Local branch-triggered workflows call `app.engine.runs` and `app.engine.workspaces`; they do not own the request/result file format or the detached worktree layout. [@slice-86-plan] [@app-composition]
+
+`src/codealmanac/engine/runs/` owns the `request.json` and `result.json` artifacts under `~/.codealmanac/runs/<run-id>/`. `src/codealmanac/engine/workspaces/` owns the per-run workspace layout under `~/.codealmanac/workspaces/<run-id>/`, including `repo/`, `sources/`, and `run/`, plus the service contract for preparing and removing detached workspaces. Git subprocess mechanics stay in the Git integration behind the `GitWorktreeManager` port. [@engine-runs] [@engine-workspaces] [@architecture-tests]
+
+This boundary is why `src/codealmanac/local/runs/` still exists after Slice 86. Local runs coordinate trigger claiming, local engine execution, delivery, status, and worker orchestration; the engine package owns reusable runtime artifacts and workspace mechanics that a local or hosted worker can share. [@slice-86-plan] [@local-runs] [@app-composition]
 
 ## Storage
 
@@ -116,6 +136,6 @@ The public CLI name is `codealmanac`. The lifecycle jobs inspection surface is t
 
 ## Naming Rule
 
-Use `job` for repo-local lifecycle records, queue entries, logs, specs, locks, and inspection APIs. Use `run` for cloud executions, branch-triggered local control-plane executions, and engine execution artifacts only when the owning package is one of those run domains.
+Use `job` for repo-local lifecycle records, queue entries, logs, specs, locks, and inspection APIs. Use `run` for cloud executions, branch-triggered local control-plane executions, and engine execution artifacts only when the owning package is one of those run domains. Use `engine workspace` for detached model-worker worktrees; avoid reviving `worker_workspaces` as a package or public mental model.
 
-This distinction is architectural, not cosmetic. It prevents future agents from comparing the local wiki maintenance ledger with hosted/cloud delivery runs as if they were the same product object. [@slice-85-plan]
+This distinction is architectural, not cosmetic. It prevents future agents from comparing the local wiki maintenance ledger with hosted/cloud delivery runs as if they were the same product object, and it keeps model-runtime infrastructure out of the local control-plane package. [@slice-85-plan] [@slice-86-plan]
