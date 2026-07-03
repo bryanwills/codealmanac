@@ -10,6 +10,7 @@ def test_cli_workflows_and_services_do_not_import_integrations():
         SRC_ROOT / "cli",
         SRC_ROOT / "cloud",
         SRC_ROOT / "engine",
+        SRC_ROOT / "local",
         SRC_ROOT / "wiki",
         SRC_ROOT / "workflows",
         SRC_ROOT / "services",
@@ -37,7 +38,7 @@ def test_database_package_owns_sqlite_imports():
 
 
 def test_control_service_keeps_schema_store_service_boundaries():
-    control_root = SRC_ROOT / "services/control"
+    control_root = SRC_ROOT / "local/control"
     service_text = (control_root / "service.py").read_text(encoding="utf-8")
     store_text = (control_root / "store.py").read_text(encoding="utf-8")
     schema_text = (control_root / "schema.py").read_text(encoding="utf-8")
@@ -63,7 +64,7 @@ def test_control_service_keeps_schema_store_service_boundaries():
 
 
 def test_engine_runs_service_keeps_worker_contract_boundary():
-    engine_root = SRC_ROOT / "services/engine_runs"
+    engine_root = SRC_ROOT / "local/runs/artifacts"
     module_names = {path.name for path in engine_root.glob("*.py")}
     models_text = (engine_root / "models.py").read_text(encoding="utf-8")
     service_text = (engine_root / "service.py").read_text(encoding="utf-8")
@@ -85,8 +86,8 @@ def test_engine_runs_service_keeps_worker_contract_boundary():
     assert "result.json" in store_text
     assert "connection.execute" not in store_text
     assert "codealmanac.cli" not in service_text
-    assert "codealmanac.services.control" not in service_text
-    assert "codealmanac.services.control" not in store_text
+    assert "codealmanac.local.control" not in service_text
+    assert "codealmanac.local.control" not in store_text
 
 
 def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
@@ -135,12 +136,12 @@ def test_source_bundles_service_keeps_bundle_materialization_boundary():
     assert "manifest.json" in store_text
     assert "shutil.copyfile" in store_text
     assert "connection.execute" not in store_text
-    assert "codealmanac.services.control" not in store_text
+    assert "codealmanac.local.control" not in store_text
     assert "codealmanac.cli" not in service_text
 
 
 def test_deliveries_service_keeps_ledger_boundary():
-    deliveries_root = SRC_ROOT / "services/deliveries"
+    deliveries_root = SRC_ROOT / "local/delivery/ledger"
     module_names = {path.name for path in deliveries_root.glob("*.py")}
     service_text = (deliveries_root / "service.py").read_text(encoding="utf-8")
     store_text = (deliveries_root / "store.py").read_text(encoding="utf-8")
@@ -162,7 +163,7 @@ def test_deliveries_service_keeps_ledger_boundary():
 
 
 def test_local_delivery_workflow_keeps_git_mechanics_in_integration():
-    workflow_root = SRC_ROOT / "workflows/local_delivery"
+    workflow_root = SRC_ROOT / "local/delivery/execution"
     git_delivery = SRC_ROOT / "integrations/workspaces/git/delivery.py"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     ports_text = (workflow_root / "ports.py").read_text(encoding="utf-8")
@@ -189,7 +190,7 @@ def test_local_delivery_workflow_keeps_git_mechanics_in_integration():
 
 
 def test_local_setup_workflow_keeps_git_detection_in_integration():
-    workflow_root = SRC_ROOT / "workflows/local_setup"
+    workflow_root = SRC_ROOT / "local/setup"
     git_repository = SRC_ROOT / "integrations/workspaces/git/repository.py"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     ports_text = (workflow_root / "ports.py").read_text(encoding="utf-8")
@@ -314,8 +315,60 @@ def test_wiki_package_owns_wiki_read_model_surface():
     assert all(not any(root.glob("*.py")) for root in forbidden_roots)
 
 
+def test_local_package_owns_local_control_plane_surface():
+    local_root = SRC_ROOT / "local"
+    forbidden_roots = (
+        SRC_ROOT / "services/control",
+        SRC_ROOT / "services/deliveries",
+        SRC_ROOT / "services/engine_runs",
+        SRC_ROOT / "services/local_hooks",
+        SRC_ROOT / "workflows/local_delivery",
+        SRC_ROOT / "workflows/local_engine",
+        SRC_ROOT / "workflows/local_jobs",
+        SRC_ROOT / "workflows/local_policy",
+        SRC_ROOT / "workflows/local_runs",
+        SRC_ROOT / "workflows/local_setup",
+        SRC_ROOT / "workflows/local_status",
+        SRC_ROOT / "workflows/local_update",
+        SRC_ROOT / "workflows/local_worker",
+    )
+
+    assert {
+        "control",
+        "delivery",
+        "hooks",
+        "policies",
+        "runs",
+        "setup",
+        "status",
+        "update",
+    } <= {path.name for path in local_root.iterdir() if path.is_dir()}
+    assert {
+        "execution",
+        "ledger",
+    } <= {path.name for path in (local_root / "delivery").iterdir() if path.is_dir()}
+    assert {
+        "artifacts",
+        "execution",
+        "jobs",
+        "preparation",
+        "worker",
+    } <= {path.name for path in (local_root / "runs").iterdir() if path.is_dir()}
+    assert all(not any(root.glob("*.py")) for root in forbidden_roots)
+
+
+def test_app_exposes_local_control_plane_facade():
+    app_text = (SRC_ROOT / "app.py").read_text(encoding="utf-8")
+
+    assert "class CodeAlmanacLocal" in app_text
+    assert "local: CodeAlmanacLocal" in app_text
+    assert "local = CodeAlmanacLocal(" in app_text
+    assert "run_preparation=local_runs" in app_text
+    assert "delivery=local_delivery" in app_text
+
+
 def test_local_run_preparation_workflow_only_orchestrates_services():
-    workflow_root = SRC_ROOT / "workflows/local_runs"
+    workflow_root = SRC_ROOT / "local/runs/preparation"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     module_names = {path.name for path in workflow_root.glob("*.py")}
 
@@ -337,7 +390,7 @@ def test_local_run_preparation_workflow_only_orchestrates_services():
 
 
 def test_local_engine_workflow_only_runs_harness_and_records_artifacts():
-    workflow_root = SRC_ROOT / "workflows/local_engine"
+    workflow_root = SRC_ROOT / "local/runs/execution"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     prompt_text = (workflow_root / "prompt.py").read_text(encoding="utf-8")
     result_text = (workflow_root / "result.py").read_text(encoding="utf-8")
@@ -368,7 +421,7 @@ def test_local_engine_workflow_only_runs_harness_and_records_artifacts():
 
 
 def test_local_worker_workflow_only_composes_local_workflows():
-    workflow_root = SRC_ROOT / "workflows/local_worker"
+    workflow_root = SRC_ROOT / "local/runs/worker"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     module_names = {path.name for path in workflow_root.glob("*.py")}
 
@@ -391,7 +444,7 @@ def test_local_worker_workflow_only_composes_local_workflows():
 
 
 def test_local_update_workflow_only_records_manual_trigger_and_runs_worker():
-    workflow_root = SRC_ROOT / "workflows/local_update"
+    workflow_root = SRC_ROOT / "local/update"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     module_names = {path.name for path in workflow_root.glob("*.py")}
 
@@ -439,7 +492,7 @@ def test_maintenance_api_is_a_package_edge_over_workflows():
 
 
 def test_local_policy_workflow_only_updates_control_policy():
-    workflow_root = SRC_ROOT / "workflows/local_policy"
+    workflow_root = SRC_ROOT / "local/policies"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
     module_names = {path.name for path in workflow_root.glob("*.py")}
 
@@ -779,7 +832,7 @@ def test_topics_service_keeps_graph_and_workspace_boundaries():
 
 
 def test_local_hooks_service_keeps_file_writes_in_git_integration():
-    service_root = SRC_ROOT / "services/local_hooks"
+    service_root = SRC_ROOT / "local/hooks"
     git_hooks = SRC_ROOT / "integrations/workspaces/git/hooks.py"
     service_text = (service_root / "service.py").read_text(encoding="utf-8")
     hooks_text = git_hooks.read_text(encoding="utf-8")

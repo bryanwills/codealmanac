@@ -10,12 +10,12 @@ from codealmanac.integrations.workspaces.git.hooks import (
     LOCAL_TRIGGER_START,
     FileLocalGitHookManager,
 )
-from codealmanac.services.local_hooks.models import LocalGitHookName
-from codealmanac.services.local_hooks.requests import (
+from codealmanac.local.hooks.models import LocalGitHookName
+from codealmanac.local.hooks.requests import (
     InstallLocalHooksRequest,
     UninstallLocalHooksRequest,
 )
-from codealmanac.services.local_hooks.service import LocalHooksService
+from codealmanac.local.hooks.service import LocalHooksService
 
 
 def test_local_hooks_install_default_git_trigger_hooks(tmp_path: Path):

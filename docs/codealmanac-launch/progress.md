@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 83 CodeAlmanac engine package boundary.
+Sent: 2026-07-03 after Slice 84 CodeAlmanac local package boundary.
 
 Route:
 
@@ -19,12 +19,12 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Slice 83 moved the reusable agent/wiki-update runtime surface into
-`src/codealmanac/engine/`, removed tracked old engine service/workflow source
-modules, and kept CLI behavior unchanged. Focused engine verification passed
-with `194 passed`; full local verification passed with
-`uv run ruff check src tests`, `uv run pytest -q --tb=short` (`511 passed`),
-and `git diff --check`.
+Slice 84 moved the local control plane into `src/codealmanac/local/`, removed
+tracked old local service/workflow source modules, added a `CodeAlmanacLocal`
+composition-root facade, and kept CLI behavior unchanged. Focused local
+verification passed with `131 passed`; full local verification passed with
+`uv run ruff check src tests`, `uv run pytest -q --tb=short` (`513 passed`), and
+`git diff --check`.
 
 ## Latest Local Notes
 
@@ -45,12 +45,15 @@ and `git diff --check`.
 - Slice 83 implemented the next CodeAlmanac-side refactor from that audit:
   harness contracts, sources, source bundles, worker workspaces, page-run
   execution, and lifecycle helpers now live under `src/codealmanac/engine/`.
+- Slice 84 implemented the next CodeAlmanac-side refactor from that audit:
+  local control DB, hooks, delivery, run preparation/execution/jobs/worker,
+  policies, setup, status, and update now live under `src/codealmanac/local/`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 99.5% | 99% | Slice 83 moved the reusable agent/wiki-update runtime surface into `src/codealmanac/engine/`, added architecture guards, and passed full local gates. |
+| CodeAlmanac backend/local | 99.8% | 99.5% | Slice 84 moved the local control plane into `src/codealmanac/local/`, added architecture guards, and passed focused local gates. |
 | CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |

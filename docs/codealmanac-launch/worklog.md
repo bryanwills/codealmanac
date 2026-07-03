@@ -2469,3 +2469,24 @@
   (`194 passed`).
 - Slice 83 full local verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.
+
+## 2026-07-03 Slice 84 CodeAlmanac Local Package Boundary
+
+- Slice 84 moved local control-plane code into `src/codealmanac/local/`:
+  control DB, hooks, delivery ledger/execution, run artifacts/preparation/
+  execution/jobs/worker, policies, setup, status, and update.
+- `app.py` now exposes a `CodeAlmanacLocal` facade so the composition root has
+  one named local surface. Old top-level fields remain available during the
+  broader cleanup run.
+- Architecture tests now prevent the old local service/workflow source files
+  from returning.
+- Focused Slice 84 verification passed:
+  `uv run pytest tests/test_architecture.py tests/test_control_service.py
+  tests/test_local_setup_workflow.py tests/test_local_status_workflow.py
+  tests/test_local_policy_workflow.py tests/test_local_run_preparation_workflow.py
+  tests/test_local_engine_workflow.py tests/test_local_delivery_workflow.py
+  tests/test_local_worker_workflow.py tests/test_local_update_workflow.py
+  tests/test_local_hooks.py tests/test_engine_runs_service.py
+  tests/test_deliveries_service.py -q --tb=short` (`131 passed`).
+- Slice 84 full local verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`.

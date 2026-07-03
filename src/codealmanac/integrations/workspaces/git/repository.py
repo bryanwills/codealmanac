@@ -7,7 +7,7 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
 from codealmanac.core.text import required_text
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 GIT_REPOSITORY_TIMEOUT_SECONDS = 10
 GITHUB_HTTPS_RE = re.compile(

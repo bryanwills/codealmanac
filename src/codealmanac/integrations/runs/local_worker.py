@@ -1,8 +1,8 @@
 import subprocess
 import sys
 
+from codealmanac.local.runs.worker.requests import SpawnLocalWorkerRequest
 from codealmanac.services.runs.models import RunWorkerSpawnResult
-from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
 
 
 class SubprocessLocalWorkerSpawner:

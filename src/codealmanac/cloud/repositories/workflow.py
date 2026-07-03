@@ -19,7 +19,7 @@ from codealmanac.cloud.repositories.workflow_requests import (
     UpdateCloudRepoTriggerRequest,
 )
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.workflows.local_setup.ports import LocalRepositoryProbe
+from codealmanac.local.setup.ports import LocalRepositoryProbe
 
 
 class CloudRepoWorkflow:

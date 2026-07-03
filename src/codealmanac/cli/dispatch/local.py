@@ -13,21 +13,21 @@ from codealmanac.cli.render.local import (
     render_local_update,
 )
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.services.control.models import ControlDeliveryMode, ControlRunStatus
-from codealmanac.wiki.workspaces.roots import DEFAULT_ALMANAC_ROOT
-from codealmanac.workflows.local_jobs.requests import (
-    ListLocalJobsRequest,
-    ReadLocalJobLogsRequest,
-    ShowLocalJobRequest,
-)
-from codealmanac.workflows.local_policy.requests import (
+from codealmanac.local.control.models import ControlDeliveryMode, ControlRunStatus
+from codealmanac.local.policies.requests import (
     ListLocalTriggerPoliciesRequest,
     SetLocalDeliveryPolicyRequest,
     UpdateLocalTriggerPolicyRequest,
 )
-from codealmanac.workflows.local_setup.requests import RunLocalSetupRequest
-from codealmanac.workflows.local_status.requests import ReadLocalStatusRequest
-from codealmanac.workflows.local_update.requests import RunLocalUpdateRequest
+from codealmanac.local.runs.jobs.requests import (
+    ListLocalJobsRequest,
+    ReadLocalJobLogsRequest,
+    ShowLocalJobRequest,
+)
+from codealmanac.local.setup.requests import RunLocalSetupRequest
+from codealmanac.local.status.requests import ReadLocalStatusRequest
+from codealmanac.local.update.requests import RunLocalUpdateRequest
+from codealmanac.wiki.workspaces.roots import DEFAULT_ALMANAC_ROOT
 
 LOCAL_COMMANDS = frozenset(("local",))
 

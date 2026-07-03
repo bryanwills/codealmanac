@@ -13,14 +13,14 @@ from codealmanac.engine.harnesses.models import (
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
-from codealmanac.services.control.models import (
+from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
     ControlRunStatus,
     TriggerEventKind,
     TriggerEventStatus,
 )
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.requests import (
     AppendControlRunEventRequest,
     CreateControlRunRequest,
     ListControlRunEventsRequest,
@@ -28,15 +28,15 @@ from codealmanac.services.control.requests import (
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
 )
-from codealmanac.workflows.local_delivery.models import (
+from codealmanac.local.delivery.execution.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
     LocalDeliveryWorkingTree,
 )
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
-from codealmanac.workflows.local_status.requests import ReadLocalStatusRequest
-from codealmanac.workflows.local_update.requests import RunLocalUpdateRequest
+from codealmanac.local.setup.models import LocalRepositoryState
+from codealmanac.local.status.requests import ReadLocalStatusRequest
+from codealmanac.local.update.requests import RunLocalUpdateRequest
 
 
 class FakeLocalRepositoryProbe:

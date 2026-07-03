@@ -87,11 +87,30 @@ cloud setup flow.
   and lifecycle helpers now live under `src/codealmanac/engine/`. The CLI
   surface did not change. Packaged `prompts/` and `manual/` remain root
   package resources for now.
-- The remaining CodeAlmanac repackaging work is mostly the explicit `local/`
-  control-plane boundary and any later package-resource cleanup for
-  `prompts/` / `manual/`.
+- Slice 84 implemented the next CodeAlmanac-side package cleanup: local
+  control DB, hooks, delivery ledger/execution, run artifacts/preparation/
+  execution/jobs/worker, policies, setup, status, and update now live under
+  `src/codealmanac/local/`. The CLI surface did not change.
+- The remaining CodeAlmanac cleanup is mostly semantic, not mechanical:
+  collapse the old repo-local job/run ledger names, decide whether
+  `prompts/` / `manual/` should stay root package resources, and continue the
+  hosted package/worker/domain cleanup.
 
 ## Last Completed Work
+
+Slice 84 creates the CodeAlmanac local package boundary:
+
+- `src/codealmanac/local/` owns local-only control-plane behavior: control DB,
+  hooks, delivery, run artifacts/preparation/execution/jobs/worker, policies,
+  setup, status, and update
+- tracked old local source files were removed from `services/` and `workflows/`
+- `app.py` now exposes `CodeAlmanacLocal` so local concepts have one explicit
+  composition-root facade while old top-level fields remain during cleanup
+- architecture tests now prevent old local source modules from returning
+- focused verification passed with the local/control-plane test set
+  (`131 passed`)
+- full verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`
 
 Slice 83 creates the CodeAlmanac engine package boundary:
 

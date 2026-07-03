@@ -25,3 +25,16 @@
 - Added architecture coverage so the old engine service/workflow source files cannot reappear and the new `engine/` package stays behind the integration boundary.
 - Focused Slice 83 verification passed with the engine/provider/lifecycle test set (`194 passed`).
 - Full Slice 83 verification passed with `uv run ruff check src tests`, `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.
+- Planned and implemented Slice 84 in `docs/plans/2026-07-03-slice-84-codealmanac-local-package.md`.
+- Moved the local control plane into first-class `src/codealmanac/local/`:
+  control DB, hooks, delivery ledger/execution, run artifacts/preparation/execution/jobs/worker,
+  policies, setup, status, and update.
+- Added a `CodeAlmanacLocal` composition-root facade so local concepts have one
+  explicit home while old top-level app fields remain available during the
+  cleanup run.
+- Added architecture coverage so the old local service/workflow source files
+  cannot reappear.
+- Focused Slice 84 verification passed with the local/control-plane test set
+  (`131 passed`).
+- Full Slice 84 verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`.

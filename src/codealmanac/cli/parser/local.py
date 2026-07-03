@@ -1,7 +1,7 @@
 import argparse
 
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.services.control.models import ControlRunStatus
+from codealmanac.local.control.models import ControlRunStatus
 
 LOCAL_DELIVERY_CHOICES = ("commit", "working-tree")
 LOCAL_JOB_STATUS_CHOICES = tuple(status.value for status in ControlRunStatus)

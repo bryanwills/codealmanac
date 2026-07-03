@@ -7,14 +7,14 @@ from codealmanac.app import create_app
 from codealmanac.core.errors import NotFoundError
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_run_artifacts_path
-from codealmanac.services.engine_runs.models import (
+from codealmanac.local.runs.artifacts.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineFileChangeKind,
     EngineRunResult,
     EngineRunStatus,
 )
-from codealmanac.services.engine_runs.requests import (
+from codealmanac.local.runs.artifacts.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
     WriteEngineRunResultRequest,

@@ -3,7 +3,7 @@ import json
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.workflows.local_worker.requests import RunNextLocalWorkerRequest
+from codealmanac.local.runs.worker.requests import RunNextLocalWorkerRequest
 
 
 def dispatch_run_local_worker(args: argparse.Namespace, app: CodeAlmanac) -> int:

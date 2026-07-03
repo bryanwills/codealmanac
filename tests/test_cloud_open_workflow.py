@@ -9,7 +9,7 @@ from codealmanac.cloud.repositories.requests import (
     ResolveCloudRepositoryRequest,
 )
 from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 
 def test_cloud_open_workflow_resolves_and_opens_dashboard_wiki_url(

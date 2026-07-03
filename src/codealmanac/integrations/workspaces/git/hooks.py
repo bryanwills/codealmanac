@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from codealmanac.core.errors import ExecutionFailed
-from codealmanac.services.local_hooks.models import (
+from codealmanac.local.hooks.models import (
     LocalGitHookChange,
     LocalGitHookName,
 )

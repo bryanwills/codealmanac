@@ -4,14 +4,14 @@ from pathlib import Path
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
-from codealmanac.services.control.models import (
+from codealmanac.local.control.models import (
     ControlRunEventKind,
     ControlRunStatus,
     SessionProvider,
     TriggerEventKind,
     TriggerEventStatus,
 )
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.requests import (
     LinkTurnBranchRequest,
     ListControlRunEventsRequest,
     ListTriggerEventsRequest,

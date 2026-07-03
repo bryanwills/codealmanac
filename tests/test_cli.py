@@ -48,11 +48,7 @@ from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
-from codealmanac.services.automation.models import (
-    ScheduledJob,
-    ScheduledJobStatus,
-)
-from codealmanac.services.control.models import (
+from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
     ControlRunStatus,
@@ -60,7 +56,7 @@ from codealmanac.services.control.models import (
     TriggerEventKind,
     TriggerEventStatus,
 )
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.requests import (
     AppendControlRunEventRequest,
     CreateControlRunRequest,
     ListTriggerEventsRequest,
@@ -68,6 +64,18 @@ from codealmanac.services.control.requests import (
     SetBranchPolicyRequest,
     UpdateControlRunRequest,
     UpsertRepositoryRequest,
+)
+from codealmanac.local.delivery.execution.models import (
+    LocalDeliveryCommit,
+    LocalDeliveryHead,
+    LocalDeliveryPatch,
+    LocalDeliveryWorkingTree,
+)
+from codealmanac.local.runs.worker.requests import SpawnLocalWorkerRequest
+from codealmanac.local.setup.models import LocalRepositoryState
+from codealmanac.services.automation.models import (
+    ScheduledJob,
+    ScheduledJobStatus,
 )
 from codealmanac.services.runs.models import (
     RunEventKind,
@@ -91,14 +99,6 @@ from codealmanac.services.updates.models import (
 from codealmanac.wiki.workspaces.identity import workspace_id_for
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
-from codealmanac.workflows.local_delivery.models import (
-    LocalDeliveryCommit,
-    LocalDeliveryHead,
-    LocalDeliveryPatch,
-    LocalDeliveryWorkingTree,
-)
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
-from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
 from codealmanac.workflows.sync.models import (
     SyncLedger,
     SyncLedgerEntry,

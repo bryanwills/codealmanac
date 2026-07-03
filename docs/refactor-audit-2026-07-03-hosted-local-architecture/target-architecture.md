@@ -3,8 +3,9 @@
 This is a partially implemented target. Slice 81 implemented the
 `codealmanac.cloud` package boundary. Slice 82 implemented the
 `codealmanac.wiki` package boundary. Slice 83 implemented the first
-`codealmanac.engine` package boundary. The broader local and hosted package
-refactors are still proposed.
+`codealmanac.engine` package boundary. Slice 84 implemented the
+`codealmanac.local` package boundary. The broader hosted package refactor is
+still proposed.
 
 ## Shared Product Model
 
@@ -60,16 +61,29 @@ Local owns the user-level control DB and local automation shape.
 
 ```text
 local/
-  control/
-  triggers/
-  runs/
+  control/                # user-level local control DB
+  hooks/                  # local Git hook installation/status
   delivery/
-  hooks/
-  status/
-  setup/
+    ledger/               # delivery records in the local control DB
+    execution/            # deterministic local Git delivery workflow
+  runs/
+    artifacts/            # model-worker run artifacts
+    preparation/          # snapshot/source bundle preparation
+    execution/            # local engine invocation workflow
+    jobs/                 # local run/job list and inspection
+    worker/               # detached local worker entrypoint
+  policies/               # local branch trigger and delivery policy
+  setup/                  # explicit local setup flow
+  status/                 # local status aggregation
+  update/                 # local update execution workflow
 ```
 
-`local/runs` should own local run lifecycle. It should absorb or clearly relate the current `engine_runs`, `local_runs`, `local_jobs`, and `run_queue` concepts.
+Implemented in Slice 84. This groups the old `services/control`,
+`services/deliveries`, `services/engine_runs`, `services/local_hooks`, and
+`workflows/local_*` control-plane concepts. The older repo-local lifecycle
+`services/runs` / `workflows/run_queue` concept still exists and should be
+collapsed deliberately in the later local run-name slice, not hidden in a
+package move.
 
 ### `wiki/`
 

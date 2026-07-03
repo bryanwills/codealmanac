@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import Field
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 CloudOpenTarget = Literal[
     "wiki",

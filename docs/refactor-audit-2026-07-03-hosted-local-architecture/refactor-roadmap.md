@@ -87,23 +87,27 @@ Completed:
 - Slice 83: `services/source_bundles`, `services/sources`,
   `services/harnesses`, `services/worker_workspaces`, `workflows/page_run`,
   and shared lifecycle helpers -> `engine/`
+- Slice 84: `services/control`, `services/deliveries`,
+  `services/engine_runs`, `services/local_hooks`, and `workflows/local_*`
+  control-plane workflows -> `local/`
 
 Goal:
 
 ```text
-services/cloud_* + workflows/cloud_* -> cloud/
-services/wiki/index/search/pages/topics/viewer/workspaces -> wiki/
-services/source_bundles/sources/harnesses/worker_workspaces + lifecycle workflows -> engine/
-control/deliveries/local_hooks/local_* workflows -> local/
+services/cloud_* + workflows/cloud_* -> cloud/                              # done
+services/wiki/index/search/pages/topics/viewer/workspaces -> wiki/          # done
+services/source_bundles/sources/harnesses/worker_workspaces + lifecycle workflows -> engine/  # done
+control/deliveries/local_hooks/local_* workflows -> local/                  # done
 ```
 
 Do this with import-move tooling and thin compatibility only inside the same slice. Delete compatibility modules before the slice lands if all imports are moved.
 
 Remaining work in this slice family:
 
-- `control/deliveries/local_hooks/local_* workflows -> local/`
 - optional later package-resource move for root `prompts/` and `manual/` if
   hosted needs those under `engine/`
+- optional later collapse of old repo-local job/run ledger names into the new
+  local/engine package language
 
 ## Slice F: Collapse Local Run Names
 

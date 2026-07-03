@@ -4,7 +4,7 @@ from codealmanac.cloud.repositories.models import (
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 
 class CloudRepoStatusResult(CodeAlmanacModel):

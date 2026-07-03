@@ -9,8 +9,8 @@ from codealmanac.cloud.repositories.requests import (
 )
 from codealmanac.cloud.repositories.service import CloudRepositoriesService
 from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
-from codealmanac.workflows.local_setup.ports import LocalRepositoryProbe
+from codealmanac.local.setup.models import LocalRepositoryState
+from codealmanac.local.setup.ports import LocalRepositoryProbe
 
 
 class CloudOpenWorkflow:

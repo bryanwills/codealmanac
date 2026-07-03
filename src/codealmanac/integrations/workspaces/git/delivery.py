@@ -7,7 +7,7 @@ from codealmanac.integrations.command import (
     first_line,
 )
 from codealmanac.integrations.workspaces.git.probe import parse_git_status
-from codealmanac.workflows.local_delivery.models import (
+from codealmanac.local.delivery.execution.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,

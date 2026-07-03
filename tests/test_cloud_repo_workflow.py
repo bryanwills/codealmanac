@@ -20,7 +20,7 @@ from codealmanac.cloud.repositories.workflow_requests import (
     SetCloudRepoDeliveryRequest,
     UpdateCloudRepoTriggerRequest,
 )
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 
 def test_cloud_repo_workflow_resolves_current_checkout_and_updates_triggers(

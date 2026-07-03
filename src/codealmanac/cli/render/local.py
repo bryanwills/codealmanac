@@ -1,16 +1,16 @@
 import sys
 
 from codealmanac.cli.render.common import print_json_model, print_json_rows
-from codealmanac.workflows.local_jobs.models import (
-    LocalJobLogsResult,
-    LocalJobSummary,
-)
-from codealmanac.workflows.local_policy.models import (
+from codealmanac.local.policies.models import (
     LocalTriggerPoliciesResult,
     LocalTriggerPolicyResult,
 )
-from codealmanac.workflows.local_status.models import LocalStatusResult
-from codealmanac.workflows.local_update.models import LocalUpdateResult
+from codealmanac.local.runs.jobs.models import (
+    LocalJobLogsResult,
+    LocalJobSummary,
+)
+from codealmanac.local.status.models import LocalStatusResult
+from codealmanac.local.update.models import LocalUpdateResult
 
 
 def render_local_status(result: LocalStatusResult, json_output: bool) -> None:

@@ -11,21 +11,21 @@ from codealmanac.engine.harnesses.models import (
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
-from codealmanac.services.control.models import (
+from codealmanac.local.control.models import (
     ControlRunStatus,
     TriggerEventKind,
 )
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.requests import (
     RecordTriggerEventRequest,
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
 )
-from codealmanac.workflows.local_delivery.models import (
+from codealmanac.local.delivery.execution.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,
     LocalDeliveryPatch,
 )
-from codealmanac.workflows.local_worker.requests import RunNextLocalWorkerRequest
+from codealmanac.local.runs.worker.requests import RunNextLocalWorkerRequest
 
 
 class FakeGitWorktreeManager:

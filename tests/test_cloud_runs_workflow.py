@@ -28,7 +28,7 @@ from codealmanac.cloud.runs.workflow_requests import (
     ShowCloudRunRequest,
     StartCloudRunRequest,
 )
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
+from codealmanac.local.setup.models import LocalRepositoryState
 
 
 def test_cloud_runs_workflow_lists_current_repo_and_reads_run_by_id(

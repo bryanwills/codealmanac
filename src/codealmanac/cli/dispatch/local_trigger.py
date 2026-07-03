@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
-from codealmanac.services.control.models import TriggerEventKind
-from codealmanac.services.control.requests import RecordCurrentGitTriggerRequest
-from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
+from codealmanac.local.control.models import TriggerEventKind
+from codealmanac.local.control.requests import RecordCurrentGitTriggerRequest
+from codealmanac.local.runs.worker.requests import SpawnLocalWorkerRequest
 
 
 def dispatch_record_local_trigger(args: argparse.Namespace, app: CodeAlmanac) -> int:

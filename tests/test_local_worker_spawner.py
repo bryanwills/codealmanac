@@ -2,7 +2,7 @@ from pathlib import Path
 
 from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.integrations.runs.local_worker import local_worker_command
-from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
+from codealmanac.local.runs.worker.requests import SpawnLocalWorkerRequest
 
 
 def test_local_worker_command_targets_hidden_local_worker_cli(tmp_path: Path):

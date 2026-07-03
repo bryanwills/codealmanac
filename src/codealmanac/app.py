@@ -70,22 +70,35 @@ from codealmanac.integrations.workspaces.git import (
     GitLocalStateProbe,
     GitWorkspaceChangeProbe,
 )
+from codealmanac.local.control.ports import LocalGitStateProbe
+from codealmanac.local.control.service import ControlService
+from codealmanac.local.control.store import ControlStore
+from codealmanac.local.delivery.execution import LocalDeliveryWorkflow
+from codealmanac.local.delivery.execution.ports import LocalGitDeliveryManager
+from codealmanac.local.delivery.ledger.service import DeliveriesService
+from codealmanac.local.delivery.ledger.store import DeliveriesStore
+from codealmanac.local.hooks.ports import LocalGitHookManager
+from codealmanac.local.hooks.service import LocalHooksService
+from codealmanac.local.policies import LocalPolicyWorkflow
+from codealmanac.local.runs.artifacts.service import EngineRunsService
+from codealmanac.local.runs.artifacts.store import EngineRunsStore
+from codealmanac.local.runs.execution import LocalEngineWorkflow
+from codealmanac.local.runs.jobs import LocalJobsWorkflow
+from codealmanac.local.runs.preparation import LocalRunPreparationWorkflow
+from codealmanac.local.runs.worker import LocalWorkerSpawner, LocalWorkerWorkflow
+from codealmanac.local.setup import (
+    LocalRepositoryProbe,
+    LocalSetupWorkflow,
+)
+from codealmanac.local.status import LocalStatusWorkflow
+from codealmanac.local.update import LocalUpdateWorkflow
 from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
 from codealmanac.services.automation.service import AutomationService
 from codealmanac.services.config.service import ConfigService
 from codealmanac.services.config.store import ConfigStore
-from codealmanac.services.control.ports import LocalGitStateProbe
-from codealmanac.services.control.service import ControlService
-from codealmanac.services.control.store import ControlStore
-from codealmanac.services.deliveries.service import DeliveriesService
-from codealmanac.services.deliveries.store import DeliveriesStore
 from codealmanac.services.diagnostics.service import DiagnosticsService
-from codealmanac.services.engine_runs.service import EngineRunsService
-from codealmanac.services.engine_runs.store import EngineRunsStore
-from codealmanac.services.local_hooks.ports import LocalGitHookManager
-from codealmanac.services.local_hooks.service import LocalHooksService
 from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
@@ -111,19 +124,6 @@ from codealmanac.wiki.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.service import InitWorkflow
-from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
-from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
-from codealmanac.workflows.local_engine import LocalEngineWorkflow
-from codealmanac.workflows.local_jobs import LocalJobsWorkflow
-from codealmanac.workflows.local_policy import LocalPolicyWorkflow
-from codealmanac.workflows.local_runs import LocalRunPreparationWorkflow
-from codealmanac.workflows.local_setup import (
-    LocalRepositoryProbe,
-    LocalSetupWorkflow,
-)
-from codealmanac.workflows.local_status import LocalStatusWorkflow
-from codealmanac.workflows.local_update import LocalUpdateWorkflow
-from codealmanac.workflows.local_worker import LocalWorkerSpawner, LocalWorkerWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncLedgerStore
@@ -150,6 +150,24 @@ class CodeAlmanacWorkflows:
     local_worker: LocalWorkerWorkflow
     local_update: LocalUpdateWorkflow
     sync: SyncWorkflow
+
+
+@dataclass(frozen=True)
+class CodeAlmanacLocal:
+    control: ControlService
+    deliveries: DeliveriesService
+    engine_runs: EngineRunsService
+    hooks: LocalHooksService
+    worker_spawner: LocalWorkerSpawner
+    setup: LocalSetupWorkflow
+    status: LocalStatusWorkflow
+    jobs: LocalJobsWorkflow
+    policy: LocalPolicyWorkflow
+    run_preparation: LocalRunPreparationWorkflow
+    engine: LocalEngineWorkflow
+    delivery: LocalDeliveryWorkflow
+    worker: LocalWorkerWorkflow
+    update: LocalUpdateWorkflow
 
 
 @dataclass(frozen=True)
@@ -181,6 +199,7 @@ class CodeAlmanac:
     runs: RunsService
     sources: SourcesService
     harnesses: HarnessesService
+    local: CodeAlmanacLocal
     local_worker_spawner: LocalWorkerSpawner
     prompts: PromptRenderer
     manual: ManualLibrary
@@ -408,6 +427,22 @@ def create_app(
     resolved_local_worker_spawner = (
         local_worker_spawner or SubprocessLocalWorkerSpawner()
     )
+    local = CodeAlmanacLocal(
+        control=control,
+        deliveries=deliveries,
+        engine_runs=engine_runs,
+        hooks=local_hooks,
+        worker_spawner=resolved_local_worker_spawner,
+        setup=local_setup,
+        status=local_status,
+        jobs=local_jobs,
+        policy=local_policy,
+        run_preparation=local_runs,
+        engine=local_engine,
+        delivery=local_delivery,
+        worker=local_worker,
+        update=local_update,
+    )
     sync = SyncWorkflow(
         workspaces,
         sources,
@@ -465,6 +500,7 @@ def create_app(
         runs=runs,
         sources=sources,
         harnesses=harnesses,
+        local=local,
         local_worker_spawner=resolved_local_worker_spawner,
         prompts=prompts,
         manual=manual,

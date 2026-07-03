@@ -5,13 +5,13 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.models import AppConfig
-from codealmanac.services.control.models import ControlDeliveryMode
-from codealmanac.services.local_hooks.models import (
+from codealmanac.local.control.models import ControlDeliveryMode
+from codealmanac.local.hooks.models import (
     LocalGitHookChange,
     LocalGitHookName,
 )
-from codealmanac.workflows.local_setup.models import LocalRepositoryState
-from codealmanac.workflows.local_setup.requests import RunLocalSetupRequest
+from codealmanac.local.setup.models import LocalRepositoryState
+from codealmanac.local.setup.requests import RunLocalSetupRequest
 
 
 class FakeLocalRepositoryProbe:

@@ -9,22 +9,22 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.services.control.models import ControlRunEventKind, ControlRunStatus
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.models import ControlRunEventKind, ControlRunStatus
+from codealmanac.local.control.requests import (
     CreateControlRunRequest,
     ListControlRunEventsRequest,
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
 )
-from codealmanac.services.engine_runs.models import (
+from codealmanac.local.runs.artifacts.models import (
     EngineFileChangeKind,
     EngineRunStatus,
 )
-from codealmanac.services.engine_runs.requests import (
+from codealmanac.local.runs.artifacts.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
 )
-from codealmanac.workflows.local_engine.requests import ExecuteLocalEngineRunRequest
+from codealmanac.local.runs.execution.requests import ExecuteLocalEngineRunRequest
 
 
 class FakeHarnessAdapter:

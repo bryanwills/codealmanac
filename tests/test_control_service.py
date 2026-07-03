@@ -6,7 +6,7 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_control_db_path
-from codealmanac.services.control.models import (
+from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
     ControlRunStatus,
@@ -15,7 +15,7 @@ from codealmanac.services.control.models import (
     TriggerEventKind,
     TriggerEventStatus,
 )
-from codealmanac.services.control.requests import (
+from codealmanac.local.control.requests import (
     AppendControlRunEventRequest,
     ClaimNextTriggerRequest,
     CreateControlRunRequest,
@@ -37,7 +37,7 @@ from codealmanac.services.control.requests import (
     UpsertSessionRequest,
     UpsertTurnRequest,
 )
-from codealmanac.services.control.schema import (
+from codealmanac.local.control.schema import (
     CONTROL_SCHEMA_VERSION,
     CONTROL_TABLES,
 )

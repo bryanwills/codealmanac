@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.control.models import LocalGitState
+from codealmanac.local.control.models import LocalGitState
 
 GIT_STATE_TIMEOUT_SECONDS = 10
 

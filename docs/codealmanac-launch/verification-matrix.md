@@ -1653,3 +1653,21 @@ Known residue:
   (`194 passed`).
   Full local verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.
+
+## Slice 84 CodeAlmanac Local Package Boundary
+
+- Requirement: local control-plane code should have one explicit package owner
+  instead of living across similarly named `services/*` and `workflows/local_*`
+  modules.
+- Implementation evidence: `src/codealmanac/local/` now owns the local control
+  DB, hooks, delivery ledger/execution, run artifacts/preparation/execution/
+  jobs/worker, policies, setup, status, and update.
+- Boundary evidence: architecture tests now prevent the old
+  `services/control`, `services/deliveries`, `services/engine_runs`,
+  `services/local_hooks`, and `workflows/local_*` source files from returning.
+- Composition evidence: `app.py` now exposes `CodeAlmanacLocal`, a named local
+  facade in the composition root.
+- Verification evidence: focused local/control-plane test set passed
+  (`131 passed`). Full local verification passed with
+  `uv run ruff check src tests`, `uv run pytest -q --tb=short` (`513 passed`), and
+  `git diff --check`.
