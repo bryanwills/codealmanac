@@ -1174,3 +1174,8 @@ Current evidence:
 - Slice 64 isolated PyPI check proved `codealmanac==0.1.1` still defaults to
   the Render URL. The repo package was bumped to `0.1.2` with canonical
   defaults `https://api.codealmanac.com` and `https://www.codealmanac.com`.
+- Slice 64 publish verification passed: GitHub Actions publish run
+  `28648341690` succeeded, PyPI JSON reports latest `0.1.2`, fresh unpinned
+  `uv tool install --python 3.12 --refresh --no-cache codealmanac` installed
+  `0.1.2`, `capture status --json` reported the canonical API URL, and the
+  installed CLI completed Chrome `/cli-login` approval with no `--api-url`.

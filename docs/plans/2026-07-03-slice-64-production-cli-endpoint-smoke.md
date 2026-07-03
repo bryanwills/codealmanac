@@ -75,3 +75,16 @@ commands, and cloud open.
 
 The only risky part is publishing. If PyPI publish is needed, verify from a
 fresh isolated tool install after the workflow completes.
+
+## Result
+
+- Commit: `b0a8c5a3 fix: use canonical cloud endpoints in CLI`
+- Published: `codealmanac` `0.1.2`
+- Publish workflow: `28648341690`
+- Verified fresh PyPI install:
+  `uv tool install --python 3.12 --refresh --no-cache codealmanac`
+- Verified installed default:
+  `capture status --json` reports `https://api.codealmanac.com`
+- Verified installed Chrome login:
+  `codealmanac login --no-browser` prints a `www.codealmanac.com/cli-login`
+  approval URL and stores auth for `rohans0509`.

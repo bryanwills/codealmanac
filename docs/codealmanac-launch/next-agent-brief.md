@@ -195,14 +195,22 @@ CodeAlmanac:
   do not assume rerunning the publish workflow for `0.1.1` is valid because
   PyPI already has that version
 - package version in `pyproject.toml`: `0.1.2`
-- PyPI live version checked before Slice 64 publish on 2026-07-03: `0.1.1`
+- PyPI live version checked after Slice 64 publish on 2026-07-03: `0.1.2`
 - Slice 59 is published and verified from a fresh PyPI install.
 - Slice 64 bumped `pyproject.toml` to `0.1.2` because PyPI `0.1.1`
   still defaults to `https://codealmanac-backend-docker.onrender.com`.
+- GitHub Actions publish run `28648341690` succeeded for `0.1.2`.
+- Fresh public install with `uv tool install --python 3.12 --refresh --no-cache
+  codealmanac` installed `0.1.2`, and `capture status --json` reported
+  `api_url: https://api.codealmanac.com`.
 - Source CLI production auth was verified in Chrome with:
   `uv run codealmanac login --api-url https://api.codealmanac.com --no-browser`.
   The browser approved `/cli-login`, `whoami` returned `rohans0509`, and
   capture credential issue/status/disable worked in a temp HOME.
+- Fresh PyPI `0.1.2` login was verified with no `--api-url`: the installed
+  binary printed a `https://www.codealmanac.com/cli-login` approval URL, Chrome
+  approved it, and `whoami` returned `rohans0509` with cloud
+  `https://api.codealmanac.com`.
 - The machine PATH currently resolves an old Node-era `codealmanac` first:
   `/Users/rohan/.nvm/versions/node/v21.7.3/bin/codealmanac` reports `0.2.26`.
   Use `uv run codealmanac` inside this repo or a fresh `uv tool install`

@@ -1786,3 +1786,16 @@
   `https://codealmanac-backend-docker.onrender.com`. The repo default was
   changed to `https://api.codealmanac.com`, the app default was changed to
   `https://www.codealmanac.com`, and `pyproject.toml` was bumped to `0.1.2`.
+- Slice 64 pushed commit `b0a8c5a3 fix: use canonical cloud endpoints in CLI`
+  to `origin/dev` and `origin/main`.
+- GitHub push checks passed on both branches, and publish workflow run
+  `28648341690` succeeded for `codealmanac` `0.1.2`.
+- PyPI JSON reported latest version `0.1.2`.
+- Fresh public install with
+  `UV_TOOL_DIR=<tmp> UV_TOOL_BIN_DIR=<tmp> uv tool install --python 3.12 --refresh --no-cache codealmanac`
+  installed `0.1.2`; `capture status --json` reported
+  `api_url: https://api.codealmanac.com`.
+- Fresh PyPI `0.1.2` login was verified with no `--api-url`: the installed
+  binary printed a `https://www.codealmanac.com/cli-login` URL, Chrome showed
+  `CLI login approved`, and `whoami` returned `rohans0509` with cloud
+  `https://api.codealmanac.com`.
