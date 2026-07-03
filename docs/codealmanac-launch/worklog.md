@@ -1872,3 +1872,15 @@
   and no cloud credentials.
 - Slice 66 focused tests passed in CodeAlmanac (`7 passed`) and hosted backend
   capture/internal API tests (`14 passed`, `1` Starlette warning).
+- Slice 67 aligns captured conversations with maintained branch triggers. On a
+  qualifying branch push, hosted now claims completed, unclaimed, ref-backed
+  conversation turns for that repository and branch into a source bundle and
+  starts a `ConversationBatchSource` run. If no bundle exists, it falls back to
+  the existing `BranchSource` run.
+- Slice 67 also removes a delivery split: conversation-batch runs now use the
+  same per-branch trigger delivery mode as branch runs, including the old
+  scheduler path while it still exists.
+- Slice 67 full hosted backend verification passed: focused update/conversation/
+  webhook/installation/worker/architecture tests (`172 passed`), full hosted
+  backend suite (`380 passed`, `1` Starlette warning), hosted ruff,
+  `python -m compileall backend/src -q`, and `git diff --check`.

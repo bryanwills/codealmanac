@@ -52,6 +52,12 @@ materializes a temporary worker-local folder:
 That folder is an execution input, not durable product state. Durable state is
 the SQL batch/run rows plus source-artifact refs.
 
+Slice 67 makes maintained branch triggers the primary cloud source-bundle
+claim point. A branch trigger first asks `conversation_turns` for completed,
+unclaimed, ref-backed turns on the same repository and branch. If any exist,
+the run source is `ConversationBatchSource`; if none exist, the run falls back
+to `BranchSource`. Both paths use the branch trigger policy delivery mode.
+
 ## Local Storage
 
 Local control DB:

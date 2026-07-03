@@ -159,6 +159,13 @@ Status: active.
 - RelayForge Discord updates use Doppler project `almanac`, config `dev`.
 - Do not mix those Doppler targets when testing internal production API
   endpoints; the wrong internal secret should return `401`.
+- Maintained branch triggers are the primary cloud finalization event for
+  captured conversations. On a qualifying branch push, cloud claims completed
+  ref-backed conversation turns for that repo/branch into a source bundle and
+  starts a `ConversationBatchSource` run. If there is no source bundle, cloud
+  falls back to a `BranchSource` run.
+- Conversation-batch runs use the same per-branch delivery policy as branch
+  runs. The old scheduler path must not hard-code commit delivery.
 
 ## Naming
 

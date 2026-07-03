@@ -1264,3 +1264,23 @@ Current evidence:
 - Focused hosted tests passed:
   `uv run pytest tests/test_capture_upload_api_contract.py tests/test_capture_tokens_api_contract.py tests/test_internal_route_contract.py`
   (`14 passed`, `1` Starlette warning).
+
+## Slice 67 Branch-Triggered Source Bundles
+
+- Hosted branch pushes now prefer captured conversation source bundles when
+  completed ref-backed turns exist for the triggered repo/branch.
+- `ConversationBatchSource` still stores refs and `batch_id`; it does not store
+  rendered conversation text.
+- The branch trigger policy delivery mode now applies to conversation-batch
+  runs and branch-source fallback runs.
+- The old due-ingest scheduler path also uses branch trigger policy delivery
+  instead of hard-coded commit delivery.
+- Verification passed:
+  - `uv run pytest tests/test_updates_contract.py tests/test_conversation_ingest_scheduler.py -q`
+    (`61 passed`)
+  - `uv run pytest tests/test_updates_contract.py tests/test_conversation_ingest_scheduler.py tests/test_modal_worker_contract.py tests/test_github_service_contract.py tests/test_installations_contract.py tests/test_architecture_contract.py -q`
+    (`172 passed`)
+  - `uv run pytest -q` in hosted backend (`380 passed`, `1` Starlette warning)
+  - `uv run ruff check .`
+  - `python -m compileall backend/src -q`
+  - `git diff --check`

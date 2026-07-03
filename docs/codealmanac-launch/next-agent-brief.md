@@ -236,6 +236,21 @@ Slice 66 pressure-tests production capture upload:
 - focused CodeAlmanac capture tests passed (`7 passed`)
 - focused hosted capture/internal API tests passed (`14 passed`, `1` warning)
 
+Slice 67 aligns captured conversations with branch triggers:
+
+- maintained branch pushes now claim completed, unclaimed, ref-backed
+  conversation turns for the same repo/branch into a source bundle
+- source-bundle runs use `ConversationBatchSource` with `batch_id` plus
+  source refs; transcript/session content remains in source artifacts
+- branches with no captured source refs still start the existing `BranchSource`
+  run
+- conversation-batch delivery now uses the same per-branch trigger policy as
+  branch-source delivery, including the old due-ingest scheduler path
+- hosted backend verification passed: focused trigger/conversation tests
+  (`61 passed`), broader update/webhook/installation/worker/architecture tests
+  (`172 passed`), full backend suite (`380 passed`, `1` warning), hosted ruff,
+  compileall, and diff check
+
 Important provider note:
 
 - Render production backend secrets come from Doppler `codealmanac/prd`.
@@ -291,17 +306,19 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 65 artifact commit:
-  `3cb94624cacacffe2d75271080223bdc3b511b26`
+- current Slice 67 hosted backend commit:
+  `a9a7ff82c3b014254feb6da05615d1048d7673f6`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `3cb94624cacacffe2d75271080223bdc3b511b26`
+  `a9a7ff82c3b014254feb6da05615d1048d7673f6`
 - production frontend: `https://www.codealmanac.com`
 - hosted main has setup/auth hardening, route-test guardrails, cloud setup
   checklist, production WorkOS identity schema repair, and capture-token
   storage repair, GitHub webhook event-header routing, branch-trigger delivery
-  loop protection, Slice 63 frontend production fixes, and Slice 65
-  curl-first installer/onboarding changes through `3cb9462`.
-- Slice 65 is deployed and production-smoked. The hosted worktree is clean.
+  loop protection, Slice 63 frontend production fixes, Slice 65 curl-first
+  installer/onboarding changes, and Slice 67 branch-triggered source bundles
+  through `a9a7ff8`.
+- Slice 65 is deployed and production-smoked. Slice 67 is pushed to hosted
+  `main`; deploy status should be checked after the provider finishes building.
 
 The local wiki command currently fails on this checkout with:
 
@@ -402,9 +419,17 @@ repaired.
   matched the repo script byte-for-byte, homepage and setup surfaces use the
   curl installer with no stale npm/backend-host strings, API health returned
   `{"status":"ok"}`, and Chrome verified source plus PyPI CLI setup handoffs.
+- Slice 67 hosted backend verification passed: focused trigger/conversation
+  tests (`61 passed`), broader adjacent tests (`172 passed`), full backend
+  suite (`380 passed`, `1` warning), hosted ruff, compileall, and
+  `git diff --check`.
 
 ## Next Pressure Tests
 
+- Deploy Slice 67, then run a production trigger smoke: captured source exists
+  for a repo/branch, enabling that branch trigger should create a
+  `ConversationBatchSource` run on a qualifying push and use the branch delivery
+  policy.
 - Continue the real signed-in production browser pass into capture install,
   source capture, and actual run creation/delivery.
 - Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
