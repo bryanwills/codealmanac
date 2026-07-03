@@ -1,6 +1,12 @@
 import subprocess
 from pathlib import Path
 
+from codealmanac.engine.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.command import (
     CommandRunner,
     SubprocessCommandRunner,
@@ -13,12 +19,6 @@ from codealmanac.integrations.harnesses.git_status import (
     changed_paths,
     git_status_snapshot,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessKind,
-    HarnessReadiness,
-    HarnessRunResult,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CODEX_COMMAND = "codex"
 CODEX_STATUS_TIMEOUT_SECONDS = 10

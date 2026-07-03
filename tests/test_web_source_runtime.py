@@ -3,12 +3,12 @@ from pathlib import Path
 import httpx
 
 from codealmanac.app import create_app
-from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
-from codealmanac.services.sources.models import SourceRuntimeStatus
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.models import SourceRuntimeStatus
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
+from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 
 
 def test_web_source_runtime_extracts_html_text(tmp_path: Path):

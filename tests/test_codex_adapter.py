@@ -2,16 +2,16 @@ import subprocess
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.integrations.command import CommandResult
-from codealmanac.integrations.harnesses.codex.adapter import (
-    CodexAppServerHarnessAdapter,
-)
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessRunResult,
     HarnessRunStatus,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.integrations.command import CommandResult
+from codealmanac.integrations.harnesses.codex.adapter import (
+    CodexAppServerHarnessAdapter,
+)
 
 
 class FakeCommandRunner:

@@ -6,14 +6,14 @@ import pytest
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
-from codealmanac.integrations.sources.filesystem import FilesystemSourceRuntimeAdapter
-from codealmanac.integrations.sources.filesystem.git import parse_git_status_z
-from codealmanac.services.sources.models import SourceRuntimeStatus
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.models import SourceRuntimeStatus
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
     SourceRuntimeContext,
 )
+from codealmanac.integrations.sources.filesystem import FilesystemSourceRuntimeAdapter
+from codealmanac.integrations.sources.filesystem.git import parse_git_status_z
 
 
 def test_filesystem_source_runtime_reads_text_file(tmp_path: Path):

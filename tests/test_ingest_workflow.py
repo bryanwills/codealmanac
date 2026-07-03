@@ -8,8 +8,7 @@ from pydantic import ValidationError
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFailed
 from codealmanac.core.models import AppConfig
-from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessActorConfidence,
     HarnessActorRole,
     HarnessAgentTrace,
@@ -26,19 +25,20 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
     HarnessUsage,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.runs.models import RunEventKind, RunStatus
-from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
-from codealmanac.services.sources.models import (
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.sources.models import (
     SourceKind,
     SourceRef,
     SourceRuntime,
     SourceRuntimeStatus,
 )
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
+from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
+from codealmanac.services.runs.models import RunEventKind, RunStatus
+from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest

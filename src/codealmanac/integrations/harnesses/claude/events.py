@@ -11,6 +11,7 @@ from claude_agent_sdk import (
     UserMessage,
 )
 
+from codealmanac.engine.harnesses.models import HarnessEvent, HarnessEventKind
 from codealmanac.integrations.harnesses.claude.actors import actor_for_message
 from codealmanac.integrations.harnesses.claude.message_events import (
     assistant_events,
@@ -31,7 +32,6 @@ from codealmanac.integrations.harnesses.claude.task_events import (
     task_started_events,
     task_updated_events,
 )
-from codealmanac.services.harnesses.models import HarnessEvent, HarnessEventKind
 
 
 def map_claude_message(

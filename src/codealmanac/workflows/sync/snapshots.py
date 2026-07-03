@@ -1,6 +1,6 @@
 from hashlib import sha256
 
-from codealmanac.services.sources.models import TranscriptCandidate
+from codealmanac.engine.sources.models import TranscriptCandidate
 from codealmanac.workflows.sync.models import TranscriptSnapshot
 
 EMPTY_SHA256 = f"sha256:{sha256(b'').hexdigest()}"

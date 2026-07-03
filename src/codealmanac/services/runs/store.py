@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from codealmanac.core.errors import ConflictError, NotFoundError
-from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
+from codealmanac.engine.harnesses.models import HarnessEvent, HarnessTranscriptRef
 from codealmanac.services.runs.factory import new_run_id, new_run_record
 from codealmanac.services.runs.io import RunLedgerIO
 from codealmanac.services.runs.locks import RunWorkerLease, acquire_worker_lock

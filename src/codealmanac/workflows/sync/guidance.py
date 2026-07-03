@@ -1,4 +1,4 @@
-from codealmanac.services.sources.models import TranscriptCandidate
+from codealmanac.engine.sources.models import TranscriptCandidate
 from codealmanac.workflows.sync.models import SyncWorkItem
 
 

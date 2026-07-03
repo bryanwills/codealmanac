@@ -32,8 +32,8 @@ def test_directory_selection_group_uses_two_directory_levels():
     assert directory_selection_group(root / "app.py", root) == "app.py"
     assert directory_selection_group(root / "cli/main.py", root) == "cli"
     assert (
-        directory_selection_group(root / "services/sources/service.py", root)
-        == "services/sources"
+        directory_selection_group(root / "engine/sources/service.py", root)
+        == "engine/sources"
     )
 
 

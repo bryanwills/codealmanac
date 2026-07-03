@@ -3,8 +3,8 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from codealmanac.app import CodeAlmanac
+from codealmanac.engine.harnesses.models import HarnessEvent, HarnessEventKind
 from codealmanac.server.app import create_server_app
-from codealmanac.services.harnesses.models import HarnessEvent, HarnessEventKind
 from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,

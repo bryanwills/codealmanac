@@ -25,6 +25,20 @@ from codealmanac.cloud.runs.service import CloudRunsService
 from codealmanac.cloud.runs.workflow import CloudRunsWorkflow
 from codealmanac.cloud.status.workflow import CloudStatusWorkflow
 from codealmanac.core.models import AppConfig
+from codealmanac.engine.harnesses.ports import HarnessAdapter
+from codealmanac.engine.harnesses.service import HarnessesService
+from codealmanac.engine.lifecycle import LifecycleMutationPolicy
+from codealmanac.engine.page_run import PageRunWorkflow
+from codealmanac.engine.source_bundles.service import SourceBundlesService
+from codealmanac.engine.source_bundles.store import SourceBundlesStore
+from codealmanac.engine.sources.ports import (
+    SourceRuntimeAdapter,
+    TranscriptDiscoveryAdapter,
+)
+from codealmanac.engine.sources.service import SourcesService
+from codealmanac.engine.worker_workspaces.ports import GitWorktreeManager
+from codealmanac.engine.worker_workspaces.service import WorkerWorkspacesService
+from codealmanac.engine.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.browser import WebBrowserOpener
 from codealmanac.integrations.capture import (
@@ -70,8 +84,6 @@ from codealmanac.services.deliveries.store import DeliveriesStore
 from codealmanac.services.diagnostics.service import DiagnosticsService
 from codealmanac.services.engine_runs.service import EngineRunsService
 from codealmanac.services.engine_runs.store import EngineRunsStore
-from codealmanac.services.harnesses.ports import HarnessAdapter
-from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.local_hooks.ports import LocalGitHookManager
 from codealmanac.services.local_hooks.service import LocalHooksService
 from codealmanac.services.runs.ports import RunWorkerSpawner
@@ -79,22 +91,12 @@ from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.setup.ports import InstructionInstaller
 from codealmanac.services.setup.service import SetupService
-from codealmanac.services.source_bundles.service import SourceBundlesService
-from codealmanac.services.source_bundles.store import SourceBundlesStore
-from codealmanac.services.sources.ports import (
-    SourceRuntimeAdapter,
-    TranscriptDiscoveryAdapter,
-)
-from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.tagging.service import TaggingService
 from codealmanac.services.updates.ports import (
     PackageCommandRunner,
     PackageInstallMetadataProvider,
 )
 from codealmanac.services.updates.service import UpdatesService
-from codealmanac.services.worker_workspaces.ports import GitWorktreeManager
-from codealmanac.services.worker_workspaces.service import WorkerWorkspacesService
-from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.wiki.health.service import HealthService
 from codealmanac.wiki.index.service import IndexService
 from codealmanac.wiki.index.store import IndexStore
@@ -109,7 +111,6 @@ from codealmanac.wiki.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.service import InitWorkflow
-from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 from codealmanac.workflows.local_delivery import LocalDeliveryWorkflow
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_engine import LocalEngineWorkflow
@@ -123,7 +124,6 @@ from codealmanac.workflows.local_setup import (
 from codealmanac.workflows.local_status import LocalStatusWorkflow
 from codealmanac.workflows.local_update import LocalUpdateWorkflow
 from codealmanac.workflows.local_worker import LocalWorkerSpawner, LocalWorkerWorkflow
-from codealmanac.workflows.page_run import PageRunWorkflow
 from codealmanac.workflows.run_queue import RunQueueWorkflow
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncLedgerStore

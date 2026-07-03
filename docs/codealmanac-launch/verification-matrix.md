@@ -1636,3 +1636,20 @@ Known residue:
 - Modal image build logs showed `codealmanac 0.1.9`.
 - Modal smoke command completed:
   `doppler run --project codealmanac --config prd -- uv run modal run modal_app/dev.py::smoke`.
+
+## Slice 83 CodeAlmanac Engine Package Boundary
+
+- Requirement: hosted and local code should have an explicit open-source engine
+  import surface instead of depending on scattered `services/*` and
+  `workflows/*` runtime modules.
+- Implementation evidence: `src/codealmanac/engine/` now owns harness
+  contracts, source refs/runtimes, source bundle materialization, worker
+  workspaces, shared page-run execution, and lifecycle safety helpers.
+- Boundary evidence: architecture tests now prevent the old
+  `services/source_bundles`, `services/sources`, `services/harnesses`,
+  `services/worker_workspaces`, `workflows/page_run`, and `workflows/lifecycle*`
+  source files from returning.
+- Verification evidence: focused engine/provider/lifecycle test set passed
+  (`194 passed`).
+  Full local verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.

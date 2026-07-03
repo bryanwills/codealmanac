@@ -5,9 +5,9 @@ from humanfriendly import InvalidTimespan, parse_timespan
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.core.errors import ValidationFailed
+from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.services.config.models import CodeAlmanacConfig
 from codealmanac.services.config.requests import LoadConfigRequest
-from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.workflows.sync.requests import DEFAULT_SYNC_PENDING_TIMEOUT
 
 

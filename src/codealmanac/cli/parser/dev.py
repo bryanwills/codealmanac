@@ -1,6 +1,6 @@
 import argparse
 
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 
 
 def add_dev_commands(subcommands: argparse._SubParsersAction) -> None:

@@ -15,6 +15,14 @@ from claude_agent_sdk import (
     query as claude_query,
 )
 
+from codealmanac.engine.harnesses.models import (
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessKind,
+    HarnessRunResult,
+    HarnessRunStatus,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.harnesses.claude.events import (
     map_claude_message,
 )
@@ -31,14 +39,6 @@ from codealmanac.integrations.harnesses.claude.sdk_messages import (
     session_id_for_message,
 )
 from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
-from codealmanac.services.harnesses.models import (
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessKind,
-    HarnessRunResult,
-    HarnessRunStatus,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CLAUDE_COMMAND = "claude"
 CLAUDE_RUN_TIMEOUT_SECONDS = 900

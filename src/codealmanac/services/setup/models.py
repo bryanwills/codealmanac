@@ -6,7 +6,7 @@ from pydantic import Field, field_validator
 from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 
 
 class SetupTarget(StrEnum):

@@ -36,6 +36,17 @@ from codealmanac.cloud.runs.models import (
 )
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_jobs_path, normalize_path
+from codealmanac.engine.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+    HarnessRunStatus,
+    HarnessTranscriptRef,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
+from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
+from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     ScheduledJob,
@@ -58,14 +69,6 @@ from codealmanac.services.control.requests import (
     UpdateControlRunRequest,
     UpsertRepositoryRequest,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessKind,
-    HarnessReadiness,
-    HarnessRunResult,
-    HarnessRunStatus,
-    HarnessTranscriptRef,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunOperation,
@@ -81,13 +84,10 @@ from codealmanac.services.runs.requests import (
     SpawnRunWorkerRequest,
     StartRunRequest,
 )
-from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
-from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
 )
-from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.wiki.workspaces.identity import workspace_id_for
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest

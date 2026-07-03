@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
+from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.wiki.workspaces.roots import nearest_almanac_root
 
 

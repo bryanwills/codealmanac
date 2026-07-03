@@ -1,5 +1,12 @@
 import httpx
 
+from codealmanac.engine.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.engine.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.integrations.sources.web.client import fetch_web_response
 from codealmanac.integrations.sources.web.documents import parse_web_response
 from codealmanac.integrations.sources.web.errors import (
@@ -11,13 +18,6 @@ from codealmanac.integrations.sources.web.rendering import (
     render_web_runtime,
     web_runtime_title,
 )
-from codealmanac.services.sources.models import (
-    SourceKind,
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
-)
-from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 
 WEB_RUNTIME_TIMEOUT_SECONDS = 20
 DEFAULT_MAX_BYTES = 2_000_000

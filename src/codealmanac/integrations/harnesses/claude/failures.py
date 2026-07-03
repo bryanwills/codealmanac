@@ -1,4 +1,4 @@
-from codealmanac.services.harnesses.models import HarnessFailure, HarnessKind
+from codealmanac.engine.harnesses.models import HarnessFailure, HarnessKind
 
 
 def classify_claude_failure(

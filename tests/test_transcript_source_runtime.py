@@ -2,12 +2,12 @@ import json
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.integrations.sources.transcripts import TranscriptSourceRuntimeAdapter
-from codealmanac.services.sources.models import SourceRuntimeStatus
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.models import SourceRuntimeStatus
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
+from codealmanac.integrations.sources.transcripts import TranscriptSourceRuntimeAdapter
 
 
 def test_transcript_runtime_reads_codex_jsonl(tmp_path: Path):

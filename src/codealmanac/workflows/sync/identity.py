@@ -3,8 +3,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from codealmanac.core.paths import normalize_path
+from codealmanac.engine.sources.models import TranscriptCandidate
 from codealmanac.services.runs.models import RunRecord
-from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.wiki.workspaces.models import Workspace
 from codealmanac.workflows.sync.entries import fresh_ledger_entry
 from codealmanac.workflows.sync.models import SyncLedger, SyncLedgerEntry

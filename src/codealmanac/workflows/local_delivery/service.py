@@ -1,5 +1,7 @@
 from contextlib import suppress
 
+from codealmanac.engine.worker_workspaces.requests import ReadWorkerWorkspaceRequest
+from codealmanac.engine.worker_workspaces.service import WorkerWorkspacesService
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -27,8 +29,6 @@ from codealmanac.services.engine_runs.models import (
 )
 from codealmanac.services.engine_runs.requests import ReadEngineRunRequest
 from codealmanac.services.engine_runs.service import EngineRunsService
-from codealmanac.services.worker_workspaces.requests import ReadWorkerWorkspaceRequest
-from codealmanac.services.worker_workspaces.service import WorkerWorkspacesService
 from codealmanac.workflows.local_delivery.models import LocalDeliveryResult
 from codealmanac.workflows.local_delivery.ports import LocalGitDeliveryManager
 from codealmanac.workflows.local_delivery.requests import DeliverLocalRunRequest

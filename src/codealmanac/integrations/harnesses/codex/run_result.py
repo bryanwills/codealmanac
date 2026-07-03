@@ -1,12 +1,12 @@
-from codealmanac.integrations.harnesses.codex.failures import classify_codex_failure
-from codealmanac.integrations.harnesses.codex.state import CodexRunState
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessKind,
     HarnessRunResult,
     HarnessRunStatus,
 )
+from codealmanac.integrations.harnesses.codex.failures import classify_codex_failure
+from codealmanac.integrations.harnesses.codex.state import CodexRunState
 
 
 def result_from_state(

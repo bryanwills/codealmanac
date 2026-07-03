@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
 from codealmanac.core.paths import normalize_path
+from codealmanac.engine.sources.models import TranscriptCandidate
 from codealmanac.services.runs.models import RunRecord, RunStatus
-from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.workflows.sync.entries import (
     cleared_pending_fields,
     needs_attention_entry,

@@ -9,6 +9,13 @@ from claude_agent_sdk import (
     UserMessage,
 )
 
+from codealmanac.engine.harnesses.models import (
+    HarnessAgentTrace,
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessRunActor,
+    HarnessToolStatus,
+)
 from codealmanac.integrations.command import first_line
 from codealmanac.integrations.harnesses.claude.actors import (
     actor_for_helper,
@@ -24,13 +31,6 @@ from codealmanac.integrations.harnesses.claude.raw import (
     raw_block,
 )
 from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
-from codealmanac.services.harnesses.models import (
-    HarnessAgentTrace,
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessRunActor,
-    HarnessToolStatus,
-)
 
 
 def tool_use_events(

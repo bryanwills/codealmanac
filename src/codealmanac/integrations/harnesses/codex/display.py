@@ -1,17 +1,17 @@
-from codealmanac.integrations.harnesses.codex.fields import (
-    JsonObject,
-    as_record,
-    number_field,
-    string_field,
-    stringify_json_value,
-)
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessRunActor,
     HarnessToolDisplay,
     HarnessToolDisplayKind,
     HarnessToolStatus,
+)
+from codealmanac.integrations.harnesses.codex.fields import (
+    JsonObject,
+    as_record,
+    number_field,
+    string_field,
+    stringify_json_value,
 )
 
 

@@ -84,6 +84,9 @@ Completed:
 - Slice 82: `services/wiki`, `services/workspaces`, `services/index`,
   `services/search`, `services/pages`, `services/topics`, `services/health`,
   and `services/viewer` -> `wiki/`
+- Slice 83: `services/source_bundles`, `services/sources`,
+  `services/harnesses`, `services/worker_workspaces`, `workflows/page_run`,
+  and shared lifecycle helpers -> `engine/`
 
 Goal:
 
@@ -98,8 +101,9 @@ Do this with import-move tooling and thin compatibility only inside the same sli
 
 Remaining work in this slice family:
 
-- `services/source_bundles/sources/harnesses/worker_workspaces + lifecycle workflows -> engine/`
 - `control/deliveries/local_hooks/local_* workflows -> local/`
+- optional later package-resource move for root `prompts/` and `manual/` if
+  hosted needs those under `engine/`
 
 ## Slice F: Collapse Local Run Names
 

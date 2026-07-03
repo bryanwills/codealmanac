@@ -5,7 +5,7 @@ from pydantic import field_validator, model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.wiki.workspaces.roots import validate_almanac_root_field
 
 

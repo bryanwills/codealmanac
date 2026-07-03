@@ -1,12 +1,12 @@
 from pathlib import Path
 
+from codealmanac.engine.harnesses.models import HarnessRunResult
+from codealmanac.engine.lifecycle import first_line
 from codealmanac.services.engine_runs.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineFileChangeKind,
 )
-from codealmanac.services.harnesses.models import HarnessRunResult
-from codealmanac.workflows.lifecycle import first_line
 
 DEFAULT_COMMIT_DESCRIPTION = "update wiki"
 

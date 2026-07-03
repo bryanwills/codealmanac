@@ -1,5 +1,5 @@
 from codealmanac.core.errors import ExecutionFailed
-from codealmanac.services.sources.models import SourceRef
+from codealmanac.engine.sources.models import SourceRef
 
 
 def github_target_args(ref: SourceRef) -> tuple[str, ...]:

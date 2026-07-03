@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
+from codealmanac.engine.source_bundles.models import SourceBundleSessionInput
 from codealmanac.services.control.models import SessionRecord
-from codealmanac.services.source_bundles.models import SourceBundleSessionInput
 
 
 def source_bundle_session_inputs(

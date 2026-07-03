@@ -2441,3 +2441,31 @@
 - Refactor direction captured there: hosted should split into
   `web / worker / domains / events / integrations`; local should split into
   `cloud / local / wiki / engine / integrations`.
+
+## 2026-07-03 Slice 81-83 CodeAlmanac Package Boundaries
+
+- Slice 81 moved the local package's cloud-facing client surface from scattered
+  `services/cloud_*` and `workflows/cloud_*` modules into
+  `src/codealmanac/cloud/`.
+- Slice 82 moved repo-wiki/read-model code into `src/codealmanac/wiki/`:
+  wiki files, workspaces, index, search, pages, topics, health, and viewer.
+- Slice 83 moved reusable agent/wiki-update runtime code into
+  `src/codealmanac/engine/`: harness contracts, source refs/runtimes, source
+  bundles, worker workspaces, shared page-run execution, and lifecycle safety
+  helpers.
+- Packaged `prompts/` and `manual/` remain root package resources for now;
+  moving them needs a distribution-aware package-data slice.
+- Slice 83 focused verification passed:
+  `uv run pytest tests/test_harnesses_service.py tests/test_sources_service.py
+  tests/test_source_bundles_service.py tests/test_worker_workspaces_service.py
+  tests/test_init_workflow.py tests/test_ingest_workflow.py
+  tests/test_garden_workflow.py tests/test_sync_workflow.py
+  tests/test_run_queue_workflow.py tests/test_local_engine_workflow.py
+  tests/test_local_update_workflow.py tests/test_local_worker_workflow.py
+  tests/test_codex_adapter.py tests/test_codex_app_server_adapter.py
+  tests/test_claude_adapter.py tests/test_web_source_runtime.py
+  tests/test_filesystem_source_runtime.py tests/test_github_source_runtime.py
+  tests/test_transcript_source_runtime.py tests/test_architecture.py -q --tb=short`
+  (`194 passed`).
+- Slice 83 full local verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.

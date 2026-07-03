@@ -1,11 +1,11 @@
 from pydantic import JsonValue
 
+from codealmanac.engine.harnesses.models import HarnessUsage
 from codealmanac.integrations.harnesses.codex.fields import (
     as_record,
     first_present,
     number_field,
 )
-from codealmanac.services.harnesses.models import HarnessUsage
 
 
 def parse_codex_app_server_usage(value: JsonValue | None) -> HarnessUsage | None:

@@ -7,7 +7,7 @@ from pydantic import StringConstraints, field_validator, model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessKind,
     HarnessTranscriptRef,

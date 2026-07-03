@@ -9,6 +9,7 @@ def test_cli_workflows_and_services_do_not_import_integrations():
     checked_roots = (
         SRC_ROOT / "cli",
         SRC_ROOT / "cloud",
+        SRC_ROOT / "engine",
         SRC_ROOT / "wiki",
         SRC_ROOT / "workflows",
         SRC_ROOT / "services",
@@ -89,7 +90,7 @@ def test_engine_runs_service_keeps_worker_contract_boundary():
 
 
 def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
-    worker_root = SRC_ROOT / "services/worker_workspaces"
+    worker_root = SRC_ROOT / "engine/worker_workspaces"
     git_worktree = SRC_ROOT / "integrations/workspaces/git/worktree.py"
     module_names = {path.name for path in worker_root.glob("*.py")}
     service_text = (worker_root / "service.py").read_text(encoding="utf-8")
@@ -116,7 +117,7 @@ def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
 
 
 def test_source_bundles_service_keeps_bundle_materialization_boundary():
-    bundle_root = SRC_ROOT / "services/source_bundles"
+    bundle_root = SRC_ROOT / "engine/source_bundles"
     module_names = {path.name for path in bundle_root.glob("*.py")}
     service_text = (bundle_root / "service.py").read_text(encoding="utf-8")
     store_text = (bundle_root / "store.py").read_text(encoding="utf-8")
@@ -259,6 +260,33 @@ def test_cloud_package_owns_cloud_client_surface():
         "status",
     } <= {path.name for path in cloud_root.iterdir() if path.is_dir()}
     assert all(not any(root.glob("*.py")) for root in forbidden_roots)
+
+
+def test_engine_package_owns_agent_runtime_surface():
+    engine_root = SRC_ROOT / "engine"
+    forbidden_roots = (
+        SRC_ROOT / "services/source_bundles",
+        SRC_ROOT / "services/sources",
+        SRC_ROOT / "services/harnesses",
+        SRC_ROOT / "services/worker_workspaces",
+        SRC_ROOT / "workflows/page_run",
+    )
+    forbidden_files = (
+        SRC_ROOT / "workflows/lifecycle.py",
+        SRC_ROOT / "workflows/lifecycle_harness.py",
+        SRC_ROOT / "workflows/lifecycle_mutation.py",
+    )
+
+    assert {
+        "harnesses",
+        "lifecycle",
+        "page_run",
+        "source_bundles",
+        "sources",
+        "worker_workspaces",
+    } <= {path.name for path in engine_root.iterdir() if path.is_dir()}
+    assert all(not any(root.glob("*.py")) for root in forbidden_roots)
+    assert [path for path in forbidden_files if path.exists()] == []
 
 
 def test_wiki_package_owns_wiki_read_model_surface():
@@ -805,7 +833,7 @@ def test_wiki_topics_yaml_stays_split_by_read_and_mutation():
 
 
 def test_harness_contract_models_stay_split_by_meaning():
-    harness_root = SRC_ROOT / "services/harnesses"
+    harness_root = SRC_ROOT / "engine/harnesses"
     models_text = (harness_root / "models.py").read_text(encoding="utf-8")
     kinds_text = (harness_root / "kinds.py").read_text(encoding="utf-8")
     actors_text = (harness_root / "actors.py").read_text(encoding="utf-8")
@@ -1426,10 +1454,10 @@ def test_cli_dispatch_files_stay_small():
 
 
 def test_page_run_workflow_owns_shared_lifecycle_execution():
-    page_run_service = SRC_ROOT / "workflows/page_run/service.py"
-    lifecycle = SRC_ROOT / "workflows/lifecycle.py"
-    lifecycle_harness = SRC_ROOT / "workflows/lifecycle_harness.py"
-    lifecycle_mutation = SRC_ROOT / "workflows/lifecycle_mutation.py"
+    page_run_service = SRC_ROOT / "engine/page_run/service.py"
+    lifecycle = SRC_ROOT / "engine/lifecycle/__init__.py"
+    lifecycle_harness = SRC_ROOT / "engine/lifecycle/harness.py"
+    lifecycle_mutation = SRC_ROOT / "engine/lifecycle/mutation.py"
     page_run_text = page_run_service.read_text(encoding="utf-8")
     lifecycle_text = lifecycle.read_text(encoding="utf-8")
     lifecycle_harness_text = lifecycle_harness.read_text(encoding="utf-8")
@@ -1442,8 +1470,8 @@ def test_page_run_workflow_owns_shared_lifecycle_execution():
     assert "RecordRunHarnessTranscriptRequest" in page_run_text
     assert "validate_harness_result" in page_run_text
     assert len(lifecycle_text.splitlines()) <= 40
-    assert "from codealmanac.workflows.lifecycle_harness import" in lifecycle_text
-    assert "from codealmanac.workflows.lifecycle_mutation import" in lifecycle_text
+    assert "from codealmanac.engine.lifecycle.harness import" in lifecycle_text
+    assert "from codealmanac.engine.lifecycle.mutation import" in lifecycle_text
     assert "class LifecycleMutationPolicy" not in lifecycle_text
     assert "def validate_harness_result(" not in lifecycle_text
     assert "def changed_paths(" not in lifecycle_text
@@ -1481,7 +1509,7 @@ def test_page_writing_workflow_services_stay_small():
     for path in (
         SRC_ROOT / "workflows/ingest/service.py",
         SRC_ROOT / "workflows/garden/service.py",
-        SRC_ROOT / "workflows/page_run/service.py",
+        SRC_ROOT / "engine/page_run/service.py",
         SRC_ROOT / "workflows/run_queue/service.py",
     ):
         line_count = len(path.read_text(encoding="utf-8").splitlines())
@@ -1799,7 +1827,7 @@ def test_transcript_source_runtime_stays_split_by_responsibility():
 
 
 def test_sources_service_stays_orchestration_only():
-    sources_root = SRC_ROOT / "services/sources"
+    sources_root = SRC_ROOT / "engine/sources"
     service_text = (sources_root / "service.py").read_text(encoding="utf-8")
     address_text = (sources_root / "address_resolution.py").read_text(
         encoding="utf-8"
@@ -1993,7 +2021,7 @@ def test_sync_workflow_policy_stays_out_of_service_orchestration():
         "codealmanac.integrations",
         "codealmanac.workflows.ingest",
         "codealmanac.workflows.run_queue",
-        "codealmanac.services.sources.service",
+        "codealmanac.engine.sources.service",
         "codealmanac.services.runs.service",
         "codealmanac.wiki.workspaces.service",
     )

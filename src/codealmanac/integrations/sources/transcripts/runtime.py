@@ -1,16 +1,16 @@
+from codealmanac.engine.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.engine.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.integrations.sources.transcripts.errors import unavailable_runtime
 from codealmanac.integrations.sources.transcripts.paths import transcript_path
 from codealmanac.integrations.sources.transcripts.reader import read_transcript_entries
 from codealmanac.integrations.sources.transcripts.rendering import (
     render_transcript_runtime,
 )
-from codealmanac.services.sources.models import (
-    SourceKind,
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
-)
-from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 
 DEFAULT_MAX_CHARS = 60_000
 

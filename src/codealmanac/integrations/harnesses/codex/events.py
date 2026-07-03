@@ -1,3 +1,8 @@
+from codealmanac.engine.harnesses.models import (
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessRunActor,
+)
 from codealmanac.integrations.harnesses.codex.actors import actor_for_codex_thread
 from codealmanac.integrations.harnesses.codex.failures import (
     failure_from_error_record,
@@ -20,11 +25,6 @@ from codealmanac.integrations.harnesses.codex.result import (
     record_failure,
 )
 from codealmanac.integrations.harnesses.codex.state import CodexRunState
-from codealmanac.services.harnesses.models import (
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessRunActor,
-)
 
 __all__ = (
     "CodexRunState",

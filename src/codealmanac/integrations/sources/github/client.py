@@ -4,6 +4,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from codealmanac.core.errors import ExecutionFailed
+from codealmanac.engine.sources.models import SourceRef
 from codealmanac.integrations.command import CommandRunner, SubprocessCommandRunner
 from codealmanac.integrations.sources.github.models import (
     ISSUE_FIELDS,
@@ -13,7 +14,6 @@ from codealmanac.integrations.sources.github.models import (
 )
 from codealmanac.integrations.sources.github.targets import github_target_args
 from codealmanac.integrations.sources.runtime import surface_process_error
-from codealmanac.services.sources.models import SourceRef
 
 GITHUB_RUNTIME_TIMEOUT_SECONDS = 30
 

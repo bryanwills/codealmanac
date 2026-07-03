@@ -4,14 +4,14 @@ from pathlib import Path
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_jobs_path
-from codealmanac.integrations.runs.process import worker_command
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.integrations.runs.process import worker_command
 from codealmanac.services.runs.models import RunStatus, RunWorkerSpawnResult
 from codealmanac.services.runs.requests import (
     CancelRunRequest,

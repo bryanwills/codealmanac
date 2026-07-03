@@ -10,7 +10,7 @@ from codealmanac.cli.dispatch.config import (
 )
 from codealmanac.cli.render.root import render_sync_status
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.sources.models import TranscriptApp
+from codealmanac.engine.sources.models import TranscriptApp
 from codealmanac.workflows.sync.models import SyncExecution
 from codealmanac.workflows.sync.requests import (
     DEFAULT_SYNC_MAX_FAILED_ATTEMPTS,

@@ -3,12 +3,12 @@ import re
 
 from pydantic import JsonValue
 
+from codealmanac.engine.harnesses.models import HarnessFailure, HarnessKind
 from codealmanac.integrations.harnesses.codex.fields import (
     JsonObject,
     as_record,
     number_field,
 )
-from codealmanac.services.harnesses.models import HarnessFailure, HarnessKind
 
 
 def classify_codex_failure(

@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from codealmanac.services.harnesses.models import HarnessEvent
+from codealmanac.engine.harnesses.models import HarnessEvent
 from codealmanac.services.runs.io import RunLedgerIO
 from codealmanac.services.runs.models import (
     RunEventKind,

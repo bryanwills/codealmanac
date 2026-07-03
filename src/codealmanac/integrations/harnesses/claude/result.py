@@ -1,14 +1,7 @@
 from claude_agent_sdk import ResultMessage
 from pydantic import JsonValue
 
-from codealmanac.integrations.command import first_line
-from codealmanac.integrations.harnesses.claude.actors import root_claude_actor
-from codealmanac.integrations.harnesses.claude.failures import (
-    classify_claude_failure,
-)
-from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
-from codealmanac.integrations.harnesses.claude.usage import parse_claude_usage
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessActorRole,
     HarnessEvent,
     HarnessEventKind,
@@ -19,6 +12,13 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
     HarnessUsage,
 )
+from codealmanac.integrations.command import first_line
+from codealmanac.integrations.harnesses.claude.actors import root_claude_actor
+from codealmanac.integrations.harnesses.claude.failures import (
+    classify_claude_failure,
+)
+from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
+from codealmanac.integrations.harnesses.claude.usage import parse_claude_usage
 
 
 def provider_session_event(session_id: str) -> HarnessEvent:

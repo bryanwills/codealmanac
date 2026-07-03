@@ -6,7 +6,7 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 
 DEFAULT_HARNESS = HarnessKind.CODEX
 DEFAULT_SYNC_QUIET = timedelta(minutes=45)

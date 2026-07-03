@@ -5,6 +5,14 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.models import AppConfig
+from codealmanac.engine.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+    HarnessRunStatus,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.services.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -20,14 +28,6 @@ from codealmanac.services.control.requests import (
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessKind,
-    HarnessReadiness,
-    HarnessRunResult,
-    HarnessRunStatus,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.workflows.local_delivery.models import (
     LocalDeliveryCommit,
     LocalDeliveryHead,

@@ -1,3 +1,8 @@
+from codealmanac.engine.sources.models import (
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
 from codealmanac.integrations.sources.github.models import (
     GitHubActor,
     GitHubComment,
@@ -11,11 +16,6 @@ from codealmanac.integrations.sources.github.models import (
 from codealmanac.integrations.sources.runtime import (
     bounded_text,
     source_runtime_section,
-)
-from codealmanac.services.sources.models import (
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
 )
 
 

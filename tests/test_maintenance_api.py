@@ -6,18 +6,18 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
-from codealmanac.maintenance import (
-    MaintenanceOperation,
-    RunMaintenanceRequest,
-    run_maintenance,
-)
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.maintenance import (
+    MaintenanceOperation,
+    RunMaintenanceRequest,
+    run_maintenance,
+)
 from codealmanac.services.runs.models import RunStatus
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest

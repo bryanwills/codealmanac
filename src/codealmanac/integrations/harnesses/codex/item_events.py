@@ -1,6 +1,14 @@
 import base64
 import binascii
 
+from codealmanac.engine.harnesses.models import (
+    HarnessActorRole,
+    HarnessAgentTrace,
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessRunActor,
+    HarnessToolStatus,
+)
 from codealmanac.integrations.harnesses.codex.agent_events import lifecycle_events
 from codealmanac.integrations.harnesses.codex.display import (
     codex_item_display,
@@ -15,14 +23,6 @@ from codealmanac.integrations.harnesses.codex.fields import (
     string_field,
 )
 from codealmanac.integrations.harnesses.codex.state import CodexRunState
-from codealmanac.services.harnesses.models import (
-    HarnessActorRole,
-    HarnessAgentTrace,
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessRunActor,
-    HarnessToolStatus,
-)
 
 
 def map_started_item(

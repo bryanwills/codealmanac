@@ -1,3 +1,10 @@
+from codealmanac.engine.harnesses.models import (
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessFailure,
+    HarnessRunActor,
+    HarnessUsage,
+)
 from codealmanac.integrations.harnesses.codex.failures import classify_codex_failure
 from codealmanac.integrations.harnesses.codex.fields import (
     JsonObject,
@@ -10,13 +17,6 @@ from codealmanac.integrations.harnesses.codex.fields import (
 from codealmanac.integrations.harnesses.codex.state import CodexRunState
 from codealmanac.integrations.harnesses.codex.usage import (
     parse_codex_app_server_usage,
-)
-from codealmanac.services.harnesses.models import (
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessFailure,
-    HarnessRunActor,
-    HarnessUsage,
 )
 
 

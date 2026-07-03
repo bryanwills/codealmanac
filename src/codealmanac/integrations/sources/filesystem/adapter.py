@@ -1,6 +1,13 @@
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
+from codealmanac.engine.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.engine.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.integrations.command import CommandRunner, SubprocessCommandRunner
 from codealmanac.integrations.sources.filesystem.documents import (
     UnreadableTextError,
@@ -17,13 +24,6 @@ from codealmanac.integrations.sources.runtime import (
     bounded_text,
     source_runtime_section,
 )
-from codealmanac.services.sources.models import (
-    SourceKind,
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
-)
-from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 
 DEFAULT_MAX_FILE_BYTES = 200_000
 DEFAULT_MAX_DIRECTORY_FILES = 25

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
+from codealmanac.engine.sources.service import SourcesService
 from codealmanac.services.runs.service import RunsService
-from codealmanac.services.sources.service import SourcesService
 from codealmanac.wiki.workspaces.service import WorkspacesService
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.run_queue.service import RunQueueWorkflow

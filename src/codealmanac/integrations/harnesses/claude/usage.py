@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from codealmanac.services.harnesses.models import HarnessUsage
+from codealmanac.engine.harnesses.models import HarnessUsage
 
 
 def parse_claude_usage(value: Mapping[str, object] | None) -> HarnessUsage | None:

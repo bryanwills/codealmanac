@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.integrations.runs.local_worker import local_worker_command
-from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.workflows.local_worker.requests import SpawnLocalWorkerRequest
 
 

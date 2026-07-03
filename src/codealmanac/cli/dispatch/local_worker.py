@@ -2,7 +2,7 @@ import argparse
 import json
 
 from codealmanac.app import CodeAlmanac
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.workflows.local_worker.requests import RunNextLocalWorkerRequest
 
 

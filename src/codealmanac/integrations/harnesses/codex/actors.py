@@ -1,9 +1,9 @@
-from codealmanac.integrations.harnesses.codex.state import CodexRunState
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessActorConfidence,
     HarnessActorRole,
     HarnessRunActor,
 )
+from codealmanac.integrations.harnesses.codex.state import CodexRunState
 
 
 def actor_for_codex_thread(

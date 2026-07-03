@@ -5,6 +5,12 @@ from claude_agent_sdk import (
     TaskUpdatedMessage,
 )
 
+from codealmanac.engine.harnesses.models import (
+    HarnessAgentTrace,
+    HarnessEvent,
+    HarnessEventKind,
+    HarnessRunActor,
+)
 from codealmanac.integrations.harnesses.claude.actors import (
     actor_for_helper,
     helper_label,
@@ -14,12 +20,6 @@ from codealmanac.integrations.harnesses.claude.failures import (
 )
 from codealmanac.integrations.harnesses.claude.raw import raw_message
 from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
-from codealmanac.services.harnesses.models import (
-    HarnessAgentTrace,
-    HarnessEvent,
-    HarnessEventKind,
-    HarnessRunActor,
-)
 
 
 def task_started_events(

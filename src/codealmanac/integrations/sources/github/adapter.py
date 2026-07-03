@@ -4,6 +4,13 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from codealmanac.core.errors import ExecutionFailed
+from codealmanac.engine.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.engine.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.integrations.command import CommandRunner
 from codealmanac.integrations.sources.github.client import (
     GITHUB_RUNTIME_TIMEOUT_SECONDS,
@@ -14,13 +21,6 @@ from codealmanac.integrations.sources.github.rendering import (
     render_issue_runtime,
     render_pull_request_runtime,
 )
-from codealmanac.services.sources.models import (
-    SourceKind,
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
-)
-from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 
 DEFAULT_MAX_CHARS = 60_000
 

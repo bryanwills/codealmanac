@@ -1,5 +1,13 @@
 from pathlib import Path
 
+from codealmanac.engine.harnesses.models import (
+    HarnessActorRole,
+    HarnessEventKind,
+    HarnessKind,
+    HarnessRunStatus,
+    HarnessToolDisplayKind,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.harnesses.codex.app_server import (
     CodexAppServerClient,
     noninteractive_response,
@@ -7,14 +15,6 @@ from codealmanac.integrations.harnesses.codex.app_server import (
 from codealmanac.integrations.harnesses.codex.usage import (
     parse_codex_app_server_usage,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessActorRole,
-    HarnessEventKind,
-    HarnessKind,
-    HarnessRunStatus,
-    HarnessToolDisplayKind,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 FAKE_CODEX_BODY = r'''
 import base64

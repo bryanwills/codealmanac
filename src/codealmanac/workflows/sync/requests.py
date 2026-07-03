@@ -5,8 +5,8 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.harnesses.models import HarnessKind
-from codealmanac.services.sources.models import TranscriptApp
+from codealmanac.engine.harnesses.models import HarnessKind
+from codealmanac.engine.sources.models import TranscriptApp
 from codealmanac.workflows.sync.models import SyncExecution
 
 DEFAULT_SYNC_PENDING_TIMEOUT = timedelta(hours=24)

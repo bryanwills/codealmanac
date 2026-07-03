@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.engine.harnesses.models import HarnessKind
 
 
 class RunLocalUpdateRequest(CodeAlmanacModel):

@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
+from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.integrations.sources.transcripts.jsonl import (
     candidate_from_meta,
     collect_jsonl,
@@ -8,8 +10,6 @@ from codealmanac.integrations.sources.transcripts.jsonl import (
     read_first_lines,
     string_field,
 )
-from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
-from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 
 CLAUDE_PROJECTS_DIR = ".claude/projects"
 

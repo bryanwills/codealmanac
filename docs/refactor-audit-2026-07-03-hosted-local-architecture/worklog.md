@@ -19,3 +19,9 @@
 - Removed the ambiguous root `wiki/topics.py` facade because it conflicted with the new `wiki/topics/` command package; callers now import topic-file helpers directly.
 - Added architecture coverage so the old wiki/read-model `services/` source files cannot reappear and the new `wiki/` package stays behind the integration boundary.
 - Verified Slice 82 with `uv run ruff check src tests`, `uv run pytest -q --tb=short` (`510 passed`), and `git diff --check`.
+- Planned and implemented Slice 83 in `docs/plans/2026-07-03-slice-83-codealmanac-engine-package.md`.
+- Moved the reusable agent/wiki-update runtime into first-class `src/codealmanac/engine/`: harness contracts, source refs/runtimes, source bundle materialization, worker workspaces, shared page-run execution, and lifecycle safety helpers.
+- Left packaged `prompts/` and `manual/` at root package level because those are distribution resources and should move only in a separate package-data-aware slice.
+- Added architecture coverage so the old engine service/workflow source files cannot reappear and the new `engine/` package stays behind the integration boundary.
+- Focused Slice 83 verification passed with the engine/provider/lifecycle test set (`194 passed`).
+- Full Slice 83 verification passed with `uv run ruff check src tests`, `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`.

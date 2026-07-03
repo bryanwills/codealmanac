@@ -2,8 +2,9 @@
 
 This is a partially implemented target. Slice 81 implemented the
 `codealmanac.cloud` package boundary. Slice 82 implemented the
-`codealmanac.wiki` package boundary. The broader local/engine and hosted
-package refactors are still proposed.
+`codealmanac.wiki` package boundary. Slice 83 implemented the first
+`codealmanac.engine` package boundary. The broader local and hosted package
+refactors are still proposed.
 
 ## Shared Product Model
 
@@ -95,16 +96,21 @@ Engine owns the work a model/agent performs.
 
 ```text
 engine/
-  prompts/
-  manual/
   harnesses/
   sources/
   source_bundles/
   worker_workspaces/
+  page_run/
   lifecycle/
 ```
 
-The hosted Modal worker imports from here. The human CLI is not the engine contract.
+Implemented in Slice 83 for harness contracts, source refs/runtimes, source
+bundle materialization, worker workspaces, shared page-run execution, and
+lifecycle safety helpers. Packaged `prompts/` and `manual/` still live at the
+root package level until a distribution-aware resource move is worth doing.
+
+The hosted Modal worker imports from here. The human CLI is not the engine
+contract.
 
 ## `codealmanac-hosted` Target Shape
 

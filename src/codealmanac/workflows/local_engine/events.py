@@ -1,8 +1,8 @@
+from codealmanac.engine.harnesses.models import HarnessRunResult
+from codealmanac.engine.lifecycle import harness_events, harness_run_event_kind
 from codealmanac.services.control.models import ControlRunEventKind
 from codealmanac.services.control.requests import AppendControlRunEventRequest
 from codealmanac.services.control.service import ControlService
-from codealmanac.services.harnesses.models import HarnessRunResult
-from codealmanac.workflows.lifecycle import harness_events, harness_run_event_kind
 
 
 def record_harness_events(

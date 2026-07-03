@@ -3,12 +3,12 @@ from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
+from codealmanac.engine.sources.models import TranscriptCandidate
+from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
+from codealmanac.engine.sources.service import SourcesService
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.services.runs.requests import ListRunsRequest
 from codealmanac.services.runs.service import RunsService
-from codealmanac.services.sources.models import TranscriptCandidate
-from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
-from codealmanac.services.sources.service import SourcesService
 from codealmanac.wiki.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.wiki.workspaces.service import WorkspacesService
 from codealmanac.workflows.sync.models import (

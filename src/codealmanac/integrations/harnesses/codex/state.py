@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessActorRole,
     HarnessFailure,
     HarnessUsage,

@@ -2,7 +2,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.harnesses.models import HarnessEvent
+from codealmanac.engine.harnesses.models import HarnessEvent
 
 
 class ViewerFileKind(StrEnum):

@@ -1,4 +1,6 @@
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.engine.source_bundles.models import MaterializedSourceBundle
+from codealmanac.engine.worker_workspaces.models import PreparedWorkerWorkspace
 from codealmanac.services.control.models import (
     BranchRecord,
     ControlRunRecord,
@@ -6,8 +8,6 @@ from codealmanac.services.control.models import (
     TriggerEventRecord,
 )
 from codealmanac.services.engine_runs.models import PreparedEngineRun
-from codealmanac.services.source_bundles.models import MaterializedSourceBundle
-from codealmanac.services.worker_workspaces.models import PreparedWorkerWorkspace
 
 
 class LocalRunPreparationResult(CodeAlmanacModel):

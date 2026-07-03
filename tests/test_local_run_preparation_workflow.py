@@ -3,6 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.services.control.models import (
     ControlRunEventKind,
     ControlRunStatus,
@@ -20,7 +21,6 @@ from codealmanac.services.control.requests import (
     UpsertSessionRequest,
     UpsertTurnRequest,
 )
-from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 
 
 class FakeGitWorktreeManager:

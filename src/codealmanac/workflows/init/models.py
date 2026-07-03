@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.harnesses.models import HarnessRunResult
+from codealmanac.engine.harnesses.models import HarnessRunResult
+from codealmanac.engine.lifecycle import LifecycleMutationReport
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.wiki.index.models import IndexRefreshResult
 from codealmanac.wiki.workspaces.models import Workspace
-from codealmanac.workflows.lifecycle import LifecycleMutationReport
 
 
 class InitPreparation(CodeAlmanacModel):

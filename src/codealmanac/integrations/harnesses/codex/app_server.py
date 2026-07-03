@@ -3,6 +3,11 @@ import time
 from pydantic import JsonValue
 
 from codealmanac import __version__
+from codealmanac.engine.harnesses.models import (
+    HarnessEvent,
+    HarnessRunResult,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.harnesses.codex.errors import CodexAppServerError
 from codealmanac.integrations.harnesses.codex.events import (
     CodexRunState,
@@ -35,11 +40,6 @@ from codealmanac.integrations.harnesses.codex.timeouts import env_milliseconds
 from codealmanac.integrations.harnesses.codex.turn_completion import (
     root_turn_completion,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessEvent,
-    HarnessRunResult,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CODEX_APP_SERVER_RPC_TIMEOUT_MS = 30_000
 CODEX_APP_SERVER_TURN_TIMEOUT_MS = 30 * 60_000

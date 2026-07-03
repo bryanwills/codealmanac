@@ -1,3 +1,4 @@
+from codealmanac.engine.source_bundles.models import MaterializedSourceBundle
 from codealmanac.services.control.models import (
     ControlRunEventKind,
     ControlRunRecord,
@@ -8,7 +9,6 @@ from codealmanac.services.control.requests import (
     UpdateControlRunRequest,
 )
 from codealmanac.services.control.service import ControlService
-from codealmanac.services.source_bundles.models import MaterializedSourceBundle
 
 
 def append_prepared_events(

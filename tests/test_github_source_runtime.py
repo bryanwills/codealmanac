@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.integrations.command import CommandResult
-from codealmanac.integrations.sources.github import GitHubSourceRuntimeAdapter
-from codealmanac.services.sources.models import SourceRuntimeStatus
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.models import SourceRuntimeStatus
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
+from codealmanac.integrations.command import CommandResult
+from codealmanac.integrations.sources.github import GitHubSourceRuntimeAdapter
 
 
 class FakeGhRunner:

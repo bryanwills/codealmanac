@@ -1,14 +1,14 @@
 import json
 from pathlib import Path
 
+from codealmanac.engine.sources.models import TranscriptApp
+from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.integrations.sources.transcripts.claude import (
     ClaudeTranscriptDiscoveryAdapter,
 )
 from codealmanac.integrations.sources.transcripts.codex import (
     CodexTranscriptDiscoveryAdapter,
 )
-from codealmanac.services.sources.models import TranscriptApp
-from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 
 
 def test_codex_transcript_discovery_reads_metadata_and_skips_subagents(

@@ -81,10 +81,34 @@ cloud setup flow.
   change.
 - Slice 82 implemented the next CodeAlmanac-side package cleanup: wiki files,
   workspaces, index, search, pages, topics, health, and viewer now live under
-  `src/codealmanac/wiki/`. The CLI surface did not change. The remaining
-  CodeAlmanac repackaging work is mostly `engine/` and `local/`.
+  `src/codealmanac/wiki/`. The CLI surface did not change.
+- Slice 83 implemented the next CodeAlmanac-side package cleanup: harness
+  contracts, sources, source bundles, worker workspaces, page-run execution,
+  and lifecycle helpers now live under `src/codealmanac/engine/`. The CLI
+  surface did not change. Packaged `prompts/` and `manual/` remain root
+  package resources for now.
+- The remaining CodeAlmanac repackaging work is mostly the explicit `local/`
+  control-plane boundary and any later package-resource cleanup for
+  `prompts/` / `manual/`.
 
 ## Last Completed Work
+
+Slice 83 creates the CodeAlmanac engine package boundary:
+
+- `src/codealmanac/engine/` owns reusable model-runtime contracts: harnesses,
+  sources, source bundles, worker workspaces, shared page-run execution, and
+  lifecycle safety helpers
+- tracked old engine source files were removed from `services/` and
+  `workflows/`
+- operation workflows such as `init`, `ingest`, `garden`, `sync`, and local
+  update remain in `workflows/` because they compose wiki, local, and engine
+  services
+- packaged `prompts/` and `manual/` remain root resources because moving them
+  needs package-data handling
+- focused verification passed with the engine/provider/lifecycle test set
+  (`194 passed`)
+- full verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`511 passed`), and `git diff --check`
 
 Slice 82 creates the CodeAlmanac wiki package boundary:
 

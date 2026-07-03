@@ -1,7 +1,7 @@
 import json
 from collections.abc import Mapping
 
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessToolDisplay,
     HarnessToolDisplayKind,
     HarnessToolStatus,

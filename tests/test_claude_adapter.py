@@ -12,6 +12,15 @@ from claude_agent_sdk import (
 )
 
 from codealmanac.app import create_app
+from codealmanac.engine.harnesses.models import (
+    HarnessActorRole,
+    HarnessEventKind,
+    HarnessKind,
+    HarnessRunResult,
+    HarnessRunStatus,
+    HarnessToolDisplayKind,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.command import CommandResult
 from codealmanac.integrations.harnesses.claude.adapter import (
     ANTHROPIC_API_KEY,
@@ -24,15 +33,6 @@ from codealmanac.integrations.harnesses.claude.client import (
 from codealmanac.integrations.harnesses.git_status import (
     parse_git_status_paths,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessActorRole,
-    HarnessEventKind,
-    HarnessKind,
-    HarnessRunResult,
-    HarnessRunStatus,
-    HarnessToolDisplayKind,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 
 class FakeCommandRunner:

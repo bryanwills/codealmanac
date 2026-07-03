@@ -10,7 +10,7 @@ from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_jobs_path
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessKind,

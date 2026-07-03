@@ -2,6 +2,13 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.engine.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+    HarnessRunStatus,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.services.control.models import ControlRunEventKind, ControlRunStatus
 from codealmanac.services.control.requests import (
     CreateControlRunRequest,
@@ -17,13 +24,6 @@ from codealmanac.services.engine_runs.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessKind,
-    HarnessReadiness,
-    HarnessRunResult,
-    HarnessRunStatus,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.workflows.local_engine.requests import ExecuteLocalEngineRunRequest
 
 

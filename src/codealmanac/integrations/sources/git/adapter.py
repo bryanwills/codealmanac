@@ -2,19 +2,19 @@ import subprocess
 from pathlib import Path
 
 from codealmanac.core.errors import ExecutionFailed
+from codealmanac.engine.sources.models import (
+    SourceKind,
+    SourceRef,
+    SourceRuntime,
+    SourceRuntimeStatus,
+)
+from codealmanac.engine.sources.requests import InspectSourceRuntimeRequest
 from codealmanac.integrations.command import CommandRunner, SubprocessCommandRunner
 from codealmanac.integrations.sources.runtime import (
     bounded_text,
     source_runtime_section,
     surface_process_error,
 )
-from codealmanac.services.sources.models import (
-    SourceKind,
-    SourceRef,
-    SourceRuntime,
-    SourceRuntimeStatus,
-)
-from codealmanac.services.sources.requests import InspectSourceRuntimeRequest
 
 GIT_RUNTIME_TIMEOUT_SECONDS = 30
 DEFAULT_MAX_CHARS = 60_000

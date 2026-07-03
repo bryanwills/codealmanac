@@ -5,17 +5,17 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.integrations.command import CommandResult
-from codealmanac.integrations.sources.git import GitSourceRuntimeAdapter
-from codealmanac.services.sources.models import (
+from codealmanac.engine.sources.models import (
     SourceKind,
     SourceProvenanceKind,
     SourceRuntimeStatus,
 )
-from codealmanac.services.sources.requests import (
+from codealmanac.engine.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
+from codealmanac.integrations.command import CommandResult
+from codealmanac.integrations.sources.git import GitSourceRuntimeAdapter
 
 
 class FakeGitRunner:

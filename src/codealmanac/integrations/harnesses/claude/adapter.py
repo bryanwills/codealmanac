@@ -4,6 +4,12 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from codealmanac.engine.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+)
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.command import (
     CommandResult,
     CommandRunner,
@@ -20,12 +26,6 @@ from codealmanac.integrations.harnesses.git_status import (
     git_status_snapshot,
     parse_git_status_paths,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessKind,
-    HarnessReadiness,
-    HarnessRunResult,
-)
-from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CLAUDE_STATUS_TIMEOUT_SECONDS = 10
 ANTHROPIC_API_KEY = "ANTHROPIC_API_KEY"

@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from codealmanac.core.errors import ExecutionFailed
+from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.command import (
     CommandRunner,
     SubprocessCommandRunner,
     first_line,
 )
-from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
 
 GIT_WORKTREE_TIMEOUT_SECONDS = 60
 

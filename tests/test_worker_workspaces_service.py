@@ -8,8 +8,8 @@ from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_worker_workspaces_path
-from codealmanac.services.worker_workspaces.models import GitWorktreeCheckout
-from codealmanac.services.worker_workspaces.requests import (
+from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.worker_workspaces.requests import (
     PrepareWorkerWorkspaceRequest,
     ReadWorkerWorkspaceRequest,
     RemoveWorkerWorkspaceRequest,

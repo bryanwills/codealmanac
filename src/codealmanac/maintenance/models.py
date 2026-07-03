@@ -1,6 +1,6 @@
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.engine.harnesses.models import HarnessRunStatus
 from codealmanac.maintenance.requests import MaintenanceOperation
-from codealmanac.services.harnesses.models import HarnessRunStatus
 from codealmanac.services.runs.models import RunId, RunStatus
 
 

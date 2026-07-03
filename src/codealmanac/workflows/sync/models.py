@@ -6,7 +6,7 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
+from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
 
 
 class SyncMode(StrEnum):

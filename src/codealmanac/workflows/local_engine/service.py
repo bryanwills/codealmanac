@@ -1,5 +1,8 @@
 from contextlib import suppress
 
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.service import HarnessesService
+from codealmanac.engine.lifecycle import first_line, validate_harness_result
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.control.models import ControlRunStatus
 from codealmanac.services.control.requests import (
@@ -13,9 +16,6 @@ from codealmanac.services.engine_runs.requests import (
     WriteEngineRunResultRequest,
 )
 from codealmanac.services.engine_runs.service import EngineRunsService
-from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.harnesses.service import HarnessesService
-from codealmanac.workflows.lifecycle import first_line, validate_harness_result
 from codealmanac.workflows.local_engine.events import (
     append_error,
     append_status,

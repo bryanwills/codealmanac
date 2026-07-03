@@ -4,14 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from codealmanac.core.errors import ConflictError, NotFoundError
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.harnesses.service import HarnessesService
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.service import HarnessesService
 
 
 class FakeHarnessAdapter:

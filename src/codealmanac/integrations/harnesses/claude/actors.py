@@ -10,16 +10,16 @@ from claude_agent_sdk import (
     UserMessage,
 )
 
+from codealmanac.engine.harnesses.models import (
+    HarnessActorConfidence,
+    HarnessActorRole,
+    HarnessRunActor,
+)
 from codealmanac.integrations.harnesses.claude.sdk_messages import (
     ClaudeMessage,
     session_id_for_message,
 )
 from codealmanac.integrations.harnesses.claude.state import ClaudeRunState
-from codealmanac.services.harnesses.models import (
-    HarnessActorConfidence,
-    HarnessActorRole,
-    HarnessRunActor,
-)
 
 
 def actor_for_message(

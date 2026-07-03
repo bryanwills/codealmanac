@@ -6,14 +6,14 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, ValidationFailed
 from codealmanac.core.models import AppConfig
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
     HarnessRunStatus,
     HarnessTranscriptRef,
 )
-from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest

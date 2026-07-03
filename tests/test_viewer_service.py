@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from codealmanac.app import CodeAlmanac
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessKind,

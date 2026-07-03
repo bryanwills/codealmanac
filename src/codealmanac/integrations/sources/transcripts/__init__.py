@@ -1,3 +1,7 @@
+from codealmanac.engine.sources.ports import (
+    SourceRuntimeAdapter,
+    TranscriptDiscoveryAdapter,
+)
 from codealmanac.integrations.sources.transcripts.claude import (
     ClaudeTranscriptDiscoveryAdapter,
 )
@@ -6,10 +10,6 @@ from codealmanac.integrations.sources.transcripts.codex import (
 )
 from codealmanac.integrations.sources.transcripts.runtime import (
     TranscriptSourceRuntimeAdapter,
-)
-from codealmanac.services.sources.ports import (
-    SourceRuntimeAdapter,
-    TranscriptDiscoveryAdapter,
 )
 
 

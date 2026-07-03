@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.sources.models import SourceRef
+from codealmanac.engine.sources.models import SourceRef
 
 
 def transcript_path(cwd: Path, ref: SourceRef) -> Path | None:

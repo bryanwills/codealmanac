@@ -4,10 +4,10 @@ from pathlib import Path
 import pytest
 
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.source_bundles.models import SourceBundleSessionInput
-from codealmanac.services.source_bundles.requests import MaterializeSourceBundleRequest
-from codealmanac.services.source_bundles.service import SourceBundlesService
-from codealmanac.services.source_bundles.store import SourceBundlesStore
+from codealmanac.engine.source_bundles.models import SourceBundleSessionInput
+from codealmanac.engine.source_bundles.requests import MaterializeSourceBundleRequest
+from codealmanac.engine.source_bundles.service import SourceBundlesService
+from codealmanac.engine.source_bundles.store import SourceBundlesStore
 
 
 def test_source_bundle_materializes_session_files_and_manifest(tmp_path: Path):

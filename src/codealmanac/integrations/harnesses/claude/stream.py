@@ -2,12 +2,12 @@ from collections.abc import Mapping
 
 from claude_agent_sdk import StreamEvent
 
-from codealmanac.integrations.harnesses.claude.raw import raw_message
-from codealmanac.services.harnesses.models import (
+from codealmanac.engine.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessRunActor,
 )
+from codealmanac.integrations.harnesses.claude.raw import raw_message
 
 
 def stream_event(
