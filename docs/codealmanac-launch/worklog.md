@@ -30,6 +30,32 @@
   built wheel, installed `codealmanac --version` (`0.1.1`), and installed
   `codealmanac setup --skip-login --skip-instructions --json`
   (`automation_mode: "none"`).
+- Planned Slice 60 in the hosted worktree with
+  `docs/plans/2026-07-03-capture-token-schema-repair.md`.
+- Repaired the production repository-settings failure. The real blocker was
+  `GET /api/capture/status`: backend code queried `CaptureTokenRow`, but
+  production Supabase did not have `public.capture_tokens`.
+- Added hosted migration `20260703010000_capture_tokens.sql` and updated the
+  clean-slate init migration so repaired production and fresh environments
+  share the same capture-token table shape.
+- Applied the migration to production through Doppler-backed `psql`, then
+  marked it applied in Supabase migration history.
+- Verified production DB has `public.capture_tokens` and policy
+  `capture_tokens_backend_access` for `{postgres,service_role}`.
+- Verified hosted Slice 60 with
+  `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
+  (`76 passed, 1 warning`) and `uv run ruff check .`.
+- Pushed hosted commit
+  `5220adf8de537111beb7383761cfe82eb87b0a38 fix: add capture token storage schema`
+  to `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Render deployed hosted commit `5220adf` live as deploy
+  `dep-d93lnpl7vvec73fpne40`; backend health returned `{"status":"ok"}`.
+- Browser-harness verified signed-in production repository settings at
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`
+  showing repository readiness, GitHub write access, capture status,
+  maintained branches, and delivery controls.
+- Render logs after the live deploy showed fresh
+  `GET /api/capture/status HTTP/1.1` requests returning `200 OK`.
 
 ## 2026-07-02
 

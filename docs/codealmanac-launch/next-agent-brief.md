@@ -167,13 +167,14 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 60 working tree has the capture-token migration and schema
-  guard before commit
+- current Slice 60 artifact commit:
+  `5220adf8de537111beb7383761cfe82eb87b0a38`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `01c84637e082945f22c71e09dfb7216c49c7769d`
+  `5220adf8de537111beb7383761cfe82eb87b0a38`
 - production frontend: `https://www.codealmanac.com`
 - hosted main has setup/auth hardening, route-test guardrails, cloud setup
-  checklist, and production WorkOS identity schema repair through `01c8463`.
+  checklist, production WorkOS identity schema repair, and capture-token
+  storage repair through `5220adf`.
 
 The local wiki command currently fails on this checkout with:
 
@@ -249,8 +250,9 @@ repaired.
   CLI whose root setup JSON still showed `automation_mode: "none"`.
 - Slice 60 hosted verification passed: production DB has
   `public.capture_tokens`, Supabase migration history includes
-  `20260703010000`, signed-in production repository settings loads in Chrome,
-  Render logs show fresh `/api/capture/status` `200 OK`, hosted focused tests
+  `20260703010000`, Render deploy `dep-d93lnpl7vvec73fpne40` is live on commit
+  `5220adf`, signed-in production repository settings loads in Chrome, Render
+  logs show post-deploy `/api/capture/status` `200 OK`, hosted focused tests
   reported `76 passed`, and hosted ruff passed.
 
 ## Next Pressure Tests

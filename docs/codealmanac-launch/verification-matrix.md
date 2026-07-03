@@ -211,7 +211,9 @@ Current evidence:
   GitHub access, capture status, maintained branches, and delivery settings.
 - Render logs after the repair show fresh signed-in
   `GET /api/capture/status` requests returning `200 OK`.
-- Slice 60 hosted verification passed:
+- Slice 60 hosted verification passed: Render deploy
+  `dep-d93lnpl7vvec73fpne40` is live on commit `5220adf8`; production health
+  returned `{"status":"ok"}`;
   `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
   (`76 passed, 1 warning`) and `uv run ruff check .`.
 

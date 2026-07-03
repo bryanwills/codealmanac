@@ -23,7 +23,8 @@ Note: production repository settings now loads. The root cause was a missing
 `public.capture_tokens` table while backend code already queried
 `CaptureTokenRow`. Migration `20260703010000` was applied and marked applied in
 Supabase history. Signed-in Chrome verification reached repository settings, and
-Render logs showed fresh `/api/capture/status` `200 OK`.
+Render deploy `dep-d93lnpl7vvec73fpne40` showed fresh
+`/api/capture/status` `200 OK`.
 
 ## Percentages
 
