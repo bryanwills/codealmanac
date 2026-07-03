@@ -1774,3 +1774,15 @@
 - Hosted tests for the repair passed:
   `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
   (`76 passed, 1 warning`) and `uv run ruff check .`.
+- Slice 64 verified the source CLI against production Chrome/AuthKit with a
+  temp HOME. The command used `--api-url https://api.codealmanac.com` and
+  `--no-browser`; it printed a `/cli-login` URL, Chrome showed
+  `CLI login approved`, and the CLI stored auth for `rohans0509`.
+- Slice 64 verified `whoami`, `setup --skip-login --skip-instructions`,
+  `capture status --check-cloud`, `capture enable --target codex`, and
+  `capture disable --target codex` against production. The capture credential
+  was issued, visible from cloud status, then revoked.
+- Slice 64 found PyPI `codealmanac==0.1.1` still defaults to
+  `https://codealmanac-backend-docker.onrender.com`. The repo default was
+  changed to `https://api.codealmanac.com`, the app default was changed to
+  `https://www.codealmanac.com`, and `pyproject.toml` was bumped to `0.1.2`.

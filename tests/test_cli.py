@@ -781,11 +781,11 @@ def test_cli_open_commands_use_current_checkout_and_browser_handoff(
     assert main([]) == 0
     bare_output = capsys.readouterr()
     assert (
-        "opened: https://codealmanac.com/wiki/github/AlmanacCode/codealmanac\n"
+        "opened: https://www.codealmanac.com/wiki/github/AlmanacCode/codealmanac\n"
         in bare_output.out
     )
     assert browser.opened == [
-        "https://codealmanac.com/wiki/github/AlmanacCode/codealmanac"
+        "https://www.codealmanac.com/wiki/github/AlmanacCode/codealmanac"
     ]
 
     assert (

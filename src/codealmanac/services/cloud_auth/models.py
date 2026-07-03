@@ -7,8 +7,8 @@ from pydantic import Field, field_validator, model_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 
-DEFAULT_CLOUD_API_URL = "https://codealmanac-backend-docker.onrender.com"
-DEFAULT_CLOUD_APP_URL = "https://codealmanac.com"
+DEFAULT_CLOUD_API_URL = "https://api.codealmanac.com"
+DEFAULT_CLOUD_APP_URL = "https://www.codealmanac.com"
 
 CloudLoginStatus = Literal["pending", "authorized", "complete", "expired"]
 CloudLoginResultStatus = Literal[

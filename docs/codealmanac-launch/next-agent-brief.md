@@ -194,9 +194,19 @@ CodeAlmanac:
 - later docs-only checkpoint commits may sit on top of that artifact commit;
   do not assume rerunning the publish workflow for `0.1.1` is valid because
   PyPI already has that version
-- package version in `pyproject.toml`: `0.1.1`
-- PyPI live version checked on 2026-07-03: `0.1.1`
+- package version in `pyproject.toml`: `0.1.2`
+- PyPI live version checked before Slice 64 publish on 2026-07-03: `0.1.1`
 - Slice 59 is published and verified from a fresh PyPI install.
+- Slice 64 bumped `pyproject.toml` to `0.1.2` because PyPI `0.1.1`
+  still defaults to `https://codealmanac-backend-docker.onrender.com`.
+- Source CLI production auth was verified in Chrome with:
+  `uv run codealmanac login --api-url https://api.codealmanac.com --no-browser`.
+  The browser approved `/cli-login`, `whoami` returned `rohans0509`, and
+  capture credential issue/status/disable worked in a temp HOME.
+- The machine PATH currently resolves an old Node-era `codealmanac` first:
+  `/Users/rohan/.nvm/versions/node/v21.7.3/bin/codealmanac` reports `0.2.26`.
+  Use `uv run codealmanac` inside this repo or a fresh `uv tool install`
+  binary when verifying the Python package.
 - Local working tree note at handoff: a large `README.md` rewrite,
   `docs/assets/`, and
   `docs/plans/2026-07-03-github-webhook-contract-hardening.md` were

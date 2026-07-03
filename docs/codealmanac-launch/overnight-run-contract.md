@@ -110,7 +110,7 @@ surface.
 Public install should prefer a product-grade one-liner:
 
 ```bash
-curl -fsSL https://codealmanac.com/install.sh | sh
+curl -fsSL https://www.codealmanac.com/install.sh | sh
 codealmanac setup
 ```
 

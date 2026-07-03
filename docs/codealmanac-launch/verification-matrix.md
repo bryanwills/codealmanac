@@ -1166,3 +1166,11 @@ Current evidence:
   user count is `0`, Supabase production hosted-table/auth/storage count query
   returned no nonzero rows, and `supabase db push --linked --dry-run` reported
   `Remote database is up to date.`
+- Slice 64 production CLI smoke verified source `uv run codealmanac` against
+  `https://api.codealmanac.com`: Chrome approved `/cli-login`, `whoami`
+  returned `rohans0509`, setup planning returned `automation_mode: "none"`,
+  capture status worked, capture enable created a cloud credential and temp
+  Codex hook, and capture disable revoked the credential.
+- Slice 64 isolated PyPI check proved `codealmanac==0.1.1` still defaults to
+  the Render URL. The repo package was bumped to `0.1.2` with canonical
+  defaults `https://api.codealmanac.com` and `https://www.codealmanac.com`.

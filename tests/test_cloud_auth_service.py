@@ -5,7 +5,12 @@ from uuid import UUID, uuid4
 import pytest
 
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.services.cloud_auth.models import (
+    DEFAULT_CLOUD_API_URL,
+    DEFAULT_CLOUD_APP_URL,
+    CloudIdentity,
+    CloudLoginSession,
+)
 from codealmanac.services.cloud_auth.requests import (
     CloudLogoutRequest,
     CloudStatusRequest,
@@ -13,6 +18,11 @@ from codealmanac.services.cloud_auth.requests import (
 )
 from codealmanac.services.cloud_auth.service import CloudAuthService
 from codealmanac.services.cloud_auth.store import CloudAuthStore
+
+
+def test_cloud_defaults_use_public_codealmanac_hosts() -> None:
+    assert DEFAULT_CLOUD_API_URL == "https://api.codealmanac.com"
+    assert DEFAULT_CLOUD_APP_URL == "https://www.codealmanac.com"
 
 
 def test_cloud_auth_store_saves_cli_token_state_mode_0600(tmp_path: Path) -> None:

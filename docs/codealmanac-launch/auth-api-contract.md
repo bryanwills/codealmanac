@@ -119,6 +119,17 @@ API -> returns WorkOS-backed access_token and refresh_token
 CLI -> stores local WorkOS-backed auth state
 ```
 
+Public CLI defaults:
+
+```text
+API: https://api.codealmanac.com
+App: https://www.codealmanac.com
+```
+
+Provider deployment URLs such as Render or Vercel preview domains are
+implementation details. They should not be the CLI default or appear in public
+setup instructions.
+
 Local auth state lives under `~/.codealmanac/`.
 
 Preferred storage:
