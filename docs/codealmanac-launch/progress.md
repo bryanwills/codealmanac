@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 61 GitHub webhook contract hardening.
+Sent: 2026-07-03 after Slice 62 branch-trigger delivery guard.
 
 Route:
 
@@ -19,21 +19,21 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: hosted webhook intake now routes by `X-GitHub-Event`. Production Render
-deploy `dep-d93lvet7vvec73fpsag0` is live on commit `c9b0da1`. A signed
-synthetic `check_run` webhook returned `204` and was persisted as
-`status=ignored`, proving unsupported events are no longer shape-sniffed into
-repository or installation messages.
+Note: hosted branch-push updates now ignore non-truncated `.almanac/`-only
+pushes before policy lookup so CodeAlmanac delivery commits do not loop into
+new runs. Delivery commits and PRs now use `docs almanac: <summary>`. Production
+Render deploy `dep-d93mceekanas73aeia30` is live on commit `fdad34d`; both
+canonical API and Render health checks returned `{"status":"ok"}`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 61. |
-| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.1` remains published and install-smoked; no CLI code changed in Slice 61. |
-| CodeAlmanac-hosted backend/auth/API | 99% | 99% | Webhook intake now matches GitHub event-header routing and production smoke proves unsupported events are ignored. |
-| Hosted frontend/onboarding | 92% | 92% | Frontend unchanged in Slice 61; repository settings remained verified in Slice 60. |
-| Infra/deploy rename | 99% | 99% | Render is live on `c9b0da1`; Vercel/frontend unchanged for this backend-only slice. |
+| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 62. |
+| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.1` remains published and install-smoked; no CLI code changed in Slice 62. |
+| CodeAlmanac-hosted backend/auth/API | 99% | 99% | Branch-trigger loop guard and deterministic `docs almanac:` delivery messages are implemented, tested, pushed, and deployed. |
+| Hosted frontend/onboarding | 92% | 92% | Frontend unchanged in Slice 62; repository settings remained verified in Slice 60 and auth/setup in Chrome after Slice 61. |
+| Infra/deploy rename | 99% | 99% | Render is live on `fdad34d`; Vercel/frontend unchanged for this backend-only slice. |
 
 ## Update Rule
 

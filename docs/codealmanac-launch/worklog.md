@@ -79,6 +79,35 @@
 - Production signed-webhook smoke posted a synthetic `check_run` delivery and
   the DB recorded it as `event=check_run`, `action=requested_action`,
   `status=ignored`.
+- Planned Slice 62 in hosted
+  `docs/plans/2026-07-03-slice-62-branch-trigger-delivery-loop-guard.md`.
+- Added hosted branch-push loop protection. Non-truncated pushes with no
+  changed paths are ignored as `empty_push`, and non-truncated pushes whose
+  changed paths are all under `.almanac/` are ignored as `almanac_only_push`
+  before trigger policy lookup, capacity checks, or run creation.
+- Kept truncated push payloads eligible for runs because GitHub caps the push
+  commits array; visible changed paths are not authoritative when
+  `commits_truncated=True`.
+- Changed hosted delivery commit/PR text to use deterministic
+  `docs almanac: <worker summary>` messages, with `docs almanac: update wiki`
+  as the missing-summary fallback.
+- Changed open-PR delivery branches from `almanac/wiki-<run>` to
+  `almanac/update-<run>` because the delivery path is not only for initial wiki
+  creation.
+- Verified Slice 62 with hosted focused update tests
+  `tests/test_updates_contract.py` (`49 passed`), adjacent webhook/update
+  tests (`65 passed`), full backend suite (`375 passed, 1 warning`),
+  `uv run ruff check .`, `python -m compileall backend/src backend/modal_app
+  -q`, and `git diff --check`.
+- Pushed hosted commit
+  `fdad34d4297c969d3d7779250f67c94a60903c27 fix(updates): ignore almanac delivery pushes`
+  to `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Render deployed hosted commit `fdad34d` live as deploy
+  `dep-d93mceekanas73aeia30`; both `https://api.codealmanac.com/api/health`
+  and the Render URL returned `{"status":"ok"}`.
+- Production synthetic branch-push smoke was intentionally skipped because
+  fake `push` events also feed the wiki tracker; a fake `.almanac/` path could
+  mark an import state even though the update service correctly ignores it.
 
 ## 2026-07-02
 

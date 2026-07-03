@@ -233,6 +233,23 @@ Current evidence:
   `{"status":"ok"}`, and production signed-webhook smoke persisted
   `smoke-slice61-1783062568` as `event=check_run`, `action=requested_action`,
   `status=ignored`.
+- Slice 62 hardened branch-push update triggers against self-delivery loops.
+  `BranchPushUpdates.plan(...)` now ignores non-truncated pushes with no changed
+  paths and non-truncated pushes whose changed paths are all under `.almanac/`
+  before trigger policy lookup, capacity checks, or run creation.
+- Slice 62 keeps truncated push payloads eligible for runs because GitHub caps
+  the push commits array, so visible changed paths are incomplete when
+  `commits_truncated=True`.
+- Slice 62 changed hosted delivery to use deterministic
+  `docs almanac: <worker summary>` commit and PR titles, with
+  `docs almanac: update wiki` as the fallback. Open-PR delivery now uses
+  `almanac/update-<run>` branches instead of `almanac/wiki-<run>` branches.
+- Slice 62 hosted verification passed: focused update tests (`49 passed`),
+  adjacent webhook/update tests (`65 passed`), full backend suite
+  (`375 passed, 1 warning`), `uv run ruff check .`, `python -m compileall
+  backend/src backend/modal_app -q`, `git diff --check`, Render deploy
+  `dep-d93mceekanas73aeia30` live on commit `fdad34d`, and backend health
+  returned `{"status":"ok"}` on both the canonical API domain and Render URL.
 
 ## CodeAlmanac Local Repo
 
@@ -729,6 +746,10 @@ Current evidence:
 - `backend/tests/test_updates_contract.py` proves enabled branch-push trigger
   policies start `BranchSource` runs and select `CommitToBranch` vs
   `OpenWikiPullRequest` from delivery mode.
+- Slice 62 extends `backend/tests/test_updates_contract.py` to prove
+  `.almanac/`-only branch pushes are ignored without policy lookup, mixed
+  code/wiki pushes still start runs, truncated payloads do not use visible paths
+  as an ignore signal, and delivery messages use `docs almanac:` consistently.
 - `frontend/tests/frontend/repository-settings.test.tsx` proves repository
   settings render maintained branches, saved trigger state, and delivery
   controls from DTOs.

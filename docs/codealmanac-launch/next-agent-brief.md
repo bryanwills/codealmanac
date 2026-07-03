@@ -156,6 +156,18 @@ Slice 61 hardens GitHub webhook intake:
 - production signed-webhook smoke recorded a synthetic `check_run` delivery as
   `ignored`, proving unsupported event-header routing is live
 
+Slice 62 hardens branch-trigger delivery:
+
+- non-truncated `.almanac/`-only branch pushes are ignored before trigger policy
+  lookup, capacity checks, or run creation
+- truncated push payloads still remain eligible for runs because changed paths
+  are incomplete when GitHub caps the commits array
+- delivery commits and PR titles now use `docs almanac: <worker summary>`
+- open-PR delivery branches now use `almanac/update-<run>` instead of
+  `almanac/wiki-<run>`
+- hosted commit `fdad34d4297c969d3d7779250f67c94a60903c27` is deployed live on
+  Render deploy `dep-d93mceekanas73aeia30`
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -179,14 +191,15 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 61 artifact commit:
-  `c9b0da10cad6f21f28fce72eabebcb7fde38f7a4`
+- current Slice 62 artifact commit:
+  `fdad34d4297c969d3d7779250f67c94a60903c27`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `c9b0da10cad6f21f28fce72eabebcb7fde38f7a4`
+  `fdad34d4297c969d3d7779250f67c94a60903c27`
 - production frontend: `https://www.codealmanac.com`
 - hosted main has setup/auth hardening, route-test guardrails, cloud setup
   checklist, production WorkOS identity schema repair, and capture-token
-  storage repair plus GitHub webhook event-header routing through `c9b0da1`.
+  storage repair, GitHub webhook event-header routing, and branch-trigger
+  delivery loop protection through `fdad34d`.
 
 The local wiki command currently fails on this checkout with:
 
@@ -272,6 +285,11 @@ repaired.
   `dep-d93lvet7vvec73fpsag0` live on commit `c9b0da1`, backend health
   `{"status":"ok"}`, and production signed-webhook smoke persisted a synthetic
   `check_run` delivery as `ignored`.
+- Slice 62 hosted verification passed: focused update tests (`49 passed`),
+  adjacent webhook/update tests (`65 passed`), full hosted backend suite
+  (`375 passed, 1 warning`), hosted ruff, compileall, `git diff --check`,
+  Render deploy `dep-d93mceekanas73aeia30` live on commit `fdad34d`, and
+  backend health `{"status":"ok"}` on both canonical API and Render URLs.
 
 ## Next Pressure Tests
 
