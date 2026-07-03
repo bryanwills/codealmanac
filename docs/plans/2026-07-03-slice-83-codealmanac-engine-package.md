@@ -14,7 +14,7 @@ Target shape after this slice:
 ```text
 codealmanac.cloud   # local client surface for CodeAlmanac Cloud
 codealmanac.wiki    # repo wiki, registry, read model, viewer
-codealmanac.engine  # sources, source bundles, harnesses, worker workspaces, page runs
+codealmanac.engine  # sources, source bundles, harnesses, engine workspaces, page runs
 ```
 
 ## Scope
@@ -25,7 +25,7 @@ Move these packages:
 services/source_bundles    -> engine/source_bundles/
 services/sources           -> engine/sources/
 services/harnesses         -> engine/harnesses/
-services/worker_workspaces -> engine/worker_workspaces/
+services/engine_workspaces -> engine/engine_workspaces/
 workflows/page_run         -> engine/page_run/
 workflows/lifecycle.py     -> engine/lifecycle/__init__.py
 workflows/lifecycle_harness.py  -> engine/lifecycle/harness.py
@@ -83,7 +83,7 @@ Relevant Cosmic Python transfer:
 3. Rewrite imports from old `services.*` and `workflows.lifecycle/page_run`
    paths to `codealmanac.engine.*`.
 4. Update architecture tests and active docs.
-5. Run focused tests for harnesses, sources, bundles, worker workspaces,
+5. Run focused tests for harnesses, sources, bundles, engine workspaces,
    page-run lifecycle, init/ingest/garden/sync/local update, and integrations.
 6. Run full `uv run ruff check src tests`, `uv run pytest -q --tb=short`, and
    `git diff --check`.
@@ -97,7 +97,7 @@ uv run pytest \
   tests/test_harnesses_service.py \
   tests/test_sources_service.py \
   tests/test_source_bundles_service.py \
-  tests/test_worker_workspaces_service.py \
+  tests/test_engine_workspaces_service.py \
   tests/test_init_workflow.py \
   tests/test_ingest_workflow.py \
   tests/test_garden_workflow.py \

@@ -32,7 +32,7 @@ def append_prepared_events(
         AppendControlRunEventRequest(
             run_id=run.id,
             kind=ControlRunEventKind.STATUS,
-            message="prepared local worker workspace",
+            message="prepared local engine workspace",
             artifact_ref=run.request_ref,
         )
     )

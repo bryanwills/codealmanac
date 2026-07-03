@@ -57,7 +57,7 @@ It should contain:
 - local trigger hooks
 - local control DB at `~/.codealmanac/control.sqlite`
 - local query DB for wiki search/read
-- local worker workspace creation
+- local engine workspace creation
 - source bundle materialization
 - engine request/result models
 - deterministic local delivery
@@ -186,7 +186,7 @@ GitHub webhook fires
   -> dashboard shows run_events, delivery, and resulting commit/PR
 ```
 
-Cloud worker workspace:
+Cloud engine workspace:
 
 ```text
 /work/<run-id>/

@@ -57,7 +57,7 @@ orchestrates services.
 
 - The selector is intentionally simple: include every full session with at least
   one turn linked to the branch.
-- The bundle copies source files into the worker workspace, but the run request
+- The bundle copies source files into the engine workspace, but the run request
   still passes the bundle by reference via `sources_path` and
   `source_bundle_ref`.
 - Session destination filenames use the stable local session row id, not raw

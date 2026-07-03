@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from codealmanac.core.errors import ExecutionFailed
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.command import (
     CommandRunner,
     SubprocessCommandRunner,

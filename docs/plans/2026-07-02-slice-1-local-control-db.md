@@ -93,7 +93,7 @@ policy code will later restrict local delivery to `working_tree | commit`.
 - Git hook installation.
 - Trigger event recording.
 - Source capture/session ingestion.
-- Worker workspace creation.
+- Engine workspace creation.
 - Public CLI command changes.
 - Cloud Supabase migrations.
 

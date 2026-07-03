@@ -96,7 +96,7 @@ Local lifecycle job state:
   sync-ledger.json
 ```
 
-Local worker workspaces:
+Local engine workspaces:
 
 ```text
 ~/.codealmanac/workspaces/<run-id>/
@@ -443,7 +443,7 @@ SQL tables store refs to these objects; they do not inline large raw payloads.
 | Control DB | `~/.codealmanac/control.sqlite` | Supabase/Postgres |
 | Source artifacts | `~/.codealmanac/sources/` | `source-artifacts` bucket |
 | Run artifacts | `~/.codealmanac/runs/` | `run-artifacts` bucket |
-| Worker workspace | `~/.codealmanac/workspaces/<run-id>/` | `/work/<run-id>/` or worker temp dir |
+| Engine workspace | `~/.codealmanac/workspaces/<run-id>/` | `/work/<run-id>/` or worker temp dir |
 | Users/accounts | none | cloud-only |
 | GitHub App installations | none | cloud-only |
 | Webhooks | none | cloud-only |

@@ -63,8 +63,8 @@ def test_control_service_keeps_schema_store_service_boundaries():
     assert "connection.execute" in store_text
 
 
-def test_engine_runs_service_keeps_worker_contract_boundary():
-    engine_root = SRC_ROOT / "local/runs/artifacts"
+def test_engine_runs_service_keeps_artifact_contract_boundary():
+    engine_root = SRC_ROOT / "engine/runs"
     module_names = {path.name for path in engine_root.glob("*.py")}
     models_text = (engine_root / "models.py").read_text(encoding="utf-8")
     service_text = (engine_root / "service.py").read_text(encoding="utf-8")
@@ -90,8 +90,8 @@ def test_engine_runs_service_keeps_worker_contract_boundary():
     assert "codealmanac.local.control" not in store_text
 
 
-def test_worker_workspaces_service_keeps_git_mechanics_in_integration():
-    worker_root = SRC_ROOT / "engine/worker_workspaces"
+def test_engine_workspaces_service_keeps_git_mechanics_in_integration():
+    worker_root = SRC_ROOT / "engine/workspaces"
     git_worktree = SRC_ROOT / "integrations/workspaces/git/worktree.py"
     module_names = {path.name for path in worker_root.glob("*.py")}
     service_text = (worker_root / "service.py").read_text(encoding="utf-8")
@@ -269,8 +269,13 @@ def test_engine_package_owns_agent_runtime_surface():
         SRC_ROOT / "services/source_bundles",
         SRC_ROOT / "services/sources",
         SRC_ROOT / "services/harnesses",
-        SRC_ROOT / "services/worker_workspaces",
+        SRC_ROOT / "services/engine_workspaces",
         SRC_ROOT / "workflows/page_run",
+    )
+    forbidden_runtime_roots = (
+        SRC_ROOT / "local/runs/artifacts",
+        SRC_ROOT / "engine/worker_workspaces",
+        SRC_ROOT / "engine/engine_workspaces",
     )
     forbidden_files = (
         SRC_ROOT / "workflows/lifecycle.py",
@@ -282,11 +287,13 @@ def test_engine_package_owns_agent_runtime_surface():
         "harnesses",
         "lifecycle",
         "page_run",
+        "runs",
         "source_bundles",
         "sources",
-        "worker_workspaces",
+        "workspaces",
     } <= {path.name for path in engine_root.iterdir() if path.is_dir()}
     assert all(not any(root.glob("*.py")) for root in forbidden_roots)
+    assert [path for path in forbidden_runtime_roots if path.exists()] == []
     assert [path for path in forbidden_files if path.exists()] == []
 
 
@@ -348,7 +355,6 @@ def test_local_package_owns_local_control_plane_surface():
         "ledger",
     } <= {path.name for path in (local_root / "delivery").iterdir() if path.is_dir()}
     assert {
-        "artifacts",
         "execution",
         "jobs",
         "preparation",
@@ -367,6 +373,18 @@ def test_app_exposes_local_control_plane_facade():
     assert "delivery=local_delivery" in app_text
 
 
+def test_app_exposes_engine_facade():
+    app_text = (SRC_ROOT / "app.py").read_text(encoding="utf-8")
+
+    assert "class CodeAlmanacEngine" in app_text
+    assert "engine: CodeAlmanacEngine" in app_text
+    assert "engine = CodeAlmanacEngine(" in app_text
+    assert "runs=engine_runs" in app_text
+    assert "workspaces=engine_workspaces" in app_text
+    assert "local = CodeAlmanacLocal(" in app_text
+    assert "engine_runs=engine_runs" not in app_text
+
+
 def test_local_run_preparation_workflow_only_orchestrates_services():
     workflow_root = SRC_ROOT / "local/runs/preparation"
     service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
@@ -380,7 +398,7 @@ def test_local_run_preparation_workflow_only_orchestrates_services():
     } <= module_names
     assert len(service_text.splitlines()) <= 150
     assert "claim_next_trigger" in service_text
-    assert "worker_workspaces.prepare" in service_text
+    assert "engine_workspaces.prepare" in service_text
     assert "source_bundles.materialize" in service_text
     assert "engine_runs.prepare" in service_text
     assert "update_run" in service_text

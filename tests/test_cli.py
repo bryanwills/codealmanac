@@ -46,7 +46,7 @@ from codealmanac.engine.harnesses.models import (
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.engine.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.engine.sources.requests import DiscoverTranscriptsRequest
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.jobs.ledger.models import (
     JobEventKind,
@@ -2006,7 +2006,7 @@ def test_cli_local_update_runs_manual_local_worker(
         AppConfig(
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         local_repository_probe=CliLocalRepositoryProbe(local_repository_state(repo)),
         git_worktree_manager=CliGitWorktreeManager(),
@@ -2915,7 +2915,7 @@ def test_cli_hidden_run_local_worker_processes_one_trigger(
             registry_path=isolated_home / ".codealmanac/registry.json",
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=CliGitWorktreeManager(),
         harness_adapters=(harness,),

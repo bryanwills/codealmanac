@@ -23,7 +23,7 @@ control DB
   durable local product state: repos, branches, sessions, turns, runs,
   run events, trigger events, deliveries
 
-worker workspace
+engine workspace
   temporary checkout/worktree where the model runs
 ```
 
@@ -425,7 +425,7 @@ For local, the workspace should usually be a temporary worktree or detached
 checkout at the triggering SHA. That is the local equivalent of a cloud worker
 container checkout.
 
-Concrete local worker workspace:
+Concrete local engine workspace:
 
 ```text
 ~/.codealmanac/workspaces/<run-id>/

@@ -9,20 +9,20 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
+from codealmanac.engine.runs.models import (
+    EngineFileChangeKind,
+    EngineRunStatus,
+)
+from codealmanac.engine.runs.requests import (
+    PrepareEngineRunRequest,
+    ReadEngineRunRequest,
+)
 from codealmanac.local.control.models import ControlRunEventKind, ControlRunStatus
 from codealmanac.local.control.requests import (
     CreateControlRunRequest,
     ListControlRunEventsRequest,
     SetBranchPolicyRequest,
     UpsertRepositoryRequest,
-)
-from codealmanac.local.runs.artifacts.models import (
-    EngineFileChangeKind,
-    EngineRunStatus,
-)
-from codealmanac.local.runs.artifacts.requests import (
-    PrepareEngineRunRequest,
-    ReadEngineRunRequest,
 )
 from codealmanac.local.runs.execution.requests import ExecuteLocalEngineRunRequest
 
@@ -75,7 +75,7 @@ def test_local_engine_executes_prepared_request_and_writes_result(
     result = app.workflows.local_engine.execute(
         ExecuteLocalEngineRunRequest(run_id=run.id, title="Update wiki")
     )
-    reloaded_engine = app.engine_runs.read_result(ReadEngineRunRequest(run_id=run.id))
+    reloaded_engine = app.engine.runs.read_result(ReadEngineRunRequest(run_id=run.id))
     events = app.control.list_run_events(ListControlRunEventsRequest(run_id=run.id))
 
     assert result.executed is True
@@ -238,7 +238,7 @@ def local_engine_app(
             expected_head_sha="head-1",
         )
     )
-    app.engine_runs.prepare(
+    app.engine.runs.prepare(
         PrepareEngineRunRequest(
             run_id=run.id,
             repository_id=repository.id,

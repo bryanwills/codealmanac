@@ -29,6 +29,8 @@ from codealmanac.engine.harnesses.ports import HarnessAdapter
 from codealmanac.engine.harnesses.service import HarnessesService
 from codealmanac.engine.lifecycle import LifecycleMutationPolicy
 from codealmanac.engine.page_run import PageRunWorkflow
+from codealmanac.engine.runs.service import EngineRunsService
+from codealmanac.engine.runs.store import EngineRunsStore
 from codealmanac.engine.source_bundles.service import SourceBundlesService
 from codealmanac.engine.source_bundles.store import SourceBundlesStore
 from codealmanac.engine.sources.ports import (
@@ -36,9 +38,9 @@ from codealmanac.engine.sources.ports import (
     TranscriptDiscoveryAdapter,
 )
 from codealmanac.engine.sources.service import SourcesService
-from codealmanac.engine.worker_workspaces.ports import GitWorktreeManager
-from codealmanac.engine.worker_workspaces.service import WorkerWorkspacesService
-from codealmanac.engine.worker_workspaces.store import WorkerWorkspacesStore
+from codealmanac.engine.workspaces.ports import GitWorktreeManager
+from codealmanac.engine.workspaces.service import EngineWorkspacesService
+from codealmanac.engine.workspaces.store import EngineWorkspacesStore
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.browser import WebBrowserOpener
 from codealmanac.integrations.capture import (
@@ -84,8 +86,6 @@ from codealmanac.local.delivery.ledger.store import DeliveriesStore
 from codealmanac.local.hooks.ports import LocalGitHookManager
 from codealmanac.local.hooks.service import LocalHooksService
 from codealmanac.local.policies import LocalPolicyWorkflow
-from codealmanac.local.runs.artifacts.service import EngineRunsService
-from codealmanac.local.runs.artifacts.store import EngineRunsStore
 from codealmanac.local.runs.execution import LocalEngineWorkflow
 from codealmanac.local.runs.jobs import LocalJobsWorkflow
 from codealmanac.local.runs.preparation import LocalRunPreparationWorkflow
@@ -153,10 +153,18 @@ class CodeAlmanacWorkflows:
 
 
 @dataclass(frozen=True)
+class CodeAlmanacEngine:
+    harnesses: HarnessesService
+    sources: SourcesService
+    source_bundles: SourceBundlesService
+    runs: EngineRunsService
+    workspaces: EngineWorkspacesService
+
+
+@dataclass(frozen=True)
 class CodeAlmanacLocal:
     control: ControlService
     deliveries: DeliveriesService
-    engine_runs: EngineRunsService
     hooks: LocalHooksService
     worker_spawner: LocalWorkerSpawner
     setup: LocalSetupWorkflow
@@ -180,10 +188,9 @@ class CodeAlmanac:
     config: ConfigService
     control: ControlService
     deliveries: DeliveriesService
-    engine_runs: EngineRunsService
+    engine: CodeAlmanacEngine
     local_hooks: LocalHooksService
     source_bundles: SourceBundlesService
-    worker_workspaces: WorkerWorkspacesService
     workspaces: WorkspacesService
     wiki: WikiService
     index: IndexService
@@ -266,8 +273,8 @@ def create_app(
     local_hooks = LocalHooksService(
         local_git_hook_manager or FileLocalGitHookManager(),
     )
-    worker_workspaces = WorkerWorkspacesService(
-        WorkerWorkspacesStore(app_config.worker_workspaces_path),
+    engine_workspaces = EngineWorkspacesService(
+        EngineWorkspacesStore(app_config.engine_workspaces_path),
         git_worktree_manager or GitDetachedWorktreeManager(),
     )
     automation = AutomationService(workspaces, scheduler or LaunchdSchedulerAdapter())
@@ -307,6 +314,13 @@ def create_app(
     prompts = PromptRenderer()
     harnesses = HarnessesService(
         default_harness_adapters() if harness_adapters is None else harness_adapters
+    )
+    engine = CodeAlmanacEngine(
+        harnesses=harnesses,
+        sources=sources,
+        source_bundles=source_bundles,
+        runs=engine_runs,
+        workspaces=engine_workspaces,
     )
     init_page_runs = PageRunWorkflow(
         workspaces,
@@ -362,9 +376,9 @@ def create_app(
     )
     local_runs = LocalRunPreparationWorkflow(
         control,
-        worker_workspaces,
-        source_bundles,
-        engine_runs,
+        engine.workspaces,
+        engine.source_bundles,
+        engine.runs,
     )
     resolved_local_repository_probe = (
         local_repository_probe or GitLocalRepositoryProbe()
@@ -403,15 +417,15 @@ def create_app(
     )
     local_engine = LocalEngineWorkflow(
         control,
-        engine_runs,
-        harnesses,
+        engine.runs,
+        engine.harnesses,
         prompts,
     )
     local_delivery = LocalDeliveryWorkflow(
         control,
         deliveries,
-        engine_runs,
-        worker_workspaces,
+        engine.runs,
+        engine.workspaces,
         git_delivery_manager or GitLocalDeliveryManager(),
     )
     local_worker = LocalWorkerWorkflow(
@@ -430,7 +444,6 @@ def create_app(
     local = CodeAlmanacLocal(
         control=control,
         deliveries=deliveries,
-        engine_runs=engine_runs,
         hooks=local_hooks,
         worker_spawner=resolved_local_worker_spawner,
         setup=local_setup,
@@ -481,10 +494,9 @@ def create_app(
         config=config_service,
         control=control,
         deliveries=deliveries,
-        engine_runs=engine_runs,
+        engine=engine,
         local_hooks=local_hooks,
         source_bundles=source_bundles,
-        worker_workspaces=worker_workspaces,
         workspaces=workspaces,
         wiki=wiki,
         index=index,

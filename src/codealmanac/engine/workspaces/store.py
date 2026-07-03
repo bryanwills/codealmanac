@@ -2,20 +2,20 @@ import shutil
 from pathlib import Path
 
 from codealmanac.engine.run_ids import EngineRunId
-from codealmanac.engine.worker_workspaces.models import WorkerWorkspacePaths
+from codealmanac.engine.workspaces.models import EngineWorkspacePaths
 
 REPO_DIR_NAME = "repo"
 SOURCES_DIR_NAME = "sources"
 RUN_DIR_NAME = "run"
 
 
-class WorkerWorkspacesStore:
+class EngineWorkspacesStore:
     def __init__(self, root_path: Path):
         self.root_path = root_path
 
-    def paths(self, run_id: EngineRunId) -> WorkerWorkspacePaths:
+    def paths(self, run_id: EngineRunId) -> EngineWorkspacePaths:
         root_path = self.root_path / run_id
-        return WorkerWorkspacePaths(
+        return EngineWorkspacePaths(
             run_id=run_id,
             root_path=root_path,
             repo_path=root_path / REPO_DIR_NAME,
@@ -23,12 +23,12 @@ class WorkerWorkspacesStore:
             run_path=root_path / RUN_DIR_NAME,
         )
 
-    def exists(self, paths: WorkerWorkspacePaths) -> bool:
+    def exists(self, paths: EngineWorkspacePaths) -> bool:
         return paths.root_path.exists()
 
-    def create_non_repo_dirs(self, paths: WorkerWorkspacePaths) -> None:
+    def create_non_repo_dirs(self, paths: EngineWorkspacePaths) -> None:
         paths.sources_path.mkdir(parents=True, exist_ok=True)
         paths.run_path.mkdir(parents=True, exist_ok=True)
 
-    def remove_tree(self, paths: WorkerWorkspacePaths) -> None:
+    def remove_tree(self, paths: EngineWorkspacePaths) -> None:
         shutil.rmtree(paths.root_path, ignore_errors=True)

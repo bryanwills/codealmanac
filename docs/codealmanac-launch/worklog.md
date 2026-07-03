@@ -1480,7 +1480,7 @@
 - Recorded launch progress percentages in `docs/codealmanac-launch/progress.md`.
 - Planned Slice 7 in
   `docs/plans/2026-07-02-slice-7-engine-run-artifacts.md`.
-- Added `app.engine_runs` with file-backed shared engine request/result
+- Added `app.engine.runs` with file-backed shared engine request/result
   artifacts under `~/.codealmanac/runs/<run-id>/`.
 - Added `EngineRunRequest`, `EngineRunResult`, typed changed-file records, and
   commit subject validation for the `docs almanac:` style.
@@ -1494,14 +1494,14 @@
   infra/deploy rename 5%.
 - Planned Slice 8 in
   `docs/plans/2026-07-02-slice-8-worker-workspaces.md`.
-- Added `app.worker_workspaces` with a local worker workspace layout under
+- Added `app.engine.workspaces` with a local engine workspace layout under
   `~/.codealmanac/workspaces/<run-id>/`.
-- Added `src/codealmanac/services/worker_workspaces/` with typed paths,
+- Added `src/codealmanac/services/engine_workspaces/` with typed paths,
   request objects, a Git worktree port, filesystem store, and service verbs.
 - Added `GitDetachedWorktreeManager`, which creates detached worktrees at the
   expected head SHA using `git worktree add --detach`.
 - Verified Slice 8 focused behavior with
-  `uv run pytest tests/test_worker_workspaces_service.py tests/test_architecture.py`.
+  `uv run pytest tests/test_engine_workspaces_service.py tests/test_architecture.py`.
 - Verified Slice 8 full gate with `uv run pytest` (`389 passed`),
   `uv run ruff check .`, and `git diff --check`.
 - Sent the Slice 8 RelayForge update and recorded progress as:
@@ -1513,7 +1513,7 @@
 - Added control read seams for repositories and branches.
 - Extended control run updates to store `source_bundle_ref` and `request_ref`.
 - Added `app.workflows.local_runs.prepare_next(...)`, which claims a pending
-  trigger, prepares a local worker workspace, creates an engine request
+  trigger, prepares a local engine workspace, creates an engine request
   artifact, stores refs on the control run, and appends a run event.
 - Added failure handling for claimed runs that cannot be prepared.
 - Verified Slice 9 focused behavior with
@@ -1563,12 +1563,12 @@
 - Added `app.workflows.local_delivery.deliver(...)`.
 - Added `GitLocalDeliveryManager` for expected-head reads, wiki-only patch
   collection, patch application, and `docs almanac:` commit delivery.
-- Added worker workspace path lookup by run id.
+- Added engine workspace path lookup by run id.
 - Verified moved-head behavior: delivery is skipped and the run is marked
   `stale`.
 - Verified empty worker diffs skip delivery and mark the run `succeeded`.
 - Verified Slice 12 focused behavior with
-  `uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py`.
+  `uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_engine_workspaces_service.py tests/test_architecture.py`.
 - Verified Slice 12 full gate with `uv run pytest` (`407 passed`),
   `uv run ruff check .`, and `git diff --check`.
 - Sent the Slice 12 RelayForge update and recorded progress as:
@@ -2451,13 +2451,13 @@
   wiki files, workspaces, index, search, pages, topics, health, and viewer.
 - Slice 83 moved reusable agent/wiki-update runtime code into
   `src/codealmanac/engine/`: harness contracts, source refs/runtimes, source
-  bundles, worker workspaces, shared page-run execution, and lifecycle safety
+  bundles, engine workspaces, shared page-run execution, and lifecycle safety
   helpers.
 - Packaged `prompts/` and `manual/` remain root package resources for now;
   moving them needs a distribution-aware package-data slice.
 - Slice 83 focused verification passed:
   `uv run pytest tests/test_harnesses_service.py tests/test_sources_service.py
-  tests/test_source_bundles_service.py tests/test_worker_workspaces_service.py
+  tests/test_source_bundles_service.py tests/test_engine_workspaces_service.py
   tests/test_init_workflow.py tests/test_ingest_workflow.py
   tests/test_garden_workflow.py tests/test_sync_workflow.py
   tests/test_run_queue_workflow.py tests/test_local_engine_workflow.py
@@ -2512,3 +2512,22 @@
   tests/test_architecture.py -q --tb=short` (`217 passed`).
 - Full Slice 85 verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`.
+
+## 2026-07-03 Slice 86 CodeAlmanac Engine Runs And Workspaces
+
+- Slice 86 moved model-worker request/result artifacts from
+  `src/codealmanac/local/runs/artifacts/` to
+  `src/codealmanac/engine/runs/`.
+- Slice 86 moved detached engine workspace management from
+  `src/codealmanac/engine/worker_workspaces/` to
+  `src/codealmanac/engine/workspaces/`.
+- `app.py` now exposes a `CodeAlmanacEngine` facade with `app.engine.runs` and
+  `app.engine.workspaces`; local run preparation, execution, and delivery are
+  wired through that engine facade.
+- Local branch-triggered orchestration intentionally remains under
+  `src/codealmanac/local/runs/`.
+- Focused Slice 86 verification passed:
+  `uv run pytest tests/test_engine_runs_service.py tests/test_engine_workspaces_service.py tests/test_local_run_preparation_workflow.py tests/test_local_worker_workflow.py tests/test_local_delivery_workflow.py tests/test_local_engine_workflow.py tests/test_architecture.py -q --tb=short`
+  (`96 passed`).
+- Full Slice 86 verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`514 passed`), and `git diff --check`.

@@ -113,13 +113,14 @@ engine/
   harnesses/
   sources/
   source_bundles/
-  worker_workspaces/
+  runs/
+  workspaces/
   page_run/
   lifecycle/
 ```
 
 Implemented in Slice 83 for harness contracts, source refs/runtimes, source
-bundle materialization, worker workspaces, shared page-run execution, and
+bundle materialization, engine workspaces, shared page-run execution, and
 lifecycle safety helpers. Packaged `prompts/` and `manual/` still live at the
 root package level until a distribution-aware resource move is worth doing.
 

@@ -1,4 +1,4 @@
-from codealmanac.local.runs.artifacts.models import EngineRunRequest
+from codealmanac.engine.runs.models import EngineRunRequest
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
 
 UPDATE_PROMPT_SECTIONS = (

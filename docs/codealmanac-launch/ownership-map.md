@@ -19,7 +19,7 @@ Owns:
 - local Git hook dispatchers
 - local status and local job read surface
 - local trigger and delivery policy commands
-- local worker workspace creation
+- local engine workspace creation
 - local engine execution
 - local worker orchestration
 - local worker background spawning

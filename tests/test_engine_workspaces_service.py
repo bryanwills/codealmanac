@@ -7,12 +7,12 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
 from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import default_worker_workspaces_path
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
-from codealmanac.engine.worker_workspaces.requests import (
-    PrepareWorkerWorkspaceRequest,
-    ReadWorkerWorkspaceRequest,
-    RemoveWorkerWorkspaceRequest,
+from codealmanac.core.paths import default_engine_workspaces_path
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.requests import (
+    PrepareEngineWorkspaceRequest,
+    ReadEngineWorkspaceRequest,
+    RemoveEngineWorkspaceRequest,
 )
 
 
@@ -35,16 +35,16 @@ class FakeGitWorktreeManager:
         self.remove_calls.append((source_repo_path, worktree_path))
 
 
-def test_default_worker_workspaces_path_uses_codealmanac_home(
+def test_default_engine_workspaces_path_uses_codealmanac_home(
     isolated_home: Path,
 ):
     expected = isolated_home / ".codealmanac/workspaces"
 
-    assert default_worker_workspaces_path() == expected
-    assert AppConfig().worker_workspaces_path == expected
+    assert default_engine_workspaces_path() == expected
+    assert AppConfig().engine_workspaces_path == expected
 
 
-def test_worker_workspace_prepare_creates_layout_and_git_worktree(
+def test_engine_workspace_prepare_creates_layout_and_git_worktree(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -52,14 +52,14 @@ def test_worker_workspace_prepare_creates_layout_and_git_worktree(
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=fake_git,
     )
     repo = tmp_path / "repo"
 
-    prepared = app.worker_workspaces.prepare(
-        PrepareWorkerWorkspaceRequest(
+    prepared = app.engine.workspaces.prepare(
+        PrepareEngineWorkspaceRequest(
             run_id="run-1",
             repository_root_path=repo,
             expected_head_sha="abc123",
@@ -74,7 +74,7 @@ def test_worker_workspace_prepare_creates_layout_and_git_worktree(
     assert fake_git.add_calls == [(repo, prepared.paths.repo_path, "abc123")]
 
 
-def test_worker_workspace_prepare_rejects_existing_run_workspace(
+def test_engine_workspace_prepare_rejects_existing_run_workspace(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -82,23 +82,23 @@ def test_worker_workspace_prepare_rejects_existing_run_workspace(
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=fake_git,
     )
-    request = PrepareWorkerWorkspaceRequest(
+    request = PrepareEngineWorkspaceRequest(
         run_id="run-1",
         repository_root_path=tmp_path / "repo",
         expected_head_sha="abc123",
     )
 
-    app.worker_workspaces.prepare(request)
+    app.engine.workspaces.prepare(request)
 
     with pytest.raises(ConflictError):
-        app.worker_workspaces.prepare(request)
+        app.engine.workspaces.prepare(request)
 
 
-def test_worker_workspace_remove_delegates_git_and_removes_tree(
+def test_engine_workspace_remove_delegates_git_and_removes_tree(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -106,38 +106,38 @@ def test_worker_workspace_remove_delegates_git_and_removes_tree(
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=fake_git,
     )
     repo = tmp_path / "repo"
-    prepared = app.worker_workspaces.prepare(
-        PrepareWorkerWorkspaceRequest(
+    prepared = app.engine.workspaces.prepare(
+        PrepareEngineWorkspaceRequest(
             run_id="run-1",
             repository_root_path=repo,
             expected_head_sha="abc123",
         )
     )
 
-    app.worker_workspaces.remove(
-        RemoveWorkerWorkspaceRequest(run_id="run-1", repository_root_path=repo)
+    app.engine.workspaces.remove(
+        RemoveEngineWorkspaceRequest(run_id="run-1", repository_root_path=repo)
     )
 
     assert fake_git.remove_calls == [(repo, prepared.paths.repo_path)]
     assert not prepared.paths.root_path.exists()
 
 
-def test_worker_workspace_paths_returns_typed_layout(
+def test_engine_workspace_paths_returns_typed_layout(
     isolated_home: Path,
 ):
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         )
     )
 
-    paths = app.worker_workspaces.paths(ReadWorkerWorkspaceRequest(run_id="run-1"))
+    paths = app.engine.workspaces.paths(ReadEngineWorkspaceRequest(run_id="run-1"))
 
     assert paths.root_path == isolated_home / ".codealmanac/workspaces/run-1"
     assert paths.repo_path == paths.root_path / "repo"
@@ -163,12 +163,12 @@ def test_git_detached_worktree_manager_creates_expected_head_worktree(
     app = create_app(
         AppConfig(
             registry_path=isolated_home / ".codealmanac/registry.json",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         )
     )
 
-    prepared = app.worker_workspaces.prepare(
-        PrepareWorkerWorkspaceRequest(
+    prepared = app.engine.workspaces.prepare(
+        PrepareEngineWorkspaceRequest(
             run_id="run-real",
             repository_root_path=repo,
             expected_head_sha=head_sha,
@@ -180,8 +180,8 @@ def test_git_detached_worktree_manager_creates_expected_head_worktree(
         "hello\n"
     )
 
-    app.worker_workspaces.remove(
-        RemoveWorkerWorkspaceRequest(run_id="run-real", repository_root_path=repo)
+    app.engine.workspaces.remove(
+        RemoveEngineWorkspaceRequest(run_id="run-real", repository_root_path=repo)
     )
     assert not prepared.paths.root_path.exists()
 

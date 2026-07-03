@@ -5,7 +5,7 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.engine.run_ids import EngineRunId
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineRunStatus,

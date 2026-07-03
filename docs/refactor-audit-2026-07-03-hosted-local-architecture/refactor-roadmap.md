@@ -85,7 +85,7 @@ Completed:
   `services/search`, `services/pages`, `services/topics`, `services/health`,
   and `services/viewer` -> `wiki/`
 - Slice 83: `services/source_bundles`, `services/sources`,
-  `services/harnesses`, `services/worker_workspaces`, `workflows/page_run`,
+  `services/harnesses`, `services/engine_workspaces`, `workflows/page_run`,
   and shared lifecycle helpers -> `engine/`
 - Slice 84: `services/control`, `services/deliveries`,
   `services/engine_runs`, `services/local_hooks`, and `workflows/local_*`
@@ -98,7 +98,8 @@ Goal:
 ```text
 services/cloud_* + workflows/cloud_* -> cloud/                              # done
 services/wiki/index/search/pages/topics/viewer/workspaces -> wiki/          # done
-services/source_bundles/sources/harnesses/worker_workspaces + lifecycle workflows -> engine/  # done
+services/source_bundles/sources/harnesses + lifecycle workflows -> engine/  # done
+local/runs/artifacts + engine/worker_workspaces -> engine/runs + engine/workspaces  # done
 control/deliveries/local_hooks/local_* workflows -> local/                  # done
 repo-local lifecycle services/runs + workflows/run_queue -> jobs/           # done
 ```
@@ -120,11 +121,9 @@ Replace:
 
 ```text
 runs
-engine_runs
 local_runs
 local_jobs
 local_worker
-worker_workspaces
 ```
 
 with clearer responsibilities:

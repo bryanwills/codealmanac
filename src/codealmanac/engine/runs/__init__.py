@@ -1,4 +1,4 @@
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineFileChangeKind,
@@ -8,13 +8,13 @@ from codealmanac.local.runs.artifacts.models import (
     EngineRunStatus,
     PreparedEngineRun,
 )
-from codealmanac.local.runs.artifacts.requests import (
+from codealmanac.engine.runs.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
     WriteEngineRunResultRequest,
 )
-from codealmanac.local.runs.artifacts.service import EngineRunsService
-from codealmanac.local.runs.artifacts.store import EngineRunsStore
+from codealmanac.engine.runs.service import EngineRunsService
+from codealmanac.engine.runs.store import EngineRunsStore
 
 __all__ = (
     "COMMIT_SUBJECT_PREFIX",

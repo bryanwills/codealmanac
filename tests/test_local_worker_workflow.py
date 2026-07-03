@@ -10,7 +10,7 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.local.control.models import (
     ControlRunStatus,
     TriggerEventKind,
@@ -153,7 +153,7 @@ def test_local_worker_prepares_executes_and_delivers_one_trigger(
     assert result.run is not None
     assert result.run.status is ControlRunStatus.SUCCEEDED
     assert fake_harness.requests[0].cwd == (
-        result.preparation.worker_workspace.paths.repo_path
+        result.preparation.engine_workspace.paths.repo_path
     )
     assert fake_harness.requests[0].title == "Local update"
     assert fake_delivery.read_calls == [repo_path]
@@ -255,7 +255,7 @@ def local_worker_app(
             registry_path=isolated_home / ".codealmanac/registry.json",
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=FakeGitWorktreeManager(),
         harness_adapters=(fake_harness,),

@@ -46,7 +46,7 @@ mark delivery succeeded
 - Add a delivery ledger service over the existing `deliveries` table.
 - Add local delivery workflow and typed result models.
 - Add a Git delivery port and concrete native-Git implementation.
-- Add worker workspace path lookup so delivery can find the detached worker
+- Add engine workspace path lookup so delivery can find the detached worker
   repo for a run.
 - Support local `commit` delivery mode.
 - Mark moved-head deliveries as skipped and runs as `stale`.
@@ -85,8 +85,8 @@ Modify:
 
 - `src/codealmanac/app.py`
 - `src/codealmanac/services/control/records.py`
-- `src/codealmanac/services/worker_workspaces/requests.py`
-- `src/codealmanac/services/worker_workspaces/service.py`
+- `src/codealmanac/services/engine_workspaces/requests.py`
+- `src/codealmanac/services/engine_workspaces/service.py`
 - `tests/test_architecture.py`
 - launch docs under `docs/codealmanac-launch/`
 
@@ -95,7 +95,7 @@ Modify:
 Focused:
 
 ```text
-uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_worker_workspaces_service.py tests/test_architecture.py
+uv run pytest tests/test_deliveries_service.py tests/test_local_delivery_workflow.py tests/test_git_local_delivery.py tests/test_engine_workspaces_service.py tests/test_architecture.py
 ```
 
 Full:

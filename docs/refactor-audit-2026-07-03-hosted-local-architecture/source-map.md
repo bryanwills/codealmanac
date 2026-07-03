@@ -47,7 +47,6 @@ topics
 updates
 viewer
 wiki
-worker_workspaces
 workspaces
 ```
 
@@ -129,4 +128,3 @@ wiki
 - `messages` and `wiring/fanout` form an event bus, but the naming hides that.
 - `capture_tokens` and `cli_tokens` need review against the WorkOS-backed auth decision.
 - Some old `usealmanac` provider names still exist in deployment history and docs.
-

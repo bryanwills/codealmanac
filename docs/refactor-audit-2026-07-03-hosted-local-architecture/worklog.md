@@ -20,7 +20,7 @@
 - Added architecture coverage so the old wiki/read-model `services/` source files cannot reappear and the new `wiki/` package stays behind the integration boundary.
 - Verified Slice 82 with `uv run ruff check src tests`, `uv run pytest -q --tb=short` (`510 passed`), and `git diff --check`.
 - Planned and implemented Slice 83 in `docs/plans/2026-07-03-slice-83-codealmanac-engine-package.md`.
-- Moved the reusable agent/wiki-update runtime into first-class `src/codealmanac/engine/`: harness contracts, source refs/runtimes, source bundle materialization, worker workspaces, shared page-run execution, and lifecycle safety helpers.
+- Moved the reusable agent/wiki-update runtime into first-class `src/codealmanac/engine/`: harness contracts, source refs/runtimes, source bundle materialization, engine workspaces, shared page-run execution, and lifecycle safety helpers.
 - Left packaged `prompts/` and `manual/` at root package level because those are distribution resources and should move only in a separate package-data-aware slice.
 - Added architecture coverage so the old engine service/workflow source files cannot reappear and the new `engine/` package stays behind the integration boundary.
 - Focused Slice 83 verification passed with the engine/provider/lifecycle test set (`194 passed`).
@@ -53,3 +53,14 @@
   server, CLI, and architecture test set (`217 passed`).
 - Full Slice 85 verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`.
+- Planned and implemented Slice 86 in
+  `docs/plans/2026-07-03-slice-86-engine-runs-and-workspaces.md`.
+- Moved engine run artifacts into `src/codealmanac/engine/runs/` and detached
+  engine workspace management into `src/codealmanac/engine/workspaces/`.
+- Added `CodeAlmanacEngine` in the composition root so engine-owned runtime
+  services have one explicit facade: `app.engine.runs` and
+  `app.engine.workspaces`.
+- Focused Slice 86 verification passed with the engine/local workflow and
+  architecture test set (`96 passed`).
+- Full Slice 86 verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`514 passed`), and `git diff --check`.

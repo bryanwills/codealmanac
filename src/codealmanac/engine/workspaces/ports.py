@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Protocol
 
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 
 
 class GitWorktreeManager(Protocol):

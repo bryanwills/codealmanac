@@ -12,7 +12,7 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -163,7 +163,7 @@ def test_local_update_creates_manual_trigger_and_runs_worker(
     )
     assert tuple(event.message for event in events) == (
         "materialized local source bundle with 0 sessions",
-        "prepared local worker workspace",
+        "prepared local engine workspace",
         "started local engine worker",
         "codex succeeded: Update local wiki",
         "completed local engine worker; delivery pending",
@@ -245,7 +245,7 @@ def local_update_app(tmp_path: Path, isolated_home: Path):
         AppConfig(
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         local_repository_probe=FakeLocalRepositoryProbe(available_state(repo)),
         git_worktree_manager=FakeGitWorktreeManager(),

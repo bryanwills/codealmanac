@@ -4,7 +4,7 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.engine.run_ids import EngineRunId
 
 
-class WorkerWorkspacePaths(CodeAlmanacModel):
+class EngineWorkspacePaths(CodeAlmanacModel):
     run_id: EngineRunId
     root_path: Path
     repo_path: Path
@@ -17,6 +17,6 @@ class GitWorktreeCheckout(CodeAlmanacModel):
     head_sha: str
 
 
-class PreparedWorkerWorkspace(CodeAlmanacModel):
-    paths: WorkerWorkspacePaths
+class PreparedEngineWorkspace(CodeAlmanacModel):
+    paths: EngineWorkspacePaths
     checkout: GitWorktreeCheckout

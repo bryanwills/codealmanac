@@ -6,7 +6,7 @@ Status: planned.
 ## Goal
 
 Create the local run preparation workflow that connects trigger claiming,
-worker workspace creation, and engine request artifacts.
+engine workspace creation, and engine request artifacts.
 
 This slice stops before model execution and delivery. It produces a queued
 control run with concrete `source_bundle_ref` and `request_ref` fields.
@@ -36,7 +36,7 @@ claim_next_trigger
 ## Ownership
 
 - `ControlService` owns control DB reads and run ref updates.
-- `WorkerWorkspacesService` owns worker workspace paths and Git worktree port.
+- `EngineWorkspacesService` owns engine workspace paths and Git worktree port.
 - `EngineRunsService` owns engine request artifact creation.
 - `LocalRunPreparationWorkflow` owns orchestration across those services.
 
@@ -69,7 +69,7 @@ claimed trigger with an invisible failure.
 ## Tests
 
 - No pending trigger returns `prepared=False`.
-- Pending local trigger prepares worker workspace and engine request artifact.
+- Pending local trigger prepares engine workspace and engine request artifact.
 - Control run stores `source_bundle_ref` and `request_ref`.
 - Run events record preparation.
 - Missing repository `local_root_path` fails the run with a normalized error.

@@ -358,7 +358,7 @@ Must prove:
 - Local worker uses the engine contract, not public CLI strings.
 - Local run metadata is stored in `~/.codealmanac/control.sqlite`.
 - Local run artifacts are stored in `~/.codealmanac/runs/<run-id>/`.
-- Local worker workspaces are stored in
+- Local engine workspaces are stored in
   `~/.codealmanac/workspaces/<run-id>/`.
 - Auto-update does not replace the current running process.
 
@@ -398,8 +398,8 @@ Current evidence:
   trigger `claimed`, sets `claimed_at`, creates a queued run, copies
   `head_sha` into `expected_head_sha`, and returns an empty result when no
   pending trigger exists.
-- Slice 7 added `app.engine_runs` and
-  `src/codealmanac/services/engine_runs/`.
+- Slice 7 added engine run artifacts; Slice 86 moved them to
+  `app.engine.runs` and `src/codealmanac/engine/runs/`.
 - `AppConfig.run_artifacts_path` defaults to `~/.codealmanac/runs`.
 - `tests/test_engine_runs_service.py` proves `request.json` and `result.json`
   round-trip under `~/.codealmanac/runs/<run-id>/`.
@@ -408,23 +408,23 @@ Current evidence:
   payloads.
 - `tests/test_engine_runs_service.py` proves engine result commit subjects use
   the `docs almanac:` style.
-- `tests/test_architecture.py` proves `engine_runs` stays separate from CLI,
-  control DB, and integration concerns.
-- Slice 8 added `app.worker_workspaces` and
-  `src/codealmanac/services/worker_workspaces/`.
-- `AppConfig.worker_workspaces_path` defaults to
+- `tests/test_architecture.py` proves engine run artifacts stay separate from
+  CLI, control DB, and integration concerns.
+- Slice 8 added engine workspaces; Slice 86 moved them to
+  `app.engine.workspaces` and `src/codealmanac/engine/workspaces/`.
+- `AppConfig.engine_workspaces_path` defaults to
   `~/.codealmanac/workspaces`.
-- `tests/test_worker_workspaces_service.py` proves the worker workspace layout:
+- `tests/test_engine_workspaces_service.py` proves the engine workspace layout:
   `repo/`, `sources/`, and `run/`.
-- `tests/test_worker_workspaces_service.py` proves existing run workspaces
+- `tests/test_engine_workspaces_service.py` proves existing run workspaces
   raise a conflict instead of being silently removed.
-- `tests/test_worker_workspaces_service.py` proves the concrete Git adapter
+- `tests/test_engine_workspaces_service.py` proves the concrete Git adapter
   creates a detached worktree at the expected head SHA.
 - `tests/test_architecture.py` proves Git/subprocess mechanics stay in the Git
-  integration, not the worker workspace service/store.
+  integration, not the engine workspace service/store.
 - Slice 9 added `app.workflows.local_runs.prepare_next`.
 - `tests/test_local_run_preparation_workflow.py` proves a pending trigger is
-  claimed, a worker workspace is created, an engine `request.json` is written,
+  claimed, an engine workspace is created, an engine `request.json` is written,
   `source_bundle_ref` and `request_ref` are stored on the control run, and a
   normalized run event is appended.
 - `tests/test_local_run_preparation_workflow.py` proves no pending trigger
@@ -1647,8 +1647,8 @@ Known residue:
   workspaces, shared page-run execution, and lifecycle safety helpers.
 - Boundary evidence: architecture tests now prevent the old
   `services/source_bundles`, `services/sources`, `services/harnesses`,
-  `services/worker_workspaces`, `workflows/page_run`, and `workflows/lifecycle*`
-  source files from returning.
+  `local/runs/artifacts`, `engine/worker_workspaces`, `workflows/page_run`, and
+  `workflows/lifecycle*` source files from returning.
 - Verification evidence: focused engine/provider/lifecycle test set passed
   (`194 passed`).
   Full local verification passed with `uv run ruff check src tests`,

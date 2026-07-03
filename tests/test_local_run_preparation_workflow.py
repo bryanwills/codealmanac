@@ -3,7 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
-from codealmanac.engine.worker_workspaces.models import GitWorktreeCheckout
+from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.local.control.models import (
     ControlRunEventKind,
     ControlRunStatus,
@@ -102,12 +102,12 @@ def test_prepare_next_local_run_claims_trigger_and_prepares_engine_request(
     assert result.run.request_ref is not None
     assert result.run.source_bundle_ref.startswith("file://")
     assert result.run.request_ref.startswith("file://")
-    assert result.worker_workspace is not None
-    assert result.worker_workspace.paths.repo_path.is_dir()
-    assert result.worker_workspace.paths.sources_path.is_dir()
-    assert result.worker_workspace.paths.run_path.is_dir()
+    assert result.engine_workspace is not None
+    assert result.engine_workspace.paths.repo_path.is_dir()
+    assert result.engine_workspace.paths.sources_path.is_dir()
+    assert result.engine_workspace.paths.run_path.is_dir()
     assert result.source_bundle is not None
-    assert result.source_bundle.root_path == result.worker_workspace.paths.sources_path
+    assert result.source_bundle.root_path == result.engine_workspace.paths.sources_path
     assert result.source_bundle.session_count == 1
     assert result.source_bundle.manifest_path.is_file()
     bundle_session = result.source_bundle.manifest.sessions[0]
@@ -122,10 +122,10 @@ def test_prepare_next_local_run_claims_trigger_and_prepares_engine_request(
     assert result.engine_run is not None
     assert result.engine_run.paths.request_path.is_file()
     assert result.engine_run.request.repo_path == (
-        result.worker_workspace.paths.repo_path
+        result.engine_workspace.paths.repo_path
     )
     assert result.engine_run.request.sources_path == (
-        result.worker_workspace.paths.sources_path
+        result.engine_workspace.paths.sources_path
     )
     assert result.engine_run.request.source_bundle_ref == result.run.source_bundle_ref
 
@@ -143,7 +143,7 @@ def test_prepare_next_local_run_claims_trigger_and_prepares_engine_request(
     )
     assert run_events[0].message == "materialized local source bundle with 1 sessions"
     assert run_events[0].artifact_ref == result.run.source_bundle_ref
-    assert run_events[1].message == "prepared local worker workspace"
+    assert run_events[1].message == "prepared local engine workspace"
     assert run_events[1].artifact_ref == result.run.request_ref
 
 
@@ -186,7 +186,7 @@ def local_run_app(isolated_home: Path):
             registry_path=isolated_home / ".codealmanac/registry.json",
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_worktree_manager=FakeGitWorktreeManager(),
     )

@@ -2,6 +2,13 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.engine.runs.models import (
+    EngineRunStatus,
+)
+from codealmanac.engine.runs.requests import (
+    PrepareEngineRunRequest,
+    WriteEngineRunResultRequest,
+)
 from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -22,13 +29,6 @@ from codealmanac.local.delivery.execution.models import (
 )
 from codealmanac.local.delivery.execution.requests import DeliverLocalRunRequest
 from codealmanac.local.delivery.ledger.models import DeliveryStatus
-from codealmanac.local.runs.artifacts.models import (
-    EngineRunStatus,
-)
-from codealmanac.local.runs.artifacts.requests import (
-    PrepareEngineRunRequest,
-    WriteEngineRunResultRequest,
-)
 
 
 class FakeGitDeliveryManager:
@@ -219,7 +219,7 @@ def local_delivery_app(
             registry_path=isolated_home / ".codealmanac/registry.json",
             control_db_path=isolated_home / ".codealmanac/control.sqlite",
             run_artifacts_path=isolated_home / ".codealmanac/runs",
-            worker_workspaces_path=isolated_home / ".codealmanac/workspaces",
+            engine_workspaces_path=isolated_home / ".codealmanac/workspaces",
         ),
         git_delivery_manager=fake_git,
     )
@@ -253,7 +253,7 @@ def local_delivery_app(
 
 
 def write_engine_result(app, run_id: str) -> None:
-    app.engine_runs.prepare(
+    app.engine.runs.prepare(
         PrepareEngineRunRequest(
             run_id=run_id,
             repository_id="repo-1",
@@ -266,7 +266,7 @@ def write_engine_result(app, run_id: str) -> None:
             sources_path=Path("/tmp/sources"),
         )
     )
-    app.engine_runs.write_result(
+    app.engine.runs.write_result(
         WriteEngineRunResultRequest(
             run_id=run_id,
             status=EngineRunStatus.SUCCEEDED,

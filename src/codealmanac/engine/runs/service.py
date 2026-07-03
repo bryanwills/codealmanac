@@ -1,16 +1,16 @@
 from codealmanac.core.errors import NotFoundError
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     EngineRunArtifactPaths,
     EngineRunRequest,
     EngineRunResult,
     PreparedEngineRun,
 )
-from codealmanac.local.runs.artifacts.requests import (
+from codealmanac.engine.runs.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
     WriteEngineRunResultRequest,
 )
-from codealmanac.local.runs.artifacts.store import EngineRunsStore
+from codealmanac.engine.runs.store import EngineRunsStore
 
 
 class EngineRunsService:

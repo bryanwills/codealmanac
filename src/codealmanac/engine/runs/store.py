@@ -4,7 +4,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 
 from codealmanac.engine.run_ids import EngineRunId
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     EngineRunArtifactPaths,
     EngineRunRequest,
     EngineRunResult,

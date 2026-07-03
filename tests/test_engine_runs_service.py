@@ -7,14 +7,14 @@ from codealmanac.app import create_app
 from codealmanac.core.errors import NotFoundError
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import default_run_artifacts_path
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineFileChangeKind,
     EngineRunResult,
     EngineRunStatus,
 )
-from codealmanac.local.runs.artifacts.requests import (
+from codealmanac.engine.runs.requests import (
     PrepareEngineRunRequest,
     ReadEngineRunRequest,
     WriteEngineRunResultRequest,
@@ -41,7 +41,7 @@ def test_engine_run_prepare_writes_request_artifact(
     repo_path = tmp_path / "repo"
     sources_path = isolated_home / ".codealmanac/source-bundles/run-1"
 
-    prepared = app.engine_runs.prepare(
+    prepared = app.engine.runs.prepare(
         PrepareEngineRunRequest(
             run_id="run-1",
             repository_id="repo_1",
@@ -63,7 +63,7 @@ def test_engine_run_prepare_writes_request_artifact(
     assert prepared.request.sources_path == sources_path
     assert prepared.request.source_bundle_ref == "file://source-bundles/run-1"
 
-    reloaded = app.engine_runs.read_request(ReadEngineRunRequest(run_id="run-1"))
+    reloaded = app.engine.runs.read_request(ReadEngineRunRequest(run_id="run-1"))
     raw = json.loads(prepared.paths.request_path.read_text(encoding="utf-8"))
 
     assert reloaded == prepared.request
@@ -84,7 +84,7 @@ def test_engine_run_result_round_trips_with_commit_subject_style(
             run_artifacts_path=isolated_home / ".codealmanac/runs",
         )
     )
-    app.engine_runs.prepare(
+    app.engine.runs.prepare(
         PrepareEngineRunRequest(
             run_id="run-2",
             repository_id="repo_1",
@@ -98,7 +98,7 @@ def test_engine_run_result_round_trips_with_commit_subject_style(
         )
     )
 
-    result = app.engine_runs.write_result(
+    result = app.engine.runs.write_result(
         WriteEngineRunResultRequest(
             run_id="run-2",
             status=EngineRunStatus.SUCCEEDED,
@@ -116,7 +116,7 @@ def test_engine_run_result_round_trips_with_commit_subject_style(
         )
     )
 
-    reloaded = app.engine_runs.read_result(ReadEngineRunRequest(run_id="run-2"))
+    reloaded = app.engine.runs.read_result(ReadEngineRunRequest(run_id="run-2"))
 
     assert reloaded == result
     assert result.status is EngineRunStatus.SUCCEEDED
@@ -133,7 +133,7 @@ def test_engine_run_result_requires_prepared_request(isolated_home: Path):
     )
 
     with pytest.raises(NotFoundError):
-        app.engine_runs.write_result(
+        app.engine.runs.write_result(
             WriteEngineRunResultRequest(
                 run_id="missing-run",
                 status=EngineRunStatus.FAILED,

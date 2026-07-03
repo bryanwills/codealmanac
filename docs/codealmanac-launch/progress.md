@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 85 CodeAlmanac job ledger naming.
+Sent: 2026-07-03 after Slice 86 CodeAlmanac engine runs/workspaces.
 
 Route:
 
@@ -19,14 +19,13 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Slice 85 moved repo-local lifecycle job storage into
-`src/codealmanac/jobs/ledger/` and the background lifecycle queue into
-`src/codealmanac/jobs/queue/`. Lifecycle records now use `job_id` and
-`JobRecord`/`JobLogEvent` naming across service, CLI, viewer API, sync,
-maintenance, and tests; cloud/local trigger executions remain `runs`. Focused
-verification passed with `217 passed`; full local verification passed with
-`uv run ruff check src tests`, `uv run pytest -q --tb=short` (`513 passed`), and
-`git diff --check`.
+Slice 86 moved engine run artifacts into `src/codealmanac/engine/runs/` and
+detached engine workspace management into `src/codealmanac/engine/workspaces/`.
+The composition root now has `app.engine.runs` and `app.engine.workspaces`, and
+local run preparation/execution/delivery are wired through that engine facade.
+Focused verification passed with `96 passed`; full local verification passed
+with `uv run ruff check src tests`, `uv run pytest -q --tb=short`
+(`514 passed`), and `git diff --check`.
 
 ## Latest Local Notes
 
@@ -45,7 +44,7 @@ verification passed with `217 passed`; full local verification passed with
   wiki files, workspaces, index, search, pages, topics, health, and viewer now
   live under `src/codealmanac/wiki/`.
 - Slice 83 implemented the next CodeAlmanac-side refactor from that audit:
-  harness contracts, sources, source bundles, worker workspaces, page-run
+  harness contracts, sources, source bundles, engine workspaces, page-run
   execution, and lifecycle helpers now live under `src/codealmanac/engine/`.
 - Slice 84 implemented the next CodeAlmanac-side refactor from that audit:
   local control DB, hooks, delivery, run preparation/execution/jobs/worker,
@@ -54,12 +53,16 @@ verification passed with `217 passed`; full local verification passed with
   repo-local lifecycle jobs now live under `src/codealmanac/jobs/ledger/` and
   `src/codealmanac/jobs/queue/`, while branch-triggered local/cloud executions
   remain `runs`.
+- Slice 86 implemented the engine runtime cleanup from that audit:
+  model-worker request/result artifacts now live under `src/codealmanac/engine/runs/`,
+  detached engine workspaces live under `src/codealmanac/engine/workspaces/`,
+  and local run workflows use the `app.engine` facade.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 99.9% | 99.8% | Slice 85 renamed repo-local lifecycle execution to jobs, moved the ledger/queue under `src/codealmanac/jobs/`, added architecture guards, and passed focused/full gates. |
+| CodeAlmanac backend/local | 100% | 99.9% | Slice 86 moved engine run artifacts/workspaces under `src/codealmanac/engine/`, added the `app.engine` facade, and passed focused/full gates. |
 | CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |

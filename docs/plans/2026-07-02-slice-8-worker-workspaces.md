@@ -5,7 +5,7 @@ Status: planned.
 
 ## Goal
 
-Add the local worker workspace contract used before engine execution.
+Add the local engine workspace contract used before engine execution.
 
 This slice creates deterministic per-run directories and a Git-native detached
 worktree at the expected head SHA. It does not run the model, select sources,
@@ -13,7 +13,7 @@ or deliver changes.
 
 ## Contract
 
-Local worker workspaces live under:
+Local engine workspaces live under:
 
 ```text
 ~/.codealmanac/workspaces/<run-id>/
@@ -25,8 +25,8 @@ Local worker workspaces live under:
 Call shape:
 
 ```python
-workspace = app.worker_workspaces.prepare(
-    PrepareWorkerWorkspaceRequest(
+workspace = app.engine_workspaces.prepare(
+    PrepareEngineWorkspaceRequest(
         run_id=run.id,
         repository_root_path=repo.local_root_path,
         expected_head_sha=run.expected_head_sha,
@@ -45,7 +45,7 @@ engine = app.engine_runs.prepare(
 ## Ownership
 
 ```text
-services/worker_workspaces/
+services/engine_workspaces/
   models.py      # path/result models
   requests.py    # prepare/remove commands
   ports.py       # GitWorktreeManager protocol
@@ -73,7 +73,7 @@ The service owns product verbs and paths. The Git integration owns
 
 ## Tests
 
-- Default worker workspace root is `~/.codealmanac/workspaces`.
+- Default engine workspace root is `~/.codealmanac/workspaces`.
 - Preparing a workspace creates `sources/` and `run/`, calls the Git worktree
   port with the expected SHA, and returns typed paths.
 - Existing workspace paths raise a conflict instead of being silently removed.

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from codealmanac.engine.harnesses.models import HarnessRunResult
 from codealmanac.engine.lifecycle import first_line
-from codealmanac.local.runs.artifacts.models import (
+from codealmanac.engine.runs.models import (
     COMMIT_SUBJECT_PREFIX,
     EngineChangedFile,
     EngineFileChangeKind,

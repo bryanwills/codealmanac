@@ -1,10 +1,12 @@
 from codealmanac.core.errors import ValidationFailed
+from codealmanac.engine.runs.requests import PrepareEngineRunRequest
+from codealmanac.engine.runs.service import EngineRunsService
 from codealmanac.engine.source_bundles.requests import MaterializeSourceBundleRequest
 from codealmanac.engine.source_bundles.service import SourceBundlesService
-from codealmanac.engine.worker_workspaces.requests import (
-    PrepareWorkerWorkspaceRequest,
+from codealmanac.engine.workspaces.requests import (
+    PrepareEngineWorkspaceRequest,
 )
-from codealmanac.engine.worker_workspaces.service import WorkerWorkspacesService
+from codealmanac.engine.workspaces.service import EngineWorkspacesService
 from codealmanac.local.control.requests import (
     ClaimNextTriggerRequest,
     GetBranchRequest,
@@ -13,8 +15,6 @@ from codealmanac.local.control.requests import (
     UpdateControlRunRequest,
 )
 from codealmanac.local.control.service import ControlService
-from codealmanac.local.runs.artifacts.requests import PrepareEngineRunRequest
-from codealmanac.local.runs.artifacts.service import EngineRunsService
 from codealmanac.local.runs.preparation.bundle_inputs import (
     source_bundle_session_inputs,
 )
@@ -31,12 +31,12 @@ class LocalRunPreparationWorkflow:
     def __init__(
         self,
         control: ControlService,
-        worker_workspaces: WorkerWorkspacesService,
+        engine_workspaces: EngineWorkspacesService,
         source_bundles: SourceBundlesService,
         engine_runs: EngineRunsService,
     ):
         self.control = control
-        self.worker_workspaces = worker_workspaces
+        self.engine_workspaces = engine_workspaces
         self.source_bundles = source_bundles
         self.engine_runs = engine_runs
 
@@ -68,8 +68,8 @@ class LocalRunPreparationWorkflow:
                 raise ValidationFailed("repository local_root_path is required")
             if claim.run.expected_head_sha is None:
                 raise ValidationFailed("run expected_head_sha is required")
-            worker_workspace = self.worker_workspaces.prepare(
-                PrepareWorkerWorkspaceRequest(
+            engine_workspace = self.engine_workspaces.prepare(
+                PrepareEngineWorkspaceRequest(
                     run_id=claim.run.id,
                     repository_root_path=repository.local_root_path,
                     expected_head_sha=claim.run.expected_head_sha,
@@ -82,7 +82,7 @@ class LocalRunPreparationWorkflow:
                 MaterializeSourceBundleRequest(
                     run_id=claim.run.id,
                     branch_id=branch.id,
-                    target_path=worker_workspace.paths.sources_path,
+                    target_path=engine_workspace.paths.sources_path,
                     sessions=source_bundle_session_inputs(sessions),
                 )
             )
@@ -95,9 +95,9 @@ class LocalRunPreparationWorkflow:
                     repository_full_name=repository.full_name,
                     branch_name=branch.name,
                     expected_head_sha=claim.run.expected_head_sha,
-                    repo_path=worker_workspace.paths.repo_path,
+                    repo_path=engine_workspace.paths.repo_path,
                     almanac_root=repository.almanac_root,
-                    sources_path=worker_workspace.paths.sources_path,
+                    sources_path=engine_workspace.paths.sources_path,
                     source_bundle_ref=source_ref,
                 )
             )
@@ -115,7 +115,7 @@ class LocalRunPreparationWorkflow:
                 branch=branch,
                 trigger=claim.trigger,
                 run=run,
-                worker_workspace=worker_workspace,
+                engine_workspace=engine_workspace,
                 source_bundle=source_bundle,
                 engine_run=engine_run,
             )

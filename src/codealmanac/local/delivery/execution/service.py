@@ -1,7 +1,14 @@
 from contextlib import suppress
 
-from codealmanac.engine.worker_workspaces.requests import ReadWorkerWorkspaceRequest
-from codealmanac.engine.worker_workspaces.service import WorkerWorkspacesService
+from codealmanac.engine.runs.models import (
+    COMMIT_SUBJECT_PREFIX,
+    EngineRunResult,
+    EngineRunStatus,
+)
+from codealmanac.engine.runs.requests import ReadEngineRunRequest
+from codealmanac.engine.runs.service import EngineRunsService
+from codealmanac.engine.workspaces.requests import ReadEngineWorkspaceRequest
+from codealmanac.engine.workspaces.service import EngineWorkspacesService
 from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -25,13 +32,6 @@ from codealmanac.local.delivery.ledger.requests import (
     UpdateDeliveryRequest,
 )
 from codealmanac.local.delivery.ledger.service import DeliveriesService
-from codealmanac.local.runs.artifacts.models import (
-    COMMIT_SUBJECT_PREFIX,
-    EngineRunResult,
-    EngineRunStatus,
-)
-from codealmanac.local.runs.artifacts.requests import ReadEngineRunRequest
-from codealmanac.local.runs.artifacts.service import EngineRunsService
 from codealmanac.local.runs.preparation.refs import first_line
 
 
@@ -41,13 +41,13 @@ class LocalDeliveryWorkflow:
         control: ControlService,
         deliveries: DeliveriesService,
         engine_runs: EngineRunsService,
-        worker_workspaces: WorkerWorkspacesService,
+        engine_workspaces: EngineWorkspacesService,
         git_delivery: LocalGitDeliveryManager,
     ):
         self.control = control
         self.deliveries = deliveries
         self.engine_runs = engine_runs
-        self.worker_workspaces = worker_workspaces
+        self.engine_workspaces = engine_workspaces
         self.git_delivery = git_delivery
 
     def deliver(self, request: DeliverLocalRunRequest) -> LocalDeliveryResult:
@@ -87,8 +87,8 @@ class LocalDeliveryWorkflow:
                     f"branch advanced to {head.head_sha}; delivery skipped",
                     head.head_sha,
                 )
-            workspace = self.worker_workspaces.paths(
-                ReadWorkerWorkspaceRequest(run_id=run.id)
+            workspace = self.engine_workspaces.paths(
+                ReadEngineWorkspaceRequest(run_id=run.id)
             )
             patch = self.git_delivery.collect_patch(
                 workspace.repo_path,

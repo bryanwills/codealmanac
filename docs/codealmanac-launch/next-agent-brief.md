@@ -93,7 +93,7 @@ direction.
   workspaces, index, search, pages, topics, health, and viewer now live under
   `src/codealmanac/wiki/`. The CLI surface did not change.
 - Slice 83 implemented the next CodeAlmanac-side package cleanup: harness
-  contracts, sources, source bundles, worker workspaces, page-run execution,
+  contracts, sources, source bundles, engine workspaces, page-run execution,
   and lifecycle helpers now live under `src/codealmanac/engine/`. The CLI
   surface did not change. Packaged `prompts/` and `manual/` remain root
   package resources for now.
@@ -101,12 +101,37 @@ direction.
   control DB, hooks, delivery ledger/execution, run artifacts/preparation/
   execution/jobs/worker, policies, setup, status, and update now live under
   `src/codealmanac/local/`. The CLI surface did not change.
-- The remaining CodeAlmanac cleanup is mostly semantic, not mechanical:
-  collapse the old repo-local job/run ledger names, decide whether
-  `prompts/` / `manual/` should stay root package resources, and continue the
-  hosted package/worker/domain cleanup.
+- Slice 85 renamed repo-local lifecycle execution to jobs under
+  `src/codealmanac/jobs/`.
+- Slice 86 moved engine run artifacts and detached engine workspace management
+  under `src/codealmanac/engine/` and added `app.engine.runs` /
+  `app.engine.workspaces`.
+- The remaining CodeAlmanac cleanup is mostly hosted-facing or package-resource
+  judgment: decide whether `prompts/` / `manual/` should stay root package
+  resources, and continue the hosted package/worker/domain cleanup.
 
 ## Last Completed Work
+
+Slice 86 creates the CodeAlmanac engine runtime facade:
+
+- `src/codealmanac/engine/runs/` owns model-worker request/result artifacts
+- `src/codealmanac/engine/workspaces/` owns detached engine workspaces
+- `app.py` exposes `CodeAlmanacEngine` as `app.engine`
+- local run preparation, execution, and delivery use the engine facade
+- focused verification passed with the engine/local workflow and architecture
+  test set (`96 passed`)
+- full verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`514 passed`), and `git diff --check`
+
+Slice 85 creates the CodeAlmanac job ledger naming boundary:
+
+- repo-local lifecycle jobs now live under `src/codealmanac/jobs/ledger/` and
+  `src/codealmanac/jobs/queue/`
+- lifecycle records use `JobRecord`, `JobLogEvent`, `JobSpec`, and `job_id`
+- cloud runs and branch-triggered local runs intentionally remain run-shaped
+- focused verification passed (`217 passed`)
+- full verification passed with `uv run ruff check src tests`,
+  `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`
 
 Slice 84 creates the CodeAlmanac local package boundary:
 
@@ -125,7 +150,7 @@ Slice 84 creates the CodeAlmanac local package boundary:
 Slice 83 creates the CodeAlmanac engine package boundary:
 
 - `src/codealmanac/engine/` owns reusable model-runtime contracts: harnesses,
-  sources, source bundles, worker workspaces, shared page-run execution, and
+  sources, source bundles, engine workspaces, shared page-run execution, and
   lifecycle safety helpers
 - tracked old engine source files were removed from `services/` and
   `workflows/`

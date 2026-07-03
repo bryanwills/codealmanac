@@ -45,7 +45,7 @@ def default_jobs_path() -> Path:
     return global_state_dir() / "jobs"
 
 
-def default_worker_workspaces_path() -> Path:
+def default_engine_workspaces_path() -> Path:
     return global_state_dir() / "workspaces"
 
 
