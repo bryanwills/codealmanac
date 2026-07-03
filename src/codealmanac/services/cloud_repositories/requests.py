@@ -27,6 +27,18 @@ class ResolveCloudRepositoryRequest(CloudRepositoryRequest):
         return required_text(value, "cloud repository full name")
 
 
+class ListCloudRepositoriesRequest(CloudRepositoryRequest):
+    limit: int | None = None
+    cursor: str | None = None
+
+    @field_validator("limit")
+    @classmethod
+    def positive_limit(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("limit must be positive")
+        return value
+
+
 class ListCloudRepositoryTriggersRequest(CloudRepositoryRequest):
     repo_id: int = Field(gt=0)
 

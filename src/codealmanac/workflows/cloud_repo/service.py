@@ -1,16 +1,19 @@
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.services.cloud_repositories.requests import (
+    ListCloudRepositoriesRequest,
     ListCloudRepositoryTriggersRequest,
     ResolveCloudRepositoryRequest,
     UpsertCloudRepositoryTriggerRequest,
 )
 from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
 from codealmanac.workflows.cloud_repo.models import (
+    CloudRepoListResult,
     CloudRepoStatusResult,
     CloudRepoTriggerPoliciesResult,
     CloudRepoTriggerPolicyResult,
 )
 from codealmanac.workflows.cloud_repo.requests import (
+    ListCloudReposRequest,
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,
     SetCloudRepoDeliveryRequest,
@@ -27,6 +30,16 @@ class CloudRepoWorkflow:
     ):
         self.cloud_repositories = cloud_repositories
         self.repository_probe = repository_probe
+
+    def list(self, request: ListCloudReposRequest) -> CloudRepoListResult:
+        repositories = self.cloud_repositories.list(
+            ListCloudRepositoriesRequest(
+                api_url=request.api_url,
+                limit=request.limit,
+                cursor=request.cursor,
+            )
+        )
+        return CloudRepoListResult(repositories=repositories)
 
     def status(self, request: ReadCloudRepoStatusRequest) -> CloudRepoStatusResult:
         checkout = self.repository_probe.read(request.cwd)

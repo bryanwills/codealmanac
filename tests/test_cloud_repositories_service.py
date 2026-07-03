@@ -8,9 +8,11 @@ from codealmanac.services.cloud_auth.service import CloudAuthService
 from codealmanac.services.cloud_auth.store import CloudAuthStore
 from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.services.cloud_repositories.requests import (
+    ListCloudRepositoriesRequest,
     ListCloudRepositoryTriggersRequest,
     ResolveCloudRepositoryRequest,
     UpsertCloudRepositoryTriggerRequest,
@@ -22,6 +24,13 @@ def test_cloud_repository_service_uses_stored_cli_token(tmp_path: Path) -> None:
     client = FakeCloudRepositoriesClient()
     service = CloudRepositoriesService(sign_in(tmp_path), client)
 
+    page = service.list(
+        ListCloudRepositoriesRequest(
+            api_url="https://api.example.test",
+            limit=5,
+            cursor="1",
+        )
+    )
     repo = service.resolve(
         ResolveCloudRepositoryRequest(
             api_url="https://api.example.test",
@@ -44,10 +53,12 @@ def test_cloud_repository_service_uses_stored_cli_token(tmp_path: Path) -> None:
         )
     )
 
+    assert page.items[0].full_name == "acme/api"
     assert repo.full_name == "acme/api"
     assert triggers[0].branch == "main"
     assert updated.delivery_mode == "commit"
     assert client.calls == [
+        ("list-repos", "alm_secret", 5, "1"),
         ("resolve", "alm_secret", "acme/api"),
         ("list", "alm_secret", 1),
         ("upsert", "alm_secret", 1, "release/1.4", False, "commit"),
@@ -91,6 +102,27 @@ class FakeCloudAuthClient:
 class FakeCloudRepositoriesClient:
     def __init__(self) -> None:
         self.calls: list[tuple] = []
+
+    def list_repositories(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRepositoryPage:
+        self.calls.append(("list-repos", cli_token, limit, cursor))
+        return CloudRepositoryPage(
+            items=(
+                CloudRepository(
+                    repo_id=1,
+                    account_id=10,
+                    full_name="acme/api",
+                    default_branch="main",
+                ),
+            ),
+            next_cursor=None,
+        )
 
     def resolve_repository(
         self,

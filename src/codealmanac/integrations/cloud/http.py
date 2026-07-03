@@ -18,6 +18,7 @@ from codealmanac.services.cloud_capture.models import (
 from codealmanac.services.cloud_repositories.models import (
     CloudDeliveryMode,
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.services.cloud_runs.models import (
@@ -101,6 +102,27 @@ class HttpCloudAuthClient:
             json_body={"token": capture_token},
         )
         return bool(data.get("revoked"))
+
+    def list_repositories(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRepositoryPage:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._request(
+            "GET",
+            f"{api_url}/v1/repositories",
+            token=cli_token,
+            params=params or None,
+        )
+        return cloud_repository_page(data)
 
     def resolve_repository(
         self,
@@ -387,6 +409,13 @@ def cloud_repository(data: dict[str, Any]) -> CloudRepository:
         account_id=int(data["accountId"]),
         full_name=str(data["fullName"]),
         default_branch=str(data["defaultBranch"]),
+    )
+
+
+def cloud_repository_page(data: dict[str, Any]) -> CloudRepositoryPage:
+    return CloudRepositoryPage(
+        items=tuple(cloud_repository(item) for item in data.get("items", [])),
+        next_cursor=data.get("nextCursor"),
     )
 
 

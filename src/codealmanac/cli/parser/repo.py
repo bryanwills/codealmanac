@@ -11,6 +11,12 @@ def add_repo_commands(subcommands: argparse._SubParsersAction) -> None:
     repo = subcommands.add_parser("repo", help="manage the current cloud repository")
     repo_subcommands = repo.add_subparsers(dest="repo_command", required=True)
 
+    repo_list = repo_subcommands.add_parser("list", help="list cloud repositories")
+    repo_list.add_argument("--limit", type=int)
+    repo_list.add_argument("--cursor")
+    add_api_url(repo_list)
+    repo_list.add_argument("--json", action="store_true")
+
     setup = repo_subcommands.add_parser(
         "setup",
         help="open cloud setup for the current repository",
@@ -39,19 +45,16 @@ def add_repo_commands(subcommands: argparse._SubParsersAction) -> None:
         "triggers",
         help="manage cloud branch trigger policy",
     )
-    triggers_subcommands = triggers.add_subparsers(
-        dest="triggers_command",
-        required=True,
-    )
+    trigger_sub = triggers.add_subparsers(dest="triggers_command", required=True)
 
-    triggers_list = triggers_subcommands.add_parser(
+    triggers_list = trigger_sub.add_parser(
         "list",
         help="list cloud branch trigger policies",
     )
     add_api_url(triggers_list)
     triggers_list.add_argument("--json", action="store_true")
 
-    triggers_enable = triggers_subcommands.add_parser(
+    triggers_enable = trigger_sub.add_parser(
         "enable",
         help="enable cloud updates for a branch",
     )
@@ -64,7 +67,7 @@ def add_repo_commands(subcommands: argparse._SubParsersAction) -> None:
     add_api_url(triggers_enable)
     triggers_enable.add_argument("--json", action="store_true")
 
-    triggers_disable = triggers_subcommands.add_parser(
+    triggers_disable = trigger_sub.add_parser(
         "disable",
         help="disable cloud updates for a branch",
     )
@@ -76,11 +79,8 @@ def add_repo_commands(subcommands: argparse._SubParsersAction) -> None:
         "delivery",
         help="manage cloud delivery policy",
     )
-    delivery_subcommands = delivery.add_subparsers(
-        dest="delivery_command",
-        required=True,
-    )
-    delivery_set = delivery_subcommands.add_parser(
+    delivery_sub = delivery.add_subparsers(dest="delivery_command", required=True)
+    delivery_set = delivery_sub.add_parser(
         "set",
         help="set cloud delivery mode for a branch",
     )

@@ -618,6 +618,17 @@ Slice 39 implemented the CLI-token manual branch run route used by
 POST /v1/repositories/{repo_id}/runs  # body carries branch
 ```
 
+Slice 75 implemented the CLI-token cloud repository list route used by
+`codealmanac repo list`:
+
+```text
+GET /v1/repositories  # optional limit and cursor query params
+```
+
+The route returns repository mirror rows from GitHub App installations visible
+to the signed-in GitHub user. It does not perform per-repository GitHub
+permission checks while listing.
+
 Manual branch starts require `Action.APPROVE_UPDATE`. The hosted service reads
 the current GitHub branch head, creates a `BranchSource` run, selects delivery
 from the branch trigger policy when present, defaults to `commit` otherwise,

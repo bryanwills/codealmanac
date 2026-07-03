@@ -122,9 +122,10 @@ Current evidence:
   `264516179`, branch `dev`, and `triggers: 3`. `codealmanac repo triggers
   list`, `codealmanac capture status --check-cloud --json`, and
   `https://api.codealmanac.com/api/health` also passed.
-- Gap: PyPI `0.1.5` does not expose `codealmanac repos list`; invoking it
-  returns an invalid-command error. Do not promise that command until the CLI
-  surface decision is made and implemented.
+- Gap: PyPI `0.1.5` does not expose the canonical
+  `codealmanac repo list`; invoking `codealmanac repos list` also returns an
+  invalid-command error because `repos` is intentionally not a namespace.
+  Do not promise repository listing until Slice 75 is published and deployed.
 - Slice 29 added capture-token upload routes:
   `POST /v1/capture/artifacts` and `POST /v1/capture/turns`.
 - `backend/tests/test_capture_upload_api_contract.py` proves capture tokens can

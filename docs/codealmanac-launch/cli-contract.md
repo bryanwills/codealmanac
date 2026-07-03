@@ -152,6 +152,18 @@ remote to open the matching browser setup page. It does not run an update.
 Trigger policy is branch-scoped. Delivery mode is configured per maintained
 branch.
 
+Implemented in Slice 75:
+
+```text
+codealmanac repo list [--limit N] [--cursor C] [--json]
+```
+
+`repo list` is not checkout-scoped. It authenticates with the stored cloud CLI
+token and calls `GET /v1/repositories`, which returns mirrored repositories from
+GitHub App installations visible to the signed-in GitHub user. It does not use
+the removed `repos` namespace and does not fan out to one GitHub permission
+check per repository.
+
 Implemented in Slice 36:
 
 ```text

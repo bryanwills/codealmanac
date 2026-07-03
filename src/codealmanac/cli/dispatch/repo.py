@@ -4,6 +4,7 @@ from pathlib import Path
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.cloud_open import render_cloud_open
 from codealmanac.cli.render.repo import (
+    render_cloud_repo_list,
     render_cloud_repo_status,
     render_cloud_repo_trigger_policies,
     render_cloud_repo_trigger_policy,
@@ -12,6 +13,7 @@ from codealmanac.services.cloud_repositories.models import CloudDeliveryMode
 from codealmanac.workflows.cloud_open.models import CloudOpenTarget
 from codealmanac.workflows.cloud_open.requests import OpenCloudTargetRequest
 from codealmanac.workflows.cloud_repo.requests import (
+    ListCloudReposRequest,
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,
     SetCloudRepoDeliveryRequest,
@@ -26,6 +28,16 @@ def is_repo_command(command: str | None) -> bool:
 
 
 def dispatch_repo(args: argparse.Namespace, app: CodeAlmanac) -> int:
+    if args.repo_command == "list":
+        result = app.workflows.cloud_repo.list(
+            ListCloudReposRequest(
+                api_url=args.api_url,
+                limit=args.limit,
+                cursor=args.cursor,
+            )
+        )
+        render_cloud_repo_list(result, json_output=args.json)
+        return 0
     if args.repo_command == "setup":
         result = app.workflows.cloud_open.open(
             OpenCloudTargetRequest(

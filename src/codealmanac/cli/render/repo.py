@@ -2,10 +2,29 @@ import sys
 
 from codealmanac.cli.render.common import print_json_model
 from codealmanac.workflows.cloud_repo.models import (
+    CloudRepoListResult,
     CloudRepoStatusResult,
     CloudRepoTriggerPoliciesResult,
     CloudRepoTriggerPolicyResult,
 )
+
+
+def render_cloud_repo_list(
+    result: CloudRepoListResult,
+    *,
+    json_output: bool,
+) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    repositories = result.repositories.items
+    if len(repositories) == 0:
+        print("# 0 cloud repositories", file=sys.stderr)
+        return
+    for repository in repositories:
+        print(f"{repository.full_name}\t{repository.repo_id}\t{repository.account_id}")
+    if result.repositories.next_cursor is not None:
+        print(f"next_cursor: {result.repositories.next_cursor}", file=sys.stderr)
 
 
 def render_cloud_repo_status(

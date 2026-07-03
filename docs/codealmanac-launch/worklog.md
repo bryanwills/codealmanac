@@ -2134,6 +2134,22 @@
   - `codealmanac capture status --check-cloud --json` returned signed-in cloud
     state and no capture credential.
   - `https://api.codealmanac.com/api/health` returned `{"status":"ok"}`.
-- Gap found during adjacent smoke: `codealmanac repos list` is not currently a
-  valid public CLI command in PyPI `0.1.5`; the command surface needs a decision
-  before docs or onboarding promise it.
+- Gap found during adjacent smoke: `codealmanac repo list` is the canonical
+  command from the launch contract, but it is not implemented in PyPI `0.1.5`.
+  `codealmanac repos list` is also invalid because `repos` is intentionally not
+  a public namespace.
+
+## 2026-07-03 Slice 75: Cloud repo list
+
+- Added hosted `GET /v1/repositories` for CLI-token repository listing.
+- Added `Repositories.connected_for_user`, which lists mirrored repositories
+  for the signed-in user's visible GitHub App installations without fanning out
+  to per-repository permission checks.
+- Added `codealmanac repo list [--limit N] [--cursor C] [--json]`.
+- Focused hosted verification passed:
+  `uv run pytest tests/test_cli_repositories_api_contract.py
+  tests/test_repositories_api_contract.py tests/test_core_access_contracts.py
+  tests/test_repositories_contract.py`.
+- Focused CodeAlmanac verification passed:
+  `uv run pytest tests/test_cloud_repositories_service.py
+  tests/test_cloud_repo_workflow.py tests/test_cli.py -q`.

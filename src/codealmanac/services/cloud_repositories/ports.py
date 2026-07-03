@@ -3,11 +3,22 @@ from typing import Protocol
 from codealmanac.services.cloud_repositories.models import (
     CloudDeliveryMode,
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 
 
 class CloudRepositoriesClient(Protocol):
+    def list_repositories(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRepositoryPage:
+        pass
+
     def resolve_repository(
         self,
         *,

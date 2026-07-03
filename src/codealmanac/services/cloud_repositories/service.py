@@ -2,10 +2,12 @@ from codealmanac.services.cloud_auth.requests import CloudStatusRequest
 from codealmanac.services.cloud_auth.service import CloudAuthService
 from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.services.cloud_repositories.ports import CloudRepositoriesClient
 from codealmanac.services.cloud_repositories.requests import (
+    ListCloudRepositoriesRequest,
     ListCloudRepositoryTriggersRequest,
     ResolveCloudRepositoryRequest,
     UpsertCloudRepositoryTriggerRequest,
@@ -16,6 +18,15 @@ class CloudRepositoriesService:
     def __init__(self, auth: CloudAuthService, client: CloudRepositoriesClient):
         self.auth = auth
         self.client = client
+
+    def list(self, request: ListCloudRepositoriesRequest) -> CloudRepositoryPage:
+        state = self.auth.require_state(CloudStatusRequest(api_url=request.api_url))
+        return self.client.list_repositories(
+            api_url=request.api_url,
+            cli_token=state.token,
+            limit=request.limit,
+            cursor=request.cursor,
+        )
 
     def resolve(self, request: ResolveCloudRepositoryRequest) -> CloudRepository:
         state = self.auth.require_state(CloudStatusRequest(api_url=request.api_url))

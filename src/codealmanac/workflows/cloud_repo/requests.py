@@ -25,6 +25,24 @@ class ReadCloudRepoStatusRequest(CloudRepoRequest):
     pass
 
 
+class ListCloudReposRequest(CodeAlmanacModel):
+    api_url: str = DEFAULT_CLOUD_API_URL
+    limit: int | None = None
+    cursor: str | None = None
+
+    @field_validator("api_url")
+    @classmethod
+    def normalize_api_url(cls, value: str) -> str:
+        return normalize_api_url(value)
+
+    @field_validator("limit")
+    @classmethod
+    def positive_limit(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("limit must be positive")
+        return value
+
+
 class ListCloudRepoTriggersRequest(CloudRepoRequest):
     pass
 

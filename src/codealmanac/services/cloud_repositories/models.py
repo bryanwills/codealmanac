@@ -20,6 +20,18 @@ class CloudRepository(CodeAlmanacModel):
         return required_text(value, "cloud repository text")
 
 
+class CloudRepositoryPage(CodeAlmanacModel):
+    items: tuple[CloudRepository, ...]
+    next_cursor: str | None = None
+
+    @field_validator("next_cursor")
+    @classmethod
+    def require_optional_cursor(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return required_text(value, "cloud repository cursor")
+
+
 class CloudRepositoryTriggerPolicy(CodeAlmanacModel):
     repo_id: int = Field(gt=0)
     branch: str = Field(min_length=1)

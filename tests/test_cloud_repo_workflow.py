@@ -8,10 +8,12 @@ from codealmanac.services.cloud_auth.service import CloudAuthService
 from codealmanac.services.cloud_auth.store import CloudAuthStore
 from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
 from codealmanac.workflows.cloud_repo.requests import (
+    ListCloudReposRequest,
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,
     SetCloudRepoDeliveryRequest,
@@ -83,9 +85,35 @@ def test_cloud_repo_workflow_resolves_current_checkout_and_updates_triggers(
 class FakeRepositoryProbe:
     def __init__(self, state: LocalRepositoryState) -> None:
         self.state = state
+        self.reads: list[Path] = []
 
     def read(self, cwd: Path) -> LocalRepositoryState:
+        self.reads.append(cwd)
         return self.state
+
+
+def test_cloud_repo_list_is_not_checkout_scoped(tmp_path: Path) -> None:
+    client = FakeCloudRepositoriesClient()
+    probe = FakeRepositoryProbe(local_repository_state(tmp_path / "repo"))
+    workflow = CloudRepoWorkflow(
+        CloudRepositoriesService(sign_in(tmp_path), client),
+        probe,
+    )
+
+    result = workflow.list(
+        ListCloudReposRequest(
+            api_url="https://api.example.test",
+            limit=5,
+            cursor="1",
+        )
+    )
+
+    assert [repository.full_name for repository in result.repositories.items] == [
+        "AlmanacCode/codealmanac"
+    ]
+    assert result.repositories.next_cursor is None
+    assert client.repo_lists == [(5, "1")]
+    assert probe.reads == []
 
 
 def local_repository_state(repo: Path) -> LocalRepositoryState:
@@ -139,7 +167,30 @@ class FakeCloudAuthClient:
 
 class FakeCloudRepositoriesClient:
     def __init__(self) -> None:
+        self.repo_lists: list[tuple[int | None, str | None]] = []
         self.upserts: list[tuple[str, bool | None, str | None]] = []
+
+    def list_repositories(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRepositoryPage:
+        assert cli_token == "alm_secret"
+        self.repo_lists.append((limit, cursor))
+        return CloudRepositoryPage(
+            items=(
+                CloudRepository(
+                    repo_id=1,
+                    account_id=10,
+                    full_name="AlmanacCode/codealmanac",
+                    default_branch="main",
+                ),
+            ),
+            next_cursor=None,
+        )
 
     def resolve_repository(
         self,

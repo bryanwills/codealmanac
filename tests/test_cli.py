@@ -31,6 +31,7 @@ from codealmanac.services.cloud_capture.models import (
 )
 from codealmanac.services.cloud_repositories.models import (
     CloudRepository,
+    CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
 from codealmanac.services.cloud_runs.models import (
@@ -414,9 +415,32 @@ class CliCloudCaptureClient:
 
 class CliCloudRepositoriesClient:
     def __init__(self):
+        self.repo_lists: list[tuple[int | None, str | None]] = []
         self.resolves: list[str] = []
         self.lists: list[int] = []
         self.upserts: list[tuple[int, str, bool | None, str | None]] = []
+
+    def list_repositories(
+        self,
+        *,
+        api_url: str,
+        cli_token: str,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> CloudRepositoryPage:
+        assert cli_token == "alm_secret"
+        self.repo_lists.append((limit, cursor))
+        return CloudRepositoryPage(
+            items=(
+                CloudRepository(
+                    repo_id=1,
+                    account_id=10,
+                    full_name="AlmanacCode/codealmanac",
+                    default_branch="main",
+                ),
+            ),
+            next_cursor=None,
+        )
 
     def resolve_repository(
         self,
@@ -1314,6 +1338,25 @@ def test_cli_repo_status_triggers_and_delivery(
         == 0
     )
     capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "repo",
+                "list",
+                "--limit",
+                "5",
+                "--cursor",
+                "0",
+                "--api-url",
+                "https://api.example.test",
+            ]
+        )
+        == 0
+    )
+    repos = capsys.readouterr()
+    assert "AlmanacCode/codealmanac\t1\t10\n" in repos.out
+    assert repositories_client.repo_lists == [(5, "0")]
 
     assert main(["repo", "status", "--api-url", "https://api.example.test"]) == 0
     status = capsys.readouterr()
