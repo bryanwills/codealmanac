@@ -6,13 +6,13 @@ from codealmanac.cli.render.cloud_auth import (
     render_cloud_logout_result,
     render_cloud_status,
 )
-from codealmanac.services.cloud_auth.requests import (
-    CloudLogoutRequest,
-    CloudStatusRequest,
-)
-from codealmanac.workflows.cloud_login.requests import (
+from codealmanac.cloud.auth.login_requests import (
     CloudLoginBrowserMode,
     RunCloudLoginRequest,
+)
+from codealmanac.cloud.auth.requests import (
+    CloudLogoutRequest,
+    CloudStatusRequest,
 )
 
 

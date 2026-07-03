@@ -1,5 +1,5 @@
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.workflows.cloud_open.models import CloudOpenResult
+from codealmanac.cloud.open.models import CloudOpenResult
 
 
 def render_cloud_open(result: CloudOpenResult, *, json_output: bool) -> None:

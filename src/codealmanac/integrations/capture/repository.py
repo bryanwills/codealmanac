@@ -1,9 +1,9 @@
 import subprocess
 from pathlib import Path
 
+from codealmanac.cloud.capture.models import CaptureRepositoryState
 from codealmanac.core.paths import normalize_path
 from codealmanac.integrations.workspaces.git.repository import parse_github_remote
-from codealmanac.services.cloud_capture.models import CaptureRepositoryState
 
 GIT_CAPTURE_TIMEOUT_SECONDS = 10
 

@@ -1,7 +1,7 @@
 from rich.console import Console
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.capture.models import (
     CaptureDisableResult,
     CaptureEnableResult,
     CaptureHookEvent,

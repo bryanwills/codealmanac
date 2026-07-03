@@ -3,7 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.cloud_status import render_cloud_status_overview
-from codealmanac.workflows.cloud_status.requests import ReadCloudStatusRequest
+from codealmanac.cloud.status.requests import ReadCloudStatusRequest
 
 
 def dispatch_cloud_status(args: argparse.Namespace, app: CodeAlmanac) -> int:

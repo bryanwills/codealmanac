@@ -13,15 +13,8 @@ from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.dispatch.setup import setup_login_browser_mode
 from codealmanac.cli.main import build_parser, main
-from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import default_jobs_path, normalize_path
-from codealmanac.integrations.setup.instructions import CODEALMANAC_START
-from codealmanac.services.automation.models import (
-    ScheduledJob,
-    ScheduledJobStatus,
-)
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.capture.models import (
     CaptureArtifact,
     CaptureArtifactUpload,
     CaptureCloudStatus,
@@ -30,16 +23,23 @@ from codealmanac.services.cloud_capture.models import (
     CaptureTranscriptUpload,
     CaptureTurnUploadResult,
 )
-from codealmanac.services.cloud_repositories.models import (
+from codealmanac.cloud.repositories.models import (
     CloudRepository,
     CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
-from codealmanac.services.cloud_runs.models import (
+from codealmanac.cloud.runs.models import (
     CloudRun,
     CloudRunEvent,
     CloudRunPage,
     CloudRunSource,
+)
+from codealmanac.core.models import AppConfig
+from codealmanac.core.paths import default_jobs_path, normalize_path
+from codealmanac.integrations.setup.instructions import CODEALMANAC_START
+from codealmanac.services.automation.models import (
+    ScheduledJob,
+    ScheduledJobStatus,
 )
 from codealmanac.services.control.models import (
     ControlDeliveryMode,

@@ -2,8 +2,8 @@ import json
 import sys
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.cloud_runs.models import CloudRun, CloudRunEvent
-from codealmanac.workflows.cloud_runs.models import (
+from codealmanac.cloud.runs.models import CloudRun, CloudRunEvent
+from codealmanac.cloud.runs.workflow_models import (
     CloudRunDetailResult,
     CloudRunListResult,
     CloudRunLogResult,

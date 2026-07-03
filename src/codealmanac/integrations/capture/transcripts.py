@@ -2,12 +2,7 @@ import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.integrations.sources.transcripts.jsonl import (
-    object_field,
-    parse_json_object,
-    string_field,
-)
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.capture.models import (
     CaptureArtifact,
     CaptureArtifactUpload,
     CaptureBranchSource,
@@ -15,6 +10,11 @@ from codealmanac.services.cloud_capture.models import (
     CaptureRepositoryState,
     CaptureRoutingStatus,
     CaptureTranscriptUpload,
+)
+from codealmanac.integrations.sources.transcripts.jsonl import (
+    object_field,
+    parse_json_object,
+    string_field,
 )
 
 

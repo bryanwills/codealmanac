@@ -9,10 +9,10 @@ from codealmanac.cli.render.repo import (
     render_cloud_repo_trigger_policies,
     render_cloud_repo_trigger_policy,
 )
-from codealmanac.services.cloud_repositories.models import CloudDeliveryMode
-from codealmanac.workflows.cloud_open.models import CloudOpenTarget
-from codealmanac.workflows.cloud_open.requests import OpenCloudTargetRequest
-from codealmanac.workflows.cloud_repo.requests import (
+from codealmanac.cloud.open.models import CloudOpenTarget
+from codealmanac.cloud.open.requests import OpenCloudTargetRequest
+from codealmanac.cloud.repositories.models import CloudDeliveryMode
+from codealmanac.cloud.repositories.workflow_requests import (
     ListCloudReposRequest,
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,

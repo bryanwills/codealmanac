@@ -2,24 +2,24 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.requests import SaveCloudTokenRequest
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_repositories.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.requests import SaveCloudTokenRequest
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.repositories.models import (
     CloudRepository,
     CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
-from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
-from codealmanac.workflows.cloud_repo.requests import (
+from codealmanac.cloud.repositories.service import CloudRepositoriesService
+from codealmanac.cloud.repositories.workflow import CloudRepoWorkflow
+from codealmanac.cloud.repositories.workflow_requests import (
     ListCloudReposRequest,
     ListCloudRepoTriggersRequest,
     ReadCloudRepoStatusRequest,
     SetCloudRepoDeliveryRequest,
     UpdateCloudRepoTriggerRequest,
 )
-from codealmanac.workflows.cloud_repo.service import CloudRepoWorkflow
 from codealmanac.workflows.local_setup.models import LocalRepositoryState
 
 

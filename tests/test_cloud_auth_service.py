@@ -4,20 +4,20 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.cloud_auth.models import (
+from codealmanac.cloud.auth.models import (
     DEFAULT_CLOUD_API_URL,
     DEFAULT_CLOUD_APP_URL,
     CloudIdentity,
     CloudLoginSession,
 )
-from codealmanac.services.cloud_auth.requests import (
+from codealmanac.cloud.auth.requests import (
     CloudLogoutRequest,
     CloudStatusRequest,
     SaveCloudTokenRequest,
 )
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.core.errors import ValidationFailed
 
 
 def test_cloud_defaults_use_public_codealmanac_hosts() -> None:

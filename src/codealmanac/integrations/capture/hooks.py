@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from codealmanac.core.errors import ValidationFailed
-from codealmanac.core.paths import home_dir
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.capture.models import (
     CaptureHookChange,
     CaptureHookStatus,
     CaptureProvider,
 )
+from codealmanac.core.errors import ValidationFailed
+from codealmanac.core.paths import home_dir
 
 CAPTURE_STATUS_MESSAGE = "CodeAlmanac capture"
 CODEX_COMMAND = "codealmanac __capture-hook --provider codex"

@@ -1,8 +1,8 @@
 from typing import Protocol
 
+from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
+from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.services.setup.models import InstructionChange, SetupTarget
-from codealmanac.workflows.cloud_login.models import CloudLoginWorkflowResult
-from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
 
 
 class InstructionInstaller(Protocol):

@@ -3,9 +3,9 @@ from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.admin import render_setup_result, render_uninstall_result
+from codealmanac.cloud.auth.login_requests import CloudLoginBrowserMode
 from codealmanac.services.setup.models import SetupTarget
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
-from codealmanac.workflows.cloud_login.requests import CloudLoginBrowserMode
 
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:

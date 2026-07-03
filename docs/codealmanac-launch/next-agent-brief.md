@@ -76,8 +76,25 @@ cloud setup flow.
   direction is product-area-first: hosted becomes
   `web / worker / domains / events / integrations`; local becomes
   `cloud / local / wiki / engine / integrations`.
+- Slice 81 implemented the first CodeAlmanac-side package cleanup:
+  `services/cloud_* + workflows/cloud_* -> cloud/`. The CLI surface did not
+  change. The remaining CodeAlmanac repackaging work is `wiki/`, `engine/`, and
+  `local/`.
 
 ## Last Completed Work
+
+Slice 81 creates the CodeAlmanac cloud package boundary:
+
+- `src/codealmanac/cloud/` owns local client flows for CodeAlmanac Cloud:
+  auth/login, capture, open, repositories, runs, and status
+- tracked old cloud service/workflow source files were deleted after all
+  imports moved
+- `src/codealmanac/integrations/cloud/http.py` remains the HTTP provider
+  adapter
+- architecture tests now prevent old cloud source modules from coming back and
+  keep `cloud/` behind the integration boundary
+- verification passed with `uv run ruff check src tests` and
+  `uv run pytest -q --tb=short` (`509 passed`)
 
 Slice 50 added the browser-owned cloud setup entry:
 

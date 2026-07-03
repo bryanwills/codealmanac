@@ -1,11 +1,11 @@
 import sys
 from typing import TextIO
 
-from codealmanac.services.cloud_auth.models import CloudLoginSession
-from codealmanac.workflows.cloud_login.ports import (
+from codealmanac.cloud.auth.login_ports import (
     CloudLoginStartDecision,
 )
-from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
+from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
+from codealmanac.cloud.auth.models import CloudLoginSession
 
 
 class TerminalCloudLoginInteraction:

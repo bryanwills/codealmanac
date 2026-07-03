@@ -4,9 +4,8 @@ from uuid import UUID
 
 import httpx
 
-from codealmanac.core.errors import ExecutionFailed
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.capture.models import (
     CaptureArtifact,
     CaptureArtifactUpload,
     CaptureCloudStatus,
@@ -15,18 +14,19 @@ from codealmanac.services.cloud_capture.models import (
     CaptureTranscriptUpload,
     CaptureTurnUploadResult,
 )
-from codealmanac.services.cloud_repositories.models import (
+from codealmanac.cloud.repositories.models import (
     CloudDeliveryMode,
     CloudRepository,
     CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
-from codealmanac.services.cloud_runs.models import (
+from codealmanac.cloud.runs.models import (
     CloudRun,
     CloudRunEvent,
     CloudRunPage,
     CloudRunSource,
 )
+from codealmanac.core.errors import ExecutionFailed
 
 
 class HttpCloudAuthClient:

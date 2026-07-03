@@ -1,6 +1,6 @@
 import argparse
 
-from codealmanac.services.cloud_auth.models import DEFAULT_CLOUD_APP_URL
+from codealmanac.cloud.auth.models import DEFAULT_CLOUD_APP_URL
 
 
 def add_open_commands(subcommands: argparse._SubParsersAction) -> None:

@@ -76,6 +76,9 @@ The event bus should coordinate side effects. It should not hide product policy.
 
 ## Slice E: Local Product-Area Repackaging
 
+Status: partially started. Slice 81 completed the cloud-client portion:
+`services/cloud_* + workflows/cloud_* -> cloud/`.
+
 Goal:
 
 ```text
@@ -86,6 +89,12 @@ control/deliveries/local_hooks/local_* workflows -> local/
 ```
 
 Do this with import-move tooling and thin compatibility only inside the same slice. Delete compatibility modules before the slice lands if all imports are moved.
+
+Remaining work in this slice family:
+
+- `services/wiki/index/search/pages/topics/viewer/workspaces -> wiki/`
+- `services/source_bundles/sources/harnesses/worker_workspaces + lifecycle workflows -> engine/`
+- `control/deliveries/local_hooks/local_* workflows -> local/`
 
 ## Slice F: Collapse Local Run Names
 
@@ -127,4 +136,3 @@ Local:
 - move local run metadata out of repo `.almanac/jobs` if that is still the decided direction;
 - keep query/index DB separate from control DB;
 - do not store cloud-only account/team state locally.
-

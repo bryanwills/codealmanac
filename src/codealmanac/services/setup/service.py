@@ -1,3 +1,4 @@
+from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.core.errors import ExecutionFailed
 from codealmanac.services.setup.models import SetupResult, UninstallResult
 from codealmanac.services.setup.planning import setup_plan
@@ -6,7 +7,6 @@ from codealmanac.services.setup.ports import (
     SetupCloudLogin,
 )
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
-from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
 
 
 class SetupService:

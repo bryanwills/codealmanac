@@ -2,6 +2,32 @@
 
 ## 2026-07-03
 
+## 2026-07-03 Slice 81: CodeAlmanac cloud package boundary
+
+- Planned Slice 81 in
+  `docs/plans/2026-07-03-slice-81-codealmanac-cloud-package.md`.
+- Moved the local package's cloud-facing surface into
+  `src/codealmanac/cloud/`.
+- Removed tracked old cloud source modules from:
+  - `src/codealmanac/services/cloud_*`
+  - `src/codealmanac/workflows/cloud_*`
+- Kept CLI parser/dispatch/render modules in `src/codealmanac/cli/`; the CLI
+  still adapts terminal arguments and output, while cloud product behavior now
+  lives under `codealmanac.cloud`.
+- Kept `src/codealmanac/integrations/cloud/http.py` as the provider adapter; it
+  now imports cloud package models and requests.
+- Added architecture coverage so:
+  - `src/codealmanac/cloud/` cannot import integrations;
+  - old tracked cloud service/workflow source files cannot come back;
+  - `cloud/open` owns the browser-handoff workflow while CLI render only prints
+    its result.
+- Focused local verification passed:
+  - `uv run pytest tests/test_cloud_auth_service.py tests/test_cloud_login_workflow.py tests/test_cloud_open_workflow.py tests/test_cloud_repo_workflow.py tests/test_cloud_repositories_service.py tests/test_cloud_runs_service.py tests/test_cloud_runs_workflow.py tests/test_cloud_capture_service.py tests/test_capture_transcript_upload.py tests/test_setup_service.py tests/test_cli.py tests/test_architecture.py -q --tb=short`
+    (`163 passed`)
+- Full local verification passed:
+  - `uv run ruff check src tests`
+  - `uv run pytest -q --tb=short` (`509 passed`)
+
 ## 2026-07-03 Slice 79: Root uninstall automation split
 
 - Planned Slice 79 in

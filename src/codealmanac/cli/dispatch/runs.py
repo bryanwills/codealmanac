@@ -7,7 +7,7 @@ from codealmanac.cli.render.cloud_runs import (
     render_cloud_run_log,
     render_cloud_runs,
 )
-from codealmanac.workflows.cloud_runs.requests import (
+from codealmanac.cloud.runs.workflow_requests import (
     CancelCloudRunWorkflowRequest,
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,

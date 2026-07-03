@@ -1,6 +1,8 @@
 # Target Architecture
 
-This is a proposed shape, not yet implemented.
+This is a partially implemented target. Slice 81 implemented the
+`codealmanac.cloud` package boundary. The broader local/wiki/engine and hosted
+package refactors are still proposed.
 
 ## Shared Product Model
 
@@ -41,12 +43,14 @@ This is not cloud backend code. It is the local package's client surface for Cod
 cloud/
   auth/
   capture/
+  open/
   repositories/
   runs/
-  setup/
+  status/
 ```
 
-This replaces scattered `services/cloud_*` plus `workflows/cloud_*`.
+Implemented in Slice 81. This replaced scattered `services/cloud_*` plus
+`workflows/cloud_*` source modules with one first-class cloud client package.
 
 ### `local/`
 
@@ -203,4 +207,3 @@ Examples:
 - `messages` should become `events` or `github_webhooks`, depending on the actual responsibility.
 - `modal_app` should become `worker`.
 - `cloud_auth` in local should become `cloud/auth`, because it is a cloud client feature.
-

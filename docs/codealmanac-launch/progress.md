@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 79 root uninstall split publish and smoke.
+Sent: 2026-07-03 after Slice 81 CodeAlmanac cloud package boundary.
 
 Route:
 
@@ -19,12 +19,11 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Published CLI `0.1.9` removes root uninstall's stale local-scheduler coupling.
-GitHub Actions publish run `28672818638` passed full tests, lint, diff hygiene,
-build, Twine checks, artifact upload, and PyPI upload. Fresh public PyPI
-install smoke passed with `--refresh --no-cache`: root uninstall no longer
-shows `--keep-automation` or automation JSON fields, and explicit
-`codealmanac automation uninstall` remains available.
+Slice 81 moved the local package's cloud-facing surface into
+`src/codealmanac/cloud/`, removed tracked old `services/cloud_*` and
+`workflows/cloud_*` source modules, and kept CLI behavior unchanged. Full local
+verification passed with `uv run ruff check src tests` and
+`uv run pytest -q --tb=short` (`509 passed`).
 
 ## Latest Local Notes
 
@@ -37,12 +36,14 @@ shows `--keep-automation` or automation JSON fields, and explicit
   `codealmanac` git SHA. Modal image logs showed `codealmanac 0.1.9`.
 - Architecture cleanup notes now live under
   `docs/refactor-audit-2026-07-03-hosted-local-architecture/`.
+- Slice 81 implemented the first CodeAlmanac-side refactor from that audit:
+  `services/cloud_* + workflows/cloud_* -> cloud/`.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 97% | 97% | No local engine change in Slice 79; full source gates still passed after the setup/uninstall split. |
+| CodeAlmanac backend/local | 98% | 97% | Slice 81 moved the cloud client surface into `src/codealmanac/cloud/`, added architecture guards, and passed full local gates. |
 | CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |

@@ -2,28 +2,28 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from codealmanac.integrations.capture import (
-    CaptureTranscriptNormalizer,
-    FileCaptureHookManager,
-    GitCaptureRepositoryProbe,
-)
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.requests import SaveCloudTokenRequest
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_capture.event_store import CaptureEventStore
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.requests import SaveCloudTokenRequest
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.capture.event_store import CaptureEventStore
+from codealmanac.cloud.capture.models import (
     CaptureCloudStatus,
     CaptureCredential,
 )
-from codealmanac.services.cloud_capture.requests import (
+from codealmanac.cloud.capture.requests import (
     CaptureDisableRequest,
     CaptureEnableRequest,
     CaptureHookRequest,
     CaptureStatusRequest,
 )
-from codealmanac.services.cloud_capture.service import CloudCaptureService
-from codealmanac.services.cloud_capture.store import CaptureStateStore
+from codealmanac.cloud.capture.service import CloudCaptureService
+from codealmanac.cloud.capture.store import CaptureStateStore
+from codealmanac.integrations.capture import (
+    CaptureTranscriptNormalizer,
+    FileCaptureHookManager,
+    GitCaptureRepositoryProbe,
+)
 
 
 def test_cloud_capture_enable_status_and_disable(tmp_path: Path) -> None:
@@ -216,7 +216,7 @@ class FakeCloudCaptureClient:
 
 
 def credential_issue(*, name: str):
-    from codealmanac.services.cloud_capture.models import CaptureCredentialIssue
+    from codealmanac.cloud.capture.models import CaptureCredentialIssue
 
     return CaptureCredentialIssue(
         credential=credential(name=name),

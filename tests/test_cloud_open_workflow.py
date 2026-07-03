@@ -2,13 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.services.cloud_repositories.models import CloudRepository
-from codealmanac.services.cloud_repositories.requests import (
+from codealmanac.cloud.open.requests import OpenCloudTargetRequest
+from codealmanac.cloud.open.workflow import CloudOpenWorkflow
+from codealmanac.cloud.repositories.models import CloudRepository
+from codealmanac.cloud.repositories.requests import (
     ResolveCloudRepositoryRequest,
 )
-from codealmanac.workflows.cloud_open.requests import OpenCloudTargetRequest
-from codealmanac.workflows.cloud_open.service import CloudOpenWorkflow
+from codealmanac.core.errors import NotFoundError, ValidationFailed
 from codealmanac.workflows.local_setup.models import LocalRepositoryState
 
 

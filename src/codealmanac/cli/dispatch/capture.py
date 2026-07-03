@@ -10,18 +10,18 @@ from codealmanac.cli.render.capture import (
     render_capture_hook_event,
     render_capture_status,
 )
-from codealmanac.core.errors import CodeAlmanacError, ValidationFailed
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.capture.models import (
     ALL_CAPTURE_PROVIDERS,
     CaptureProvider,
 )
-from codealmanac.services.cloud_capture.requests import (
+from codealmanac.cloud.capture.requests import (
     CaptureDisableRequest,
     CaptureEnableRequest,
     CaptureHookRequest,
     CaptureRepairRequest,
     CaptureStatusRequest,
 )
+from codealmanac.core.errors import CodeAlmanacError, ValidationFailed
 
 
 def dispatch_capture(args: argparse.Namespace, app: CodeAlmanac) -> int:

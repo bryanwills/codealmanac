@@ -3,12 +3,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from codealmanac.integrations.capture import CaptureTranscriptNormalizer
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_capture.event_store import CaptureEventStore
-from codealmanac.services.cloud_capture.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.capture.event_store import CaptureEventStore
+from codealmanac.cloud.capture.models import (
     CaptureArtifact,
     CaptureArtifactUpload,
     CaptureCloudStatus,
@@ -17,9 +16,10 @@ from codealmanac.services.cloud_capture.models import (
     CaptureTranscriptUpload,
     CaptureTurnUploadResult,
 )
-from codealmanac.services.cloud_capture.requests import CaptureHookRequest
-from codealmanac.services.cloud_capture.service import CloudCaptureService
-from codealmanac.services.cloud_capture.store import CaptureStateStore
+from codealmanac.cloud.capture.requests import CaptureHookRequest
+from codealmanac.cloud.capture.service import CloudCaptureService
+from codealmanac.cloud.capture.store import CaptureStateStore
+from codealmanac.integrations.capture import CaptureTranscriptNormalizer
 
 
 def test_codex_capture_hook_uploads_artifact_and_turn_metadata(tmp_path: Path) -> None:

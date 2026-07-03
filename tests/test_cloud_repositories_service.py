@@ -2,22 +2,22 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.requests import SaveCloudTokenRequest
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_repositories.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.requests import SaveCloudTokenRequest
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.repositories.models import (
     CloudRepository,
     CloudRepositoryPage,
     CloudRepositoryTriggerPolicy,
 )
-from codealmanac.services.cloud_repositories.requests import (
+from codealmanac.cloud.repositories.requests import (
     ListCloudRepositoriesRequest,
     ListCloudRepositoryTriggersRequest,
     ResolveCloudRepositoryRequest,
     UpsertCloudRepositoryTriggerRequest,
 )
-from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
+from codealmanac.cloud.repositories.service import CloudRepositoriesService
 
 
 def test_cloud_repository_service_uses_stored_cli_token(tmp_path: Path) -> None:

@@ -2,13 +2,13 @@ from pathlib import Path
 
 from pydantic import Field, field_validator
 
-from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.cloud_auth.models import (
+from codealmanac.cloud.auth.login_requests import CloudLoginBrowserMode
+from codealmanac.cloud.auth.models import (
     DEFAULT_CLOUD_API_URL,
     normalize_api_url,
 )
+from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.services.setup.models import SetupTarget
-from codealmanac.workflows.cloud_login.requests import CloudLoginBrowserMode
 
 DEFAULT_SETUP_TARGETS = (SetupTarget.CODEX, SetupTarget.CLAUDE)
 

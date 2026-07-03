@@ -1,8 +1,8 @@
 from rich.console import Console
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.cloud_auth.models import CloudLogoutResult, CloudStatus
-from codealmanac.workflows.cloud_login.models import CloudLoginWorkflowResult
+from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
+from codealmanac.cloud.auth.models import CloudLogoutResult, CloudStatus
 
 
 def render_cloud_login_result(

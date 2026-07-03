@@ -73,6 +73,12 @@ Current evidence:
   omitted `--keep-automation` from root uninstall help, omitted automation
   fields from root uninstall JSON, and kept explicit
   `codealmanac automation uninstall --help`.
+- Slice 81 moved the local package's cloud-facing client surface into
+  `src/codealmanac/cloud/`. Local focused verification passed with
+  cloud/auth/capture/repository/runs/setup/CLI/architecture tests
+  (`163 passed`). Full local verification then passed with
+  `uv run ruff check src tests` and `uv run pytest -q --tb=short`
+  (`509 passed`).
 - `tests/test_cloud_auth_service.py` proves `~/.codealmanac/auth.json`
   save/load/delete behavior, mode `0600`, malformed-file recovery, identity
   fetch, and logout.

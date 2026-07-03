@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
+from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.integrations.setup.instructions import (
     CLAUDE_IMPORT_LINE,
     CODEALMANAC_END,
@@ -12,8 +14,6 @@ from codealmanac.integrations.setup.instructions import (
 from codealmanac.services.setup.models import SetupTarget
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 from codealmanac.services.setup.service import SetupService
-from codealmanac.workflows.cloud_login.models import CloudLoginWorkflowResult
-from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
 
 
 def test_setup_installs_codex_block_idempotently(home: Path):

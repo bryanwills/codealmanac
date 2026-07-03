@@ -2,12 +2,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.workflows.cloud_login.ports import CloudLoginStartDecision
-from codealmanac.workflows.cloud_login.requests import RunCloudLoginRequest
-from codealmanac.workflows.cloud_login.service import CloudLoginWorkflow
+from codealmanac.cloud.auth.login_ports import CloudLoginStartDecision
+from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
+from codealmanac.cloud.auth.login_workflow import CloudLoginWorkflow
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
 
 
 def test_cloud_login_uses_interaction_decision_to_open_browser(tmp_path: Path) -> None:

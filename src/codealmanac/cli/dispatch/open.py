@@ -3,7 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.cloud_open import render_cloud_open
-from codealmanac.workflows.cloud_open.requests import OpenCloudTargetRequest
+from codealmanac.cloud.open.requests import OpenCloudTargetRequest
 
 OPEN_COMMANDS = frozenset(("open",))
 

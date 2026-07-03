@@ -1,7 +1,7 @@
 from rich.console import Console
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.workflows.cloud_status.models import CloudStatusOverview
+from codealmanac.cloud.status.models import CloudStatusOverview
 
 
 def render_cloud_status_overview(

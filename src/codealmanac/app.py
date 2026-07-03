@@ -2,6 +2,28 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from codealmanac import __version__
+from codealmanac.cloud.auth.login_ports import BrowserOpener, CloudLoginInteraction
+from codealmanac.cloud.auth.login_workflow import CloudLoginWorkflow
+from codealmanac.cloud.auth.ports import CloudAuthClient
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.capture.event_store import CaptureEventStore
+from codealmanac.cloud.capture.ports import (
+    CaptureHookManager,
+    CaptureRepositoryProbe,
+    CaptureTranscriptParser,
+    CloudCaptureClient,
+)
+from codealmanac.cloud.capture.service import CloudCaptureService
+from codealmanac.cloud.capture.store import CaptureStateStore
+from codealmanac.cloud.open.workflow import CloudOpenWorkflow
+from codealmanac.cloud.repositories.ports import CloudRepositoriesClient
+from codealmanac.cloud.repositories.service import CloudRepositoriesService
+from codealmanac.cloud.repositories.workflow import CloudRepoWorkflow
+from codealmanac.cloud.runs.ports import CloudRunsClient
+from codealmanac.cloud.runs.service import CloudRunsService
+from codealmanac.cloud.runs.workflow import CloudRunsWorkflow
+from codealmanac.cloud.status.workflow import CloudStatusWorkflow
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.browser import WebBrowserOpener
@@ -38,22 +60,6 @@ from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptRenderer
 from codealmanac.services.automation.ports import SchedulerAdapter
 from codealmanac.services.automation.service import AutomationService
-from codealmanac.services.cloud_auth.ports import CloudAuthClient
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_capture.event_store import CaptureEventStore
-from codealmanac.services.cloud_capture.ports import (
-    CaptureHookManager,
-    CaptureRepositoryProbe,
-    CaptureTranscriptParser,
-    CloudCaptureClient,
-)
-from codealmanac.services.cloud_capture.service import CloudCaptureService
-from codealmanac.services.cloud_capture.store import CaptureStateStore
-from codealmanac.services.cloud_repositories.ports import CloudRepositoriesClient
-from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
-from codealmanac.services.cloud_runs.ports import CloudRunsClient
-from codealmanac.services.cloud_runs.service import CloudRunsService
 from codealmanac.services.config.service import ConfigService
 from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.control.ports import LocalGitStateProbe
@@ -100,12 +106,6 @@ from codealmanac.services.worker_workspaces.service import WorkerWorkspacesServi
 from codealmanac.services.worker_workspaces.store import WorkerWorkspacesStore
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
-from codealmanac.workflows.cloud_login import CloudLoginWorkflow
-from codealmanac.workflows.cloud_login.ports import BrowserOpener, CloudLoginInteraction
-from codealmanac.workflows.cloud_open import CloudOpenWorkflow
-from codealmanac.workflows.cloud_repo import CloudRepoWorkflow
-from codealmanac.workflows.cloud_runs import CloudRunsWorkflow
-from codealmanac.workflows.cloud_status import CloudStatusWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.service import InitWorkflow

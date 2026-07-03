@@ -2,24 +2,25 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
-from codealmanac.services.cloud_auth.models import CloudIdentity, CloudLoginSession
-from codealmanac.services.cloud_auth.requests import SaveCloudTokenRequest
-from codealmanac.services.cloud_auth.service import CloudAuthService
-from codealmanac.services.cloud_auth.store import CloudAuthStore
-from codealmanac.services.cloud_repositories.models import (
+from codealmanac.cloud.auth.models import CloudIdentity, CloudLoginSession
+from codealmanac.cloud.auth.requests import SaveCloudTokenRequest
+from codealmanac.cloud.auth.service import CloudAuthService
+from codealmanac.cloud.auth.store import CloudAuthStore
+from codealmanac.cloud.repositories.models import (
     CloudRepository,
     CloudRepositoryTriggerPolicy,
 )
-from codealmanac.services.cloud_repositories.service import CloudRepositoriesService
-from codealmanac.services.cloud_runs.models import (
+from codealmanac.cloud.repositories.service import CloudRepositoriesService
+from codealmanac.cloud.repositories.workflow import CloudRepoWorkflow
+from codealmanac.cloud.runs.models import (
     CloudRun,
     CloudRunEvent,
     CloudRunPage,
     CloudRunSource,
 )
-from codealmanac.services.cloud_runs.service import CloudRunsService
-from codealmanac.workflows.cloud_repo.service import CloudRepoWorkflow
-from codealmanac.workflows.cloud_runs.requests import (
+from codealmanac.cloud.runs.service import CloudRunsService
+from codealmanac.cloud.runs.workflow import CloudRunsWorkflow
+from codealmanac.cloud.runs.workflow_requests import (
     CancelCloudRunWorkflowRequest,
     ListCloudRunsRequest,
     ReadCloudRunLogRequest,
@@ -27,7 +28,6 @@ from codealmanac.workflows.cloud_runs.requests import (
     ShowCloudRunRequest,
     StartCloudRunRequest,
 )
-from codealmanac.workflows.cloud_runs.service import CloudRunsWorkflow
 from codealmanac.workflows.local_setup.models import LocalRepositoryState
 
 

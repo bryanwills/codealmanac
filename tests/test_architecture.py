@@ -8,6 +8,7 @@ SRC_ROOT = PROJECT_ROOT / "src/codealmanac"
 def test_cli_workflows_and_services_do_not_import_integrations():
     checked_roots = (
         SRC_ROOT / "cli",
+        SRC_ROOT / "cloud",
         SRC_ROOT / "workflows",
         SRC_ROOT / "services",
     )
@@ -213,8 +214,8 @@ def test_local_setup_workflow_keeps_git_detection_in_integration():
 
 
 def test_cloud_open_workflow_keeps_browser_handoff_out_of_cli():
-    workflow_root = SRC_ROOT / "workflows/cloud_open"
-    service_text = (workflow_root / "service.py").read_text(encoding="utf-8")
+    workflow_root = SRC_ROOT / "cloud/open"
+    service_text = (workflow_root / "workflow.py").read_text(encoding="utf-8")
     requests_text = (workflow_root / "requests.py").read_text(encoding="utf-8")
     render_text = (SRC_ROOT / "cli/render/cloud_open.py").read_text(encoding="utf-8")
     module_names = {path.name for path in workflow_root.glob("*.py")}
@@ -223,7 +224,7 @@ def test_cloud_open_workflow_keeps_browser_handoff_out_of_cli():
         "__init__.py",
         "models.py",
         "requests.py",
-        "service.py",
+        "workflow.py",
     } <= module_names
     assert "repository_probe.read" in service_text
     assert "browser.open" in service_text
@@ -232,6 +233,31 @@ def test_cloud_open_workflow_keeps_browser_handoff_out_of_cli():
     assert "webbrowser" not in service_text
     assert "subprocess" not in service_text
     assert "print_json_model" in render_text
+
+
+def test_cloud_package_owns_cloud_client_surface():
+    cloud_root = SRC_ROOT / "cloud"
+    forbidden_roots = (
+        SRC_ROOT / "services/cloud_auth",
+        SRC_ROOT / "services/cloud_capture",
+        SRC_ROOT / "services/cloud_repositories",
+        SRC_ROOT / "services/cloud_runs",
+        SRC_ROOT / "workflows/cloud_login",
+        SRC_ROOT / "workflows/cloud_open",
+        SRC_ROOT / "workflows/cloud_repo",
+        SRC_ROOT / "workflows/cloud_runs",
+        SRC_ROOT / "workflows/cloud_status",
+    )
+
+    assert {
+        "auth",
+        "capture",
+        "open",
+        "repositories",
+        "runs",
+        "status",
+    } <= {path.name for path in cloud_root.iterdir() if path.is_dir()}
+    assert all(not any(root.glob("*.py")) for root in forbidden_roots)
 
 
 def test_local_run_preparation_workflow_only_orchestrates_services():

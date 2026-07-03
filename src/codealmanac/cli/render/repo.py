@@ -1,7 +1,7 @@
 import sys
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.workflows.cloud_repo.models import (
+from codealmanac.cloud.repositories.workflow_models import (
     CloudRepoListResult,
     CloudRepoStatusResult,
     CloudRepoTriggerPoliciesResult,
