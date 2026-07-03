@@ -24,6 +24,14 @@ cloud setup flow.
 - Fresh production branch push created run
   `773da5fb-9871-4f83-8797-ddf651c635ce`; it delivered with summary
   `No wiki changes made.`
+- Production captured-conversation trigger smoke passed. A temporary Codex
+  capture on branch `codealmanac-smoke/slice-71-20260703123931` became run
+  `02ae5710-92b4-4ae4-acdd-7148e8aa60f7` with source kind
+  `conversation_batch`; it delivered and appeared at the top of the production
+  activity page.
+- Slice 71 cleanup completed: temp capture credential revoked, temp hook
+  removed, smoke trigger disabled, remote smoke branch deleted, temp worktree
+  removed, and temp HOME removed.
 - Do not chase older failed smoke runs unless doing cleanup. The old failures
   are historical evidence from stale worker images and pre-fix payloads.
 - The old conversation-batch run
@@ -449,12 +457,9 @@ repaired.
 
 ## Next Pressure Tests
 
-- Run a production trigger smoke: captured source exists
-  for a repo/branch, enabling that branch trigger should create a
-  `ConversationBatchSource` run on a qualifying push and use the branch delivery
-  policy.
-- Continue the real signed-in production browser pass into capture install,
-  source capture, and actual run creation/delivery.
+- Continue the real signed-in production browser pass into capture install and
+  agent-instruction polish. The backend capture-to-run path is now live-tested;
+  the remaining pressure is product UX, not basic data flow.
 - Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
   local signed-in setup walkthrough is needed; the backend currently refuses to
   start without it.
@@ -518,3 +523,21 @@ repaired.
   installed `0.1.4`.
 - Installed `codealmanac open --no-browser` verified both paths: fresh HOME
   prints the public resolver, and signed-in HOME prints the dashboard wiki URL.
+
+## Current Slice 71 Handoff
+
+- Chrome setup retry worked: WorkOS/AuthKit plus GitHub OAuth completed, and
+  `/setup` rendered connected GitHub state for `AlmanacCode/codealmanac`.
+- Production capture plus maintained-branch trigger worked end to end:
+  `__capture-hook` uploaded a routable Codex transcript, the second push to the
+  smoke branch created run `02ae5710-92b4-4ae4-acdd-7148e8aa60f7`, and the run
+  source was `conversation_batch`.
+- The run delivered with commit
+  `9211b65f85ce0583419926c67968cefc0893c7bd` and changed
+  `.almanac/pages/github-native-wiki-maintenance.md`.
+- Cleanup is clean. Public CLI capture status has no local credential, no
+  hooks, and no cloud credentials. The Slice 71 smoke trigger row remains only
+  as disabled historical state.
+- Do not repeat the same smoke unless changing trigger/source-bundle code.
+  Spend the next slice on CLI/setup polish, provider cleanup, or frontend
+  branch/delivery/capture UX.

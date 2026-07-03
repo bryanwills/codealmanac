@@ -1396,3 +1396,29 @@ Known residue:
 - Installed `codealmanac open --no-browser` verified both paths after publish:
   fresh HOME printed the public resolver, and signed-in HOME printed the
   dashboard wiki URL.
+
+## Slice 71 Production Conversation Trigger Smoke
+
+- Published CLI `0.1.4` issued a temporary Codex capture credential from a
+  temp HOME and revoked it during cleanup.
+- The production capture hook uploaded a synthetic Codex transcript for
+  `AlmanacCode/codealmanac` branch
+  `codealmanac-smoke/slice-71-20260703123931` with
+  `upload_status: uploaded` and `routing_status: routable`.
+- The first push created the remote smoke branch and correctly did not trigger
+  a run because hosted ignores `event.created`.
+- The second push to the existing smoke branch created run
+  `02ae5710-92b4-4ae4-acdd-7148e8aa60f7` with source kind
+  `conversation_batch`.
+- SQL verified source batch `5621c16d-9334-4d8d-8a46-4039b7b2d398`
+  succeeded with one turn and the run emitted `queued`, `running`, and
+  `delivered` events.
+- Public CLI `runs show 02ae5710-92b4-4ae4-acdd-7148e8aa60f7 --json`
+  verified terminal status `delivered`, changed file
+  `.almanac/pages/github-native-wiki-maintenance.md`, and delivery commit
+  `9211b65f85ce0583419926c67968cefc0893c7bd`.
+- Chrome verified `/setup`, the repository dashboard, and the repository
+  activity page showing the delivered conversation-batch run at the top.
+- Cleanup verification passed: no local capture credential, no installed temp
+  hooks, no cloud capture credentials, disabled smoke trigger, deleted remote
+  smoke branch, removed temp worktree, and removed temp HOME.

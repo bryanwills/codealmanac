@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 70 CLI open fallback publish.
+Sent: 2026-07-03 after Slice 71 production conversation-trigger smoke.
 
 Route:
 
@@ -19,18 +19,19 @@ doppler run --project almanac --config dev -- \
   --binding rohan-almanac-main "..."
 ```
 
-Note: PyPI `0.1.4` is published. Fresh installed `codealmanac open` now has
-both launch paths: no-auth falls back to `/wiki/github/<owner>/<repo>`, and
-signed-in opens the exact dashboard wiki route.
+Note: production captured-conversation routing now passed a live maintained
+branch trigger smoke. A routable Codex capture became a
+`conversation_batch` run, delivered, and was visible in the production activity
+feed.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 68. |
-| CodeAlmanac CLI/public UX | 99% | 99% | PyPI `0.1.4` fixes fresh-install `open`: no-auth falls back to `/wiki/github/...`, signed-in opens the dashboard wiki. |
-| CodeAlmanac-hosted backend/auth/API | 99% | 99% | Production branch push now creates an immutable branch-source run and worker completion delivered successfully. |
-| Hosted frontend/onboarding | 97% | 96% | Chrome verified the signed-in dashboard wiki route for `AlmanacCode/codealmanac` with 62 pages. |
+| CodeAlmanac backend/local | 96% | 96% | Local/backend unchanged in Slice 71; published CLI remains `0.1.4`. |
+| CodeAlmanac CLI/public UX | 99% | 99% | Public CLI handled setup/open/capture/runs paths used by the production smoke. |
+| CodeAlmanac-hosted backend/auth/API | 100% | 99% | Live branch trigger claimed captured conversation source, created a `conversation_batch` run, and delivered. |
+| Hosted frontend/onboarding | 98% | 97% | Chrome verified `/setup`, repository dashboard, and activity feed with the delivered conversation-batch run. |
 | Infra/deploy rename | 99% | 99% | Render is live on `eb8dba0`; Modal app `codealmanac-hosted-updates` is redeployed; Vercel frontend unchanged. |
 
 ## Update Rule

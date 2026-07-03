@@ -1980,3 +1980,35 @@
 - Installed `codealmanac open --no-browser` passed both launch paths:
   fresh HOME printed `/wiki/github/AlmanacCode/codealmanac`, and signed-in HOME
   printed `/dashboard/accounts/264516179/repositories/1212149375/wiki`.
+- Slice 71 retried the production setup flow in Chrome. GitHub OAuth for
+  Almanac Bot completed, `/setup` rendered as signed-in `rohans0509`,
+  `AlmanacCode/codealmanac` was connected, and the repository dashboard opened.
+- Production capture smoke used published CLI `0.1.4` from a temp HOME with
+  copied cloud auth. `capture enable --target codex` issued a temporary cloud
+  capture credential and installed the temp Codex hook.
+- The real hidden capture hook uploaded a synthetic Codex transcript for
+  branch `codealmanac-smoke/slice-71-20260703123931` with
+  `upload_status: uploaded`, `repo_full_name: AlmanacCode/codealmanac`, and
+  `routing_status: routable`.
+- The smoke branch was temporarily enabled with delivery mode `commit`.
+  Creating the remote branch did not create a run because hosted intentionally
+  ignores first-push `event.created` webhooks.
+- A second push to the existing smoke branch created production run
+  `02ae5710-92b4-4ae4-acdd-7148e8aa60f7` with source kind
+  `conversation_batch`, label
+  `Captured chats on codealmanac-smoke/slice-71-20260703123931`, and source
+  batch `5621c16d-9334-4d8d-8a46-4039b7b2d398`.
+- Production SQL showed the source batch succeeded with one turn and the run
+  emitted ordered events `queued`, `running`, and `delivered`.
+- Public CLI `runs show 02ae5710-92b4-4ae4-acdd-7148e8aa60f7 --json`
+  confirmed the delivered run changed
+  `.almanac/pages/github-native-wiki-maintenance.md` and committed
+  `9211b65f85ce0583419926c67968cefc0893c7bd`.
+- Chrome verified the production repository activity page with the delivered
+  run at the top.
+- Cleanup passed: the temp capture credential was revoked, temp Codex hook was
+  removed, the smoke trigger is disabled, the remote smoke branch was deleted,
+  the temp worktree was removed, and the temp HOME was removed.
+- Final public CLI checks showed `capture status --check-cloud --json` has no
+  local credential, no hooks, and no cloud credentials; `repo triggers list`
+  shows the Slice 71 smoke branch disabled with delivery mode `commit`.
