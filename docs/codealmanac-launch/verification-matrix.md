@@ -172,6 +172,27 @@ Current evidence:
   `codealmanac-hosted-jaxnxk6oq-thealmanac.vercel.app`, production `/setup`
   redirect smoke, production `/sign-in` verifier-cookie smoke,
   browser-harness `/login` smoke, and Vercel error-log check.
+- Slice 58 repaired production Supabase schema drift. Production had old
+  Supabase Auth-era `users.supabase_user_id` and plaintext token columns while
+  the deployed backend expected WorkOS/AuthKit `users.workos_user_id` and
+  encrypted token columns.
+- Hosted migration
+  `supabase/migrations/20260703000000_repair_workos_identity_schema.sql`
+  records the repair path. The migration converts legacy identity columns and
+  foreign keys to WorkOS text ids, adds `oauth_token_ciphertext` and
+  `refresh_token_ciphertext`, removes plaintext token columns, and recreates
+  foreign keys to `users(workos_user_id)`.
+- Production migration history includes `20260703000000` plus the previously
+  drifted launch migrations. The repair was applied through Doppler-backed
+  `psql` because Supabase CLI migration commands hit a pooler
+  prepared-statement conflict.
+- Production DB check proved `rohans0509` has an active WorkOS user row with
+  encrypted GitHub access and refresh tokens present.
+- Slice 58 hosted verification passed: focused backend auth tests
+  (`24 passed`), Render deploy `dep-d93h21h9rddc73a2q0g0` live on commit
+  `01c8463`, backend health `{"status":"ok"}`, Vercel production Ready, and
+  browser-harness signed-in `/setup` rendering `rohans0509`, `ReverieOne`, and
+  `AlmanacCode`.
 
 ## CodeAlmanac Local Repo
 

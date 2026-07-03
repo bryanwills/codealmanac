@@ -1,14 +1,14 @@
 # Launch Progress
 
 Status: active.
-Updated: 2026-07-02.
+Updated: 2026-07-03.
 
 This file tracks the rough percentage estimates used in RelayForge updates.
 Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-02 after Slice 57 AuthKit sign-in hardening.
+Sent: 2026-07-03 after Slice 58 AuthKit production schema repair.
 
 Route:
 
@@ -20,18 +20,20 @@ doppler run --project almanac --config dev -- \
 ```
 
 Note: rate limits were postponed. PyPI Trusted Publishing is working for
-CodeAlmanac `0.1.0`. Hosted sign-in is now routed through the product login
-page first, with `/sign-in` as the only WorkOS/AuthKit start endpoint.
+CodeAlmanac `0.1.0`. Hosted sign-in now reaches the production `/setup` page
+with GitHub accounts visible. The root cause was production Supabase schema
+drift: backend code expected WorkOS-shaped `users` rows, while production still
+had the old Supabase Auth-shaped `users.supabase_user_id` table shape.
 
 ## Percentages
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 57. |
-| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.0` remains published and install-smoked; no CLI code changed in Slice 57. |
-| CodeAlmanac-hosted backend/auth/API | 97% | 96% | AuthKit callback now rejects non-GitHub-token completions and maps callback errors back to GitHub-only login states. |
-| Hosted frontend/onboarding | 84% | 78% | Public CTAs, protected redirects, login, `/sign-in`, and production `/setup` smoke now follow one GitHub-first setup path. |
-| Infra/deploy rename | 98% | 98% | Vercel production redeployed and aliased after Slice 57; remaining infra work is provider cleanup and signed-in walkthrough coverage. |
+| CodeAlmanac backend/local | 96% | 96% | CodeAlmanac local/backend unchanged in Slice 58. |
+| CodeAlmanac CLI/public UX | 98% | 98% | PyPI `0.1.0` remains published and install-smoked; no CLI code changed in Slice 58. |
+| CodeAlmanac-hosted backend/auth/API | 98% | 97% | Production DB now matches the WorkOS/AuthKit identity schema and stores encrypted GitHub access plus refresh tokens. |
+| Hosted frontend/onboarding | 88% | 84% | Signed-in production `/setup` now renders `rohans0509` and connected GitHub accounts after the fixed auth/session write. |
+| Infra/deploy rename | 99% | 98% | Hosted `main` and branch point at the schema-repair commit; Render deployed it live and Vercel remains Ready. |
 
 ## Update Rule
 

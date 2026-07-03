@@ -1,7 +1,7 @@
 # Next Agent Brief
 
 Status: active.
-Updated: 2026-07-02.
+Updated: 2026-07-03.
 
 ## Current Hypothesis
 
@@ -98,16 +98,34 @@ Slice 57 hardens GitHub-only hosted sign-in:
   `https://codealmanac-hosted-jaxnxk6oq-thealmanac.vercel.app` is aliased to
   `https://www.codealmanac.com`
 
+Slice 58 repairs production AuthKit schema drift:
+
+- WorkOS/GitHub OAuth was configured correctly; the failing production request
+  was backend persistence after the callback.
+- Production Supabase still had the old Supabase Auth-era `users.supabase_user_id`
+  table shape, while deployed backend code expected `users.workos_user_id` plus
+  encrypted GitHub token columns.
+- Hosted migration
+  `supabase/migrations/20260703000000_repair_workos_identity_schema.sql`
+  records the repair path.
+- Production now has an active `rohans0509` WorkOS user row with encrypted
+  GitHub access and refresh tokens.
+- Hosted commit `01c84637e082945f22c71e09dfb7216c49c7769d` is on hosted
+  `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Render deploy `dep-d93h21h9rddc73a2q0g0` is live for commit `01c8463`.
+- Browser-harness verified signed-in production `/setup` with `rohans0509`,
+  `ReverieOne`, and `AlmanacCode`.
+
 ## Current Repo State
 
 CodeAlmanac:
 
 - repo: `/Users/rohan/Desktop/Projects/codealmanac`
 - branch: `dev`
-- current launch-docs commit before Slice 57 docs:
-  `deda8a4faf336b98431d95719978f72719ad88da`
+- current launch-docs commit before Slice 58 docs:
+  `d65392818f6d22f6b963b20259344bcd759b8dd1`
 - `origin/dev` and `origin/main` both point at
-  `deda8a4faf336b98431d95719978f72719ad88da`
+  `d65392818f6d22f6b963b20259344bcd759b8dd1`
 - package version in `pyproject.toml`: `0.1.0`
 - PyPI live version checked on 2026-07-02: `0.1.0`
 
@@ -115,13 +133,13 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 57 commit:
-  `041deb878edb3931121ad861659dff0568f23b99`
+- current Slice 58 commit:
+  `01c84637e082945f22c71e09dfb7216c49c7769d`
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
-  `041deb878edb3931121ad861659dff0568f23b99`
+  `01c84637e082945f22c71e09dfb7216c49c7769d`
 - production frontend: `https://www.codealmanac.com`
-- hosted main has the setup/auth hardening, route-test guardrails, and cloud
-  setup checklist through `041deb8`
+- hosted main has setup/auth hardening, route-test guardrails, cloud setup
+  checklist, and production WorkOS identity schema repair through `01c8463`.
 
 The local wiki command currently fails on this checkout with:
 
@@ -180,12 +198,17 @@ repaired.
   `/sign-in` set a `wos-auth-verifier-*` cookie before redirecting to WorkOS,
   browser-harness showed `/login` with `Continue with GitHub` and no inputs,
   and Vercel had no recent error logs.
+- Slice 58 production auth verification passed: focused hosted backend auth
+  tests (`24 passed`), production DB row for `rohans0509` with encrypted access
+  and refresh token ciphertext, Render live deploy `dep-d93h21h9rddc73a2q0g0`,
+  backend health `{"status":"ok"}`, Vercel production Ready, and browser-harness
+  signed-in `/setup` showing `rohans0509`, `ReverieOne`, and `AlmanacCode`.
 
 ## Next Pressure Tests
 
-- Do a real signed-in production browser pass through:
-  `/login` -> GitHub AuthKit -> `/setup` -> GitHub App install/config ->
-  repository settings.
+- Continue the real signed-in production browser pass from the verified
+  `/setup` state into repository settings, branch trigger configuration,
+  capture consent, and run visibility.
 - Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
   local signed-in setup walkthrough is needed; the backend currently refuses to
   start without it.

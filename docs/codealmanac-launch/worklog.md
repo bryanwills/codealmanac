@@ -2,6 +2,49 @@
 
 ## 2026-07-02
 
+- Planned Slice 58 in
+  `docs/plans/2026-07-02-slice-58-authkit-stale-session-retry.md`. The initial
+  hypothesis was a stale AuthKit session retry problem; production evidence
+  changed the slice into a schema-drift repair.
+- Confirmed the real production auth failure was not WorkOS or GitHub OAuth
+  configuration. WorkOS/GitHub returned tokens, but
+  `POST /api/auth/github-app/session` failed because production Supabase still
+  had the old Supabase Auth-era `users.supabase_user_id` shape while deployed
+  backend code expected `users.workos_user_id` and encrypted token columns.
+- Repaired production Supabase through Doppler-backed `psql` because Supabase
+  CLI migration commands hit the pooler prepared-statement error
+  `prepared statement "lrupsc_1_0" already exists`.
+- Added hosted migration
+  `supabase/migrations/20260703000000_repair_workos_identity_schema.sql`. The
+  migration creates missing launch tables, converts legacy identity foreign keys
+  to WorkOS text ids, drops plaintext GitHub token columns, adds encrypted token
+  columns, and recreates foreign keys to `users(workos_user_id)`.
+- Applied and repaired production migration history for:
+  `launch_security_hardening`, `local_agent_setup_intro`,
+  `hosted_conversation_sync`, `conversation_ingest_scheduler`,
+  `conversation_source_refs`, `encrypt_github_user_tokens`, and
+  `repair_workos_identity_schema`.
+- Verified production DB has `user_01KWJ304254FX8W88S879S8PQG` for
+  `rohans0509`, active, with encrypted GitHub access and refresh token
+  ciphertext present.
+- Verified hosted backend focused auth tests:
+  `uv run pytest tests/test_identity_auth_contract.py tests/test_github_auth_contract.py tests/test_installations_contract.py -q`
+  (`24 passed`).
+- Pushed hosted commit
+  `01c84637e082945f22c71e09dfb7216c49c7769d fix(auth): repair WorkOS identity schema migration`
+  to `origin/codex/workos-authkit-api-foundation` and hosted `origin/main`.
+- Render deployed hosted commit `01c8463` live as deploy
+  `dep-d93h21h9rddc73a2q0g0`. Backend health returned `{"status":"ok"}`.
+- Vercel production remained Ready and aliased to `https://www.codealmanac.com`.
+  No new Vercel deployment was needed for the SQL-only migration commit.
+- Browser-harness verified signed-in production setup after the Render deploy:
+  `https://www.codealmanac.com/setup` rendered `rohans0509`, cloud setup,
+  connected GitHub accounts `ReverieOne` and `AlmanacCode`, and the PyPI-shaped
+  machine setup command.
+- Sent RelayForge update through `rohan-almanac-main` with Slice 58 verification
+  evidence and progress percentages: CodeAlmanac backend/local 96%,
+  CLI/public UX 98%, hosted backend/auth/API 98%, hosted frontend/onboarding
+  88%, infra/deploy rename 99%.
 - Planned Slice 57 in
   `docs/plans/2026-07-02-slice-57-authkit-signin-hardening.md`.
 - Hardened hosted sign-in so `/sign-in` is the only route that starts

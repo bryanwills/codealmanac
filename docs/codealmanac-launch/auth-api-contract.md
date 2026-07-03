@@ -191,6 +191,61 @@ persist upstream `oauthTokens` from `handleAuth({ onSuccess })` when present.
 This replaces the old Supabase callback behavior where `provider_token` and
 `provider_refresh_token` were sent to the backend.
 
+Docs-backed setup contract:
+
+```text
+browser -> /sign-in
+/sign-in -> AuthKit getSignInUrl()
+AuthKit -> GitHub OAuth provider
+GitHub -> WorkOS GitHub OAuth Redirect URI
+WorkOS -> /auth/callback
+/auth/callback -> handleAuth({ onSuccess })
+onSuccess -> send WorkOS accessToken + GitHub oauthTokens to backend
+backend -> verify WorkOS AuthKit access token, then store GitHub token pair
+```
+
+The frontend should use WorkOS' standard Next.js SDK helpers:
+
+```text
+getSignInUrl() in the sign-in route
+handleAuth() in the callback route
+AuthKitProvider in the app layout
+authkitProxy/authkit middleware or proxy for session handling
+```
+
+Do not hand-roll the OAuth callback, state verifier, or PKCE cookie. If the
+provider setup is correct, the callback should be boring.
+
+The backend should verify the WorkOS/AuthKit bearer as an AuthKit session token:
+
+```text
+verify JWT signature against WorkOS JWKS
+require normal session claims such as subject, issuer, issued-at, and expiry
+accept the WorkOS/AuthKit issuer shape used by the SDK/runtime
+do not require GitHub oauthTokens to be embedded in the WorkOS access token
+do not require a non-documented `client_id` claim as a hard auth condition
+reject wrong client_id if WorkOS includes one
+```
+
+GitHub provider tokens are not the browser session. They are upstream provider
+tokens returned during the AuthKit callback and stored only after the WorkOS
+session bearer verifies.
+
+Production schema drift note from Slice 58:
+
+```text
+symptom: /login?error=github_required after GitHub OAuth
+actual failing hop: POST /api/auth/github-app/session
+root cause: production users table still had supabase_user_id
+fix: repair production DB to workos_user_id plus encrypted token columns
+tracking migration: 20260703000000_repair_workos_identity_schema.sql
+```
+
+If sign-in fails after WorkOS/GitHub redirects have succeeded, check backend
+logs and the production `users` schema before adding AuthKit retry machinery.
+The simplest correct path is the documented SDK callback plus a matching
+database schema.
+
 Default GitHub OAuth scope:
 
 ```text
@@ -207,6 +262,67 @@ Do not add broad OAuth scopes such as `repo` for normal product operation.
 Repository reads, writes, PRs, branch checks, and delivery should use GitHub App
 installation tokens and GitHub App permissions. Add user OAuth scopes only for a
 specific user-on-behalf-of-user feature that cannot be served by the GitHub App.
+
+When using a GitHub App as the WorkOS GitHub OAuth credential, GitHub App user
+access tokens do not use OAuth scopes in the classic OAuth App sense. They are
+bounded by the intersection of the GitHub App permissions and the user's own
+permissions. Keep the WorkOS scope field simple unless a concrete user-token
+feature requires more.
+
+GitHub App optional feature:
+
+```text
+User-to-server token expiration: enabled
+```
+
+Reason:
+
+```text
+GitHub returns ghu_ access tokens that expire after 8 hours and ghr_ refresh
+tokens that can refresh them. CodeAlmanac needs the refresh token path for
+stable user-linked GitHub identity and repository visibility.
+```
+
+GitHub App installation OAuth prompt:
+
+```text
+Request user authorization during installation: off by default
+```
+
+Reason:
+
+```text
+The normal user identity path is WorkOS/AuthKit sign-in. Installation is the
+repo permission path. If we enable OAuth during installation, GitHub starts a
+separate web application flow and chooses the first app callback unless the full
+flow controls redirect_uri. Keep identity and installation separate unless we
+intentionally redesign onboarding around installation-first auth.
+```
+
+Provider config that should stay simple:
+
+```text
+WorkOS GitHub provider enabled
+WorkOS GitHub provider uses GitHub App client id and client secret
+Return GitHub OAuth tokens enabled
+scope user:email
+GitHub App callback URL is the WorkOS GitHub OAuth Redirect URI
+GitHub App setup URL is https://www.codealmanac.com/setup
+GitHub App webhook URL is https://api.codealmanac.com/api/webhooks/github
+```
+
+Production environment contract:
+
+```text
+WORKOS_API_KEY
+WORKOS_CLIENT_ID
+WORKOS_COOKIE_PASSWORD
+NEXT_PUBLIC_WORKOS_REDIRECT_URI
+```
+
+`WORKOS_COOKIE_PASSWORD` must be at least 32 characters because the AuthKit
+Next.js SDK uses it to encrypt the session cookie. An empty value is a broken
+deployment even when the WorkOS and GitHub dashboards are otherwise correct.
 
 Empirical check on 2026-07-02 against `codealmanac/prd`: after refreshing the
 stored GitHub App user token for `rohans0509`, GitHub returned an empty
