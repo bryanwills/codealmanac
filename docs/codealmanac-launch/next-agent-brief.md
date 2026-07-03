@@ -130,6 +130,20 @@ Slice 59 fixes the CLI auth/setup contract:
 - GitHub Actions publish run `28640955934` published `codealmanac` `0.1.1` to
   PyPI, and a fresh PyPI install verified the released CLI
 
+Slice 60 repairs capture-token schema drift in production:
+
+- production repository settings failed because the page called
+  `GET /api/capture/status`, and production Supabase lacked
+  `public.capture_tokens`
+- hosted migration `20260703010000_capture_tokens.sql` creates the table,
+  indexes, grants, forced RLS, and backend policy
+- the clean-slate init migration also includes `capture_tokens`
+- the migration was applied through Doppler-backed `psql` and marked applied in
+  Supabase migration history
+- browser-harness verified signed-in production repository settings now loads
+  and Render logs show fresh `/api/capture/status` `200 OK` entries
+- hosted focused tests and ruff passed for the slice
+
 ## Current Repo State
 
 CodeAlmanac:
@@ -153,8 +167,8 @@ Hosted:
 
 - repo: `/Users/rohan/.config/superpowers/worktrees/usealmanac/hosted-baseline-convergence`
 - branch: `codex/workos-authkit-api-foundation`
-- current Slice 58 commit:
-  `01c84637e082945f22c71e09dfb7216c49c7769d`
+- current Slice 60 working tree has the capture-token migration and schema
+  guard before commit
 - `origin/codex/workos-authkit-api-foundation` and `origin/main` both point at
   `01c84637e082945f22c71e09dfb7216c49c7769d`
 - production frontend: `https://www.codealmanac.com`
@@ -233,12 +247,16 @@ repaired.
   succeeded, PyPI JSON/simple index exposed `0.1.1`, and
   `uv tool install --python 3.12 --no-cache codealmanac==0.1.1` installed a
   CLI whose root setup JSON still showed `automation_mode: "none"`.
+- Slice 60 hosted verification passed: production DB has
+  `public.capture_tokens`, Supabase migration history includes
+  `20260703010000`, signed-in production repository settings loads in Chrome,
+  Render logs show fresh `/api/capture/status` `200 OK`, hosted focused tests
+  reported `76 passed`, and hosted ruff passed.
 
 ## Next Pressure Tests
 
-- Continue the real signed-in production browser pass from the verified
-  `/setup` state into repository settings, branch trigger configuration,
-  capture consent, and run visibility.
+- Continue the real signed-in production browser pass from repository settings
+  into branch trigger configuration, capture consent, and run visibility.
 - Add `GITHUB_TOKEN_ENCRYPTION_KEYS` to Doppler `codealmanac/dev_personal` if a
   local signed-in setup walkthrough is needed; the backend currently refuses to
   start without it.

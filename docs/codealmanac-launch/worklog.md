@@ -1641,3 +1641,29 @@
   `UV_TOOL_DIR=<tmp> UV_TOOL_BIN_DIR=<tmp> uv tool install --python 3.12 --no-cache codealmanac==0.1.1`;
   the installed executable returned `0.1.1`, and installed setup JSON showed
   `automation_mode: "none"` with `automation: []`.
+- Repaired production repository settings after the page failed at
+  `/api/capture/status`.
+- Root cause: backend code already had `CaptureTokenRow` and
+  `CaptureTokensStore.active_for_user()`, but production Supabase did not have
+  `public.capture_tokens`.
+- Added hosted migration
+  `supabase/migrations/20260703010000_capture_tokens.sql` and added
+  `capture_tokens` to the clean-slate init schema.
+- Applied the migration to production through Doppler-backed `psql`, then
+  marked migration `20260703010000` as applied with
+  `supabase migration repair --linked --status applied 20260703010000`.
+- Verified production DB has `public.capture_tokens` and policy
+  `capture_tokens_backend_access` for `{postgres,service_role}`.
+- Verified unauthenticated `GET https://api.codealmanac.com/api/capture/status`
+  returns `401 not_authenticated`, not a server error.
+- Verified signed-in Chrome production settings page loads:
+  `https://www.codealmanac.com/dashboard/accounts/264516179/repositories/1212149375/settings`.
+- Verified page text shows repository readiness, GitHub App connected, write
+  repository access, capture not installed, maintained branches, and delivery
+  settings.
+- Verified Render logs after the fix include fresh
+  `GET /api/capture/status HTTP/1.1" 200 OK` entries at
+  `2026-07-03T06:47:13Z`, `06:47:16Z`, and `06:47:33Z`.
+- Hosted tests for the repair passed:
+  `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
+  (`76 passed, 1 warning`) and `uv run ruff check .`.

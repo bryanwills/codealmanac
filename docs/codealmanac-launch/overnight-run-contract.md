@@ -1,14 +1,41 @@
 # Overnight Run Contract
 
 Status: active.
-Date: 2026-07-02.
+Date: 2026-07-03.
 
 This file records the execution order for the long autonomous launch run.
 
+## Operating Authority
+
+This launch has no external customer compatibility constraint. If a database
+shape, migration history, URL, package name, CLI command, frontend route, or
+code organization choice is wrong for the launch product, change it instead of
+protecting it.
+
+Use provider-owned concepts where they exist:
+
+- WorkOS owns human identity, AuthKit sessions, and any WorkOS-backed machine
+  credentials.
+- GitHub owns accounts, installations, repositories, branches, pull requests,
+  commits, and webhook event shapes.
+- Supabase/Postgres owns CodeAlmanac product state, but not identity.
+- Vercel, Render, GitHub Actions, PyPI, Doppler, PostHog, Autumn, and provider
+  CLIs/APIs should be used directly where they are the real control plane.
+
+Do not invent parallel product-owned systems unless a provider gap forces a
+small named adapter.
+
 ## Priority Order
 
-The first major objective is infrastructure and deployment, before deep product
-implementation.
+The run has two large halves:
+
+1. Build the product spine until CLI, API, frontend, backend, and deployables
+   work together.
+2. Sharpen the codebase so it reads like it was designed after the product
+   model became clear.
+
+The first major objective remains infrastructure and deployment, before deep
+product implementation.
 
 Order:
 
@@ -24,6 +51,78 @@ Order:
 
 The intended wake-up state is: there is something deployed, not only a local
 refactor.
+
+## Product Spine
+
+Finish the concrete product path first:
+
+- root `codealmanac setup` is cloud setup, not local automation setup
+- CLI setup/login use the final WorkOS-backed auth contract through
+  CodeAlmanac API endpoints
+- API exposes the nouns the frontend and CLI actually need
+- hosted repo list, repo setup, repo settings, trigger policy, delivery policy,
+  and runs surfaces work in production
+- GitHub App webhooks create or update parent records before child records
+- PR/merge events on maintained branches create runs
+- delivery defaults to commit and is configurable per maintained branch
+- run records and run events are stored with the same conceptual shape in cloud
+  and local, even when persistence differs
+- CLI, frontend, backend, and migrations are deployed after coherent chunks
+
+## Codebase Sharpening
+
+After the spine works, the run should spend serious time improving code quality.
+This is not cosmetic cleanup. The goal is that a new engineer or agent can read
+the names and infer the product.
+
+Allowed and encouraged:
+
+- reorganize packages and folders around stable product/provider domains
+- rename services, stores, DTOs, routes, and tables to match GitHub, WorkOS, and
+  CodeAlmanac nouns
+- collapse, rewrite, or repair Supabase migrations because launch has no
+  external users
+- remove stale local/cloud split-brain
+- remove compatibility husks once callers have moved
+- simplify DTOs and API names so frontend, CLI, API, and core use the same
+  vocabulary
+- break large files by responsibility
+- introduce a consistent project-wide error/result approach if current error
+  handling is scattered
+- add architecture tests when boundaries become important enough to protect
+- mirror cloud/local concepts only where the parallel is real
+
+Do not refactor for motion. Every reorganization should make one of these true:
+
+- a product noun has one obvious home
+- a provider boundary stops leaking raw provider details
+- a future SDK/API method becomes easier to name
+- a test can enforce an architectural rule
+- deleted code removes a real source of confusion
+
+## README And Install UX
+
+Restore the old README's feel rather than replacing it with a new marketing
+document. Keep the original banner, cadence, and most of the language where it
+still describes the product correctly. Update only the launch facts and command
+surface.
+
+Public install should prefer a product-grade one-liner:
+
+```bash
+curl -fsSL https://codealmanac.com/install.sh | sh
+codealmanac setup
+```
+
+The install script can use `uv tool install` internally. Keep the manual path in
+docs for transparency:
+
+```bash
+uv tool install --python 3.12 codealmanac
+codealmanac setup
+```
+
+Do not reintroduce npm/npx instructions for the Python CLI.
 
 ## Provider CLI Check
 
@@ -112,6 +211,34 @@ local setup/update path works
 
 Refactors are allowed inside these chunks when they make the chunk fit cleanly.
 Refactors that do not affect the launch path should wait.
+
+## Testing And Evidence
+
+Test as much as possible. Prefer real provider/browser verification at the end
+of coherent chunks, not only unit tests.
+
+Maintain a running testing record in `worklog.md` or `verification-matrix.md`
+with:
+
+- what was tested
+- exact command or provider surface used
+- production or local URL when relevant
+- result
+- commit/deploy/run id when relevant
+- anything not testable without user action
+
+At minimum, keep checking:
+
+- full Python tests and lint for `codealmanac`
+- hosted route/frontend/backend tests where touched
+- browser login/setup/repo/settings flows in production
+- backend health and relevant API endpoints
+- GitHub webhook behavior or replayed webhook payloads
+- PyPI install and `codealmanac setup` smoke after CLI releases
+- Vercel and Render deploy status after provider changes
+
+If blocked, record the block instead of silently skipping the surface. The
+wake-up handoff should say exactly what remains human-testable.
 
 ## Supabase
 

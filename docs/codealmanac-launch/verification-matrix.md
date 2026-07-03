@@ -193,6 +193,27 @@ Current evidence:
   `01c8463`, backend health `{"status":"ok"}`, Vercel production Ready, and
   browser-harness signed-in `/setup` rendering `rohans0509`, `ReverieOne`, and
   `AlmanacCode`.
+- Slice 60 repaired capture credential schema drift. The backend already
+  queried `CaptureTokenRow`, but production Supabase lacked
+  `public.capture_tokens`, causing signed-in repository settings to fail at
+  `GET /api/capture/status`.
+- Hosted migration
+  `supabase/migrations/20260703010000_capture_tokens.sql` creates
+  `public.capture_tokens`, grants service-role access, enables forced RLS, and
+  creates `capture_tokens_backend_access`.
+- The clean-slate init migration now includes `capture_tokens`, so fresh
+  environments and repaired production use the same table shape.
+- Production DB verification proved `to_regclass('public.capture_tokens')`
+  resolves and `pg_policies` includes `capture_tokens_backend_access` for
+  `{postgres,service_role}`.
+- Browser-harness verified signed-in production repository settings loads at
+  `/dashboard/accounts/264516179/repositories/1212149375/settings` and renders
+  GitHub access, capture status, maintained branches, and delivery settings.
+- Render logs after the repair show fresh signed-in
+  `GET /api/capture/status` requests returning `200 OK`.
+- Slice 60 hosted verification passed:
+  `uv run pytest tests/test_architecture_contract.py tests/test_capture_tokens_api_contract.py`
+  (`76 passed, 1 warning`) and `uv run ruff check .`.
 
 ## CodeAlmanac Local Repo
 

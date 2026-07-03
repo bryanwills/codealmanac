@@ -115,6 +115,24 @@ Status: active.
   machinery is written.
 - The first overnight execution priority is infrastructure and deployment, so
   the renamed cloud product exists on real providers before deeper feature work.
+- The overnight run has two large halves: first build the CLI/API/frontend/
+  backend product spine until it works together, then deliberately sharpen the
+  codebase organization and naming around the settled product model.
+- Codebase reorganization is in scope after the product spine works. Services,
+  stores, DTOs, API routes, frontend modules, migrations, and package structure
+  may be renamed or moved when the new shape is simpler and more truthful.
+- Code quality is a first-class launch objective. Refactors should be done when
+  they remove split-brain concepts, provider leakage, stale compatibility, or
+  unclear ownership; they should not be done for motion alone.
+- The README should preserve the old README's banner, feel, and core language
+  while updating launch commands and product facts. Do not replace it with a
+  generic marketing README.
+- Public install UX should prefer a curl one-liner backed by the Python/PyPI
+  package path. `uv tool install --python 3.12 codealmanac` remains the explicit
+  manual path.
+- Every coherent chunk must leave a testing record: commands, URLs, provider
+  surfaces, results, deploy/run ids, and any surfaces that could not be tested
+  without user action.
 - Provider CLIs/APIs should be used where available for Vercel, Render,
   Supabase, Modal, Doppler, PostHog, Autumn, and GitHub.
 - CodeAlmanac PyPI publishing uses PyPI Trusted Publishing through GitHub
