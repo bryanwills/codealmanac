@@ -4,8 +4,8 @@ export const RouteKind = Object.freeze({
   TOPIC: "topic",
   SEARCH: "search",
   FILE: "file",
-  JOBS: "runs",
-  JOB: "run",
+  RUNS: "runs",
+  RUN: "run",
 });
 
 export function parseHash(hash) {
@@ -14,8 +14,8 @@ export function parseHash(hash) {
   const parts = raw.split("/");
   const kind = parts[0];
   const value = decodeURIComponent(parts.slice(1).join("/"));
-  if (kind === RouteKind.JOBS && value) {
-    return { kind: RouteKind.JOB, value };
+  if (kind === RouteKind.RUNS && value) {
+    return { kind: RouteKind.RUN, value };
   }
   return { kind, value };
 }

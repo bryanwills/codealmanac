@@ -1,7 +1,7 @@
 ---
 title: almanac serve (Local Viewer)
 summary: >-
-  `almanac serve` is a local read-only viewer over wiki pages, the SQLite index, job records, and
+  `almanac serve` is a local read-only viewer over wiki pages, the SQLite index, run records, and
   review escalations.
 topics:
   - cli
@@ -47,18 +47,10 @@ sources:
     type: file
     path: src/viewer/api.ts
     note: Migrated from legacy files.
-  - id: job-projections
+  - id: runs
     type: file
-    path: src/jobs/projections/view.ts
-    note: Migrated from legacy files.
-  - id: job-types
-    type: file
-    path: src/viewer/job-types.ts
-    note: Migrated from legacy files.
-  - id: jobs
-    type: file
-    path: src/viewer/jobs.ts
-    note: Migrated from legacy files.
+    path: src/codealmanac/wiki/viewer/runs.py
+    note: Projects lifecycle run records and log events into viewer DTOs.
   - id: server
     type: file
     path: src/viewer/server.ts
@@ -95,18 +87,14 @@ sources:
     type: file
     path: viewer/routes.js
     note: Migrated from legacy files.
-  - id: jobs-view
+  - id: runs-view
     type: file
-    path: viewer/jobs-view.js
-    note: Migrated from legacy files.
-  - id: jobs-transcript
+    path: src/codealmanac/api/assets/viewer/runs.js
+    note: Renders lifecycle run list, detail, event logs, and polling in the static viewer.
+  - id: viewer-routes
     type: file
-    path: viewer/jobs-transcript.js
-    note: Migrated from legacy files.
-  - id: jobs-2
-    type: file
-    path: viewer/jobs.css
-    note: Migrated from legacy files.
+    path: src/codealmanac/api/assets/viewer/routes.js
+    note: Defines `#/runs` and `#/runs/<run-id>` routes.
   - id: search-suggestions
     type: file
     path: viewer/search-suggestions.js
@@ -118,10 +106,6 @@ sources:
   - id: viewer-api-test
     type: file
     path: test/viewer-api.test.ts
-    note: Migrated from legacy files.
-  - id: viewer-jobs-transcript-test
-    type: file
-    path: test/viewer-jobs-transcript.test.ts
     note: Migrated from legacy files.
   - id: viewer-ui-assets-test
     type: file
@@ -143,7 +127,7 @@ sources:
 
 `almanac serve` is a lightweight local read-only web viewer for browsing a repo's Almanac wiki. It is the preferred "read the wiki" experience for humans; filesystem browsing is the fallback and editor interface, not the primary UX. Designed and implemented 2026-05-10.
 
-The viewer is mostly a read-only client over existing wiki/index/job-record primitives. `[[src/wiki/query/search.ts]]` owns shared FTS query builders and file-reference matching primitives used by both `[[src/cli/commands/search.ts]]` and `[[src/viewer/api.ts]]`, including parent-folder prefix calculation and SQLite GLOB escaping for literal path queries.
+The viewer is mostly a read-only client over existing wiki/index/run-record primitives. `[[src/codealmanac/wiki/index/]]` owns the SQLite-backed index that search, show, health, topics, and the viewer read.
 
 ## Rationale
 
@@ -184,14 +168,13 @@ The viewer reads `.almanac/pages/*.md` and `.almanac/index.db`. It triggers an i
 /topic/:slug               topic + descendant pages list
 /search?q=...              FTS search results
 /file?path=src/foo.ts      pages mentioning a file
-/review                    review inbox for unresolved source conflicts
-/jobs                      jobs dashboard — list of recent runs
-/jobs/:jobId               job detail — settings, status, stream timeline
+/runs                      runs dashboard — list of recent lifecycle runs
+/runs/:runId               run detail — status and event timeline
 ```
 
 The left-rail search box uses `/api/suggest` while typing, then `/search?q=...` for submitted searches. Suggestions are bounded to the top eight pages and reuse the same FTS path as search.
 
-The page rail (left and right panels) is hidden for `/jobs` and `/jobs/:jobId` routes — these views use a dedicated full-width layout rather than the three-panel wiki layout.
+The page rail is hidden for run routes — these views use a dedicated full-width layout rather than the three-panel wiki layout.
 
 The home route treats `.almanac/pages/getting-started.md` as the single markdown-backed front door. `project-overview.md` is no longer a featured fallback in the viewer API or frontend; it can still be read as a normal page if a wiki has one.
 
@@ -208,7 +191,7 @@ The review route reads `.almanac/review.yaml` through the viewer API and groups 
 - File reference listings (pages mentioning a given source file)
 - Source listings in the page rail, with file sources linked to `/file` views and web sources linked externally
 - Archive / superseded indicators
-- Jobs dashboard with run list and detail/stream view
+- Runs dashboard with run list and detail/event view
 - Graph sidebar (deferred)
 - Review inbox for human decisions on unresolved conflicts raised by lifecycle agents
 
@@ -232,9 +215,7 @@ codealmanac package:
     app.css              # served CSS: --ca-* tokens, wiki layout
     app.js               # router and chrome glue; wiki views inline
     routes.js            # wiki route helpers and wikilink route classification
-    jobs-view.js         # jobs dashboard and detail view rendering
-    jobs-transcript.js   # pure projection of JSONL events into chat/tool transcript rows
-    jobs.css             # jobs-specific CSS
+    runs.js              # runs dashboard, detail view, event rendering, and polling
     search-suggestions.js # debounced left-rail search suggestions
 
 almanac serve:
@@ -247,7 +228,7 @@ Next.js was explicitly rejected as too heavy. Express was not added; Node's `htt
 
 ## Source module structure
 
-The viewer is a read-only client over the same persisted index and page/job-record source files that the CLI uses. It should not introduce a separate database model or forked parser. Shared query mechanics live under `[[src/wiki/query/]]` rather than in viewer-specific helpers.
+The viewer is a read-only client over the same persisted index and run-record source files that the CLI uses. It should not introduce a separate database model or forked parser. Shared query mechanics live under `[[src/codealmanac/wiki/index/]]` rather than in viewer-specific helpers.
 
 Actual source layout:
 
@@ -257,15 +238,11 @@ src/
     serve.ts          # thin CLI wrapper: resolve wiki root, start server, wait for Ctrl+C
 
   viewer/
-    api.ts            # createViewerApi(): overview(), page(), topic(), search(), suggest(), file(), jobs(), job()
-    job-types.ts      # shared viewer job response shapes
-    jobs.ts           # jobs API logic: listViewerJobs(), getViewerJob(), storage access, job-id safety
+    api.ts            # createViewerApi(): overview(), page(), topic(), search(), suggest(), file(), runs(), run()
+    run-types.ts      # shared viewer run response shapes
+    runs.ts           # runs API logic: listViewerRuns(), getViewerRun(), storage access, run-id safety
     server.ts         # startViewerServer(): HTTP routing for /api/* and static assets
     static.ts         # readViewerAsset() / readViewerIndex(): serves viewer/ from package root
-
-  jobs/projections/
-    view.ts           # derived job display fields, transcript source, agent traces, warnings
-    log-events.ts     # JSONL parsing for job logs
 
   query/
     page-view.ts      # getPageView(db, slug) → PageView; shared by show command and viewer API
@@ -276,19 +253,17 @@ viewer/               # bundled static frontend (no build step required at runti
   app.js              # router and chrome glue; wiki views (home, page, topic, search, file) inline
   routes.js           # shared route helpers for wiki-scoped URLs and wikilinks
   app.css             # all wiki tokens and layout CSS
-  jobs-view.js        # jobs list and job detail UI rendering (loaded by index.html alongside app.js)
-  jobs-transcript.js  # pure transcript projection and tool-card display model
-  jobs.css            # jobs-specific CSS (loaded by index.html)
+  runs.js             # runs list, run detail, event rendering, and polling
   search-suggestions.js # left-rail search suggestion controller
 ```
 
-`serve.ts` owns only the CLI interface. `server.ts` owns HTTP. `api.ts` owns wiki-API payload assembly and delegates jobs concerns to `src/viewer/jobs.ts`. `jobs.ts` owns job storage access, job-id validation, and PID liveness through the shared `src/jobs/` API. `src/jobs/projections/view.ts` owns derived job display fields, transcript-source inference, agent traces, and run warnings; `src/jobs/projections/log-events.ts` owns JSONL job-log parsing. `job-types.ts` owns the shared viewer job response shapes. `page-view.ts` is extracted shared logic: the `show` command and viewer API both call it. The frontend in `viewer/` is plain HTML + vanilla JS with no compile step. `app.js` handles routing and wiki views; `jobs-view.js` handles jobs rendering; `jobs-transcript.js` handles stream projection and tool/result pairing; `search-suggestions.js` owns the debounced search suggestion interaction.
+The current Python implementation serves HTTP from `src/codealmanac/api/routes.py`. `ViewerService` owns wiki-API payload assembly and delegates run projection to `src/codealmanac/wiki/viewer/runs.py`. `RunLedgerService` owns run storage access, run-id validation, and event reads through `src/codealmanac/runs/ledger/`. The static frontend in `src/codealmanac/api/assets/viewer/` is plain HTML plus vanilla JS; `main.js` handles routing and wiki views, and `runs.js` handles run list/detail rendering and polling.
 
-`jobs.ts` delegates to `[[src/jobs/index.ts]]` — specifically `listJobRecords()`, `readJobRecord()`, `resolveJobRecordPath()`, `resolveJobLogPath()`, and `toJobView()` — for all job storage access. The viewer does not duplicate the storage rules or introduce its own job model.
+The viewer does not duplicate run storage rules or introduce its own run model.
 
 ## Key API types
 
-`ViewerApi` exposes eight methods: `overview()` (wiki stats + recent pages + root topics), `page(slug)` (full `PageView` including body markdown, backlinks, topics, file refs, source records, and a `related_pages` array), `topic(slug)` (topic metadata + children + pages), `search(query)` (FTS results or recent pages when query is empty), `suggest(query)` (top eight FTS page hits for instant suggestions), `file(path)` (pages from `file_refs` matching path semantics), `jobs()` (list of all job records as `ViewerJobRun[]`), and `job(jobId)` (one `ViewerJobRun` plus its JSONL event log).
+`ViewerService` exposes `overview()`, `page(slug)`, `topic(slug)`, `search(query)`, `file(path)`, `runs()`, and `run(runId)`. The HTTP API maps those reads to `/api/overview`, `/api/page/{slug}`, `/api/topic/{slug}`, `/api/search`, `/api/file`, `/api/runs`, and `/api/runs/{run_id}`.
 
 `search()` and `suggest()` use different FTS query builders from `[[src/wiki/query/search.ts]]`. `search()` calls `buildQuotedTermFtsQuery()`, which wraps each whitespace-split term in exact-phrase quotes (`"term"`) and ANDs them — suitable for complete submitted queries. `suggest()` calls `buildQuotedPrefixFtsQuery()`, which appends `*` to each quoted term (`"term"*`) — FTS5 prefix matching that returns results while the user is still typing. Using the submitted-query builder for suggest would break as-you-type completion because incomplete words would not match their eventual full form.
 
@@ -296,40 +271,26 @@ viewer/               # bundled static frontend (no build step required at runti
 
 `overview()` returns `featuredPages.gettingStarted` when the wiki contains `getting-started.md`. It does not return `featuredPages.projectOverview`; the 2026-05-28 front-door cleanup made `getting-started.md` the only special homepage convention.
 
-`ViewerJobRun` extends `JobView` (from [[process-manager-runs]] via `toJobView()`) with display fields: `displayTitle` (human label derived from operation and target kind), `displaySubtitle` (nullable summary derived from the final `done`/`text` event in the log, falling back to the first target path or the model string), and `transcriptSource` for session captures. The transcript-source field intentionally differs from `provider`: a Claude or Codex transcript may be processed by a Codex, Claude, or future provider agent. `src/jobs/projections/view.ts` derives the source from the saved spec prompt when available and falls back to transcript-path conventions for older records. The `enrichJobView()` helper computes these fields after `jobs.ts` reads the event log. Job IDs are validated by `isSafeJobId()` (regex `/^(job|run)_[A-Za-z0-9_-]+$/`) before any path construction to prevent path traversal.
+`ViewerRunRecord` is the projected run row. It carries `run_id`, `kind`, `status`, title, summary, error, timestamps, log path, page changes, and optional harness transcript metadata. `ViewerRun` returns one projected run plus `ViewerRunEvent[]`, where each event carries sequence, timestamp, kind, message, and an optional normalized harness event.
 
-`ViewerJobDetail` is the shape returned by `job(jobId)`: `{ run: ViewerJobRun; events: ViewerJobLogEvent[] }`. `ViewerJobLogEvent` is a discriminated union: a valid line is `{ line: number; timestamp: string | null; event: HarnessEvent }` and an unparseable line is `{ line: number; invalid: true; raw: string; error: string }`. The `readJobLogEvents()` helper reads the JSONL log file line-by-line, unwraps the job-log `{ timestamp, event }` and v2 `{ version, sequence, jobId, actor, event }` envelopes, skips blank lines, and preserves invalid lines as error-shaped display rows rather than throwing. This is intentional: a corrupt or truncated log should still render the rest of the timeline.
+## Runs Dashboard UI
 
-Process liveness for `jobs()` is checked via `isPidAlive(pid)` — a local helper that calls `process.kill(pid, 0)` and returns `false` on any signal error. This is the same strategy `jobs attach` uses in the CLI.
+The runs dashboard (`#/runs`) lists lifecycle run records in reverse-chronological order. Each row shows the run title, summary or error, status, kind, and last update time. Clicking any row navigates to `#/runs/<run-id>`.
 
-## Jobs dashboard UI
+The run detail view (`#/runs/<run-id>`) renders run facts followed by an event log:
 
-The jobs dashboard (`/jobs`) lists all job records in reverse-chronological order. Each row shows: operation badge, provider/model, optional transcript source for session captures, `displayStatus` badge (colored by status), `displayTitle`, `displaySubtitle` (page-change summary if available), and elapsed time. Clicking any row navigates to `/jobs/:jobId`.
+- **Run panel**: run id, status, kind, update timestamp, log path, optional harness transcript, summary, and error.
+- **Event log**: sequence, event kind, timestamp, message, and structured harness details when present.
 
-The job detail view (`/jobs/:jobId`) renders two fact panels followed by a stream timeline:
-
-- **Settings panel**: operation, provider, model, started-at timestamp, finished-at timestamp, and provider session ID if present.
-- **Outcomes panel**: pages created/updated/archived counts, cost (USD), token count, log file path, failure message and fix suggestion if present, error string if present.
-- **Targets section**: display of the job's targets (populated from `JobView.targetPaths`).
-- **Stream timeline**: assistant text renders as chat bubbles; Normal mode groups root tool calls into collapsed activity summaries; Debug mode renders individual tool cards; tool results are paired with their tool call by ID where possible; invalid lines render as error rows showing the raw content and parse error.
-
-The desired Normal-mode hierarchy for a job detail page is outcome-first, not colophon-first. The first screen should answer: which model ran, whether it succeeded, elapsed time, what pages were created or modified, what input transcript/file/folder the run ingested, and whether that input can be opened for inspection. Page-change rows are the primary result object and should link to the affected pages when possible. Started and finished timestamps are useful but secondary. Provider session IDs, raw log paths, and other audit fields belong below the primary summary or in Debug-oriented detail because they do not answer the normal "what happened in this run?" question. The separate barometer/colophon treatment should not remain always-visible in Normal mode when it repeats status, provider, token, and path facts already present in the summary. Usage should show token count when available and a cost estimate when the run record has enough pricing data; if the estimate is not available, the UI may show an explicit "coming soon" placeholder rather than pretending token count alone is spend.
+The desired run detail hierarchy is outcome-first, not colophon-first. The first screen should answer whether the run succeeded, what kind of run it was, what pages were created or modified, what input transcript/file/folder the run ingested, and whether that input can be opened for inspection. Started and finished timestamps are useful but secondary.
 
 The run overview uses a compact dashboard hierarchy rather than a hero plus scattered facts. The title and subtitle stand alone, then a metric grid answers status, time taken, model, and usage as separate cards. Status cards use a colored state treatment so completion, active work, and failures are visually distinct. Outcome cards below handle page changes and source/ingested transcript details. Run details stays collapsed for audit fields such as exact timestamps, session ids, and log paths.
 
-`viewer/jobs-transcript.js` is a projection layer over raw JSONL events, not a one-row-per-log-line renderer. The transcript has two modes. **Normal** is the default and suppresses `tool_summary` and `context_usage` bookkeeping events because those records duplicate information already visible in tool cards or outcome metrics and made real capture runs unreadable. **Debug** is opt-in and keeps those bookkeeping rows for provider inspection. The transcript count in `viewer/jobs-view.js` uses the projected entry count for the active mode rather than the raw `ViewerJobDetail.events.length` so the UI label matches what the user can inspect.
+`runs.js` renders structured event details directly from the `ViewerRunEvent` payloads. The current Python viewer does not have a separate transcript-projection module.
 
-Expanded tool cards use mode-specific rendering. Normal mode shows tool-shaped details first: shell commands show command/output, read/write/edit calls show path and content/change/result, search calls show query/result, and agent calls show task/result. Debug mode keeps the generic fact grid plus raw JSON input/result sections so adapter behavior can still be audited.
+Polling behavior: while status is `queued` or `running`, the list and detail views schedule a re-fetch every 1.5 seconds via `runs.js`. On re-render, any existing poll timer is cancelled before scheduling a new one. Polling stops automatically when the route changes or the status reaches a terminal state.
 
-Normal mode treats the root agent as the implicit narrator. Root assistant rows omit the `M` avatar, root tool rows omit the `Main` pill, and the standalone Agents section is hidden when the run has no helper or unknown actors. Helper and unknown actors stay labeled in Normal mode so subagent work is visible when it appears. Debug mode shows all actor labels, including root, for attribution audits.
-
-Normal mode is organized around readable run narrative, not a timestamped event stream. `viewer/jobs-view.js` applies `groupNormalTranscript()` after `buildTranscript()` so contiguous root tool entries collapse into expandable activity summaries such as "Explored 2 files, ran 4 commands" or "Edited 2 files." Expanding a root activity summary shows compact action rows such as "Ran npm test", "Read SKILL.md", or "Edited 2 files". Rows with useful inspectable material can expand again: read rows show light file previews, edit rows show per-file change panels, and shell rows show command/output without provider shell wrappers when possible. Prose-like read previews use the same markdown renderer as wiki pages; markdown links to `.almanac/pages/*.md` route back into viewer page routes through `viewer/app.js`. Edit details stay focused on the changed hunks first, with page links when the changed path is a wiki page so the full page remains reachable without dumping the whole file into the transcript. This keeps `/bin/zsh -lc` wrappers and raw tool payloads out of the default reading path. Helper and unknown-actor tool entries are not folded into root activity groups because subagent work needs visible attribution. Debug mode keeps each tool call as its own top-level timeline row with per-row offsets and full audit details.
-
-Normal mode exposes only the transcript mode switch (`normal` / `debug`) above the readable transcript. The `all` / `main` / `tools` / `raw` event filters are Debug-only controls because they operate on the raw event stream rather than the Normal-mode narrative projection.
-
-Polling behavior: while `displayStatus` is `queued` or `running`, the detail view schedules a re-fetch every ~1.5 seconds via `jobs-view.js`. On re-render, any existing poll timer is cancelled before scheduling a new one. Polling stops automatically when the route changes or the status reaches a terminal state.
-
-The poll timer is private state inside `createJobsView()` in `viewer/jobs-view.js`. Route changes call `jobsView.clearPoll()` from `viewer/app.js`, keeping the global router aware of cleanup without storing jobs-specific state in the main viewer shell.
+The poll timer is private state inside `runs.js`. Route changes call `clearRunPolling()` from `main.js`, keeping the global router aware of cleanup without storing run-specific state in the main viewer shell.
 
 ## UI direction
 
@@ -383,8 +344,6 @@ The viewer still reads from `.almanac/pages/` — the migration to a visible `al
 
 `test/serve-command.test.ts` starts the server at port 0 (OS-assigned), verifies the static HTML is served, confirms `/api/overview` returns correct page counts, and checks `/api/page/:slug` returns title and body.
 
-`test/viewer-api.test.ts` tests `createViewerApi()` in isolation: seeds a repo with two linked pages, verifies `overview()`, `page()` (including backlinks and file refs), `topic()`, `search()`, `file()`, `jobs()`, and `job(jobId)` (including JSONL parsing and invalid-line handling).
+`tests/test_viewer_service.py` tests `ViewerService` in isolation: seeds a repo with linked pages, verifies overview, page, topic, search, file, runs, and run detail behavior.
 
-`test/viewer-ui-assets.test.ts` checks that the served static assets include expected strings: the jobs nav item, jobs-list CSS classes, and job-detail markup patterns. This guards the HTML/JS/CSS bundle against accidental deletion of feature-critical strings.
-
-`test/viewer-jobs-transcript.test.ts` tests `buildTranscript()` and `getToolCardModel()` in isolation: verifies that streamed `text_delta` events are accumulated into a single assistant bubble, that `done` result text is appended to the bubble, that `tool_use` and `tool_result` entries are paired by ID, that unmatched `tool_result` entries produce standalone tool rows, that `tool_summary` and `context_usage` events stay out of the visible transcript, and that invalid JSONL lines surface as error rows rather than throwing.
+`tests/test_api.py` checks that the served static assets include expected strings for the runs nav item, runs module, polling, and structured harness details. This guards the HTML/JS/CSS bundle against accidental deletion of feature-critical strings.

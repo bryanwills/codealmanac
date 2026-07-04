@@ -74,11 +74,11 @@ async function route(elements) {
       await renderFile(context, routeState.value);
       return;
     }
-    if (routeState.kind === RouteKind.JOBS) {
+    if (routeState.kind === RouteKind.RUNS) {
       await renderRuns(context);
       return;
     }
-    if (routeState.kind === RouteKind.JOB && routeState.value) {
+    if (routeState.kind === RouteKind.RUN && routeState.value) {
       await renderRun(context, routeState.value);
       return;
     }
@@ -153,12 +153,12 @@ function activeNavKind(routeState) {
   if (
     routeState.kind === RouteKind.HOME ||
     routeState.kind === RouteKind.SEARCH ||
-    routeState.kind === RouteKind.JOBS
+    routeState.kind === RouteKind.RUNS
   ) {
     return routeState.kind;
   }
-  if (routeState.kind === RouteKind.JOB) {
-    return RouteKind.JOBS;
+  if (routeState.kind === RouteKind.RUN) {
+    return RouteKind.RUNS;
   }
   return "";
 }

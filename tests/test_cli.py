@@ -1927,7 +1927,7 @@ def test_cli_local_delivery_set_and_trigger_disable(
     assert data["branch"]["delivery_mode"] == "working_tree"
 
 
-def test_cli_local_jobs_list_show_and_logs(
+def test_cli_local_runs_list_show_and_logs(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,

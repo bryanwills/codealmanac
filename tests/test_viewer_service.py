@@ -179,11 +179,11 @@ def test_viewer_file_request_rejects_paths_outside_reference_space(
         ViewerFileRequest(cwd=repo, path="../secret.txt")
 
 
-def test_viewer_jobs_expose_jobs_and_normalized_harness_events(
+def test_viewer_runs_expose_runs_and_normalized_harness_events(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    record = create_viewer_job(repo, app)
+    record = create_viewer_run(repo, app)
 
     runs = app.viewer.runs(ViewerRunsRequest(cwd=repo))
     detail = app.viewer.run(ViewerRunRequest(cwd=repo, run_id=record.run_id))
@@ -207,7 +207,7 @@ def test_viewer_jobs_expose_jobs_and_normalized_harness_events(
     assert detail.events[2].harness_event.message == "Edited auth-flow.md"
 
 
-def test_viewer_job_request_rejects_path_shaped_run_ids(
+def test_viewer_run_request_rejects_path_shaped_run_ids(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, _ = viewer_repo
@@ -222,7 +222,7 @@ def write_viewer_page(repo: Path, name: str, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def create_viewer_job(repo: Path, app: CodeAlmanac):
+def create_viewer_run(repo: Path, app: CodeAlmanac):
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,

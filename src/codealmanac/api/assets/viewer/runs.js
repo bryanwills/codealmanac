@@ -2,15 +2,15 @@ import { viewerApi } from "./api.js";
 import { emptyState, pageIntro } from "./components.js";
 import { runHref } from "./routes.js";
 
-const ACTIVE_JOB_STATUSES = new Set(["queued", "running"]);
-const JOB_POLL_INTERVAL_MS = 1500;
+const ACTIVE_RUN_STATUSES = new Set(["queued", "running"]);
+const RUN_POLL_INTERVAL_MS = 1500;
 
-let jobPollTimer = null;
+let runPollTimer = null;
 
 export function clearRunPolling() {
-  if (jobPollTimer === null) return;
-  window.clearTimeout(jobPollTimer);
-  jobPollTimer = null;
+  if (runPollTimer === null) return;
+  window.clearTimeout(runPollTimer);
+  runPollTimer = null;
 }
 
 export async function renderRuns(context) {
@@ -29,10 +29,10 @@ export async function renderRuns(context) {
   }
 }
 
-export async function renderRun(context, jobId) {
+export async function renderRun(context, runId) {
   const { elements, setRouteTitle, wiki } = context;
   const routeHash = window.location.hash;
-  const detail = await viewerApi.run(jobId, wiki);
+  const detail = await viewerApi.run(runId, wiki);
   if (window.location.hash !== routeHash) return;
   const run = detail.run;
   setRouteTitle(run.title || run.run_id);
@@ -43,23 +43,23 @@ export async function renderRun(context, jobId) {
     eventList(detail.events),
   );
   if (isActiveRunStatus(run.status)) {
-    scheduleRunPolling(routeHash, () => renderRun(context, jobId));
+    scheduleRunPolling(routeHash, () => renderRun(context, runId));
   }
 }
 
 function scheduleRunPolling(routeHash, render) {
   clearRunPolling();
-  jobPollTimer = window.setTimeout(() => {
-    jobPollTimer = null;
+  runPollTimer = window.setTimeout(() => {
+    runPollTimer = null;
     if (window.location.hash !== routeHash) return;
     render().catch((error) => {
       console.error("CodeAlmanac run refresh failed", error);
     });
-  }, JOB_POLL_INTERVAL_MS);
+  }, RUN_POLL_INTERVAL_MS);
 }
 
 function isActiveRunStatus(status) {
-  return ACTIVE_JOB_STATUSES.has(status);
+  return ACTIVE_RUN_STATUSES.has(status);
 }
 
 function runList(runs) {

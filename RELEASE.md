@@ -65,7 +65,7 @@ codealmanac search getting
 codealmanac show getting-started --lead
 codealmanac topics
 codealmanac health --json
-codealmanac jobs
+codealmanac runs list
 codealmanac sync status --from codex --quiet 0s
 codealmanac doctor --json
 codealmanac serve --host 127.0.0.1 --port 49280

@@ -63,7 +63,7 @@ class FailingAppendLedger(RunLedgerIO):
         super().append_event(almanac_path, event)
 
 
-def test_runs_service_records_job_and_events(
+def test_runs_service_records_run_and_events(
     tmp_path: Path,
     isolated_home: Path,
 ):

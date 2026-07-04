@@ -85,15 +85,15 @@ verified: 2026-07-03
 
 # Lifecycle Run Ledger
 
-Repo-local lifecycle work in the Python codebase is a run ledger, not a run subsystem. `init`, `ingest`, `garden`, and sync-started ingest work produce `RunRecord` entries with `run_id` values, event logs, durable queued specs, cancellation, attach streaming, and worker locking under `src/codealmanac/runs/`. Cloud runs and branch-triggered local control-plane runs remain separate concepts under `src/codealmanac/cloud/runs/` and `src/codealmanac/local/runs/`. Engine run artifacts and engine workspaces are a third runtime-infrastructure domain under `src/codealmanac/engine/`, exposed through `app.engine`. [@slice-85-plan] [@slice-86-plan] [@run-models] [@cloud-runs] [@local-runs] [@engine-runs] [@engine-workspaces]
+Repo-local lifecycle work in the Python codebase is recorded by a run ledger. `init`, `ingest`, `garden`, and sync-started ingest work produce `RunRecord` entries with `run_id` values, event logs, durable queued specs, cancellation, attach streaming, and worker locking under `src/codealmanac/runs/`. Cloud runs and branch-triggered local control-plane runs remain separate concepts under `src/codealmanac/cloud/runs/` and `src/codealmanac/local/runs/`. Engine run artifacts and engine workspaces are a third runtime-infrastructure domain under `src/codealmanac/engine/`, exposed through `app.engine`. [@slice-85-plan] [@slice-86-plan] [@run-models] [@cloud-runs] [@local-runs] [@engine-runs] [@engine-workspaces]
 
-The page slug is historical. Treat this page as the current home for lifecycle runs, not as evidence that new repo-local lifecycle code should use run-shaped names.
+The page slug is historical. Treat this page as the current home for lifecycle runs and use run-shaped names for new repo-local lifecycle code.
 
 ## Boundary
 
-`src/codealmanac/runs/ledger/` owns durable lifecycle observability. It defines `RunRecord`, `RunLogEvent`, `RunSpec`, `RunKind`, `RunStatus`, `RunStore`, and `RunLedgerService`; callers pass `run_id` through request objects rather than `run_id`. `src/codealmanac/runs/queue/` owns the single-writer background queue through `RunQueueWorkflow`. [@run-models] [@run-service] [@run-store] [@run-queue]
+`src/codealmanac/runs/ledger/` owns durable lifecycle observability. It defines `RunRecord`, `RunLogEvent`, `RunSpec`, `RunKind`, `RunStatus`, `RunStore`, and `RunLedgerService`; callers pass `run_id` through request objects. `src/codealmanac/runs/queue/` owns the single-writer background queue through `RunQueueWorkflow`. [@run-models] [@run-service] [@run-store] [@run-queue]
 
-The composition root wires `RunLedgerService` as `app.runs` and passes that service to the viewer, init, ingest, garden, page-run workflow, sync workflow, and queue workflow. There is no current `app.runs` facade for this repo-local lifecycle surface. [@app-composition]
+The composition root wires `RunLedgerService` as `app.runs` and passes that service to the viewer, init, ingest, garden, page-run workflow, sync workflow, and queue workflow. [@app-composition]
 
 The run noun is still correct for three other domains. Cloud runs are hosted or cloud-parallel executions started through `codealmanac runs ...`; local runs are trigger-created branch executions managed by the local control plane; engine runs are request/result material for one model-worker execution. Engine run artifacts validate IDs through `src/codealmanac/engine/run_ids.py`, so engine storage does not import local control-plane ID types. [@cloud-runs] [@local-runs] [@engine-runs] [@engine-run-ids]
 

@@ -31,7 +31,7 @@ def test_api_serves_static_assets_and_viewer_api(
     module = client.get("/assets/viewer/main.js")
     renderers_module = client.get("/assets/viewer/renderers.js")
     api_module = client.get("/assets/viewer/api.js")
-    jobs_module = client.get("/assets/viewer/runs.js")
+    runs_module = client.get("/assets/viewer/runs.js")
 
     assert index.status_code == 200
     assert "CodeAlmanac" in index.text
@@ -50,15 +50,15 @@ def test_api_serves_static_assets_and_viewer_api(
     assert "Sources" in renderers_module.text
     assert api_module.status_code == 200
     assert "withQuery" in api_module.text
-    assert jobs_module.status_code == 200
-    assert "renderRun" in jobs_module.text
-    assert "clearRunPolling" in jobs_module.text
-    assert "setTimeout" in jobs_module.text
-    assert '"queued", "running"' in jobs_module.text
-    assert "Tool display" in jobs_module.text
-    assert "Input tokens" in jobs_module.text
-    assert "Failure" in jobs_module.text
-    assert "Agent trace" in jobs_module.text
+    assert runs_module.status_code == 200
+    assert "renderRun" in runs_module.text
+    assert "clearRunPolling" in runs_module.text
+    assert "setTimeout" in runs_module.text
+    assert '"queued", "running"' in runs_module.text
+    assert "Tool display" in runs_module.text
+    assert "Input tokens" in runs_module.text
+    assert "Failure" in runs_module.text
+    assert "Agent trace" in runs_module.text
     assert overview.json()["workspace"]["name"] == "repo"
     assert overview.json()["workspaces"][0]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
@@ -74,11 +74,11 @@ def test_api_serves_static_assets_and_viewer_api(
     ]
 
 
-def test_api_serves_jobs_api_with_normalized_harness_events(
+def test_api_serves_runs_api_with_normalized_harness_events(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    record = create_server_job(repo, app)
+    record = create_server_run(repo, app)
     client = TestClient(create_api_app(app, repo))
 
     runs = client.get("/api/runs")
@@ -221,7 +221,7 @@ def write_server_page(repo: Path, name: str, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def create_server_job(repo: Path, app: CodeAlmanac):
+def create_server_run(repo: Path, app: CodeAlmanac):
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,

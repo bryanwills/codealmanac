@@ -30,7 +30,7 @@ sources:
   - id: lifecycle-architecture
     type: wiki
     slug: lifecycle-architecture
-    note: Provides the reading map for lifecycle operations, CLI commands, jobs, providers, and automation.
+    note: Provides the reading map for lifecycle operations, CLI commands, runs, providers, and automation.
   - id: wiki-lifecycle-operations
     type: wiki
     slug: wiki-lifecycle-operations
@@ -79,14 +79,14 @@ CodeAlmanac guidance is intentionally split by audience and job. `[[.almanac/REA
 
 | Task | Open first | Then read |
 | --- | --- | --- |
-| Change AI wiki write operations, job execution, or lifecycle boundaries | [[lifecycle-architecture]] | [[wiki-lifecycle-operations]], [[operation-prompts]], [[process-manager-runs]], [[lifecycle-cli]] |
+| Change AI wiki write operations, run execution, or lifecycle boundaries | [[lifecycle-architecture]] | [[wiki-lifecycle-operations]], [[operation-prompts]], [[process-manager-runs]], [[lifecycle-cli]] |
 | Change transcript sync, scheduled capture, or automation | [[capture-flow]] | [[capture-automation]], [[capture-ledger]], [[automation]], [[sessionend-hook]] |
 | Change search, file mentions, health, sources, links, or topics | [[sqlite-indexer]] | [[source-provenance]], [[wikilink-syntax]], [[topic-dag]], [[global-registry]] |
 | Change Claude, Codex, Cursor, or future provider execution | [[harness-providers]] | [[provider-lifecycle-boundary]], [[claude-agent-sdk]], [[agents-md]], [[global-agent-instructions]] |
 | Change operation prompts or wiki-writing doctrine | [[wiki-organization-primitives]] | [[operation-prompts]], [[documenting-software-architectures]], [[farzapedia]], [[source-provenance]] |
 | Change product shape, hosted GitHub workflows, or positioning | [[almanac-product-family]] | [[just-in-time-context-surfacing]], [[github-native-wiki-maintenance]], [[company-brain]], [[customer-segmentation]] |
 
-[[lifecycle-architecture]] is the current hub for the write-capable runtime: operations, CLI routing, provider execution, job records, and scheduled maintenance. [@lifecycle-architecture]
+[[lifecycle-architecture]] is the current hub for the write-capable runtime: operations, CLI routing, provider execution, run records, and scheduled maintenance. [@lifecycle-architecture]
 
 [[wiki-lifecycle-operations]] is the semantic overview for Build, Absorb, and Garden. It matters when a change affects what kind of wiki work an operation performs rather than how a provider process runs. [@wiki-lifecycle-operations]
 
@@ -102,9 +102,9 @@ CodeAlmanac guidance is intentionally split by audience and job. `[[.almanac/REA
 
 ## Core model
 
-The committed wiki source is `.almanac/README.md`, `.almanac/pages/`, and `.almanac/topics.yaml`. The derived local layer is `.almanac/index.db`, job records, logs, and viewer state. Future agents should trust current code for present-tense behavior, but the wiki usually explains why the code has its current shape. [@wiki-readme]
+The committed wiki source is `.almanac/README.md`, `.almanac/pages/`, and `.almanac/topics.yaml`. The derived local layer is `.almanac/index.db`, run records, logs, and viewer state. Future agents should trust current code for present-tense behavior, but the wiki usually explains why the code has its current shape. [@wiki-readme]
 
-The main runtime split is operations, jobs, and providers. Operations define wiki semantics, jobs record and observe one run, and providers translate a neutral spec into Claude, Codex, Cursor, or another runtime. Start with [[lifecycle-architecture]] when a change crosses those boundaries. [@lifecycle-architecture]
+The main runtime split is operations, runs, and providers. Operations define wiki semantics, runs record and observe one execution, and providers translate a neutral spec into Claude, Codex, Cursor, or another runtime. Start with [[lifecycle-architecture]] when a change crosses those boundaries. [@lifecycle-architecture]
 
 The main wiki-quality split is evidence versus navigation. `sources:` and citation markers explain why a claim is believable; wikilinks and topics explain where to read next. When a page has many source entries but few citations, treat that as source hygiene debt rather than proof that the underlying source list is useless. [@source-provenance]
 

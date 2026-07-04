@@ -188,7 +188,7 @@ def test_run_queue_skips_cancelled_queued_runs(
     assert harness.requests == []
 
 
-def test_worker_command_targets_private_job_worker_entrypoint(tmp_path: Path):
+def test_worker_command_targets_private_run_worker_entrypoint(tmp_path: Path):
     command = worker_command(SpawnRunWorkerRequest(cwd=tmp_path, wiki="docs"))
 
     assert command == [

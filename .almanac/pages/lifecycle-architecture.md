@@ -1,6 +1,6 @@
 ---
 title: Lifecycle Architecture
-summary: Lifecycle architecture is the reading map for CodeAlmanac's AI write operations, provider execution layer, repo-local job records, CLI commands, and scheduled maintenance tasks.
+summary: Lifecycle architecture is the reading map for CodeAlmanac's AI write operations, provider execution layer, repo-local run records, CLI commands, and scheduled maintenance tasks.
 topics:
   - agents
   - flows
@@ -14,19 +14,19 @@ sources:
   - id: app-composition
     type: file
     path: src/codealmanac/app.py
-    note: Wires lifecycle workflows, the job ledger, the job queue, harnesses, and viewer services through the composition root.
+    note: Wires lifecycle workflows, the run ledger, the run queue, harnesses, and viewer services through the composition root.
   - id: lifecycle-parser
     type: file
     path: src/codealmanac/cli/parser/lifecycle.py
     note: Registers public lifecycle command parsing for init and hidden sync plus dev ingest/garden wiring.
-  - id: jobs-parser
+  - id: cloud-runs-parser
     type: file
-    path: src/codealmanac/cli/parser/jobs.py
-    note: Registers the hidden jobs inspection surface with `job_id` arguments.
-  - id: jobs-layer
+    path: src/codealmanac/cli/parser/runs.py
+    note: Registers the cloud update-run surface with `run_id` arguments.
+  - id: runs-layer
     type: file
-    path: src/codealmanac/jobs/
-    note: Stores repo-local lifecycle job records, logs, queue specs, worker locks, and background queue behavior.
+    path: src/codealmanac/runs/
+    note: Stores repo-local lifecycle run records, logs, queue specs, worker locks, and background queue behavior.
   - id: harness
     type: file
     path: src/codealmanac/engine/harnesses/
@@ -62,9 +62,9 @@ verified: 2026-07-03
 
 # Lifecycle Architecture
 
-Lifecycle architecture is the cluster that explains how CodeAlmanac performs write-capable wiki work. It spans product workflows, command routing, provider-neutral harness execution, repo-local job records, transcript sync, and scheduled maintenance. [@operations] [@app-composition] [@jobs-layer] [@harness] [@automation]
+Lifecycle architecture is the cluster that explains how CodeAlmanac performs write-capable wiki work. It spans product workflows, command routing, provider-neutral harness execution, repo-local run records, transcript sync, and scheduled maintenance. [@operations] [@app-composition] [@runs-layer] [@harness] [@automation]
 
-Start with [[wiki-lifecycle-operations]] when the question is "what semantic operation is this?" Start with [[lifecycle-cli]] when the question is "what command did the user run?" Start with [[process-manager-runs]] when the question is "what happened during a lifecycle job?" Start with [[harness-providers]] when the question is "how does this reach Claude, Codex, Cursor, or another runtime?"
+Start with [[wiki-lifecycle-operations]] when the question is "what semantic operation is this?" Start with [[lifecycle-cli]] when the question is "what command did the user run?" Start with [[process-manager-runs]] when the question is "what happened during a lifecycle run?" Start with [[harness-providers]] when the question is "how does this reach Claude, Codex, Cursor, or another runtime?"
 
 ## Core Read Order
 
@@ -72,9 +72,9 @@ Start with [[wiki-lifecycle-operations]] when the question is "what semantic ope
 
 [[operation-prompts]] explains the base doctrine and operation-specific algorithms that give init, ingest, and garden their judgment rules. Prompt edits are the first place to improve wiki-writing behavior when the missing behavior is editorial judgment rather than deterministic plumbing. [@purpose-prompt] [@notability-prompt] [@init-prompt] [@ingest-prompt] [@garden-prompt]
 
-[[lifecycle-cli]] maps public commands to operations and job behavior. It is the command-surface reference for `init`, `sync`, `jobs`, `serve`, `setup`, automation, and the developer ingest/garden surfaces. [@lifecycle-parser] [@jobs-parser]
+[[lifecycle-cli]] maps public commands to operations and run behavior. It is the command-surface reference for `init`, `sync`, cloud `runs`, `local runs`, `serve`, `setup`, automation, and the developer ingest/garden surfaces. [@lifecycle-parser] [@cloud-runs-parser]
 
-[[process-manager-runs]] owns repo-local lifecycle job records, background spawn, event logs, cancellation, queue specs, worker locks, attach streaming, reindex-on-success, and jobs inspection. It is the storage and observability layer for init, ingest, garden, and sync-started ingest execution. It deliberately does not own cloud runs or branch-triggered local runs.
+[[process-manager-runs]] owns repo-local lifecycle run records, background spawn, event logs, cancellation, queue specs, worker locks, attach streaming, reindex-on-success, and run inspection. It is the storage and observability layer for init, ingest, garden, and sync-started ingest execution. It deliberately does not own cloud runs or branch-triggered local runs.
 
 [[harness-providers]] owns the runtime adapter boundary. Workflows create provider-neutral harness requests; adapters translate those requests into Claude, Codex, or future runtimes.
 
@@ -92,9 +92,9 @@ Start with [[wiki-lifecycle-operations]] when the question is "what semantic ope
 
 ## Boundaries To Preserve
 
-Lifecycle workflows own wiki semantics and construct harness requests. They do not know provider SDKs, prompt transport protocols, launchd details, or job-record file formats.
+Lifecycle workflows own wiki semantics and construct harness requests. They do not know provider SDKs, prompt transport protocols, launchd details, or run-record file formats.
 
-The jobs layer owns repo-local lifecycle execution state and durable observability. It does not decide whether a transcript is worth syncing, whether a page deserves to exist, how provider-specific auth works, or how cloud/local trigger runs are delivered.
+The runs layer owns repo-local lifecycle execution state and durable observability. It does not decide whether a transcript is worth syncing, whether a page deserves to exist, how provider-specific auth works, or how cloud/local trigger runs are delivered.
 
 Harness providers own runtime execution truth. They must reject unsupported spec fields or report unsupported capabilities rather than silently pretending a provider honored a request.
 
@@ -104,6 +104,6 @@ Agent readiness, auth checks, global instruction installation, and persisted pro
 
 ## Historical Context
 
-[[sessionend-hook]] is archived history for hook-based automatic capture. Current automatic sync is scheduler-only and must pass through sync sweep, ledger, and job records.
+[[sessionend-hook]] is archived history for hook-based automatic capture. Current automatic sync is scheduler-only and must pass through sync sweep, ledger, and run records.
 
 Deleted bootstrap/build surfaces and the old writer/reviewer capture pipeline are historical names. Current runtime guidance should point to `codealmanac init`, [[wiki-lifecycle-operations]], [[operation-prompts]], and [[process-manager-runs]].
