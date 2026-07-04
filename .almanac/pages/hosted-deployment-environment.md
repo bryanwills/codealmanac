@@ -1,6 +1,6 @@
 ---
 title: Hosted Deployment Environment
-summary: Almanac for GitHub currently uses the `usealmanac` repository and a `codealmanac` provider namespace across Vercel, Render, Supabase, Modal, and Doppler.
+summary: CodeAlmanac hosted uses the `codealmanac-hosted` project and `codealmanac_hosted` backend package across Vercel, Render, Supabase, Modal, and Doppler.
 topics: [product-positioning, stack]
 sources:
   - id: external-providers-doc
@@ -24,21 +24,31 @@ sources:
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/05/31/rollout-2026-05-31T23-31-46-019e8173-bc02-7503-a102-e9de99d6bb9c.jsonl
     note: Records the 2026-06-05 production smoke that retried the Almanac check after the model quota reset, fixed duplicate GitHub webhook delivery processing, redeployed Render at commit 05ead0e, and verified a same-repository Almanac bot commit on PR 12.
+  - id: hosted-package-namespace-slice
+    type: git
+    revision_range: 53389d129b1b852474e8e27e3c6a25604e203d42..95883abb239351def6948e6a7b0c0519a5854b4b
+    note: Records the Slice 87 hosted package and worker namespace update, including `codealmanac_hosted`, the new Modal worker path, live Render deploy `dep-d941j7m7r5hc73cd5ij0`, and Vercel production project `thealmanac/codealmanac-hosted`.
 status: active
-verified: 2026-06-05
+verified: 2026-07-03
 ---
 
-The hosted Almanac for GitHub environment is split between the `usealmanac` application repository and a `codealmanac` provider namespace. `usealmanac` is the code home for the hosted frontend, FastAPI backend, Modal worker scaffold, provider docs, and local deployment configuration, while `codealmanac` is the shared resource name used for Supabase, Doppler, Modal secrets, and the Render backend service [@external-providers-doc].
+The hosted CodeAlmanac environment now centers on the `codealmanac-hosted` application project and a `codealmanac` provider namespace. The hosted backend package is `codealmanac_hosted`; the Modal worker lives under `backend/src/codealmanac_hosted/worker/`; Render, Modal, live-audit scripts, tests, and deployment docs use that package name after the Slice 87 hosted namespace cleanup [@hosted-package-namespace-slice]. Older setup records use the `usealmanac` repository name because that was the code home when the first GitHub App, Render, Supabase, Modal, and Doppler resources were created [@external-providers-doc] [@provider-setup-session].
 
 ## Provider Roles
 
-Vercel hosts the Next frontend from the existing `usealmanac` project. Render hosts the Python FastAPI backend through the working Docker service `codealmanac-backend`. Supabase is the hosted database and project state store. Modal runs async worker and sandbox jobs under the hosted worker path. Doppler stores shared deployment and local-development secrets. The GitHub App owns webhooks, installation authentication, checks, pull requests, and repository writes [@external-providers-doc] [@provider-setup-session].
+Vercel hosts the Next frontend from the `codealmanac-hosted` project. Render hosts the Python FastAPI backend through the working Docker service `codealmanac-backend`. Supabase is the hosted database and project state store. Modal runs async worker and sandbox jobs from the `codealmanac_hosted.worker` package path. Doppler stores shared deployment and local-development secrets. The GitHub App owns webhooks, installation authentication, checks, pull requests, and repository writes [@hosted-package-namespace-slice] [@external-providers-doc] [@provider-setup-session].
 
 The deployment boundary matches [[github-native-wiki-maintenance]]: hosted infrastructure can receive GitHub events, run jobs, and publish Almanac-root changes, but durable project memory still lands as reviewed markdown in Git. Provider state is deployment/configuration state, not a product table inside the application database; the `usealmanac` provider doc explicitly rejects an `external_app_setup_status` table for v1 [@external-providers-doc].
 
 ## Current Resource State
 
-As of 2026-06-03, Vercel is linked locally to `thealmanac/usealmanac`, and the production frontend URL is `https://usealmanac.com` [@provider-setup-session].
+As of 2026-07-03, Vercel production is linked to project `thealmanac/codealmanac-hosted`, deployment `dpl_BNAWQDiWydrtXUXfM1D4f61FiwCB` is `Ready`, and `www.codealmanac.com` plus `codealmanac.com` are production aliases [@hosted-package-namespace-slice].
+
+Render service `srv-d8g8nb37uimc739vnnsg` remains the live backend service. The live deploy recorded after the package rename is `dep-d941j7m7r5hc73cd5ij0` for hosted commit `89d97c3`; `https://api.codealmanac.com/api/health` returned `{"status":"ok"}` after that deploy [@hosted-package-namespace-slice].
+
+Modal app `codealmanac-hosted-updates` is deployed from `backend/src/codealmanac_hosted/worker/updates_worker.py`. The smoke command now runs through `PYTHONPATH=src uv run modal`, builds the worker image, hydrates Doppler inside the remote worker, and returns a small status payload without triggering a real update run [@hosted-package-namespace-slice].
+
+The 2026-06-03 setup record linked Vercel locally to `thealmanac/usealmanac`, and the production frontend URL was `https://usealmanac.com` at that time [@provider-setup-session].
 
 Supabase project `codealmanac` exists in `us-east-1` with ref `amlownbvhsmnuhqofknb`, and the local `supabase/` directory in `usealmanac` is linked to that project [@external-providers-doc]. The setup run verified the project status as `ACTIVE_HEALTHY` [@provider-setup-session].
 

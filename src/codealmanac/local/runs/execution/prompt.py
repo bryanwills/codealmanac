@@ -3,15 +3,11 @@ from codealmanac.local.runs.kinds import LocalRunKind
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
 
 UPDATE_PROMPT_SECTIONS = (
-    PromptName.BASE_PURPOSE,
-    PromptName.BASE_NOTABILITY,
-    PromptName.BASE_SYNTAX,
+    PromptName.BASE_KERNEL,
     PromptName.OPERATION_UPDATE,
 )
 GARDEN_PROMPT_SECTIONS = (
-    PromptName.BASE_PURPOSE,
-    PromptName.BASE_NOTABILITY,
-    PromptName.BASE_SYNTAX,
+    PromptName.BASE_KERNEL,
     PromptName.OPERATION_GARDEN,
 )
 

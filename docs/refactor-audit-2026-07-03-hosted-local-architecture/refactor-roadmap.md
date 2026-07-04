@@ -22,6 +22,8 @@ Do not start broad moves until this map is stable.
 
 ## Slice B: Hosted Package Rename and Edge Split
 
+Status: partially complete.
+
 Goal:
 
 ```text
@@ -31,6 +33,18 @@ server -> codealmanac_hosted/web
 ```
 
 This is high blast radius but mostly mechanical.
+
+Completed in Slice 87:
+
+- `backend/src/almanac/` -> `backend/src/codealmanac_hosted/`
+- `backend/modal_app/` -> `backend/src/codealmanac_hosted/worker/`
+- Render and Modal deploy surfaces point at `codealmanac_hosted`
+
+Remaining:
+
+- decide whether the FastAPI edge should stay `server/` or become `web/`
+- if it becomes `web/`, do it as a separate behavior-preserving edge rename
+  after the package rename has settled
 
 Tests:
 
@@ -42,6 +56,8 @@ Tests:
 - frontend build if API imports generated values
 
 ## Slice C: Hosted `updates` Split
+
+Status: partially complete.
 
 Goal:
 
@@ -56,6 +72,24 @@ services/updates ->
 Do this after the package rename, not before, to avoid moving the same files twice.
 
 Use a Unit of Work if one API/webhook action writes multiple tables together.
+
+Completed in Slice 88:
+
+- `services/updates/triggers/` owns update starters: branch pushes, pull
+  requests, manual branch runs, initial wiki runs, and conversation-ingest
+  scheduling.
+- `services/updates/runs/` owns durable run lifecycle and persistence: queueing,
+  tables, records, store, queries, cancellation, retry, completion, and worker
+  invocation.
+- `services/updates/delivery/` owns delivery application and bundle/path
+  validation.
+- `services/updates/service.py` remains the public use-case facade.
+
+Remaining:
+
+- decide whether source-bundle ownership should move into a first-class hosted
+  update `sources/` package or remain owned by the existing conversations
+  domain until a second source type forces the seam
 
 ## Slice D: Hosted Events Rename
 
