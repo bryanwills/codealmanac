@@ -9,6 +9,10 @@ from codealmanac.engine.harnesses.models import (
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.harnesses.codex.errors import CodexAppServerError
+from codealmanac.integrations.harnesses.codex.event_sink import (
+    record_harness_event,
+    record_harness_events,
+)
 from codealmanac.integrations.harnesses.codex.events import (
     CodexRunState,
     done_event,
@@ -20,9 +24,7 @@ from codealmanac.integrations.harnesses.codex.fields import (
     as_record,
     string_field,
 )
-from codealmanac.integrations.harnesses.codex.responses import (
-    noninteractive_response,
-)
+from codealmanac.integrations.harnesses.codex.responses import noninteractive_response
 from codealmanac.integrations.harnesses.codex.rpc import (
     JsonRpcLineProcess,
     is_server_request,
@@ -121,8 +123,8 @@ class CodexAppServerClient:
                 )
             state.provider_session_id = thread_id
             state.root_thread_id = thread_id
-            self.record_harness_event(
-                request,
+            record_harness_event(
+                request.event_sink,
                 events,
                 provider_session_event(thread_id),
             )
@@ -184,8 +186,8 @@ class CodexAppServerClient:
                     raise CodexAppServerError(f"Codex app-server {method}: {detail}")
                 return message.get("result")
             if string_field(message, "method") is not None:
-                self.record_harness_events(
-                    request,
+                record_harness_events(
+                    request.event_sink,
                     events,
                     map_codex_notification(message, state),
                 )
@@ -209,31 +211,12 @@ class CodexAppServerClient:
                 continue
             is_root_completion = root_turn_completion(message, state)
             mapped = map_codex_notification(message, state, is_root_completion)
-            self.record_harness_events(request, events, mapped)
+            record_harness_events(request.event_sink, events, mapped)
             if method == "error":
                 return result_from_state(state, events)
             if method == "turn/completed" and is_root_completion:
-                self.record_harness_event(request, events, done_event(state))
+                record_harness_event(request.event_sink, events, done_event(state))
                 return result_from_state(state, events)
-
-    def record_harness_events(
-        self,
-        request: RunHarnessRequest,
-        events: list[HarnessEvent],
-        new_events: tuple[HarnessEvent, ...],
-    ) -> None:
-        for event in new_events:
-            self.record_harness_event(request, events, event)
-
-    def record_harness_event(
-        self,
-        request: RunHarnessRequest,
-        events: list[HarnessEvent],
-        event: HarnessEvent,
-    ) -> None:
-        events.append(event)
-        if request.event_sink is not None:
-            request.event_sink(event)
 
     def respond_to_server_request(
         self,
