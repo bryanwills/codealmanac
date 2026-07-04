@@ -1731,3 +1731,13 @@ Known residue:
   `local update`, and `local jobs`; and private
   `codealmanac-local-trigger` / `codealmanac-local-worker` entrypoints exposed
   help successfully.
+- Publish evidence: GitHub Actions run `28690993407` published
+  `codealmanac` `0.1.10` from `main` after passing tests, lint, diff hygiene,
+  build, artifact checks, artifact upload, and PyPI upload.
+- Public install evidence: a fresh temp-home install with
+  `uv tool install --python 3.12 --refresh --no-cache --force
+  codealmanac==0.1.10` succeeded after PyPI propagation. The installed package
+  returned version `0.1.10`, exposed `codealmanac`,
+  `codealmanac-local-trigger`, and `codealmanac-local-worker`, and kept stale
+  `sync`, root scheduled `automation`, `local update`, and `local jobs` help
+  text out of the launch-facing CLI.

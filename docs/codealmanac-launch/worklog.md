@@ -2625,3 +2625,18 @@
   `codealmanac-local-trigger` / `codealmanac-local-worker` entrypoints, and
   rejected stale launch-facing `sync`, `automation`, `local update`, and
   `local jobs` help text.
+- Pushed release branch `codex/cli-run-surface-release` and fast-forwarded
+  `main` from `4f79c161` to `3c1aeaa`.
+- Published `codealmanac` `0.1.10` to PyPI through GitHub Actions run
+  `28690993407`. The workflow passed tests, lint, diff hygiene, build,
+  artifact checks, artifact upload, and PyPI upload.
+- Fresh public install smoke passed from a temp `HOME` with
+  `uv tool install --python 3.12 --refresh --no-cache --force
+  codealmanac==0.1.10`. The first attempt hit PyPI propagation; the second
+  installed `0.1.10`.
+- Public smoke verified `codealmanac --version`, root/local help, private
+  `codealmanac-local-trigger` / `codealmanac-local-worker` entrypoints, and
+  absence of stale launch-facing `sync`, root scheduled `automation`,
+  `local update`, and `local jobs` help text.
+- RelayForge update sent through binding `rohan-codex-019f05b3` with the public
+  install evidence and 100% status for CLI/public UX.

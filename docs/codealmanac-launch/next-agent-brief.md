@@ -62,6 +62,12 @@ direction.
   `28672818638`; a fresh public `uv tool install --python 3.12 --refresh
   --no-cache --force codealmanac==0.1.9` smoke passed for version, root
   uninstall help/JSON, and explicit `codealmanac automation uninstall`.
+- PyPI `codealmanac` `0.1.10` is published from GitHub Actions run
+  `28690993407`; a fresh public temp-home install with `uv tool install
+  --python 3.12 --refresh --no-cache --force codealmanac==0.1.10` passed for
+  version, root/local help, private local trigger/worker entrypoints, and
+  absence of stale `sync`, root scheduled `automation`, `local update`, and
+  `local jobs` help text.
 - Chrome verified the production CLI setup handshake again from an isolated
   temp `HOME`; `codealmanac setup --no-browser --target codex --yes` approved
   through `/cli-login` and completed as `rohans0509`.
@@ -852,6 +858,16 @@ repaired.
   `codealmanac-local-trigger` and `codealmanac-local-worker` entrypoints, and
   absence of stale launch help for `sync`, root scheduled `automation`,
   `local update`, and `local jobs`.
-- Next step: commit the version/release-prep changes, push the release branch,
-  fast-forward `main`, run `publish.yml` with `confirm_version=0.1.10`, then
-  public-smoke PyPI before sending the RelayForge update.
+- Release branch `codex/cli-run-surface-release` and `main` have both been
+  pushed through commit `3c1aeaa`.
+- GitHub Actions publish run `28690993407` passed and published
+  `codealmanac` `0.1.10` to PyPI.
+- Fresh public temp-home install passed with `uv tool install --python 3.12
+  --refresh --no-cache --force codealmanac==0.1.10`.
+- Public smoke proved version `0.1.10`, root/local help, private
+  `codealmanac-local-trigger` and `codealmanac-local-worker` entrypoints, and
+  absence of stale launch help for `sync`, root scheduled `automation`,
+  `local update`, and `local jobs`.
+- RelayForge update was sent through `rohan-codex-019f05b3`.
+- Next step: continue the larger code-quality and hosted/local architecture
+  cleanup.

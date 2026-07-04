@@ -1,31 +1,32 @@
 # Launch Progress
 
 Status: active.
-Updated: 2026-07-03.
+Updated: 2026-07-04.
 
 This file tracks the rough percentage estimates used in RelayForge updates.
 Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-03 after Slice 86 CodeAlmanac engine runs/workspaces.
+Sent: 2026-07-04 after Slice 90 CLI 0.1.10 release.
 
 Route:
 
 ```bash
 doppler run --project almanac --config dev -- \
   relayforge reply \
-  --config /Users/rohan/Desktop/Projects/relayforge/relay.config.json \
-  --binding rohan-almanac-main "..."
+  "CLI breaking surface is done. Published codealmanac 0.1.10 ..." \
+  --config /Users/rohan/Desktop/Projects/relayforge/relay.config.json
 ```
 
-Slice 86 moved engine run artifacts into `src/codealmanac/engine/runs/` and
-detached engine workspace management into `src/codealmanac/engine/workspaces/`.
-The composition root now has `app.engine.runs` and `app.engine.workspaces`, and
-local run preparation/execution/delivery are wired through that engine facade.
-Focused verification passed with `96 passed`; full local verification passed
-with `uv run ruff check src tests`, `uv run pytest -q --tb=short`
-(`514 passed`), and `git diff --check`.
+Result: `sent via rohan-codex-019f05b3`.
+
+Slice 90 published `codealmanac` `0.1.10` from `main` through GitHub Actions
+run `28690993407`. Public temp-home install smoke passed with `uv tool install
+--python 3.12 --refresh --no-cache --force codealmanac==0.1.10`; the installed
+CLI returned `0.1.10`, exposed `codealmanac`, `codealmanac-local-trigger`, and
+`codealmanac-local-worker`, and kept stale launch-facing `sync`, root scheduled
+`automation`, `local update`, and `local jobs` help text out of root/local help.
 
 ## Latest Local Notes
 
@@ -62,11 +63,11 @@ with `uv run ruff check src tests`, `uv run pytest -q --tb=short`
 
 | Area | Latest | Previous | Basis |
 | --- | ---: | ---: | --- |
-| CodeAlmanac backend/local | 100% | 99.9% | Slice 86 moved engine run artifacts/workspaces under `src/codealmanac/engine/`, added the `app.engine` facade, and passed focused/full gates. |
-| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.9` passed public install smoke; root uninstall is now scoped to setup-owned artifacts, while automation teardown remains explicit. |
+| CodeAlmanac backend/local | 100% | 100% | Slice 89 removed the old sync/automation implementation path and aligned local execution/history on `local runs`; Slice 90 public smoke verified the packaged private local trigger/worker entrypoints. |
+| CodeAlmanac CLI/public UX | 100% | 100% | Published CLI `0.1.10` passed public install smoke; stale launch-facing `sync`, root scheduled `automation`, `local update`, and `local jobs` help text is gone. |
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Slice 76 shipped repository readiness, capture handoff, maintained branches, and per-branch delivery to Vercel; Chrome verified production with no console errors. |
-| Infra/deploy rename | 100% | 99% | Vercel now targets `thealmanac/codealmanac-hosted`, Render health is live, and Modal `codealmanac-hosted-updates` was redeployed with current `codealmanac` `0.1.9` engine logs. |
+| Infra/deploy rename | 100% | 100% | Vercel targets `thealmanac/codealmanac-hosted`, Render health is live, Modal `codealmanac-hosted-updates` was redeployed, and PyPI `codealmanac` `0.1.10` is live. |
 
 ## Update Rule
 
