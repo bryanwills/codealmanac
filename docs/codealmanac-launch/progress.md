@@ -8,7 +8,7 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-04 after Slice 91 CLI 0.1.11 release.
+Sent: 2026-07-04 after the `0.1.12` setup/capture release.
 
 Route:
 
@@ -36,6 +36,11 @@ Fresh `uvx --python 3.12 --refresh --no-cache --from codealmanac==0.1.12`
 smoke returned version `0.1.12` and showed the updated setup help.
 Hosted `main` was fast-forwarded to `748c8ed` and Vercel deploy run
 `28694096088` succeeded.
+
+Slice 92 is local architecture cleanup, not a new public package release. It
+renamed the local viewer HTTP edge from `codealmanac.server` to
+`codealmanac.api`, updated wheel asset packaging, and passed the local
+source/package gates.
 
 ## Latest Local Notes
 
@@ -77,6 +82,7 @@ Hosted `main` was fast-forwarded to `748c8ed` and Vercel deploy run
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Hosted `main` is at `748c8ed`; Vercel deploy run `28694096088` succeeded with setup/onboarding copy aligned to `codealmanac setup` owning capture. |
 | Infra/deploy rename | 100% | 100% | Vercel targets `thealmanac/codealmanac-hosted`, Render `/api/health` is live, Modal `codealmanac-hosted-updates` was redeployed earlier, and PyPI `codealmanac` `0.1.12` is live. |
+| Codebase architecture quality | 88% | 86% | Slice 92 removed stale local `server` naming from active Python and added a guard for the `api` edge. Remaining quality work is broader domain/package cleanup and live signed-in verification. |
 
 ## Update Rule
 

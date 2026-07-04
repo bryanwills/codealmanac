@@ -672,7 +672,7 @@ repaired.
   `uv run pytest tests/test_runs_service.py tests/test_run_queue_workflow.py
   tests/test_cli.py tests/test_sync_workflow.py tests/test_init_workflow.py
   tests/test_ingest_workflow.py tests/test_garden_workflow.py
-  tests/test_viewer_service.py tests/test_server.py tests/test_maintenance_api.py
+  tests/test_viewer_service.py tests/test_api.py tests/test_maintenance_api.py
   tests/test_architecture.py -q --tb=short` (`217 passed`);
   `uv run ruff check src tests`; `uv run pytest -q --tb=short`
   (`513 passed`); `git diff --check`.
@@ -906,3 +906,16 @@ repaired.
   `codealmanac-job-worker`, keeps the local private trigger/worker scripts, and
   adds `codealmanac capture inspect`.
 - Text Discord only after `0.1.11` is published and fresh-install smoke-tested.
+
+## Current Slice 92 Local API Edge Handoff
+
+- Local CodeAlmanac now uses `src/codealmanac/api/` for the FastAPI viewer edge.
+- `src/codealmanac/server/` was removed from active code.
+- `codealmanac serve` imports `codealmanac.api.app.create_api_app`.
+- Architecture tests guard against reintroducing `codealmanac.server`.
+- Verification passed with `uv run pytest -q` (`480 passed`), `uv run ruff
+  check src tests`, `uv run ruff format --check src tests`, compileall, Twine
+  check, wheel asset inspection, and `git diff --check`.
+- `uv run ruff check .` still fails because of unrelated, untracked Python
+  files under `docs/research/harness-framework/`; do not treat that as a Slice
+  92 regression unless that research folder is brought into scope.

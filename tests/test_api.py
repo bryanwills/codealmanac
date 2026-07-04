@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from codealmanac.api.app import create_api_app
 from codealmanac.app import CodeAlmanac
 from codealmanac.engine.harnesses.models import HarnessEvent, HarnessEventKind
 from codealmanac.jobs.ledger.models import JobEventKind, JobOperation, JobStatus
@@ -11,15 +12,14 @@ from codealmanac.jobs.ledger.requests import (
     RecordJobEventRequest,
     StartJobRequest,
 )
-from codealmanac.server.app import create_server_app
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 
 
-def test_server_serves_static_assets_and_viewer_api(
+def test_api_serves_static_assets_and_viewer_api(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     index = client.get("/")
     overview = client.get("/api/overview")
@@ -74,12 +74,12 @@ def test_server_serves_static_assets_and_viewer_api(
     ]
 
 
-def test_server_serves_jobs_api_with_normalized_harness_events(
+def test_api_serves_jobs_api_with_normalized_harness_events(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
     record = create_server_job(repo, app)
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     jobs = client.get("/api/jobs")
     detail = client.get(f"/api/jobs/{record.job_id}")
@@ -96,7 +96,7 @@ def test_server_serves_jobs_api_with_normalized_harness_events(
     )
 
 
-def test_server_viewer_api_switches_between_registered_wikis(
+def test_api_viewer_api_switches_between_registered_wikis(
     viewer_repo: tuple[Path, CodeAlmanac],
     tmp_path: Path,
 ):
@@ -118,7 +118,7 @@ topics: [operations]
 Tracks operational decisions.
 """,
     )
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     overview = client.get("/api/overview")
     other_overview = client.get("/api/overview", params={"wiki": other.workspace_id})
@@ -126,7 +126,7 @@ Tracks operational decisions.
         "/api/page/ops-note",
         params={"wiki": other.workspace_id},
     )
-    locked_client = TestClient(create_server_app(app, repo, other.workspace_id))
+    locked_client = TestClient(create_api_app(app, repo, other.workspace_id))
     locked_overview = locked_client.get("/api/overview")
     locked_page = locked_client.get("/api/page/ops-note")
 
@@ -149,11 +149,11 @@ Tracks operational decisions.
     assert locked_page.json()["slug"] == "ops-note"
 
 
-def test_server_maps_product_errors_to_http_statuses(
+def test_api_maps_product_errors_to_http_statuses(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     response = client.get("/api/page/missing")
 
@@ -161,11 +161,11 @@ def test_server_maps_product_errors_to_http_statuses(
     assert response.json()["detail"]["code"] == "not_found"
 
 
-def test_server_maps_request_validation_errors_to_http_statuses(
+def test_api_maps_request_validation_errors_to_http_statuses(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     response = client.get("/api/search", params={"limit": "-1"})
 
@@ -173,11 +173,11 @@ def test_server_maps_request_validation_errors_to_http_statuses(
     assert response.json()["detail"]["code"] == "validation_failed"
 
 
-def test_server_rejects_invalid_file_reference_paths(
+def test_api_rejects_invalid_file_reference_paths(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     response = client.get("/api/file", params={"path": "../secret.txt"})
 
@@ -185,11 +185,11 @@ def test_server_rejects_invalid_file_reference_paths(
     assert response.json()["detail"]["code"] == "validation_failed"
 
 
-def test_server_rejects_invalid_static_asset_paths(
+def test_api_rejects_invalid_static_asset_paths(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     traversal = client.get("/assets/%2E%2E/app.js")
     missing = client.get("/assets/viewer/missing.js")
@@ -203,11 +203,11 @@ def test_server_rejects_invalid_static_asset_paths(
     assert unsupported.json()["detail"]["code"] == "validation_failed"
 
 
-def test_server_rejects_path_shaped_job_ids(
+def test_api_rejects_path_shaped_job_ids(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
-    client = TestClient(create_server_app(app, repo))
+    client = TestClient(create_api_app(app, repo))
 
     response = client.get("/api/jobs/..secret")
 

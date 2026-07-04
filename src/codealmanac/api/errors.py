@@ -5,9 +5,9 @@ from pydantic import ValidationError
 from codealmanac.core.errors import CodeAlmanacError, ConflictError, NotFoundError
 
 
-def register_error_handlers(server: FastAPI) -> None:
-    server.add_exception_handler(CodeAlmanacError, product_error_response)
-    server.add_exception_handler(ValidationError, validation_error_response)
+def register_error_handlers(api: FastAPI) -> None:
+    api.add_exception_handler(CodeAlmanacError, product_error_response)
+    api.add_exception_handler(ValidationError, validation_error_response)
 
 
 async def product_error_response(

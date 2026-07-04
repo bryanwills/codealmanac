@@ -2508,7 +2508,7 @@
   `uv run pytest tests/test_runs_service.py tests/test_run_queue_workflow.py
   tests/test_cli.py tests/test_sync_workflow.py tests/test_init_workflow.py
   tests/test_ingest_workflow.py tests/test_garden_workflow.py
-  tests/test_viewer_service.py tests/test_server.py tests/test_maintenance_api.py
+  tests/test_viewer_service.py tests/test_api.py tests/test_maintenance_api.py
   tests/test_architecture.py -q --tb=short` (`217 passed`).
 - Full Slice 85 verification passed with `uv run ruff check src tests`,
   `uv run pytest -q --tb=short` (`513 passed`), and `git diff --check`.
@@ -2715,3 +2715,35 @@
   `{"status":"ok"}` and `/login` redirects through WorkOS/AuthKit. The bare
   `/health` path returns 404 because the deployed health endpoint is namespaced
   under `/api/health`.
+
+## 2026-07-04 Slice 92 Local API Edge Naming
+
+- Renamed the local viewer HTTP edge package from `src/codealmanac/server/` to
+  `src/codealmanac/api/`.
+- Renamed `api_routes.py` to `routes.py` so the package reads as an API edge,
+  not a generic server.
+- Updated `codealmanac serve` to import `create_api_app`.
+- Updated package-data paths so wheels include `codealmanac/api/assets/...`.
+- Added an architecture guard that active Python code no longer imports
+  `codealmanac.server` and that `src/codealmanac/server/` does not return.
+- Focused verification passed:
+  - `uv run pytest tests/test_api.py
+    tests/test_architecture.py::test_api_app_stays_composition_root
+    tests/test_architecture.py::test_local_http_edge_uses_api_package_name
+    tests/test_architecture.py::test_viewer_jobs_surface_stays_read_only -q`
+    (`11 passed`)
+  - `uv run ruff check src/codealmanac/api
+    src/codealmanac/cli/dispatch/serve.py tests/test_api.py
+    tests/test_architecture.py`
+- Full source verification passed:
+  - `uv run pytest -q` (`480 passed`)
+  - `uv run ruff check src tests`
+  - `uv run ruff format --check src tests`
+  - `uv run python -m compileall src -q`
+  - `uvx twine check dist-release-check/*`
+  - `git diff --check`
+- Package verification proved the wheel includes `codealmanac/api/assets/...`
+  and no `codealmanac/server/assets/...` entries.
+- `uv run ruff check .` is not a valid current gate while the unrelated,
+  untracked `docs/research/harness-framework/` Python source dump is present;
+  that research folder is outside this slice and remains unstaged.

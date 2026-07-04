@@ -695,7 +695,7 @@ def test_active_python_model_has_no_page_archive_lineage():
 
 
 def test_serve_css_does_not_scale_type_with_viewport_width():
-    css = (SRC_ROOT / "server/assets/app.css").read_text(encoding="utf-8")
+    css = (SRC_ROOT / "api/assets/app.css").read_text(encoding="utf-8")
 
     assert "clamp(" not in css
     assert "vw" not in css
@@ -1293,7 +1293,7 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
         "UnlinkTopicRequest",
         "DropWorkspaceRequest",
         "uvicorn",
-        "create_server_app",
+        "create_api_app",
     )
 
     assert len(dispatch_root.splitlines()) <= 80
@@ -1322,7 +1322,7 @@ def test_cli_dispatch_edge_is_split_by_command_domain():
     assert "CreateTopicRequest" in dispatch_topics
     assert "ListTopicsRequest" in dispatch_topics
     assert "DropWorkspaceRequest" in dispatch_workspaces
-    assert "create_server_app" in dispatch_serve
+    assert "create_api_app" in dispatch_serve
 
 
 def test_cli_admin_dispatch_stays_split_by_command_family():
@@ -1956,8 +1956,8 @@ def test_viewer_jobs_surface_stays_read_only():
     paths = (
         SRC_ROOT / "wiki/viewer/service.py",
         SRC_ROOT / "wiki/viewer/jobs.py",
-        SRC_ROOT / "server/app.py",
-        SRC_ROOT / "server/api_routes.py",
+        SRC_ROOT / "api/app.py",
+        SRC_ROOT / "api/routes.py",
     )
     forbidden_fragments = (
         "CancelJobRequest",
@@ -1977,15 +1977,15 @@ def test_viewer_jobs_surface_stays_read_only():
     assert offenders == []
 
 
-def test_server_app_stays_composition_root():
-    server_root = SRC_ROOT / "server"
-    app_text = (server_root / "app.py").read_text(encoding="utf-8")
-    api_text = (server_root / "api_routes.py").read_text(encoding="utf-8")
-    static_routes_text = (server_root / "static_routes.py").read_text(encoding="utf-8")
-    static_assets_text = (server_root / "static_assets.py").read_text(encoding="utf-8")
-    errors_text = (server_root / "errors.py").read_text(encoding="utf-8")
+def test_api_app_stays_composition_root():
+    api_root = SRC_ROOT / "api"
+    app_text = (api_root / "app.py").read_text(encoding="utf-8")
+    routes_text = (api_root / "routes.py").read_text(encoding="utf-8")
+    static_routes_text = (api_root / "static_routes.py").read_text(encoding="utf-8")
+    static_assets_text = (api_root / "static_assets.py").read_text(encoding="utf-8")
+    errors_text = (api_root / "errors.py").read_text(encoding="utf-8")
     forbidden_app_fragments = (
-        "@server.get",
+        "@api.get",
         "resources.files",
         "HTTPException",
         "JSONResponse",
@@ -2000,27 +2000,47 @@ def test_server_app_stays_composition_root():
     assert [
         fragment for fragment in forbidden_app_fragments if fragment in app_text
     ] == []
-    assert "register_error_handlers(server)" in app_text
-    assert "register_api_routes(" in app_text
-    assert "register_static_routes(server)" in app_text
+    assert "register_error_handlers(api)" in app_text
+    assert "register_routes(" in app_text
+    assert "register_static_routes(api)" in app_text
 
-    assert '@server.get("/api/overview"' in api_text
-    assert "ViewerOverviewRequest(" in api_text
-    assert "context.codealmanac.viewer" in api_text
-    assert "resources.files" not in api_text
-    assert "CodeAlmanacError" not in api_text
+    assert '@api.get("/api/overview"' in routes_text
+    assert "ViewerOverviewRequest(" in routes_text
+    assert "context.codealmanac.viewer" in routes_text
+    assert "resources.files" not in routes_text
+    assert "CodeAlmanacError" not in routes_text
 
-    assert '@server.get("/assets/{asset_path:path}"' in static_routes_text
+    assert '@api.get("/assets/{asset_path:path}"' in static_routes_text
     assert "asset_response(asset_path)" in static_routes_text
     assert "ViewerOverviewRequest" not in static_routes_text
 
     assert "class StaticAssetRequest" in static_assets_text
-    assert 'resources.files("codealmanac.server.assets")' in static_assets_text
+    assert 'resources.files("codealmanac.api.assets")' in static_assets_text
     assert "ViewerOverviewRequest" not in static_assets_text
 
     assert "CodeAlmanacError" in errors_text
     assert "ValidationError" in errors_text
     assert "ViewerOverviewRequest" not in errors_text
+
+
+def test_local_http_edge_uses_api_package_name():
+    assert (SRC_ROOT / "api").is_dir()
+    assert not (SRC_ROOT / "server").exists()
+
+    stale_package = "codealmanac" + ".server"
+    active_paths = [
+        path
+        for root in (SRC_ROOT, PROJECT_ROOT / "tests")
+        for path in root.rglob("*.py")
+        if "__pycache__" not in path.parts
+    ]
+    stale_imports = [
+        str(path.relative_to(PROJECT_ROOT))
+        for path in active_paths
+        if stale_package in path.read_text(encoding="utf-8")
+    ]
+
+    assert stale_imports == []
 
 
 def test_job_id_validation_is_owned_by_job_models():

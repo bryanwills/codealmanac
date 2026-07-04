@@ -25,7 +25,7 @@ from codealmanac.wiki.viewer.requests import (
 
 
 @dataclass(frozen=True)
-class ServerApiContext:
+class ApiContext:
     codealmanac: CodeAlmanac
     cwd: Path
     scope_wiki: str | None = None
@@ -34,8 +34,8 @@ class ServerApiContext:
         return self.scope_wiki or request_wiki
 
 
-def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
-    @server.get("/api/overview", response_model=ViewerOverview)
+def register_routes(api: FastAPI, context: ApiContext) -> None:
+    @api.get("/api/overview", response_model=ViewerOverview)
     def overview(wiki: str | None = None) -> ViewerOverview:
         return context.codealmanac.viewer.overview(
             ViewerOverviewRequest(
@@ -45,7 +45,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/page/{slug}", response_model=ViewerPage)
+    @api.get("/api/page/{slug}", response_model=ViewerPage)
     def page(slug: str, wiki: str | None = None) -> ViewerPage:
         return context.codealmanac.viewer.page(
             ViewerPageRequest(
@@ -55,7 +55,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/search", response_model=ViewerSearch)
+    @api.get("/api/search", response_model=ViewerSearch)
     def search(
         q: str | None = None,
         limit: int = 50,
@@ -70,7 +70,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/file", response_model=ViewerFile)
+    @api.get("/api/file", response_model=ViewerFile)
     def file_route(
         path: str,
         limit: int = 50,
@@ -85,7 +85,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/topic/{slug}", response_model=ViewerTopic)
+    @api.get("/api/topic/{slug}", response_model=ViewerTopic)
     def topic(
         slug: str,
         descendants: bool = False,
@@ -100,7 +100,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/jobs", response_model=ViewerJobs)
+    @api.get("/api/jobs", response_model=ViewerJobs)
     def jobs(limit: int | None = None, wiki: str | None = None) -> ViewerJobs:
         return context.codealmanac.viewer.jobs(
             ViewerJobsRequest(
@@ -110,7 +110,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/jobs/{job_id}", response_model=ViewerJob)
+    @api.get("/api/jobs/{job_id}", response_model=ViewerJob)
     def job(job_id: str, wiki: str | None = None) -> ViewerJob:
         return context.codealmanac.viewer.job(
             ViewerJobRequest(

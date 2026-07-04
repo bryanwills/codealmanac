@@ -66,7 +66,7 @@ def asset_response(asset_path: str) -> Response:
 
 
 def read_asset_text(request: StaticAssetRequest) -> str:
-    asset = resources.files("codealmanac.server.assets").joinpath(*request.parts)
+    asset = resources.files("codealmanac.api.assets").joinpath(*request.parts)
     if not asset.is_file():
         raise FileNotFoundError(request.path)
     return asset.read_text(encoding="utf-8")
