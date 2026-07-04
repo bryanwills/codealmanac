@@ -1,11 +1,11 @@
 import platform
 import sys
 
+from codealmanac.diagnostics.install import install_checks
+from codealmanac.diagnostics.models import DoctorReport
+from codealmanac.diagnostics.requests import DoctorRequest
+from codealmanac.diagnostics.wiki import wiki_checks
 from codealmanac.manual import ManualLibrary
-from codealmanac.services.diagnostics.install import install_checks
-from codealmanac.services.diagnostics.models import DoctorReport
-from codealmanac.services.diagnostics.requests import DoctorRequest
-from codealmanac.services.diagnostics.wiki import wiki_checks
 from codealmanac.wiki.index.service import IndexService
 from codealmanac.wiki.workspaces.service import WorkspacesService
 

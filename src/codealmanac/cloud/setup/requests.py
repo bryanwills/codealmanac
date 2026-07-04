@@ -7,8 +7,8 @@ from codealmanac.cloud.auth.models import (
     DEFAULT_CLOUD_API_URL,
     normalize_api_url,
 )
+from codealmanac.cloud.setup.models import SetupTarget
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.setup.models import SetupTarget
 
 DEFAULT_SETUP_TARGETS = (SetupTarget.CODEX, SetupTarget.CLAUDE)
 

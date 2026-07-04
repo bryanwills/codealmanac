@@ -1,4 +1,4 @@
-from codealmanac.services.tagging.models import TaggingResult
+from codealmanac.wiki.tagging.models import TaggingResult
 
 
 def render_tagging(

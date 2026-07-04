@@ -1,14 +1,14 @@
 from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.cloud.capture.requests import CaptureRepairRequest
-from codealmanac.core.errors import ExecutionFailed
-from codealmanac.services.setup.models import SetupResult, UninstallResult
-from codealmanac.services.setup.planning import setup_plan
-from codealmanac.services.setup.ports import (
+from codealmanac.cloud.setup.models import SetupResult, UninstallResult
+from codealmanac.cloud.setup.planning import setup_plan
+from codealmanac.cloud.setup.ports import (
     InstructionInstaller,
     SetupCapture,
     SetupCloudLogin,
 )
-from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
+from codealmanac.cloud.setup.requests import RunSetupRequest, RunUninstallRequest
+from codealmanac.core.errors import ExecutionFailed
 
 
 class SetupService:

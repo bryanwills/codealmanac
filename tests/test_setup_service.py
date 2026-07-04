@@ -7,15 +7,15 @@ from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
 from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.cloud.capture.models import CaptureEnableResult
 from codealmanac.cloud.capture.requests import CaptureRepairRequest
+from codealmanac.cloud.setup.models import SetupTarget
+from codealmanac.cloud.setup.requests import RunSetupRequest, RunUninstallRequest
+from codealmanac.cloud.setup.service import SetupService
 from codealmanac.integrations.setup.instructions import (
     CLAUDE_IMPORT_LINE,
     CODEALMANAC_END,
     CODEALMANAC_START,
     FileInstructionInstaller,
 )
-from codealmanac.services.setup.models import SetupTarget
-from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
-from codealmanac.services.setup.service import SetupService
 
 
 def test_setup_installs_codex_block_idempotently(home: Path):

@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
+from codealmanac.config.models import CodeAlmanacConfig
+from codealmanac.config.requests import LoadConfigRequest
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.services.config.models import CodeAlmanacConfig
-from codealmanac.services.config.requests import LoadConfigRequest
 
 
 def load_cli_config(app: CodeAlmanac, wiki: str | None) -> CodeAlmanacConfig:

@@ -1,8 +1,8 @@
 from pathlib import Path
 
+from codealmanac.cloud.setup.models import InstructionChange, SetupTarget
 from codealmanac.integrations.setup.managed_blocks import collapse_blank_lines
 from codealmanac.integrations.setup.text_files import read_text_if_present
-from codealmanac.services.setup.models import InstructionChange, SetupTarget
 
 CLAUDE_IMPORT_LINE = "@~/.claude/codealmanac.md"
 

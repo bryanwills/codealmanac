@@ -1,7 +1,7 @@
 import shlex
 
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.updates.models import UpdatePlan, UpdateResult
+from codealmanac.maintenance.updates.models import UpdatePlan, UpdateResult
 
 
 def render_update_plan(plan: UpdatePlan, json_output: bool) -> None:

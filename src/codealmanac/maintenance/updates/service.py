@@ -1,4 +1,4 @@
-from codealmanac.services.updates.models import (
+from codealmanac.maintenance.updates.models import (
     PACKAGE_NAME,
     PackageInstallMetadata,
     UpdateInstallMethod,
@@ -6,11 +6,14 @@ from codealmanac.services.updates.models import (
     UpdateResult,
     UpdateStatus,
 )
-from codealmanac.services.updates.ports import (
+from codealmanac.maintenance.updates.ports import (
     PackageCommandRunner,
     PackageInstallMetadataProvider,
 )
-from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
+from codealmanac.maintenance.updates.requests import (
+    CheckUpdateRequest,
+    RunUpdateRequest,
+)
 
 
 class UpdatesService:

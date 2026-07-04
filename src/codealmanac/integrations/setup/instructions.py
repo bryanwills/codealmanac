@@ -1,9 +1,9 @@
 from pathlib import Path
 
+from codealmanac.cloud.setup.models import InstructionChange, SetupTarget
 from codealmanac.core.paths import home_dir
 from codealmanac.integrations.setup import claude, codex, managed_blocks
 from codealmanac.integrations.setup.guide import read_agent_guide
-from codealmanac.services.setup.models import InstructionChange, SetupTarget
 
 CLAUDE_IMPORT_LINE = claude.CLAUDE_IMPORT_LINE
 CODEALMANAC_END = managed_blocks.CODEALMANAC_END

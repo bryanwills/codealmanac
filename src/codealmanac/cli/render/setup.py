@@ -5,7 +5,7 @@ from shutil import get_terminal_size
 
 from codealmanac.cli.render.common import print_json_model
 from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
-from codealmanac.services.setup.models import (
+from codealmanac.cloud.setup.models import (
     InstructionChange,
     SetupResult,
     UninstallResult,

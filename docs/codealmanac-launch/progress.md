@@ -8,14 +8,14 @@ Percentages are planning estimates, not accounting metrics.
 
 ## Latest RelayForge Update
 
-Sent: 2026-07-04 after the `0.1.12` setup/capture release.
+Sent: 2026-07-04 after Slice 93 local architecture cleanup.
 
 Route:
 
 ```bash
 doppler run --project almanac --config dev -- \
   relayforge reply \
-  "CodeAlmanac CLI breaking surface is done and publicly shipped. Published codealmanac 0.1.11 ..." \
+  "Slice 93 verified locally. CodeAlmanac architecture quality is now ~91% ..." \
   --config /Users/rohan/Desktop/Projects/relayforge/relay.config.json
 ```
 
@@ -41,6 +41,11 @@ Slice 92 is local architecture cleanup, not a new public package release. It
 renamed the local viewer HTTP edge from `codealmanac.server` to
 `codealmanac.api`, updated wheel asset packaging, and passed the local
 source/package gates.
+
+Slice 93 is local architecture cleanup, not a new public package release. It
+removed the generic `src/codealmanac/services/` bucket and moved the remaining
+modules into `config`, `diagnostics`, `cloud/setup`, `wiki/tagging`, and
+`maintenance/updates`.
 
 ## Latest Local Notes
 
@@ -72,6 +77,8 @@ source/package gates.
   model-worker request/result artifacts now live under `src/codealmanac/engine/runs/`,
   detached engine workspaces live under `src/codealmanac/engine/workspaces/`,
   and local run workflows use the `app.engine` facade.
+- Slice 92 renamed the local viewer HTTP edge from `server` to `api`.
+- Slice 93 retired the remaining active generic `services/` package.
 
 ## Percentages
 
@@ -82,7 +89,7 @@ source/package gates.
 | CodeAlmanac-hosted backend/auth/API | 100% | 100% | Slice 75 added production `/v1/repositories`; production repo list and repo status pass without per-repo permission fanout. |
 | Hosted frontend/onboarding | 100% | 99% | Hosted `main` is at `748c8ed`; Vercel deploy run `28694096088` succeeded with setup/onboarding copy aligned to `codealmanac setup` owning capture. |
 | Infra/deploy rename | 100% | 100% | Vercel targets `thealmanac/codealmanac-hosted`, Render `/api/health` is live, Modal `codealmanac-hosted-updates` was redeployed earlier, and PyPI `codealmanac` `0.1.12` is live. |
-| Codebase architecture quality | 88% | 86% | Slice 92 removed stale local `server` naming from active Python and added a guard for the `api` edge. Remaining quality work is broader domain/package cleanup and live signed-in verification. |
+| Codebase architecture quality | 91% | 88% | Slice 93 removed the remaining active generic `services/` package, moved modules to named domains, and added a guard against reintroducing `codealmanac.services`. Remaining quality work is broader refinement and live signed-in verification. |
 
 ## Update Rule
 

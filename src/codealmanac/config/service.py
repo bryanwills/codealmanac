@@ -1,10 +1,10 @@
 from pathlib import Path
 
+from codealmanac.config.models import CodeAlmanacConfig
+from codealmanac.config.requests import LoadConfigRequest
+from codealmanac.config.store import ConfigStore
 from codealmanac.core.errors import NotFoundError
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.config.models import CodeAlmanacConfig
-from codealmanac.services.config.requests import LoadConfigRequest
-from codealmanac.services.config.store import ConfigStore
 from codealmanac.wiki.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.wiki.workspaces.service import WorkspacesService
 

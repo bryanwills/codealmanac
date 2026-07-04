@@ -1,13 +1,16 @@
 from pathlib import Path
 
-from codealmanac.services.updates.models import (
+from codealmanac.maintenance.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
     UpdateInstallMethod,
     UpdateStatus,
 )
-from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
-from codealmanac.services.updates.service import UpdatesService
+from codealmanac.maintenance.updates.requests import (
+    CheckUpdateRequest,
+    RunUpdateRequest,
+)
+from codealmanac.maintenance.updates.service import UpdatesService
 
 
 class FakeMetadataProvider:

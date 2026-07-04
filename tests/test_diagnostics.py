@@ -2,8 +2,8 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
-from codealmanac.services.diagnostics.models import DoctorStatus
-from codealmanac.services.diagnostics.requests import DoctorRequest
+from codealmanac.diagnostics.models import DoctorStatus
+from codealmanac.diagnostics.requests import DoctorRequest
 from codealmanac.wiki.workspaces.requests import (
     InitializeWorkspaceRequest,
     RegisterWorkspaceRequest,

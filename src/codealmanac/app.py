@@ -23,8 +23,13 @@ from codealmanac.cloud.repositories.workflow import CloudRepoWorkflow
 from codealmanac.cloud.runs.ports import CloudRunsClient
 from codealmanac.cloud.runs.service import CloudRunsService
 from codealmanac.cloud.runs.workflow import CloudRunsWorkflow
+from codealmanac.cloud.setup.ports import InstructionInstaller
+from codealmanac.cloud.setup.service import SetupService
 from codealmanac.cloud.status.workflow import CloudStatusWorkflow
+from codealmanac.config.service import ConfigService
+from codealmanac.config.store import ConfigStore
 from codealmanac.core.models import AppConfig
+from codealmanac.diagnostics.service import DiagnosticsService
 from codealmanac.engine.harnesses.ports import HarnessAdapter
 from codealmanac.engine.harnesses.service import HarnessesService
 from codealmanac.engine.lifecycle import LifecycleMutationPolicy
@@ -94,25 +99,20 @@ from codealmanac.local.setup import (
     LocalSetupWorkflow,
 )
 from codealmanac.local.status import LocalStatusWorkflow
-from codealmanac.manual import ManualLibrary
-from codealmanac.prompts import PromptRenderer
-from codealmanac.services.config.service import ConfigService
-from codealmanac.services.config.store import ConfigStore
-from codealmanac.services.diagnostics.service import DiagnosticsService
-from codealmanac.services.setup.ports import InstructionInstaller
-from codealmanac.services.setup.service import SetupService
-from codealmanac.services.tagging.service import TaggingService
-from codealmanac.services.updates.ports import (
+from codealmanac.maintenance.updates.ports import (
     PackageCommandRunner,
     PackageInstallMetadataProvider,
 )
-from codealmanac.services.updates.service import UpdatesService
+from codealmanac.maintenance.updates.service import UpdatesService
+from codealmanac.manual import ManualLibrary
+from codealmanac.prompts import PromptRenderer
 from codealmanac.wiki.health.service import HealthService
 from codealmanac.wiki.index.service import IndexService
 from codealmanac.wiki.index.store import IndexStore
 from codealmanac.wiki.pages.service import PagesService
 from codealmanac.wiki.search.service import SearchService
 from codealmanac.wiki.service import WikiService
+from codealmanac.wiki.tagging.service import TaggingService
 from codealmanac.wiki.topics.service import TopicsService
 from codealmanac.wiki.viewer.renderer import MarkdownRenderer
 from codealmanac.wiki.viewer.service import ViewerService

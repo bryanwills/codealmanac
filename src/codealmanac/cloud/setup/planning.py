@@ -1,6 +1,6 @@
-from codealmanac.services.config.models import DEFAULT_HARNESS
-from codealmanac.services.setup.models import SetupCommand, SetupPlan
-from codealmanac.services.setup.requests import RunSetupRequest
+from codealmanac.cloud.setup.models import SetupCommand, SetupPlan
+from codealmanac.cloud.setup.requests import RunSetupRequest
+from codealmanac.config.models import DEFAULT_HARNESS
 
 
 def setup_plan(request: RunSetupRequest) -> SetupPlan:

@@ -2747,3 +2747,37 @@
 - `uv run ruff check .` is not a valid current gate while the unrelated,
   untracked `docs/research/harness-framework/` Python source dump is present;
   that research folder is outside this slice and remains unstaged.
+
+## 2026-07-04 Slice 93 Services Package Retirement
+
+- Removed the active `src/codealmanac/services/` package.
+- Moved the remaining service subpackages into their real owners:
+  - `src/codealmanac/config/`
+  - `src/codealmanac/diagnostics/`
+  - `src/codealmanac/cloud/setup/`
+  - `src/codealmanac/wiki/tagging/`
+  - `src/codealmanac/maintenance/updates/`
+- Kept `src/codealmanac/app.py` as the composition root; it now imports the
+  moved services by their domain names.
+- Updated package data so `agent-guide.md` ships from
+  `codealmanac.cloud.setup`.
+- Removed the `maintenance.__init__` import of `run_maintenance` because it
+  created an import cycle when `maintenance.updates` loaded under `app.py`.
+  Tests now import executable maintenance workflow code from
+  `codealmanac.maintenance.service` explicitly.
+- Added an architecture guard that active Python cannot import
+  `codealmanac.services` and that `src/codealmanac/services/` cannot return.
+- Verification passed:
+  - focused config/diagnostics/setup/tagging/updates/CLI/architecture/
+    maintenance tests (`93 passed`)
+  - `uv run pytest -q` (`481 passed`)
+  - `uv run ruff check src tests`
+  - `uv run ruff format --check src tests`
+  - `uv run python -m compileall src -q`
+  - `rm -rf dist-release-check && uv build --out-dir dist-release-check`
+  - `uvx twine check dist-release-check/*`
+  - wheel inspection confirmed `codealmanac/cloud/setup/agent-guide.md` is
+    packaged and `codealmanac/services/` is absent
+  - `git diff --check`
+- RelayForge update sent through binding `rohan-codex-019f05b3`; architecture
+  quality was raised to roughly 91%.

@@ -17,8 +17,8 @@ from codealmanac.jobs.ledger.models import JobStatus
 from codealmanac.maintenance import (
     MaintenanceOperation,
     RunMaintenanceRequest,
-    run_maintenance,
 )
+from codealmanac.maintenance.service import run_maintenance
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 

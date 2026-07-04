@@ -3,7 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.admin import render_doctor
-from codealmanac.services.diagnostics.requests import DoctorRequest
+from codealmanac.diagnostics.requests import DoctorRequest
 
 
 def dispatch_doctor(args: argparse.Namespace, app: CodeAlmanac) -> int:

@@ -4,8 +4,8 @@ from tomllib import TOMLDecodeError
 from pydantic import ValidationError
 from pydantic_settings import TomlConfigSettingsSource
 
+from codealmanac.config.models import CodeAlmanacConfig
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.config.models import CodeAlmanacConfig
 
 
 class ConfigStore:

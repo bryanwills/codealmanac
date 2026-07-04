@@ -1,12 +1,12 @@
 from pathlib import Path
 
+from codealmanac.cloud.setup.models import InstructionChange, SetupTarget
 from codealmanac.integrations.setup.managed_blocks import (
     format_managed_block,
     remove_managed_block,
     upsert_managed_block,
 )
 from codealmanac.integrations.setup.text_files import read_text_if_present
-from codealmanac.services.setup.models import InstructionChange, SetupTarget
 
 
 def install_codex_instructions(home: Path, guide: str) -> InstructionChange:

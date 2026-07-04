@@ -9,11 +9,13 @@ def test_cli_workflows_and_services_do_not_import_integrations():
     checked_roots = (
         SRC_ROOT / "cli",
         SRC_ROOT / "cloud",
+        SRC_ROOT / "config",
+        SRC_ROOT / "diagnostics",
         SRC_ROOT / "engine",
         SRC_ROOT / "local",
+        SRC_ROOT / "maintenance",
         SRC_ROOT / "wiki",
         SRC_ROOT / "workflows",
-        SRC_ROOT / "services",
     )
 
     offenders = [
@@ -23,6 +25,22 @@ def test_cli_workflows_and_services_do_not_import_integrations():
         if imports_integration(path)
     ]
 
+    assert offenders == []
+
+
+def test_generic_services_package_is_retired():
+    active_roots = (
+        SRC_ROOT,
+        PROJECT_ROOT / "tests",
+    )
+    offenders = [
+        path
+        for root in active_roots
+        for path in root.rglob("*.py")
+        if imports_module(path, "codealmanac.services")
+    ]
+
+    assert not (SRC_ROOT / "services").exists()
     assert offenders == []
 
 
@@ -258,6 +276,7 @@ def test_cloud_package_owns_cloud_client_surface():
         "open",
         "repositories",
         "runs",
+        "setup",
         "status",
     } <= {path.name for path in cloud_root.iterdir() if path.is_dir()}
     assert all(not any(root.glob("*.py")) for root in forbidden_roots)
@@ -315,6 +334,7 @@ def test_wiki_package_owns_wiki_read_model_surface():
         "index",
         "pages",
         "search",
+        "tagging",
         "topics",
         "viewer",
         "workspaces",
@@ -536,7 +556,7 @@ def test_config_service_owns_toml_imports():
     offenders = [
         path
         for path in SRC_ROOT.rglob("*.py")
-        if path.relative_to(SRC_ROOT).parts[:2] != ("services", "config")
+        if path.relative_to(SRC_ROOT).parts[:1] != ("config",)
         and imports_module(path, "tomllib")
     ]
 
@@ -547,7 +567,7 @@ def test_config_service_owns_pydantic_settings_imports():
     offenders = [
         path
         for path in SRC_ROOT.rglob("*.py")
-        if path.relative_to(SRC_ROOT).parts[:2] != ("services", "config")
+        if path.relative_to(SRC_ROOT).parts[:1] != ("config",)
         and imports_module(path, "pydantic_settings")
     ]
 
@@ -934,7 +954,7 @@ def test_harness_contract_models_stay_split_by_meaning():
 
 
 def test_diagnostics_service_stays_facade():
-    diagnostics_root = SRC_ROOT / "services/diagnostics"
+    diagnostics_root = SRC_ROOT / "diagnostics"
     service_text = (diagnostics_root / "service.py").read_text(encoding="utf-8")
     install_text = (diagnostics_root / "install.py").read_text(encoding="utf-8")
     wiki_text = (diagnostics_root / "wiki.py").read_text(encoding="utf-8")
@@ -1411,7 +1431,7 @@ def test_setup_instruction_adapter_stays_split_by_target_family():
 
 
 def test_setup_service_stays_split_from_cloud_setup_planning():
-    setup_root = SRC_ROOT / "services/setup"
+    setup_root = SRC_ROOT / "cloud/setup"
     service = (setup_root / "service.py").read_text(encoding="utf-8")
     planning = (setup_root / "planning.py").read_text(encoding="utf-8")
     setup_owned_text = "\n".join(
@@ -1430,7 +1450,7 @@ def test_setup_service_stays_split_from_cloud_setup_planning():
     assert "DEFAULT_SYNC_INTERVAL" not in service
     assert "SetupAutomationRecommendation" not in service
     assert "def automation_recommendations" not in service
-    assert "codealmanac.services.automation" not in setup_owned_text
+    assert "codealmanac.services" not in setup_owned_text
     assert "UninstallAutomationRequest" not in setup_owned_text
     assert "AutomationTask" not in setup_owned_text
 

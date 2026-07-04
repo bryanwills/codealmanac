@@ -3,7 +3,7 @@ import subprocess
 from importlib.metadata import PackageNotFoundError, distribution
 
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.updates.models import (
+from codealmanac.maintenance.updates.models import (
     PACKAGE_NAME,
     PackageCommandResult,
     PackageInstallMetadata,

@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from codealmanac.core.errors import CodeAlmanacError
-from codealmanac.manual import ManualLibrary
-from codealmanac.services.diagnostics.messages import first_line
-from codealmanac.services.diagnostics.models import (
+from codealmanac.diagnostics.messages import first_line
+from codealmanac.diagnostics.models import (
     DoctorCheck,
     DoctorStatus,
 )
+from codealmanac.manual import ManualLibrary
 
 
 def install_checks(

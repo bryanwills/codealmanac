@@ -1,8 +1,8 @@
-from codealmanac.services.tagging.models import TaggingResult
-from codealmanac.services.tagging.requests import TagPageRequest, UntagPageRequest
 from codealmanac.wiki.frontmatter_rewrite import rewrite_page_topics
 from codealmanac.wiki.pages.requests import ShowPageRequest
 from codealmanac.wiki.pages.service import PagesService
+from codealmanac.wiki.tagging.models import TaggingResult
+from codealmanac.wiki.tagging.requests import TagPageRequest, UntagPageRequest
 
 
 class TaggingService:

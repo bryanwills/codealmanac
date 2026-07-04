@@ -3,10 +3,10 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
+from codealmanac.config.requests import LoadConfigRequest
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.models import AppConfig
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.services.config.requests import LoadConfigRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 
 

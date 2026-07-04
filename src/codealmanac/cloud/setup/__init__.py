@@ -1,4 +1,4 @@
-from codealmanac.services.setup.models import (
+from codealmanac.cloud.setup.models import (
     InstructionChange,
     SetupCommand,
     SetupPlan,
@@ -6,8 +6,8 @@ from codealmanac.services.setup.models import (
     SetupTarget,
     UninstallResult,
 )
-from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
-from codealmanac.services.setup.service import SetupService
+from codealmanac.cloud.setup.requests import RunSetupRequest, RunUninstallRequest
+from codealmanac.cloud.setup.service import SetupService
 
 __all__ = [
     "InstructionChange",

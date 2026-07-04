@@ -4,7 +4,7 @@ from codealmanac.cloud.auth.login_models import CloudLoginWorkflowResult
 from codealmanac.cloud.auth.login_requests import RunCloudLoginRequest
 from codealmanac.cloud.capture.models import CaptureEnableResult
 from codealmanac.cloud.capture.requests import CaptureRepairRequest
-from codealmanac.services.setup.models import InstructionChange, SetupTarget
+from codealmanac.cloud.setup.models import InstructionChange, SetupTarget
 
 
 class InstructionInstaller(Protocol):

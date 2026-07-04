@@ -919,3 +919,26 @@ repaired.
 - `uv run ruff check .` still fails because of unrelated, untracked Python
   files under `docs/research/harness-framework/`; do not treat that as a Slice
   92 regression unless that research folder is brought into scope.
+
+## Current Slice 93 Services Package Retirement Handoff
+
+- Active CodeAlmanac no longer has `src/codealmanac/services/`.
+- The moved package owners are:
+  - `src/codealmanac/config/`
+  - `src/codealmanac/diagnostics/`
+  - `src/codealmanac/cloud/setup/`
+  - `src/codealmanac/wiki/tagging/`
+  - `src/codealmanac/maintenance/updates/`
+- `src/codealmanac/app.py` remains the composition root and now wires those
+  packages by their real domain names.
+- `codealmanac.cloud.setup` owns the packaged `agent-guide.md` resource.
+- `codealmanac.maintenance.__init__` no longer imports `run_maintenance`;
+  import executable maintenance workflow code from
+  `codealmanac.maintenance.service`.
+- Architecture tests prevent active `codealmanac.services` imports and prevent
+  the physical services package from returning.
+- Verification passed with focused tests (`93 passed`), full pytest
+  (`481 passed`), ruff on `src tests`, format check, compileall, build, Twine
+  check, wheel path inspection, and `git diff --check`.
+- `uv run ruff check .` is still not the right current gate while the unrelated,
+  untracked `docs/research/harness-framework/` Python dump remains present.

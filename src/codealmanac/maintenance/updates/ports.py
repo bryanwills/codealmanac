@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from codealmanac.services.updates.models import (
+from codealmanac.maintenance.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
 )

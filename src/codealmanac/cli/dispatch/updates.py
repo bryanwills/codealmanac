@@ -2,8 +2,11 @@ import argparse
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.cli.render.admin import render_update_plan, render_update_result
-from codealmanac.services.updates.models import UpdateStatus
-from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
+from codealmanac.maintenance.updates.models import UpdateStatus
+from codealmanac.maintenance.updates.requests import (
+    CheckUpdateRequest,
+    RunUpdateRequest,
+)
 
 
 def dispatch_update(args: argparse.Namespace, app: CodeAlmanac) -> int:

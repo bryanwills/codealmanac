@@ -1,18 +1,18 @@
 from collections.abc import Sequence
 
 from codealmanac.core.errors import CodeAlmanacError, NotFoundError
-from codealmanac.manual import ManualLibrary
-from codealmanac.services.diagnostics.messages import (
+from codealmanac.diagnostics.messages import (
     first_line,
     health_problem_count,
     index_message,
     problem_word,
 )
-from codealmanac.services.diagnostics.models import (
+from codealmanac.diagnostics.models import (
     DoctorCheck,
     DoctorStatus,
 )
-from codealmanac.services.diagnostics.requests import DoctorRequest
+from codealmanac.diagnostics.requests import DoctorRequest
+from codealmanac.manual import ManualLibrary
 from codealmanac.wiki.index.service import IndexService
 from codealmanac.wiki.workspaces.models import Workspace, WorkspaceRegistryStatus
 from codealmanac.wiki.workspaces.requests import SelectWorkspaceRequest

@@ -83,7 +83,7 @@ from codealmanac.local.runs.worker.requests import SpawnLocalWorkerRequest
 from codealmanac.local.setup.models import LocalRepositoryState
 from codealmanac.local_trigger import main as local_trigger_main
 from codealmanac.local_worker import main as local_worker_main
-from codealmanac.services.updates.models import (
+from codealmanac.maintenance.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
 )
