@@ -2614,3 +2614,26 @@
   import-path split.
 - Backend health returned `{"status":"ok"}` from
   `https://api.codealmanac.com/api/health`.
+
+## 2026-07-04 Slice 87 CLI Run Surface Convergence
+
+- Closed `docs/codealmanac-launch/cli-inconsistency-ledger.md` as a current
+  contract document instead of a stale open-problem list.
+- Removed the old scheduled sync/automation command surface from active code:
+  parser, dispatch, render, services, integrations, workflows, and tests.
+- Removed local update/local jobs command spellings from the public local
+  surface. Local wiki execution now uses `codealmanac local runs start`; local
+  history inspection uses `codealmanac local runs list/show/logs`.
+- Replaced hidden root worker commands with private process entrypoints:
+  `codealmanac-local-trigger` and `codealmanac-local-worker`.
+- Root setup remains cloud setup plus agent instructions. It rejects old
+  automation flags and does not install local trigger hooks.
+- Root uninstall remains scoped to setup-owned instruction files and no longer
+  carries local automation fields.
+- Focused verification passed:
+  `uv run pytest tests/test_config_service.py tests/test_local_hooks.py
+  tests/test_local_worker_spawner.py tests/test_local_runs_workflow.py
+  tests/test_cli.py tests/test_public_contract.py tests/test_architecture.py -q`
+  (`165 passed`).
+- Full source verification passed with `uv run pytest -q` (`481 passed`).
+- Lint and diff hygiene passed with `uv run ruff check .` and `git diff --check`.

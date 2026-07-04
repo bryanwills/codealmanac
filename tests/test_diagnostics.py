@@ -68,7 +68,7 @@ def test_doctor_reports_index_and_health_for_selected_wiki(
     assert checks["wiki.index"].status == DoctorStatus.OK
     assert checks["wiki.index"].message.startswith("index: 1 page, 1 topic")
     assert checks["wiki.manual"].status == DoctorStatus.OK
-    assert checks["wiki.manual"].message == "manual: 12 docs"
+    assert checks["wiki.manual"].message == "manual: 13 docs"
     assert checks["wiki.health"].status == DoctorStatus.OK
     assert checks["wiki.health"].message == "health: 0 problems"
 
