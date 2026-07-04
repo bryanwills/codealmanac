@@ -17,7 +17,7 @@ def add_local_commands(subcommands: argparse._SubParsersAction) -> None:
 
     setup = local_subcommands.add_parser(
         "setup",
-        help="configure local repo automation for this checkout",
+        help="configure local branch triggers for this checkout",
     )
     setup.add_argument("--branch", help="branch to maintain; defaults to current")
     setup.add_argument(

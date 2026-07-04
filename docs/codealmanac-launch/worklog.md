@@ -2599,3 +2599,29 @@
   (`165 passed`).
 - Full source verification passed with `uv run pytest -q` (`481 passed`).
 - Lint and diff hygiene passed with `uv run ruff check .` and `git diff --check`.
+
+## 2026-07-04 Slice 90 CLI 0.1.10 Release Prep
+
+- Planned Slice 90 in
+  `docs/plans/2026-07-04-slice-90-cli-0-1-10-release.md`.
+- Created a clean release branch from `origin/main` and cherry-picked the
+  Slice 89 CLI run-surface cleanup without pulling unrelated `dev` commits.
+- Bumped the Python package version from `0.1.9` to `0.1.10`.
+- Fixed the release-branch prompt dependency so local run execution uses the
+  `main` prompt contract instead of the dev-only `BASE_KERNEL` prompt name.
+- Updated architecture and CLI tests for the launch contract: local package
+  guardrails no longer expect old `local update` or `local jobs` packages, and
+  `codealmanac local --help` must mention runs/triggers without stale
+  automation/sync/update/jobs language.
+- Local release verification passed:
+  - `uv run ruff check .`
+  - `uv run pytest -q` (`480 passed`)
+  - `git diff --check`
+  - `rm -rf dist && uv build --out-dir dist`
+  - `uvx twine check dist/*`
+- Isolated Python 3.12 wheel smoke installed
+  `dist/codealmanac-0.1.10-py3-none-any.whl`, returned version `0.1.10`,
+  verified root and local help, verified private
+  `codealmanac-local-trigger` / `codealmanac-local-worker` entrypoints, and
+  rejected stale launch-facing `sync`, `automation`, `local update`, and
+  `local jobs` help text.

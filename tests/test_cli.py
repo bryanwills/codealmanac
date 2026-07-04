@@ -2353,6 +2353,22 @@ def test_cli_help_is_cloud_first_and_hides_compatibility_commands(capsys):
     assert automation_exit.value.code == 2
 
 
+def test_cli_local_help_uses_runs_language(capsys):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit) as exit_info:
+        parser.parse_args(["local", "--help"])
+
+    output = capsys.readouterr()
+    assert exit_info.value.code == 0
+    assert "runs" in output.out
+    assert "triggers" in output.out
+    assert "automation" not in output.out
+    assert "sync" not in output.out
+    assert "update" not in output.out
+    assert "jobs" not in output.out
+
+
 def test_cli_lifecycle_dev_commands_are_hidden_from_public_parser():
     parser = build_parser()
 

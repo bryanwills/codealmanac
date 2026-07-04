@@ -1709,3 +1709,25 @@ Known residue:
   test set passed with `165 passed`; full source verification passed with
   `uv run pytest -q` (`481 passed`); lint and diff hygiene passed with
   `uv run ruff check .` and `git diff --check`.
+
+## Slice 90 CLI 0.1.10 Release Prep
+
+- Requirement: the Slice 89 run-surface cleanup must ship as a fresh PyPI
+  artifact without pulling unrelated `dev` commits into `main`.
+- Branch evidence: `codex/cli-run-surface-release` was created from
+  `origin/main`, and the only pre-release commit ahead of `origin/main` was
+  `68323aec refactor(slice-89): converge cli run surface`.
+- Compatibility evidence: the release branch replaced the dev-only
+  `PromptName.BASE_KERNEL` dependency with the prompt names that exist on
+  `main`.
+- CLI evidence: `codealmanac local --help` now has test coverage proving it
+  exposes `runs` and `triggers` while excluding stale `automation`, `sync`,
+  `update`, and `jobs` launch language.
+- Verification evidence: `uv run ruff check .`, `uv run pytest -q`
+  (`480 passed`), `git diff --check`, `uv build`, and `twine check` passed.
+- Wheel evidence: an isolated Python 3.12 venv installed
+  `dist/codealmanac-0.1.10-py3-none-any.whl`; the binary returned `0.1.10`;
+  root/local help excluded stale `sync`, root scheduled `automation`,
+  `local update`, and `local jobs`; and private
+  `codealmanac-local-trigger` / `codealmanac-local-worker` entrypoints exposed
+  help successfully.

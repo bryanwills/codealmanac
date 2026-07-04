@@ -9,7 +9,9 @@ UPDATE_PROMPT_SECTIONS = (
     PromptName.OPERATION_UPDATE,
 )
 GARDEN_PROMPT_SECTIONS = (
-    PromptName.BASE_KERNEL,
+    PromptName.BASE_PURPOSE,
+    PromptName.BASE_NOTABILITY,
+    PromptName.BASE_SYNTAX,
     PromptName.OPERATION_GARDEN,
 )
 

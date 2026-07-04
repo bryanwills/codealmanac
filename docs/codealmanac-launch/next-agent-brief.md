@@ -831,3 +831,27 @@ repaired.
   passed with `165 passed`.
 - Full source verification: `uv run pytest -q` passed with `481 passed`.
 - Lint and diff hygiene: `uv run ruff check .` and `git diff --check` passed.
+
+## Current Slice 90 Release Handoff
+
+- Release branch: `codex/cli-run-surface-release`, based on `origin/main`.
+- Branch intent: publish the Slice 89 CLI run-surface cleanup without pulling
+  unrelated `dev` commits into `main`.
+- Package version is now `0.1.10`.
+- Release-branch compatibility fix: local run prompt loading uses the prompt
+  names present on `main`, not the dev-only `BASE_KERNEL` prompt.
+- Local gates passed:
+  - `uv run ruff check .`
+  - `uv run pytest -q` (`480 passed`)
+  - `git diff --check`
+  - `rm -rf dist && uv build --out-dir dist`
+  - `uvx twine check dist/*`
+- Isolated Python 3.12 wheel smoke passed for
+  `dist/codealmanac-0.1.10-py3-none-any.whl`.
+- Wheel smoke proved version `0.1.10`, root/local help, private
+  `codealmanac-local-trigger` and `codealmanac-local-worker` entrypoints, and
+  absence of stale launch help for `sync`, root scheduled `automation`,
+  `local update`, and `local jobs`.
+- Next step: commit the version/release-prep changes, push the release branch,
+  fast-forward `main`, run `publish.yml` with `confirm_version=0.1.10`, then
+  public-smoke PyPI before sending the RelayForge update.

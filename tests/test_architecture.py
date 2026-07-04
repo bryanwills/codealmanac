@@ -348,7 +348,6 @@ def test_local_package_owns_local_control_plane_surface():
         "runs",
         "setup",
         "status",
-        "update",
     } <= {path.name for path in local_root.iterdir() if path.is_dir()}
     assert {
         "execution",
@@ -356,7 +355,6 @@ def test_local_package_owns_local_control_plane_surface():
     } <= {path.name for path in (local_root / "delivery").iterdir() if path.is_dir()}
     assert {
         "execution",
-        "jobs",
         "preparation",
         "worker",
     } <= {path.name for path in (local_root / "runs").iterdir() if path.is_dir()}
