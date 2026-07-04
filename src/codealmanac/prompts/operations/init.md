@@ -85,7 +85,7 @@ The coverage map is working state and an audit artifact. Do not stop after
 planning, and do not create only a report or a starter page. Use the map to
 write the wiki in this same run.
 
-Phase 1 and Phase 2 are separate jobs. In Phase 1, create the best coverage map
+Phase 1 and Phase 2 are separate phases. In Phase 1, create the best coverage map
 for the repo. Do not make the map smaller because you will need to write it
 later. Do not optimize for speed, brevity, context limits, or ease of completion
 while planning.

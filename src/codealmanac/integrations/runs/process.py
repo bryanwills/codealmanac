@@ -1,12 +1,12 @@
 import subprocess
 from pathlib import Path
 
-from codealmanac.jobs.ledger.models import JobWorkerSpawnResult
-from codealmanac.jobs.ledger.requests import SpawnJobWorkerRequest
+from codealmanac.runs.ledger.models import RunWorkerSpawnResult
+from codealmanac.runs.ledger.requests import SpawnRunWorkerRequest
 
 
-class SubprocessJobWorkerSpawner:
-    def spawn(self, request: SpawnJobWorkerRequest) -> JobWorkerSpawnResult:
+class SubprocessRunWorkerSpawner:
+    def spawn(self, request: SpawnRunWorkerRequest) -> RunWorkerSpawnResult:
         command = worker_command(request)
         child = subprocess.Popen(
             command,
@@ -16,15 +16,15 @@ class SubprocessJobWorkerSpawner:
             stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
-        return JobWorkerSpawnResult(
+        return RunWorkerSpawnResult(
             child_pid=child.pid,
             command=tuple(command),
         )
 
 
-def worker_command(request: SpawnJobWorkerRequest) -> list[str]:
+def worker_command(request: SpawnRunWorkerRequest) -> list[str]:
     command = [
-        "codealmanac-job-worker",
+        "codealmanac-run-worker",
         "--cwd",
         str(Path(request.cwd)),
     ]

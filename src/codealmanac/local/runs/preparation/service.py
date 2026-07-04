@@ -49,7 +49,7 @@ class LocalRunPreparationWorkflow:
             ClaimNextTriggerRequest(
                 repository_id=resolved.repository_id,
                 branch_id=resolved.branch_id,
-                operation=resolved.operation,
+                kind=resolved.kind,
             )
         )
         if not claim.claimed or claim.run is None or claim.trigger is None:
@@ -92,7 +92,7 @@ class LocalRunPreparationWorkflow:
                     run_id=claim.run.id,
                     repository_id=repository.id,
                     branch_id=branch.id,
-                    operation=claim.run.operation,
+                    kind=claim.run.kind,
                     repository_full_name=repository.full_name,
                     branch_name=branch.name,
                     expected_head_sha=claim.run.expected_head_sha,

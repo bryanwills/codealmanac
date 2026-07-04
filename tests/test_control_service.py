@@ -165,7 +165,7 @@ def test_control_db_constraints_reject_invalid_launch_vocabulary(
                   id,
                   repository_id,
                   branch_id,
-                  operation,
+                  kind,
                   status,
                   created_at,
                   updated_at

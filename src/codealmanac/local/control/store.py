@@ -442,7 +442,7 @@ class ControlStore:
                   repository_id,
                   branch_id,
                   trigger_event_id,
-                  operation,
+                  kind,
                   status,
                   expected_head_sha,
                   source_bundle_ref,
@@ -458,7 +458,7 @@ class ControlStore:
                     request.repository_id,
                     request.branch_id,
                     request.trigger_event_id,
-                    request.operation,
+                    request.kind,
                     request.status.value,
                     request.expected_head_sha,
                     request.source_bundle_ref,
@@ -479,7 +479,7 @@ class ControlStore:
             if started_at is None and status is ControlRunStatus.RUNNING:
                 started_at = datetime.fromisoformat(now)
             finished_at = existing.finished_at
-            if status in TERMINAL_JOB_STATUSES and finished_at is None:
+            if status in TERMINAL_RUN_STATUSES and finished_at is None:
                 finished_at = datetime.fromisoformat(now)
             connection.execute(
                 """
@@ -753,7 +753,7 @@ class ControlStore:
                   repository_id,
                   branch_id,
                   trigger_event_id,
-                  operation,
+                  kind,
                   status,
                   expected_head_sha,
                   source_bundle_ref,
@@ -768,7 +768,7 @@ class ControlStore:
                     trigger.repository_id,
                     trigger.branch_id,
                     trigger.id,
-                    request.operation,
+                    request.kind,
                     ControlRunStatus.QUEUED.value,
                     trigger.head_sha,
                     request.source_bundle_ref,
@@ -1026,7 +1026,7 @@ def current_timestamp() -> str:
     return datetime.now(UTC).isoformat()
 
 
-TERMINAL_JOB_STATUSES = frozenset(
+TERMINAL_RUN_STATUSES = frozenset(
     (
         ControlRunStatus.SUCCEEDED,
         ControlRunStatus.FAILED,

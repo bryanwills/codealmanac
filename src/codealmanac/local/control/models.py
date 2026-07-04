@@ -182,7 +182,7 @@ class ControlRunRecord(CodeAlmanacModel):
     repository_id: str
     branch_id: str
     trigger_event_id: str | None = None
-    operation: str
+    kind: str
     status: ControlRunStatus
     expected_head_sha: str | None = None
     source_bundle_ref: str | None = None
@@ -212,10 +212,10 @@ class ControlRunRecord(CodeAlmanacModel):
     def require_branch_id(cls, value: str) -> str:
         return required_text(value, "run branch_id")
 
-    @field_validator("operation")
+    @field_validator("kind")
     @classmethod
-    def require_operation(cls, value: str) -> str:
-        return required_text(value, "run operation")
+    def require_kind(cls, value: str) -> str:
+        return required_text(value, "run kind")
 
 
 class ControlRunEventRecord(CodeAlmanacModel):

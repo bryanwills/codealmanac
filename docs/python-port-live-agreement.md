@@ -41,7 +41,7 @@ It is the constraint document for future agents.
   `almanac`/`alm` compatibility bins, hosted login/connect/upload/MCP/SDK
   surfaces, migration commands unless a migration need becomes concrete, and
   the `review` command family for now. `setup`, `uninstall`, structured page
-  `sources:`, multi-wiki `serve`, background jobs, and rich harness events are
+  `sources:`, multi-wiki `serve`, background runs, and rich harness events are
   not intentionally dropped.
 - 2026-06-29: "Frontmatter rewrite" means deterministic editing of current
   page metadata such as `topics:` while preserving page body text. It is not a
@@ -67,10 +67,10 @@ It is the constraint document for future agents.
   `cli/render/wiki.py` is a wiki-render facade only; `search.py` owns
   search/reindex output, `pages.py` owns show/page output, `topics.py` owns
   topic output, `health.py` owns health output, and `tagging.py` owns
-  tag/untag output. `lifecycle.py` owns lifecycle/sync/job-start output,
+  tag/untag output. `lifecycle.py` owns lifecycle/sync/run-start output,
   `workspaces.py` owns local wiki registry list/drop output, and
   `cli/render/admin.py` is an admin-render facade only; `automation.py` owns
-  automation output, `diagnostics.py` owns doctor output, `jobs.py` owns jobs
+  automation output, `diagnostics.py` owns doctor output, `runs.py` owns runs
   output, `updates.py` owns update output, and `setup.py` owns setup/uninstall
   output plus Rich presentation. `common.py` owns shared formatting helpers.
 - 2026-07-01: Wiki CLI dispatch follows the same command-family split.
@@ -91,7 +91,7 @@ It is the constraint document for future agents.
 - 2026-07-01: Admin CLI parser construction follows the same command-family
   split. `cli/parser/admin.py` remains the admin-parser facade; `setup.py`
   owns setup/uninstall flags, `diagnostics.py` owns doctor flags, `updates.py`
-  owns update flags, `jobs.py` owns jobs flags, and `automation.py` owns
+  owns update flags, `runs.py` owns runs flags, and `automation.py` owns
   automation flags and task choices. Do not move command flag construction
   back into `parser/admin.py`.
 - 2026-06-30: Validation belongs at product boundaries. Use Pydantic request,
@@ -104,9 +104,9 @@ It is the constraint document for future agents.
   toward clean-install proof, real lifecycle dogfood, prompt quality, package
   metadata, README accuracy, and browser verification instead of adding
   speculative architecture seams.
-- 2026-07-01: Background jobs are in scope for v1. Restore the archived
+- 2026-07-04: Background runs are in scope for v1. Restore the archived
   machinery in Python shape: per-wiki queue, worker lock, background process
-  owner, durable job/run spec and record files, append-only event logs, attach,
+  owner, durable run spec and record files, append-only event logs, attach,
   cancel, stale-lock handling, and safe foreground execution when explicitly
   requested. Automation may schedule commands, but the implementation should
   call workflow/services directly rather than shelling out internally.
@@ -121,24 +121,24 @@ It is the constraint document for future agents.
 - 2026-06-29: `sync` writes a durable pending ledger claim before it invokes
   Ingest. Active pending claims skip that transcript; stale pending claims
   surface as needs-attention; terminal success or failure clears the pending
-  fields. With background jobs enabled, sync can enqueue ingest work while the
+  fields. With background runs enabled, sync can enqueue ingest work while the
   ledger records pending ownership and later reconciles terminal run state.
 - 2026-06-29: `runs` owns lifecycle state transitions. Run records start as
   `queued`, workflows explicitly mark them `running`, and only terminal
   finish calls may move them to `done`, `failed`, or `cancelled`.
-- 2026-07-01: `jobs attach` and `jobs cancel` are public control verbs over the
+- 2026-07-04: `runs attach` and `runs cancel` are public control verbs over the
   run ledger. Cancellation is durable run state, not a CLI-side file edit.
   Terminal runs are cancel no-ops; queued or running runs append a `cancelled`
   status event. Terminal finish calls must preserve an already-cancelled run
   rather than rewriting it as done or failed.
-- 2026-07-01: Python `jobs attach` streams through a service-owned use case.
+- 2026-07-04: Python `runs attach` streams through a service-owned use case.
   `services/runs/streaming.py` polls `RunStore.attach(...)`, emits only new log
   events, and stops at `done`, `failed`, or `cancelled`; CLI rendering owns
-  text and JSON-line output. `jobs logs` remains the snapshot command.
+  text and JSON-line output. `runs logs` remains the snapshot command.
 - 2026-07-01: Run ledger persistence is split by responsibility. `RunStore`
   remains the service-facing repository facade. `services/runs/paths.py` owns
   run-id validation and path construction; `io.py` owns JSON record/spec and
-  JSONL event file mechanics; `locks.py` owns worker lock ownership;
+  JSONL event file mechanics; `locks.py` owns run worker lock ownership;
   `transitions.py` owns grouped record-plus-event transition writes;
   `factory.py` owns run-id and initial `RunRecord` construction; and
   `queries.py` owns sorted record listing and spec-backed queue selection. Do
@@ -180,7 +180,7 @@ It is the constraint document for future agents.
   mutation mechanics or harness classification inside the facade.
 - 2026-06-29: Lifecycle workflows record returned harness status/output before
   mutation-safety validation and harness success validation. A failed harness
-  run should leave an `output` event in `jobs logs` even when the terminal run
+  run should leave an `output` event in `runs logs` even when the terminal run
   error is a later safety failure.
 - 2026-07-01: The inspectable transcript surface is a CodeAlmanac-owned
   normalized harness event stream, not raw provider transcript files. Port the
@@ -483,7 +483,7 @@ It is the constraint document for future agents.
   reader interaction model.
 - 2026-07-01: Viewer service boundaries are split by local-reader
   responsibility. `services/viewer/service.py` remains the use-case facade for
-  overview/page/search/file/topic/jobs payloads; `workspace_scope.py` owns
+  overview/page/search/file/topic/runs payloads; `workspace_scope.py` owns
   selected-wiki fallback, registry availability filtering, and multi-wiki
   navigation ordering; `projections.py` owns conversion from index/workspace
   models to viewer DTOs. Do not move registry filtering or DTO construction
@@ -499,7 +499,7 @@ It is the constraint document for future agents.
   appears. `cli/dispatch/admin.py` is an admin-command facade only;
   `setup.py` owns setup/uninstall request construction, `diagnostics.py` owns
   doctor request construction, `updates.py` owns update request construction,
-  `jobs.py` owns jobs request construction, and `automation.py` owns automation
+  `runs.py` owns runs request construction, and `automation.py` owns automation
   request construction. The root dispatcher delegates to command-domain edges
   and keeps services/workflows as the product boundary.
 - 2026-06-29: The SQLite index service separates projection writes from
@@ -522,7 +522,7 @@ It is the constraint document for future agents.
   status checks back into `service.py`.
 - 2026-06-30: An initialized Almanac root is identified by wiki markers
   (`README.md`, `topics.yaml`, or `pages/`), not by directory existence.
-  Runtime artifacts such as `index.db`, WAL files, and `jobs/` are derived
+  Runtime artifacts such as `index.db`, WAL files, and `runs/` are derived
   state. They must not make registry status, root discovery, `doctor`, or read
   commands treat an otherwise missing root as available.
 - 2026-06-30: `docs/python-port/next-agent-brief.md` is a load-bearing
@@ -710,7 +710,7 @@ not make CLI contain product decisions.
 | `config` | user/project config parsing and precedence | product workflows |
 | `diagnostics` | doctor-style checks and readiness reports | mutation workflows |
 | `updates` | local package update policy, installer detection, update command planning | scheduler state, hosted release management, package-manager subprocess mechanics |
-| `viewer` | read-only local browser payloads, page/topic/search overview assembly, rendered markdown for the viewer | markdown source of truth, SQLite persistence, AI calls, jobs/review lifecycle |
+| `viewer` | read-only local browser payloads, page/topic/search overview assembly, rendered markdown for the viewer | markdown source of truth, SQLite persistence, AI calls, runs/review lifecycle |
 
 The viewer's product shape is local wiki browsing. It may adopt UseAlmanac's
 alpine visual system and shell styling, but it should not replace the existing
@@ -806,9 +806,9 @@ codealmanac sync
 codealmanac sync status
 codealmanac garden
 codealmanac automation install|status|uninstall
-codealmanac jobs
-codealmanac jobs attach <run-id>
-codealmanac jobs cancel <run-id>
+codealmanac runs
+codealmanac runs attach <run-id>
+codealmanac runs cancel <run-id>
 codealmanac doctor
 codealmanac update
 codealmanac uninstall
@@ -841,9 +841,9 @@ SQLite read model. Query commands may refresh the index implicitly and silently.
 `--claim-owner`, `--pending-timeout`, and `--max-failed-attempts`. Automation
 uses them to make scheduled sync ownership and retry policy explicit.
 
-Public `jobs` is required because background lifecycle execution ships. Internal
-`runs` owns records, logs, event streams, outputs, and lifecycle state.
-`jobs attach` streams a running job's event log. `jobs cancel` requests
+Public `runs` is required because background lifecycle execution ships. The
+`runs` domain owns records, logs, event streams, outputs, and lifecycle state.
+`runs attach` streams a running run's event log. `runs cancel` requests
 cancellation for queued/running work.
 
 CLI commands are not internal APIs. Automation, workers, tests, and server
@@ -878,7 +878,7 @@ subprocess.run(["codealmanac", "show", "..."])
 | Wiki | pages, frontmatter, topics, wikilinks, file/folder refs |
 | Index | SQLite read model, FTS search, mentions, backlinks, health |
 | Sources | transcript/path/Git/GitHub/web input contracts, local observations, and runtime snapshots |
-| Runs/jobs | durable ledger, events, outputs, foreground/background lifecycle state, attach/cancel |
+| Runs | durable ledger, events, outputs, foreground/background lifecycle state, attach/cancel |
 | Harnesses | Codex app-server and Claude SDK/event harnesses behind normalized ports |
 | Workflows | `init`, `ingest`, `sync`, `garden` |
 | Automation | local scheduled sync/garden |
@@ -891,7 +891,7 @@ subprocess.run(["codealmanac", "show", "..."])
 | Area | Decision |
 |---|---|
 | Hosted product | Do not build hosted shipping now |
-| Hosted CLI | No `login`, `connect`, `upload`, hosted `sources`, hosted `jobs` |
+| Hosted CLI | No `login`, `connect`, `upload`, hosted `sources`, hosted `runs` |
 | SDK | No Python SDK package |
 | MCP | No MCP server |
 | Compatibility aliases | No public `almanac`, `alm`, or `absorb` |
@@ -922,9 +922,9 @@ subprocess.run(["codealmanac", "show", "..."])
 
 1. Whether local `add` deserves a v1 command or should wait until source-pool
    behavior is concrete.
-2. Resolved 2026-07-01: background jobs ship in v1. Public `jobs` returns as
-   the inspection/control noun; internal `runs` owns records, events, outputs,
-   worker state, and lifecycle transitions.
+2. Resolved 2026-07-04: background runs ship in v1. Public `runs` is the
+   inspection/control noun and owns records, events, outputs, worker state, and
+   lifecycle transitions.
 3. Resolved 2026-06-29: `serve` is restored after the core CLI/read model,
    because the Python index can now support a read-only viewer without a second
    content model.

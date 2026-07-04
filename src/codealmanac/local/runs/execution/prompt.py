@@ -17,7 +17,7 @@ def render_update_prompt(
     request: EngineRunRequest,
     guidance: str | None = None,
 ) -> str:
-    sections = operation_prompt_sections(request.operation)
+    sections = run_prompt_sections(request.kind)
     context = (f"Runtime context:\n{request.model_dump_json(indent=2)}\n",)
     if guidance is not None:
         context = (*context, f"\n\nUser guidance:\n{guidance}\n")
@@ -29,9 +29,9 @@ def render_update_prompt(
     )
 
 
-def operation_prompt_sections(operation: str) -> tuple[PromptName, ...]:
-    if operation == LocalRunKind.UPDATE.value:
+def run_prompt_sections(kind: str) -> tuple[PromptName, ...]:
+    if kind == LocalRunKind.UPDATE.value:
         return UPDATE_PROMPT_SECTIONS
-    if operation == LocalRunKind.GARDEN.value:
+    if kind == LocalRunKind.GARDEN.value:
         return GARDEN_PROMPT_SECTIONS
-    raise ValueError(f"unsupported local run kind: {operation}")
+    raise ValueError(f"unsupported local run kind: {kind}")

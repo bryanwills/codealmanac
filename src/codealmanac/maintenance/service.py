@@ -1,7 +1,7 @@
 from codealmanac.app import CodeAlmanac, create_app
-from codealmanac.maintenance.models import MaintenanceJobResult
+from codealmanac.maintenance.models import MaintenanceRunResult
 from codealmanac.maintenance.requests import (
-    MaintenanceOperation,
+    MaintenanceRunKind,
     RunMaintenanceRequest,
 )
 from codealmanac.workflows.ingest.requests import RunIngestRequest
@@ -11,9 +11,9 @@ from codealmanac.workflows.init.requests import RunInitRequest
 def run_maintenance(
     request: RunMaintenanceRequest,
     app: CodeAlmanac | None = None,
-) -> MaintenanceJobResult:
+) -> MaintenanceRunResult:
     resolved_app = create_app() if app is None else app
-    if request.operation == MaintenanceOperation.INIT:
+    if request.kind == MaintenanceRunKind.INIT:
         result = resolved_app.workflows.init.run(
             RunInitRequest(
                 path=request.cwd,
@@ -26,15 +26,15 @@ def run_maintenance(
                 force=request.force,
             )
         )
-        return MaintenanceJobResult(
-            operation=request.operation,
-            job_id=result.job.job_id,
-            job_status=result.job.status,
+        return MaintenanceRunResult(
+            kind=request.kind,
+            run_id=result.run.run_id,
+            run_status=result.run.status,
             harness_status=result.harness.status,
-            summary=result.job.summary,
+            summary=result.run.summary,
             output_text=result.harness.output_text,
         )
-    if request.operation == MaintenanceOperation.INGEST:
+    if request.kind == MaintenanceRunKind.INGEST:
         result = resolved_app.workflows.ingest.run(
             RunIngestRequest(
                 cwd=request.cwd,
@@ -44,12 +44,12 @@ def run_maintenance(
                 guidance=request.guidance,
             )
         )
-        return MaintenanceJobResult(
-            operation=request.operation,
-            job_id=result.job.job_id,
-            job_status=result.job.status,
+        return MaintenanceRunResult(
+            kind=request.kind,
+            run_id=result.run.run_id,
+            run_status=result.run.status,
             harness_status=result.harness.status,
-            summary=result.job.summary,
+            summary=result.run.summary,
             output_text=result.harness.output_text,
         )
-    raise AssertionError(f"unsupported maintenance operation: {request.operation}")
+    raise AssertionError(f"unsupported maintenance kind: {request.kind}")

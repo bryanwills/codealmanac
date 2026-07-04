@@ -31,7 +31,7 @@ that root instead of constructing stores or adapters themselves.
 | `index` | SQLite derived read model, projection refresh/write facade, read-only query views, FTS, mentions, backlinks, health projections | `search`, `show --links`, `health` |
 | `topics` | topic use cases, topic DAG validation, topic workspace selection | `topics`, `topics show`, `topics create/describe/link/unlink/rename/delete` |
 | `sources` | source observations, source refs, address resolution, fingerprints, local source state, source runtime snapshots, transcript discovery ports and typed transcript candidates | `SourceAddress`/`SourceRef`/`SourceBrief`/`SourceRuntime`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `TranscriptCandidate`, ingest and sync inputs |
-| `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `jobs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
+| `runs` | run ledger, events, outputs, lifecycle state transitions, persisted harness transcript identity | `runs` read surface, lifecycle workflows, future sync exclusion and reconciliation |
 | `harnesses` | normalized Codex/Claude run contracts, provider transcript refs, provider-neutral harness events, and ports | `HarnessKind`/`RunHarnessRequest`/`HarnessRunResult`/`HarnessTranscriptRef`/`HarnessEvent`/`HarnessAdapter`, later `build`, `ingest`, `garden` |
 | `automation` | local scheduler decisions, quiet windows, unattended sync command policy, installed task state | `AutomationTask`/`ScheduledJob`/`SchedulerAdapter`, `sync` and `garden` scheduling |
 | `config` | user/project TOML parsing and precedence for local CLI defaults | lifecycle harness default and sync quiet window |
@@ -187,7 +187,7 @@ parsing.
 `services/runs/store.py` is the service-facing repository facade for the run
 ledger. `services/runs/paths.py` owns run-id validation and file naming,
 `services/runs/io.py` owns JSON record/spec and JSONL event file mechanics,
-`services/runs/locks.py` owns worker lock ownership, and
+`services/runs/locks.py` owns run worker lock ownership, and
 `services/runs/transitions.py` owns grouped record-plus-event transition writes.
 `services/runs/factory.py` owns run-id and initial `RunRecord` construction.
 `services/runs/queries.py` owns sorted record listing and oldest spec-backed
@@ -330,13 +330,13 @@ No route body, package-resource read, or product-error mapping belongs back in
 
 `cli/render/root.py` is a re-export facade over domain render modules so
 dispatch imports stay stable. `cli/render/lifecycle.py` owns
-build/ingest/garden/sync/job-start output. `cli/render/wiki.py` is a
+build/ingest/garden/sync/run-start output. `cli/render/wiki.py` is a
 wiki-render facade only; `search.py` owns search/reindex output, `pages.py`
 owns show/page output, `topics.py` owns topic output, `health.py` owns health
 output, and `tagging.py` owns tag/untag output. `workspaces.py` owns local wiki
 registry list/drop output. `cli/render/admin.py` is an admin-render facade
 only; `automation.py` owns automation output, `diagnostics.py` owns doctor
-output, `jobs.py` owns jobs output, `updates.py` owns update output, and
+output, `runs.py` owns runs output, `updates.py` owns update output, and
 `setup.py` owns setup/uninstall output plus Rich-backed setup/uninstall
 terminal presentation. `common.py` owns shared formatting helpers. Render
 modules display service-returned facts only. Rich must not be imported from
@@ -351,8 +351,8 @@ contain service logic or presentation formatting.
 
 `cli/dispatch/admin.py` is the admin-command facade. `cli/dispatch/setup.py`
 owns setup/uninstall request construction, `diagnostics.py` owns doctor
-request construction, `updates.py` owns update request construction, `jobs.py`
-owns jobs request construction, and `automation.py` owns automation request
+request construction, `updates.py` owns update request construction, `runs.py`
+owns runs request construction, and `automation.py` owns automation request
 construction. Setup may reuse automation quiet-duration resolution; automation
 must not call setup.
 
@@ -365,7 +365,7 @@ requests; lifecycle workflows own product behavior.
 
 `cli/parser/admin.py` is the admin-parser facade. `cli/parser/setup.py` owns
 setup/uninstall flags, `diagnostics.py` owns doctor flags, `updates.py` owns
-update flags, `jobs.py` owns jobs flags, and `automation.py` owns automation
+update flags, `runs.py` owns runs flags, and `automation.py` owns automation
 flags plus task choices. Parser modules define CLI shape only; they do not
 import services beyond enum choices needed for argparse validation.
 

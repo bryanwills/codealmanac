@@ -4,7 +4,7 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
-from codealmanac.jobs.ledger.models import JobId
+from codealmanac.runs.ledger.models import RunId
 from codealmanac.wiki.paths import (
     looks_like_dir,
     normalize_reference_path_preserving_case,
@@ -88,7 +88,7 @@ class ViewerTopicRequest(CodeAlmanacModel):
         return required_text(value, "topic slug")
 
 
-class ViewerJobsRequest(CodeAlmanacModel):
+class ViewerRunsRequest(CodeAlmanacModel):
     cwd: Path
     wiki: str | None = None
     limit: int | None = None
@@ -101,7 +101,7 @@ class ViewerJobsRequest(CodeAlmanacModel):
         return value
 
 
-class ViewerJobRequest(CodeAlmanacModel):
+class ViewerRunRequest(CodeAlmanacModel):
     cwd: Path
-    job_id: JobId
+    run_id: RunId
     wiki: str | None = None

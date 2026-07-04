@@ -92,21 +92,21 @@ class ViewerTopic(CodeAlmanacModel):
     pages: tuple[ViewerPageSummary, ...]
 
 
-class ViewerJobPageChanges(CodeAlmanacModel):
+class ViewerRunPageChanges(CodeAlmanacModel):
     created: tuple[str, ...] = ()
     updated: tuple[str, ...] = ()
     deleted: tuple[str, ...] = ()
 
 
-class ViewerJobTranscript(CodeAlmanacModel):
+class ViewerRunTranscript(CodeAlmanacModel):
     kind: str
     session_id: str | None
     transcript_path: Path | None
 
 
-class ViewerJobRecord(CodeAlmanacModel):
-    job_id: str
-    operation: str
+class ViewerRunRecord(CodeAlmanacModel):
+    run_id: str
+    kind: str
     status: str
     title: str | None
     summary: str | None
@@ -116,11 +116,11 @@ class ViewerJobRecord(CodeAlmanacModel):
     started_at: str | None
     finished_at: str | None
     log_path: Path
-    page_changes: ViewerJobPageChanges | None
-    harness_transcript: ViewerJobTranscript | None
+    page_changes: ViewerRunPageChanges | None
+    harness_transcript: ViewerRunTranscript | None
 
 
-class ViewerJobEvent(CodeAlmanacModel):
+class ViewerRunEvent(CodeAlmanacModel):
     sequence: int
     timestamp: str
     kind: str
@@ -128,12 +128,12 @@ class ViewerJobEvent(CodeAlmanacModel):
     harness_event: HarnessEvent | None
 
 
-class ViewerJobs(CodeAlmanacModel):
+class ViewerRuns(CodeAlmanacModel):
     workspace: ViewerWorkspace
-    jobs: tuple[ViewerJobRecord, ...]
+    runs: tuple[ViewerRunRecord, ...]
 
 
-class ViewerJob(CodeAlmanacModel):
+class ViewerRun(CodeAlmanacModel):
     workspace: ViewerWorkspace
-    job: ViewerJobRecord
-    events: tuple[ViewerJobEvent, ...]
+    run: ViewerRunRecord
+    events: tuple[ViewerRunEvent, ...]

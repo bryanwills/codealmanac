@@ -6,19 +6,19 @@ from fastapi import FastAPI
 from codealmanac.app import CodeAlmanac
 from codealmanac.wiki.viewer.models import (
     ViewerFile,
-    ViewerJob,
-    ViewerJobs,
     ViewerOverview,
     ViewerPage,
+    ViewerRun,
+    ViewerRuns,
     ViewerSearch,
     ViewerTopic,
 )
 from codealmanac.wiki.viewer.requests import (
     ViewerFileRequest,
-    ViewerJobRequest,
-    ViewerJobsRequest,
     ViewerOverviewRequest,
     ViewerPageRequest,
+    ViewerRunRequest,
+    ViewerRunsRequest,
     ViewerSearchRequest,
     ViewerTopicRequest,
 )
@@ -100,22 +100,22 @@ def register_routes(api: FastAPI, context: ApiContext) -> None:
             )
         )
 
-    @api.get("/api/jobs", response_model=ViewerJobs)
-    def jobs(limit: int | None = None, wiki: str | None = None) -> ViewerJobs:
-        return context.codealmanac.viewer.jobs(
-            ViewerJobsRequest(
+    @api.get("/api/runs", response_model=ViewerRuns)
+    def runs(limit: int | None = None, wiki: str | None = None) -> ViewerRuns:
+        return context.codealmanac.viewer.runs(
+            ViewerRunsRequest(
                 cwd=context.cwd,
                 wiki=context.selected_wiki(wiki),
                 limit=limit,
             )
         )
 
-    @api.get("/api/jobs/{job_id}", response_model=ViewerJob)
-    def job(job_id: str, wiki: str | None = None) -> ViewerJob:
-        return context.codealmanac.viewer.job(
-            ViewerJobRequest(
+    @api.get("/api/runs/{run_id}", response_model=ViewerRun)
+    def run(run_id: str, wiki: str | None = None) -> ViewerRun:
+        return context.codealmanac.viewer.run(
+            ViewerRunRequest(
                 cwd=context.cwd,
                 wiki=context.selected_wiki(wiki),
-                job_id=job_id,
+                run_id=run_id,
             )
         )

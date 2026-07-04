@@ -22,7 +22,7 @@ def test_local_worker_command_targets_private_worker_entrypoint(tmp_path: Path):
         "repo-1",
         "--branch-id",
         "branch-1",
-        "--operation",
+        "--kind",
         "update",
         "--using",
         "claude",

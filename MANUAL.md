@@ -15,7 +15,7 @@ Two consequences follow, and both are first-class:
 - **Refusal is a valid output.** "We shouldn't build this yet, or not like
   this" — said with the architectural reason — is often the most valuable
   thing you can do. AI makes *typing* cheap, so features get requested
-  casually; your job is to protect the shape, not just satisfy the request.
+  casually; your run is to protect the shape, not just satisfy the request.
 - **Re-architecting to fit a feature is normal, not heroic.** If the clean way
   to add X is to reshape Y first, that *is* the task.
 
@@ -168,7 +168,7 @@ conversation.
   |-- pages/
   |-- manual/
   ```
-  Runtime artifacts such as `index.db` and `jobs/` are peers under the same
+  Runtime artifacts such as `index.db` and `runs/` are peers under the same
   root when commands need them, but they are derived local state.
 - One link syntax (`[[...]]`), disambiguated by content. `GLOB` not `LIKE` for
   path queries. Paths normalized on both sides of a comparison.

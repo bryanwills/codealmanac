@@ -250,7 +250,7 @@ def test_local_runs_start_uses_garden_kind(
     assert result.started is True
     assert result.worker is not None
     assert result.worker.run is not None
-    assert result.worker.run.operation == "garden"
+    assert result.worker.run.kind == "garden"
     assert "# Garden Operation" in harness.requests[0].prompt
 
 

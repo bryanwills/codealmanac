@@ -1,6 +1,6 @@
 import { viewerApi } from "./api.js";
 import { navLink } from "./components.js";
-import { clearJobPolling, renderJob, renderJobs } from "./jobs.js";
+import { clearRunPolling, renderRun, renderRuns } from "./runs.js";
 import {
   renderError,
   renderFile,
@@ -29,7 +29,7 @@ export function startViewer() {
     window.location.hash = searchHref(elements.searchInput.value.trim());
   });
   elements.workspaceSelect.addEventListener("change", async () => {
-    clearJobPolling();
+    clearRunPolling();
     state.selectedWiki = elements.workspaceSelect.value;
     await loadOverview(elements, state.selectedWiki);
     await route(elements);
@@ -48,7 +48,7 @@ async function loadOverview(elements, wiki = state.selectedWiki) {
 
 async function route(elements) {
   if (!state.overview) return;
-  clearJobPolling();
+  clearRunPolling();
   const context = {
     elements,
     overview: state.overview,
@@ -75,11 +75,11 @@ async function route(elements) {
       return;
     }
     if (routeState.kind === RouteKind.JOBS) {
-      await renderJobs(context);
+      await renderRuns(context);
       return;
     }
     if (routeState.kind === RouteKind.JOB && routeState.value) {
-      await renderJob(context, routeState.value);
+      await renderRun(context, routeState.value);
       return;
     }
     renderHome(context);

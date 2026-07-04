@@ -1,22 +1,22 @@
 from datetime import datetime
 
-from codealmanac.jobs.ledger.models import (
-    JobLogEvent,
-    JobRecord,
+from codealmanac.runs.ledger.models import (
     PageChangeSet,
+    RunLogEvent,
+    RunRecord,
 )
 from codealmanac.wiki.viewer.models import (
-    ViewerJobEvent,
-    ViewerJobPageChanges,
-    ViewerJobRecord,
-    ViewerJobTranscript,
+    ViewerRunEvent,
+    ViewerRunPageChanges,
+    ViewerRunRecord,
+    ViewerRunTranscript,
 )
 
 
-def viewer_job_record(record: JobRecord) -> ViewerJobRecord:
-    return ViewerJobRecord(
-        job_id=record.job_id,
-        operation=record.operation.value,
+def viewer_run_record(record: RunRecord) -> ViewerRunRecord:
+    return ViewerRunRecord(
+        run_id=record.run_id,
+        kind=record.kind.value,
         status=record.status.value,
         title=record.title,
         summary=record.summary,
@@ -31,8 +31,8 @@ def viewer_job_record(record: JobRecord) -> ViewerJobRecord:
     )
 
 
-def viewer_job_event(event: JobLogEvent) -> ViewerJobEvent:
-    return ViewerJobEvent(
+def viewer_run_event(event: RunLogEvent) -> ViewerRunEvent:
+    return ViewerRunEvent(
         sequence=event.sequence,
         timestamp=timestamp(event.timestamp),
         kind=event.kind.value,
@@ -41,21 +41,21 @@ def viewer_job_event(event: JobLogEvent) -> ViewerJobEvent:
     )
 
 
-def viewer_page_changes(changes: PageChangeSet | None) -> ViewerJobPageChanges | None:
+def viewer_page_changes(changes: PageChangeSet | None) -> ViewerRunPageChanges | None:
     if changes is None:
         return None
-    return ViewerJobPageChanges(
+    return ViewerRunPageChanges(
         created=changes.created,
         updated=changes.updated,
         deleted=changes.deleted,
     )
 
 
-def viewer_harness_transcript(record: JobRecord) -> ViewerJobTranscript | None:
+def viewer_harness_transcript(record: RunRecord) -> ViewerRunTranscript | None:
     transcript = record.harness_transcript
     if transcript is None:
         return None
-    return ViewerJobTranscript(
+    return ViewerRunTranscript(
         kind=transcript.kind.value,
         session_id=transcript.session_id,
         transcript_path=transcript.transcript_path,

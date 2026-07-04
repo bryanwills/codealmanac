@@ -29,7 +29,7 @@ class LocalWorkerWorkflow:
             PrepareNextLocalRunRequest(
                 repository_id=resolved.repository_id,
                 branch_id=resolved.branch_id,
-                operation=resolved.operation,
+                kind=resolved.kind,
             )
         )
         if not preparation.prepared or preparation.run is None:

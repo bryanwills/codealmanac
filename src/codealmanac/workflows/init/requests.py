@@ -5,7 +5,7 @@ from pydantic import Field, field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.engine.harnesses.models import HarnessKind
-from codealmanac.jobs.ledger.models import JobId
+from codealmanac.runs.ledger.models import RunId
 from codealmanac.wiki.workspaces.roots import validate_almanac_root_field
 
 
@@ -37,5 +37,5 @@ class RunInitRequest(CodeAlmanacModel):
         return required_text(value, "init request text")
 
 
-class RunInitWithJobRequest(RunInitRequest):
-    job_id: JobId
+class RunInitWithRunRequest(RunInitRequest):
+    run_id: RunId

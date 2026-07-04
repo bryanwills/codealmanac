@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from codealmanac.app import CodeAlmanac, create_app
 from codealmanac.core.errors import CodeAlmanacError
-from codealmanac.jobs.queue import DrainJobQueueRequest
+from codealmanac.runs.queue import DrainRunQueueRequest
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -16,14 +16,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         return run(args, create_app())
     except (CodeAlmanacError, ValidationError) as error:
-        print(f"codealmanac-job-worker: {error}", file=sys.stderr)
+        print(f"codealmanac-run-worker: {error}", file=sys.stderr)
         return 1
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="codealmanac-job-worker",
-        description="Drain queued local CodeAlmanac lifecycle jobs.",
+        prog="codealmanac-run-worker",
+        description="Drain queued local CodeAlmanac lifecycle runs.",
     )
     parser.add_argument("--cwd", required=True)
     parser.add_argument("--wiki")
@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def run(args: argparse.Namespace, app: CodeAlmanac) -> int:
     app.workflows.queue.drain(
-        DrainJobQueueRequest(
+        DrainRunQueueRequest(
             cwd=Path(args.cwd),
             wiki=args.wiki,
         )

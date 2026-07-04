@@ -6,18 +6,18 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.engine.harnesses.models import HarnessEvent, HarnessKind
 from codealmanac.engine.page_run.models import PageRunContext
-from codealmanac.jobs.ledger.models import JobEventKind, JobId
+from codealmanac.runs.ledger.models import RunEventKind, RunId
 
 
 class PageRunBeginRequest(CodeAlmanacModel):
     cwd: Path
-    job_id: JobId
+    run_id: RunId
     wiki: str | None = None
 
 
-class PageJobRecordEventRequest(CodeAlmanacModel):
+class PageRunRecordEventRequest(CodeAlmanacModel):
     context: PageRunContext
-    kind: JobEventKind
+    kind: RunEventKind
     message: str
     harness_event: HarnessEvent | None = None
 

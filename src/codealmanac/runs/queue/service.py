@@ -1,64 +1,64 @@
 from pathlib import Path
 
-from codealmanac.jobs.ledger.models import (
-    JobOperation,
-    JobQueueDrainResult,
-    JobRecord,
-    JobSpec,
-    JobStatus,
-    QueuedJob,
+from codealmanac.runs.ledger.models import (
+    QueuedRun,
+    RunKind,
+    RunQueueDrainResult,
+    RunRecord,
+    RunSpec,
+    RunStatus,
 )
-from codealmanac.jobs.ledger.ports import JobWorkerSpawner
-from codealmanac.jobs.ledger.requests import (
-    AcquireJobWorkerLockRequest,
-    FinishJobRequest,
-    NextQueuedJobRequest,
-    QueueJobRequest,
-    SpawnJobWorkerRequest,
+from codealmanac.runs.ledger.ports import RunWorkerSpawner
+from codealmanac.runs.ledger.requests import (
+    AcquireRunWorkerLockRequest,
+    FinishRunRequest,
+    NextQueuedRunRequest,
+    QueueRunRequest,
+    SpawnRunWorkerRequest,
 )
-from codealmanac.jobs.ledger.service import JobLedgerService
-from codealmanac.jobs.queue.models import JobQueueStartResult
-from codealmanac.jobs.queue.requests import DrainJobQueueRequest
+from codealmanac.runs.ledger.service import RunLedgerService
+from codealmanac.runs.queue.models import RunQueueStartResult
+from codealmanac.runs.queue.requests import DrainRunQueueRequest
 from codealmanac.workflows.garden.requests import (
     RunGardenRequest,
-    RunGardenWithJobRequest,
+    RunGardenWithRunRequest,
 )
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.requests import (
     RunIngestRequest,
-    RunIngestWithJobRequest,
+    RunIngestWithRunRequest,
 )
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.init.requests import (
     RunInitRequest,
-    RunInitWithJobRequest,
+    RunInitWithRunRequest,
 )
 from codealmanac.workflows.init.service import InitWorkflow
 
 
-class JobQueueWorkflow:
+class RunQueueWorkflow:
     def __init__(
         self,
-        jobs: JobLedgerService,
+        runs: RunLedgerService,
         init: InitWorkflow,
         ingest: IngestWorkflow,
         garden: GardenWorkflow,
-        spawner: JobWorkerSpawner,
+        spawner: RunWorkerSpawner,
     ):
-        self.jobs = jobs
+        self.runs = runs
         self.init = init
         self.ingest = ingest
         self.garden = garden
         self.spawner = spawner
 
-    def queue_init(self, request: RunInitRequest) -> JobRecord:
+    def queue_init(self, request: RunInitRequest) -> RunRecord:
         prepared = self.init.prepare(request, enforce_force=True)
-        return self.jobs.queue(
-            QueueJobRequest(
+        return self.runs.queue(
+            QueueRunRequest(
                 cwd=prepared.workspace.root_path,
                 title=request.title or "Initialize wiki",
-                spec=JobSpec(
-                    operation=JobOperation.INIT,
+                spec=RunSpec(
+                    kind=RunKind.INIT,
                     cwd=prepared.workspace.root_path,
                     harness=request.harness,
                     almanac_root=prepared.workspace.almanac_root,
@@ -71,19 +71,19 @@ class JobQueueWorkflow:
             )
         )
 
-    def start_init_background(self, request: RunInitRequest) -> JobQueueStartResult:
-        job = self.queue_init(request)
+    def start_init_background(self, request: RunInitRequest) -> RunQueueStartResult:
+        run = self.queue_init(request)
         worker = self.spawn_worker(request.path, None)
-        return JobQueueStartResult(job=job, worker=worker)
+        return RunQueueStartResult(run=run, worker=worker)
 
-    def queue_ingest(self, request: RunIngestRequest) -> JobRecord:
-        return self.jobs.queue(
-            QueueJobRequest(
+    def queue_ingest(self, request: RunIngestRequest) -> RunRecord:
+        return self.runs.queue(
+            QueueRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
                 title=request.title or default_ingest_title(request.inputs),
-                spec=JobSpec(
-                    operation=JobOperation.INGEST,
+                spec=RunSpec(
+                    kind=RunKind.INGEST,
                     cwd=request.cwd,
                     wiki=request.wiki,
                     harness=request.harness,
@@ -94,19 +94,19 @@ class JobQueueWorkflow:
             )
         )
 
-    def start_ingest_background(self, request: RunIngestRequest) -> JobQueueStartResult:
-        job = self.queue_ingest(request)
+    def start_ingest_background(self, request: RunIngestRequest) -> RunQueueStartResult:
+        run = self.queue_ingest(request)
         worker = self.spawn_worker(request.cwd, request.wiki)
-        return JobQueueStartResult(job=job, worker=worker)
+        return RunQueueStartResult(run=run, worker=worker)
 
-    def queue_garden(self, request: RunGardenRequest) -> JobRecord:
-        return self.jobs.queue(
-            QueueJobRequest(
+    def queue_garden(self, request: RunGardenRequest) -> RunRecord:
+        return self.runs.queue(
+            QueueRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
                 title=request.title or "Garden wiki",
-                spec=JobSpec(
-                    operation=JobOperation.GARDEN,
+                spec=RunSpec(
+                    kind=RunKind.GARDEN,
                     cwd=request.cwd,
                     wiki=request.wiki,
                     harness=request.harness,
@@ -116,17 +116,17 @@ class JobQueueWorkflow:
             )
         )
 
-    def start_garden_background(self, request: RunGardenRequest) -> JobQueueStartResult:
-        job = self.queue_garden(request)
+    def start_garden_background(self, request: RunGardenRequest) -> RunQueueStartResult:
+        run = self.queue_garden(request)
         worker = self.spawn_worker(request.cwd, request.wiki)
-        return JobQueueStartResult(job=job, worker=worker)
+        return RunQueueStartResult(run=run, worker=worker)
 
     def spawn_worker(self, cwd: Path, wiki: str | None):
-        return self.spawner.spawn(SpawnJobWorkerRequest(cwd=cwd, wiki=wiki))
+        return self.spawner.spawn(SpawnRunWorkerRequest(cwd=cwd, wiki=wiki))
 
-    def drain(self, request: DrainJobQueueRequest) -> JobQueueDrainResult:
-        lease = self.jobs.acquire_worker_lock(
-            AcquireJobWorkerLockRequest(
+    def drain(self, request: DrainRunQueueRequest) -> RunQueueDrainResult:
+        lease = self.runs.acquire_worker_lock(
+            AcquireRunWorkerLockRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
                 owner=request.owner,
@@ -136,17 +136,17 @@ class JobQueueWorkflow:
             )
         )
         if lease is None:
-            return JobQueueDrainResult(lock_acquired=False)
-        processed: list[JobRecord] = []
+            return RunQueueDrainResult(lock_acquired=False)
+        processed: list[RunRecord] = []
         try:
-            while request.max_jobs is None or len(processed) < request.max_jobs:
-                queued = self.jobs.next_queued(
-                    NextQueuedJobRequest(cwd=request.cwd, wiki=request.wiki)
+            while request.max_runs is None or len(processed) < request.max_runs:
+                queued = self.runs.next_queued(
+                    NextQueuedRunRequest(cwd=request.cwd, wiki=request.wiki)
                 )
                 if queued is None:
                     break
                 processed.append(self.run_one(queued, request))
-            return JobQueueDrainResult(
+            return RunQueueDrainResult(
                 lock_acquired=True,
                 processed=tuple(processed),
             )
@@ -155,23 +155,23 @@ class JobQueueWorkflow:
 
     def run_one(
         self,
-        queued: QueuedJob,
-        request: DrainJobQueueRequest,
-    ) -> JobRecord:
+        queued: QueuedRun,
+        request: DrainRunQueueRequest,
+    ) -> RunRecord:
         spec = queued.spec
         if spec is None:
-            return self.jobs.finish(
-                FinishJobRequest(
+            return self.runs.finish(
+                FinishRunRequest(
                     cwd=request.cwd,
                     wiki=request.wiki,
-                    job_id=queued.record.job_id,
-                    status=JobStatus.FAILED,
-                    error="queued job is missing its durable spec",
+                    run_id=queued.record.run_id,
+                    status=RunStatus.FAILED,
+                    error="queued run is missing its durable spec",
                 )
             )
-        if spec.operation == JobOperation.INIT:
-            result = self.init.run_with_job(
-                RunInitWithJobRequest(
+        if spec.kind == RunKind.INIT:
+            result = self.init.run_with_run(
+                RunInitWithRunRequest(
                     path=spec.cwd,
                     harness=spec.harness,
                     almanac_root=spec.almanac_root,
@@ -180,42 +180,42 @@ class JobQueueWorkflow:
                     title=spec.title,
                     guidance=spec.guidance,
                     force=spec.force,
-                    job_id=queued.record.job_id,
+                    run_id=queued.record.run_id,
                 )
             )
-            return result.job
-        if spec.operation == JobOperation.INGEST:
-            result = self.ingest.run_with_job(
-                RunIngestWithJobRequest(
+            return result.run
+        if spec.kind == RunKind.INGEST:
+            result = self.ingest.run_with_run(
+                RunIngestWithRunRequest(
                     cwd=spec.cwd,
                     wiki=spec.wiki,
                     inputs=spec.inputs,
                     harness=spec.harness,
                     title=spec.title,
                     guidance=spec.guidance,
-                    job_id=queued.record.job_id,
+                    run_id=queued.record.run_id,
                 )
             )
-            return result.job
-        if spec.operation == JobOperation.GARDEN:
-            result = self.garden.run_with_job(
-                RunGardenWithJobRequest(
+            return result.run
+        if spec.kind == RunKind.GARDEN:
+            result = self.garden.run_with_run(
+                RunGardenWithRunRequest(
                     cwd=spec.cwd,
                     wiki=spec.wiki,
                     harness=spec.harness,
                     title=spec.title,
                     guidance=spec.guidance,
-                    job_id=queued.record.job_id,
+                    run_id=queued.record.run_id,
                 )
             )
-            return result.job
-        return self.jobs.finish(
-            FinishJobRequest(
+            return result.run
+        return self.runs.finish(
+            FinishRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
-                job_id=queued.record.job_id,
-                status=JobStatus.FAILED,
-                error=f"unsupported queued job operation: {spec.operation.value}",
+                run_id=queued.record.run_id,
+                status=RunStatus.FAILED,
+                error=f"unsupported queued run kind: {spec.kind.value}",
             )
         )
 

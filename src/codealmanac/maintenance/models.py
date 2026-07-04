@@ -1,13 +1,13 @@
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.engine.harnesses.models import HarnessRunStatus
-from codealmanac.jobs.ledger.models import JobId, JobStatus
-from codealmanac.maintenance.requests import MaintenanceOperation
+from codealmanac.maintenance.requests import MaintenanceRunKind
+from codealmanac.runs.ledger.models import RunId, RunStatus
 
 
-class MaintenanceJobResult(CodeAlmanacModel):
-    operation: MaintenanceOperation
-    job_id: JobId
-    job_status: JobStatus
+class MaintenanceRunResult(CodeAlmanacModel):
+    kind: MaintenanceRunKind
+    run_id: RunId
+    run_status: RunStatus
     harness_status: HarnessRunStatus
     summary: str | None
     output_text: str

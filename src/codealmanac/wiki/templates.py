@@ -90,5 +90,5 @@ def gitignore_runtime_block(almanac_root: Path) -> list[str]:
         f"{root}/index.db",
         f"{root}/index.db-wal",
         f"{root}/index.db-shm",
-        f"{root}/jobs/",
+        f"{root}/runs/",
     ]

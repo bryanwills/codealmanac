@@ -37,8 +37,8 @@ from codealmanac.engine.sources.requests import (
     ResolveSourcesRequest,
 )
 from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
-from codealmanac.jobs.ledger.models import JobEventKind, JobStatus
-from codealmanac.jobs.ledger.requests import ListJobsRequest, ReadJobLogRequest
+from codealmanac.runs.ledger.models import RunEventKind, RunStatus
+from codealmanac.runs.ledger.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
@@ -282,14 +282,14 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     )
 
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="durable"))
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=result.job.job_id))
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
-    assert result.job.status == JobStatus.DONE
-    assert result.job.started_at is not None
-    assert result.job.finished_at is not None
-    assert result.job.summary == "ingested note"
-    assert result.job.harness_transcript is not None
-    assert result.job.harness_transcript.session_id == "codex-ingest-session"
+    assert result.run.status == RunStatus.DONE
+    assert result.run.started_at is not None
+    assert result.run.finished_at is not None
+    assert result.run.summary == "ingested note"
+    assert result.run.harness_transcript is not None
+    assert result.run.harness_transcript.session_id == "codex-ingest-session"
     assert result.sources[0].ref.fingerprint is not None
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
     assert result.harness.changed_files == (repo / "almanac/pages/ingested-note.md",)
@@ -302,15 +302,15 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert "Prefer short pages." in adapter.requests[0].prompt
     assert "public CLI name is codealmanac" in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
-        JobEventKind.STATUS,
-        JobEventKind.STATUS,
-        JobEventKind.MESSAGE,
-        JobEventKind.MESSAGE,
-        JobEventKind.MESSAGE,
-        JobEventKind.OUTPUT,
-        JobEventKind.STATUS,
+        RunEventKind.STATUS,
+        RunEventKind.STATUS,
+        RunEventKind.MESSAGE,
+        RunEventKind.MESSAGE,
+        RunEventKind.MESSAGE,
+        RunEventKind.OUTPUT,
+        RunEventKind.STATUS,
     )
-    assert log[1].message == JobStatus.RUNNING.value
+    assert log[1].message == RunStatus.RUNNING.value
 
 
 def test_ingest_workflow_records_normalized_harness_events(
@@ -336,15 +336,15 @@ def test_ingest_workflow_records_normalized_harness_events(
         )
     )
 
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=result.job.job_id))
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
     assert tuple((entry.kind, entry.message) for entry in log[-6:]) == (
-        (JobEventKind.OUTPUT, "agent read source note"),
-        (JobEventKind.TOOL, "agent wrote almanac/pages/ingested-note.md"),
-        (JobEventKind.TOOL, "usage: 42 tokens"),
-        (JobEventKind.TOOL, "spawned helper"),
-        (JobEventKind.OUTPUT, "codex succeeded: updated wiki"),
-        (JobEventKind.STATUS, "done"),
+        (RunEventKind.OUTPUT, "agent read source note"),
+        (RunEventKind.TOOL, "agent wrote almanac/pages/ingested-note.md"),
+        (RunEventKind.TOOL, "usage: 42 tokens"),
+        (RunEventKind.TOOL, "spawned helper"),
+        (RunEventKind.OUTPUT, "codex succeeded: updated wiki"),
+        (RunEventKind.STATUS, "done"),
     )
     assert log[-6].harness_event is not None
     assert log[-6].harness_event.actor is not None
@@ -512,12 +512,12 @@ def test_ingest_workflow_fails_run_when_harness_is_missing(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=run.job_id))
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=run.run_id))
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error == "harness not found: codex"
-    assert JobEventKind.ERROR in {entry.kind for entry in log}
+    assert RunEventKind.ERROR in {entry.kind for entry in log}
 
 
 def test_ingest_workflow_rejects_harness_changes_outside_almanac(
@@ -544,9 +544,9 @@ def test_ingest_workflow_rejects_harness_changes_outside_almanac(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error is not None
     assert run.error.startswith(
         "harness reported change outside configured Almanac root:"
@@ -578,17 +578,17 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=run.job_id))
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=run.run_id))
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error == "harness codex failed with status failed: agent failed"
     assert run.harness_transcript is not None
     assert run.harness_transcript.session_id == "failed-ingest-session"
     assert tuple(entry.kind for entry in log)[-3:] == (
-        JobEventKind.OUTPUT,
-        JobEventKind.ERROR,
-        JobEventKind.STATUS,
+        RunEventKind.OUTPUT,
+        RunEventKind.ERROR,
+        RunEventKind.STATUS,
     )
     assert log[-3].message == "codex failed: agent failed"
 
@@ -619,15 +619,15 @@ def test_ingest_workflow_checks_mutations_before_failed_harness_status(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=run.job_id))
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=run.run_id))
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error == "ingest changed file outside almanac: src/app.py"
     assert tuple(entry.kind for entry in log)[-3:] == (
-        JobEventKind.OUTPUT,
-        JobEventKind.ERROR,
-        JobEventKind.STATUS,
+        RunEventKind.OUTPUT,
+        RunEventKind.ERROR,
+        RunEventKind.STATUS,
     )
     assert log[-3].message == "codex failed: agent failed after mutation"
 
@@ -659,7 +659,7 @@ def test_ingest_workflow_allows_preexisting_dirty_app_files_when_unchanged(
         )
     )
 
-    assert result.job.status == JobStatus.DONE
+    assert result.run.status == RunStatus.DONE
     assert result.safety.changed_files == (repo / "almanac/pages/ingested-note.md",)
     assert (repo / "src/app.py").read_text(encoding="utf-8") == "user edit\n"
 
@@ -691,9 +691,9 @@ def test_ingest_workflow_rejects_harness_mutation_to_dirty_app_file(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error is not None
     assert run.error == "ingest changed file outside almanac: src/app.py"
 
@@ -726,9 +726,9 @@ def test_ingest_workflow_rejects_dirty_almanac_preflight(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error is not None
     assert run.error.startswith("ingest requires a clean almanac before running:")
 
@@ -755,9 +755,9 @@ def test_ingest_workflow_requires_git_change_tracking(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error is not None
     assert run.error.startswith("ingest requires Git change tracking:")
 

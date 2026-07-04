@@ -7,7 +7,7 @@ from codealmanac.core.text import required_text
 class PrepareNextLocalRunRequest(CodeAlmanacModel):
     repository_id: str | None = None
     branch_id: str | None = None
-    operation: str = "update"
+    kind: str = "update"
 
     @field_validator("repository_id", "branch_id")
     @classmethod
@@ -16,7 +16,7 @@ class PrepareNextLocalRunRequest(CodeAlmanacModel):
             return None
         return required_text(value, "local run preparation id")
 
-    @field_validator("operation")
+    @field_validator("kind")
     @classmethod
-    def require_operation(cls, value: str) -> str:
-        return required_text(value, "local run preparation operation")
+    def require_kind(cls, value: str) -> str:
+        return required_text(value, "local run preparation kind")

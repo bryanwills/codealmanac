@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codealmanac"
-version = "0.1.13"
+version = "0.2.0"
 description = "A codebase wiki maintained by AI coding agents."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -44,7 +44,7 @@ dependencies = [
 [project.scripts]
 codealmanac = "codealmanac.cli.main:main"
 codealmanac-capture-hook = "codealmanac.capture_hook:main"
-codealmanac-job-worker = "codealmanac.job_worker:main"
+codealmanac-run-worker = "codealmanac.run_worker:main"
 codealmanac-local-trigger = "codealmanac.local_trigger:main"
 codealmanac-local-worker = "codealmanac.local_worker:main"
 

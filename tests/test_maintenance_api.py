@@ -13,12 +13,13 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.jobs.ledger.models import JobStatus
 from codealmanac.maintenance import (
-    MaintenanceOperation,
+    MaintenanceRunKind,
+    MaintenanceRunResult,
     RunMaintenanceRequest,
 )
 from codealmanac.maintenance.service import run_maintenance
+from codealmanac.runs.ledger.models import RunStatus
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 
@@ -85,7 +86,7 @@ def test_run_maintenance_routes_ingest_to_ingest_workflow(
 
     result = run_maintenance(
         RunMaintenanceRequest(
-            operation=MaintenanceOperation.INGEST,
+            kind=MaintenanceRunKind.INGEST,
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
@@ -96,16 +97,27 @@ def test_run_maintenance_routes_ingest_to_ingest_workflow(
     )
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="durable"))
 
-    assert result.operation == MaintenanceOperation.INGEST
-    assert result.job_status == JobStatus.DONE
+    assert result.kind == MaintenanceRunKind.INGEST
+    assert result.run_status == RunStatus.DONE
     assert result.harness_status == HarnessRunStatus.SUCCEEDED
     assert result.summary == "ingested maintenance source"
     assert result.output_text == "updated wiki from maintenance source"
-    assert result.job_id
+    assert result.run_id
     assert matches[0].slug == "maintenance-ingest"
     assert harness.requests[0].title == "Hosted maintenance ingest"
     assert "Keep the page terse." in harness.requests[0].prompt
     assert "capture source" in harness.requests[0].prompt
+
+
+def test_maintenance_package_exports_hosted_data_contract() -> None:
+    assert tuple(MaintenanceRunResult.model_fields) == (
+        "kind",
+        "run_id",
+        "run_status",
+        "harness_status",
+        "summary",
+        "output_text",
+    )
 
 
 def test_run_maintenance_routes_init_to_init_workflow(
@@ -127,7 +139,7 @@ def test_run_maintenance_routes_init_to_init_workflow(
 
     result = run_maintenance(
         RunMaintenanceRequest(
-            operation=MaintenanceOperation.INIT,
+            kind=MaintenanceRunKind.INIT,
             cwd=repo,
             harness=HarnessKind.CODEX,
             name="repo",
@@ -139,8 +151,8 @@ def test_run_maintenance_routes_init_to_init_workflow(
     )
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="durable"))
 
-    assert result.operation == MaintenanceOperation.INIT
-    assert result.job_status == JobStatus.DONE
+    assert result.kind == MaintenanceRunKind.INIT
+    assert result.run_status == RunStatus.DONE
     assert result.harness_status == HarnessRunStatus.SUCCEEDED
     assert result.summary == "initialized maintenance wiki"
     assert result.output_text == "initialized wiki from maintenance api"
@@ -149,20 +161,20 @@ def test_run_maintenance_routes_init_to_init_workflow(
     assert "Write one starting page." in harness.requests[0].prompt
 
 
-def test_maintenance_request_validates_operation_specific_fields(tmp_path: Path):
+def test_maintenance_request_validates_kind_specific_fields(tmp_path: Path):
     with pytest.raises(ValidationError, match="ingest maintenance request requires"):
-        RunMaintenanceRequest(operation=MaintenanceOperation.INGEST, cwd=tmp_path)
+        RunMaintenanceRequest(kind=MaintenanceRunKind.INGEST, cwd=tmp_path)
 
     with pytest.raises(ValidationError, match="init maintenance request"):
         RunMaintenanceRequest(
-            operation=MaintenanceOperation.INIT,
+            kind=MaintenanceRunKind.INIT,
             cwd=tmp_path,
             inputs=("note.md",),
         )
 
     with pytest.raises(ValidationError, match="does not accept almanac_root"):
         RunMaintenanceRequest(
-            operation=MaintenanceOperation.INGEST,
+            kind=MaintenanceRunKind.INGEST,
             cwd=tmp_path,
             inputs=("note.md",),
             almanac_root=Path("docs/almanac"),

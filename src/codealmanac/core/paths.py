@@ -41,8 +41,8 @@ def default_run_artifacts_path() -> Path:
     return global_state_dir() / "runs"
 
 
-def default_jobs_path() -> Path:
-    return global_state_dir() / "jobs"
+def default_runs_path() -> Path:
+    return global_state_dir() / "runs"
 
 
 def default_engine_workspaces_path() -> Path:

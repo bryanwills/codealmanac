@@ -28,8 +28,8 @@ def local_worker_command(request: SpawnLocalWorkerRequest) -> list[str]:
         request.repository_id,
         "--branch-id",
         request.branch_id,
-        "--operation",
-        request.operation,
+        "--kind",
+        request.kind,
         "--using",
         request.harness.value,
     ]

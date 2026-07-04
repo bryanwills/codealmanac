@@ -124,13 +124,13 @@ def test_console_entry_points_keep_one_human_cli_and_private_workers():
 
     assert scripts["codealmanac"] == "codealmanac.cli.main:main"
     assert scripts["codealmanac-capture-hook"] == "codealmanac.capture_hook:main"
-    assert scripts["codealmanac-job-worker"] == "codealmanac.job_worker:main"
+    assert scripts["codealmanac-run-worker"] == "codealmanac.run_worker:main"
     assert scripts["codealmanac-local-trigger"] == "codealmanac.local_trigger:main"
     assert scripts["codealmanac-local-worker"] == "codealmanac.local_worker:main"
     assert set(scripts) == {
         "codealmanac",
         "codealmanac-capture-hook",
-        "codealmanac-job-worker",
+        "codealmanac-run-worker",
         "codealmanac-local-trigger",
         "codealmanac-local-worker",
     }
@@ -229,7 +229,7 @@ def test_readme_keeps_init_scaffold_separate_from_runtime_state():
     assert "|   |-- pages/" in init_section
     assert "|   |-- manual/" in init_section
     assert "almanac/index.db" not in init_section
-    assert "almanac/jobs/" not in init_section
+    assert "almanac/runs/" not in init_section
     assert "config.toml" not in init_section
 
 

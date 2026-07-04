@@ -28,7 +28,7 @@ Topics form a DAG serialized in `.almanac/topics.yaml`. A page can belong to mul
 |-------|------------------|
 | `stack` | Third-party libraries and services we depend on |
 | `systems` | Custom subsystems built in this repo (indexer, registry, DAG, viewer) |
-| `flows` | Multi-step processes spanning files (capture, build, jobs) |
+| `flows` | Multi-step processes spanning files (capture, build, runs) |
 | `decisions` | Architectural choices — "why X over Y" |
 | `agents` | AI agent integration: harness providers, operation prompts, Build/Absorb/Garden (child of `flows` + `stack`) |
 | `cli` | CLI command surface and wiring (child of `systems`) |

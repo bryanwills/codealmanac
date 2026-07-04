@@ -6,21 +6,21 @@ from codealmanac.engine.lifecycle import (
     LifecycleMutationPreflight,
     LifecycleMutationReport,
 )
-from codealmanac.jobs.ledger.models import JobId, JobRecord
+from codealmanac.runs.ledger.models import RunId, RunRecord
 from codealmanac.wiki.index.models import IndexRefreshResult
 from codealmanac.wiki.workspaces.models import Workspace
 
 
 class PageRunContext(CodeAlmanacModel):
     cwd: Path
-    job_id: JobId
+    run_id: RunId
     workspace: Workspace
     wiki: str | None = None
     preflight: LifecycleMutationPreflight | None = None
 
 
 class PageRunResult(CodeAlmanacModel):
-    job: JobRecord
+    run: RunRecord
     harness: HarnessRunResult
     safety: LifecycleMutationReport
     index: IndexRefreshResult

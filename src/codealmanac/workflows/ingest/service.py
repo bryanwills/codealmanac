@@ -1,7 +1,7 @@
 from codealmanac.engine.page_run import (
-    PageJobRecordEventRequest,
     PageRunBeginRequest,
     PageRunExecuteRequest,
+    PageRunRecordEventRequest,
     PageRunWorkflow,
 )
 from codealmanac.engine.sources.models import SourceBrief, SourceRuntime
@@ -11,19 +11,19 @@ from codealmanac.engine.sources.requests import (
     SourceRuntimeContext,
 )
 from codealmanac.engine.sources.service import SourcesService
-from codealmanac.jobs.ledger.models import (
-    JobEventKind,
-    JobOperation,
-    JobRecord,
-)
-from codealmanac.jobs.ledger.requests import StartJobRequest
-from codealmanac.jobs.ledger.service import JobLedgerService
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
+from codealmanac.runs.ledger.models import (
+    RunEventKind,
+    RunKind,
+    RunRecord,
+)
+from codealmanac.runs.ledger.requests import StartRunRequest
+from codealmanac.runs.ledger.service import RunLedgerService
 from codealmanac.wiki.workspaces.models import Workspace
 from codealmanac.workflows.ingest.models import IngestPromptPayload, IngestResult
 from codealmanac.workflows.ingest.requests import (
     RunIngestRequest,
-    RunIngestWithJobRequest,
+    RunIngestWithRunRequest,
 )
 
 INGEST_PROMPT_SECTIONS = (
@@ -36,46 +36,46 @@ class IngestWorkflow:
     def __init__(
         self,
         sources: SourcesService,
-        jobs: JobLedgerService,
+        runs: RunLedgerService,
         page_runs: PageRunWorkflow,
         prompts: PromptRenderer,
     ):
         self.sources = sources
-        self.jobs = jobs
+        self.runs = runs
         self.page_runs = page_runs
         self.prompts = prompts
 
     def run(self, request: RunIngestRequest) -> IngestResult:
         started = self.start(request)
-        return self.run_with_job(
-            RunIngestWithJobRequest(
+        return self.run_with_run(
+            RunIngestWithRunRequest(
                 cwd=request.cwd,
                 inputs=request.inputs,
                 harness=request.harness,
                 wiki=request.wiki,
                 title=request.title,
                 guidance=request.guidance,
-                job_id=started.job_id,
+                run_id=started.run_id,
             )
         )
 
-    def start(self, request: RunIngestRequest) -> JobRecord:
-        return self.jobs.start(
-            StartJobRequest(
+    def start(self, request: RunIngestRequest) -> RunRecord:
+        return self.runs.start(
+            StartRunRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
-                operation=JobOperation.INGEST,
+                kind=RunKind.INGEST,
                 title=request.title or default_title(request.inputs),
             )
         )
 
-    def run_with_job(self, request: RunIngestWithJobRequest) -> IngestResult:
-        job_id = request.job_id
+    def run_with_run(self, request: RunIngestWithRunRequest) -> IngestResult:
+        run_id = request.run_id
         context = self.page_runs.begin(
             PageRunBeginRequest(
                 cwd=request.cwd,
                 wiki=request.wiki,
-                job_id=job_id,
+                run_id=run_id,
             )
         )
         try:
@@ -84,17 +84,17 @@ class IngestWorkflow:
                 ResolveSourcesRequest(cwd=request.cwd, inputs=request.inputs)
             )
             self.page_runs.record(
-                PageJobRecordEventRequest(
+                PageRunRecordEventRequest(
                     context=context,
-                    kind=JobEventKind.MESSAGE,
+                    kind=RunEventKind.MESSAGE,
                     message=f"resolved {len(sources)} {source_word(len(sources))}",
                 )
             )
             source_runtime = self.inspect_source_runtime(context.workspace, sources)
             self.page_runs.record(
-                PageJobRecordEventRequest(
+                PageRunRecordEventRequest(
                     context=context,
-                    kind=JobEventKind.MESSAGE,
+                    kind=RunEventKind.MESSAGE,
                     message=(
                         f"loaded {len(source_runtime)} source runtime snapshot"
                         f"{'' if len(source_runtime) == 1 else 's'}"
@@ -117,7 +117,7 @@ class IngestWorkflow:
                 )
             )
             return IngestResult(
-                job=page_run.job,
+                run=page_run.run,
                 sources=sources,
                 source_runtime=source_runtime,
                 harness=page_run.harness,

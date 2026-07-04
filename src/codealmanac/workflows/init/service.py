@@ -6,10 +6,10 @@ from codealmanac.engine.page_run import (
     PageRunExecuteRequest,
     PageRunWorkflow,
 )
-from codealmanac.jobs.ledger.models import JobOperation
-from codealmanac.jobs.ledger.requests import StartJobRequest
-from codealmanac.jobs.ledger.service import JobLedgerService
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
+from codealmanac.runs.ledger.models import RunKind
+from codealmanac.runs.ledger.requests import StartRunRequest
+from codealmanac.runs.ledger.service import RunLedgerService
 from codealmanac.wiki.service import WikiService
 from codealmanac.wiki.workspaces.models import Workspace
 from codealmanac.wiki.workspaces.requests import (
@@ -23,7 +23,7 @@ from codealmanac.workflows.init.models import (
     InitPromptPayload,
     InitResult,
 )
-from codealmanac.workflows.init.requests import RunInitRequest, RunInitWithJobRequest
+from codealmanac.workflows.init.requests import RunInitRequest, RunInitWithRunRequest
 
 INIT_PROMPT_SECTIONS = (
     PromptName.BASE_KERNEL,
@@ -36,13 +36,13 @@ class InitWorkflow:
         self,
         workspaces: WorkspacesService,
         wiki: WikiService,
-        jobs: JobLedgerService,
+        runs: RunLedgerService,
         page_runs: PageRunWorkflow,
         prompts: PromptRenderer,
     ):
         self.workspaces = workspaces
         self.wiki = wiki
-        self.jobs = jobs
+        self.runs = runs
         self.page_runs = page_runs
         self.prompts = prompts
 
@@ -71,15 +71,15 @@ class InitWorkflow:
 
     def run(self, request: RunInitRequest) -> InitResult:
         preparation = self.prepare(request, enforce_force=True)
-        started = self.jobs.start(
-            StartJobRequest(
+        started = self.runs.start(
+            StartRunRequest(
                 cwd=preparation.workspace.root_path,
-                operation=JobOperation.INIT,
+                kind=RunKind.INIT,
                 title=request.title or "Initialize wiki",
             )
         )
-        return self.run_with_job(
-            RunInitWithJobRequest(
+        return self.run_with_run(
+            RunInitWithRunRequest(
                 path=preparation.workspace.root_path,
                 harness=request.harness,
                 almanac_root=preparation.workspace.almanac_root,
@@ -88,21 +88,21 @@ class InitWorkflow:
                 title=request.title,
                 guidance=request.guidance,
                 force=request.force,
-                job_id=started.job_id,
+                run_id=started.run_id,
             ),
             prepared=preparation,
         )
 
-    def run_with_job(
+    def run_with_run(
         self,
-        request: RunInitWithJobRequest,
+        request: RunInitWithRunRequest,
         prepared: InitPreparation | None = None,
     ) -> InitResult:
         preparation = prepared or self.prepare(request, enforce_force=False)
         context = self.page_runs.begin(
             PageRunBeginRequest(
                 cwd=preparation.workspace.root_path,
-                job_id=request.job_id,
+                run_id=request.run_id,
             )
         )
         try:
@@ -125,7 +125,7 @@ class InitWorkflow:
             return InitResult(
                 workspace=preparation.workspace,
                 existing_page_count=preparation.existing_page_count,
-                job=page_run.job,
+                run=page_run.run,
                 harness=page_run.harness,
                 safety=page_run.safety,
                 index=page_run.index,

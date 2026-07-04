@@ -2,21 +2,21 @@ import time
 from collections.abc import Iterator
 from pathlib import Path
 
-from codealmanac.jobs.ledger.models import (
-    JobAttachUpdate,
-    JobEventKind,
-    JobLogEvent,
-    JobStatus,
+from codealmanac.runs.ledger.models import (
+    RunAttachUpdate,
+    RunEventKind,
+    RunLogEvent,
+    RunStatus,
 )
-from codealmanac.jobs.ledger.store import JobStore
+from codealmanac.runs.ledger.store import RunStore
 
 TERMINAL_SETTLE_SECONDS = 1.0
 
 
-class JobAttachStreamer:
+class RunAttachStreamer:
     def __init__(
         self,
-        store: JobStore,
+        store: RunStore,
         terminal_settle_seconds: float = TERMINAL_SETTLE_SECONDS,
     ):
         if terminal_settle_seconds < 0:
@@ -27,13 +27,13 @@ class JobAttachStreamer:
     def stream(
         self,
         almanac_path: Path,
-        job_id: str,
+        run_id: str,
         poll_interval_seconds: float,
-    ) -> Iterator[JobAttachUpdate]:
+    ) -> Iterator[RunAttachUpdate]:
         last_sequence = 0
         terminal_seen_at: float | None = None
         while True:
-            snapshot = self.store.attach(almanac_path, job_id)
+            snapshot = self.store.attach(almanac_path, run_id)
             if snapshot.terminal and not terminal_status_event_seen(
                 snapshot.events,
                 snapshot.record.status,
@@ -50,7 +50,7 @@ class JobAttachStreamer:
             if len(events) > 0:
                 last_sequence = max(event.sequence for event in events)
             if len(events) > 0 or snapshot.terminal:
-                yield JobAttachUpdate(
+                yield RunAttachUpdate(
                     record=snapshot.record,
                     events=events,
                     terminal=snapshot.terminal,
@@ -61,17 +61,17 @@ class JobAttachStreamer:
 
 
 def events_after(
-    events: tuple[JobLogEvent, ...],
+    events: tuple[RunLogEvent, ...],
     last_sequence: int,
-) -> tuple[JobLogEvent, ...]:
+) -> tuple[RunLogEvent, ...]:
     return tuple(event for event in events if event.sequence > last_sequence)
 
 
 def terminal_status_event_seen(
-    events: tuple[JobLogEvent, ...],
-    status: JobStatus,
+    events: tuple[RunLogEvent, ...],
+    status: RunStatus,
 ) -> bool:
     return any(
-        event.kind == JobEventKind.STATUS and event.message == status.value
+        event.kind == RunEventKind.STATUS and event.message == status.value
         for event in events
     )

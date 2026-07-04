@@ -3,7 +3,7 @@ from pathlib import Path
 
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import default_jobs_path
+from codealmanac.core.paths import default_runs_path
 from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -12,14 +12,14 @@ from codealmanac.engine.harnesses.models import (
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.integrations.runs.process import worker_command
-from codealmanac.jobs.ledger.models import JobStatus, JobWorkerSpawnResult
-from codealmanac.jobs.ledger.requests import (
-    CancelJobRequest,
-    ListJobsRequest,
-    ReadJobLogRequest,
-    SpawnJobWorkerRequest,
+from codealmanac.runs.ledger.models import RunStatus, RunWorkerSpawnResult
+from codealmanac.runs.ledger.requests import (
+    CancelRunRequest,
+    ListRunsRequest,
+    ReadRunLogRequest,
+    SpawnRunWorkerRequest,
 )
-from codealmanac.jobs.queue import DrainJobQueueRequest
+from codealmanac.runs.queue import DrainRunQueueRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.identity import workspace_id_for
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
@@ -68,18 +68,18 @@ The queued worker turned the note into durable wiki knowledge.
 
 class FakeWorkerSpawner:
     def __init__(self):
-        self.requests: list[SpawnJobWorkerRequest] = []
+        self.requests: list[SpawnRunWorkerRequest] = []
 
-    def spawn(self, request: SpawnJobWorkerRequest) -> JobWorkerSpawnResult:
+    def spawn(self, request: SpawnRunWorkerRequest) -> RunWorkerSpawnResult:
         self.requests.append(request)
-        return JobWorkerSpawnResult(
+        return RunWorkerSpawnResult(
             child_pid=4242,
             command=("fake-codealmanac-worker",),
         )
 
 
-def workspace_jobs_path(repo: Path) -> Path:
-    return default_jobs_path() / workspace_id_for(repo)
+def workspace_runs_path(repo: Path) -> Path:
+    return default_runs_path() / workspace_id_for(repo)
 
 
 def test_run_queue_background_start_persists_spec_and_spawns_worker(
@@ -104,13 +104,13 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
             harness=HarnessKind.CODEX,
         )
     )
-    runs = app.jobs.list(ListJobsRequest(cwd=repo))
+    runs = app.runs.list(ListRunsRequest(cwd=repo))
 
     assert result.worker.child_pid == 4242
-    assert result.job.status == JobStatus.QUEUED
-    assert runs[0].job_id == result.job.job_id
-    assert spawner.requests == [SpawnJobWorkerRequest(cwd=repo, wiki=None)]
-    assert (workspace_jobs_path(repo) / f"{result.job.job_id}.spec.json").is_file()
+    assert result.run.status == RunStatus.QUEUED
+    assert runs[0].run_id == result.run.run_id
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert (workspace_runs_path(repo) / f"{result.run.run_id}.spec.json").is_file()
 
 
 def test_run_queue_drains_persisted_ingest_spec(
@@ -138,14 +138,14 @@ def test_run_queue_drains_persisted_ingest_spec(
         )
     )
 
-    result = app.workflows.queue.drain(DrainJobQueueRequest(cwd=repo))
-    runs = app.jobs.list(ListJobsRequest(cwd=repo))
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=queued.job_id))
+    result = app.workflows.queue.drain(DrainRunQueueRequest(cwd=repo))
+    runs = app.runs.list(ListRunsRequest(cwd=repo))
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=queued.run_id))
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="worker"))
 
     assert result.lock_acquired is True
-    assert [record.job_id for record in result.processed] == [queued.job_id]
-    assert runs[0].status == JobStatus.DONE
+    assert [record.run_id for record in result.processed] == [queued.run_id]
+    assert runs[0].status == RunStatus.DONE
     assert runs[0].summary == "queued ingest completed"
     assert matches[0].slug == "queued-note"
     assert len(harness.requests) == 1
@@ -154,7 +154,7 @@ def test_run_queue_drains_persisted_ingest_spec(
         "queued ingest",
         "running",
     )
-    assert not (workspace_jobs_path(repo) / "worker.lock").exists()
+    assert not (workspace_runs_path(repo) / "worker.lock").exists()
 
 
 def test_run_queue_skips_cancelled_queued_runs(
@@ -177,22 +177,22 @@ def test_run_queue_skips_cancelled_queued_runs(
             harness=HarnessKind.CODEX,
         )
     )
-    app.jobs.cancel(CancelJobRequest(cwd=repo, job_id=queued.job_id))
+    app.runs.cancel(CancelRunRequest(cwd=repo, run_id=queued.run_id))
 
-    result = app.workflows.queue.drain(DrainJobQueueRequest(cwd=repo))
-    runs = app.jobs.list(ListJobsRequest(cwd=repo))
+    result = app.workflows.queue.drain(DrainRunQueueRequest(cwd=repo))
+    runs = app.runs.list(ListRunsRequest(cwd=repo))
 
     assert result.lock_acquired is True
     assert result.processed == ()
-    assert runs[0].status == JobStatus.CANCELLED
+    assert runs[0].status == RunStatus.CANCELLED
     assert harness.requests == []
 
 
 def test_worker_command_targets_private_job_worker_entrypoint(tmp_path: Path):
-    command = worker_command(SpawnJobWorkerRequest(cwd=tmp_path, wiki="docs"))
+    command = worker_command(SpawnRunWorkerRequest(cwd=tmp_path, wiki="docs"))
 
     assert command == [
-        "codealmanac-job-worker",
+        "codealmanac-run-worker",
         "--cwd",
         str(tmp_path),
         "--wiki",

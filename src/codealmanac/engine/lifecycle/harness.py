@@ -6,7 +6,7 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
     terminal_harness_event,
 )
-from codealmanac.jobs.ledger.models import JobEventKind
+from codealmanac.runs.ledger.models import RunEventKind
 
 
 def validate_harness_result(result: HarnessRunResult) -> None:
@@ -25,9 +25,9 @@ def harness_events(result: HarnessRunResult) -> tuple[HarnessEvent, ...]:
     return (terminal_harness_event(result.kind, result.status, result.output_text),)
 
 
-def harness_run_event_kind(event: HarnessEvent) -> JobEventKind:
+def harness_run_event_kind(event: HarnessEvent) -> RunEventKind:
     if event.kind == HarnessEventKind.ERROR:
-        return JobEventKind.ERROR
+        return RunEventKind.ERROR
     if event.kind in {
         HarnessEventKind.TOOL_USE,
         HarnessEventKind.TOOL_RESULT,
@@ -39,8 +39,8 @@ def harness_run_event_kind(event: HarnessEvent) -> JobEventKind:
         HarnessEventKind.AGENT_WAIT_STARTED,
         HarnessEventKind.AGENT_COMPLETED,
     }:
-        return JobEventKind.TOOL
-    return JobEventKind.OUTPUT
+        return RunEventKind.TOOL
+    return RunEventKind.OUTPUT
 
 
 def first_line(value: str) -> str:

@@ -25,17 +25,17 @@ class LifecycleMutationPolicy:
     def __init__(
         self,
         probe: WorkspaceChangeProbe,
-        operation: str,
+        kind: str,
         *,
         require_clean_almanac: bool = True,
     ):
         self.probe = probe
-        self.operation = operation
+        self.kind = kind
         self.require_clean_almanac = require_clean_almanac
 
     def preflight(self, workspace: Workspace) -> LifecycleMutationPreflight:
         before = self.probe.snapshot(workspace.root_path)
-        validate_snapshot_available(before, self.operation)
+        validate_snapshot_available(before, self.kind)
         almanac_prefix = almanac_relative_path(workspace)
         if self.require_clean_almanac:
             dirty_almanac = tuple(
@@ -46,7 +46,7 @@ class LifecycleMutationPolicy:
             if dirty_almanac:
                 almanac_label = almanac_prefix.as_posix()
                 raise ValidationFailed(
-                    f"{self.operation} requires a clean {almanac_label} "
+                    f"{self.kind} requires a clean {almanac_label} "
                     f"before running: {format_paths(dirty_almanac)}"
                 )
         return LifecycleMutationPreflight(
@@ -68,7 +68,7 @@ class LifecycleMutationPolicy:
     ) -> LifecycleMutationReport:
         validate_reported_changes(workspace, reported_changed_files)
         after = self.probe.snapshot(workspace.root_path)
-        validate_snapshot_available(after, self.operation)
+        validate_snapshot_available(after, self.kind)
         mutated = changed_paths(preflight.before, after)
         unsafe = tuple(
             path
@@ -78,7 +78,7 @@ class LifecycleMutationPolicy:
         if unsafe:
             almanac_label = preflight.almanac_prefix.as_posix()
             raise ValidationFailed(
-                f"{self.operation} changed file outside {almanac_label}: "
+                f"{self.kind} changed file outside {almanac_label}: "
                 f"{format_paths(unsafe)}"
             )
         return LifecycleMutationReport(
@@ -94,12 +94,12 @@ class LifecycleMutationPolicy:
 
 def validate_snapshot_available(
     snapshot: WorkspaceChangeSnapshot,
-    operation: str,
+    kind: str,
 ) -> None:
     if snapshot.available:
         return
     reason = snapshot.unavailable_reason or "unknown git status failure"
-    raise ValidationFailed(f"{operation} requires Git change tracking: {reason}")
+    raise ValidationFailed(f"{kind} requires Git change tracking: {reason}")
 
 
 def validate_reported_changes(

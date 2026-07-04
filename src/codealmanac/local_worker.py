@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository-id")
     parser.add_argument("--branch-id")
     parser.add_argument(
-        "--operation",
+        "--kind",
         default=LocalRunKind.UPDATE.value,
         choices=tuple(kind.value for kind in LocalRunKind),
     )
@@ -50,7 +50,7 @@ def run(args: argparse.Namespace, app: CodeAlmanac) -> int:
         RunNextLocalWorkerRequest(
             repository_id=args.repository_id,
             branch_id=args.branch_id,
-            operation=args.operation,
+            kind=args.kind,
             harness=HarnessKind(args.using),
             title=args.title,
             guidance=args.guidance,

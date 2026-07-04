@@ -1,139 +1,139 @@
 import { viewerApi } from "./api.js";
 import { emptyState, pageIntro } from "./components.js";
-import { jobHref } from "./routes.js";
+import { runHref } from "./routes.js";
 
 const ACTIVE_JOB_STATUSES = new Set(["queued", "running"]);
 const JOB_POLL_INTERVAL_MS = 1500;
 
 let jobPollTimer = null;
 
-export function clearJobPolling() {
+export function clearRunPolling() {
   if (jobPollTimer === null) return;
   window.clearTimeout(jobPollTimer);
   jobPollTimer = null;
 }
 
-export async function renderJobs(context) {
+export async function renderRuns(context) {
   const { elements, setRouteTitle, wiki } = context;
   const routeHash = window.location.hash;
-  const result = await viewerApi.jobs(wiki);
+  const result = await viewerApi.runs(wiki);
   if (window.location.hash !== routeHash) return;
-  setRouteTitle("Jobs");
+  setRouteTitle("Runs");
   replaceMain(
     elements,
-    pageIntro("Lifecycle jobs", "Jobs", `${result.jobs.length} lifecycle jobs.`),
-    jobList(result.jobs),
+    pageIntro("Lifecycle runs", "Runs", `${result.runs.length} lifecycle runs.`),
+    runList(result.runs),
   );
-  if (result.jobs.some((job) => isActiveJobStatus(job.status))) {
-    scheduleJobPolling(routeHash, () => renderJobs(context));
+  if (result.runs.some((run) => isActiveRunStatus(run.status))) {
+    scheduleRunPolling(routeHash, () => renderRuns(context));
   }
 }
 
-export async function renderJob(context, jobId) {
+export async function renderRun(context, jobId) {
   const { elements, setRouteTitle, wiki } = context;
   const routeHash = window.location.hash;
-  const detail = await viewerApi.job(jobId, wiki);
+  const detail = await viewerApi.run(jobId, wiki);
   if (window.location.hash !== routeHash) return;
-  const job = detail.job;
-  setRouteTitle(job.title || job.job_id);
+  const run = detail.run;
+  setRouteTitle(run.title || run.run_id);
   replaceMain(
     elements,
-    pageIntro("Job", job.title || job.job_id, `${job.operation} · ${job.status}`),
-    jobDetail(job),
+    pageIntro("Run", run.title || run.run_id, `${run.kind} · ${run.status}`),
+    runDetail(run),
     eventList(detail.events),
   );
-  if (isActiveJobStatus(job.status)) {
-    scheduleJobPolling(routeHash, () => renderJob(context, jobId));
+  if (isActiveRunStatus(run.status)) {
+    scheduleRunPolling(routeHash, () => renderRun(context, jobId));
   }
 }
 
-function scheduleJobPolling(routeHash, render) {
-  clearJobPolling();
+function scheduleRunPolling(routeHash, render) {
+  clearRunPolling();
   jobPollTimer = window.setTimeout(() => {
     jobPollTimer = null;
     if (window.location.hash !== routeHash) return;
     render().catch((error) => {
-      console.error("CodeAlmanac job refresh failed", error);
+      console.error("CodeAlmanac run refresh failed", error);
     });
   }, JOB_POLL_INTERVAL_MS);
 }
 
-function isActiveJobStatus(status) {
+function isActiveRunStatus(status) {
   return ACTIVE_JOB_STATUSES.has(status);
 }
 
-function jobList(jobs) {
-  if (jobs.length === 0) {
+function runList(runs) {
+  if (runs.length === 0) {
     return emptyState(
-      "No jobs yet",
-      "Lifecycle jobs appear here after ingest, garden, or sync.",
+      "No runs yet",
+      "Lifecycle runs appear here after ingest, garden, or sync.",
     );
   }
   const list = document.createElement("nav");
-  list.className = "job-list";
-  list.setAttribute("aria-label", "Lifecycle jobs");
-  for (const job of jobs) {
-    list.append(jobRow(job));
+  list.className = "run-list";
+  list.setAttribute("aria-label", "Lifecycle runs");
+  for (const run of runs) {
+    list.append(runRow(run));
   }
   return list;
 }
 
-function jobRow(job) {
+function runRow(run) {
   const item = document.createElement("a");
-  item.className = "job-row";
-  item.href = jobHref(job.job_id);
+  item.className = "run-row";
+  item.href = runHref(run.run_id);
 
   const main = document.createElement("span");
-  main.className = "job-row-main";
+  main.className = "run-row-main";
   const title = document.createElement("span");
-  title.className = "job-row-title";
-  title.textContent = job.title || job.job_id;
+  title.className = "run-row-title";
+  title.textContent = run.title || run.run_id;
   const summary = document.createElement("span");
-  summary.className = "job-row-summary";
-  summary.textContent = job.summary || job.error || job.job_id;
+  summary.className = "run-row-summary";
+  summary.textContent = run.summary || run.error || run.run_id;
   main.append(title, summary);
 
   const meta = document.createElement("span");
-  meta.className = "job-row-meta";
+  meta.className = "run-row-meta";
   meta.append(
-    jobPill(job.status),
-    textSpan(job.operation),
-    textSpan(shortTime(job.updated_at)),
+    runPill(run.status),
+    textSpan(run.kind),
+    textSpan(shortTime(run.updated_at)),
   );
 
   item.append(main, meta);
   return item;
 }
 
-function jobDetail(job) {
+function runDetail(run) {
   const section = document.createElement("section");
-  section.className = "job-detail";
+  section.className = "run-detail";
   section.append(
-    detailRow("Job", job.job_id),
-    detailRow("Status", job.status),
-    detailRow("Operation", job.operation),
-    detailRow("Updated", job.updated_at),
-    detailRow("Log", job.log_path),
+    detailRow("Run", run.run_id),
+    detailRow("Status", run.status),
+    detailRow("Operation", run.kind),
+    detailRow("Updated", run.updated_at),
+    detailRow("Log", run.log_path),
   );
-  if (job.harness_transcript) {
+  if (run.harness_transcript) {
     section.append(
       detailRow(
         "Transcript",
-        `${job.harness_transcript.kind} ${job.harness_transcript.session_id}`,
+        `${run.harness_transcript.kind} ${run.harness_transcript.session_id}`,
       ),
     );
   }
-  if (job.summary) section.append(detailRow("Summary", job.summary));
-  if (job.error) section.append(detailRow("Error", job.error));
+  if (run.summary) section.append(detailRow("Summary", run.summary));
+  if (run.error) section.append(detailRow("Error", run.error));
   return section;
 }
 
 function eventList(events) {
   if (events.length === 0) {
-    return emptyState("No events", "This job has no persisted log events.");
+    return emptyState("No events", "This run has no persisted log events.");
   }
   const section = document.createElement("section");
-  section.className = "job-events";
+  section.className = "run-events";
   const heading = document.createElement("h2");
   heading.textContent = "Event log";
   section.append(heading);
@@ -145,18 +145,18 @@ function eventList(events) {
 
 function eventRow(event) {
   const row = document.createElement("article");
-  row.className = "job-event";
+  row.className = "run-event";
 
   const header = document.createElement("header");
-  header.className = "job-event-header";
+  header.className = "run-event-header";
   header.append(
     textSpan(`#${event.sequence}`),
-    jobPill(event.kind),
+    runPill(event.kind),
     textSpan(shortTime(event.timestamp)),
   );
 
   const message = document.createElement("p");
-  message.className = "job-event-message";
+  message.className = "run-event-message";
   message.textContent = event.message;
 
   row.append(header, message);
@@ -168,7 +168,7 @@ function eventRow(event) {
 
 function harnessSummary(event) {
   const box = document.createElement("div");
-  box.className = "job-harness";
+  box.className = "run-harness";
   box.append(detailRow("Harness", event.kind));
   if (event.status) box.append(detailRow("Run status", event.status));
   if (event.actor) box.append(actorRows(event.actor));
@@ -266,7 +266,7 @@ function agentTraceRows(trace) {
 
 function detailGroup(title, rows) {
   const group = document.createElement("section");
-  group.className = "job-detail-group";
+  group.className = "run-detail-group";
   const heading = document.createElement("h3");
   heading.textContent = title;
   group.append(heading);
@@ -279,7 +279,7 @@ function detailGroup(title, rows) {
 
 function detailRow(label, value) {
   const row = document.createElement("div");
-  row.className = "job-detail-row";
+  row.className = "run-detail-row";
   const key = document.createElement("span");
   key.textContent = label;
   const val = document.createElement("strong");
@@ -299,9 +299,9 @@ function millis(value) {
   return `${value}ms`;
 }
 
-function jobPill(value) {
+function runPill(value) {
   const pill = document.createElement("span");
-  pill.className = `job-pill job-pill--${String(value).replace(/[^a-z0-9_-]/gi, "")}`;
+  pill.className = `run-pill run-pill--${String(value).replace(/[^a-z0-9_-]/gi, "")}`;
   pill.textContent = value;
   return pill;
 }

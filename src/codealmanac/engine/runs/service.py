@@ -24,7 +24,7 @@ class EngineRunsService:
         paths = self.store.paths(request.run_id)
         engine_request = EngineRunRequest(
             run_id=request.run_id,
-            operation=request.operation,
+            kind=request.kind,
             repository_id=request.repository_id,
             branch_id=request.branch_id,
             repository_full_name=request.repository_full_name,

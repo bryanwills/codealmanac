@@ -80,7 +80,7 @@ def render_local_runs(
     for item in runs:
         summary = item.run.summary or item.run.error or ""
         print(
-            f"{item.run.id}\t{item.run.status.value}\t{item.run.operation}\t"
+            f"{item.run.id}\t{item.run.status.value}\t{item.run.kind}\t"
             f"{item.repository.full_name}\t{item.branch.name}\t{summary}"
         )
 
@@ -93,7 +93,7 @@ def render_local_run(item: LocalRunSummary, json_output: bool) -> None:
     print(f"id: {run.id}")
     print(f"repo: {item.repository.full_name}")
     print(f"branch: {item.branch.name}")
-    print(f"operation: {run.operation}")
+    print(f"kind: {run.kind}")
     print(f"status: {run.status.value}")
     if run.expected_head_sha is not None:
         print(f"expected_head_sha: {run.expected_head_sha}")

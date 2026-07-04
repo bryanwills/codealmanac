@@ -13,17 +13,17 @@ from codealmanac.engine.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.jobs.ledger.models import (
-    JobOperation,
-    JobStatus,
-    JobWorkerSpawnResult,
+from codealmanac.runs.ledger.models import (
+    RunKind,
+    RunStatus,
+    RunWorkerSpawnResult,
 )
-from codealmanac.jobs.ledger.requests import (
-    ListJobsRequest,
-    ReadJobLogRequest,
-    SpawnJobWorkerRequest,
+from codealmanac.runs.ledger.requests import (
+    ListRunsRequest,
+    ReadRunLogRequest,
+    SpawnRunWorkerRequest,
 )
-from codealmanac.jobs.queue.requests import DrainJobQueueRequest
+from codealmanac.runs.queue.requests import DrainRunQueueRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.init.requests import RunInitRequest
@@ -68,11 +68,11 @@ The init workflow built the first durable wiki page.
 
 class InitWorkerSpawner:
     def __init__(self):
-        self.requests: list[SpawnJobWorkerRequest] = []
+        self.requests: list[SpawnRunWorkerRequest] = []
 
-    def spawn(self, request: SpawnJobWorkerRequest) -> JobWorkerSpawnResult:
+    def spawn(self, request: SpawnRunWorkerRequest) -> RunWorkerSpawnResult:
         self.requests.append(request)
-        return JobWorkerSpawnResult(
+        return RunWorkerSpawnResult(
             child_pid=9191,
             command=("fake-codealmanac-worker",),
         )
@@ -99,11 +99,11 @@ def test_init_workflow_runs_harness_and_refreshes_index(
         )
     )
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="durable"))
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=result.job.job_id))
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
-    assert result.job.operation == JobOperation.INIT
-    assert result.job.status == JobStatus.DONE
-    assert result.job.summary == "initialized wiki"
+    assert result.run.kind == RunKind.INIT
+    assert result.run.status == RunStatus.DONE
+    assert result.run.summary == "initialized wiki"
     assert result.existing_page_count == 0
     assert result.index.pages_indexed == 2
     assert matches[0].slug == "initialized-note"
@@ -158,7 +158,7 @@ def test_init_workflow_force_runs_on_populated_wiki(
         )
     )
 
-    assert result.job.status == JobStatus.DONE
+    assert result.run.status == RunStatus.DONE
     assert result.existing_page_count == 1
     assert len(harness.requests) == 1
 
@@ -185,18 +185,18 @@ def test_init_background_queues_spec_and_worker_drains_it(
             name="repo",
         )
     )
-    drained = app.workflows.queue.drain(DrainJobQueueRequest(cwd=repo))
-    runs = app.jobs.list(ListJobsRequest(cwd=repo))
+    drained = app.workflows.queue.drain(DrainRunQueueRequest(cwd=repo))
+    runs = app.runs.list(ListRunsRequest(cwd=repo))
 
     assert started.worker.child_pid == 9191
-    assert started.job.operation == JobOperation.INIT
-    assert started.job.status == JobStatus.QUEUED
+    assert started.run.kind == RunKind.INIT
+    assert started.run.status == RunStatus.QUEUED
     assert drained.lock_acquired is True
-    assert [record.job_id for record in drained.processed] == [started.job.job_id]
-    assert runs[0].status == JobStatus.DONE
+    assert [record.run_id for record in drained.processed] == [started.run.run_id]
+    assert runs[0].status == RunStatus.DONE
     assert runs[0].summary == "initialized wiki"
     assert harness.requests[0].cwd == repo
-    assert spawner.requests == [SpawnJobWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
 def initialize_git(repo: Path) -> None:

@@ -9,13 +9,13 @@ from codealmanac.engine.harnesses.models import HarnessKind
 from codealmanac.wiki.workspaces.roots import validate_almanac_root_field
 
 
-class MaintenanceOperation(StrEnum):
+class MaintenanceRunKind(StrEnum):
     INIT = "init"
     INGEST = "ingest"
 
 
 class RunMaintenanceRequest(CodeAlmanacModel):
-    operation: MaintenanceOperation
+    kind: MaintenanceRunKind
     cwd: Path
     inputs: tuple[str, ...] = ()
     harness: HarnessKind = HarnessKind.CODEX
@@ -48,12 +48,12 @@ class RunMaintenanceRequest(CodeAlmanacModel):
         return required_text(value, "maintenance request text")
 
     @model_validator(mode="after")
-    def validate_operation_payload(self) -> "RunMaintenanceRequest":
-        if self.operation == MaintenanceOperation.INIT:
+    def validate_kind_payload(self) -> "RunMaintenanceRequest":
+        if self.kind == MaintenanceRunKind.INIT:
             if len(self.inputs) > 0:
                 raise ValueError("init maintenance request does not accept inputs")
             return self
-        if self.operation == MaintenanceOperation.INGEST:
+        if self.kind == MaintenanceRunKind.INGEST:
             if len(self.inputs) == 0:
                 raise ValueError("ingest maintenance request requires inputs")
             if self.almanac_root is not None:
@@ -69,4 +69,4 @@ class RunMaintenanceRequest(CodeAlmanacModel):
             if self.force:
                 raise ValueError("ingest maintenance request does not accept force")
             return self
-        raise ValueError(f"unsupported maintenance operation: {self.operation.value}")
+        raise ValueError(f"unsupported maintenance kind: {self.kind.value}")

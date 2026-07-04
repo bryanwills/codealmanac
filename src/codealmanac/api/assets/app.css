@@ -753,19 +753,19 @@ button {
   color: var(--accent);
 }
 
-.job-list,
-.job-events,
-.job-detail {
+.run-list,
+.run-events,
+.run-detail {
   display: grid;
   max-width: var(--dashboard-panel-max);
   gap: 10px;
 }
 
-.job-list {
+.run-list {
   border-top: 1px solid var(--hair);
 }
 
-.job-row {
+.run-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(170px, 240px);
   gap: 18px;
@@ -775,18 +775,18 @@ button {
   padding: 13px 0;
 }
 
-.job-row:hover .job-row-title {
+.run-row:hover .run-row-title {
   color: var(--accent);
 }
 
-.job-row-main,
-.job-row-meta {
+.run-row-main,
+.run-row-meta {
   display: grid;
   min-width: 0;
   gap: 4px;
 }
 
-.job-row-title {
+.run-row-title {
   overflow: hidden;
   color: var(--ink);
   font-size: 14px;
@@ -795,7 +795,7 @@ button {
   white-space: nowrap;
 }
 
-.job-row-summary {
+.run-row-summary {
   display: -webkit-box;
   overflow: hidden;
   color: var(--muted);
@@ -805,7 +805,7 @@ button {
   -webkit-line-clamp: 2;
 }
 
-.job-row-meta {
+.run-row-meta {
   align-content: start;
   color: var(--faint);
   font-family: var(--code);
@@ -813,14 +813,14 @@ button {
   line-height: 1.4;
 }
 
-.job-detail {
+.run-detail {
   border: 1px solid var(--hair);
   border-radius: 8px;
   background: var(--paper);
   padding: 14px;
 }
 
-.job-detail-row {
+.run-detail-row {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 12px;
@@ -829,7 +829,7 @@ button {
   font-size: 12px;
 }
 
-.job-detail-row strong {
+.run-detail-row strong {
   min-width: 0;
   overflow-wrap: anywhere;
   color: var(--ink);
@@ -838,25 +838,25 @@ button {
   font-weight: 600;
 }
 
-.job-events {
+.run-events {
   margin-top: 18px;
 }
 
-.job-events h2 {
+.run-events h2 {
   margin: 0 0 4px;
   color: var(--ink);
   font-size: 18px;
   font-weight: 650;
 }
 
-.job-event {
+.run-event {
   display: grid;
   gap: 8px;
   border-top: 1px solid var(--hair);
   padding: 12px 0;
 }
 
-.job-event-header {
+.run-event-header {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -866,7 +866,7 @@ button {
   font-size: 11px;
 }
 
-.job-event-message {
+.run-event-message {
   margin: 0;
   color: var(--text);
   font-size: 13px;
@@ -874,21 +874,21 @@ button {
   overflow-wrap: anywhere;
 }
 
-.job-harness {
+.run-harness {
   display: grid;
   gap: 8px;
   border-left: 2px solid rgba(152, 118, 26, 0.28);
   padding-left: 10px;
 }
 
-.job-detail-group {
+.run-detail-group {
   display: grid;
   gap: 5px;
   border-top: 1px solid var(--hair);
   padding-top: 8px;
 }
 
-.job-detail-group h3 {
+.run-detail-group h3 {
   margin: 0;
   color: var(--muted);
   font-size: 11px;
@@ -896,7 +896,7 @@ button {
   text-transform: uppercase;
 }
 
-.job-pill {
+.run-pill {
   display: inline-flex;
   width: fit-content;
   align-items: center;
@@ -910,13 +910,13 @@ button {
   padding: 2px 7px;
 }
 
-.job-pill--done {
+.run-pill--done {
   border-color: rgba(108, 115, 57, 0.28);
   color: var(--moss);
 }
 
-.job-pill--failed,
-.job-pill--error {
+.run-pill--failed,
+.run-pill--error {
   border-color: rgba(160, 75, 46, 0.28);
   color: var(--danger);
 }
@@ -1039,8 +1039,8 @@ button {
   .wiki-search-form,
   .wiki-detail-grid,
   .wiki-page-row,
-  .job-row,
-  .job-detail-row,
+  .run-row,
+  .run-detail-row,
   .wiki-stats {
     grid-template-columns: 1fr;
   }

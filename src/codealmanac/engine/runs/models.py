@@ -61,7 +61,7 @@ class EngineRunRequest(CodeAlmanacModel):
     version: int = 1
     request_id: str = Field(default_factory=lambda: f"engine_req_{uuid4().hex}")
     run_id: EngineRunId
-    operation: str = "update"
+    kind: str = "update"
     repository_id: str
     branch_id: str
     repository_full_name: str
@@ -77,7 +77,7 @@ class EngineRunRequest(CodeAlmanacModel):
 
     @field_validator(
         "request_id",
-        "operation",
+        "kind",
         "repository_id",
         "branch_id",
         "repository_full_name",

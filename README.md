@@ -69,7 +69,7 @@ codealmanac search "getting"
 codealmanac show getting-started
 ```
 
-Read commands work without cloud login. Local update jobs use your local agent
+Read commands work without cloud login. Local update runs use your local agent
 credentials and write back to your working tree or local commits, depending on
 the branch delivery policy.
 
@@ -102,7 +102,7 @@ with `codealmanac serve`, or in the cloud with `codealmanac open`.
 
 A folder counts as a CodeAlmanac wiki only when it has both `topics.yaml` and
 `pages/`. Derived local state appears when commands need it: `index.db` and
-user-level job records are runtime state, not part of the init scaffold.
+user-level run records are runtime state, not part of the init scaffold.
 
 ## Principles
 

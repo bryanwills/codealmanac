@@ -14,8 +14,8 @@ from codealmanac.engine.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
-from codealmanac.jobs.ledger.models import JobEventKind, JobStatus
-from codealmanac.jobs.ledger.requests import ListJobsRequest, ReadJobLogRequest
+from codealmanac.runs.ledger.models import RunEventKind, RunStatus
+from codealmanac.runs.ledger.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.wiki.search.requests import SearchPagesRequest
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.garden.requests import RunGardenRequest
@@ -109,14 +109,14 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     )
 
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="coherent"))
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=result.job.job_id))
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
 
-    assert result.job.status == JobStatus.DONE
-    assert result.job.started_at is not None
-    assert result.job.finished_at is not None
-    assert result.job.summary == "gardened wiki graph"
-    assert result.job.harness_transcript is not None
-    assert result.job.harness_transcript.session_id == "codex-garden-session"
+    assert result.run.status == RunStatus.DONE
+    assert result.run.started_at is not None
+    assert result.run.finished_at is not None
+    assert result.run.summary == "gardened wiki graph"
+    assert result.run.harness_transcript is not None
+    assert result.run.harness_transcript.session_id == "codex-garden-session"
     assert result.health_before.empty_pages == ()
     assert result.harness.changed_files == (repo / "almanac/pages/gardened-note.md",)
     assert result.safety.changed_files == (repo / "almanac/pages/gardened-note.md",)
@@ -127,14 +127,14 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert '"pages_root"' in adapter.requests[0].prompt
     assert "Improve a single page if useful." in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
-        JobEventKind.STATUS,
-        JobEventKind.STATUS,
-        JobEventKind.MESSAGE,
-        JobEventKind.MESSAGE,
-        JobEventKind.OUTPUT,
-        JobEventKind.STATUS,
+        RunEventKind.STATUS,
+        RunEventKind.STATUS,
+        RunEventKind.MESSAGE,
+        RunEventKind.MESSAGE,
+        RunEventKind.OUTPUT,
+        RunEventKind.STATUS,
     )
-    assert log[1].message == JobStatus.RUNNING.value
+    assert log[1].message == RunStatus.RUNNING.value
 
 
 def test_garden_workflow_rejects_harness_mutation_outside_almanac(
@@ -161,9 +161,9 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error == "garden changed file outside almanac: src/app.py"
 
 
@@ -189,17 +189,17 @@ def test_garden_workflow_records_failed_harness_output_before_error(
             )
         )
 
-    run = app.jobs.list(ListJobsRequest(cwd=repo))[0]
-    log = app.jobs.log(ReadJobLogRequest(cwd=repo, job_id=run.job_id))
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=run.run_id))
 
-    assert run.status == JobStatus.FAILED
+    assert run.status == RunStatus.FAILED
     assert run.error == "harness codex failed with status failed: garden agent failed"
     assert run.harness_transcript is not None
     assert run.harness_transcript.session_id == "failed-garden-session"
     assert tuple(entry.kind for entry in log)[-3:] == (
-        JobEventKind.OUTPUT,
-        JobEventKind.ERROR,
-        JobEventKind.STATUS,
+        RunEventKind.OUTPUT,
+        RunEventKind.ERROR,
+        RunEventKind.STATUS,
     )
     assert log[-3].message == "codex failed: garden agent failed"
 

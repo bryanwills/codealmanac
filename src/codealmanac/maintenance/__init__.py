@@ -1,11 +1,11 @@
-from codealmanac.maintenance.models import MaintenanceJobResult
+from codealmanac.maintenance.models import MaintenanceRunResult
 from codealmanac.maintenance.requests import (
-    MaintenanceOperation,
+    MaintenanceRunKind,
     RunMaintenanceRequest,
 )
 
 __all__ = [
-    "MaintenanceOperation",
-    "MaintenanceJobResult",
+    "MaintenanceRunKind",
+    "MaintenanceRunResult",
     "RunMaintenanceRequest",
 ]

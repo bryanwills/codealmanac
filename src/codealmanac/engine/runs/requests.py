@@ -22,7 +22,7 @@ class PrepareEngineRunRequest(CodeAlmanacModel):
     repo_path: Path
     almanac_root: Path
     sources_path: Path
-    operation: str = "update"
+    kind: str = "update"
     source_bundle_ref: str | None = None
     commit_subject_prefix: str = COMMIT_SUBJECT_PREFIX
 
@@ -32,7 +32,7 @@ class PrepareEngineRunRequest(CodeAlmanacModel):
         "repository_full_name",
         "branch_name",
         "expected_head_sha",
-        "operation",
+        "kind",
         "commit_subject_prefix",
     )
     @classmethod

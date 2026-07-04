@@ -195,7 +195,7 @@ class RecordCurrentGitTriggerRequest(CodeAlmanacModel):
 class CreateControlRunRequest(CodeAlmanacModel):
     repository_id: str
     branch_id: str
-    operation: str = "update"
+    kind: str = "update"
     status: ControlRunStatus = ControlRunStatus.QUEUED
     trigger_event_id: str | None = None
     expected_head_sha: str | None = None
@@ -212,10 +212,10 @@ class CreateControlRunRequest(CodeAlmanacModel):
     def require_branch_id(cls, value: str) -> str:
         return required_text(value, "run branch_id")
 
-    @field_validator("operation")
+    @field_validator("kind")
     @classmethod
-    def require_operation(cls, value: str) -> str:
-        return required_text(value, "run operation")
+    def require_kind(cls, value: str) -> str:
+        return required_text(value, "run kind")
 
 
 class UpdateControlRunRequest(CodeAlmanacModel):
@@ -383,11 +383,11 @@ class ListControlRunsRequest(CodeAlmanacModel):
 class ClaimNextTriggerRequest(CodeAlmanacModel):
     repository_id: str | None = None
     branch_id: str | None = None
-    operation: str = "update"
+    kind: str = "update"
     source_bundle_ref: str | None = None
     request_ref: str | None = None
 
-    @field_validator("operation")
+    @field_validator("kind")
     @classmethod
-    def require_operation(cls, value: str) -> str:
-        return required_text(value, "claim operation")
+    def require_kind(cls, value: str) -> str:
+        return required_text(value, "claim kind")

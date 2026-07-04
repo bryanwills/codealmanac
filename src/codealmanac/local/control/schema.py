@@ -7,7 +7,7 @@ from codealmanac.database import (
     connect_sqlite,
 )
 
-CONTROL_SCHEMA_VERSION = 2026070201
+CONTROL_SCHEMA_VERSION = 2026070401
 
 CONTROL_TABLES = (
     "repositories",
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS runs (
   repository_id      TEXT NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
   branch_id          TEXT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
   trigger_event_id   TEXT REFERENCES trigger_events(id) ON DELETE SET NULL,
-  operation          TEXT NOT NULL,
+  kind               TEXT NOT NULL,
   status             TEXT NOT NULL CHECK (
     status IN ('queued', 'running', 'succeeded', 'failed', 'stale', 'cancelled')
   ),
@@ -187,5 +187,15 @@ CONTROL_MIGRATIONS = (
 
 def connect_control(path: Path) -> SQLiteConnection:
     connection = connect_sqlite(path)
+    migrate_run_kind_column(connection)
     apply_migrations(connection, CONTROL_MIGRATIONS)
     return connection
+
+
+def migrate_run_kind_column(connection: SQLiteConnection) -> None:
+    rows = connection.execute("PRAGMA table_info(runs)").fetchall()
+    columns = {row["name"] for row in rows}
+    if "operation" not in columns or "kind" in columns:
+        return
+    connection.execute("ALTER TABLE runs RENAME COLUMN operation TO kind")
+    connection.commit()

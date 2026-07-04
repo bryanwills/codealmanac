@@ -35,7 +35,7 @@ from codealmanac.cloud.runs.models import (
     CloudRunSource,
 )
 from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import default_jobs_path
+from codealmanac.core.paths import default_runs_path
 from codealmanac.engine.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -45,17 +45,6 @@ from codealmanac.engine.harnesses.models import (
 from codealmanac.engine.harnesses.requests import RunHarnessRequest
 from codealmanac.engine.workspaces.models import GitWorktreeCheckout
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
-from codealmanac.job_worker import main as job_worker_main
-from codealmanac.jobs.ledger.models import (
-    JobOperation,
-    JobStatus,
-    JobWorkerSpawnResult,
-)
-from codealmanac.jobs.ledger.requests import (
-    ListJobsRequest,
-    ShowJobRequest,
-    SpawnJobWorkerRequest,
-)
 from codealmanac.local.control.models import (
     ControlDeliveryMode,
     ControlRunEventKind,
@@ -86,6 +75,17 @@ from codealmanac.local_worker import main as local_worker_main
 from codealmanac.maintenance.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
+)
+from codealmanac.run_worker import main as job_worker_main
+from codealmanac.runs.ledger.models import (
+    RunKind,
+    RunStatus,
+    RunWorkerSpawnResult,
+)
+from codealmanac.runs.ledger.requests import (
+    ListRunsRequest,
+    ShowRunRequest,
+    SpawnRunWorkerRequest,
 )
 from codealmanac.wiki.workspaces.identity import workspace_id_for
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
@@ -208,11 +208,11 @@ The public CLI gardened the local wiki graph.
 
 class CliWorkerSpawner:
     def __init__(self):
-        self.requests: list[SpawnJobWorkerRequest] = []
+        self.requests: list[SpawnRunWorkerRequest] = []
 
-    def spawn(self, request: SpawnJobWorkerRequest) -> JobWorkerSpawnResult:
+    def spawn(self, request: SpawnRunWorkerRequest) -> RunWorkerSpawnResult:
         self.requests.append(request)
-        return JobWorkerSpawnResult(
+        return RunWorkerSpawnResult(
             child_pid=5151,
             command=("fake-codealmanac-worker",),
         )
@@ -222,9 +222,9 @@ class CliLocalWorkerSpawner:
     def __init__(self):
         self.requests: list[SpawnLocalWorkerRequest] = []
 
-    def spawn(self, request: SpawnLocalWorkerRequest) -> JobWorkerSpawnResult:
+    def spawn(self, request: SpawnLocalWorkerRequest) -> RunWorkerSpawnResult:
         self.requests.append(request)
-        return JobWorkerSpawnResult(
+        return RunWorkerSpawnResult(
             child_pid=6262,
             command=("fake-codealmanac-local-worker",),
         )
@@ -590,8 +590,8 @@ class CliUpdateRunner:
         return self.result
 
 
-def workspace_jobs_path(repo: Path) -> Path:
-    return default_jobs_path() / workspace_id_for(repo)
+def workspace_runs_path(repo: Path) -> Path:
+    return default_runs_path() / workspace_id_for(repo)
 
 
 class CliLocalGitStateProbe:
@@ -927,14 +927,14 @@ def test_cli_init_background_queues_run_and_spawns_worker(
 
     output = capsys.readouterr()
     data = json.loads(output.out)
-    job = app.jobs.show(ShowJobRequest(cwd=repo, job_id=data["job_id"]))
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=data["run_id"]))
 
     assert data["status"] == "queued"
     assert data["child_pid"] == 5151
-    assert job.operation == JobOperation.INIT
-    assert job.status == JobStatus.QUEUED
+    assert run.kind == RunKind.INIT
+    assert run.status == RunStatus.QUEUED
     assert harness.requests == []
-    assert spawner.requests == [SpawnJobWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
 def test_cli_build_command_is_not_public():
@@ -2406,8 +2406,8 @@ def test_cli_help_is_cloud_first_and_hides_compatibility_commands(capsys):
     assert "dev" not in output.out
 
     parser.parse_args(["status"])
-    with pytest.raises(SystemExit) as jobs_exit:
-        parser.parse_args(["jobs"])
+    with pytest.raises(SystemExit) as runs_exit:
+        parser.parse_args(["runs"])
     with pytest.raises(SystemExit) as sync_exit:
         parser.parse_args(["sync", "status"])
     with pytest.raises(SystemExit) as automation_exit:
@@ -2416,7 +2416,7 @@ def test_cli_help_is_cloud_first_and_hides_compatibility_commands(capsys):
         parser.parse_args(["__capture-hook", "--provider", "codex"])
     with pytest.raises(SystemExit) as run_worker_exit:
         parser.parse_args(["__run-worker", "--cwd", "."])
-    assert jobs_exit.value.code == 2
+    assert runs_exit.value.code == 2
     assert sync_exit.value.code == 2
     assert automation_exit.value.code == 2
     assert capture_hook_exit.value.code == 2
@@ -2578,14 +2578,14 @@ def test_cli_dev_ingest_background_queues_run_and_spawns_worker(
 
     output = capsys.readouterr()
     data = json.loads(output.out)
-    job = app.jobs.show(ShowJobRequest(cwd=repo, job_id=data["job_id"]))
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=data["run_id"]))
 
     assert data["status"] == "queued"
     assert data["child_pid"] == 5151
-    assert job.status == JobStatus.QUEUED
+    assert run.status == RunStatus.QUEUED
     assert harness.requests == []
-    assert spawner.requests == [SpawnJobWorkerRequest(cwd=repo, wiki=None)]
-    assert (workspace_jobs_path(repo) / f"{job.job_id}.spec.json").is_file()
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert (workspace_runs_path(repo) / f"{run.run_id}.spec.json").is_file()
 
 
 def test_cli_dev_garden_runs_workflow_with_selected_harness(
@@ -2655,13 +2655,13 @@ def test_cli_dev_garden_background_plain_output(
     assert main(["dev", "garden", "--using", "codex", "--background"]) == 0
 
     output = capsys.readouterr()
-    job = app.jobs.list(ListJobsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert f"queued {job.job_id}: queued" in output.out
+    assert f"queued {run.run_id}: queued" in output.out
     assert "worker_pid: 5151" in output.out
-    assert job.operation == JobOperation.GARDEN
+    assert run.kind == RunKind.GARDEN
     assert harness.requests == []
-    assert spawner.requests == [SpawnJobWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
 def test_cli_hidden_run_worker_drains_queued_run(
@@ -2688,13 +2688,13 @@ def test_cli_hidden_run_worker_drains_queued_run(
             harness=HarnessKind.CODEX,
         )
     )
-    monkeypatch.setattr("codealmanac.job_worker.create_app", lambda: app)
+    monkeypatch.setattr("codealmanac.run_worker.create_app", lambda: app)
 
     assert job_worker_main(["--cwd", str(repo)]) == 0
 
-    job = app.jobs.show(ShowJobRequest(cwd=repo, job_id=queued.job_id))
+    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=queued.run_id))
 
-    assert job.status == JobStatus.DONE
+    assert run.status == RunStatus.DONE
     assert harness.requests[0].kind == HarnessKind.CODEX
     assert (repo / "almanac/pages/cli-ingest-note.md").is_file()
 

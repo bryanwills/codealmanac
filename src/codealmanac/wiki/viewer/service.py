@@ -1,21 +1,20 @@
 from codealmanac.core.errors import NotFoundError
 from codealmanac.core.slug import to_kebab_case
-from codealmanac.jobs.ledger.requests import AttachJobRequest, ListJobsRequest
-from codealmanac.jobs.ledger.service import JobLedgerService
+from codealmanac.runs.ledger.requests import AttachRunRequest, ListRunsRequest
+from codealmanac.runs.ledger.service import RunLedgerService
 from codealmanac.wiki.index.models import PageView
 from codealmanac.wiki.index.requests import SearchIndexRequest
 from codealmanac.wiki.index.service import IndexService
 from codealmanac.wiki.paths import looks_like_dir
-from codealmanac.wiki.viewer.jobs import viewer_job_event, viewer_job_record
 from codealmanac.wiki.viewer.models import (
     ViewerFile,
     ViewerFileKind,
     ViewerFileReference,
-    ViewerJob,
-    ViewerJobs,
     ViewerOverview,
     ViewerPage,
     ViewerPageSummary,
+    ViewerRun,
+    ViewerRuns,
     ViewerSearch,
     ViewerTopic,
 )
@@ -29,13 +28,14 @@ from codealmanac.wiki.viewer.projections import (
 from codealmanac.wiki.viewer.renderer import MarkdownRenderer
 from codealmanac.wiki.viewer.requests import (
     ViewerFileRequest,
-    ViewerJobRequest,
-    ViewerJobsRequest,
     ViewerOverviewRequest,
     ViewerPageRequest,
+    ViewerRunRequest,
+    ViewerRunsRequest,
     ViewerSearchRequest,
     ViewerTopicRequest,
 )
+from codealmanac.wiki.viewer.runs import viewer_run_event, viewer_run_record
 from codealmanac.wiki.viewer.workspace_scope import ViewerWorkspaceScope
 from codealmanac.wiki.workspaces.models import Workspace
 from codealmanac.wiki.workspaces.service import WorkspacesService
@@ -46,11 +46,11 @@ class ViewerService:
         self,
         workspaces: WorkspacesService,
         index: IndexService,
-        jobs: JobLedgerService,
+        runs: RunLedgerService,
         renderer: MarkdownRenderer,
     ):
         self.index = index
-        self.jobs_service = jobs
+        self.runs_service = runs
         self.renderer = renderer
         self.workspace_scope = ViewerWorkspaceScope(workspaces)
 
@@ -152,33 +152,33 @@ class ViewerService:
             pages=pages,
         )
 
-    def jobs(self, request: ViewerJobsRequest) -> ViewerJobs:
+    def runs(self, request: ViewerRunsRequest) -> ViewerRuns:
         workspace = self.workspace_scope.select(request.cwd, request.wiki)
-        jobs = self.jobs_service.list(
-            ListJobsRequest(
+        runs = self.runs_service.list(
+            ListRunsRequest(
                 cwd=request.cwd,
                 wiki=workspace.workspace_id,
                 limit=request.limit,
             )
         )
-        return ViewerJobs(
+        return ViewerRuns(
             workspace=viewer_workspace(workspace),
-            jobs=tuple(viewer_job_record(record) for record in jobs),
+            runs=tuple(viewer_run_record(record) for record in runs),
         )
 
-    def job(self, request: ViewerJobRequest) -> ViewerJob:
+    def run(self, request: ViewerRunRequest) -> ViewerRun:
         workspace = self.workspace_scope.select(request.cwd, request.wiki)
-        snapshot = self.jobs_service.attach(
-            AttachJobRequest(
+        snapshot = self.runs_service.attach(
+            AttachRunRequest(
                 cwd=request.cwd,
                 wiki=workspace.workspace_id,
-                job_id=request.job_id,
+                run_id=request.run_id,
             )
         )
-        return ViewerJob(
+        return ViewerRun(
             workspace=viewer_workspace(workspace),
-            job=viewer_job_record(snapshot.record),
-            events=tuple(viewer_job_event(event) for event in snapshot.events),
+            run=viewer_run_record(snapshot.record),
+            events=tuple(viewer_run_event(event) for event in snapshot.events),
         )
 
     def get_page_or_raise(self, workspace: Workspace, slug: str) -> PageView:

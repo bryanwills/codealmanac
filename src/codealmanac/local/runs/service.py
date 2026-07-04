@@ -89,7 +89,7 @@ class LocalRunsWorkflow:
             RunNextLocalWorkerRequest(
                 repository_id=repository.id,
                 branch_id=branch.id,
-                operation=request.kind.value,
+                kind=request.kind.value,
                 harness=request.harness,
                 title=request.title,
                 guidance=request.guidance,

@@ -14,21 +14,21 @@ from codealmanac.engine.harnesses.models import (
 )
 from codealmanac.wiki.workspaces.roots import validate_almanac_root_field
 
-JOB_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
-JobId = Annotated[
+RUN_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
+RunId = Annotated[
     str,
-    StringConstraints(strip_whitespace=True, min_length=1, pattern=JOB_ID_PATTERN),
+    StringConstraints(strip_whitespace=True, min_length=1, pattern=RUN_ID_PATTERN),
 ]
 
 
-class JobOperation(StrEnum):
+class RunKind(StrEnum):
     INIT = "init"
     INGEST = "ingest"
     SYNC = "sync"
     GARDEN = "garden"
 
 
-class JobStatus(StrEnum):
+class RunStatus(StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
     DONE = "done"
@@ -36,7 +36,7 @@ class JobStatus(StrEnum):
     CANCELLED = "cancelled"
 
 
-class JobEventKind(StrEnum):
+class RunEventKind(StrEnum):
     STATUS = "status"
     MESSAGE = "message"
     TOOL = "tool"
@@ -50,11 +50,11 @@ class PageChangeSet(CodeAlmanacModel):
     deleted: tuple[str, ...] = ()
 
 
-class JobRecord(CodeAlmanacModel):
-    job_id: JobId
+class RunRecord(CodeAlmanacModel):
+    run_id: RunId
     workspace_id: str
-    operation: JobOperation
-    status: JobStatus
+    kind: RunKind
+    status: RunStatus
     title: str | None
     summary: str | None = None
     error: str | None = None
@@ -72,11 +72,11 @@ class JobRecord(CodeAlmanacModel):
         return required_text(value, "workspace_id")
 
 
-class JobLogEvent(CodeAlmanacModel):
-    job_id: JobId
+class RunLogEvent(CodeAlmanacModel):
+    run_id: RunId
     sequence: int
     timestamp: datetime
-    kind: JobEventKind
+    kind: RunEventKind
     message: str
     harness_event: HarnessEvent | None = None
 
@@ -93,31 +93,31 @@ class JobLogEvent(CodeAlmanacModel):
         return value
 
 
-TERMINAL_JOB_STATUSES = frozenset(
-    (JobStatus.DONE, JobStatus.FAILED, JobStatus.CANCELLED)
+TERMINAL_RUN_STATUSES = frozenset(
+    (RunStatus.DONE, RunStatus.FAILED, RunStatus.CANCELLED)
 )
 
 
-class JobCancelResult(CodeAlmanacModel):
-    record: JobRecord
+class RunCancelResult(CodeAlmanacModel):
+    record: RunRecord
     changed: bool
 
 
-class JobAttachSnapshot(CodeAlmanacModel):
-    record: JobRecord
-    events: tuple[JobLogEvent, ...]
+class RunAttachSnapshot(CodeAlmanacModel):
+    record: RunRecord
+    events: tuple[RunLogEvent, ...]
     terminal: bool
 
 
-class JobAttachUpdate(CodeAlmanacModel):
-    record: JobRecord
-    events: tuple[JobLogEvent, ...]
+class RunAttachUpdate(CodeAlmanacModel):
+    record: RunRecord
+    events: tuple[RunLogEvent, ...]
     terminal: bool
 
 
-class JobSpec(CodeAlmanacModel):
+class RunSpec(CodeAlmanacModel):
     version: int = 1
-    operation: JobOperation
+    kind: RunKind
     cwd: Path
     harness: HarnessKind
     wiki: str | None = None
@@ -133,7 +133,7 @@ class JobSpec(CodeAlmanacModel):
     @classmethod
     def require_ingest_input_text(cls, value: tuple[str, ...]) -> tuple[str, ...]:
         for item in value:
-            required_text(item, "job spec input")
+            required_text(item, "run spec input")
         return value
 
     @field_validator("almanac_root")
@@ -148,51 +148,51 @@ class JobSpec(CodeAlmanacModel):
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return required_text(value, "job spec text")
+        return required_text(value, "run spec text")
 
     @model_validator(mode="after")
-    def validate_operation_payload(self) -> "JobSpec":
+    def validate_kind_payload(self) -> "RunSpec":
         if self.version != 1:
-            raise ValueError("job spec version must be 1")
-        if self.operation == JobOperation.INIT:
+            raise ValueError("run spec version must be 1")
+        if self.kind == RunKind.INIT:
             if len(self.inputs) > 0:
-                raise ValueError("init job spec does not accept inputs")
+                raise ValueError("init run spec does not accept inputs")
             if self.wiki is not None:
-                raise ValueError("init job spec does not accept wiki selector")
+                raise ValueError("init run spec does not accept wiki selector")
             return self
-        if self.operation == JobOperation.INGEST:
+        if self.kind == RunKind.INGEST:
             if len(self.inputs) == 0:
-                raise ValueError("ingest job spec requires inputs")
+                raise ValueError("ingest run spec requires inputs")
             if self.almanac_root is not None:
-                raise ValueError("ingest job spec does not accept almanac_root")
+                raise ValueError("ingest run spec does not accept almanac_root")
             if self.workspace_name is not None:
-                raise ValueError("ingest job spec does not accept workspace_name")
+                raise ValueError("ingest run spec does not accept workspace_name")
             if self.description:
-                raise ValueError("ingest job spec does not accept description")
+                raise ValueError("ingest run spec does not accept description")
             if self.force:
-                raise ValueError("ingest job spec does not accept force")
+                raise ValueError("ingest run spec does not accept force")
             return self
-        if self.operation == JobOperation.GARDEN:
+        if self.kind == RunKind.GARDEN:
             if len(self.inputs) > 0:
-                raise ValueError("garden job spec does not accept inputs")
+                raise ValueError("garden run spec does not accept inputs")
             if self.almanac_root is not None:
-                raise ValueError("garden job spec does not accept almanac_root")
+                raise ValueError("garden run spec does not accept almanac_root")
             if self.workspace_name is not None:
-                raise ValueError("garden job spec does not accept workspace_name")
+                raise ValueError("garden run spec does not accept workspace_name")
             if self.description:
-                raise ValueError("garden job spec does not accept description")
+                raise ValueError("garden run spec does not accept description")
             if self.force:
-                raise ValueError("garden job spec does not accept force")
+                raise ValueError("garden run spec does not accept force")
             return self
-        raise ValueError(f"unsupported queued job operation: {self.operation.value}")
+        raise ValueError(f"unsupported queued run kind: {self.kind.value}")
 
 
-class QueuedJob(CodeAlmanacModel):
-    record: JobRecord
-    spec: JobSpec | None
+class QueuedRun(CodeAlmanacModel):
+    record: RunRecord
+    spec: RunSpec | None
 
 
-class JobWorkerLockOwner(CodeAlmanacModel):
+class RunWorkerLockOwner(CodeAlmanacModel):
     owner: str
     pid: int
     acquired_at: datetime
@@ -200,7 +200,7 @@ class JobWorkerLockOwner(CodeAlmanacModel):
     @field_validator("owner")
     @classmethod
     def require_owner(cls, value: str) -> str:
-        return required_text(value, "job worker lock owner")
+        return required_text(value, "run run worker lock owner")
 
     @field_validator("pid")
     @classmethod
@@ -210,7 +210,7 @@ class JobWorkerLockOwner(CodeAlmanacModel):
         return value
 
 
-class JobWorkerSpawnResult(CodeAlmanacModel):
+class RunWorkerSpawnResult(CodeAlmanacModel):
     child_pid: int
     command: tuple[str, ...]
 
@@ -231,6 +231,6 @@ class JobWorkerSpawnResult(CodeAlmanacModel):
         return value
 
 
-class JobQueueDrainResult(CodeAlmanacModel):
+class RunQueueDrainResult(CodeAlmanacModel):
     lock_acquired: bool
-    processed: tuple[JobRecord, ...] = ()
+    processed: tuple[RunRecord, ...] = ()

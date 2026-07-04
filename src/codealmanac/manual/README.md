@@ -7,7 +7,7 @@ topics: []
 
 This manual defines how agents maintain a CodeAlmanac repo-owned wiki.
 
-Prompts name the job. The manual explains how to write the pages.
+Prompts name the run. The manual explains how to write the pages.
 
 Read the relevant page before editing:
 
@@ -59,8 +59,8 @@ Runtime state is local and rebuildable:
 <almanac-root>/index.db
 <almanac-root>/index.db-wal
 <almanac-root>/index.db-shm
-~/.codealmanac/jobs/<workspace-id>/
+~/.codealmanac/runs/<workspace-id>/
 ```
 
-`~/.codealmanac/jobs/<workspace-id>/` contains foreground run logs, queued
+`~/.codealmanac/runs/<workspace-id>/` contains foreground run logs, queued
 background specs, worker locks, and sync ledger state. It is not wiki source.

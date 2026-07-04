@@ -4,8 +4,8 @@ export const RouteKind = Object.freeze({
   TOPIC: "topic",
   SEARCH: "search",
   FILE: "file",
-  JOBS: "jobs",
-  JOB: "job",
+  JOBS: "runs",
+  JOB: "run",
 });
 
 export function parseHash(hash) {
@@ -40,10 +40,10 @@ export function fileHref(path) {
   return `#/file/${encodeURIComponent(path)}`;
 }
 
-export function jobsHref() {
-  return "#/jobs";
+export function runsHref() {
+  return "#/runs";
 }
 
-export function jobHref(runId) {
-  return `#/jobs/${encodeURIComponent(runId)}`;
+export function runHref(runId) {
+  return `#/runs/${encodeURIComponent(runId)}`;
 }

@@ -3,7 +3,7 @@ from pathlib import Path
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.engine.harnesses.models import HarnessRunResult
 from codealmanac.engine.lifecycle import LifecycleMutationReport
-from codealmanac.jobs.ledger.models import JobRecord
+from codealmanac.runs.ledger.models import RunRecord
 from codealmanac.wiki.index.models import IndexRefreshResult
 from codealmanac.wiki.workspaces.models import Workspace
 
@@ -27,7 +27,7 @@ class InitPromptPayload(CodeAlmanacModel):
 class InitResult(CodeAlmanacModel):
     workspace: Workspace
     existing_page_count: int
-    job: JobRecord
+    run: RunRecord
     harness: HarnessRunResult
     safety: LifecycleMutationReport
     index: IndexRefreshResult

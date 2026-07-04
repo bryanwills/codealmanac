@@ -5,12 +5,12 @@ from fastapi.testclient import TestClient
 from codealmanac.api.app import create_api_app
 from codealmanac.app import CodeAlmanac
 from codealmanac.engine.harnesses.models import HarnessEvent, HarnessEventKind
-from codealmanac.jobs.ledger.models import JobEventKind, JobOperation, JobStatus
-from codealmanac.jobs.ledger.requests import (
-    FinishJobRequest,
-    MarkJobRunningRequest,
-    RecordJobEventRequest,
-    StartJobRequest,
+from codealmanac.runs.ledger.models import RunEventKind, RunKind, RunStatus
+from codealmanac.runs.ledger.requests import (
+    FinishRunRequest,
+    MarkRunRunningRequest,
+    RecordRunEventRequest,
+    StartRunRequest,
 )
 from codealmanac.wiki.workspaces.requests import InitializeWorkspaceRequest
 
@@ -31,13 +31,13 @@ def test_api_serves_static_assets_and_viewer_api(
     module = client.get("/assets/viewer/main.js")
     renderers_module = client.get("/assets/viewer/renderers.js")
     api_module = client.get("/assets/viewer/api.js")
-    jobs_module = client.get("/assets/viewer/jobs.js")
+    jobs_module = client.get("/assets/viewer/runs.js")
 
     assert index.status_code == 200
     assert "CodeAlmanac" in index.text
     assert "repo-owned wiki" in index.text
     assert "Local knowledge graph" in index.text
-    assert 'data-nav-kind="jobs"' in index.text
+    assert 'data-nav-kind="runs"' in index.text
     assert 'type="module"' in index.text
     assert javascript.status_code == 200
     assert 'import { startViewer } from "/assets/viewer/main.js";' in javascript.text
@@ -51,8 +51,8 @@ def test_api_serves_static_assets_and_viewer_api(
     assert api_module.status_code == 200
     assert "withQuery" in api_module.text
     assert jobs_module.status_code == 200
-    assert "renderJob" in jobs_module.text
-    assert "clearJobPolling" in jobs_module.text
+    assert "renderRun" in jobs_module.text
+    assert "clearRunPolling" in jobs_module.text
     assert "setTimeout" in jobs_module.text
     assert '"queued", "running"' in jobs_module.text
     assert "Tool display" in jobs_module.text
@@ -81,15 +81,15 @@ def test_api_serves_jobs_api_with_normalized_harness_events(
     record = create_server_job(repo, app)
     client = TestClient(create_api_app(app, repo))
 
-    jobs = client.get("/api/jobs")
-    detail = client.get(f"/api/jobs/{record.job_id}")
+    runs = client.get("/api/runs")
+    detail = client.get(f"/api/runs/{record.run_id}")
 
-    assert jobs.status_code == 200
-    assert jobs.json()["workspace"]["name"] == "repo"
-    assert [job["job_id"] for job in jobs.json()["jobs"]] == [record.job_id]
-    assert jobs.json()["jobs"][0]["status"] == "done"
+    assert runs.status_code == 200
+    assert runs.json()["workspace"]["name"] == "repo"
+    assert [run["run_id"] for run in runs.json()["runs"]] == [record.run_id]
+    assert runs.json()["runs"][0]["status"] == "done"
     assert detail.status_code == 200
-    assert detail.json()["job"]["summary"] == "updated wiki"
+    assert detail.json()["run"]["summary"] == "updated wiki"
     assert detail.json()["events"][2]["harness_event"]["kind"] == "text"
     assert detail.json()["events"][2]["harness_event"]["message"] == (
         "Created auth-flow.md"
@@ -203,13 +203,13 @@ def test_api_rejects_invalid_static_asset_paths(
     assert unsupported.json()["detail"]["code"] == "validation_failed"
 
 
-def test_api_rejects_path_shaped_job_ids(
+def test_api_rejects_path_shaped_run_ids(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
     client = TestClient(create_api_app(app, repo))
 
-    response = client.get("/api/jobs/..secret")
+    response = client.get("/api/runs/..secret")
 
     assert response.status_code == 422
     assert response.json()["detail"]["code"] == "validation_failed"
@@ -222,19 +222,19 @@ def write_server_page(repo: Path, name: str, body: str) -> None:
 
 
 def create_server_job(repo: Path, app: CodeAlmanac):
-    record = app.jobs.start(
-        StartJobRequest(
+    record = app.runs.start(
+        StartRunRequest(
             cwd=repo,
-            operation=JobOperation.INGEST,
+            kind=RunKind.INGEST,
             title="Digest auth note",
         )
     )
-    app.jobs.mark_running(MarkJobRunningRequest(cwd=repo, job_id=record.job_id))
-    app.jobs.record_event(
-        RecordJobEventRequest(
+    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
+    app.runs.record_event(
+        RecordRunEventRequest(
             cwd=repo,
-            job_id=record.job_id,
-            kind=JobEventKind.OUTPUT,
+            run_id=record.run_id,
+            kind=RunEventKind.OUTPUT,
             message="Created auth-flow.md",
             harness_event=HarnessEvent(
                 kind=HarnessEventKind.TEXT,
@@ -242,11 +242,11 @@ def create_server_job(repo: Path, app: CodeAlmanac):
             ),
         )
     )
-    return app.jobs.finish(
-        FinishJobRequest(
+    return app.runs.finish(
+        FinishRunRequest(
             cwd=repo,
-            job_id=record.job_id,
-            status=JobStatus.DONE,
+            run_id=record.run_id,
+            status=RunStatus.DONE,
             summary="updated wiki",
         )
     )
