@@ -13,12 +13,11 @@ This Python rewrite is usable as a local alpha. It is not the old Node CLI and
 it does not require a hosted service.
 
 - Public command: `codealmanac`
-- Default repo wiki root: `almanac/`
-- Common alternate repo wiki root: `docs/almanac/`
-- Custom repo wiki roots: any safe repo-relative directory via `--root`
+- Repo wiki root: `almanac/` only
+- Alternate repo wiki roots: none
 - User state root: `~/.codealmanac/`
 - Runtime: Python 3.12+
-- Storage: local markdown plus a derived SQLite index
+- Storage: local markdown plus derived state under `~/.codealmanac/`
 
 ## Install
 
@@ -82,9 +81,8 @@ codealmanac show getting-started
 codealmanac serve
 ```
 
-`init` creates a local wiki scaffold under the configured Almanac root. New
-repos default to `almanac/`. Use `--root docs/almanac`, `--root .almanac`, or
-another repo-relative directory when a project needs a different location.
+`init` creates a local wiki scaffold under `almanac/`. CodeAlmanac does not
+support alternate repo wiki roots.
 
 ## Daily Read Surface
 
@@ -104,7 +102,7 @@ commands resolve the nearest repository wiki from the current directory.
 ## Updating The Wiki
 
 Lifecycle commands can ask a configured local agent harness to edit wiki pages.
-They only allow changes under the configured Almanac root.
+They only allow source edits under `almanac/`.
 
 ```bash
 codealmanac ingest README.md --using codex
@@ -146,7 +144,7 @@ Use `sync --background` for manual queue-and-worker execution.
 
 ## Jobs
 
-Lifecycle runs are recorded under the configured Almanac root:
+Lifecycle runs are recorded under `~/.codealmanac/`:
 
 ```bash
 codealmanac jobs
@@ -182,31 +180,35 @@ your-repo/
 |-- almanac/
 |   |-- README.md
 |   |-- topics.yaml
-|   |-- pages/
-|   |-- manual/
+|   |-- architecture/
+|   |   |-- README.md
+|   |   `-- indexer.md
+|   |-- decisions/
+|   |   `-- local-first.md
+|   `-- guides/
+|       `-- setup.md
 |-- src/
 `-- ...
 ```
 
-Markdown pages, `topics.yaml`, and manual files are the wiki source. `init`
-also writes `.gitignore` entries for runtime artifacts.
+Markdown pages live directly under `almanac/` in meaningful folders.
+`topics.yaml` organizes pages across folders. `README.md` files act as landing
+pages for their folder routes.
 
-For auto-detection, a folder counts as a CodeAlmanac wiki only when it has both
-`topics.yaml` and `pages/`. `README.md` alone is not a wiki marker.
+For auto-detection, a repository counts as a CodeAlmanac wiki when
+`almanac/topics.yaml` and `almanac/README.md` exist.
 
 ## Runtime State
 
-Derived local state appears when commands need it:
+Derived local state lives under `~/.codealmanac/`:
 
 ```text
-almanac/index.db
-almanac/index.db-wal
-almanac/index.db-shm
-almanac/jobs/
+~/.codealmanac/repos/<repo-id>/index.db
+~/.codealmanac/repos/<repo-id>/runs/
 ```
 
-Those runtime files are rebuildable local machine state and should stay out of
-commits.
+Those runtime files are rebuildable local machine state. They do not belong in
+the committed `almanac/` tree.
 
 ## Configuration
 
@@ -219,7 +221,7 @@ User config lives at:
 Project config lives at:
 
 ```text
-<almanac-root>/config.toml
+almanac/config.toml
 ```
 
 The first supported defaults are:
@@ -252,6 +254,7 @@ This rewrite is local-only for now.
 - No hosted login/connect/upload commands.
 - No public SDK or MCP package.
 - No compatibility aliases.
+- No alternate wiki roots.
 - No hidden cloud write path.
 - No second wiki command name.
 

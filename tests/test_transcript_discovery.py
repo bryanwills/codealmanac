@@ -94,7 +94,7 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
     assert candidates[0].transcript_path == transcript
 
 
-def test_transcript_discovery_uses_configured_almanac_roots(tmp_path: Path):
+def test_transcript_discovery_ignores_retired_alternate_roots(tmp_path: Path):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
     (repo / "docs/almanac/pages").mkdir(parents=True)
@@ -113,15 +113,5 @@ def test_transcript_discovery_uses_configured_almanac_roots(tmp_path: Path):
     default_candidates = CodexTranscriptDiscoveryAdapter().discover(
         DiscoverTranscriptsRequest(home=home, apps=(TranscriptApp.CODEX,))
     )
-    configured_candidates = CodexTranscriptDiscoveryAdapter().discover(
-        DiscoverTranscriptsRequest(
-            home=home,
-            apps=(TranscriptApp.CODEX,),
-            almanac_roots=(Path("docs/almanac"),),
-        )
-    )
 
     assert default_candidates == ()
-    assert len(configured_candidates) == 1
-    assert configured_candidates[0].repo_root == repo
-    assert configured_candidates[0].almanac_path == repo / "docs/almanac"

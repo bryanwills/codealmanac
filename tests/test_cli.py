@@ -223,7 +223,7 @@ def test_cli_init_creates_wiki_and_prints_name(
     assert (isolated_home / ".codealmanac/registry.json").is_file()
 
 
-def test_cli_init_accepts_configured_root(
+def test_cli_init_rejects_root_option(
     tmp_path: Path,
     isolated_home: Path,
     capsys,
@@ -231,13 +231,13 @@ def test_cli_init_accepts_configured_root(
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    exit_code = main(["init", str(repo), "--root", "docs/almanac"])
+    with pytest.raises(SystemExit):
+        main(["init", str(repo), "--root", "docs/almanac"])
 
     captured = capsys.readouterr()
-    assert exit_code == 0
-    assert captured.out == "repo\n"
-    assert str(repo / "docs/almanac") in captured.err
-    assert (repo / "docs/almanac/pages/getting-started.md").is_file()
+    assert captured.out == ""
+    assert "unrecognized arguments: --root" in captured.err
+    assert not (repo / "docs").exists()
 
 
 def test_cli_setup_and_uninstall_codex_instructions(

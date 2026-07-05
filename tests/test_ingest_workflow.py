@@ -470,7 +470,7 @@ def test_ingest_prompt_includes_web_source_runtime(
     assert "Keep pricing context in the wiki." in adapter.requests[0].prompt
 
 
-def test_ingest_workflow_passes_configured_almanac_root_to_source_runtime(
+def test_ingest_workflow_passes_almanac_root_to_source_runtime(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -481,9 +481,7 @@ def test_ingest_workflow_passes_configured_almanac_root_to_source_runtime(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         source_runtime_adapters=(runtime,),
     )
-    app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=repo, almanac_root=Path("knowledge"))
-    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     workspace = app.workspaces.resolve(repo)
     sources = app.sources.resolve(ResolveSourcesRequest(cwd=repo, inputs=(".",)))
 
@@ -491,7 +489,7 @@ def test_ingest_workflow_passes_configured_almanac_root_to_source_runtime(
 
     assert result[0].status == SourceRuntimeStatus.AVAILABLE
     assert runtime.requests[0].cwd == repo
-    assert runtime.requests[0].context.ignored_directories == (Path("knowledge"),)
+    assert runtime.requests[0].context.ignored_directories == (Path("almanac"),)
 
 
 def test_ingest_workflow_fails_run_when_harness_is_missing(

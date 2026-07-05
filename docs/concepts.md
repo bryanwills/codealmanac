@@ -2,51 +2,54 @@
 
 CodeAlmanac has five core concepts.
 
-## 1. Wiki Root
+## 1. Almanac Tree
 
-Each repository owns its wiki files. The default root is `almanac/`.
+Each repository owns one wiki tree at `almanac/`.
 
 ```text
 your-repo/
 |-- almanac/
 |   |-- README.md
 |   |-- topics.yaml
-|   |-- pages/
-|   |-- manual/
+|   |-- architecture/
+|   |   |-- README.md
+|   |   `-- indexing.md
+|   |-- decisions/
+|   |   `-- local-first.md
+|   `-- guides/
+|       `-- setup.md
 |-- src/
 `-- ...
 ```
 
-`docs/almanac/`, `.almanac/`, or another safe repo-relative directory can be
-used with `codealmanac init --root <path>`.
-
-For auto-detection, a folder counts as a CodeAlmanac wiki only when it has both
-`topics.yaml` and `pages/`. `README.md` alone is guidance, not a marker.
+There are no alternate roots.
 
 ## 2. Pages
 
-A page is a markdown file under `<almanac-root>/pages/`. It documents one
-durable subject: a decision, subsystem, external service, workflow, incident,
-invariant, or gotcha.
+A page is a Markdown file under `almanac/`, except reserved root files such as
+`topics.yaml` and local config files.
 
-```markdown
----
-title: Auth Flow
-topics: [systems]
-files:
-  - src/auth/
----
+The page id is its path under `almanac/` without `.md`:
 
-# Auth Flow
-
-Login checks [[src/auth/session.py]] and links to [[session-store]].
+```text
+almanac/README.md                         -> README
+almanac/architecture/README.md            -> architecture
+almanac/architecture/indexing.md          -> architecture/indexing
+almanac/guides/setup.md                   -> guides/setup
 ```
 
-The filename is the slug: `auth-flow.md` becomes `auth-flow`.
+`README.md` files are folder landing pages. Route collisions are invalid:
+
+```text
+almanac/architecture.md
+almanac/architecture/README.md
+```
+
+Those two files both map to `architecture`, so validation rejects the tree.
 
 ## 3. Topics
 
-Topics are categories for pages. They live in `<almanac-root>/topics.yaml`.
+Topics are categories for pages. They live in `almanac/topics.yaml`.
 
 Topics form a DAG, not a folder tree. A page can have multiple topics, and a
 topic can have multiple parents.
@@ -57,19 +60,30 @@ codealmanac topics show systems --descendants
 codealmanac search --topic systems
 ```
 
-## 4. Links And File References
+## 4. Links And Sources
 
-One syntax handles page links, file references, folder references, and cross-wiki
-references:
+Authored page links use normal Markdown links.
 
 ```markdown
-[[auth-flow]]              # page link
-[[src/auth/session.py]]    # file reference
-[[src/auth/]]              # folder reference
-[[other-wiki:auth-flow]]   # cross-wiki reference
+[Indexing](architecture/indexing.md)
+[Setup guide](guides/setup.md)
 ```
 
-File references power `--mentions`:
+Structured evidence lives in `sources:` frontmatter.
+
+```yaml
+---
+title: Auth Flow
+topics: [systems]
+sources:
+  - id: auth-session
+    type: file
+    path: src/auth/session.py
+    note: Login checks session state here.
+---
+```
+
+File sources power `--mentions`:
 
 ```bash
 codealmanac search --mentions src/auth/session.py
@@ -78,11 +92,8 @@ codealmanac search --mentions src/auth/
 
 ## 5. Local Index And Commands
 
-Markdown is the source of truth. SQLite is a derived local cache at:
-
-```text
-<almanac-root>/index.db
-```
+Markdown is the source of truth. SQLite is a derived local cache under
+`~/.codealmanac/`.
 
 Query commands refresh the index silently when pages change. `codealmanac
 reindex` forces a full rebuild.

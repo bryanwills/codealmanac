@@ -27,7 +27,6 @@ def dispatch_build(args: argparse.Namespace, app: CodeAlmanac) -> int:
 def build_request(args: argparse.Namespace) -> InitializeWorkspaceRequest:
     return InitializeWorkspaceRequest(
         path=Path(args.path),
-        almanac_root=Path(args.root) if args.root is not None else None,
         name=args.name,
         description=args.description,
     )

@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import NotFoundError
@@ -60,33 +61,22 @@ def test_initialize_starter_wiki_has_no_health_noise(
     assert report.dead_refs == ()
 
 
-def test_initialize_supports_configured_almanac_root(
+def test_initialize_rejects_configured_almanac_root(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
-    )
 
-    workspace = app.workflows.build.initialize(
+    with pytest.raises(ValidationError, match="fixed at almanac"):
         InitializeWorkspaceRequest(
             path=repo,
             almanac_root=Path("docs/almanac"),
             name="repo",
         )
-    )
-
-    assert workspace.almanac_root == Path("docs/almanac")
-    assert workspace.almanac_path == repo / "docs/almanac"
-    assert (repo / "docs/almanac/pages/getting-started.md").is_file()
-    gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
-    assert "docs/almanac/index.db" in gitignore_lines
-    assert app.workspaces.resolve(repo / "src").almanac_path == repo / "docs/almanac"
 
 
-def test_build_without_root_preserves_registered_almanac_root(
+def test_build_without_root_uses_registered_almanac_tree(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -98,45 +88,35 @@ def test_build_without_root_preserves_registered_almanac_root(
     app.workflows.build.initialize(
         InitializeWorkspaceRequest(
             path=repo,
-            almanac_root=Path("docs/almanac"),
             name="docs-root",
-            description="configured docs root",
+            description="registered wiki",
         )
     )
 
     result = app.workflows.build.build(InitializeWorkspaceRequest(path=repo / "src"))
 
     assert result.workspace.name == "docs-root"
-    assert result.workspace.description == "configured docs root"
-    assert result.workspace.almanac_root == Path("docs/almanac")
-    assert result.workspace.almanac_path == repo / "docs/almanac"
-    assert not (repo / "almanac").exists()
+    assert result.workspace.description == "registered wiki"
+    assert result.workspace.almanac_root == Path("almanac")
+    assert result.workspace.almanac_path == repo / "almanac"
 
 
-def test_initialize_allows_explicit_dot_almanac_root(
+def test_initialize_rejects_dot_almanac_root(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
-    )
 
-    workspace = app.workflows.build.initialize(
+    with pytest.raises(ValidationError, match="fixed at almanac"):
         InitializeWorkspaceRequest(
             path=repo,
             almanac_root=Path(".almanac"),
             name="repo",
         )
-    )
-
-    assert workspace.almanac_root == Path(".almanac")
-    assert (repo / ".almanac/pages/getting-started.md").is_file()
-    assert app.workspaces.resolve(repo).almanac_path == repo / ".almanac"
 
 
-def test_resolve_discovers_unregistered_dot_almanac_root(
+def test_resolve_ignores_unregistered_dot_almanac_root(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -147,11 +127,8 @@ def test_resolve_discovers_unregistered_dot_almanac_root(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
 
-    workspace = app.workspaces.resolve(repo / "src")
-
-    assert workspace.root_path == repo
-    assert workspace.almanac_root == Path(".almanac")
-    assert workspace.almanac_path == repo / ".almanac"
+    with pytest.raises(NotFoundError):
+        app.workspaces.resolve(repo / "src")
 
 
 def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
@@ -160,8 +137,8 @@ def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
 ):
     projects = tmp_path / "Projects"
     repo = projects / "codealmanac"
-    (repo / ".almanac/pages").mkdir(parents=True)
-    (repo / ".almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
+    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
@@ -176,8 +153,8 @@ def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
     workspace = app.workspaces.resolve(repo)
 
     assert workspace.root_path == repo
-    assert workspace.almanac_root == Path(".almanac")
-    assert workspace.almanac_path == repo / ".almanac"
+    assert workspace.almanac_root == Path("almanac")
+    assert workspace.almanac_path == repo / "almanac"
 
 
 def test_initialized_wiki_requires_topics_yaml_and_pages(tmp_path: Path):

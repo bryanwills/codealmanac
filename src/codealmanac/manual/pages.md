@@ -19,9 +19,8 @@ Prefer updating an existing page when the subject already has a home. Create a
 new page when the material reveals a durable subject that would otherwise stay
 buried.
 
-Use `[[page-slug]]` links for subjects a reader may follow. Use
-`[[src/path.py]]` and `[[src/path/]]` references when a page should be found by
-file-aware search.
+Use Markdown links for subjects a reader may follow. Use `sources:` entries
+with `type: file` when a page should be found by file-aware search.
 
 Page links are for real wiki nodes, not automatic entity markup. Link only to
 an existing page or a page created in the same run. If the subject is useful

@@ -9,6 +9,11 @@ from codealmanac.cli.main import build_parser
 from codealmanac.core.models import AppConfig
 from codealmanac.services.sources.models import SourceKind
 from codealmanac.services.sources.requests import ResolveSourcesRequest
+from codealmanac.services.workspaces.roots import (
+    CONVENTIONAL_ALMANAC_ROOTS,
+    DEFAULT_ALMANAC_ROOT,
+    normalize_almanac_root,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src/codealmanac"
@@ -28,8 +33,8 @@ FORBIDDEN_TOP_LEVEL_COMMANDS = (
 
 README_REQUIRED_FRAGMENTS = (
     "Public command: `codealmanac`",
-    "Default repo wiki root: `almanac/`",
-    "Custom repo wiki roots: any safe repo-relative directory via `--root`",
+    "Repo wiki root: `almanac/` only",
+    "Alternate repo wiki roots: none",
     "User state root: `~/.codealmanac/`",
     "Python 3.12+",
     "uv tool install codealmanac",
@@ -42,9 +47,9 @@ README_REQUIRED_FRAGMENTS = (
     "codealmanac ingest README.md --using codex",
     "codealmanac ingest github:pr:123 --using claude",
     "## What Gets Created By Init",
-    "a folder counts as a CodeAlmanac wiki only when it has both",
-    "`topics.yaml` and `pages/`",
-    "Derived local state appears when commands need it:",
+    "a repository counts as a CodeAlmanac wiki when",
+    "`almanac/topics.yaml` and `almanac/README.md`",
+    "Derived local state lives under `~/.codealmanac/`:",
     "codealmanac uninstall --yes",
     "codealmanac uninstall --yes --keep-automation",
     "No hosted login/connect/upload commands.",
@@ -57,6 +62,14 @@ README_FORBIDDEN_FRAGMENTS = (
     "`almanac ",
     "`alm`",
     "~/.almanac",
+    "Common alternate repo wiki root",
+    "Custom repo wiki roots",
+    "--root",
+    "docs/almanac",
+    ".almanac",
+    "|   |-- pages/",
+    "almanac/index.db",
+    "almanac/jobs/",
     "codealmanac.com/dashboard",
     "usealmanac.com",
     "does not install scheduled automation",
@@ -156,6 +169,29 @@ def test_readme_documents_python_local_public_surface():
         assert fragment not in readme
 
 
+def test_almanac_root_is_not_configurable():
+    assert Path("almanac") == DEFAULT_ALMANAC_ROOT
+    assert (Path("almanac"),) == CONVENTIONAL_ALMANAC_ROOTS
+    assert normalize_almanac_root(None) == Path("almanac")
+
+    with pytest.raises(ValueError, match="fixed at almanac"):
+        normalize_almanac_root(Path("docs/almanac"))
+
+    with pytest.raises(ValueError, match="fixed at almanac"):
+        normalize_almanac_root(Path(".almanac"))
+
+
+@pytest.mark.parametrize("command", ("init", "build"))
+def test_lifecycle_commands_do_not_accept_root_flag(command: str, capsys):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit):
+        parser.parse_args((command, "--root", "docs/almanac"))
+
+    output = capsys.readouterr()
+    assert "unrecognized arguments: --root" in output.err
+
+
 def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
     docs = {
         "CONTRIBUTING.md": (PROJECT_ROOT / "CONTRIBUTING.md").read_text(
@@ -168,7 +204,7 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
 
     assert "uv sync" in docs["CONTRIBUTING.md"]
     assert "uv run pytest" in docs["CONTRIBUTING.md"]
-    assert "codealmanac init --root <path>" in docs["docs/concepts.md"]
+    assert "There are no alternate roots." in docs["docs/concepts.md"]
     assert "codealmanac setup --install-automation" in docs["docs/concepts.md"]
     assert "codealmanac uninstall --keep-automation" in docs["docs/concepts.md"]
     for body in docs.values():
@@ -176,6 +212,11 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
         assert "npm test" not in body
         assert "Vitest" not in body
         assert "~/.almanac" not in body
+        assert "docs/almanac" not in body
+        assert ".almanac" not in body
+        assert "--root" not in body
+        assert "[[" not in body
+        assert "files:" not in body
         assert "almanac capture" not in body
 
 
@@ -186,8 +227,11 @@ def test_readme_keeps_init_scaffold_separate_from_runtime_state():
 
     assert "|   |-- README.md" in init_section
     assert "|   |-- topics.yaml" in init_section
-    assert "|   |-- pages/" in init_section
-    assert "|   |-- manual/" in init_section
+    assert "|   |-- architecture/" in init_section
+    assert "|   |-- decisions/" in init_section
+    assert "|   `-- guides/" in init_section
+    assert "|   |-- pages/" not in init_section
+    assert "|   |-- manual/" not in init_section
     assert "almanac/index.db" not in init_section
     assert "almanac/jobs/" not in init_section
     assert "config.toml" not in init_section

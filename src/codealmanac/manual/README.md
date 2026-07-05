@@ -20,34 +20,35 @@ Read the relevant page before editing:
 - `ingest.md`: how to fold new material into an existing wiki.
 - `garden.md`: how to improve an existing wiki graph.
 
-Repo-specific conventions live in `README.md` and `topics.yaml` under the
-configured Almanac root.
+Repo-specific conventions live in `almanac/README.md` and
+`almanac/topics.yaml`.
 
 ## Folder Structure
 
-The configured Almanac root is flat. A new repo defaults to `almanac/`, but a
-repo may explicitly use another safe repo-relative directory such as
-`docs/almanac/` or `.almanac/`.
+The committed wiki source is a browseable Markdown tree under `almanac/`.
 
 ```text
-<almanac-root>/
+almanac/
 |-- README.md
 |-- topics.yaml
-|-- pages/
-|-- manual/
+|-- architecture/
+|   |-- README.md
+|   `-- indexing.md
+|-- decisions/
+|   `-- local-first.md
+`-- guides/
+    `-- setup.md
 ```
 
-`topics.yaml` plus `pages/` identify an initialized CodeAlmanac wiki. `README.md`
-is guidance for readers and writers, not a marker by itself.
+`almanac/README.md` plus `almanac/topics.yaml` identify an initialized
+CodeAlmanac wiki.
 
 Runtime state is local and rebuildable:
 
 ```text
-<almanac-root>/index.db
-<almanac-root>/index.db-wal
-<almanac-root>/index.db-shm
-<almanac-root>/jobs/
+~/.codealmanac/repos/<repo-id>/index.db
+~/.codealmanac/repos/<repo-id>/runs/
 ```
 
-`jobs/` contains foreground run logs, queued background specs, worker locks,
-and sync ledger state. It is not wiki source.
+Runtime files contain foreground run logs, queued background specs, worker
+locks, and sync ledger state. They are not wiki source.

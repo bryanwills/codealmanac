@@ -21,8 +21,9 @@ def test_prompt_renderer_composes_packaged_sections_with_context():
     assert "Runtime context:" in prompt
     assert "\n\n---\n\n" in prompt
     assert "public command and product name is `codealmanac`" in prompt
-    assert "Page wikilinks must resolve" in prompt
-    assert "broken `[[...]]` link" in prompt
+    assert "Use normal Markdown links for page links" in prompt
+    assert "Do not write wikilinks" in prompt
+    assert "Do not use `files:` frontmatter" in prompt
 
 
 def test_prompt_renderer_requires_sections():

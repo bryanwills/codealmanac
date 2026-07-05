@@ -32,9 +32,10 @@ Use focused pytest runs while developing, then run the full suite before review.
 ## Working With The Codebase
 
 - Read `README.md`, `MANUAL.md`, and `docs/concepts.md` for the product model.
-- Search the local `.almanac/` wiki before changing a real subsystem.
-- Keep changes local-first. Repo wiki data lives under the configured Almanac
-  root, which defaults to `almanac/`. User state lives in `~/.codealmanac/`.
+- Search the local `almanac/` wiki before changing a real subsystem when the
+  repo has already migrated its wiki.
+- Keep changes local-first. Repo wiki data lives under `almanac/`. User state
+  lives in `~/.codealmanac/`.
 - Keep commands scriptable. Avoid interactive prompts in CLI flows.
 
 ## Tests And Fixtures
@@ -51,11 +52,9 @@ app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 Synthetic wiki fixtures must include both source markers:
 
 ```text
-<almanac-root>/topics.yaml
-<almanac-root>/pages/
+almanac/README.md
+almanac/topics.yaml
 ```
-
-`README.md` alone is not a wiki marker.
 
 ## Pull Request Shape
 

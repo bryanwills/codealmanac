@@ -5,9 +5,9 @@
 > cleanly, and the wireframe-in-chat habit. Reason from it; don't bolt features
 > onto a misshapen base.
 
-codealmanac is a living wiki for codebases, maintained by AI coding agents. It documents what the code can't say — decisions, flows, invariants, incidents, gotchas — as atomic, interlinked markdown pages living in a configurable repo-local Almanac root. New Python repos default to `almanac/`; users can choose `docs/almanac/` or explicit `.almanac/` during setup. Primary consumer is the AI coding agent; humans benefit secondarily.
+codealmanac is a living wiki for codebases, maintained by AI coding agents. It documents what the code can't say — decisions, flows, invariants, incidents, gotchas — as atomic, interlinked markdown pages living in the repo-local `almanac/` tree. New Python repos use `almanac/` only. There is no `docs/almanac/`, `.almanac/`, custom-root, or old CLI compatibility path. Primary consumer is the AI coding agent; humans benefit secondarily.
 
-**Full spec:** `/Users/rohan/Desktop/Projects/openalmanac/docs/ideas/codebase-wiki.md` — source of truth. Read it before making design changes. This file is the working context for implementation.
+**Historical spec:** `/Users/rohan/Desktop/Projects/openalmanac/docs/ideas/codebase-wiki.md` — useful background, not current product truth where it conflicts with `notes.md` and `implementation-tickets.md`. Read it before making design changes, then apply the current reset decisions in this repo.
 
 ## Python rewrite architecture references
 
@@ -37,7 +37,7 @@ generated Markdown reference files as book text; CodeAlmanac notes belong in
 
 ## Design philosophy
 
-Intelligence lives in prompts, not pipelines. When judgment is needed — deciding what a session produced, scoring notability, evaluating a proposed page against the graph — we hand a concrete-but-open prompt to an agent. We do not wrap agents in propose/review/apply state machines, intermediate proposal files, or `--dry-run` rehearsals. The writer owns outcomes and calls the reviewer as a subagent when it wants feedback; there is no orchestration JSON schema between them. Everything is **local-only**: each repo has one configured Almanac root, `~/.almanac/registry.json` is global state, and there is no hosted service in this v1. The configured root is **flat**: no nested `wiki/` subdir, and future features get peer files. Only lifecycle operations invoke AI or write page prose. Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
+Intelligence lives in prompts, not pipelines. When judgment is needed — deciding what a session produced, scoring notability, evaluating a proposed page against the graph — we hand a concrete-but-open prompt to an agent. We do not wrap agents in propose/review/apply state machines, intermediate proposal files, or `--dry-run` rehearsals. The writer owns outcomes and calls the reviewer as a subagent when it wants feedback; there is no orchestration JSON schema between them. Everything is **local-only**: each repo has one `almanac/` tree, `~/.codealmanac/registry.json` is global state, and there is no hosted service in this v1. The committed `almanac/` tree is browseable nested Markdown, not hidden runtime state. Only lifecycle operations invoke AI or write page prose. Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
 
 ## Engineering taste
 
@@ -63,7 +63,8 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `archive/code/` | Archived TypeScript/Node implementation and old viewer | behavior reference only |
 | `docs/python-port-live-agreement.md` | Active Python rewrite agreement | local-only scope, service/workflow/integration structure |
 | `docs/reference/cosmic-python/` | Vendored Architecture Patterns with Python reference | Markdown-only book files plus `CODEALMANAC.md` |
-| `.almanac/` | This repo's current working wiki | `README.md`, `pages/`, `topics.yaml` |
+| `.almanac/` | Legacy project memory to migrate | old `README.md`, `pages/`, `topics.yaml` |
+| `almanac/` | Current target wiki tree | nested Markdown pages plus `topics.yaml` |
 | `src/codealmanac/` | Active Python implementation root | `app.py`, `cli/`, `services/`, `workflows/`, `integrations/` |
 | `tests/` | Active Python test suite | pytest files plus temp-home helpers |
 | `.github/` | GitHub workflow and contribution metadata | CI/publish templates may need rewrite after Python scaffold |
@@ -105,7 +106,7 @@ Use `uv run pytest` and `uv run ruff check .` as the default gates. Tests that t
 _Cross-cutting architectural choices. Keep current, concise, and explanatory. Update this when a conversation settles a structural choice._
 
 - **CLI is an adapter, not the internal API.** CLI dispatch builds request objects and calls the app composition root. Workflows, automation, tests, and future server wrappers call services/workflows directly.
-- **Workspace owns repo selection and Almanac roots.** The configured repo-local root defaults to `almanac/`; `docs/almanac/` and `.almanac/` are explicit setup choices.
+- **Workspace owns repo selection and the Almanac tree.** The repo-local wiki tree is `almanac/` only.
 - **Stores own persistence behavior.** Shared SQLite mechanics live in `codealmanac.database`; store packages own schemas, migrations, queries, and row conversion.
 - **Integrations implement service-owned ports.** Harnesses, transcript discovery, source runtime, Git probes, and scheduler adapters stay behind service/workflow contracts.
 - **Review prompts are separate by job.** `src/codealmanac/prompts/operations/garden.md` and `ingest.md` guide wiki writes; `.claude/agents/review.md` reviews code architecture and implementation.
@@ -115,13 +116,13 @@ _Cross-cutting architectural choices. Keep current, concise, and explanatory. Up
 Design rules every change must respect. The spec has the full rationale; these are the ones that trip people up.
 
 - **Only lifecycle operations invoke AI or write page prose.** Read commands may refresh derived local index state and read committed markdown for display or validation. Organization commands may deterministically rewrite wiki metadata through explicit verbs such as `tag`, `topics`, `review`, and `migrate`.
-- **Reindex is silent and implicit.** Every query command compares `pages/*.md` mtimes against `index.db` and rebuilds if stale. No progress bars, no "indexing..." chatter, no opt-in flag. `codealmanac reindex` is the escape hatch for "I want to force it."
-- **Unified `[[...]]` syntax.** One link form, disambiguated by content: contains `:` before `/` → cross-wiki; contains `/` → file ref (trailing `/` = folder); otherwise → page slug. Do not introduce a second link syntax.
+- **Reindex is silent and implicit.** Every query command compares `almanac/**/*.md` mtimes against the derived index and rebuilds if stale. No progress bars, no "indexing..." chatter, no opt-in flag. `codealmanac reindex` is the escape hatch for "I want to force it."
+- **Markdown links are the authored page-link syntax.** Do not reintroduce wikilinks. File evidence belongs in `sources:`.
 - **Use `GLOB` not `LIKE` for path queries**, and **escape `*?[` before concatenating stored paths into a GLOB pattern.** SQLite's `LIKE` treats `_` as a wildcard (spurious matches on `src/my_module/`); `GLOB` treats it literally. A Next.js-style stored path like `src/[id]/page.tsx` contains GLOB metacharacters — unescaped, it matches things it shouldn't. See `fixes-slice-2-review.md` for the bug and fix.
 - **Paths are normalized at index time and at query time.** Lowercase (macOS is case-insensitive), forward slashes, no `./` prefix, trailing slash iff directory, no redundant slashes. Normalize on both sides of a comparison.
 - **Slugs are kebab-case of the filename.** `checkout_flow`, `Checkout Flow.md`, `checkout-flow.md` all canonicalize to `checkout-flow`. Enforced at write time and checked by health.
 - **DAG cycle prevention is belt-and-suspenders.** `CHECK (child_slug != parent_slug)` in the schema, pre-insert cycle check on `topics link`, and a depth cap of 32 on any recursive CTE.
-- **Workspace roots are configurable.** New repos default to `almanac/`. `docs/almanac/` and `.almanac/` are valid only when configured during setup or already recorded in the registry. Downstream code must use `Workspace.almanac_path` rather than concatenating a literal root.
+- **Workspace roots are not configurable.** New repos use `almanac/`. `docs/almanac/`, `.almanac/`, custom roots, and root migration shims are retired.
 - **Registry entries are never auto-dropped.** Unreachable paths are silently skipped in `--all` queries. `codealmanac list --drop <name>` is the only explicit removal.
 - **Archived pages are excluded from search by default**, are not flagged for dead-refs by `health`, and keep their backlinks resolvable. `--include-archive` and `--archived` change scope.
 - **Prompts and manual docs are shipped as Python package resources.** They live under `src/codealmanac/prompts/` and `src/codealmanac/manual/`. They are not embedded as Python string literals.

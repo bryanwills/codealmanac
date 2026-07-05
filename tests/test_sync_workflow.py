@@ -161,14 +161,10 @@ def test_sync_status_reports_ready_transcript_ranges(
     assert summary.skipped == ()
     assert summary.needs_attention == ()
     adapter = app.sources.transcript_discovery_adapters[0]
-    assert adapter.requests[0].almanac_roots == (
-        Path("almanac"),
-        Path("docs/almanac"),
-        Path(".almanac"),
-    )
+    assert adapter.requests[0].almanac_roots == (Path("almanac"),)
 
 
-def test_sync_status_passes_configured_roots_to_discovery(
+def test_sync_status_passes_only_almanac_root_to_discovery(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -179,12 +175,10 @@ def test_sync_status_passes_configured_roots_to_discovery(
         repo,
         transcript,
         modified_at=old_time(),
-        almanac_path=repo / "docs/almanac",
+        almanac_path=repo / "almanac",
     )
     app = app_with_candidates(isolated_home, (candidate,))
-    app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=repo, almanac_root=Path("docs/almanac"))
-    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     summary = app.workflows.sync.status(
         RunSyncStatusRequest(
@@ -197,11 +191,7 @@ def test_sync_status_passes_configured_roots_to_discovery(
 
     adapter = app.sources.transcript_discovery_adapters[0]
     assert summary.eligible == 1
-    assert adapter.requests[0].almanac_roots == (
-        Path("almanac"),
-        Path("docs/almanac"),
-        Path(".almanac"),
-    )
+    assert adapter.requests[0].almanac_roots == (Path("almanac"),)
 
 
 def test_sync_run_ingests_ready_transcripts_and_advances_ledger(

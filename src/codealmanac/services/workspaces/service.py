@@ -178,11 +178,7 @@ class WorkspacesService:
         return DropWorkspaceResult(dropped=dropped)
 
     def discoverable_almanac_roots(self) -> tuple[Path, ...]:
-        roots = list(CONVENTIONAL_ALMANAC_ROOTS)
-        for workspace in self.list():
-            if workspace.almanac_root not in roots:
-                roots.append(workspace.almanac_root)
-        return tuple(roots)
+        return CONVENTIONAL_ALMANAC_ROOTS
 
     @property
     def registry_path(self) -> Path:

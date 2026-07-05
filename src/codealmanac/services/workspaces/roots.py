@@ -5,11 +5,7 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
 
 DEFAULT_ALMANAC_ROOT = Path("almanac")
-CONVENTIONAL_ALMANAC_ROOTS = (
-    DEFAULT_ALMANAC_ROOT,
-    Path("docs/almanac"),
-    Path(".almanac"),
-)
+CONVENTIONAL_ALMANAC_ROOTS = (DEFAULT_ALMANAC_ROOT,)
 ALMANAC_ROOT_MARKER_FILE = "topics.yaml"
 ALMANAC_ROOT_MARKER_DIR = "pages"
 
@@ -30,7 +26,10 @@ def normalize_almanac_root(value: Path | str | None) -> Path:
         raise ValueError("Almanac root must name a directory")
     if any(part in {"..", "~"} for part in path.parts):
         raise ValueError("Almanac root must stay inside the repo")
-    return Path(*path.parts)
+    normalized = Path(*path.parts)
+    if normalized != DEFAULT_ALMANAC_ROOT:
+        raise ValueError("Almanac root is fixed at almanac/")
+    return normalized
 
 
 def normalized_almanac_roots(values: Iterable[Path | str]) -> tuple[Path, ...]:

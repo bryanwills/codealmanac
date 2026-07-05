@@ -110,7 +110,7 @@ real code exists.
 - **Structured contracts before text scraping.** If a provider, SDK, CLI, or
   local API can return typed output, use that contract instead of extracting
   semantics with regexes over prose, prompts, logs, or final assistant text.
-  Regex is fine for syntax we own (frontmatter fences, wikilinks, durations,
+  Regex is fine for syntax we own (frontmatter fences, Markdown paths, durations,
   path normalization, known URL forms) or as a documented compatibility shim.
   It is not a product boundary for summaries, actions, identities, state
   transitions, or other durable meaning. Before adding extraction logic, check
@@ -153,24 +153,28 @@ conversation.
 - **Intelligence lives in prompts, not pipelines.** No propose/review/apply
   state machines, no orchestration JSON schema between writer and reviewer, no
   `--dry-run` rehearsals. The writer owns outcomes.
-- Local-only repo wiki roots plus `~/.codealmanac/registry.json` global state.
-  New repos default to `almanac/`; `docs/almanac/`, `.almanac/`, or another
-  safe repo-relative directory are explicit configuration choices. The
-  configured root is **flat** — future features get peer files, not nested
-  `wiki/` subdirs.
-- The initialized wiki source markers are `topics.yaml` plus `pages/` under the
-  configured root. `README.md` is useful guidance, not an auto-detection marker.
-  The root shape is:
+- Local-only repo wiki tree plus `~/.codealmanac/registry.json` global state.
+  New repos use `almanac/` only. `docs/almanac/`, `.almanac/`, custom roots,
+  and compatibility aliases are retired.
+- The committed wiki source is a browseable nested Markdown tree under
+  `almanac/`. Runtime state belongs under `~/.codealmanac/`, not in the
+  committed wiki tree. The source shape is:
   ```text
-  <almanac-root>/
+  almanac/
   |-- README.md
   |-- topics.yaml
-  |-- pages/
-  |-- manual/
+  |-- architecture/
+  |   |-- README.md
+  |   `-- indexing.md
+  |-- decisions/
+  |   `-- local-first.md
+  `-- guides/
+      `-- setup.md
   ```
-  Runtime artifacts such as `index.db` and `jobs/` are peers under the same
-  root when commands need them, but they are derived local state.
-- One link syntax (`[[...]]`), disambiguated by content. `GLOB` not `LIKE` for
-  path queries. Paths normalized on both sides of a comparison.
+- Page identity is the path under `almanac/` without `.md`; `README.md` is the
+  folder landing page. Use Markdown links for page links and `sources:` for
+  file evidence. Wikilinks and `files:` are retired.
+- `GLOB` not `LIKE` for path queries. Paths normalized on both sides of a
+  comparison.
 - Slices: plan → build → review → fix → next. The review pass is where latent
   bugs surface; don't collapse it.

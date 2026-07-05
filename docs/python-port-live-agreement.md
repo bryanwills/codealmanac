@@ -7,6 +7,15 @@ It is the constraint document for future agents.
 
 - 2026-06-29: Python v1 is a local product. Do not build hosted shipping,
   hosted CLI, login/connect/upload, SDK, or MCP in this rewrite.
+- 2026-07-05: `e773dc0b` is the fork point for the right local Python product.
+  Later `dev` and `main` moved ahead on the wrong hosted/cloud direction. Use
+  those branches and `archive/code/` as reference material only.
+- 2026-07-05: Happy path is the product path. Do not preserve backward
+  compatibility for old CLI names, old wiki roots, old page layouts,
+  hosted-product assumptions, or retired syntaxes.
+- 2026-07-05: Intelligence lives in prompts, not pipelines. Auto-commit is
+  prompt policy given to lifecycle agents, not CodeAlmanac staging or smart Git
+  orchestration.
 - 2026-06-29: The branch may contain merged `dev` / `origin/dev` work that
   assumes hosted shipping. Treat that work as reference or archive material,
   not as product direction for this rewrite.
@@ -23,8 +32,7 @@ It is the constraint document for future agents.
   normal class-name casing such as `CodeAlmanac`.
 - 2026-06-29: The Python rewrite targets new CodeAlmanac users. Do not keep
   TypeScript-era backward compatibility, legacy aliases, legacy root
-  migrations, or old frontmatter repair paths unless the user explicitly
-  reopens that decision.
+  migrations, or old frontmatter repair paths.
 - 2026-07-01: The intentionally dropped archive-era surfaces are: public
   `almanac`/`alm` compatibility bins, hosted login/connect/upload/MCP/SDK
   surfaces, migration commands unless a migration need becomes concrete, and
@@ -34,17 +42,11 @@ It is the constraint document for future agents.
 - 2026-06-29: "Frontmatter rewrite" means deterministic editing of current
   page metadata such as `topics:` while preserving page body text. It is not a
   compatibility layer for old page formats.
-- 2026-06-29: Repo-owned wiki data lives under a configurable repo-local
-  Almanac root. New Python installs default to `almanac/`, not `.almanac/`.
-  Users may configure another root such as `docs/almanac/`.
-  The chosen root owns committed wiki docs and local runtime artifacts,
-  including the SQLite index, unless a future decision splits runtime state
-  elsewhere.
-- 2026-07-01: Current-repo auto-detection prefers the nearest initialized wiki
-  root on disk over broad parent registry entries. The conventional roots
-  `almanac/`, `docs/almanac/`, and `.almanac/` are detected by the
-  `topics.yaml + pages/` marker shape; other custom roots become discoverable
-  after registration. Registry entries are still never auto-dropped.
+- 2026-06-29: Repo-owned wiki data lives under `almanac/` only. The committed
+  tree is browseable nested Markdown. Runtime state belongs under
+  `~/.codealmanac/`.
+- 2026-07-01: Current-repo auto-detection prefers the nearest initialized
+  `almanac/` tree on disk over broad parent registry entries.
 - 2026-06-30: Global user state belongs to `~/.codealmanac/`. The repo-local
   folder may be named `almanac/`; user config, registry state, and scheduler
   logs use the product-specific hidden directory.
@@ -394,9 +396,9 @@ It is the constraint document for future agents.
   metadata/content rendering; and `errors.py` owns unavailable-runtime
   diagnostics.
 - 2026-06-29: `manual/` is a local support package, not a public CLI surface.
-  It contains bundled wiki-maintenance doctrine. `init` and `build` copy
-  missing files into `<almanac-root>/manual/`, prompts tell lifecycle agents to
-  read those files, and `doctor` reports package/workspace manual readiness.
+  It contains bundled wiki-maintenance doctrine. Prompts tell lifecycle agents
+  to read the packaged manual resources; `init` and `build` do not copy manual
+  files into the committed `almanac/` tree.
 - 2026-07-01: Preserve the archived terminal setup experience in Python:
   branded banner, step indicators, raw-mode selection when available,
   non-interactive `--yes`, idempotent setup, agent/default-model selection,
@@ -428,7 +430,7 @@ It is the constraint document for future agents.
 - 2026-06-29: `database/` owns SQLite connection setup and migration
   application. Product stores still own their SQL schemas and query semantics.
   The current `index.db` migration strategy is rebuild-on-version-change
-  because the index is a derived read model from `<almanac-root>/pages/` and
+  because the index is a derived read model from `almanac/**/*.md` and
   `topics.yaml`.
 - 2026-07-01: Index read views are split by query family. `IndexStore` remains
   the store facade, `services/index/views.py` remains a small compatibility
@@ -445,7 +447,7 @@ It is the constraint document for future agents.
 - 2026-06-29: `config` owns local user/project TOML parsing and precedence
   through `pydantic-settings`. The first config surface is intentionally
   narrow: user config at `~/.codealmanac/config.toml` and project config at
-  `<almanac-root>/config.toml` can set the default lifecycle harness and sync
+  `almanac/config.toml` can set the default lifecycle harness and sync
   quiet window. CLI flags still win over config. Do not add a public `config`
   command, environment override system, secrets system, or hosted/account
   config surface until a later agreement requires it.
@@ -507,8 +509,8 @@ It is the constraint document for future agents.
   validation and nearest-root discovery; and `store.py` owns registry JSON
   persistence. Do not move selector mechanics, id generation, or marker-based
   status checks back into `service.py`.
-- 2026-06-30: An initialized Almanac root is identified by wiki markers
-  (`README.md`, `topics.yaml`, or `pages/`), not by directory existence.
+- 2026-06-30: An initialized Almanac tree is identified by wiki markers
+  (`almanac/README.md` and `almanac/topics.yaml`), not by directory existence.
   Runtime artifacts such as `index.db`, WAL files, and `jobs/` are derived
   state. They must not make registry status, root discovery, `doctor`, or read
   commands treat an otherwise missing root as available.
@@ -533,8 +535,8 @@ The wiki can cover code, architecture, decisions, incidents, conversations, PR
 context, team conventions, deployment constraints, product strategy, and other
 durable knowledge that helps future work.
 
-The durable artifact is the repository's configured Almanac root. New installs
-default to `almanac/`. Git remains the system of record for wiki changes.
+The durable artifact is the repository's `almanac/` tree. Git remains the
+system of record for wiki changes.
 
 The Python rewrite is a fresh codebase. Use the old CodeAlmanac implementation
 and Almanac's Python engine as references for behavior and structure. Do not
@@ -642,9 +644,8 @@ outside tool into service-owned models and errors.
 `cli/` owns command parsing, rendering, stdout/stderr, and exit codes. It does
 not own product decisions.
 
-`manual/` owns bundled wiki-maintenance doctrine. It is read by prompts,
-copied into `<almanac-root>/manual/` by local build/init, and checked by
-diagnostics. It does not add a public command.
+`manual/` owns bundled wiki-maintenance doctrine. It is read by prompts from
+package resources and checked by diagnostics. It does not add a public command.
 
 ## Python Service Symmetry
 
@@ -687,8 +688,8 @@ not make CLI contain product decisions.
 
 | Service | Owns | Must Not Own |
 |---|---|---|
-| `workspaces` | repo root, configured Almanac root, registry, path containment, local wiki selection, repo/worktree mutation observations | page parsing, source discovery, run execution policy |
-| `wiki` | markdown page truth, frontmatter, topics, wikilinks, page writes, health inputs | trigger timing, harness execution, source discovery |
+| `workspaces` | repo root, `almanac/` discovery, registry, path containment, local wiki selection, repo/worktree mutation observations | page parsing, source discovery, run execution policy |
+| `wiki` | markdown page truth, frontmatter, topics, Markdown links, page writes, health inputs | trigger timing, harness execution, source discovery |
 | `index` | SQLite read model, FTS, mentions, backlinks, query projections | markdown truth, agent execution |
 | `sources` | source observations, source refs, fingerprints, local source state | deciding when AI runs, page writes |
 | `runs` | run ledger, events, outputs, lifecycle state transitions | source discovery, page parsing, provider transports |
@@ -735,16 +736,17 @@ that distinction obvious.
 diffs, commit ranges, notes, or transcript refs.
 
 AI-backed ingest must be auditable before it becomes public CLI behavior. The
-workflow requires Git change tracking, clean wiki-root state before the run,
-and no non-wiki file mutation during harness execution. Dirty application
-files may exist as source material if their observed state does not change
-during the run. Workflows persist normalized harness events into run logs after
-the harness returns and before later validation.
+workflow requires Git change tracking and no non-wiki file mutation during
+harness execution. Pre-existing `almanac/` edits are allowed when the user
+triggers the run. Dirty application files may exist as source material if their
+observed state does not change during the run. Workflows persist normalized
+harness events into run logs after the harness returns and before later
+validation.
 
 `sync` scans supported local transcript stores, waits for quiet sessions, maps
-material back to repos with a configured Almanac root, claims a transcript
-range in the sync ledger, and starts ordinary local ingest work. It does not
-mean cloud sync.
+material back to repos with an `almanac/` tree, claims a transcript range in
+the sync ledger, and starts ordinary local ingest work. It does not mean cloud
+sync.
 
 `garden` maintains existing wiki structure, links, topics, stale pages, and page
 quality. It may run without new source material.
@@ -771,19 +773,20 @@ not a discovered product entity.
 Adding or discovering material does not imply a wiki update. Updating the wiki
 is a separate `ingest`, `build`, `sync`, or `garden` workflow.
 
-Page file/folder references belong to `wiki` and `index`, not to the source
-catalog. `[[src/foo.py]]` and `[[src/foo/]]` power mentions search and health.
+Page file/folder evidence belongs to `sources:` frontmatter, then to `wiki` and
+`index`, not to the source catalog. File sources power mentions search and
+health.
 
 ## CLI Contract
 
 The v1 CLI is local-only.
 
 ```text
-codealmanac init [path] [--root <repo-relative-path>]
+codealmanac init [path]
 codealmanac setup
 codealmanac list
 codealmanac search [query]
-codealmanac show <slug>
+codealmanac show <page-id>
 codealmanac topics
 codealmanac health
 codealmanac serve
@@ -801,13 +804,10 @@ codealmanac update
 codealmanac uninstall
 ```
 
-Commands run inside a repo resolve the nearest configured Almanac root, like
-Git resolves `.git/`.
+Commands run inside a repo resolve the nearest `almanac/` tree, like Git
+resolves `.git/`.
 
-`--root` is a setup-time option on `init`. It must be a repo-relative
-directory. On first setup, omitting it means `almanac/`. Inside an existing
-registered repo, omitting it means "keep the registered root." `docs/almanac/`
-is the public alternate shape when a repo wants docs under `docs/`.
+There is no `--root` setup option. `almanac/` is the only repo wiki root.
 
 `codealmanac list` reads the local registry of known repos with configured
 Almanac roots.
@@ -862,7 +862,7 @@ subprocess.run(["codealmanac", "show", "..."])
 |---|---|
 | Install/name | `codealmanac` package and command only |
 | Workspace | nearest repo resolution, local registry, path containment |
-| Wiki | pages, frontmatter, topics, wikilinks, file/folder refs |
+| Wiki | nested Markdown pages, frontmatter, topics, Markdown links, file/folder sources |
 | Index | SQLite read model, FTS search, mentions, backlinks, health |
 | Sources | transcript/path/Git/GitHub/web input contracts, local observations, and runtime snapshots |
 | Runs/jobs | durable ledger, events, outputs, foreground/background lifecycle state, attach/cancel |
@@ -888,8 +888,7 @@ subprocess.run(["codealmanac", "show", "..."])
 ## Non-Negotiables
 
 - Public naming is `codealmanac`.
-- The configured Almanac root remains the repo-owned wiki artifact. New
-  installs default to `almanac/`.
+- The `almanac/` tree is the repo-owned wiki artifact.
 - Global user state lives under `~/.codealmanac/`.
 - Local v1 must not inherit hosted assumptions from merged `dev` or `origin/dev`.
 - CLI edges stay thin.

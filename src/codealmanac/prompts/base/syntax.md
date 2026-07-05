@@ -1,19 +1,21 @@
 # Wiki Syntax
 
-Pages are Markdown files under `pages/` inside the configured Almanac root,
-with YAML frontmatter. Use kebab-case slugs and stable page titles.
+Pages are Markdown files under the repo's `almanac/` tree, with YAML
+frontmatter. The page id is the path under `almanac/` without `.md`.
+`README.md` is the landing page for its folder.
 
 Use `topics:` for topic slugs. Use structured `sources:` entries for evidence
-that supports non-obvious claims. Use `[[...]]` wikilinks for pages, files,
-folders, and cross-wiki references.
+that supports non-obvious claims.
 
-Page wikilinks must resolve. Link only to existing page slugs or pages you
-create or update in this run. If no page exists and you are not creating it,
-write the name as plain text instead of leaving a broken `[[...]]` link.
+Use normal Markdown links for page links. Link only to existing pages or pages
+you create or update in this run. If no page exists and you are not creating
+it, write the name as plain text instead of leaving a broken link.
+
+Do not write wikilinks. Do not use `files:` frontmatter. File and folder
+evidence belongs in `sources:` entries.
 
 Every sentence should contain a specific fact. Prefer neutral prose. Do not
 speculate. Do not add promotional language.
 
-Update only files inside the configured Almanac root unless the operation
-explicitly says otherwise. Do not edit application code during lifecycle wiki
-operations.
+Update only source files inside `almanac/` unless the operation explicitly says
+otherwise. Do not edit application code during lifecycle wiki operations.
