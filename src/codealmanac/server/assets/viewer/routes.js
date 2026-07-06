@@ -25,7 +25,7 @@ export function homeHref() {
 }
 
 export function pageHref(slug) {
-  return `#/page/${encodeURIComponent(slug)}`;
+  return `#/page/${encodePath(slug)}`;
 }
 
 export function topicHref(slug) {
@@ -46,4 +46,8 @@ export function jobsHref() {
 
 export function jobHref(runId) {
   return `#/jobs/${encodeURIComponent(runId)}`;
+}
+
+function encodePath(value) {
+  return value.split("/").map(encodeURIComponent).join("/");
 }

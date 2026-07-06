@@ -39,7 +39,7 @@ class QueueWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / "almanac/pages/queued-note.md"
+        page = request.cwd / "almanac/queued-note.md"
         page.write_text(
             """---
 title: Queued Note

@@ -20,7 +20,7 @@ def add_wiki_commands(subcommands: argparse._SubParsersAction) -> None:
     search.add_argument("--json", action="store_true")
 
     show = subcommands.add_parser("show", help="show a wiki page")
-    show.add_argument("slug")
+    show.add_argument("page")
     show.add_argument("--wiki")
     show.add_argument("--json", action="store_true")
     show.add_argument("--body", action="store_true")
@@ -75,11 +75,11 @@ def add_wiki_commands(subcommands: argparse._SubParsersAction) -> None:
     serve.add_argument("--port", type=int, default=DEFAULT_VIEWER_PORT)
 
     tag = subcommands.add_parser("tag", help="add topics to a page")
-    tag.add_argument("slug")
+    tag.add_argument("page")
     tag.add_argument("topics", nargs="+")
     tag.add_argument("--wiki")
 
     untag = subcommands.add_parser("untag", help="remove topics from a page")
-    untag.add_argument("slug")
+    untag.add_argument("page")
     untag.add_argument("topics", nargs="+")
     untag.add_argument("--wiki")

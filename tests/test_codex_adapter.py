@@ -84,7 +84,7 @@ def test_codex_adapter_wraps_app_server_run_with_git_change_detection(
     runner = FakeCommandRunner(
         (
             CommandResult(returncode=0, stdout=""),
-            CommandResult(returncode=0, stdout="?? almanac/pages/codex-note.md\0"),
+            CommandResult(returncode=0, stdout="?? almanac/codex-note.md\0"),
         )
     )
     app_server = FakeAppServer(
@@ -108,7 +108,7 @@ def test_codex_adapter_wraps_app_server_run_with_git_change_detection(
     assert app_server.requests == [request]
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
-    assert result.changed_files == (tmp_path / "almanac/pages/codex-note.md",)
+    assert result.changed_files == (tmp_path / "almanac/codex-note.md",)
     assert runner.calls[0][0] == "git"
     assert runner.calls[1][0] == "git"
 

@@ -16,7 +16,8 @@ def test_codex_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/README.md").write_text("# Wiki\n", encoding="utf-8")
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     sessions = home / ".codex/sessions/2026/06/29"
     sessions.mkdir(parents=True)
@@ -66,7 +67,8 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
 ):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/README.md").write_text("# Wiki\n", encoding="utf-8")
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     projects = home / ".claude/projects/repo"
     projects.mkdir(parents=True)
@@ -97,7 +99,7 @@ def test_claude_transcript_discovery_reads_metadata_and_skips_subagents(
 def test_transcript_discovery_ignores_retired_alternate_roots(tmp_path: Path):
     home = tmp_path / "home"
     repo = tmp_path / "repo"
-    (repo / "docs/almanac/pages").mkdir(parents=True)
+    (repo / "docs/almanac").mkdir(parents=True)
     (repo / "docs/almanac/topics.yaml").write_text(
         "topics: []\n",
         encoding="utf-8",

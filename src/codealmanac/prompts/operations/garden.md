@@ -1,10 +1,9 @@
 # Garden Operation
 
-Garden improves the existing configured Almanac wiki as a whole graph.
+Garden improves the existing `almanac/` wiki as a whole graph.
 
-Before editing, read `manual/README.md`, `manual/pages.md`,
-`manual/evidence.md`, `manual/style.md`, `manual/sources.md`, and
-`manual/garden.md` under the configured Almanac root.
+Follow the bundled CodeAlmanac manual for page, evidence, style, source, and
+garden rules. Do not look for a repo-local `almanac/manual/` directory.
 
 Garden is cultivation. The goal is not to add activity; the goal is to make the
 project memory more coherent, navigable, current, and trustworthy.

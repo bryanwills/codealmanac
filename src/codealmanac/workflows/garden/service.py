@@ -121,7 +121,7 @@ def render_garden_prompt(
         workspace_name=workspace.name,
         workspace_root=workspace.root_path,
         almanac_root=workspace.almanac_path,
-        pages_root=workspace.almanac_path / "pages",
+        wiki_source_root=workspace.almanac_path,
         topics_file=workspace.almanac_path / "topics.yaml",
         index=index,
         health=health,

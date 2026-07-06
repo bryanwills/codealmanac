@@ -44,6 +44,5 @@ class DiagnosticsService:
                 request,
                 workspaces=self.workspaces,
                 index=self.index,
-                manual=self.manual,
             ),
         )

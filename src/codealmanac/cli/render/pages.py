@@ -34,7 +34,7 @@ def render_page(page: PageView, args: argparse.Namespace) -> None:
 
 def metadata_header(page: PageView) -> str:
     lines = [
-        f"slug: {page.slug}",
+        f"page: {page.slug}",
         f"title: {page.title or ''}",
         f"path: {page.file_path}",
     ]

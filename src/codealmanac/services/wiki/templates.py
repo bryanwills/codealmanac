@@ -2,7 +2,13 @@ from pathlib import Path
 
 
 def starter_readme() -> str:
-    return """# CodeAlmanac Wiki
+    return """---
+title: CodeAlmanac Wiki
+topics: [concepts]
+sources: []
+---
+
+# CodeAlmanac Wiki
 
 This is the living wiki for this repository. It records the durable knowledge
 the code cannot say: decisions, flows, invariants, incidents, gotchas, and
@@ -25,20 +31,12 @@ Do not write pages that restate nearby code.
 
 ## Topic Taxonomy
 
-Topics live in `topics.yaml`. Pages live in `pages/`.
-
-Those two entries are the source markers for an initialized CodeAlmanac wiki.
-`README.md` guides writers, but it is not a marker by itself.
-
-## Manual
-
-Read `manual/README.md` before creating, reorganizing, or substantially
-rewriting pages. The manual is bundled with CodeAlmanac and copied here by
-`codealmanac init` and `codealmanac build`.
+Topics live in `topics.yaml`. Pages are Markdown files directly under
+`almanac/`, including nested folders.
 
 ## Links
 
-Use `[[page-slug]]` for page links and `[[src/path.py]]` for file references.
+Use normal Markdown links between pages. Put file evidence in `sources:`.
 """
 
 

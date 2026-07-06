@@ -15,7 +15,7 @@ class GardenPromptPayload(CodeAlmanacModel):
     workspace_name: str
     workspace_root: Path
     almanac_root: Path
-    pages_root: Path
+    wiki_source_root: Path
     topics_file: Path
     index: IndexSummary
     health: HealthReport

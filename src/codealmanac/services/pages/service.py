@@ -1,5 +1,4 @@
 from codealmanac.core.errors import NotFoundError
-from codealmanac.core.slug import to_kebab_case
 from codealmanac.services.index.models import PageView
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.pages.requests import ShowPageRequest
@@ -19,8 +18,7 @@ class PagesService:
             workspace = self.workspaces.select(
                 SelectWorkspaceRequest(selector=request.wiki, base_path=request.cwd)
             )
-        slug = to_kebab_case(request.slug)
-        page = self.index.get_page(workspace.workspace_id, slug)
+        page = self.index.get_page(workspace.workspace_id, request.slug)
         if page is None:
             raise NotFoundError("page", request.slug)
         return page

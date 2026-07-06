@@ -54,8 +54,12 @@ def test_health_reports_source_provenance_problems(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     pages.mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     (pages / "source-hygiene.md").write_text(
         """---
@@ -105,8 +109,12 @@ def test_malformed_topics_yaml_does_not_break_reads(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     pages.mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text("topics: [", encoding="utf-8")
     (pages / "note.md").write_text("# Note\n\nBody.\n", encoding="utf-8")
     app = create_app(
@@ -116,14 +124,18 @@ def test_malformed_topics_yaml_does_not_break_reads(
     topics = app.topics.list(ListTopicsRequest(cwd=repo))
     report = app.health.check(HealthCheckRequest(cwd=repo))
 
-    assert topics == ()
+    assert [topic.slug for topic in topics] == ["concepts"]
     assert {item.slug for item in report.orphans} == {"note"}
 
 
 def make_topic_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     pages.mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text(
         """topics:
   - slug: concepts

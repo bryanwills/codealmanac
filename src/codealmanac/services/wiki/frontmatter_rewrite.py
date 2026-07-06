@@ -9,6 +9,7 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.slug import to_kebab_case
+from codealmanac.services.wiki.paths import iter_page_paths
 
 
 class PageTopicsRewrite(CodeAlmanacModel):
@@ -44,13 +45,13 @@ def rewrite_page_topics(path: Path, topics: tuple[str, ...]) -> None:
 
 
 def plan_page_topic_rewrites(
-    pages_path: Path,
+    almanac_path: Path,
     transform: Callable[[tuple[str, ...]], tuple[str, ...]],
 ) -> tuple[PageTopicsRewrite, ...]:
-    if not pages_path.is_dir():
+    if not almanac_path.is_dir():
         return ()
     rewrites: list[PageTopicsRewrite] = []
-    for page_path in sorted(pages_path.rglob("*.md")):
+    for page_path in iter_page_paths(almanac_path):
         before = read_page_topics(page_path)
         after = canonical_topic_tuple(transform(before))
         if after != before:

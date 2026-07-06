@@ -33,7 +33,7 @@ class FakeHarnessAdapter:
             status=HarnessRunStatus.SUCCEEDED,
             output_text="updated wiki",
             summary=request.title,
-            changed_files=(request.cwd / "almanac/pages/example.md",),
+            changed_files=(request.cwd / "almanac/example.md",),
         )
 
 
@@ -52,7 +52,7 @@ def test_harnesses_service_runs_registered_adapter(tmp_path: Path):
 
     assert result.kind == HarnessKind.CODEX
     assert result.status == HarnessRunStatus.SUCCEEDED
-    assert result.changed_files == (tmp_path / "almanac/pages/example.md",)
+    assert result.changed_files == (tmp_path / "almanac/example.md",)
     assert adapter.requests[0].prompt == "Update the wiki from these source briefs."
 
 

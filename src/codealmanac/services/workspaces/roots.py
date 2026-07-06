@@ -7,7 +7,7 @@ from codealmanac.core.paths import normalize_path
 DEFAULT_ALMANAC_ROOT = Path("almanac")
 CONVENTIONAL_ALMANAC_ROOTS = (DEFAULT_ALMANAC_ROOT,)
 ALMANAC_ROOT_MARKER_FILE = "topics.yaml"
-ALMANAC_ROOT_MARKER_DIR = "pages"
+ALMANAC_ROOT_MARKER_README = "README.md"
 
 
 class AlmanacRootMatch(CodeAlmanacModel):
@@ -68,7 +68,7 @@ def is_initialized_almanac_root(path: Path) -> bool:
         return False
     return (
         (path / ALMANAC_ROOT_MARKER_FILE).is_file()
-        and (path / ALMANAC_ROOT_MARKER_DIR).is_dir()
+        and (path / ALMANAC_ROOT_MARKER_README).is_file()
     )
 
 

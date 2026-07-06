@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
 from codealmanac.core.errors import CodeAlmanacError, NotFoundError
-from codealmanac.manual import ManualLibrary
 from codealmanac.services.diagnostics.messages import (
     first_line,
     health_problem_count,
@@ -25,7 +24,6 @@ def wiki_checks(
     *,
     workspaces: WorkspacesService,
     index: IndexService,
-    manual: ManualLibrary,
 ) -> tuple[DoctorCheck, ...]:
     workspace = select_workspace(request, workspaces)
     if isinstance(workspace, DoctorCheck):
@@ -42,7 +40,6 @@ def wiki_checks(
     if registry_status != WorkspaceRegistryStatus.AVAILABLE:
         return tuple(checks)
     checks.extend(index_checks(index, workspace))
-    checks.append(manual_workspace_check(manual, workspace))
     checks.append(health_check(index, workspace))
     return tuple(checks)
 
@@ -101,45 +98,6 @@ def index_checks(index: IndexService, workspace: Workspace) -> Sequence[DoctorCh
             status=DoctorStatus.OK,
             message=index_message(summary),
         ),
-    )
-
-
-def manual_workspace_check(
-    manual: ManualLibrary,
-    workspace: Workspace,
-) -> DoctorCheck:
-    try:
-        status = manual.workspace_status(workspace.almanac_path / "manual")
-    except CodeAlmanacError as error:
-        return DoctorCheck(
-            key="wiki.manual",
-            status=DoctorStatus.PROBLEM,
-            message=f"manual unavailable: {first_line(str(error))}",
-            fix="run: codealmanac build",
-        )
-    if status.complete:
-        if len(status.changed) > 0:
-            changed = ", ".join(status.changed)
-            return DoctorCheck(
-                key="wiki.manual",
-                status=DoctorStatus.INFO,
-                message=f"manual differs: {changed}",
-                fix=(
-                    "review local manual files; "
-                    "codealmanac build preserves existing files"
-                ),
-            )
-        return DoctorCheck(
-            key="wiki.manual",
-            status=DoctorStatus.OK,
-            message=f"manual: {len(status.present)} docs",
-        )
-    missing = ", ".join(status.missing)
-    return DoctorCheck(
-        key="wiki.manual",
-        status=DoctorStatus.PROBLEM,
-        message=f"manual missing: {missing}",
-        fix="run: codealmanac build",
     )
 
 

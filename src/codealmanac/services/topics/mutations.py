@@ -170,7 +170,7 @@ class TopicMutationExecutor:
             )
 
         rewrites = plan_page_topic_rewrites(
-            workspace.almanac_path / "pages",
+            workspace.almanac_path,
             lambda topics: tuple(
                 request.new_slug if topic == request.old_slug else topic
                 for topic in topics
@@ -200,7 +200,7 @@ class TopicMutationExecutor:
             raise NotFoundError("topic", request.slug)
 
         rewrites = plan_page_topic_rewrites(
-            workspace.almanac_path / "pages",
+            workspace.almanac_path,
             lambda topics: tuple(topic for topic in topics if topic != request.slug),
         )
         topic_file = load_topics_file(workspace.almanac_path)

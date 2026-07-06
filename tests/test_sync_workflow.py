@@ -70,7 +70,7 @@ class SyncWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / "almanac/pages/synced-transcript.md"
+        page = request.cwd / "almanac/synced-transcript.md"
         page.write_text(
             """---
 title: Synced Transcript

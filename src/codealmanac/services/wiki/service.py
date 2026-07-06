@@ -18,15 +18,10 @@ class WikiService:
     def initialize(self, workspace_id: str) -> None:
         workspace = self.workspaces.get(workspace_id)
         almanac_path = workspace.almanac_path
-        pages_path = almanac_path / "pages"
-        manual_path = almanac_path / "manual"
         almanac_path.mkdir(parents=True, exist_ok=True)
-        pages_path.mkdir(parents=True, exist_ok=True)
-        manual_path.mkdir(parents=True, exist_ok=True)
         write_if_missing(almanac_path / "README.md", starter_readme())
         write_if_missing(almanac_path / "topics.yaml", starter_topics_yaml())
-        write_if_missing(pages_path / "getting-started.md", starter_page())
-        self.manual.install_missing(manual_path)
+        write_if_missing(almanac_path / "getting-started.md", starter_page())
         ensure_root_gitignore(workspace.root_path, workspace.almanac_root)
 
 

@@ -31,7 +31,6 @@ def parse_frontmatter(raw: str) -> ParsedFrontmatter:
     except (YAMLError, ValueError, ValidationError):
         return ParsedFrontmatter(body=raw)
     return ParsedFrontmatter(
-        page_id=fields.page_id,
         title=fields.title,
         summary=fields.summary,
         topics=fields.topics,
@@ -56,14 +55,13 @@ def first_h1(body: str) -> str | None:
 class FrontmatterFields(BaseModel):
     model_config = ConfigDict(extra="ignore", frozen=True)
 
-    page_id: str | None = None
     title: str | None = None
     summary: str | None = None
     topics: tuple[str, ...] = ()
     files: tuple[str, ...] = ()
     sources: tuple[PageSource, ...] = ()
 
-    @field_validator("page_id", "title", "summary", mode="before")
+    @field_validator("title", "summary", mode="before")
     @classmethod
     def optional_text(cls, value: Any) -> str | None:
         if isinstance(value, str) and value.strip():

@@ -213,7 +213,7 @@ def test_viewer_job_request_rejects_path_shaped_run_ids(
 
 
 def write_viewer_page(repo: Path, name: str, body: str) -> None:
-    path = repo / "almanac/pages" / name
+    path = repo / "almanac" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
 

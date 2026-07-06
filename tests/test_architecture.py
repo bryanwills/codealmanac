@@ -474,7 +474,7 @@ def test_diagnostics_service_stays_facade():
     assert "manual.inventory()" in install_text
     assert "workspace_status(" not in install_text
     assert "def wiki_checks(" in wiki_text
-    assert "workspace_status(" in wiki_text
+    assert "workspace_status(" not in wiki_text
     assert "health_report(" in wiki_text
     assert "manual.inventory()" not in wiki_text
     assert "def index_message(" in messages_text

@@ -1,8 +1,7 @@
 # CodeAlmanac Purpose
 
 CodeAlmanac maintains a repo-owned wiki for a codebase and the project world
-around that codebase. New installs default to `almanac/`; the repo may choose a
-different configured Almanac root.
+around that codebase. The repo wiki root is `almanac/`.
 
 The wiki is durable project memory for future coding agents. It records why the
 system is shaped this way, what must not be violated, what was tried and failed,
@@ -18,6 +17,6 @@ The public command and product name is `codealmanac`. Do not introduce public
 
 The public CLI name is codealmanac.
 
-Detailed wiki doctrine lives in `manual/` under the configured Almanac root.
-The prompt names the job; the manual defines the page, evidence, style, source,
-and operation rules.
+Detailed wiki doctrine is bundled with CodeAlmanac. It is not copied into
+`almanac/`. The prompt names the job; the manual defines the page, evidence,
+style, source, and operation rules.

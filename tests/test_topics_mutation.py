@@ -62,7 +62,7 @@ def test_link_promotes_ad_hoc_page_topic_and_rejects_cycle(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     (pages / "jwt.md").write_text(
         "---\ntopics: [jwt]\n---\n# JWT\n\nToken notes.\n",
         encoding="utf-8",
@@ -87,7 +87,7 @@ def test_describe_promotes_ad_hoc_page_topic(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     (pages / "runtime.md").write_text(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
@@ -158,7 +158,7 @@ def test_rename_updates_topics_yaml_parent_edges_and_page_frontmatter(
 ):
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     topics_path.write_text(
         """# keep this comment
 topics:
@@ -209,7 +209,7 @@ def test_rename_refuses_merge_without_writing_files(
 ):
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     topics_path.write_text(
         """topics:
   - slug: auth
@@ -266,7 +266,7 @@ def test_rename_page_only_ad_hoc_topic(
     isolated_home: Path,
 ):
     repo = make_repo(tmp_path)
-    page_path = repo / "almanac/pages/runtime.md"
+    page_path = repo / "almanac/runtime.md"
     page_path.write_text(
         "---\ntopics: [runtime]\n---\n# Runtime\n",
         encoding="utf-8",
@@ -291,7 +291,7 @@ def test_delete_removes_topic_edges_and_page_frontmatter_without_deleting_pages(
 ):
     repo = make_repo(tmp_path)
     topics_path = repo / "almanac/topics.yaml"
-    pages = repo / "almanac/pages"
+    pages = repo / "almanac"
     topics_path.write_text(
         """topics:
   - slug: auth
@@ -356,7 +356,7 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
 """,
         encoding="utf-8",
     )
-    (repo / "almanac/pages/broken.md").write_text(
+    (repo / "almanac/broken.md").write_text(
         "---\ntopics: [\n---\n# Broken\n",
         encoding="utf-8",
     )
@@ -375,7 +375,11 @@ def test_rename_malformed_page_frontmatter_fails_before_topics_yaml_write(
 
 def make_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
-    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text(
         """# keep this comment
 topics:

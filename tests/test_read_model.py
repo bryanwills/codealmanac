@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import NotFoundError
+from codealmanac.core.errors import NotFoundError, ValidationFailed
 from codealmanac.core.models import AppConfig
 from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
@@ -161,7 +161,11 @@ def test_search_auto_registers_existing_wiki(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     write_page(repo, "note.md", "# Note\n\nUniqueNeedle context.\n")
     app = create_app(
@@ -172,6 +176,74 @@ def test_search_auto_registers_existing_wiki(
 
     assert [row.slug for row in rows] == ["note"]
     assert app.workspaces.list()[0].root_path == repo
+
+
+def test_nested_page_ids_are_paths_under_almanac(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(
+        repo,
+        "architecture/viewer/navigation/sidebar.md",
+        "# Sidebar\n\nNestedNeedle.\n",
+    )
+
+    rows = app.search.search(SearchPagesRequest(cwd=repo, query="nestedneedle"))
+    page = app.pages.show(
+        ShowPageRequest(cwd=repo, slug="architecture/viewer/navigation/sidebar")
+    )
+
+    assert [row.slug for row in rows] == ["architecture/viewer/navigation/sidebar"]
+    assert page.slug == "architecture/viewer/navigation/sidebar"
+    assert page.file_path == repo / "almanac/architecture/viewer/navigation/sidebar.md"
+
+
+def test_readme_pages_map_to_folder_routes(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    (repo / "almanac/architecture").mkdir()
+    (repo / "almanac/architecture/README.md").write_text(
+        "# Architecture\n\nFolderNeedle.\n",
+        encoding="utf-8",
+    )
+
+    rows = app.search.search(SearchPagesRequest(cwd=repo, query="folderneedle"))
+    root = app.pages.show(ShowPageRequest(cwd=repo, slug="README"))
+    folder = app.pages.show(ShowPageRequest(cwd=repo, slug="architecture"))
+
+    assert root.slug == "README"
+    assert [row.slug for row in rows] == ["architecture"]
+    assert folder.file_path == repo / "almanac/architecture/README.md"
+
+
+def test_readme_route_collision_fails_refresh(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+    )
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    write_page(repo, "architecture.md", "# Architecture\n")
+    write_page(repo, "architecture/README.md", "# Architecture Folder\n")
+
+    with pytest.raises(ValidationFailed, match="page route collision"):
+        app.index.ensure_fresh(workspace.workspace_id)
 
 
 def test_search_does_not_materialize_missing_registered_wiki(
@@ -222,7 +294,7 @@ def test_rebuild_removes_stale_topic_rows(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    page_path = repo / "almanac/pages/note.md"
+    page_path = repo / "almanac/note.md"
     page_path.write_text("---\ntopics: [old]\n---\n# Note\n", encoding="utf-8")
     app.search.search(SearchPagesRequest(cwd=repo, query="note"))
     page_path.write_text("---\ntopics: [new]\n---\n# Note\n", encoding="utf-8")
@@ -271,11 +343,11 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
         ).fetchone()[0]
     rows = app.search.search(SearchPagesRequest(cwd=repo, query="changedneedle"))
 
-    assert first.changed == 2
+    assert first.changed == 3
     assert unchanged.changed == 0
     assert rewrites == 0
-    assert refreshed.changed == 2
-    assert refreshed_rewrites == 2
+    assert refreshed.changed == 3
+    assert refreshed_rewrites == 3
     assert [row.slug for row in rows] == ["note"]
 
 
@@ -294,11 +366,11 @@ def test_reindex_forces_projection_rebuild_when_index_is_fresh(
 
     result = app.index.reindex(ReindexRequest(cwd=repo))
 
-    assert result.changed == 2
-    assert result.pages_indexed == 2
+    assert result.changed == 3
+    assert result.pages_indexed == 3
 
 
 def write_page(repo: Path, name: str, body: str) -> None:
-    path = repo / "almanac/pages" / name
+    path = repo / "almanac" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")

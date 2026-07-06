@@ -59,7 +59,7 @@ class WritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / "almanac/pages/ingested-note.md"
+        page = request.cwd / "almanac/ingested-note.md"
         page.write_text(
             """---
 title: Ingested Note
@@ -119,13 +119,13 @@ class EventfulHarnessAdapter(WritingHarnessAdapter):
                     ),
                     HarnessEvent(
                         kind=HarnessEventKind.TOOL_USE,
-                        message="agent wrote almanac/pages/ingested-note.md",
+                        message="agent wrote almanac/ingested-note.md",
                         tool_id="tool-1",
                         tool_name="fileChange",
                         tool_display=HarnessToolDisplay(
                             kind=HarnessToolDisplayKind.EDIT,
                             title="Editing file",
-                            path="almanac/pages/ingested-note.md",
+                            path="almanac/ingested-note.md",
                             status=HarnessToolStatus.COMPLETED,
                             provider_thread_id="root-thread",
                             provider_turn_id="turn-1",
@@ -181,7 +181,7 @@ class FailedHarnessAdapter(WritingHarnessAdapter):
 class DirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / "almanac/pages/ingested-note.md"
+        page = request.cwd / "almanac/ingested-note.md"
         page.write_text(
             """---
 title: Ingested Note
@@ -293,12 +293,12 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert result.sources[0].ref.fingerprint is not None
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
     assert result.harness.changed_files == (
-        repo / "almanac/pages/ingested-note.md",
+        repo / "almanac/ingested-note.md",
     )
     assert result.safety.changed_files == (
-        repo / "almanac/pages/ingested-note.md",
+        repo / "almanac/ingested-note.md",
     )
-    assert result.index.pages_indexed == 2
+    assert result.index.pages_indexed == 3
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
     assert '"source_runtime": [' in adapter.requests[0].prompt
@@ -344,7 +344,7 @@ def test_ingest_workflow_records_normalized_harness_events(
 
     assert tuple((entry.kind, entry.message) for entry in log[-6:]) == (
         (RunEventKind.OUTPUT, "agent read source note"),
-        (RunEventKind.TOOL, "agent wrote almanac/pages/ingested-note.md"),
+        (RunEventKind.TOOL, "agent wrote almanac/ingested-note.md"),
         (RunEventKind.TOOL, "usage: 42 tokens"),
         (RunEventKind.TOOL, "spawned helper"),
         (RunEventKind.OUTPUT, "codex succeeded: updated wiki"),
@@ -356,7 +356,7 @@ def test_ingest_workflow_records_normalized_harness_events(
     assert log[-5].harness_event is not None
     assert log[-5].harness_event.tool_display is not None
     assert log[-5].harness_event.tool_display.path == (
-        "almanac/pages/ingested-note.md"
+        "almanac/ingested-note.md"
     )
     assert log[-4].harness_event is not None
     assert log[-4].harness_event.usage is not None
@@ -552,9 +552,7 @@ def test_ingest_workflow_rejects_harness_changes_outside_almanac(
 
     assert run.status == RunStatus.FAILED
     assert run.error is not None
-    assert run.error.startswith(
-        "harness reported change outside configured Almanac root:"
-    )
+    assert run.error.startswith("harness reported change outside almanac/:")
     assert "README.md" in run.error
 
 
@@ -665,7 +663,7 @@ def test_ingest_workflow_allows_preexisting_dirty_app_files_when_unchanged(
 
     assert result.run.status == RunStatus.DONE
     assert result.safety.changed_files == (
-        repo / "almanac/pages/ingested-note.md",
+        repo / "almanac/ingested-note.md",
     )
     assert (repo / "src/app.py").read_text(encoding="utf-8") == "user edit\n"
 
@@ -718,7 +716,7 @@ def test_ingest_workflow_rejects_dirty_almanac_preflight(
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
-    (repo / "almanac/pages/getting-started.md").write_text(
+    (repo / "almanac/getting-started.md").write_text(
         "local wiki edit\n",
         encoding="utf-8",
     )

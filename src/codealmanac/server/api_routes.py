@@ -45,7 +45,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             )
         )
 
-    @server.get("/api/page/{slug}", response_model=ViewerPage)
+    @server.get("/api/page/{slug:path}", response_model=ViewerPage)
     def page(slug: str, wiki: str | None = None) -> ViewerPage:
         return context.codealmanac.viewer.page(
             ViewerPageRequest(

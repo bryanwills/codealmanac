@@ -101,7 +101,7 @@ def validate_reported_changes(
             candidate.resolve().relative_to(almanac_root)
         except ValueError as error:
             raise ValidationFailed(
-                "harness reported change outside configured Almanac root: "
+                "harness reported change outside almanac/: "
                 f"{changed_file}"
             ) from error
 

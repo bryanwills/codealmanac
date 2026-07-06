@@ -4,7 +4,7 @@ export const viewerApi = {
   },
 
   page(slug, wiki) {
-    return getJson(withQuery(`/api/page/${encodeURIComponent(slug)}`, { wiki }));
+    return getJson(withQuery(`/api/page/${encodePath(slug)}`, { wiki }));
   },
 
   search(query, wiki) {
@@ -27,6 +27,10 @@ export const viewerApi = {
     return getJson(withQuery(`/api/jobs/${encodeURIComponent(runId)}`, { wiki }));
   },
 };
+
+function encodePath(value) {
+  return value.split("/").map(encodeURIComponent).join("/");
+}
 
 function withQuery(path, params) {
   const query = new URLSearchParams();

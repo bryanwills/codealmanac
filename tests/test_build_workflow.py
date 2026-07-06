@@ -35,9 +35,8 @@ def test_initialize_creates_almanac_wiki_and_registry(
     assert workspace.name == "example-repo"
     assert (repo / "almanac/README.md").is_file()
     assert (repo / "almanac/topics.yaml").is_file()
-    assert (repo / "almanac/pages/getting-started.md").is_file()
-    assert (repo / "almanac/manual/README.md").is_file()
-    assert (repo / "almanac/manual/ingest.md").is_file()
+    assert (repo / "almanac/getting-started.md").is_file()
+    assert not (repo / "almanac/manual").exists()
     gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert gitignore_lines.count("almanac/index.db") == 1
     assert app.workspaces.list()[0].description == "test wiki"
@@ -121,7 +120,7 @@ def test_resolve_ignores_unregistered_dot_almanac_root(
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
-    (repo / ".almanac/pages").mkdir(parents=True)
+    (repo / ".almanac").mkdir(parents=True)
     (repo / ".almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
@@ -137,7 +136,11 @@ def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
 ):
     projects = tmp_path / "Projects"
     repo = projects / "codealmanac"
-    (repo / "almanac/pages").mkdir(parents=True)
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
@@ -157,17 +160,21 @@ def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
     assert workspace.almanac_path == repo / "almanac"
 
 
-def test_initialized_wiki_requires_topics_yaml_and_pages(tmp_path: Path):
+def test_initialized_wiki_requires_topics_yaml_and_readme(tmp_path: Path):
     readme_only = tmp_path / "readme-only"
     topics_only = tmp_path / "topics-only"
-    pages_only = tmp_path / "pages-only"
+    pages_only = tmp_path / "old-pages-only"
     initialized = tmp_path / "initialized"
     readme_only.mkdir()
     topics_only.mkdir()
     (pages_only / "pages").mkdir(parents=True)
-    (initialized / "pages").mkdir(parents=True)
+    initialized.mkdir()
     (readme_only / "README.md").write_text("# Not enough\n", encoding="utf-8")
     (topics_only / "topics.yaml").write_text("topics: []\n", encoding="utf-8")
+    (initialized / "README.md").write_text(
+        "---\ntopics: [concepts]\n---\n# Wiki\n\nRoot page.\n",
+        encoding="utf-8",
+    )
     (initialized / "topics.yaml").write_text("topics: []\n", encoding="utf-8")
 
     assert is_initialized_almanac_root(readme_only) is False
@@ -230,8 +237,6 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
     readme = repo / "almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
-    manual_readme = repo / "almanac/manual/README.md"
-    manual_readme.write_text("local manual edit\n", encoding="utf-8")
 
     workspace = app.workflows.build.initialize(
         InitializeWorkspaceRequest(path=repo / "src", name="renamed")
@@ -240,7 +245,7 @@ def test_initialize_is_idempotent_and_preserves_existing_pages(
     assert workspace.root_path == repo
     assert workspace.name == "renamed"
     assert readme.read_text(encoding="utf-8") == "user edit\n"
-    assert manual_readme.read_text(encoding="utf-8") == "local manual edit\n"
+    assert not (repo / "almanac/manual").exists()
 
 
 def test_build_refreshes_wiki_and_rebuilds_index(
@@ -258,8 +263,8 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     )
 
     assert result.workspace.name == "repo"
-    assert result.index.pages_indexed == 1
-    assert result.index.files_seen == 1
+    assert result.index.pages_indexed == 2
+    assert result.index.files_seen == 2
     assert (repo / "almanac/index.db").is_file()
 
 

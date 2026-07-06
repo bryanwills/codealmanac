@@ -82,8 +82,8 @@ def test_filesystem_source_runtime_reads_directory_with_ignores(tmp_path: Path):
     (tmp_path / "build/generated.txt").write_text("generated\n", encoding="utf-8")
     (tmp_path / "node_modules/pkg").mkdir(parents=True)
     (tmp_path / "node_modules/pkg/index.js").write_text("dep\n", encoding="utf-8")
-    (tmp_path / "almanac/pages").mkdir(parents=True)
-    (tmp_path / "almanac/pages/wiki.md").write_text("wiki\n", encoding="utf-8")
+    (tmp_path / "almanac").mkdir(parents=True)
+    (tmp_path / "almanac/wiki.md").write_text("wiki\n", encoding="utf-8")
     app = create_app(
         source_runtime_adapters=(FilesystemSourceRuntimeAdapter(max_directory_files=5),),
     )
@@ -105,7 +105,7 @@ def test_filesystem_source_runtime_reads_directory_with_ignores(tmp_path: Path):
     assert "ignored.md" not in (runtime.content or "")
     assert "generated" not in (runtime.content or "")
     assert "node_modules" not in (runtime.content or "")
-    assert "almanac/pages/wiki.md" not in (runtime.content or "")
+    assert "almanac/wiki.md" not in (runtime.content or "")
 
 
 def test_filesystem_source_runtime_uses_configured_wiki_root_ignore(
@@ -138,8 +138,8 @@ def test_filesystem_source_runtime_uses_configured_wiki_root_ignore(
 def test_filesystem_source_runtime_does_not_hard_code_wiki_root_names(
     tmp_path: Path,
 ):
-    (tmp_path / "almanac/pages").mkdir(parents=True)
-    (tmp_path / "almanac/pages/wiki.md").write_text("wiki\n", encoding="utf-8")
+    (tmp_path / "almanac").mkdir(parents=True)
+    (tmp_path / "almanac/wiki.md").write_text("wiki\n", encoding="utf-8")
     app = create_app(
         source_runtime_adapters=(FilesystemSourceRuntimeAdapter(max_directory_files=5),),
     )
@@ -151,7 +151,7 @@ def test_filesystem_source_runtime_does_not_hard_code_wiki_root_names(
 
     content = runtime.content or ""
     assert runtime.status == SourceRuntimeStatus.AVAILABLE
-    assert "almanac/pages/wiki.md" in content
+    assert "almanac/wiki.md" in content
 
 
 def test_filesystem_source_runtime_normalizes_display_base(
@@ -196,8 +196,8 @@ def test_filesystem_source_runtime_uses_git_directory_listing(
     (repo / "src/keep.py").write_text("TRACKED = True\n", encoding="utf-8")
     (repo / "src/new-note.md").write_text("untracked source\n", encoding="utf-8")
     (repo / "src/nested-secret.txt").write_text("ignored nested\n", encoding="utf-8")
-    (repo / "almanac/pages").mkdir(parents=True)
-    (repo / "almanac/pages/wiki.md").write_text("wiki\n", encoding="utf-8")
+    (repo / "almanac").mkdir(parents=True)
+    (repo / "almanac/wiki.md").write_text("wiki\n", encoding="utf-8")
     (repo / ".env").write_text("SECRET=1\n", encoding="utf-8")
     (repo / "root-ignored.md").write_text("ignored root\n", encoding="utf-8")
     run_git(repo, "add", "src/keep.py")
@@ -223,7 +223,7 @@ def test_filesystem_source_runtime_uses_git_directory_listing(
     assert "untracked source" in content
     assert "nested-secret.txt" not in content
     assert ".gitignore" not in content
-    assert "almanac/pages/wiki.md" not in content
+    assert "almanac/wiki.md" not in content
     assert "SECRET=1" not in content
     assert "root-ignored.md" not in content
 

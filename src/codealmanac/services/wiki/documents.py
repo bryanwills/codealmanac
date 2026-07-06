@@ -17,17 +17,17 @@ from codealmanac.services.wiki.paths import (
     looks_like_dir,
     normalize_reference_path,
     normalize_reference_path_preserving_case,
+    page_id_for_path,
 )
 from codealmanac.services.wiki.wikilinks import extract_wikilinks
 
 
-def load_page_document(page_path: Path, pages_path: Path) -> PageDocument | None:
+def load_page_document(page_path: Path, almanac_path: Path) -> PageDocument | None:
     raw = page_path.read_text(encoding="utf-8")
     frontmatter = parse_frontmatter(raw)
-    relative_path = page_path.relative_to(pages_path).as_posix()
-    slug_source = frontmatter.page_id or page_path.stem
-    slug = to_kebab_case(slug_source)
-    if not slug:
+    relative_path = page_path.relative_to(almanac_path).as_posix()
+    page_id = page_id_for_path(almanac_path, page_path)
+    if not page_id:
         return None
 
     title = frontmatter.title or first_h1(frontmatter.body) or page_path.stem
@@ -45,7 +45,7 @@ def load_page_document(page_path: Path, pages_path: Path) -> PageDocument | None
             cross_wiki_links.append((link.wiki, link.target))
 
     return PageDocument(
-        slug=slug,
+        slug=page_id,
         title=title,
         summary=frontmatter.summary,
         file_path=page_path,

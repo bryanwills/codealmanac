@@ -150,7 +150,7 @@ def test_claude_adapter_wraps_sdk_run_with_git_change_detection(tmp_path: Path):
             CommandResult(returncode=0, stdout=""),
             CommandResult(
                 returncode=0,
-                stdout="?? almanac/pages/new-page.md\0 M src/app.py\0",
+                stdout="?? almanac/new-page.md\0 M src/app.py\0",
             ),
         )
     )
@@ -176,7 +176,7 @@ def test_claude_adapter_wraps_sdk_run_with_git_change_detection(tmp_path: Path):
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
     assert result.changed_files == (
-        tmp_path / "almanac/pages/new-page.md",
+        tmp_path / "almanac/new-page.md",
         tmp_path / "src/app.py",
     )
     assert runner.calls[0][0] == "git"
@@ -200,7 +200,7 @@ def test_claude_sdk_client_maps_typed_message_stream(tmp_path: Path):
                     ToolUseBlock(
                         id="tool-1",
                         name="Read",
-                        input={"file_path": "almanac/pages/source.md"},
+                        input={"file_path": "almanac/source.md"},
                     ),
                     ToolUseBlock(
                         id="agent-1",
@@ -259,7 +259,7 @@ def test_claude_sdk_client_maps_typed_message_stream(tmp_path: Path):
     tool_use = result.events[4]
     assert tool_use.tool_display is not None
     assert tool_use.tool_display.kind == HarnessToolDisplayKind.READ
-    assert tool_use.tool_display.path == "almanac/pages/source.md"
+    assert tool_use.tool_display.path == "almanac/source.md"
     helper_done = result.events[9]
     assert helper_done.actor is not None
     assert helper_done.actor.role == HarnessActorRole.HELPER

@@ -55,7 +55,7 @@ def dispatch_wiki(args: argparse.Namespace, app: CodeAlmanac) -> int:
         return 0
     if args.command == "show":
         page = app.pages.show(
-            ShowPageRequest(cwd=Path.cwd(), wiki=args.wiki, slug=args.slug)
+            ShowPageRequest(cwd=Path.cwd(), wiki=args.wiki, slug=args.page)
         )
         render_page(page, args)
         return 0
@@ -76,7 +76,7 @@ def dispatch_wiki(args: argparse.Namespace, app: CodeAlmanac) -> int:
             TagPageRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
-                slug=args.slug,
+                slug=args.page,
                 topics=tuple(args.topics),
             )
         )
@@ -87,7 +87,7 @@ def dispatch_wiki(args: argparse.Namespace, app: CodeAlmanac) -> int:
             UntagPageRequest(
                 cwd=Path.cwd(),
                 wiki=args.wiki,
-                slug=args.slug,
+                slug=args.page,
                 topics=tuple(args.topics),
             )
         )

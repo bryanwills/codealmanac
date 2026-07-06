@@ -62,7 +62,6 @@ Wikilink = PageLink | FileLink | FolderLink | CrossWikiLink
 
 
 class ParsedFrontmatter(CodeAlmanacModel):
-    page_id: str | None = None
     title: str | None = None
     summary: str | None = None
     topics: tuple[str, ...] = ()

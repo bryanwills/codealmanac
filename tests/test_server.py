@@ -215,7 +215,7 @@ def test_server_rejects_path_shaped_job_ids(
 
 
 def write_server_page(repo: Path, name: str, body: str) -> None:
-    path = repo / "almanac/pages" / name
+    path = repo / "almanac" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
 

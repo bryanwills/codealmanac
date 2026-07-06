@@ -36,7 +36,7 @@ class GardenWritingHarnessAdapter:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
-        page = request.cwd / "almanac/pages/gardened-note.md"
+        page = request.cwd / "almanac/gardened-note.md"
         page.write_text(
             """---
 title: Gardened Note
@@ -119,16 +119,16 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript.session_id == "codex-garden-session"
     assert result.health_before.empty_pages == ()
     assert result.harness.changed_files == (
-        repo / "almanac/pages/gardened-note.md",
+        repo / "almanac/gardened-note.md",
     )
     assert result.safety.changed_files == (
-        repo / "almanac/pages/gardened-note.md",
+        repo / "almanac/gardened-note.md",
     )
-    assert result.index.pages_indexed == 2
+    assert result.index.pages_indexed == 3
     assert matches[0].slug == "gardened-note"
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Runtime context:" in adapter.requests[0].prompt
-    assert '"pages_root"' in adapter.requests[0].prompt
+    assert '"wiki_source_root"' in adapter.requests[0].prompt
     assert "Improve a single page if useful." in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,

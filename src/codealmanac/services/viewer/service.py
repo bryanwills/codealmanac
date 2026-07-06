@@ -182,8 +182,7 @@ class ViewerService:
         )
 
     def get_page_or_raise(self, workspace: Workspace, slug: str) -> PageView:
-        normalized = to_kebab_case(slug)
-        page = self.index.get_page(workspace.workspace_id, normalized)
+        page = self.index.get_page(workspace.workspace_id, slug)
         if page is None:
             raise NotFoundError("page", slug)
         return page
