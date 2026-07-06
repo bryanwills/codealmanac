@@ -59,10 +59,13 @@ class GardenWorkflow:
         )
 
     def start(self, request: GardenRequest) -> RunRecord:
+        repository = self.operations.resolve_repository(
+            request.cwd,
+            request.repository_name,
+        )
         return self.runs.start(
             StartRunRequest(
-                cwd=request.cwd,
-                repository_name=request.repository_name,
+                repository_id=repository.repository_id,
                 kind=RunKind.GARDEN,
                 title=request.title or "Garden wiki",
             )

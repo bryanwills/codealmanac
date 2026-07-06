@@ -54,7 +54,6 @@ class OperationRunner:
         repository = self.resolve_repository(request.cwd, request.repository_name)
         self.runs.mark_running(
             MarkRunRunningRequest(
-                repository_name=request.repository_name,
                 run_id=request.run_id,
             )
         )

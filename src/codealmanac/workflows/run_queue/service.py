@@ -55,10 +55,13 @@ class RunQueue:
         self.spawner = spawner
 
     def queue_ingest(self, request: IngestRequest) -> RunRecord:
+        repository = self.repositories.select_operation_target(
+            request.cwd,
+            request.repository_name,
+        )
         return self.runs.queue(
             QueueRunRequest(
-                cwd=request.cwd,
-                repository_name=request.repository_name,
+                repository_id=repository.repository_id,
                 title=request.title or default_ingest_title(request.inputs),
                 spec=RunSpec(
                     kind=RunKind.INGEST,
@@ -77,10 +80,13 @@ class RunQueue:
         return self.start_result(run, worker)
 
     def queue_garden(self, request: GardenRequest) -> RunRecord:
+        repository = self.repositories.select_operation_target(
+            request.cwd,
+            request.repository_name,
+        )
         return self.runs.queue(
             QueueRunRequest(
-                cwd=request.cwd,
-                repository_name=request.repository_name,
+                repository_id=repository.repository_id,
                 title=request.title or "Garden wiki",
                 spec=RunSpec(
                     kind=RunKind.GARDEN,

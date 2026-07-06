@@ -57,8 +57,7 @@ class BuildWorkflow:
         self.wiki.initialize(repository.repository_id)
         run = self.runs.start(
             StartRunRequest(
-                cwd=repository.root_path,
-                repository_name=repository.name,
+                repository_id=repository.repository_id,
                 kind=RunKind.BUILD,
                 title=request.title or "Build wiki",
             )

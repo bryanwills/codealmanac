@@ -61,17 +61,25 @@ class CancelRunRequest(CodeAlmanacModel):
 
 
 class StartRunRequest(CodeAlmanacModel):
-    cwd: Path
+    repository_id: str
     kind: RunKind
-    repository_name: str | None = None
     title: str | None = None
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "repository_id")
 
 
 class QueueRunRequest(CodeAlmanacModel):
-    cwd: Path
+    repository_id: str
     spec: RunSpec
-    repository_name: str | None = None
     title: str | None = None
+
+    @field_validator("repository_id")
+    @classmethod
+    def require_repository_id(cls, value: str) -> str:
+        return required_text(value, "repository_id")
 
 
 class ReadRunSpecRequest(CodeAlmanacModel):
@@ -113,25 +121,21 @@ class RecordRunEventRequest(CodeAlmanacModel):
     run_id: RunId
     kind: RunEventKind
     message: str
-    repository_name: str | None = None
     harness_event: HarnessEvent | None = None
 
 
 class MarkRunRunningRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
 
 
 class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
     run_id: RunId
     transcript: HarnessTranscriptRef
-    repository_name: str | None = None
 
 
 class FinishRunRequest(CodeAlmanacModel):
     run_id: RunId
     status: RunStatus
-    repository_name: str | None = None
     summary: str | None = None
     error: str | None = None
 

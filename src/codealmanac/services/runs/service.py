@@ -1,7 +1,6 @@
 import os
 from collections.abc import Iterator
 from datetime import UTC, datetime
-from pathlib import Path
 
 from codealmanac.core.errors import NotFoundError
 from codealmanac.services.repositories.models import Repository
@@ -49,17 +48,15 @@ class RunsService:
         self.streamer = streamer or RunAttachStreamer(store)
 
     def start(self, request: StartRunRequest) -> RunRecord:
-        repository = self.resolve_repository(request.cwd, request.repository_name)
         return self.store.create(
-            repository.repository_id,
+            request.repository_id,
             request.kind,
             request.title,
         )
 
     def queue(self, request: QueueRunRequest) -> RunRecord:
-        repository = self.resolve_repository(request.cwd, request.repository_name)
         return self.store.queue(
-            repository.repository_id,
+            request.repository_id,
             request.spec,
             request.title,
         )
@@ -121,8 +118,7 @@ class RunsService:
         )
 
     def record_event(self, request: RecordRunEventRequest) -> RunLogEvent:
-        record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.store.read(request.run_id)
         return self.store.append(
             request.run_id,
             request.kind,
@@ -131,24 +127,21 @@ class RunsService:
         )
 
     def mark_running(self, request: MarkRunRunningRequest) -> RunRecord:
-        record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.store.read(request.run_id)
         return self.store.mark_running(request.run_id)
 
     def record_harness_transcript(
         self,
         request: RecordRunHarnessTranscriptRequest,
     ) -> RunRecord:
-        record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.store.read(request.run_id)
         return self.store.record_harness_transcript(
             request.run_id,
             request.transcript,
         )
 
     def finish(self, request: FinishRunRequest) -> RunRecord:
-        record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.store.read(request.run_id)
         return self.store.finish(
             request.run_id,
             request.status,
@@ -160,9 +153,6 @@ class RunsService:
         record = self.store.read(request.run_id)
         self.require_selected_run(record, request.repository_name)
         return self.store.cancel(request.run_id)
-
-    def resolve_repository(self, cwd: Path, repository_name: str | None) -> Repository:
-        return self.repositories.select_operation_target(cwd, repository_name)
 
     def selected_repository(self, repository_name: str | None) -> Repository | None:
         if repository_name is None:
