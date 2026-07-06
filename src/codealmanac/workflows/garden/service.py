@@ -74,8 +74,6 @@ class GardenWorkflow:
     def run_started(self, request: StartedGardenRequest) -> GardenResult:
         context = self.operations.begin(
             BeginOperationRequest(
-                cwd=request.cwd,
-                repository_name=request.repository_name,
                 run_id=request.run_id,
             )
         )

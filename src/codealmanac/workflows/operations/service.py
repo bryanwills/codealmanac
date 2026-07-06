@@ -51,12 +51,12 @@ class OperationRunner:
         self.mutation_policy = mutation_policy
 
     def begin(self, request: BeginOperationRequest) -> OperationContext:
-        repository = self.resolve_repository(request.cwd, request.repository_name)
-        self.runs.mark_running(
+        run = self.runs.mark_running(
             MarkRunRunningRequest(
                 run_id=request.run_id,
             )
         )
+        repository = self.runs.repository_for(run)
         return OperationContext(
             run_id=request.run_id,
             repository=repository,

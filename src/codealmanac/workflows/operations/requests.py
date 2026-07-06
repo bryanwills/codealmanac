@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
@@ -10,9 +8,7 @@ from codealmanac.workflows.operations.models import OperationContext
 
 
 class BeginOperationRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
-    repository_name: str | None = None
 
 
 class RecordOperationEventRequest(CodeAlmanacModel):

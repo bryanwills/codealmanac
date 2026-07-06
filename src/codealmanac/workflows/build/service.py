@@ -72,8 +72,6 @@ class BuildWorkflow:
         repository = start.repository
         context = self.operations.begin(
             BeginOperationRequest(
-                cwd=repository.root_path,
-                repository_name=repository.name,
                 run_id=start.run.run_id,
             )
         )

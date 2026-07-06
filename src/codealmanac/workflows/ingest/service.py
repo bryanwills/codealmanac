@@ -81,8 +81,6 @@ class IngestWorkflow:
         run_id = request.run_id
         context = self.operations.begin(
             BeginOperationRequest(
-                cwd=request.cwd,
-                repository_name=request.repository_name,
                 run_id=run_id,
             )
         )
