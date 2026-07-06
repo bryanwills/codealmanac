@@ -48,9 +48,9 @@ compatibility assumptions blindly.
 
 ## Legacy `.almanac/` Migration
 
-The current `.almanac/` directory is outdated.
+The old `.almanac/` directory was outdated.
 
-It can contain useful project memory, but it represents the old product model:
+It contained useful project memory, but it represented the old product model:
 
 - `.almanac/` as the wiki root,
 - flat `.almanac/pages/`,
@@ -58,8 +58,8 @@ It can contain useful project memory, but it represents the old product model:
 - `files:` compatibility,
 - old command names and old agent instructions.
 
-Migrate durable, still-true knowledge from `.almanac/` into the new
-`almanac/` tree after the new page model exists.
+Durable, still-true knowledge was migrated into the new `almanac/` tree after
+the new page model landed.
 
 The migration is a repo reset step, not a supported compatibility mode.
 CodeAlmanac should not keep reading `.almanac/` as an alternate root after the
@@ -68,14 +68,14 @@ new `almanac/` tree is in place.
 Migration shape:
 
 ```text
-.almanac/pages/*.md       old memory source
+git history               old memory source
 almanac/**/**/*.md        new browseable wiki source
 ~/.codealmanac/...        runtime state
 ```
 
-Use `.almanac/` carefully as source material. Keep facts that still match the
-local-first Python product. Drop hosted/cloud assumptions, old storage rules,
-old link syntax, and compatibility guidance.
+The migrated wiki keeps facts that still match the local-first Python product.
+It drops hosted/cloud assumptions, old storage rules, old link syntax, and
+compatibility guidance.
 
 ## Onboarding experience
 
@@ -279,35 +279,35 @@ architecture/viewer/local-viewer
 Preferred page links:
 
 ```md
-[Viewer navigation](/architecture/viewer/navigation)
-[Local-only decision](/decisions/local-only)
-[File references](/concepts/file-references)
+[Viewer navigation](architecture/viewer/navigation)
+[Local-only decision](decisions/local-only)
+[File references](concepts/file-references)
 ```
 
 The path starts at `almanac/` and omits `.md`.
 
 Do not use wikilinks for page links. Use Markdown links with root-relative
-paths.
+paths in root pages and relative paths in nested pages.
 
 ## Inline link examples
 
 Normal page-to-page links look like docs links:
 
 ```md
-The [viewer sidebar](/architecture/viewer/navigation/sidebar) is the primary
+The [viewer sidebar](architecture/viewer/navigation/sidebar) is the primary
 browsing surface.
 ```
 
 Link to a decision:
 
 ```md
-This follows the [local-only decision](/decisions/product/local-only).
+This follows the [local-only decision](decisions/product/local-only).
 ```
 
 Link to a reference page:
 
 ```md
-For frontmatter fields, see [page frontmatter](/reference/page-format/frontmatter).
+For frontmatter fields, see [page frontmatter](reference/page-format/frontmatter).
 ```
 
 Use inline code for repo paths when the prose is just naming a file:
@@ -387,16 +387,15 @@ almanac/guides/navigation.md
 Preferred links copy Mintlify's convention:
 
 ```md
-[Navigation](/architecture/viewer/navigation)
+[Navigation](architecture/viewer/navigation)
 ```
 
 Rules:
 
 - start from the `almanac/` root,
-- start links with `/`,
 - omit `.md`,
 - use readable link text,
-- avoid `./` and `../` in generated pages,
+- prefer relative links from nested pages,
 - do not invent hidden slugs for links.
 
 This gives us consistency without forcing long filenames.
@@ -407,15 +406,15 @@ The prompt and manual explicitly tell the model:
 
 - organize pages in nested folders,
 - use short filenames,
-- link to other pages with root-relative extensionless paths,
-- prefer `[label](/folder/page)` for normal prose,
+- link to other pages with extensionless Markdown paths,
+- prefer `[label](folder/page)` from root pages and relative links from nested pages,
 - do not use wikilinks,
 - never create long filenames just to satisfy uniqueness.
 
 Example:
 
 ```md
-See [viewer navigation](/architecture/viewer/navigation) for the local browser
+See [viewer navigation](architecture/viewer/navigation) for the local browser
 route model.
 ```
 
@@ -432,7 +431,7 @@ Wikilinks are retired.
 Page links:
 
 ```md
-[Sidebar navigation](/architecture/viewer/navigation/sidebar)
+[Sidebar navigation](architecture/viewer/navigation/sidebar)
 ```
 
 Repo file references in prose:

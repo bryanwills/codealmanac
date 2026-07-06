@@ -63,7 +63,6 @@ There is no prize for preserving awkward code. Prefer the structure a new mainta
 | `archive/code/` | Archived TypeScript/Node implementation and old viewer | behavior reference only |
 | `docs/python-port-live-agreement.md` | Active Python rewrite agreement | local-only scope, service/workflow/integration structure |
 | `docs/reference/cosmic-python/` | Vendored Architecture Patterns with Python reference | Markdown-only book files plus `CODEALMANAC.md` |
-| `.almanac/` | Legacy project memory to migrate | old `README.md`, `pages/`, `topics.yaml` |
 | `almanac/` | Current target wiki tree | nested Markdown pages plus `topics.yaml` |
 | `src/codealmanac/` | Active Python implementation root | `app.py`, `cli/`, `services/`, `workflows/`, `integrations/` |
 | `tests/` | Active Python test suite | pytest files plus temp-home helpers |

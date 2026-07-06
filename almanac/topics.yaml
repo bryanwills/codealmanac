@@ -1,0 +1,40 @@
+topics:
+  - slug: architecture
+    title: Architecture
+    description: Current Python subsystem boundaries, flows, and invariants.
+    parents: []
+
+  - slug: decisions
+    title: Decisions
+    description: Product and engineering choices that future work must preserve.
+    parents: []
+
+  - slug: operations
+    title: Operations
+    description: Lifecycle commands, background jobs, setup, diagnostics, and update behavior.
+    parents: [architecture]
+
+  - slug: agents
+    title: Agents
+    description: Harness providers, prompts, manual guidance, and agent-facing contracts.
+    parents: [operations]
+
+  - slug: storage
+    title: Storage
+    description: SQLite index state, source metadata, run records, and registry files.
+    parents: [architecture]
+
+  - slug: wiki-design
+    title: Wiki Design
+    description: Page layout, topics, links, sources, and local wiki authoring rules.
+    parents: [architecture, decisions]
+
+  - slug: cli
+    title: CLI
+    description: Public command surface and command adapter behavior.
+    parents: [operations]
+
+  - slug: migration
+    title: Migration
+    description: Notes about replacing the old repo wiki and dropping retired product assumptions.
+    parents: [decisions]
