@@ -243,8 +243,16 @@ def test_cli_init_rejects_root_option(
 
 def test_cli_setup_and_uninstall_codex_instructions(
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
     exit_code = main(["setup", "--yes", "--target", "codex"])
 
     captured = capsys.readouterr()
@@ -257,28 +265,43 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "Next steps" in captured.out
     assert "Auto commit" in captured.out
     assert "codealmanac init" in captured.out
-    assert "codealmanac automation install sync --every 5h --quiet 45m" in (
-        captured.out
-    )
+    assert "codealmanac automation status" in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
 
     second_exit = main(["setup", "--yes", "--target", "codex"])
     second = capsys.readouterr()
     assert second_exit == 0
     assert "Codex instructions already installed" in second.out
 
-    uninstall_exit = main(["uninstall", "--yes", "--target", "codex"])
+    uninstall_exit = main(["uninstall", "--yes"])
     uninstall = capsys.readouterr()
     assert uninstall_exit == 0
     assert "CodeAlmanac uninstall" in uninstall.out
     assert "Removed artifacts" in uninstall.out
     assert not agents_path.exists()
+    assert tuple(job.task for job in scheduler.uninstalled) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
 
 
 def test_cli_setup_no_auto_commit_writes_user_config(
     isolated_home: Path,
+    monkeypatch,
     capsys,
 ):
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=CliSchedulerAdapter(),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
     exit_code = main(["setup", "--yes", "--target", "codex", "--no-auto-commit"])
 
     captured = capsys.readouterr()
@@ -289,7 +312,13 @@ def test_cli_setup_no_auto_commit_writes_user_config(
     assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
 
 
-def test_cli_setup_skip_instructions_json(capsys):
+def test_cli_setup_skip_instructions_json(isolated_home: Path, monkeypatch, capsys):
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=CliSchedulerAdapter(),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
     exit_code = main(["setup", "--yes", "--skip-instructions", "--json"])
 
     captured = capsys.readouterr()
@@ -302,15 +331,15 @@ def test_cli_setup_skip_instructions_json(capsys):
     assert payload["config_update"]["key"] == "auto_commit"
     assert payload["config_update"]["value"] is True
     assert payload["plan"]["instruction_targets"] == ["codex", "claude"]
-    assert payload["plan"]["automation"][0]["command"] == [
-        "codealmanac",
-        "automation",
-        "install",
+    assert [item["task"] for item in payload["plan"]["automation"]] == [
         "sync",
-        "--every",
-        "5h",
-        "--quiet",
-        "45m",
+        "garden",
+        "update",
+    ]
+    assert [job["task"] for job in payload["automation_install"]["jobs"]] == [
+        "sync",
+        "garden",
+        "update",
     ]
 
 
@@ -338,7 +367,6 @@ def test_cli_setup_installs_automation_with_explicit_flags(
                 "--yes",
                 "--target",
                 "codex",
-                "--install-automation",
                 "--sync-every",
                 "1m",
                 "--sync-quiet",
@@ -357,16 +385,66 @@ def test_cli_setup_installs_automation_with_explicit_flags(
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
     assert scheduler.installed[0].interval.total_seconds() == 60
     assert scheduler.installed[1].interval.total_seconds() == 120
+    assert scheduler.installed[2].interval.total_seconds() == 86400
 
-    assert main(["uninstall", "--yes", "--target", "codex"]) == 0
+    assert main(["uninstall", "--yes"]) == 0
 
     capsys.readouterr()
     assert tuple(job.task for job in scheduler.uninstalled) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
+
+
+def test_cli_setup_can_skip_update_automation(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["setup", "--yes", "--no-auto-update"]) == 0
+
+    capsys.readouterr()
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+
+
+def test_cli_setup_can_skip_sync_automation(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["setup", "--yes", "--sync-off"]) == 0
+
+    capsys.readouterr()
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
 
 
@@ -614,6 +692,50 @@ def test_cli_update_refuses_editable_install(monkeypatch, capsys):
     assert "update status: unsupported" in output.out
     assert "editable source install cannot be self-updated" in output.out
     assert "run: git pull && uv sync" in output.out
+    assert runner.commands == []
+
+
+def test_cli_scheduled_update_runs_smoke(monkeypatch, capsys):
+    runner = CliUpdateRunner(PackageCommandResult(exit_code=0))
+    app = create_app(
+        update_metadata=CliUpdateMetadataProvider(
+            PackageInstallMetadata(version="0.1.0", installer="uv")
+        ),
+        update_runner=runner,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["update", "--scheduled"]) == 0
+
+    output = capsys.readouterr()
+    assert "update status: ready" in output.out
+    assert "smoke: codealmanac --version -> 0" in output.out
+    assert runner.commands == [
+        ("uv", "tool", "upgrade", "codealmanac"),
+        ("codealmanac", "--version"),
+        ("codealmanac", "doctor", "--json"),
+    ]
+
+
+def test_cli_scheduled_update_skips_editable_install(monkeypatch, capsys):
+    runner = CliUpdateRunner(PackageCommandResult(exit_code=0))
+    app = create_app(
+        update_metadata=CliUpdateMetadataProvider(
+            PackageInstallMetadata(
+                version="0.1.0",
+                installer="uv",
+                editable=True,
+                source_url="file:///repo",
+            )
+        ),
+        update_runner=runner,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["update", "--scheduled"]) == 0
+
+    output = capsys.readouterr()
+    assert "message: scheduled update skipped" in output.out
     assert runner.commands == []
 
 
@@ -1186,7 +1308,12 @@ def test_cli_automation_install_status_and_uninstall(
     assert "sync interval: 60s\n" in install_output.out
     assert "sync quiet: 1s\n" in install_output.out
     assert "garden interval: 120s\n" in install_output.out
-    assert tuple(job.task.value for job in scheduler.installed) == ("sync", "garden")
+    assert "update interval: 86400s\n" in install_output.out
+    assert tuple(job.task.value for job in scheduler.installed) == (
+        "sync",
+        "garden",
+        "update",
+    )
 
     assert main(["automation", "status", "--json"]) == 0
     status_output = capsys.readouterr()

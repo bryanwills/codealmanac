@@ -11,6 +11,8 @@ def dispatch_update(args: argparse.Namespace, app: CodeAlmanac) -> int:
         plan = app.updates.check(CheckUpdateRequest())
         render_update_plan(plan, json_output=args.json)
         return 0
-    result = app.updates.run(RunUpdateRequest())
+    result = app.updates.run(RunUpdateRequest(scheduled=args.scheduled))
     render_update_result(result, json_output=args.json)
-    return 0 if result.status == UpdateStatus.COMPLETED else 1
+    if result.status in {UpdateStatus.COMPLETED, UpdateStatus.SKIPPED}:
+        return 0
+    return 1

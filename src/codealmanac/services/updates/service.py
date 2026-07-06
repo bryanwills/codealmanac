@@ -1,9 +1,16 @@
+from datetime import UTC, datetime
+from pathlib import Path
+
+from codealmanac.core.paths import global_state_dir
+from codealmanac.services.updates.activity import active_run_count
+from codealmanac.services.updates.lock import UpdateLockStore
 from codealmanac.services.updates.models import (
     PACKAGE_NAME,
     PackageInstallMetadata,
     UpdateInstallMethod,
     UpdatePlan,
     UpdateResult,
+    UpdateSmokeResult,
     UpdateStatus,
 )
 from codealmanac.services.updates.ports import (
@@ -12,36 +19,114 @@ from codealmanac.services.updates.ports import (
 )
 from codealmanac.services.updates.requests import CheckUpdateRequest, RunUpdateRequest
 
+SMOKE_COMMANDS = (
+    ("codealmanac", "--version"),
+    ("codealmanac", "doctor", "--json"),
+)
+
 
 class UpdatesService:
     def __init__(
         self,
         metadata: PackageInstallMetadataProvider,
         runner: PackageCommandRunner,
+        state_dir: Path | None = None,
+        lock_store: UpdateLockStore | None = None,
     ):
         self.metadata = metadata
         self.runner = runner
+        self.state_dir = state_dir or global_state_dir()
+        self.lock_store = lock_store or UpdateLockStore()
 
     def check(self, request: CheckUpdateRequest) -> UpdatePlan:
         return plan_update(self.metadata.read())
 
     def run(self, request: RunUpdateRequest) -> UpdateResult:
         plan = self.check(CheckUpdateRequest())
+        if request.scheduled:
+            return self.run_scheduled(request, plan)
         if plan.status != UpdateStatus.READY:
             return UpdateResult(status=plan.status, plan=plan)
+        return self.run_plan(plan, smoke=False)
+
+    def run_scheduled(
+        self,
+        request: RunUpdateRequest,
+        plan: UpdatePlan,
+    ) -> UpdateResult:
+        if plan.status != UpdateStatus.READY:
+            return UpdateResult(
+                status=UpdateStatus.SKIPPED,
+                plan=plan,
+                message=f"scheduled update skipped: {plan.message}",
+            )
+        now = request.now or datetime.now(UTC)
+        lease = self.lock_store.acquire(
+            update_lock_path(self.state_dir),
+            now,
+            request.lock_stale_after,
+        )
+        if lease is None:
+            return UpdateResult(
+                status=UpdateStatus.SKIPPED,
+                plan=plan,
+                message="scheduled update skipped: update already in progress",
+            )
+        try:
+            active = active_run_count(self.state_dir)
+            if active > 0:
+                return UpdateResult(
+                    status=UpdateStatus.SKIPPED,
+                    plan=plan,
+                    message=active_runs_message(active),
+                )
+            return self.run_plan(plan, smoke=True)
+        finally:
+            lease.release()
+
+    def run_plan(self, plan: UpdatePlan, smoke: bool) -> UpdateResult:
         output = self.runner.run(plan.command)
         status = (
             UpdateStatus.COMPLETED
             if output.exit_code == 0
             else UpdateStatus.FAILED
         )
+        smoke_results: tuple[UpdateSmokeResult, ...] = ()
+        if status == UpdateStatus.COMPLETED and smoke:
+            smoke_results = self.run_smoke()
+            if any(result.exit_code != 0 for result in smoke_results):
+                status = UpdateStatus.FAILED
         return UpdateResult(
             status=status,
             plan=plan,
             exit_code=output.exit_code,
             stdout=output.stdout,
             stderr=output.stderr,
+            smoke=smoke_results,
         )
+
+    def run_smoke(self) -> tuple[UpdateSmokeResult, ...]:
+        results: list[UpdateSmokeResult] = []
+        for command in SMOKE_COMMANDS:
+            output = self.runner.run(command)
+            results.append(
+                UpdateSmokeResult(
+                    command=command,
+                    exit_code=output.exit_code,
+                    stdout=output.stdout,
+                    stderr=output.stderr,
+                )
+            )
+        return tuple(results)
+
+
+def update_lock_path(state_dir: Path) -> Path:
+    return state_dir / "update.lock"
+
+
+def active_runs_message(active: int) -> str:
+    suffix = "job is" if active == 1 else "jobs are"
+    return f"scheduled update skipped: {active} CodeAlmanac {suffix} active"
 
 
 def plan_update(metadata: PackageInstallMetadata) -> UpdatePlan:

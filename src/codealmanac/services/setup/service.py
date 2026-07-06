@@ -12,7 +12,11 @@ from codealmanac.services.setup.ports import (
     InstructionInstaller,
     SetupAutomationManager,
 )
-from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
+from codealmanac.services.setup.requests import (
+    DEFAULT_SETUP_TARGETS,
+    RunSetupRequest,
+    RunUninstallRequest,
+)
 
 
 class SetupService:
@@ -52,25 +56,14 @@ class SetupService:
         )
 
     def uninstall(self, request: RunUninstallRequest) -> UninstallResult:
-        changes = ()
-        if not request.keep_instructions:
-            changes = self._instructions.uninstall(request.targets)
-        automation_uninstall = None
-        if not request.keep_automation:
-            automation_uninstall = self._automation.uninstall(
-                UninstallAutomationRequest(
-                    tasks=request.automation_tasks,
-                    home=request.home,
-                )
+        changes = self._instructions.uninstall(DEFAULT_SETUP_TARGETS)
+        automation_uninstall = self._automation.uninstall(
+            UninstallAutomationRequest(
+                tasks=request.automation_tasks,
+                home=request.home,
             )
-        if request.keep_instructions:
-            return UninstallResult(
-                kept_instructions=True,
-                kept_automation=request.keep_automation,
-                automation_uninstall=automation_uninstall,
-            )
+        )
         return UninstallResult(
-            kept_automation=request.keep_automation,
             changes=changes,
             automation_uninstall=automation_uninstall,
         )

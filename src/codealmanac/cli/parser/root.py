@@ -11,7 +11,11 @@ def build_parser() -> argparse.ArgumentParser:
         prog="codealmanac",
         description="Maintain a local Almanac wiki for a codebase.",
     )
-    parser.add_argument("--version", action="version", version=__version__)
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"codealmanac {__version__}",
+    )
     subcommands = parser.add_subparsers(dest="command", required=True)
     add_lifecycle_commands(subcommands)
     add_wiki_commands(subcommands)

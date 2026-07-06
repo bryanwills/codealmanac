@@ -298,7 +298,7 @@ Todos:
 - Prompt-allowed wiki source files:
   - `almanac/**/*.md`
   - `almanac/topics.yaml`
-  - `almanac/config.yaml`
+  - `almanac/config.toml`
 - Prompt-forbidden files:
   - runtime state,
   - app source files,
@@ -366,6 +366,8 @@ Todos:
 - Remove `~/.codealmanac/` global state.
 - Remove installed binary/tool when the install method supports it.
 - Do not delete repo `almanac/`.
+- Remove `--target`, `--keep-automation`, `--keep-instructions`, and any other
+  partial-uninstall flags.
 - Keep a non-destructive confirmation path for interactive terminals.
 - Keep `--yes` non-interactive.
 
@@ -405,6 +407,7 @@ Todos:
   - install sync automation,
   - install Garden automation,
   - install update automation,
+  - ask whether CodeAlmanac should stay up to date automatically,
   - set auto-commit on by default,
   - initialize or detect `almanac/`,
   - print next steps.

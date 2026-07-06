@@ -124,6 +124,7 @@ def create_app(
     updates = UpdatesService(
         update_metadata or InstalledPackageMetadataProvider(),
         update_runner or SubprocessPackageCommandRunner(),
+        app_config.registry_path.parent,
     )
     setup = SetupService(
         instruction_installer or FileInstructionInstaller(),

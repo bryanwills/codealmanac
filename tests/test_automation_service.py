@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import ValidationFailed
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation.scheduler.launchd import (
     LaunchdSchedulerAdapter,
@@ -14,6 +13,7 @@ from codealmanac.services.automation.defaults import (
     AUTOMATION_SYNC_CLAIM_OWNER,
     AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS,
     AUTOMATION_SYNC_PENDING_TIMEOUT,
+    DEFAULT_UPDATE_INTERVAL,
     duration_text,
 )
 from codealmanac.services.automation.models import (
@@ -93,8 +93,9 @@ def test_automation_install_plans_sync_and_garden(
     assert tuple(job.task for job in result.jobs) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
-    sync, garden = scheduler.installed
+    sync, garden, update = scheduler.installed
     assert sync.program_arguments == (
         "/usr/bin/python3",
         "-m",
@@ -119,10 +120,21 @@ def test_automation_install_plans_sync_and_garden(
     )
     assert garden.interval == timedelta(minutes=2)
     assert garden.working_directory == repo
+    assert update.program_arguments == (
+        "/usr/bin/python3",
+        "-m",
+        "codealmanac.cli.main",
+        "update",
+        "--scheduled",
+    )
+    assert update.interval == DEFAULT_UPDATE_INTERVAL
+    assert update.working_directory is None
     assert sync.environment[0].name == "PATH"
     assert sync.environment[0].value.startswith("/custom/bin:")
     assert sync.stdout_path == isolated_home / ".codealmanac/logs/sync.out.log"
     assert sync.stderr_path == isolated_home / ".codealmanac/logs/sync.err.log"
+    assert update.stdout_path == isolated_home / ".codealmanac/logs/update.out.log"
+    assert update.stderr_path == isolated_home / ".codealmanac/logs/update.err.log"
 
 
 def test_automation_install_sync_only_does_not_require_repo(
@@ -148,6 +160,29 @@ def test_automation_install_sync_only_does_not_require_repo(
     assert scheduler.installed[0].interval == timedelta(minutes=10)
 
 
+def test_automation_install_update_only_can_override_interval(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    scheduler = FakeSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+
+    result = app.automation.install(
+        InstallAutomationRequest(
+            cwd=tmp_path,
+            home=isolated_home,
+            tasks=(AutomationTask.UPDATE,),
+            every=timedelta(hours=12),
+        )
+    )
+
+    assert tuple(job.task for job in result.jobs) == (AutomationTask.UPDATE,)
+    assert scheduler.installed[0].interval == timedelta(hours=12)
+
+
 def test_automation_install_preserves_zero_quiet(
     tmp_path: Path,
     isolated_home: Path,
@@ -157,6 +192,7 @@ def test_automation_install_preserves_zero_quiet(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=tmp_path))
 
     app.automation.install(
         InstallAutomationRequest(
@@ -189,6 +225,7 @@ def test_automation_status_and_uninstall_work_outside_repo(
     assert tuple(status.task for status in report.statuses) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
     assert all(not status.installed for status in report.statuses)
     assert removed.removed == ()
@@ -212,29 +249,41 @@ def test_automation_garden_off_installs_sync_and_removes_garden(
         )
     )
 
-    assert tuple(job.task for job in result.jobs) == (AutomationTask.SYNC,)
+    assert tuple(job.task for job in result.jobs) == (
+        AutomationTask.SYNC,
+        AutomationTask.UPDATE,
+    )
     assert tuple(job.task for job in result.disabled) == (AutomationTask.GARDEN,)
     assert tuple(job.task for job in scheduler.uninstalled) == (AutomationTask.GARDEN,)
 
 
-def test_automation_rejects_ambiguous_every_for_multiple_explicit_tasks(
+def test_automation_multi_task_every_keeps_update_daily(
     tmp_path: Path,
     isolated_home: Path,
 ):
+    scheduler = FakeSchedulerAdapter()
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
-        scheduler=FakeSchedulerAdapter(),
+        scheduler=scheduler,
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=tmp_path))
+
+    app.automation.install(
+        InstallAutomationRequest(
+            cwd=tmp_path,
+            home=isolated_home,
+            tasks=(AutomationTask.SYNC, AutomationTask.GARDEN, AutomationTask.UPDATE),
+            every=timedelta(minutes=1),
+        )
     )
 
-    with pytest.raises(ValidationFailed, match="--every can only target one"):
-        app.automation.install(
-            InstallAutomationRequest(
-                cwd=tmp_path,
-                home=isolated_home,
-                tasks=(AutomationTask.SYNC, AutomationTask.GARDEN),
-                every=timedelta(minutes=1),
-            )
-        )
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
+    assert scheduler.installed[0].interval == timedelta(minutes=1)
+    assert scheduler.installed[2].interval == DEFAULT_UPDATE_INTERVAL
 
 
 def test_launchd_adapter_writes_structured_plist(

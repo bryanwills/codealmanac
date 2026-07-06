@@ -15,18 +15,18 @@ from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallReq
 
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
-    install_automation = should_setup_install_automation(args)
-    cli_config = load_cli_config(app, None) if install_automation else None
+    cli_config = load_cli_config(app, None)
     result = app.setup.run(
         RunSetupRequest(
             cwd=Path.cwd(),
             targets=parse_setup_targets(args.target),
             yes=args.yes,
             auto_commit=not args.no_auto_commit,
+            auto_update=not args.no_auto_update,
             skip_instructions=args.skip_instructions,
-            install_automation=install_automation,
             sync_every=parse_optional_duration(args.sync_every, "--sync-every"),
             sync_quiet=resolve_setup_quiet(args.sync_quiet, cli_config),
+            sync_off=args.sync_off,
             garden_every=parse_optional_duration(
                 args.garden_every,
                 "--garden-every",
@@ -41,10 +41,7 @@ def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
 def dispatch_uninstall(args: argparse.Namespace, app: CodeAlmanac) -> int:
     result = app.setup.uninstall(
         RunUninstallRequest(
-            targets=parse_setup_targets(args.target),
             yes=args.yes,
-            keep_instructions=args.keep_instructions,
-            keep_automation=args.keep_automation,
         )
     )
     render_uninstall_result(result, json_output=args.json)
@@ -56,18 +53,8 @@ def resolve_setup_quiet(
     config: CodeAlmanacConfig | None,
 ) -> timedelta | None:
     if config is None:
-        return None
+        raise AssertionError("setup config is required")
     return resolve_automation_quiet(value, config)
-
-
-def should_setup_install_automation(args: argparse.Namespace) -> bool:
-    return (
-        args.install_automation
-        or args.sync_every is not None
-        or args.sync_quiet is not None
-        or args.garden_every is not None
-        or args.garden_off
-    )
 
 
 def parse_setup_targets(value: str) -> tuple[SetupTarget, ...]:

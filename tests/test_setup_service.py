@@ -41,17 +41,22 @@ def test_setup_installs_codex_block_idempotently(home: Path):
     assert first.plan.default_harness.value == "codex"
     assert first.plan.auto_commit is True
     assert first.plan.instruction_targets == (SetupTarget.CODEX,)
-    assert first.plan.automation[0].command == (
+    assert tuple(item.task for item in first.plan.automation) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
+    assert first.plan.next_commands[-1].command == (
         "codealmanac",
         "automation",
-        "install",
-        "sync",
-        "--every",
-        "5h",
-        "--quiet",
-        "45m",
+        "status",
     )
-    assert first.plan.next_commands[-1].command == first.plan.automation[0].command
+    assert first.automation_install is not None
+    assert tuple(job.task for job in first.automation_install.jobs) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
 
 
 def test_setup_uses_non_empty_codex_override(home: Path):
@@ -78,14 +83,14 @@ def test_setup_installs_claude_guide_and_import_idempotently(home: Path):
     assert claude_md.count(CLAUDE_IMPORT_LINE) == 1
 
 
-def test_uninstall_removes_only_setup_owned_codex_content(home: Path):
+def test_uninstall_removes_setup_owned_codex_content(home: Path):
     agents = home / ".codex/AGENTS.md"
     agents.parent.mkdir(parents=True)
     agents.write_text("# user rules\n", encoding="utf-8")
     service = setup_service(home)
     service.run(RunSetupRequest(targets=(SetupTarget.CODEX,)))
 
-    result = service.uninstall(RunUninstallRequest(targets=(SetupTarget.CODEX,)))
+    result = service.uninstall(RunUninstallRequest())
 
     assert result.changes[0].changed is True
     assert agents.read_text(encoding="utf-8") == "# user rules\n"
@@ -98,9 +103,10 @@ def test_uninstall_removes_claude_artifacts_and_preserves_user_content(home: Pat
     service = setup_service(home)
     service.run(RunSetupRequest(targets=(SetupTarget.CLAUDE,)))
 
-    result = service.uninstall(RunUninstallRequest(targets=(SetupTarget.CLAUDE,)))
+    result = service.uninstall(RunUninstallRequest())
 
-    assert result.changes[0].changed is True
+    changes = {change.target: change for change in result.changes}
+    assert changes[SetupTarget.CLAUDE].changed is True
     assert not (home / ".claude/codealmanac.md").exists()
     assert claude_md.read_text(encoding="utf-8") == "# user rules\n"
 
@@ -127,7 +133,6 @@ def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
     result = setup_service(home, automation).run(
         RunSetupRequest(
             cwd=tmp_path,
-            install_automation=True,
             sync_every=timedelta(minutes=2),
             sync_quiet=timedelta(seconds=5),
             garden_off=True,
@@ -140,7 +145,10 @@ def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
     assert request.quiet == timedelta(seconds=5)
     assert request.garden_off is True
     assert result.plan.automation_mode.value == "install"
-    assert tuple(item.task for item in result.plan.automation) == (AutomationTask.SYNC,)
+    assert tuple(item.task for item in result.plan.automation) == (
+        AutomationTask.SYNC,
+        AutomationTask.UPDATE,
+    )
     assert result.plan.next_commands[-1].command == (
         "codealmanac",
         "automation",
@@ -149,38 +157,50 @@ def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
     assert result.automation_install is not None
     assert tuple(job.task for job in result.automation_install.jobs) == (
         AutomationTask.SYNC,
+        AutomationTask.UPDATE,
+    )
+
+
+def test_setup_can_skip_auto_update_automation(home: Path):
+    result = setup_service(home).run(RunSetupRequest(auto_update=False))
+
+    assert tuple(item.task for item in result.plan.automation) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+    assert result.automation_install is not None
+    assert tuple(job.task for job in result.automation_install.jobs) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+
+
+def test_setup_can_skip_sync_automation(home: Path):
+    result = setup_service(home).run(RunSetupRequest(sync_off=True))
+
+    assert tuple(item.task for item in result.plan.automation) == (
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
+    assert result.automation_install is not None
+    assert tuple(job.task for job in result.automation_install.jobs) == (
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
 
 
 def test_uninstall_removes_automation_by_default(home: Path):
     automation = FakeSetupAutomationManager(home)
 
-    result = setup_service(home, automation).uninstall(
-        RunUninstallRequest(targets=(SetupTarget.CODEX,))
-    )
+    result = setup_service(home, automation).uninstall(RunUninstallRequest())
 
     assert len(automation.uninstalled) == 1
-    assert result.kept_automation is False
     assert result.automation_uninstall is not None
     assert result.automation_uninstall.tasks == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
     )
-
-
-def test_uninstall_can_keep_automation(home: Path):
-    automation = FakeSetupAutomationManager(home)
-
-    result = setup_service(home, automation).uninstall(
-        RunUninstallRequest(
-            targets=(SetupTarget.CODEX,),
-            keep_automation=True,
-        )
-    )
-
-    assert automation.uninstalled == []
-    assert result.kept_automation is True
-    assert result.automation_uninstall is None
 
 
 @pytest.fixture
@@ -226,7 +246,11 @@ class FakeSetupAutomationManager:
         request: UninstallAutomationRequest,
     ) -> AutomationUninstallResult:
         self.uninstalled.append(request)
-        tasks = request.tasks or (AutomationTask.SYNC, AutomationTask.GARDEN)
+        tasks = request.tasks or (
+            AutomationTask.SYNC,
+            AutomationTask.GARDEN,
+            AutomationTask.UPDATE,
+        )
         return AutomationUninstallResult(
             tasks=tasks,
             removed=tuple(self.home / f"{task.value}.plist" for task in tasks),
@@ -234,7 +258,11 @@ class FakeSetupAutomationManager:
 
 
 def automation_tasks(request: InstallAutomationRequest) -> tuple[AutomationTask, ...]:
-    tasks = request.tasks or (AutomationTask.SYNC, AutomationTask.GARDEN)
+    tasks = request.tasks or (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
     return tuple(
         task
         for task in tasks
@@ -248,6 +276,8 @@ def automation_interval(
 ) -> timedelta:
     if task == AutomationTask.SYNC:
         return request.every if request.every is not None else timedelta(hours=5)
+    if task == AutomationTask.UPDATE:
+        return request.every if request.every is not None else timedelta(days=1)
     if request.garden_every is not None:
         return request.garden_every
     return timedelta(hours=4)

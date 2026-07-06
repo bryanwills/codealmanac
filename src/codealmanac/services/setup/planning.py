@@ -1,6 +1,7 @@
 from codealmanac.services.automation.defaults import (
     DEFAULT_GARDEN_INTERVAL,
     DEFAULT_SYNC_INTERVAL,
+    DEFAULT_UPDATE_INTERVAL,
     duration_text,
 )
 from codealmanac.services.automation.models import AutomationTask
@@ -49,10 +50,13 @@ def automation_recommendations(
         if request.garden_every is not None
         else DEFAULT_GARDEN_INTERVAL
     )
+    update_every = duration_text(DEFAULT_UPDATE_INTERVAL)
     recommendations: list[SetupAutomationRecommendation] = []
     for task in recommendation_tasks(request):
         if task == AutomationTask.SYNC:
             recommendations.append(sync_recommendation(sync_every, sync_quiet))
+        elif task == AutomationTask.UPDATE:
+            recommendations.append(update_recommendation(update_every))
         else:
             recommendations.append(garden_recommendation(garden_every))
     return tuple(recommendations)
@@ -93,26 +97,47 @@ def garden_recommendation(garden_every: str) -> SetupAutomationRecommendation:
     )
 
 
+def update_recommendation(update_every: str) -> SetupAutomationRecommendation:
+    return SetupAutomationRecommendation(
+        task=AutomationTask.UPDATE,
+        description="keep the local CodeAlmanac CLI package updated",
+        command=(
+            "codealmanac",
+            "automation",
+            "install",
+            "update",
+            "--every",
+            update_every,
+        ),
+    )
+
+
 def next_commands(
     automation: tuple[SetupAutomationRecommendation, ...],
     mode: SetupAutomationMode,
 ) -> tuple[SetupCommand, ...]:
-    automation_command = (
-        SetupCommand(
-            label="Check scheduled automation",
-            command=("codealmanac", "automation", "status"),
-        )
-        if mode == SetupAutomationMode.INSTALL
-        else SetupCommand(
-            label="Install scheduled transcript sync",
-            command=automation[0].command,
-        )
-    )
-    return (
+    commands = [
         SetupCommand(label="Initialize this repo", command=("codealmanac", "init")),
         SetupCommand(
             label="Read the starter page",
             command=("codealmanac", "search", "getting"),
         ),
-        automation_command,
+    ]
+    if len(automation) > 0:
+        commands.append(automation_command(automation, mode))
+    return tuple(commands)
+
+
+def automation_command(
+    automation: tuple[SetupAutomationRecommendation, ...],
+    mode: SetupAutomationMode,
+) -> SetupCommand:
+    if mode == SetupAutomationMode.INSTALL:
+        return SetupCommand(
+            label="Check scheduled automation",
+            command=("codealmanac", "automation", "status"),
+        )
+    return SetupCommand(
+        label="Install scheduled automation",
+        command=automation[0].command,
     )

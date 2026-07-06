@@ -23,9 +23,9 @@ def add_setup_commands(subcommands: argparse._SubParsersAction) -> None:
         help="skip global agent instruction installation",
     )
     setup.add_argument(
-        "--install-automation",
+        "--no-auto-update",
         action="store_true",
-        help="install scheduled sync and garden automation during setup",
+        help="do not install scheduled package update automation",
     )
     setup.add_argument(
         "--sync-every",
@@ -34,6 +34,11 @@ def add_setup_commands(subcommands: argparse._SubParsersAction) -> None:
     setup.add_argument(
         "--sync-quiet",
         help="minimum quiet time before scheduled sync",
+    )
+    setup.add_argument(
+        "--sync-off",
+        action="store_true",
+        help="do not install scheduled transcript sync automation",
     )
     setup.add_argument(
         "--garden-every",
@@ -50,21 +55,5 @@ def add_setup_commands(subcommands: argparse._SubParsersAction) -> None:
         "uninstall",
         help="remove setup-owned local artifacts",
     )
-    uninstall.add_argument(
-        "--target",
-        choices=SETUP_TARGETS,
-        default="all",
-        help="agent instruction target to remove",
-    )
     uninstall.add_argument("--yes", action="store_true", help="run without prompts")
-    uninstall.add_argument(
-        "--keep-instructions",
-        action="store_true",
-        help="leave global agent instructions installed",
-    )
-    uninstall.add_argument(
-        "--keep-automation",
-        action="store_true",
-        help="leave scheduled automation installed",
-    )
     uninstall.add_argument("--json", action="store_true")

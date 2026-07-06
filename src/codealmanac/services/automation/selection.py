@@ -9,8 +9,16 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
 )
 
-DEFAULT_INSTALL_TASKS = (AutomationTask.SYNC, AutomationTask.GARDEN)
-DEFAULT_STATUS_TASKS = (AutomationTask.SYNC, AutomationTask.GARDEN)
+DEFAULT_INSTALL_TASKS = (
+    AutomationTask.SYNC,
+    AutomationTask.GARDEN,
+    AutomationTask.UPDATE,
+)
+DEFAULT_STATUS_TASKS = (
+    AutomationTask.SYNC,
+    AutomationTask.GARDEN,
+    AutomationTask.UPDATE,
+)
 
 
 @dataclass(frozen=True)
@@ -60,10 +68,6 @@ def validate_install_selection(
     if explicit_tasks and request.garden_off:
         raise ValidationFailed(
             "--garden-off can only be used with the default automation install"
-        )
-    if explicit_tasks and len(tasks) > 1 and request.every is not None:
-        raise ValidationFailed(
-            "--every can only target one explicit automation task at a time"
         )
     if request.quiet is not None and request.quiet.total_seconds() < 0:
         raise ValidationFailed("quiet window must be zero or greater")

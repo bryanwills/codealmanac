@@ -98,7 +98,5 @@ class SetupResult(CodeAlmanacModel):
 
 
 class UninstallResult(CodeAlmanacModel):
-    kept_instructions: bool = False
-    kept_automation: bool = False
     changes: tuple[InstructionChange, ...] = ()
     automation_uninstall: AutomationUninstallResult | None = None

@@ -50,24 +50,23 @@ codealmanac setup --yes --target codex
 codealmanac setup --yes --target claude
 ```
 
-Plain setup installs only local agent instructions and does not connect to a
-hosted service. Scheduled automation is explicit:
+Plain setup installs local agent instructions plus the default local automation:
+sync, Garden, and daily package update. It does not connect to a hosted service.
 
 ```bash
-codealmanac setup --yes --install-automation
 codealmanac setup --yes --sync-every 5h --sync-quiet 45m
-codealmanac setup --yes --install-automation --garden-off
+codealmanac setup --yes --sync-off
+codealmanac setup --yes --garden-off
+codealmanac setup --yes --no-auto-update
 ```
 
-`--install-automation` installs local scheduled `sync` and `garden` jobs.
-Passing `--sync-every`, `--sync-quiet`, `--garden-every`, or `--garden-off`
-also opts into automation installation.
+During interactive onboarding, setup asks whether to keep CodeAlmanac up to
+date automatically. `--yes` chooses the default happy path and enables it.
 
-To remove setup-owned instruction artifacts and scheduled automation:
+To uninstall CodeAlmanac-owned local artifacts:
 
 ```bash
 codealmanac uninstall --yes
-codealmanac uninstall --yes --keep-automation
 ```
 
 ## Quickstart
@@ -136,11 +135,13 @@ codealmanac sync status --from codex
 codealmanac sync --from codex --using codex
 codealmanac sync --from codex --using codex --background
 codealmanac automation install sync --every 5h --quiet 30m
+codealmanac automation install update --every 24h
 codealmanac automation status
 ```
 
-Scheduled automation launches foreground `sync` or `garden` commands with
-explicit unattended policy. It is local scheduler state, not cloud sync.
+Scheduled automation launches foreground `sync`, `garden`, or `update`
+commands with explicit unattended policy. It is local scheduler state, not
+cloud sync. Scheduler logs live under `~/.codealmanac/logs/`.
 Use `sync --background` for manual queue-and-worker execution.
 
 ## Jobs

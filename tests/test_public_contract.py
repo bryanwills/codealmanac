@@ -39,8 +39,9 @@ README_REQUIRED_FRAGMENTS = (
     "Python 3.12+",
     "uv tool install codealmanac",
     "codealmanac setup --yes",
-    "codealmanac setup --yes --install-automation",
+    "codealmanac setup --yes --no-auto-update",
     "codealmanac setup --yes --sync-every 5h --sync-quiet 45m",
+    "codealmanac setup --yes --sync-off",
     "codealmanac init",
     'codealmanac search "getting"',
     "codealmanac serve",
@@ -51,7 +52,6 @@ README_REQUIRED_FRAGMENTS = (
     "`almanac/topics.yaml` and `almanac/README.md`",
     "Derived local state lives under `~/.codealmanac/`:",
     "codealmanac uninstall --yes",
-    "codealmanac uninstall --yes --keep-automation",
     "No hosted login/connect/upload commands.",
 )
 
@@ -68,6 +68,10 @@ README_FORBIDDEN_FRAGMENTS = (
     "docs/almanac",
     ".almanac",
     "|   |-- pages/",
+    "--install-automation",
+    "--keep-automation",
+    "--keep-instructions",
+    "uninstall --target",
     "almanac/index.db",
     "almanac/jobs/",
     "codealmanac.com/dashboard",
@@ -205,8 +209,8 @@ def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():
     assert "uv sync" in docs["CONTRIBUTING.md"]
     assert "uv run pytest" in docs["CONTRIBUTING.md"]
     assert "There are no alternate roots." in docs["docs/concepts.md"]
-    assert "codealmanac setup --install-automation" in docs["docs/concepts.md"]
-    assert "codealmanac uninstall --keep-automation" in docs["docs/concepts.md"]
+    assert "codealmanac setup --yes" in docs["docs/concepts.md"]
+    assert "codealmanac uninstall" in docs["docs/concepts.md"]
     for body in docs.values():
         assert "npm install" not in body
         assert "npm test" not in body

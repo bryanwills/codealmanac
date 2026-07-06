@@ -99,10 +99,17 @@ Adapt for the new Python product:
 - no alternate roots,
 - no compatibility aliases,
 - auto-update automation is installed by default,
+- interactive onboarding asks: "Do you want to keep CodeAlmanac up to date
+  automatically?",
+- non-interactive `--yes` chooses the happy-path default and enables
+  auto-update,
 - sync/Garden automation is installed by default; opt-out flags disable it,
 - auto-commit is on by default; opt-out flags disable it,
 - uninstall removes CodeAlmanac-owned binary/instructions/automation/global
   state but never deletes repo `almanac/`.
+- uninstall has one meaning: uninstall everything CodeAlmanac owns. Do not add
+  `--target`, `--keep-automation`, `--keep-instructions`, or other
+  partial-uninstall flags.
 
 The setup flow feels like the archive installer, not the current plain panel
 summary.
@@ -585,7 +592,7 @@ Commit:
 ```text
 almanac/**/*.md
 almanac/topics.yaml
-almanac/config.yaml
+almanac/config.toml
 ```
 
 Never commit:

@@ -109,6 +109,7 @@ Command groups:
 | Admin | `setup`, `uninstall`, `doctor`, `update`, `automation`, `reindex` | No |
 
 Scheduled automation is local scheduler state. It runs ordinary `codealmanac
-sync` or `codealmanac garden` commands; it is not hosted sync.
-`codealmanac setup --install-automation` can install those scheduler entries,
-and `codealmanac uninstall --keep-automation` leaves them in place.
+sync`, `codealmanac garden`, or `codealmanac update --scheduled` commands; it
+is not hosted sync. `codealmanac setup --yes` installs the default local
+automation, and `codealmanac uninstall` removes CodeAlmanac-owned local
+artifacts without a partial-uninstall mode.

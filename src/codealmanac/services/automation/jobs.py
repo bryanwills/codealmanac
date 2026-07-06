@@ -11,6 +11,7 @@ from codealmanac.services.automation.defaults import (
     AUTOMATION_SYNC_PENDING_TIMEOUT,
     DEFAULT_GARDEN_INTERVAL,
     DEFAULT_SYNC_INTERVAL,
+    DEFAULT_UPDATE_INTERVAL,
     LAUNCHD_FALLBACK_PATHS,
     duration_text,
 )
@@ -79,11 +80,26 @@ def interval_for(
 ) -> timedelta:
     if task == AutomationTask.SYNC:
         return request.every if request.every is not None else DEFAULT_SYNC_INTERVAL
+    if task == AutomationTask.UPDATE:
+        if update_is_only_explicit_task(request, explicit_tasks):
+            return request.every
+        return DEFAULT_UPDATE_INTERVAL
     if request.garden_every is not None:
         return request.garden_every
     if explicit_tasks and request.every is not None:
         return request.every
     return DEFAULT_GARDEN_INTERVAL
+
+
+def update_is_only_explicit_task(
+    request: InstallAutomationRequest,
+    explicit_tasks: bool,
+) -> bool:
+    return (
+        explicit_tasks
+        and request.tasks == (AutomationTask.UPDATE,)
+        and request.every is not None
+    )
 
 
 def program_arguments_for(
@@ -106,6 +122,8 @@ def program_arguments_for(
             "--max-failed-attempts",
             str(AUTOMATION_SYNC_MAX_FAILED_ATTEMPTS),
         )
+    if task == AutomationTask.UPDATE:
+        return (*base, "update", "--scheduled")
     return (*base, "garden")
 
 

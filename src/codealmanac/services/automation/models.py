@@ -11,6 +11,7 @@ from codealmanac.core.text import required_text
 class AutomationTask(StrEnum):
     SYNC = "sync"
     GARDEN = "garden"
+    UPDATE = "update"
 
 
 class AutomationWorkingDirectory(StrEnum):

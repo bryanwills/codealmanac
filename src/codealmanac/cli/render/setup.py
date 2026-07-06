@@ -59,13 +59,8 @@ def render_setup_text(result: SetupResult) -> None:
 def render_uninstall_text(result: UninstallResult) -> None:
     console = setup_console()
     console.print(setup_panel("CodeAlmanac uninstall", "Remove setup-owned files."))
-    if result.kept_instructions:
-        console.print(status_panel("Instructions kept", "No files changed."))
-    else:
-        console.print(changes_panel("Removed artifacts", result.changes))
-    if result.kept_automation:
-        console.print(status_panel("Automation kept", "No scheduler entries changed."))
-    elif result.automation_uninstall is not None:
+    console.print(changes_panel("Removed artifacts", result.changes))
+    if result.automation_uninstall is not None:
         console.print(automation_uninstall_panel(result.automation_uninstall))
 
 

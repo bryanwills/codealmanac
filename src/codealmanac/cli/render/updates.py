@@ -23,12 +23,20 @@ def render_update_result(result: UpdateResult, json_output: bool) -> None:
         print_json_model(result)
         return
     render_update_plan(result.plan, json_output=False)
+    if result.message is not None:
+        print(f"message: {result.message}")
     if result.exit_code is not None:
         print(f"exit_code: {result.exit_code}")
     if result.stdout:
         print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
     if result.stderr:
         print(result.stderr, end="" if result.stderr.endswith("\n") else "\n")
+    for smoke in result.smoke:
+        print(f"smoke: {shell_command(smoke.command)} -> {smoke.exit_code}")
+        if smoke.stdout:
+            print(smoke.stdout, end="" if smoke.stdout.endswith("\n") else "\n")
+        if smoke.stderr:
+            print(smoke.stderr, end="" if smoke.stderr.endswith("\n") else "\n")
 
 
 def shell_command(command: tuple[str, ...]) -> str:

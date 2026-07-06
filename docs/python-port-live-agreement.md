@@ -105,12 +105,26 @@ It is the constraint document for future agents.
   requested. Automation may schedule commands, but the implementation should
   call workflow/services directly rather than shelling out internally.
 - 2026-06-29: Manual `update` is a foreground package-manager command and has
-  pip/uv non-editable install dogfood. Do not schedule `update` until an
-  explicit update-notification policy exists.
+  pip/uv non-editable install dogfood.
+- 2026-07-06: Scheduled auto-update is an explicit local automation task, not a
+  sync/Garden side effect and not a hosted updater. Plain `setup --yes`
+  installs sync, Garden, and daily `update` automation. Interactive onboarding
+  asks whether CodeAlmanac should stay up to date automatically; `--yes` takes
+  the happy-path default.
+- 2026-07-06: Scheduled `update` takes a global lock under `~/.codealmanac/`,
+  skips when another update is running, skips when queued/running lifecycle jobs
+  exist, skips editable/source installs, supports non-editable uv tool and pip
+  installs, and runs `codealmanac --version` plus `codealmanac doctor --json`
+  as post-update smoke checks.
+- 2026-07-06: `uninstall` is full uninstall. Do not expose
+  `--target`, `--keep-automation`, `--keep-instructions`, or other
+  partial-uninstall flags. The command removes CodeAlmanac-owned instructions,
+  automation, global state, and the installed binary when the install method
+  supports removal. It never deletes repo `almanac/`.
 - 2026-06-29: There is no cloud capture surface in Python v1.
   `codealmanac update` updates the installed CLI package only. `sync` scans
   local transcripts and runs local ingest. `automation` schedules local
-  `sync`/`garden`. Do not add public `capture`, cloud upload, hosted
+  `sync`/`garden`/`update`. Do not add public `capture`, cloud upload, hosted
   connection, login, or remote collection commands without a new agreement.
 - 2026-06-29: `sync` writes a durable pending ledger claim before it invokes
   Ingest. Active pending claims skip that transcript; stale pending claims
@@ -878,10 +892,10 @@ subprocess.run(["codealmanac", "show", "..."])
 | Runs/jobs | durable ledger, events, outputs, foreground/background lifecycle state, attach/cancel |
 | Harnesses | Codex app-server and Claude SDK/event harnesses behind normalized ports |
 | Workflows | `build`, `ingest`, `sync`, `garden` |
-| Automation | local scheduled sync/garden |
+| Automation | local scheduled sync/garden/update |
 | CLI | thin local command surface |
 | Serve | local read-only wiki viewer |
-| Update | foreground local package-manager update with conservative source-install refusal |
+| Update | foreground and scheduled local package-manager update with conservative source-install refusal |
 
 ### Explicitly Out Of Scope For V1
 

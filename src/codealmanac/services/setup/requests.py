@@ -15,12 +15,13 @@ class RunSetupRequest(CodeAlmanacModel):
     targets: tuple[SetupTarget, ...] = DEFAULT_SETUP_TARGETS
     yes: bool = False
     auto_commit: bool = True
+    auto_update: bool = True
     skip_instructions: bool = False
     home: Path | None = None
-    install_automation: bool = False
     automation_tasks: tuple[AutomationTask, ...] = ()
     sync_every: timedelta | None = None
     sync_quiet: timedelta | None = None
+    sync_off: bool = False
     garden_every: timedelta | None = None
     garden_off: bool = False
     env_path: str | None = None
@@ -54,20 +55,9 @@ class RunSetupRequest(CodeAlmanacModel):
 
 
 class RunUninstallRequest(CodeAlmanacModel):
-    targets: tuple[SetupTarget, ...] = DEFAULT_SETUP_TARGETS
     yes: bool = False
-    keep_instructions: bool = False
-    keep_automation: bool = False
     home: Path | None = None
     automation_tasks: tuple[AutomationTask, ...] = ()
-
-    @field_validator("targets")
-    @classmethod
-    def validate_targets(
-        cls,
-        value: tuple[SetupTarget, ...],
-    ) -> tuple[SetupTarget, ...]:
-        return unique_non_empty_targets(value)
 
     @field_validator("automation_tasks")
     @classmethod

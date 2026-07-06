@@ -563,7 +563,9 @@ def test_cli_admin_parser_stays_split_by_command_family():
         'dest="automation_command"',
         "--target",
         "--check",
+        "--install-automation",
         "--keep-automation",
+        "--keep-instructions",
     )
     oversized = []
 
