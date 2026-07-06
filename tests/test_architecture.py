@@ -1531,7 +1531,7 @@ def test_automation_service_keeps_selection_and_job_construction_boundaries():
     assert "class AutomationJobFactory" in jobs_text
     assert "def program_arguments_for(" in jobs_text
     assert "def launch_path(" in jobs_text
-    assert "state_dir_for(" in jobs_text
+    assert "logs_dir_for(" in jobs_text
     assert "class InstallTaskSelection" in selection_text
     assert "def install_task_selection(" in selection_text
     assert "ValidationFailed" in selection_text

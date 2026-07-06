@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
 
-from codealmanac.core.paths import home_dir, normalize_path, state_dir_for
+from codealmanac.core.paths import home_dir, logs_dir_for, normalize_path
 from codealmanac.services.automation.defaults import (
     DEFAULT_GARDEN_INTERVAL,
     DEFAULT_SYNC_INTERVAL,
@@ -29,7 +29,7 @@ class AutomationJobFactory:
     ) -> ScheduledJob:
         definition = task_definition(task)
         home = normalize_path(request.home or home_dir())
-        logs_dir = state_dir_for(home) / "logs"
+        logs_dir = logs_dir_for(home)
         return ScheduledJob(
             task=task,
             label=definition.label,
