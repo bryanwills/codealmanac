@@ -42,11 +42,16 @@ from codealmanac.services.runs.requests import (
     SpawnRunWorkerRequest,
     StartRunRequest,
 )
+from codealmanac.services.setup.models import (
+    PackageUninstallResult,
+    PackageUninstallStatus,
+)
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
+    UpdateInstallMethod,
 )
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
@@ -206,6 +211,27 @@ class CliUpdateRunner:
         return self.result
 
 
+class CliPackageUninstaller:
+    def __init__(self, result: PackageUninstallResult | None = None):
+        self.calls = 0
+        self.result = result or PackageUninstallResult(
+            status=PackageUninstallStatus.REMOVED,
+            method=UpdateInstallMethod.UV_TOOL,
+            command=("uv", "tool", "uninstall", "codealmanac"),
+            exit_code=0,
+            message="removed installed CodeAlmanac tool",
+        )
+
+    def uninstall(self) -> PackageUninstallResult:
+        self.calls += 1
+        return self.result
+
+
+class NonInteractiveInput:
+    def isatty(self) -> bool:
+        return False
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -247,9 +273,11 @@ def test_cli_setup_and_uninstall_codex_instructions(
     capsys,
 ):
     scheduler = CliSchedulerAdapter()
+    package_uninstaller = CliPackageUninstaller()
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
+        package_uninstaller=package_uninstaller,
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -283,12 +311,78 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert uninstall_exit == 0
     assert "CodeAlmanac uninstall" in uninstall.out
     assert "Removed artifacts" in uninstall.out
+    assert "Global state" in uninstall.out
+    assert "Installed tool" in uninstall.out
     assert not agents_path.exists()
+    assert not (isolated_home / ".codealmanac").exists()
+    assert package_uninstaller.calls == 1
     assert tuple(job.task for job in scheduler.uninstalled) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
         AutomationTask.UPDATE,
     )
+
+
+def test_cli_uninstall_without_yes_is_non_destructive_in_noninteractive_shell(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    scheduler = CliSchedulerAdapter()
+    package_uninstaller = CliPackageUninstaller()
+    state_dir = isolated_home / ".codealmanac"
+    state_dir.mkdir()
+    (state_dir / "registry.json").write_text("{}", encoding="utf-8")
+    app = create_app(
+        AppConfig(registry_path=state_dir / "registry.json"),
+        scheduler=scheduler,
+        package_uninstaller=package_uninstaller,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+    monkeypatch.setattr(
+        "codealmanac.cli.dispatch.setup.sys.stdin",
+        NonInteractiveInput(),
+    )
+
+    assert main(["uninstall"]) == 1
+
+    captured = capsys.readouterr()
+    assert "requires --yes" in captured.err
+    assert state_dir.is_dir()
+    assert scheduler.uninstalled == []
+    assert package_uninstaller.calls == 0
+
+
+def test_cli_uninstall_returns_nonzero_when_package_uninstall_fails(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    state_dir = isolated_home / ".codealmanac"
+    state_dir.mkdir()
+    (state_dir / "registry.json").write_text("{}", encoding="utf-8")
+    package_uninstaller = CliPackageUninstaller(
+        PackageUninstallResult(
+            status=PackageUninstallStatus.FAILED,
+            method=UpdateInstallMethod.UV_TOOL,
+            command=("uv", "tool", "uninstall", "codealmanac"),
+            exit_code=1,
+            stderr="failed",
+            message="package uninstall failed",
+        )
+    )
+    app = create_app(
+        AppConfig(registry_path=state_dir / "registry.json"),
+        scheduler=CliSchedulerAdapter(),
+        package_uninstaller=package_uninstaller,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["uninstall", "--yes"]) == 1
+
+    captured = capsys.readouterr()
+    assert "package uninstall failed" in captured.out
+    assert package_uninstaller.calls == 1
 
 
 def test_cli_setup_no_auto_commit_writes_user_config(
@@ -355,6 +449,7 @@ def test_cli_setup_installs_automation_with_explicit_flags(
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
+        package_uninstaller=CliPackageUninstaller(),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     monkeypatch.chdir(repo)

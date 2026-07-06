@@ -6,7 +6,11 @@ from codealmanac.core.models import AppConfig
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
 from codealmanac.integrations.runs import SubprocessRunWorkerSpawner
-from codealmanac.integrations.setup import FileInstructionInstaller
+from codealmanac.integrations.setup import (
+    FileInstructionInstaller,
+    FilesystemGlobalStateRemover,
+    PackageToolUninstaller,
+)
 from codealmanac.integrations.sources import (
     default_source_runtime_adapters,
     default_transcript_discovery_adapters,
@@ -33,7 +37,11 @@ from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
 from codealmanac.services.search.service import SearchService
-from codealmanac.services.setup.ports import InstructionInstaller
+from codealmanac.services.setup.ports import (
+    GlobalStateRemover,
+    InstructionInstaller,
+    PackageUninstaller,
+)
 from codealmanac.services.setup.service import SetupService
 from codealmanac.services.sources.ports import (
     SourceRuntimeAdapter,
@@ -106,6 +114,8 @@ def create_app(
     update_metadata: PackageInstallMetadataProvider | None = None,
     update_runner: PackageCommandRunner | None = None,
     instruction_installer: InstructionInstaller | None = None,
+    global_state_remover: GlobalStateRemover | None = None,
+    package_uninstaller: PackageUninstaller | None = None,
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
@@ -121,14 +131,20 @@ def create_app(
     health = HealthService(workspaces, index)
     diagnostics = DiagnosticsService(workspaces, index, manual, __version__)
     tagging = TaggingService(pages)
+    package_metadata = update_metadata or InstalledPackageMetadataProvider()
+    package_runner = update_runner or SubprocessPackageCommandRunner()
     updates = UpdatesService(
-        update_metadata or InstalledPackageMetadataProvider(),
-        update_runner or SubprocessPackageCommandRunner(),
+        package_metadata,
+        package_runner,
         app_config.registry_path.parent,
     )
     setup = SetupService(
         instruction_installer or FileInstructionInstaller(),
         automation,
+        global_state_remover
+        or FilesystemGlobalStateRemover(app_config.registry_path.parent),
+        package_uninstaller
+        or PackageToolUninstaller(package_metadata, package_runner),
         config_service,
     )
     runs = RunsService(workspaces, RunStore(), runtime_paths)

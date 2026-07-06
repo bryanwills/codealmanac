@@ -57,15 +57,6 @@ class RunSetupRequest(CodeAlmanacModel):
 class RunUninstallRequest(CodeAlmanacModel):
     yes: bool = False
     home: Path | None = None
-    automation_tasks: tuple[AutomationTask, ...] = ()
-
-    @field_validator("automation_tasks")
-    @classmethod
-    def validate_automation_tasks(
-        cls,
-        value: tuple[AutomationTask, ...],
-    ) -> tuple[AutomationTask, ...]:
-        return unique_tasks(value)
 
 
 def unique_non_empty_targets(

@@ -14,7 +14,9 @@ from codealmanac.services.automation.models import (
     ScheduledJob,
 )
 from codealmanac.services.setup.models import (
+    GlobalStateRemovalResult,
     InstructionChange,
+    PackageUninstallResult,
     SetupAutomationMode,
     SetupResult,
     UninstallResult,
@@ -62,6 +64,10 @@ def render_uninstall_text(result: UninstallResult) -> None:
     console.print(changes_panel("Removed artifacts", result.changes))
     if result.automation_uninstall is not None:
         console.print(automation_uninstall_panel(result.automation_uninstall))
+    if result.global_state is not None:
+        console.print(global_state_panel(result.global_state))
+    if result.package_uninstall is not None:
+        console.print(package_uninstall_panel(result.package_uninstall))
 
 
 def setup_panel(title: str, subtitle: str) -> Panel:
@@ -145,6 +151,38 @@ def automation_uninstall_panel(result: AutomationUninstallResult) -> Panel:
         table.add_row("removed", str(path))
     return Panel(
         Group(Text("Scheduled automation", style="bold"), table),
+        border_style="blue",
+        padding=(1, 2),
+    )
+
+
+def global_state_panel(result: GlobalStateRemovalResult) -> Panel:
+    table = Table.grid(padding=(0, 2))
+    table.add_column("label", style="bold")
+    table.add_column("value")
+    table.add_row("status", "removed" if result.removed else "not found")
+    table.add_row("path", str(result.path))
+    table.add_row("message", result.message)
+    return Panel(
+        Group(Text("Global state", style="bold"), table),
+        border_style="blue",
+        padding=(1, 2),
+    )
+
+
+def package_uninstall_panel(result: PackageUninstallResult) -> Panel:
+    table = Table.grid(padding=(0, 2))
+    table.add_column("label", style="bold")
+    table.add_column("value")
+    table.add_row("status", result.status.value)
+    table.add_row("method", result.method.value)
+    table.add_row("message", result.message)
+    if len(result.command) > 0:
+        table.add_row("command", shell_command(result.command))
+    if result.exit_code is not None:
+        table.add_row("exit code", str(result.exit_code))
+    return Panel(
+        Group(Text("Installed tool", style="bold"), table),
         border_style="blue",
         padding=(1, 2),
     )

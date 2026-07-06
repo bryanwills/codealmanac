@@ -10,6 +10,10 @@ from codealmanac.integrations.setup.instructions import (
     CODEALMANAC_START,
     FileInstructionInstaller,
 )
+from codealmanac.integrations.setup.uninstall import (
+    FilesystemGlobalStateRemover,
+    PackageToolUninstaller,
+)
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
     AutomationTask,
@@ -20,9 +24,18 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
-from codealmanac.services.setup.models import SetupTarget
+from codealmanac.services.setup.models import (
+    PackageUninstallResult,
+    PackageUninstallStatus,
+    SetupTarget,
+)
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 from codealmanac.services.setup.service import SetupService
+from codealmanac.services.updates.models import (
+    PackageCommandResult,
+    PackageInstallMetadata,
+    UpdateInstallMethod,
+)
 
 
 def test_setup_installs_codex_block_idempotently(home: Path):
@@ -201,6 +214,130 @@ def test_uninstall_removes_automation_by_default(home: Path):
         AutomationTask.GARDEN,
         AutomationTask.UPDATE,
     )
+    assert automation.uninstalled[0].tasks == ()
+
+
+def test_uninstall_removes_global_state_without_deleting_repo_almanac(
+    home: Path,
+    tmp_path: Path,
+):
+    global_state = home / ".codealmanac"
+    global_state.mkdir(parents=True)
+    (global_state / "registry.json").write_text("{}", encoding="utf-8")
+    repo = tmp_path / "repo"
+    repo_almanac = repo / "almanac"
+    repo_almanac.mkdir(parents=True)
+    (repo_almanac / "README.md").write_text("# Wiki\n", encoding="utf-8")
+
+    result = setup_service(home).uninstall(RunUninstallRequest())
+
+    assert result.global_state is not None
+    assert result.global_state.removed is True
+    assert not global_state.exists()
+    assert repo_almanac.is_dir()
+    assert (repo_almanac / "README.md").is_file()
+
+
+def test_uninstall_runs_package_uninstaller(home: Path):
+    package = FakePackageUninstaller(
+        PackageUninstallResult(
+            status=PackageUninstallStatus.REMOVED,
+            method=UpdateInstallMethod.UV_TOOL,
+            command=("uv", "tool", "uninstall", "codealmanac"),
+            exit_code=0,
+            message="removed installed CodeAlmanac tool",
+        )
+    )
+
+    result = setup_service(home, package_uninstaller=package).uninstall(
+        RunUninstallRequest()
+    )
+
+    assert package.calls == 1
+    assert result.package_uninstall == package.result
+
+
+def test_package_uninstaller_uses_uv_tool_command():
+    runner = FakePackageCommandRunner(PackageCommandResult(exit_code=0))
+    uninstaller = PackageToolUninstaller(
+        FakePackageMetadataProvider(
+            PackageInstallMetadata(
+                version="1.2.3",
+                installer="uv",
+            )
+        ),
+        runner,
+    )
+
+    result = uninstaller.uninstall()
+
+    assert result.status == PackageUninstallStatus.REMOVED
+    assert result.method == UpdateInstallMethod.UV_TOOL
+    assert runner.commands == [("uv", "tool", "uninstall", "codealmanac")]
+
+
+def test_package_uninstaller_uses_pip_command(tmp_path: Path):
+    python = tmp_path / "python"
+    runner = FakePackageCommandRunner(PackageCommandResult(exit_code=0))
+    uninstaller = PackageToolUninstaller(
+        FakePackageMetadataProvider(
+            PackageInstallMetadata(
+                version="1.2.3",
+                installer="pip",
+                python_executable=python,
+            )
+        ),
+        runner,
+    )
+
+    result = uninstaller.uninstall()
+
+    assert result.status == PackageUninstallStatus.REMOVED
+    assert result.method == UpdateInstallMethod.PIP
+    assert runner.commands == [
+        (str(python), "-m", "pip", "uninstall", "-y", "codealmanac")
+    ]
+
+
+def test_package_uninstaller_skips_editable_source_install():
+    runner = FakePackageCommandRunner(PackageCommandResult(exit_code=0))
+    uninstaller = PackageToolUninstaller(
+        FakePackageMetadataProvider(
+            PackageInstallMetadata(
+                version="1.2.3",
+                installer="pip",
+                editable=True,
+            )
+        ),
+        runner,
+    )
+
+    result = uninstaller.uninstall()
+
+    assert result.status == PackageUninstallStatus.SKIPPED
+    assert result.method == UpdateInstallMethod.EDITABLE
+    assert runner.commands == []
+
+
+def test_package_uninstaller_reports_failed_command():
+    runner = FakePackageCommandRunner(
+        PackageCommandResult(exit_code=1, stderr="permission denied")
+    )
+    uninstaller = PackageToolUninstaller(
+        FakePackageMetadataProvider(
+            PackageInstallMetadata(
+                version="1.2.3",
+                installer="uv",
+            )
+        ),
+        runner,
+    )
+
+    result = uninstaller.uninstall()
+
+    assert result.status == PackageUninstallStatus.FAILED
+    assert result.exit_code == 1
+    assert result.stderr == "permission denied"
 
 
 @pytest.fixture
@@ -211,10 +348,13 @@ def home(tmp_path: Path) -> Path:
 def setup_service(
     home: Path,
     automation: "FakeSetupAutomationManager | None" = None,
+    package_uninstaller: "FakePackageUninstaller | None" = None,
 ) -> SetupService:
     return SetupService(
         FileInstructionInstaller(home),
         automation or FakeSetupAutomationManager(home),
+        FilesystemGlobalStateRemover(home / ".codealmanac"),
+        package_uninstaller or FakePackageUninstaller(skipped_package_result()),
     )
 
 
@@ -255,6 +395,42 @@ class FakeSetupAutomationManager:
             tasks=tasks,
             removed=tuple(self.home / f"{task.value}.plist" for task in tasks),
         )
+
+
+class FakePackageUninstaller:
+    def __init__(self, result: PackageUninstallResult):
+        self.result = result
+        self.calls = 0
+
+    def uninstall(self) -> PackageUninstallResult:
+        self.calls += 1
+        return self.result
+
+
+class FakePackageMetadataProvider:
+    def __init__(self, metadata: PackageInstallMetadata):
+        self.metadata = metadata
+
+    def read(self) -> PackageInstallMetadata:
+        return self.metadata
+
+
+class FakePackageCommandRunner:
+    def __init__(self, result: PackageCommandResult):
+        self.result = result
+        self.commands: list[tuple[str, ...]] = []
+
+    def run(self, command: tuple[str, ...]) -> PackageCommandResult:
+        self.commands.append(command)
+        return self.result
+
+
+def skipped_package_result() -> PackageUninstallResult:
+    return PackageUninstallResult(
+        status=PackageUninstallStatus.SKIPPED,
+        method=UpdateInstallMethod.UNKNOWN,
+        message="unknown package installer; skipped package uninstall",
+    )
 
 
 def automation_tasks(request: InstallAutomationRequest) -> tuple[AutomationTask, ...]:

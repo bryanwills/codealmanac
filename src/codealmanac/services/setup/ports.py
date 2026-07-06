@@ -8,7 +8,12 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
-from codealmanac.services.setup.models import InstructionChange, SetupTarget
+from codealmanac.services.setup.models import (
+    GlobalStateRemovalResult,
+    InstructionChange,
+    PackageUninstallResult,
+    SetupTarget,
+)
 
 
 class InstructionInstaller(Protocol):
@@ -33,4 +38,14 @@ class SetupAutomationManager(Protocol):
         self,
         request: UninstallAutomationRequest,
     ) -> AutomationUninstallResult:
+        pass
+
+
+class GlobalStateRemover(Protocol):
+    def remove(self) -> GlobalStateRemovalResult:
+        pass
+
+
+class PackageUninstaller(Protocol):
+    def uninstall(self) -> PackageUninstallResult:
         pass

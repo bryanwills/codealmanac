@@ -9,7 +9,9 @@ from codealmanac.services.setup.automation import (
 from codealmanac.services.setup.models import SetupResult, UninstallResult
 from codealmanac.services.setup.planning import setup_plan
 from codealmanac.services.setup.ports import (
+    GlobalStateRemover,
     InstructionInstaller,
+    PackageUninstaller,
     SetupAutomationManager,
 )
 from codealmanac.services.setup.requests import (
@@ -24,10 +26,14 @@ class SetupService:
         self,
         instructions: InstructionInstaller,
         automation: SetupAutomationManager,
+        global_state: GlobalStateRemover,
+        package_uninstaller: PackageUninstaller,
         config: ConfigService | None = None,
     ):
         self._instructions = instructions
         self._automation = automation
+        self._global_state = global_state
+        self._package_uninstaller = package_uninstaller
         self._config = config
 
     def run(self, request: RunSetupRequest) -> SetupResult:
@@ -59,13 +65,16 @@ class SetupService:
         changes = self._instructions.uninstall(DEFAULT_SETUP_TARGETS)
         automation_uninstall = self._automation.uninstall(
             UninstallAutomationRequest(
-                tasks=request.automation_tasks,
                 home=request.home,
             )
         )
+        global_state = self._global_state.remove()
+        package_uninstall = self._package_uninstaller.uninstall()
         return UninstallResult(
             changes=changes,
             automation_uninstall=automation_uninstall,
+            global_state=global_state,
+            package_uninstall=package_uninstall,
         )
 
     def _set_auto_commit(self, enabled: bool) -> ConfigSetResult | None:

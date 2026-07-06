@@ -1,5 +1,8 @@
 from codealmanac.services.setup.models import (
+    GlobalStateRemovalResult,
     InstructionChange,
+    PackageUninstallResult,
+    PackageUninstallStatus,
     SetupAutomationMode,
     SetupAutomationRecommendation,
     SetupCommand,
@@ -12,7 +15,10 @@ from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallReq
 from codealmanac.services.setup.service import SetupService
 
 __all__ = [
+    "GlobalStateRemovalResult",
     "InstructionChange",
+    "PackageUninstallResult",
+    "PackageUninstallStatus",
     "RunSetupRequest",
     "RunUninstallRequest",
     "SetupAutomationMode",

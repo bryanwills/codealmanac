@@ -12,6 +12,7 @@ from codealmanac.services.automation.models import (
 )
 from codealmanac.services.config.models import ConfigSetResult
 from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.updates.models import UpdateInstallMethod
 
 
 class SetupTarget(StrEnum):
@@ -22,6 +23,12 @@ class SetupTarget(StrEnum):
 class SetupAutomationMode(StrEnum):
     RECOMMEND = "recommend"
     INSTALL = "install"
+
+
+class PackageUninstallStatus(StrEnum):
+    REMOVED = "removed"
+    SKIPPED = "skipped"
+    FAILED = "failed"
 
 
 class InstructionChange(CodeAlmanacModel):
@@ -97,6 +104,31 @@ class SetupResult(CodeAlmanacModel):
     automation_install: AutomationInstallResult | None = None
 
 
+class GlobalStateRemovalResult(CodeAlmanacModel):
+    path: Path
+    removed: bool
+    message: str = Field(min_length=1)
+
+
+class PackageUninstallResult(CodeAlmanacModel):
+    status: PackageUninstallStatus
+    method: UpdateInstallMethod
+    command: tuple[str, ...] = ()
+    exit_code: int | None = None
+    stdout: str = ""
+    stderr: str = ""
+    message: str = Field(min_length=1)
+
+    @field_validator("command")
+    @classmethod
+    def require_command_parts(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        for part in value:
+            required_text(part, "package uninstall command part")
+        return value
+
+
 class UninstallResult(CodeAlmanacModel):
     changes: tuple[InstructionChange, ...] = ()
     automation_uninstall: AutomationUninstallResult | None = None
+    global_state: GlobalStateRemovalResult | None = None
+    package_uninstall: PackageUninstallResult | None = None
