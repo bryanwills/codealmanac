@@ -1,4 +1,5 @@
 import tomllib
+from datetime import UTC, datetime
 from pathlib import Path
 from tomllib import TOMLDecodeError
 
@@ -48,6 +49,37 @@ class ConfigStore:
             path.write_text(updated, encoding="utf-8")
         except OSError as error:
             raise ValidationFailed(f"cannot write config: {error}") from error
+
+    def set_sync_ignore_transcripts_before_if_missing(
+        self,
+        path: Path,
+        baseline: datetime,
+    ) -> bool:
+        body = ""
+        if path.exists():
+            try:
+                body = path.read_text(encoding="utf-8")
+                parsed = tomllib.loads(body)
+            except TOMLDecodeError as error:
+                raise ValidationFailed(f"invalid config TOML: {error}") from error
+            except OSError as error:
+                raise ValidationFailed(f"cannot read config: {error}") from error
+            sync = parsed.get("sync")
+            if (
+                isinstance(sync, dict)
+                and "ignore_transcripts_before" in sync
+            ):
+                return False
+        updated = set_sync_ignore_transcripts_before(
+            body,
+            format_datetime(baseline),
+        )
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(updated, encoding="utf-8")
+        except OSError as error:
+            raise ValidationFailed(f"cannot write config: {error}") from error
+        return True
 
 
 def update_toml_value(body: str, table: str | None, key: str, literal: str) -> str:
@@ -127,3 +159,44 @@ def bool_literal(value: bool) -> str:
 
 def with_trailing_newline(lines: list[str]) -> str:
     return "\n".join(lines).rstrip() + "\n"
+
+
+def set_sync_ignore_transcripts_before(body: str, value: str) -> str:
+    replacement = f"ignore_transcripts_before = {value}"
+    lines = strip_leading_blank_lines(body.splitlines())
+    sync_index = table_index(lines, "sync")
+    if sync_index is None:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.extend(("[sync]", replacement))
+        return with_trailing_newline(lines)
+    insert_at = next_table_index(lines, sync_index + 1)
+    block = lines[sync_index + 1 : insert_at]
+    for offset, line in enumerate(block, start=sync_index + 1):
+        if top_level_key(line.strip()) == "ignore_transcripts_before":
+            lines[offset] = replacement
+            return with_trailing_newline(lines)
+    lines.insert(sync_index + 1, replacement)
+    return with_trailing_newline(lines)
+
+
+def table_index(lines: list[str], name: str) -> int | None:
+    header = f"[{name}]"
+    for index, line in enumerate(lines):
+        if line.strip() == header:
+            return index
+    return None
+
+
+def next_table_index(lines: list[str], start: int) -> int:
+    for index in range(start, len(lines)):
+        if lines[index].strip().startswith("["):
+            return index
+    return len(lines)
+
+
+def format_datetime(value: datetime) -> str:
+    if value.tzinfo is None:
+        raise ValidationFailed("sync.ignore_transcripts_before must include a timezone")
+    normalized = value.astimezone(UTC)
+    return normalized.isoformat().replace("+00:00", "Z")

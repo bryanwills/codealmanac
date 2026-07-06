@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from codealmanac.services.automation.requests import UninstallAutomationRequest
 from codealmanac.services.config.models import ConfigKey, ConfigSetResult
 from codealmanac.services.config.requests import SetConfigValueRequest
@@ -5,6 +7,7 @@ from codealmanac.services.config.service import ConfigService
 from codealmanac.services.setup.automation import (
     install_automation_request,
     should_install_automation,
+    should_write_sync_baseline,
 )
 from codealmanac.services.setup.models import SetupResult, UninstallResult
 from codealmanac.services.setup.planning import setup_plan
@@ -39,6 +42,7 @@ class SetupService:
     def run(self, request: RunSetupRequest) -> SetupResult:
         plan = setup_plan(request)
         config_update = self._set_auto_commit(request.auto_commit)
+        self._set_sync_baseline(request)
         changes = ()
         if not request.skip_instructions:
             changes = self._instructions.install(request.targets)
@@ -85,4 +89,11 @@ class SetupService:
                 key=ConfigKey.AUTO_COMMIT,
                 value="true" if enabled else "false",
             )
+        )
+
+    def _set_sync_baseline(self, request: RunSetupRequest) -> None:
+        if self._config is None or not should_write_sync_baseline(request):
+            return
+        self._config.set_sync_ignore_transcripts_before_if_missing(
+            datetime.now(UTC),
         )

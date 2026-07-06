@@ -329,6 +329,7 @@ def test_launchd_adapter_writes_structured_plist(
     assert data["Label"] == "com.codealmanac.sync"
     assert data["ProgramArguments"][-2:] == ["--quiet", "1s"]
     assert data["StartInterval"] == 300
+    assert data["RunAtLoad"] is False
     assert status.installed is True
     assert status.loaded is True
     assert status.interval == timedelta(minutes=5)

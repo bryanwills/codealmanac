@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CodeAlmanac Sync Onboarding Baseline Plan</title>
+  <style>
+    :root {
+      --ink: #181715;
+      --muted: #686058;
+      --paper: #f7f2e8;
+      --panel: #fffaf0;
+      --line: #d8cbb8;
+      --red: #c44738;
+      --green: #28795c;
+      --blue: #2d5f86;
+      --gold: #b47a24;
+      --shadow: 0 18px 45px rgba(69, 47, 26, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(24, 23, 21, 0.035) 1px, transparent 1px) 0 0 / 38px 38px,
+        linear-gradient(rgba(24, 23, 21, 0.025) 1px, transparent 1px) 0 0 / 38px 38px,
+        var(--paper);
+      font-family: ui-serif, Georgia, "Times New Roman", serif;
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 70px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 26px;
+      align-items: stretch;
+      min-height: 360px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 28px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      max-width: 780px;
+      font-size: clamp(42px, 7vw, 92px);
+      line-height: 0.92;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 42px);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .lede {
+      margin-top: 20px;
+      max-width: 670px;
+      color: var(--muted);
+      font-size: 21px;
+    }
+
+    .stamp {
+      align-self: end;
+      background: var(--panel);
+      border: 2px solid var(--ink);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stamp-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 14px;
+    }
+
+    .stamp-row strong { color: var(--blue); }
+
+    .section {
+      padding: 34px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card, .mock {
+      background: rgba(255, 250, 240, 0.88);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .card p, li {
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border: 1px solid currentColor;
+      padding: 4px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .bad { color: var(--red); }
+    .good { color: var(--green); }
+    .watch { color: var(--gold); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 18px;
+    }
+
+    .node {
+      position: relative;
+      min-height: 130px;
+      padding: 16px;
+      border: 2px solid var(--ink);
+      background: var(--panel);
+    }
+
+    .node:not(:last-child)::after {
+      content: ">";
+      position: absolute;
+      right: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 800;
+      background: var(--paper);
+      padding: 0 3px;
+    }
+
+    .node b {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .node span {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .mock {
+      min-height: 310px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+    }
+
+    .screen {
+      border: 2px solid var(--ink);
+      background: #15191d;
+      color: #e9e1d3;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      min-height: 210px;
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px dashed rgba(233, 225, 211, 0.24);
+      padding-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .line em {
+      color: #8bd3ad;
+      font-style: normal;
+    }
+
+    .line .dim { color: #9b9285; }
+
+    .terminal {
+      background: #101215;
+      color: #e7dccd;
+      border: 1px solid #3f3b34;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .code-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li + li { margin-top: 8px; }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding-top: 26px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .deerflow {
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      header, .grid-2, .grid-3, .code-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .node:not(:last-child)::after {
+        content: "v";
+        right: 50%;
+        top: auto;
+        bottom: -18px;
+        transform: translateX(50%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <span class="badge watch">Plan · Sync Onboarding Baseline</span>
+        <h1>Stop first install from eating old transcripts.</h1>
+        <p class="lede">Automation can be installed during onboarding, but it must not immediately backfill historical Claude/Codex sessions. Sync should start from the moment CodeAlmanac was set up unless the user explicitly asks otherwise.</p>
+      </div>
+      <aside class="stamp">
+        <div class="stamp-row"><span>Observed issue</span><strong>automatic backfill</strong></div>
+        <div class="stamp-row"><span>Current local count</span><strong>129 repo transcripts</strong></div>
+        <div class="stamp-row"><span>Ledger touched</span><strong>done / failed / pending</strong></div>
+        <div class="stamp-row"><span>Scope now</span><strong>no backfill command</strong></div>
+      </aside>
+    </header>
+
+    <section class="section">
+      <h2>Decision</h2>
+      <div class="grid-3">
+        <div class="card">
+          <span class="badge good">Keep</span>
+          <strong>Install automation in onboarding</strong>
+          <p>The setup flow may still create sync, garden, and update LaunchAgents.</p>
+        </div>
+        <div class="card">
+          <span class="badge bad">Change</span>
+          <strong>No immediate sync run</strong>
+          <p>Set sync automation so installation does not launch a run right away.</p>
+        </div>
+        <div class="card">
+          <span class="badge good">Add</span>
+          <strong>Sync baseline</strong>
+          <p>Setup records “ignore transcript files modified before this time.”</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Current Failure Mode</h2>
+      <div class="flow">
+        <div class="node"><b>Clean setup</b><span>Ledger is empty because local state was reset.</span></div>
+        <div class="node"><b>LaunchAgent loads</b><span><code>RunAtLoad = true</code> starts sync immediately.</span></div>
+        <div class="node"><b>Discovery scans disk</b><span>Old repo transcripts still exist under Claude/Codex dirs.</span></div>
+        <div class="node"><b>Quiet check passes</b><span>Old files are older than <code>45m</code>.</span></div>
+        <div class="node"><b>Backfill begins</b><span>Sync processes many historical sessions one by one.</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Target Flow</h2>
+      <div class="flow">
+        <div class="node"><b>Setup starts</b><span>User completes onboarding.</span></div>
+        <div class="node"><b>Baseline written</b><span><code>sync.ignore_transcripts_before = now</code></span></div>
+        <div class="node"><b>Automation installed</b><span>LaunchAgent exists, but does not run immediately.</span></div>
+        <div class="node"><b>Later sync runs</b><span>Normal scheduler cycle or manual command.</span></div>
+        <div class="node"><b>Eligibility check</b><span>Skip files modified before baseline.</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Onboarding Mockups</h2>
+      <div class="grid-2">
+        <div class="mock">
+          <h3>Before</h3>
+          <div class="screen">
+            <div class="line"><span>Automation</span><em>installed</em></div>
+            <div class="line"><span>Sync</span><em>started now</em></div>
+            <div class="line"><span>Historical transcripts</span><em>eligible</em></div>
+            <div class="line"><span>Terminal</span><span class="dim">looks blank</span></div>
+          </div>
+        </div>
+        <div class="mock">
+          <h3>After</h3>
+          <div class="screen">
+            <div class="line"><span>Automation</span><em>installed</em></div>
+            <div class="line"><span>Sync</span><span class="dim">not run now</span></div>
+            <div class="line"><span>Baseline</span><em>saved</em></div>
+            <div class="line"><span>Old transcripts</span><span class="dim">ignored</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Key Code</h2>
+      <div class="code-grid">
+        <div class="card">
+          <h3>Files to touch</h3>
+          <ol>
+            <li><code>integrations/automation/scheduler/launchd.py</code>: stop writing <code>RunAtLoad: true</code> for setup-installed jobs.</li>
+            <li><code>services/setup/service.py</code>: record the first sync baseline during setup.</li>
+            <li><code>services/config/models.py</code>: add typed sync baseline config.</li>
+            <li><code>workflows/sync/evaluation.py</code>: skip candidates older than baseline.</li>
+            <li><code>tests/</code>: prove setup does not backfill old transcripts.</li>
+          </ol>
+        </div>
+        <div class="terminal">
+<pre># arch: setup creates a baseline · sync owns eligibility
+
+setup.run(request):
+    config.sync.ignore_transcripts_before = now  # only if missing
+    automation.install(request, run_at_load=False)
+
+sync.evaluate_candidate(candidate):
+    if candidate.modified_at < config.sync.ignore_transcripts_before:
+        return skip(candidate, "before-sync-baseline")
+
+    if now - candidate.modified_at < request.quiet:
+        return skip(candidate, "quiet-window")
+
+    return evaluate_cursor(...)</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>When The Baseline Is Written</h2>
+      <div class="grid-3">
+        <div class="card">
+          <span class="badge good">Step</span>
+          <strong>Before automation install</strong>
+          <p>Setup should write the baseline after config is available and before LaunchAgent installation, so even an accidental scheduler start sees the cutoff.</p>
+        </div>
+        <div class="card">
+          <span class="badge watch">Repeat setup</span>
+          <strong>Do not move it forward</strong>
+          <p>If <code>sync.ignore_transcripts_before</code> already exists, setup preserves it. Rerunning setup should not silently hide transcripts created since the first setup.</p>
+        </div>
+        <div class="card">
+          <span class="badge watch">Sync disabled</span>
+          <strong>Write when sync is enabled</strong>
+          <p>If the user skips sync automation, no baseline is needed yet. A later setup that enables sync writes the baseline then, if absent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Implementation Notes</h2>
+      <div class="grid-2">
+        <div class="card">
+          <span class="badge watch">Launchd</span>
+          <strong>“Not started” means no immediate execution.</strong>
+          <p>We should be precise: a loaded LaunchAgent with <code>RunAtLoad = false</code> can still participate in future scheduler cycles. Not loading it at all may delay automation until next login.</p>
+        </div>
+        <div class="card">
+          <span class="badge watch">Baseline</span>
+          <strong>Use transcript mtime.</strong>
+          <p>The existing candidate field is <code>modified_at</code>, sourced from <code>Path.stat().st_mtime</code>. That is enough for this slice.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Tests</h2>
+      <div class="grid-3">
+        <div class="card">
+          <strong>Setup writes baseline</strong>
+          <p>Run setup with sandboxed home. Assert config contains a sync baseline near test time.</p>
+        </div>
+        <div class="card">
+          <strong>Old transcript skipped</strong>
+          <p>Create a transcript with mtime before baseline. Assert sync status reports <code>before-sync-baseline</code>.</p>
+        </div>
+        <div class="card">
+          <strong>New transcript eligible</strong>
+          <p>Create a transcript after baseline and outside quiet window. Assert it becomes a sync work item.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Out of Scope</h2>
+      <div class="grid-2">
+        <div class="card">
+          <strong>No backfill command yet</strong>
+          <p>Do not add <code>sync --backfill</code> in this slice.</p>
+        </div>
+        <div class="card">
+          <strong>No batch-size design yet</strong>
+          <p>Batch limits are a separate product decision. This plan only prevents surprise historical processing.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>CodeAlmanac plan · 2026-07-06</span>
+      <a class="deerflow" href="https://deerflow.tech" target="_blank" rel="noreferrer">Created By Deerflow</a>
+    </footer>
+  </main>
+</body>
+</html>

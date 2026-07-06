@@ -1,6 +1,7 @@
 import json
 import shutil
 import subprocess
+import tomllib
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
@@ -350,11 +351,19 @@ def test_cli_setup_and_uninstall_codex_instructions(
         AutomationTask.GARDEN,
         AutomationTask.UPDATE,
     )
+    config_path = isolated_home / ".codealmanac/config.toml"
+    first_config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    assert first_config["sync"]["ignore_transcripts_before"].tzinfo is not None
 
     second_exit = main(["setup", "--yes", "--target", "codex"])
     second = capsys.readouterr()
+    second_config = tomllib.loads(config_path.read_text(encoding="utf-8"))
     assert second_exit == 0
     assert "Codex instructions already installed" in second.out
+    assert (
+        second_config["sync"]["ignore_transcripts_before"]
+        == first_config["sync"]["ignore_transcripts_before"]
+    )
 
     uninstall_exit = main(["uninstall", "--yes"])
     uninstall = capsys.readouterr()
@@ -477,9 +486,11 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
     )
-    assert (
-        isolated_home / ".codealmanac/config.toml"
-    ).read_text(encoding="utf-8") == "auto_commit = false\n"
+    config = tomllib.loads(
+        (isolated_home / ".codealmanac/config.toml").read_text(encoding="utf-8")
+    )
+    assert config["auto_commit"] is False
+    assert config["sync"]["ignore_transcripts_before"].tzinfo is not None
 
 
 def test_cli_setup_json_does_not_prompt_for_auto_update(
@@ -554,7 +565,9 @@ def test_cli_setup_no_auto_commit_writes_user_config(
     assert exit_code == 0
     assert "Agent change handling" in captured.out
     assert "worktree" in captured.out
-    assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
+    config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    assert config["auto_commit"] is False
+    assert config["sync"]["ignore_transcripts_before"].tzinfo is not None
 
 
 def test_cli_setup_skip_instructions_json(isolated_home: Path, monkeypatch, capsys):
@@ -694,6 +707,9 @@ def test_cli_setup_can_skip_sync_automation(
         AutomationTask.GARDEN,
         AutomationTask.UPDATE,
     )
+    assert "ignore_transcripts_before" not in (
+        isolated_home / ".codealmanac/config.toml"
+    ).read_text(encoding="utf-8")
 
 
 def test_cli_list_outputs_registered_wikis(
@@ -1346,6 +1362,51 @@ quiet = "0s"
     output = capsys.readouterr()
     assert "eligible: 1\n" in output.out
     assert "ready codex codex-session: lines 1-1\n" in output.out
+
+
+def test_cli_sync_status_uses_configured_sync_baseline(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = tmp_path / "codex.jsonl"
+    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
+    candidate = TranscriptCandidate(
+        app=TranscriptApp.CODEX,
+        session_id="codex-session",
+        transcript_path=transcript,
+        cwd=repo,
+        repo_root=repo,
+        almanac_path=repo / "almanac",
+        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
+        size_bytes=transcript.stat().st_size,
+    )
+    adapter = CliTranscriptDiscoveryAdapter((candidate,))
+    config_path = isolated_home / ".codealmanac/config.toml"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        """
+[sync]
+ignore_transcripts_before = 2026-01-02T00:00:00Z
+""",
+        encoding="utf-8",
+    )
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        transcript_discovery_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["sync", "status", "--from", "codex", "--quiet", "0s", "--json"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["eligible"] == 0
+    assert payload["skipped"][0]["reason"] == "before-sync-baseline"
 
 
 def test_cli_sync_status_uses_retry_budget_flags(

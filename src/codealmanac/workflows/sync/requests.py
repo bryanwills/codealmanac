@@ -22,6 +22,7 @@ class SyncSelectionRequest(CodeAlmanacModel):
     now: datetime | None = None
     pending_timeout: timedelta = DEFAULT_SYNC_PENDING_TIMEOUT
     max_failed_attempts: int = DEFAULT_SYNC_MAX_FAILED_ATTEMPTS
+    ignore_transcripts_before: datetime | None = None
 
     @field_validator("apps")
     @classmethod
@@ -38,6 +39,16 @@ class SyncSelectionRequest(CodeAlmanacModel):
     def non_negative_duration(cls, value: timedelta) -> timedelta:
         if value.total_seconds() < 0:
             raise ValueError("sync duration must be non-negative")
+        return value
+
+    @field_validator("ignore_transcripts_before")
+    @classmethod
+    def require_ignore_transcripts_before_timezone(
+        cls,
+        value: datetime | None,
+    ) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("sync baseline must include a timezone")
         return value
 
     @field_validator("max_failed_attempts")

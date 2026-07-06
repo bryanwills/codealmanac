@@ -973,6 +973,58 @@ def test_sync_status_applies_quiet_window(
     assert summary.skipped[0].reason == "quiet-window"
 
 
+def test_sync_status_skips_transcripts_before_configured_baseline(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "old\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+            ignore_transcripts_before=current_time() - timedelta(hours=1),
+        )
+    )
+
+    assert summary.eligible == 0
+    assert summary.skipped[0].reason == "before-sync-baseline"
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
+    assert not ledger_path.exists()
+
+
+def test_sync_status_allows_transcripts_after_configured_baseline(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transcript = write_transcript(tmp_path, "new\n")
+    candidate = transcript_candidate(repo, transcript, modified_at=old_time())
+    app = app_with_candidates(isolated_home, (candidate,))
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+
+    summary = app.workflows.sync.status(
+        RunSyncStatusRequest(
+            cwd=repo,
+            apps=(TranscriptApp.CODEX,),
+            quiet=timedelta(),
+            now=current_time(),
+            ignore_transcripts_before=old_time() - timedelta(minutes=1),
+        )
+    )
+
+    assert summary.eligible == 1
+    assert summary.ready[0].session_id == "session-1"
+
+
 def test_sync_status_reports_prefix_mismatch_from_ledger(
     tmp_path: Path,
     isolated_home: Path,

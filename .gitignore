@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+!src/codealmanac/workflows/build/
+!src/codealmanac/workflows/build/**
 *.log
 .DS_Store
 .obsidian/

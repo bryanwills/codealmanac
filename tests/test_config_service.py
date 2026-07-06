@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -230,3 +230,105 @@ def test_config_service_rejects_invalid_set_values(
             SetConfigValueRequest(key=ConfigKey.AUTO_COMMIT, value="maybe")
         )
     assert not config_path.exists()
+
+
+def test_config_service_sets_sync_baseline_once(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    config_path = isolated_home / ".codealmanac/config.toml"
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            config_path=config_path,
+        )
+    )
+
+    first = app.config.set_sync_ignore_transcripts_before_if_missing(
+        datetime(2026, 7, 6, 12, 0, tzinfo=UTC)
+    )
+    second = app.config.set_sync_ignore_transcripts_before_if_missing(
+        datetime(2026, 7, 7, 12, 0, tzinfo=UTC)
+    )
+    config = app.config.load(LoadConfigRequest(cwd=tmp_path))
+
+    assert first is True
+    assert second is False
+    assert config.sync.ignore_transcripts_before == datetime(
+        2026,
+        7,
+        6,
+        12,
+        0,
+        tzinfo=UTC,
+    )
+    assert config_path.read_text(encoding="utf-8") == (
+        "[sync]\nignore_transcripts_before = 2026-07-06T12:00:00Z\n"
+    )
+
+
+def test_config_service_rejects_naive_sync_baseline(
+    isolated_home: Path,
+):
+    config_path = isolated_home / ".codealmanac/config.toml"
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            config_path=config_path,
+        )
+    )
+
+    with pytest.raises(ValidationFailed, match="must include a timezone"):
+        app.config.set_sync_ignore_transcripts_before_if_missing(
+            datetime(2026, 7, 6, 12, 0)
+        )
+
+    assert not config_path.exists()
+
+
+def test_config_service_adds_sync_baseline_to_existing_sync_table(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    config_path = isolated_home / ".codealmanac/config.toml"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        """auto_commit = false
+
+[sync]
+quiet = "30m"
+
+[harness]
+default = "codex"
+""",
+        encoding="utf-8",
+    )
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            config_path=config_path,
+        )
+    )
+
+    changed = app.config.set_sync_ignore_transcripts_before_if_missing(
+        datetime(2026, 7, 6, 12, 0, tzinfo=UTC)
+    )
+    config = app.config.load(LoadConfigRequest(cwd=tmp_path))
+
+    assert changed is True
+    assert config.auto_commit is False
+    assert config.sync.quiet == timedelta(minutes=30)
+    assert config.sync.ignore_transcripts_before == datetime(
+        2026,
+        7,
+        6,
+        12,
+        0,
+        tzinfo=UTC,
+    )
+    assert config_path.read_text(encoding="utf-8").startswith(
+        "auto_commit = false\n\n"
+        "[sync]\n"
+        "ignore_transcripts_before = 2026-07-06T12:00:00Z\n"
+        'quiet = "30m"'
+    )

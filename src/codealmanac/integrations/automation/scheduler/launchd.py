@@ -90,7 +90,7 @@ def launchd_plist(job: ScheduledJob) -> dict[str, object]:
         "ProgramArguments": list(job.program_arguments),
         "StartInterval": int(job.interval.total_seconds()),
         "EnvironmentVariables": environment_dict(job.environment),
-        "RunAtLoad": True,
+        "RunAtLoad": False,
         "StandardOutPath": str(job.stdout_path),
         "StandardErrorPath": str(job.stderr_path),
     }

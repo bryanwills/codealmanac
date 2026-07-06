@@ -1,4 +1,5 @@
 from codealmanac.workflows.sync.decisions import (
+    baseline_skip,
     evaluate_cursor,
     evaluate_pending_run,
     is_internal_transcript,
@@ -26,6 +27,7 @@ from codealmanac.workflows.sync.snapshots import read_transcript
 
 __all__ = (
     "absorbed_entry",
+    "baseline_skip",
     "evaluate_cursor",
     "evaluate_pending_run",
     "failed_entry",

@@ -31,6 +31,7 @@ def dispatch_sync(args: argparse.Namespace, app: CodeAlmanac) -> int:
             quiet=resolve_quiet(args.quiet, cli_config),
             pending_timeout=resolve_pending_timeout(args.pending_timeout),
             max_failed_attempts=sync_max_failed_attempts(args),
+            ignore_transcripts_before=cli_config.sync.ignore_transcripts_before,
             harness=resolve_harness(args.using, cli_config),
             execution=sync_execution(args),
             claim_owner=args.claim_owner,
@@ -51,6 +52,7 @@ def dispatch_sync_status(args: argparse.Namespace, app: CodeAlmanac) -> int:
             quiet=resolve_quiet(args.quiet, cli_config),
             pending_timeout=resolve_pending_timeout(args.pending_timeout),
             max_failed_attempts=sync_max_failed_attempts(args),
+            ignore_transcripts_before=cli_config.sync.ignore_transcripts_before,
         )
     )
     render_sync_status(result, json_output=args.json)

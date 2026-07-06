@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 from humanfriendly import InvalidTimespan, parse_timespan
@@ -62,6 +63,15 @@ class ConfigService:
             path=path.as_posix(),
             key=request.key,
             value=normalized,
+        )
+
+    def set_sync_ignore_transcripts_before_if_missing(
+        self,
+        baseline: datetime,
+    ) -> bool:
+        return self.store.set_sync_ignore_transcripts_before_if_missing(
+            normalize_path(self.user_config_path),
+            baseline,
         )
 
     def _project_config_path(self, request: LoadConfigRequest) -> Path | None:

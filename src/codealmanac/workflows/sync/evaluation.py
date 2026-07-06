@@ -23,6 +23,7 @@ from codealmanac.workflows.sync.models import (
     SyncWorkItem,
 )
 from codealmanac.workflows.sync.policy import (
+    baseline_skip,
     evaluate_cursor,
     evaluate_pending_run,
     is_internal_transcript,
@@ -119,6 +120,9 @@ class SyncEvaluator:
         ledgers: dict[Path, SyncLedger],
         run_records: dict[Path, tuple[RunRecord, ...]],
     ) -> SyncCandidateEvaluationResult:
+        baseline = baseline_skip(candidate, request)
+        if baseline is not None:
+            return SyncCandidateEvaluationResult(skipped=(baseline,), ledgers=ledgers)
         quiet_skip = quiet_window_skip(candidate, request, current_time)
         if quiet_skip is not None:
             return SyncCandidateEvaluationResult(skipped=(quiet_skip,), ledgers=ledgers)

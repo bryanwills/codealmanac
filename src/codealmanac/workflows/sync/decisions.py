@@ -32,6 +32,18 @@ def quiet_window_skip(
     return None
 
 
+def baseline_skip(
+    candidate: TranscriptCandidate,
+    request: SyncSelectionRequest,
+) -> SyncSkipped | None:
+    if (
+        request.ignore_transcripts_before is not None
+        and candidate.modified_at < request.ignore_transcripts_before
+    ):
+        return skip(candidate, "before-sync-baseline")
+    return None
+
+
 def is_internal_transcript(
     candidate: TranscriptCandidate,
     records: tuple[RunRecord, ...],
@@ -169,4 +181,3 @@ def reconcile_pending_entry(
             **cleared_pending_fields(),
         }
     )
-

@@ -13,6 +13,10 @@ def should_install_automation(request: RunSetupRequest) -> bool:
     return len(selected_setup_tasks(request)) > 0
 
 
+def should_write_sync_baseline(request: RunSetupRequest) -> bool:
+    return AutomationTask.SYNC in selected_setup_tasks(request)
+
+
 def recommendation_tasks(request: RunSetupRequest) -> tuple[AutomationTask, ...]:
     tasks = selected_setup_tasks(request)
     return tasks

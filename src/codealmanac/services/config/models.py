@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
@@ -26,6 +26,7 @@ class HarnessConfig(CodeAlmanacModel):
 
 class SyncConfig(CodeAlmanacModel):
     quiet: timedelta = DEFAULT_SYNC_QUIET
+    ignore_transcripts_before: datetime | None = None
 
     @field_validator("quiet", mode="before")
     @classmethod
@@ -37,6 +38,16 @@ class SyncConfig(CodeAlmanacModel):
     def require_non_negative_quiet(cls, value: timedelta) -> timedelta:
         if value.total_seconds() < 0:
             raise ValueError("sync.quiet must be zero or greater")
+        return value
+
+    @field_validator("ignore_transcripts_before")
+    @classmethod
+    def require_timezone(
+        cls,
+        value: datetime | None,
+    ) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("sync.ignore_transcripts_before must include a timezone")
         return value
 
 
