@@ -108,3 +108,23 @@
   - `uv run pytest`: 402 passed.
   - `uv run ruff check .`: passed.
   - `git diff --check`: passed.
+
+## Fourth Refactor Batch: Raw Input Types
+
+- Wrote `docs/plans/2026-07-06-raw-input-types-refactor.md`.
+- Replaced production `typing.Any` annotations in raw parser/validator
+  boundaries with `object`.
+- Touched raw input boundaries only:
+  - config duration parsing;
+  - source-shape validation;
+  - tag/topic request validators;
+  - wiki frontmatter and topics YAML parsing;
+  - workspace registry JSON parsing.
+- Added `RawSource` in `services/wiki/frontmatter.py` for parsed source maps.
+- Verification:
+  - `rg -n "\bAny\b|dict\[str, Any\]|dict\[Any" src/codealmanac`: no output.
+  - `uv run pytest tests/test_wiki_parsing.py tests/test_read_model.py tests/test_config_service.py tests/test_topics_mutation.py tests/test_tagging.py tests/test_topics_health.py tests/test_workspace_registry_store.py tests/test_validate.py -q`: 59 passed.
+  - `uv run ruff check ...`: passed for touched files and focused tests.
+  - `uv run pytest`: 402 passed.
+  - `uv run ruff check .`: passed.
+  - `git diff --check`: passed.

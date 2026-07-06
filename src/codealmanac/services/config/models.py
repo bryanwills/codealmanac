@@ -1,6 +1,5 @@
 from datetime import timedelta
 from enum import StrEnum
-from typing import Any
 
 from humanfriendly import InvalidTimespan, parse_timespan
 from pydantic import Field, field_validator
@@ -29,7 +28,7 @@ class SyncConfig(CodeAlmanacModel):
 
     @field_validator("quiet", mode="before")
     @classmethod
-    def parse_quiet(cls, value: Any) -> Any:
+    def parse_quiet(cls, value: object) -> object:
         return parse_duration(value, "sync.quiet")
 
     @field_validator("quiet")
@@ -59,7 +58,7 @@ class CodeAlmanacConfig(BaseSettings):
         return (init_settings,)
 
 
-def parse_duration(value: Any, label: str) -> Any:
+def parse_duration(value: object, label: str) -> object:
     if value is None or isinstance(value, timedelta):
         return value
     if not isinstance(value, str):

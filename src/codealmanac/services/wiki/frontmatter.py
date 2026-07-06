@@ -1,6 +1,5 @@
 import re
 from datetime import date, datetime
-from typing import Any
 
 import frontmatter
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
@@ -22,6 +21,7 @@ SOURCE_TARGET_FIELDS: dict[PageSourceType, tuple[str, ...]] = {
     PageSourceType.WIKI: ("page", "slug", "path"),
     PageSourceType.MANUAL: ("path", "page", "title"),
 }
+type RawSource = dict[object, object]
 
 
 def parse_frontmatter(raw: str) -> ParsedFrontmatter:
@@ -61,14 +61,14 @@ class FrontmatterFields(BaseModel):
 
     @field_validator("title", "summary", mode="before")
     @classmethod
-    def optional_text(cls, value: Any) -> str | None:
+    def optional_text(cls, value: object) -> str | None:
         if isinstance(value, str) and value.strip():
             return value.strip()
         return None
 
     @field_validator("topics", mode="before")
     @classmethod
-    def text_tuple(cls, value: Any) -> tuple[str, ...]:
+    def text_tuple(cls, value: object) -> tuple[str, ...]:
         if not isinstance(value, list | tuple):
             return ()
         values: list[str] = []
@@ -79,7 +79,7 @@ class FrontmatterFields(BaseModel):
 
     @field_validator("sources", mode="before")
     @classmethod
-    def source_tuple(cls, value: Any) -> tuple[PageSource, ...]:
+    def source_tuple(cls, value: object) -> tuple[PageSource, ...]:
         if not isinstance(value, list | tuple):
             return ()
         sources: list[PageSource] = []
@@ -90,7 +90,7 @@ class FrontmatterFields(BaseModel):
         return tuple(sources)
 
 
-def parse_source_item(value: Any) -> PageSource | None:
+def parse_source_item(value: object) -> PageSource | None:
     if not isinstance(value, dict):
         return None
     source_id = text_field(value, "id")
@@ -112,7 +112,7 @@ def parse_source_item(value: Any) -> PageSource | None:
     )
 
 
-def source_target(value: dict[Any, Any], source_type: PageSourceType) -> str | None:
+def source_target(value: RawSource, source_type: PageSourceType) -> str | None:
     for field in (*SOURCE_TARGET_FIELDS[source_type], "target"):
         target = text_or_number_field(value, field)
         if target is not None:
@@ -120,14 +120,14 @@ def source_target(value: dict[Any, Any], source_type: PageSourceType) -> str | N
     return None
 
 
-def text_field(value: dict[Any, Any], key: str) -> str | None:
+def text_field(value: RawSource, key: str) -> str | None:
     field = value.get(key)
     if isinstance(field, str) and field.strip():
         return field.strip()
     return None
 
 
-def text_or_number_field(value: dict[Any, Any], key: str) -> str | None:
+def text_or_number_field(value: RawSource, key: str) -> str | None:
     text = text_field(value, key)
     if text is not None:
         return text
@@ -137,7 +137,7 @@ def text_or_number_field(value: dict[Any, Any], key: str) -> str | None:
     return None
 
 
-def scalar_text_field(value: dict[Any, Any], key: str) -> str | None:
+def scalar_text_field(value: RawSource, key: str) -> str | None:
     text = text_field(value, key)
     if text is not None:
         return text

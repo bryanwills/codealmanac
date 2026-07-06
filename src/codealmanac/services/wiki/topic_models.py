@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from codealmanac.core.slug import to_kebab_case
@@ -15,19 +13,19 @@ class TopicDefinition(BaseModel):
 
     @field_validator("slug", mode="before")
     @classmethod
-    def canonical_slug(cls, value: Any) -> str:
+    def canonical_slug(cls, value: object) -> str:
         return to_kebab_case(str(value))
 
     @field_validator("title", "description", mode="before")
     @classmethod
-    def optional_text(cls, value: Any) -> str | None:
+    def optional_text(cls, value: object) -> str | None:
         if isinstance(value, str) and value.strip():
             return value.strip()
         return None
 
     @field_validator("parents", mode="before")
     @classmethod
-    def parent_slugs(cls, value: Any) -> tuple[str, ...]:
+    def parent_slugs(cls, value: object) -> tuple[str, ...]:
         if not isinstance(value, list | tuple):
             return ()
         parents: list[str] = []

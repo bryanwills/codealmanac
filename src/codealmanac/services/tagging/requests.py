@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from pydantic import field_validator
 
@@ -21,7 +20,7 @@ class TagPageRequest(CodeAlmanacModel):
 
     @field_validator("topics", mode="before")
     @classmethod
-    def canonical_topics(cls, value: Any) -> tuple[str, ...]:
+    def canonical_topics(cls, value: object) -> tuple[str, ...]:
         if not isinstance(value, list | tuple):
             raise ValueError("topics must not be empty")
         topics = tuple(dict.fromkeys(to_kebab_case(str(item)) for item in value))

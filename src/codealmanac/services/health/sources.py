@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 import frontmatter
 from yaml import YAMLError
@@ -48,7 +47,7 @@ def source_entry_issues(
     almanac_path: Path,
     page_path: Path,
     index: int,
-    raw_source: Any,
+    raw_source: object,
 ) -> tuple[ValidationIssue, ...]:
     source = parse_source_item(raw_source)
     if source is None:

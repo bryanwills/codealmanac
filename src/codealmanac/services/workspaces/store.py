@@ -2,7 +2,6 @@ import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 from pydantic import TypeAdapter, ValidationError
@@ -92,7 +91,7 @@ def parse_entries(text: str) -> list[WorkspaceRegistryEntry]:
     return [parse_entry(raw_entry) for raw_entry in raw_entries]
 
 
-def parse_entry(raw_entry: Any) -> WorkspaceRegistryEntry:
+def parse_entry(raw_entry: object) -> WorkspaceRegistryEntry:
     if not isinstance(raw_entry, dict):
         raise ValidationFailed("workspace registry entries must be objects")
     upgraded = dict(raw_entry)

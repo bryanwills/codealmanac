@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from pydantic import field_validator
 
@@ -38,7 +37,7 @@ class CreateTopicRequest(CodeAlmanacModel):
 
     @field_validator("parents", mode="before")
     @classmethod
-    def canonical_parents(cls, value: Any) -> tuple[str, ...]:
+    def canonical_parents(cls, value: object) -> tuple[str, ...]:
         if value is None:
             return ()
         if not isinstance(value, list | tuple):
