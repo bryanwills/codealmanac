@@ -2,17 +2,15 @@ import json
 import shutil
 import subprocess
 from datetime import UTC, datetime
-from hashlib import sha256
 from pathlib import Path
 
 import pytest
-from conftest import runtime_repo_path_for_root, runtime_runs_path
+from conftest import runtime_repo_path_for_root
 
 from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
-from codealmanac.core.models import AppConfig
-from codealmanac.core.paths import normalize_path
+from codealmanac.services.config.models import AppConfig
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     AutomationTask,
@@ -27,15 +25,17 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import (
     RunEventKind,
-    RunOperation,
+    RunKind,
     RunStatus,
     RunWorkerSpawnResult,
 )
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     ListRunsRequest,
+    ReadRunSpecRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
     ShowRunRequest,
@@ -53,13 +53,7 @@ from codealmanac.services.updates.models import (
     PackageInstallMetadata,
     UpdateInstallMethod,
 )
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
-from codealmanac.workflows.sync.models import (
-    SyncLedger,
-    SyncLedgerEntry,
-    SyncLedgerStatus,
-)
 
 
 class CliWritingHarnessAdapter:
@@ -259,7 +253,7 @@ class InteractiveInput:
 @pytest.fixture(autouse=True)
 def default_cli_app(monkeypatch, isolated_home):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(CliNoopHarnessAdapter(),),
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -280,10 +274,11 @@ def test_cli_init_creates_wiki_and_prints_name(
     assert exit_code == 0
     assert "initialized my-repo: 2 pages (2 updated, 0 removed)\n" in captured.out
     assert f"wiki: {repo / 'almanac'}\n" in captured.out
-    assert f"registry: {isolated_home / '.codealmanac/registry.json'}\n" in captured.out
+    database_path = isolated_home / ".codealmanac/codealmanac.db"
+    assert f"database: {database_path}\n" in captured.out
     assert captured.err == ""
     assert (repo / "almanac/getting-started.md").is_file()
-    assert (isolated_home / ".codealmanac/registry.json").is_file()
+    assert (isolated_home / ".codealmanac/codealmanac.db").is_file()
 
 
 def test_cli_init_rejects_root_option(
@@ -311,7 +306,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     scheduler = CliSchedulerAdapter()
     package_uninstaller = CliPackageUninstaller()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
         package_uninstaller=package_uninstaller,
     )
@@ -382,9 +377,9 @@ def test_cli_uninstall_without_yes_is_non_destructive_in_noninteractive_shell(
     package_uninstaller = CliPackageUninstaller()
     state_dir = isolated_home / ".codealmanac"
     state_dir.mkdir()
-    (state_dir / "registry.json").write_text("{}", encoding="utf-8")
+    (state_dir / "codealmanac.db").write_text("{}", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=state_dir / "registry.json"),
+        AppConfig(database_path=state_dir / "codealmanac.db"),
         scheduler=scheduler,
         package_uninstaller=package_uninstaller,
     )
@@ -410,7 +405,7 @@ def test_cli_uninstall_returns_nonzero_when_package_uninstall_fails(
 ):
     state_dir = isolated_home / ".codealmanac"
     state_dir.mkdir()
-    (state_dir / "registry.json").write_text("{}", encoding="utf-8")
+    (state_dir / "codealmanac.db").write_text("{}", encoding="utf-8")
     package_uninstaller = CliPackageUninstaller(
         PackageUninstallResult(
             status=PackageUninstallStatus.FAILED,
@@ -422,7 +417,7 @@ def test_cli_uninstall_returns_nonzero_when_package_uninstall_fails(
         )
     )
     app = create_app(
-        AppConfig(registry_path=state_dir / "registry.json"),
+        AppConfig(database_path=state_dir / "codealmanac.db"),
         scheduler=CliSchedulerAdapter(),
         package_uninstaller=package_uninstaller,
     )
@@ -442,7 +437,7 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
 ):
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -489,7 +484,7 @@ def test_cli_setup_json_does_not_prompt_for_auto_update(
 ):
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -523,7 +518,7 @@ def test_cli_setup_does_not_initialize_repo_almanac(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=CliSchedulerAdapter(),
     )
     monkeypatch.chdir(repo)
@@ -533,7 +528,7 @@ def test_cli_setup_does_not_initialize_repo_almanac(
 
     capsys.readouterr()
     assert not (repo / "almanac").exists()
-    assert not (isolated_home / ".codealmanac/registry.json").exists()
+    assert not (isolated_home / ".codealmanac/codealmanac.db").exists()
 
 
 def test_cli_setup_no_auto_commit_writes_user_config(
@@ -542,7 +537,7 @@ def test_cli_setup_no_auto_commit_writes_user_config(
     capsys,
 ):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=CliSchedulerAdapter(),
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -559,7 +554,7 @@ def test_cli_setup_no_auto_commit_writes_user_config(
 
 def test_cli_setup_skip_instructions_json(isolated_home: Path, monkeypatch, capsys):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=CliSchedulerAdapter(),
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -598,11 +593,11 @@ def test_cli_setup_installs_automation_with_explicit_flags(
     repo.mkdir()
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
         package_uninstaller=CliPackageUninstaller(),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -655,7 +650,7 @@ def test_cli_setup_can_skip_update_automation(
 ):
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
@@ -680,10 +675,10 @@ def test_cli_setup_can_skip_sync_automation(
     repo.mkdir()
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -715,7 +710,7 @@ def test_cli_list_outputs_registered_wikis(
     assert captured.out == f"repo  —\n      {repo}\n"
 
 
-def test_cli_list_json_reports_registry_status(
+def test_cli_list_json_reports_database_status(
     tmp_path: Path,
     isolated_home: Path,
     capsys,
@@ -1029,7 +1024,7 @@ def test_cli_help_includes_serve(capsys):
     assert "config" in output.out
 
 
-def test_cli_ingest_runs_workflow_with_selected_harness(
+def test_cli_ingest_queues_run_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1039,11 +1034,13 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = CliWritingHarnessAdapter()
+    spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
+        worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1054,7 +1051,6 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
             [
                 "ingest",
                 "note.md",
-                "--foreground",
                 "--using",
                 "codex",
                 "--title",
@@ -1067,14 +1063,17 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     )
 
     output = capsys.readouterr()
-    assert "ingested " in output.out
-    assert "sources: 1\n" in output.out
-    assert "wiki_changes: 1\n" in output.out
-    assert "summary: ingested through CLI\n" in output.out
-    assert adapter.requests[0].title == "Digest note"
-    assert "Write one short page." in adapter.requests[0].prompt
-    assert '"auto_commit": true' in adapter.requests[0].prompt
-    assert (repo / "almanac/cli-ingest-note.md").is_file()
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    assert f"ingest queued: {run.run_id}" in output.out
+    assert "follow:  codealmanac jobs attach" in output.out
+    assert run.status == RunStatus.QUEUED
+    assert spec is not None
+    assert spec.harness == HarnessKind.CODEX
+    assert spec.title == "Digest note"
+    assert spec.guidance == "Write one short page."
+    assert adapter.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
 def test_cli_ingest_uses_configured_default_harness(
@@ -1087,11 +1086,13 @@ def test_cli_ingest_uses_configured_default_harness(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = CliWritingHarnessAdapter()
+    spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
+        worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     (repo / "almanac/config.toml").write_text(
         """
 [harness]
@@ -1104,15 +1105,19 @@ default = "codex"
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["ingest", "note.md", "--foreground"]) == 0
+    assert main(["ingest", "note.md"]) == 0
 
     output = capsys.readouterr()
-    assert "ingested " in output.out
-    assert adapter.requests[0].kind == HarnessKind.CODEX
-    assert (repo / "almanac/cli-ingest-note.md").is_file()
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    assert f"ingest queued: {run.run_id}" in output.out
+    assert spec is not None
+    assert spec.harness == HarnessKind.CODEX
+    assert adapter.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
-def test_cli_ingest_background_queues_run_and_spawns_worker(
+def test_cli_ingest_json_queues_run_and_spawns_worker(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1124,18 +1129,15 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
     harness = CliWritingHarnessAdapter()
     spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert (
-        main(["ingest", "note.md", "--using", "codex", "--background", "--json"])
-        == 0
-    )
+    assert main(["ingest", "note.md", "--using", "codex", "--json"]) == 0
 
     output = capsys.readouterr()
     data = json.loads(output.out)
@@ -1146,14 +1148,11 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    workspace = app.workspaces.resolve(repo)
-    assert (
-        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
-    ).is_file()
+    assert app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
     assert not (repo / "almanac/jobs").exists()
 
 
-def test_cli_garden_runs_workflow_with_selected_harness(
+def test_cli_garden_queues_run_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1162,11 +1161,13 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     repo = tmp_path / "repo"
     repo.mkdir()
     adapter = CliGardenHarnessAdapter()
+    spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
+        worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1176,7 +1177,6 @@ def test_cli_garden_runs_workflow_with_selected_harness(
         main(
             [
                 "garden",
-                "--foreground",
                 "--using",
                 "codex",
                 "--title",
@@ -1189,17 +1189,19 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     )
 
     output = capsys.readouterr()
-    assert "gardened " in output.out
-    assert "wiki_changes: 1\n" in output.out
-    assert "summary: gardened through CLI\n" in output.out
-    assert adapter.requests[0].title == "Clean up graph"
-    assert "Garden Operation" in adapter.requests[0].prompt
-    assert "Improve one page boundary." in adapter.requests[0].prompt
-    assert '"auto_commit": true' in adapter.requests[0].prompt
-    assert (repo / "almanac/cli-garden-note.md").is_file()
+    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    assert f"garden queued: {run.run_id}" in output.out
+    assert run.status == RunStatus.QUEUED
+    assert spec is not None
+    assert spec.harness == HarnessKind.CODEX
+    assert spec.title == "Clean up graph"
+    assert spec.guidance == "Improve one page boundary."
+    assert adapter.requests == []
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
 
-def test_cli_garden_background_plain_output(
+def test_cli_garden_plain_output(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1210,23 +1212,23 @@ def test_cli_garden_background_plain_output(
     harness = CliGardenHarnessAdapter()
     spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["garden", "--using", "codex", "--background"]) == 0
+    assert main(["garden", "--using", "codex"]) == 0
 
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert f"garden started: {run.run_id}" in output.out
-    assert f"attach:  codealmanac jobs attach {run.run_id}" in output.out
-    assert "worker:  pid 5151" in output.out
-    assert run.operation == RunOperation.GARDEN
+    assert f"garden queued: {run.run_id}" in output.out
+    assert f"follow:  codealmanac jobs attach {run.run_id}" in output.out
+    assert "worker: pid 5151" in output.out
+    assert run.kind == RunKind.GARDEN
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
 
@@ -1241,11 +1243,11 @@ def test_cli_hidden_run_worker_drains_queued_run(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     harness = CliWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
         worker_spawner=CliWorkerSpawner(),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
@@ -1283,29 +1285,29 @@ def test_cli_sync_status_reports_ready_transcripts(
         cwd=repo,
         repo_root=repo,
         almanac_path=repo / "almanac",
-        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
+        modified_at=datetime.now(UTC),
         size_bytes=transcript.stat().st_size,
     )
     adapter = CliTranscriptDiscoveryAdapter((candidate,))
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["sync", "status", "--from", "codex", "--quiet", "0s"]) == 0
+    assert main(["sync", "status", "--from", "codex"]) == 0
 
     output = capsys.readouterr()
     assert "sync status:\n" in output.out
     assert "scanned: 1\n" in output.out
     assert "eligible: 1\n" in output.out
-    assert "ready codex codex-session: lines 1-1\n" in output.out
+    assert "ready repo: 1 transcript(s)\n" in output.out
     assert adapter.requests[0].apps == (TranscriptApp.CODEX,)
 
 
-def test_cli_sync_status_uses_configured_quiet_window(
+def test_cli_sync_queues_ingest_for_ready_transcripts(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -1325,210 +1327,32 @@ def test_cli_sync_status_uses_configured_quiet_window(
         modified_at=datetime.now(UTC),
         size_bytes=transcript.stat().st_size,
     )
-    adapter = CliTranscriptDiscoveryAdapter((candidate,))
-    app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
-        transcript_discovery_adapters=(adapter,),
-    )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    (repo / "almanac/config.toml").write_text(
-        """
-[sync]
-quiet = "0s"
-""",
-        encoding="utf-8",
-    )
-    monkeypatch.chdir(repo)
-    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
-
-    assert main(["sync", "status", "--from", "codex"]) == 0
-
-    output = capsys.readouterr()
-    assert "eligible: 1\n" in output.out
-    assert "ready codex codex-session: lines 1-1\n" in output.out
-
-
-def test_cli_sync_status_uses_retry_budget_flags(
-    tmp_path: Path,
-    isolated_home: Path,
-    monkeypatch,
-    capsys,
-):
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    transcript = tmp_path / "codex.jsonl"
-    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
-    candidate = TranscriptCandidate(
-        app=TranscriptApp.CODEX,
-        session_id="codex-session",
-        transcript_path=transcript,
-        cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
-        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
-        size_bytes=transcript.stat().st_size,
-    )
-    adapter = CliTranscriptDiscoveryAdapter((candidate,))
-    app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
-        transcript_discovery_adapters=(adapter,),
-    )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
-    ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    ledger = SyncLedger(
-        version=1,
-        updated_at=datetime(2026, 1, 1, tzinfo=UTC),
-        sessions={
-            f"{candidate.app.value}:{normalize_path(candidate.transcript_path)}": (
-                SyncLedgerEntry(
-                    app=candidate.app,
-                    session_id=candidate.session_id,
-                    transcript_path=candidate.transcript_path,
-                    status=SyncLedgerStatus.FAILED,
-                    last_absorbed_size=0,
-                    last_absorbed_line=0,
-                    last_absorbed_prefix_hash=f"sha256:{sha256(b'').hexdigest()}",
-                    failed_attempts=1,
-                )
-            )
-        },
-    )
-    ledger_path.write_text(ledger.model_dump_json(indent=2), encoding="utf-8")
-    monkeypatch.chdir(repo)
-    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
-
-    assert (
-        main(
-            [
-                "sync",
-                "status",
-                "--from",
-                "codex",
-                "--quiet",
-                "0s",
-                "--max-failed-attempts",
-                "1",
-            ]
-        )
-        == 0
-    )
-
-    output = capsys.readouterr()
-    assert "needs_attention: 1\n" in output.out
-    assert "sync-retry-budget-exhausted" in output.out
-
-
-def test_cli_sync_runs_ingest_for_ready_transcripts(
-    tmp_path: Path,
-    isolated_home: Path,
-    monkeypatch,
-    capsys,
-):
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    transcript = tmp_path / "codex.jsonl"
-    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
-    candidate = TranscriptCandidate(
-        app=TranscriptApp.CODEX,
-        session_id="codex-session",
-        transcript_path=transcript,
-        cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
-        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
-        size_bytes=transcript.stat().st_size,
-    )
-    transcript_adapter = CliTranscriptDiscoveryAdapter((candidate,))
-    harness = CliWritingHarnessAdapter()
-    app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
-        harness_adapters=(harness,),
-        transcript_discovery_adapters=(transcript_adapter,),
-    )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    initialize_git(repo)
-    commit_all(repo, "initial wiki")
-    monkeypatch.chdir(repo)
-    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
-
-    assert main(["sync", "--from", "codex", "--quiet", "0s", "--using", "codex"]) == 0
-
-    output = capsys.readouterr()
-    assert "sync:\n" in output.out
-    assert "scanned: 1\n" in output.out
-    assert "eligible: 1\n" in output.out
-    assert "started: 1\n" in output.out
-    assert "started codex codex-session: ingest-" in output.out
-    assert "Scheduled sync cursor:" in harness.requests[0].prompt
-    assert '"auto_commit": true' in harness.requests[0].prompt
-    assert f"transcript:{transcript}" in harness.requests[0].prompt
-    assert (runtime_runs_path(isolated_home, workspace) / "sync-ledger.json").is_file()
-    assert not (repo / "almanac/jobs").exists()
-
-
-def test_cli_sync_background_queues_ingest_for_ready_transcripts(
-    tmp_path: Path,
-    isolated_home: Path,
-    monkeypatch,
-    capsys,
-):
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    transcript = tmp_path / "codex.jsonl"
-    transcript.write_text('{"timestamp":"2026-01-01T00:00:00Z"}\n', encoding="utf-8")
-    candidate = TranscriptCandidate(
-        app=TranscriptApp.CODEX,
-        session_id="codex-session",
-        transcript_path=transcript,
-        cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
-        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
-        size_bytes=transcript.stat().st_size,
-    )
     transcript_adapter = CliTranscriptDiscoveryAdapter((candidate,))
     harness = CliWritingHarnessAdapter()
     spawner = CliWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
         transcript_discovery_adapters=(transcript_adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert (
-        main(
-            [
-                "sync",
-                "--from",
-                "codex",
-                "--quiet",
-                "0s",
-                "--using",
-                "codex",
-                "--background",
-            ]
-        )
-        == 0
-    )
+    assert main(["sync", "--from", "codex", "--using", "codex"]) == 0
 
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(cwd=repo))[0]
-
     assert "sync:\n" in output.out
+    assert "scanned: 1\n" in output.out
+    assert "eligible: 1\n" in output.out
     assert "started: 1\n" in output.out
-    assert f"started codex codex-session: {run.run_id}" in output.out
+    assert f"started repo: {run.run_id}" in output.out
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    workspace = app.workspaces.resolve(repo)
-    assert (
-        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
-    ).is_file()
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki="repo")]
+    assert app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -1542,10 +1366,10 @@ def test_cli_automation_install_status_and_uninstall(
     repo.mkdir()
     scheduler = CliSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1596,13 +1420,13 @@ def test_cli_jobs_inspects_local_run_records(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
-            operation=RunOperation.INGEST,
+            kind=RunKind.INGEST,
             title="Digest note",
         )
     )
@@ -1631,7 +1455,7 @@ def test_cli_jobs_inspects_local_run_records(
     list_output = capsys.readouterr()
     header = list_output.out.splitlines()[0]
     assert header.startswith("ID")
-    for column in ("OPERATION", "STATUS", "ELAPSED", "TITLE"):
+    for column in ("KIND", "STATUS", "ELAPSED", "TITLE"):
         assert column in header
     list_row = next(
         line for line in list_output.out.splitlines() if record.run_id in line
@@ -1643,7 +1467,7 @@ def test_cli_jobs_inspects_local_run_records(
     assert main(["jobs", "show", record.run_id]) == 0
     show_output = capsys.readouterr()
     assert f"job:        {record.run_id}\n" in show_output.out
-    assert "operation:  ingest\n" in show_output.out
+    assert "kind:       ingest\n" in show_output.out
     assert "session:    codex codex-job-session\n" in show_output.out
     assert f"transcript: {repo / 'codex-job.jsonl'}\n" in show_output.out
     assert "log:        " in show_output.out
@@ -1678,7 +1502,7 @@ def test_cli_jobs_inspects_local_run_records(
     cancellable = app.runs.start(
         StartRunRequest(
             cwd=repo,
-            operation=RunOperation.GARDEN,
+            kind=RunKind.GARDEN,
             title="Garden later",
         )
     )

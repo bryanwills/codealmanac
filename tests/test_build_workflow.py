@@ -7,8 +7,8 @@ from conftest import runtime_index_path
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.core.models import AppConfig
+from codealmanac.core.errors import AlreadyExists, NotFoundError, ValidationFailed
+from codealmanac.services.config.models import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -17,15 +17,15 @@ from codealmanac.services.harnesses.models import (
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.health.requests import HealthCheckRequest
-from codealmanac.services.runs.models import RunOperation, RunStatus
-from codealmanac.services.workspaces.models import WorkspaceRegistryStatus
-from codealmanac.services.workspaces.requests import (
-    DropWorkspaceRequest,
-    InitializeWorkspaceRequest,
-    RegisterWorkspaceRequest,
-    SelectWorkspaceRequest,
+from codealmanac.services.repositories.models import RepositoryStatus
+from codealmanac.services.repositories.requests import (
+    DropRepositoryRequest,
+    InitializeRepositoryRequest,
+    RegisterRepositoryRequest,
+    SelectRepositoryRequest,
 )
-from codealmanac.services.workspaces.roots import is_initialized_almanac_root
+from codealmanac.services.repositories.roots import is_initialized_almanac_root
+from codealmanac.services.runs.models import RunKind, RunStatus
 from codealmanac.workflows.build.requests import RunBuildRequest
 
 
@@ -67,27 +67,27 @@ Build creates the first useful wiki for this repository.
         )
 
 
-def test_initialize_creates_almanac_wiki_and_registry(
+def test_initialize_creates_almanac_wiki_and_database(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "Example Repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
-    workspace = app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=repo, description="test wiki")
+    repository = app.workflows.build.initialize(
+        InitializeRepositoryRequest(path=repo, description="test wiki")
     )
 
-    assert workspace.name == "example-repo"
+    assert repository.name == "example-repo"
     assert (repo / "almanac/README.md").is_file()
     assert (repo / "almanac/topics.yaml").is_file()
     assert (repo / "almanac/getting-started.md").is_file()
     assert not (repo / "almanac/manual").exists()
     assert not (repo / ".gitignore").exists()
-    assert app.workspaces.list()[0].description == "test wiki"
+    assert app.repositories.list()[0].description == "test wiki"
 
 
 def test_initialize_starter_wiki_has_no_health_noise(
@@ -97,9 +97,9 @@ def test_initialize_starter_wiki_has_no_health_noise(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
     report = app.health.check(HealthCheckRequest(cwd=repo))
 
@@ -116,36 +116,40 @@ def test_initialize_rejects_configured_almanac_root(
     repo.mkdir()
 
     with pytest.raises(ValidationError, match="fixed at almanac"):
-        InitializeWorkspaceRequest(
+        InitializeRepositoryRequest(
             path=repo,
             almanac_root=Path("docs/almanac"),
             name="repo",
         )
 
 
-def test_build_without_root_uses_registered_almanac_tree(
+def test_build_without_root_targets_exact_path(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
     app.workflows.build.initialize(
-        InitializeWorkspaceRequest(
+        InitializeRepositoryRequest(
             path=repo,
             name="docs-root",
             description="registered wiki",
         )
     )
 
-    result = app.workflows.build.build(InitializeWorkspaceRequest(path=repo / "src"))
+    source_dir = repo / "src"
+    result = app.workflows.build.build(
+        InitializeRepositoryRequest(path=source_dir, name="source-dir")
+    )
 
-    assert result.workspace.name == "docs-root"
-    assert result.workspace.description == "registered wiki"
-    assert result.workspace.almanac_root == Path("almanac")
-    assert result.workspace.almanac_path == repo / "almanac"
+    assert result.repository.name == "source-dir"
+    assert result.repository.description == ""
+    assert result.repository.root_path == source_dir
+    assert result.repository.almanac_root == Path("almanac")
+    assert result.repository.almanac_path == source_dir / "almanac"
 
 
 def test_initialize_rejects_dot_almanac_root(
@@ -156,7 +160,7 @@ def test_initialize_rejects_dot_almanac_root(
     repo.mkdir()
 
     with pytest.raises(ValidationError, match="fixed at almanac"):
-        InitializeWorkspaceRequest(
+        InitializeRepositoryRequest(
             path=repo,
             almanac_root=Path(".almanac"),
             name="repo",
@@ -171,14 +175,14 @@ def test_resolve_ignores_unregistered_dot_almanac_root(
     (repo / ".almanac").mkdir(parents=True)
     (repo / ".almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     with pytest.raises(NotFoundError):
-        app.workspaces.resolve(repo / "src")
+        app.repositories.resolve(repo / "src")
 
 
-def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
+def test_resolve_prefers_nearest_initialized_root_over_broad_parent_database(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -191,21 +195,21 @@ def test_resolve_prefers_nearest_initialized_root_over_broad_parent_registry(
     )
     (repo / "almanac/topics.yaml").write_text("topics: []\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workspaces.register(
-        RegisterWorkspaceRequest(
+    app.repositories.register(
+        RegisterRepositoryRequest(
             root_path=projects,
             almanac_root=Path("almanac"),
             name="projects",
         )
     )
 
-    workspace = app.workspaces.resolve(repo)
+    repository = app.repositories.resolve(repo)
 
-    assert workspace.root_path == repo
-    assert workspace.almanac_root == Path("almanac")
-    assert workspace.almanac_path == repo / "almanac"
+    assert repository.root_path == repo
+    assert repository.almanac_root == Path("almanac")
+    assert repository.almanac_path == repo / "almanac"
 
 
 def test_initialized_wiki_requires_topics_yaml_and_readme(tmp_path: Path):
@@ -242,13 +246,13 @@ def test_readme_only_almanac_folder_does_not_auto_register_parent(
     sibling.mkdir()
     (sibling / "README.md").write_text("# Separate project\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     with pytest.raises(NotFoundError):
-        app.workspaces.resolve(repo)
+        app.repositories.resolve(repo)
 
-    assert app.workspaces.list() == []
+    assert app.repositories.list() == []
 
 
 @pytest.mark.parametrize("root", [Path("/tmp/almanac"), Path("../almanac")])
@@ -260,12 +264,12 @@ def test_initialize_rejects_roots_outside_repo(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     with pytest.raises(ValueError):
         app.workflows.build.initialize(
-            InitializeWorkspaceRequest(
+            InitializeRepositoryRequest(
                 path=repo,
                 almanac_root=root,
                 name="repo",
@@ -273,25 +277,24 @@ def test_initialize_rejects_roots_outside_repo(
         )
 
 
-def test_initialize_is_idempotent_and_preserves_existing_pages(
+def test_initialize_rejects_existing_almanac(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo, name="repo"))
     readme = repo / "almanac/README.md"
     readme.write_text("user edit\n", encoding="utf-8")
 
-    workspace = app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=repo / "src", name="renamed")
-    )
+    with pytest.raises(AlreadyExists):
+        app.workflows.build.initialize(
+            InitializeRepositoryRequest(path=repo, name="renamed")
+        )
 
-    assert workspace.root_path == repo
-    assert workspace.name == "renamed"
     assert readme.read_text(encoding="utf-8") == "user edit\n"
     assert not (repo / "almanac/manual").exists()
 
@@ -303,17 +306,17 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     result = app.workflows.build.build(
-        InitializeWorkspaceRequest(path=repo, name="repo")
+        InitializeRepositoryRequest(path=repo, name="repo")
     )
 
-    assert result.workspace.name == "repo"
+    assert result.repository.name == "repo"
     assert result.index.pages_indexed == 2
     assert result.index.files_seen == 2
-    assert runtime_index_path(isolated_home, result.workspace).is_file()
+    assert runtime_index_path(isolated_home, result.repository).is_file()
     assert not (repo / "almanac/index.db").exists()
 
 
@@ -326,7 +329,7 @@ def test_run_build_uses_harness_prompt_and_records_build_operation(
     initialize_git(repo)
     adapter = BuildWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
 
@@ -340,7 +343,7 @@ def test_run_build_uses_harness_prompt_and_records_build_operation(
     )
 
     assert result.run is not None
-    assert result.run.operation == RunOperation.BUILD
+    assert result.run.kind == RunKind.BUILD
     assert result.run.status == RunStatus.DONE
     assert result.run.summary == "built wiki"
     assert result.index.pages_indexed == 3
@@ -365,7 +368,7 @@ def test_run_build_rejects_non_git_repo_without_registering(
     repo.mkdir()
     adapter = BuildWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
 
@@ -378,28 +381,28 @@ def test_run_build_rejects_non_git_repo_without_registering(
             )
         )
 
-    assert app.workspaces.list() == []
+    assert app.repositories.list() == []
     assert not (repo / "almanac").exists()
     assert adapter.requests == []
 
 
-def test_workspace_selection_supports_name_id_and_path(
+def test_repository_selection_supports_name_id_and_path(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    repository = app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
-    by_name = app.workspaces.select(SelectWorkspaceRequest(selector="repo"))
+    by_name = app.repositories.select(SelectRepositoryRequest(selector="repo"))
 
-    assert by_name.workspace_id == workspace.workspace_id
+    assert by_name.repository_id == repository.repository_id
 
 
-def test_workspace_registry_reports_and_drops_missing_wikis(
+def test_repository_database_reports_and_drops_missing_wikis(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -412,61 +415,61 @@ def test_workspace_registry_reports_and_drops_missing_wikis(
     index_only = tmp_path / "index-only"
     index_only.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
     app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=live_repo, name="live")
+        InitializeRepositoryRequest(path=live_repo, name="live")
     )
     app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=missing_repo, name="missing")
+        InitializeRepositoryRequest(path=missing_repo, name="missing")
     )
     app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=missing_almanac, name="missing-almanac")
+        InitializeRepositoryRequest(path=missing_almanac, name="missing-almanac")
     )
-    app.workspaces.register(
-        RegisterWorkspaceRequest(root_path=index_only, name="index-only")
+    app.repositories.register(
+        RegisterRepositoryRequest(root_path=index_only, name="index-only")
     )
     (index_only / "almanac").mkdir()
     (index_only / "almanac/index.db").write_bytes(b"derived")
     remove_tree(missing_repo)
     remove_tree(missing_almanac / "almanac")
 
-    before = app.workspaces.list_registry()
-    statuses = {item.workspace.name: item.status for item in before.items}
-    result = app.workspaces.drop_missing()
+    before = app.repositories.list_database()
+    statuses = {item.repository.name: item.status for item in before.items}
+    result = app.repositories.drop_missing()
 
     assert statuses == {
-        "live": WorkspaceRegistryStatus.AVAILABLE,
-        "missing": WorkspaceRegistryStatus.MISSING_REPO,
-        "missing-almanac": WorkspaceRegistryStatus.MISSING_ALMANAC,
-        "index-only": WorkspaceRegistryStatus.MISSING_ALMANAC,
+        "live": RepositoryStatus.AVAILABLE,
+        "missing": RepositoryStatus.MISSING_REPO,
+        "missing-almanac": RepositoryStatus.MISSING_ALMANAC,
+        "index-only": RepositoryStatus.MISSING_ALMANAC,
     }
-    assert tuple(workspace.name for workspace in result.dropped) == (
+    assert sorted(repository.name for repository in result.dropped) == [
+        "index-only",
         "missing",
         "missing-almanac",
-        "index-only",
-    )
+    ]
     remaining = tuple(
-        item.workspace.name for item in app.workspaces.list_registry().items
+        item.repository.name for item in app.repositories.list_database().items
     )
     assert remaining == ("live",)
 
 
-def test_workspace_registry_drops_selected_wiki(
+def test_repository_database_drops_selected_wiki(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo, name="repo"))
 
-    result = app.workspaces.drop(DropWorkspaceRequest(selector="repo"))
+    result = app.repositories.drop(DropRepositoryRequest(selector="repo"))
 
-    assert tuple(workspace.name for workspace in result.dropped) == ("repo",)
-    assert app.workspaces.list_registry().items == ()
+    assert tuple(repository.name for repository in result.dropped) == ("repo",)
+    assert app.repositories.list_database().items == ()
 
 
 def remove_tree(path: Path) -> None:

@@ -129,6 +129,10 @@ real code exists.
   root" is checked in the producer *and* re-checked before the write).
 - Honest names + scoping docstrings. *A docstring that over-claims generality is
   a bug.* Names teach the next agent how to extend the system.
+- Avoid internal-looking function names. Single-underscore functions make code
+  look more private and less readable; use them only in exceptional cases where
+  the boundary is genuinely local and the simpler public-looking name would
+  mislead the reader.
 
 **Judgment**
 - **Delete dead compatibility layers once callers have moved.** A husk left
@@ -161,7 +165,7 @@ conversation.
 - **Intelligence lives in prompts, not pipelines.** No propose/review/apply
   state machines, no orchestration JSON schema between writer and reviewer, no
   `--dry-run` rehearsals. The writer owns outcomes.
-- Local-only repo wiki tree plus `~/.codealmanac/registry.json` global state.
+- Local-only repo wiki tree plus `~/.codealmanac/codealmanac.db` local state.
   New repos use `almanac/` only. `docs/almanac/`, `.almanac/`, custom roots,
   and compatibility aliases are retired.
 - The committed wiki source is a browseable nested Markdown tree under

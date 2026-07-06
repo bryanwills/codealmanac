@@ -32,10 +32,6 @@ def add_setup_commands(subcommands: argparse._SubParsersAction) -> None:
         help="scheduled sync interval when setup installs automation",
     )
     setup.add_argument(
-        "--sync-quiet",
-        help="minimum quiet time before scheduled sync",
-    )
-    setup.add_argument(
         "--sync-off",
         action="store_true",
         help="do not install scheduled transcript sync automation",

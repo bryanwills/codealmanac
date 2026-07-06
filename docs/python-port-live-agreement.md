@@ -21,6 +21,34 @@ It is the constraint document for future agents.
   Explicit runs snapshot the current Git state, allow pre-existing wiki edits,
   reject files changed during the run outside `almanac/`, and validate the final
   wiki before marking the run done.
+- 2026-07-06: The run/repository/local-database refactor is a breaking
+  architectural reset. The final code shape is what counts: no half-migrated
+  concepts, no compatibility aliases, no `registry.json` migration, no
+  `registry.json` fallback, no root hopping, and no parallel local state paths.
+  Repository registration, runs, run events, sync state, and worker locks belong
+  in `~/.codealmanac/codealmanac.db`.
+- 2026-07-06: Use the durable internal nouns `repository`, `run`, `run kind`,
+  `queued run`, `worker`, `schedule`, `trigger`, and `local database`.
+  Public `jobs` remains the user-facing control command for attach/logs/cancel,
+  but internal models, stores, and tables use `runs` and `run_events`.
+- 2026-07-06: Sync is a trigger/scanner, not agent work and not a run. Scheduled
+  sync reads active Claude/Codex transcript files since
+  `sync_state.last_completed_at` or `now - sync_interval`, reads each transcript
+  identity, exact-matches transcript cwd to a registered repository, skips
+  internal transcripts, groups active transcripts by repository, and queues one
+  ingest run per repository. No quiet window, cursor ledger, line-count ledger,
+  prefix hash, pending claim, needs-attention state, or foreground/background
+  execution mode remains in the target design.
+- 2026-07-06: `init` is deterministic repository setup plus a `build` run. It
+  creates the repository row, `almanac/`, `almanac/README.md`, and
+  `almanac/topics.yaml`, then queues/runs `build` for the first real
+  agent-authored wiki. `init` fails with a product error such as
+  `AlreadyExists` when `almanac/` already exists at the target path.
+- 2026-07-06: Code quality is part of the contract. Use Pydantic request models
+  for shaped service inputs, enums or `Literal` for stable choices, service-owned
+  verbs, store-owned persistence, consistent product errors, and thin CLI edges.
+  Avoid internal-looking single-underscore functions except when they are tiny,
+  local, and clearer than a named boundary.
 - 2026-06-29: The branch may contain merged `dev` / `origin/dev` work that
   assumes hosted shipping. Treat that work as reference or archive material,
   not as product direction for this rewrite.

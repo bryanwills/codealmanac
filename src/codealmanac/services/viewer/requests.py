@@ -15,7 +15,7 @@ class ViewerOverviewRequest(CodeAlmanacModel):
     cwd: Path
     wiki: str | None = None
     page_limit: int = 30
-    include_workspaces: bool = True
+    include_repositories: bool = True
 
     @field_validator("page_limit")
     @classmethod

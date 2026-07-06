@@ -4,24 +4,23 @@ from pathlib import Path
 from threading import Event, Thread
 
 import pytest
-from conftest import runtime_runs_path
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
-from codealmanac.core.models import AppConfig
+from codealmanac.services.config.models import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,
     HarnessKind,
     HarnessTranscriptRef,
 )
-from codealmanac.services.runs.io import RunLedgerIO
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import (
     RunAttachSnapshot,
     RunEventKind,
+    RunKind,
     RunLogEvent,
-    RunOperation,
     RunRecord,
     RunSpec,
     RunStatus,
@@ -43,19 +42,7 @@ from codealmanac.services.runs.requests import (
     StartRunRequest,
     StreamRunAttachRequest,
 )
-from codealmanac.services.runs.store import RunStore
 from codealmanac.services.runs.streaming import RunAttachStreamer
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
-
-
-class FailingAppendLedger(RunLedgerIO):
-    def __init__(self):
-        self.fail_append = False
-
-    def append_event(self, almanac_path: Path, event: RunLogEvent) -> None:
-        if self.fail_append:
-            raise OSError("cannot append event")
-        super().append_event(almanac_path, event)
 
 
 def test_runs_service_records_job_and_events(
@@ -65,14 +52,14 @@ def test_runs_service_records_job_and_events(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
-            operation=RunOperation.INGEST,
+            kind=RunKind.INGEST,
             title="Digest design note",
         )
     )
@@ -150,9 +137,7 @@ def test_runs_service_records_job_and_events(
     assert log[2].harness_event is None
     assert log[3].harness_event is not None
     assert log[3].harness_event.provider_session_id == "provider-thread-1"
-    runs_path = runtime_runs_path(isolated_home, workspace)
-    assert (runs_path / f"{record.run_id}.json").is_file()
-    assert (runs_path / f"{record.run_id}.jsonl").is_file()
+    assert (isolated_home / ".codealmanac/codealmanac.db").is_file()
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -165,26 +150,26 @@ def test_runs_service_targets_registered_wiki(
     first.mkdir()
     second.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
-    )
-    first_workspace = app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=first, name="first")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
     app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=second, name="second")
+        InitializeRepositoryRequest(path=first, name="first")
+    )
+    app.workflows.build.initialize(
+        InitializeRepositoryRequest(path=second, name="second")
     )
 
     record = app.runs.start(
-        StartRunRequest(cwd=second, wiki="first", operation=RunOperation.GARDEN)
+        StartRunRequest(cwd=second, wiki="first", kind=RunKind.GARDEN)
     )
 
-    assert (
-        runtime_runs_path(isolated_home, first_workspace) / f"{record.run_id}.json"
-    ).is_file()
-    assert not (first / "almanac/jobs").exists()
     assert app.runs.list(ListRunsRequest(cwd=second, wiki="first"))[0].run_id == (
         record.run_id
     )
+    assert app.runs.show(
+        ShowRunRequest(cwd=second, wiki="first", run_id=record.run_id)
+    ).repository_id == record.repository_id
+    assert not (first / "almanac/jobs").exists()
 
 
 def test_runs_service_refuses_running_transition_after_terminal_status(
@@ -194,10 +179,10 @@ def test_runs_service_refuses_running_transition_after_terminal_status(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.INGEST))
     app.runs.finish(
         FinishRunRequest(
             cwd=repo,
@@ -218,10 +203,10 @@ def test_runs_service_cancels_queued_run_and_attaches_log(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.GARDEN))
 
     result = app.runs.cancel(CancelRunRequest(cwd=repo, run_id=record.run_id))
     snapshot = app.runs.attach(AttachRunRequest(cwd=repo, run_id=record.run_id))
@@ -245,10 +230,10 @@ def test_runs_service_cancel_is_idempotent_for_terminal_run(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.GARDEN))
     app.runs.finish(
         FinishRunRequest(
             cwd=repo,
@@ -276,10 +261,10 @@ def test_runs_service_finish_preserves_cancelled_run(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.GARDEN))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.GARDEN))
     app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
     cancelled = app.runs.cancel(CancelRunRequest(cwd=repo, run_id=record.run_id))
 
@@ -310,10 +295,10 @@ def test_runs_service_streams_attach_until_run_is_terminal(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.INGEST))
     first_update_seen = Event()
     updates = []
     errors = []
@@ -374,10 +359,10 @@ def test_run_attach_streamer_waits_for_terminal_status_event(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    record = app.runs.start(StartRunRequest(cwd=repo, operation=RunOperation.INGEST))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    record = app.runs.start(StartRunRequest(cwd=repo, kind=RunKind.INGEST))
     done = record.model_copy(update={"status": RunStatus.DONE})
     queued_event = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=record.run_id))[0]
     terminal_event = queued_event.model_copy(
@@ -419,25 +404,25 @@ def test_run_attach_streamer_waits_for_terminal_status_event(
     assert updates[-1].terminal is True
 
 
-def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(
+def test_runs_service_persists_queue_specs_and_selects_oldest_queued_run(
     tmp_path: Path,
     isolated_home: Path,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     foreground = app.runs.start(
-        StartRunRequest(cwd=repo, operation=RunOperation.INGEST)
+        StartRunRequest(cwd=repo, kind=RunKind.INGEST)
     )
     first = app.runs.queue(
         QueueRunRequest(
             cwd=repo,
             title="Ingest first note",
             spec=RunSpec(
-                operation=RunOperation.INGEST,
+                kind=RunKind.INGEST,
                 cwd=repo,
                 harness=HarnessKind.CODEX,
                 inputs=("first.md",),
@@ -449,7 +434,7 @@ def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(
             cwd=repo,
             title="Garden later",
             spec=RunSpec(
-                operation=RunOperation.GARDEN,
+                kind=RunKind.GARDEN,
                 cwd=repo,
                 harness=HarnessKind.CODEX,
             ),
@@ -471,9 +456,7 @@ def test_runs_service_persists_queue_specs_and_selects_oldest_background_run(
         first.run_id,
         second.run_id,
     }
-    assert (
-        runtime_runs_path(isolated_home, workspace) / f"{first.run_id}.spec.json"
-    ).is_file()
+    assert (isolated_home / ".codealmanac/codealmanac.db").is_file()
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -484,9 +467,9 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     now = datetime(2026, 7, 1, 12, 0, tzinfo=UTC)
 
     first = app.runs.acquire_worker_lock(
@@ -522,61 +505,18 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     assert recovered is not None
     assert recovered.owner.owner == "second-worker"
 
-    first.release()
-    assert (runtime_runs_path(isolated_home, workspace) / "worker.lock").is_dir()
     recovered.release()
-    assert not (runtime_runs_path(isolated_home, workspace) / "worker.lock").exists()
-
-
-def test_run_store_restores_previous_record_when_status_event_append_fails(
-    tmp_path: Path,
-):
-    runtime_path = tmp_path / "runtime"
-    ledger = FailingAppendLedger()
-    store = RunStore(ledger=ledger)
-    record = store.create(
-        runtime_path,
-        "workspace",
-        RunOperation.INGEST,
-        title=None,
-    )
-
-    ledger.fail_append = True
-    with pytest.raises(OSError, match="cannot append event"):
-        store.mark_running(runtime_path, record.run_id)
-
-    restored = store.read(runtime_path, record.run_id)
-    log = store.log(runtime_path, record.run_id)
-
-    assert restored.status == RunStatus.QUEUED
-    assert restored.started_at is None
-    assert tuple(event.message for event in log) == ("queued ingest",)
-
-
-def test_run_store_removes_queue_spec_when_initial_event_append_fails(
-    tmp_path: Path,
-):
-    runtime_path = tmp_path / "runtime"
-    ledger = FailingAppendLedger()
-    store = RunStore(ledger=ledger)
-    spec = RunSpec(
-        operation=RunOperation.INGEST,
-        cwd=tmp_path,
-        harness=HarnessKind.CODEX,
-        inputs=("note.md",),
-    )
-
-    ledger.fail_append = True
-    with pytest.raises(OSError, match="cannot append event"):
-        store.queue(
-            runtime_path,
-            "workspace",
-            spec,
-            title=None,
+    after_release = app.runs.acquire_worker_lock(
+        AcquireRunWorkerLockRequest(
+            cwd=repo,
+            owner="third-worker",
+            pid=os.getpid(),
+            now=now + timedelta(minutes=12),
+            stale_after=timedelta(minutes=10),
         )
-
-    assert store.list(runtime_path, limit=None) == ()
-    assert list((runtime_path / "runs").glob("*.spec.json")) == []
+    )
+    assert after_release is not None
+    after_release.release()
 
 
 def test_finish_run_request_requires_terminal_status(tmp_path: Path):
@@ -613,8 +553,8 @@ def test_run_records_and_events_reject_unsafe_run_ids(tmp_path: Path):
     with pytest.raises(ValidationError, match="String should match pattern"):
         RunRecord(
             run_id="../secret",
-            workspace_id="workspace",
-            operation=RunOperation.INGEST,
+            repository_id="repository",
+            kind=RunKind.INGEST,
             status=RunStatus.QUEUED,
             title=None,
             created_at=now,
@@ -630,16 +570,3 @@ def test_run_records_and_events_reject_unsafe_run_ids(tmp_path: Path):
             kind=RunEventKind.STATUS,
             message="queued ingest",
         )
-
-
-def test_run_store_rejects_unsafe_run_ids_before_path_access(tmp_path: Path):
-    store = RunStore()
-    runtime_path = tmp_path / "runtime"
-    bad_record = runtime_path / "runs/run.json.json"
-    bad_record.parent.mkdir(parents=True)
-    bad_record.write_text("{}", encoding="utf-8")
-
-    with pytest.raises(ValidationError, match="String should match pattern"):
-        store.read(runtime_path, "../secret")
-
-    assert store.list(runtime_path, limit=None) == ()

@@ -20,7 +20,6 @@ class RunSetupRequest(CodeAlmanacModel):
     home: Path | None = None
     automation_tasks: tuple[AutomationTask, ...] = ()
     sync_every: timedelta | None = None
-    sync_quiet: timedelta | None = None
     sync_off: bool = False
     garden_every: timedelta | None = None
     garden_off: bool = False
@@ -43,7 +42,7 @@ class RunSetupRequest(CodeAlmanacModel):
     ) -> tuple[AutomationTask, ...]:
         return unique_tasks(value)
 
-    @field_validator("sync_every", "sync_quiet", "garden_every")
+    @field_validator("sync_every", "garden_every")
     @classmethod
     def non_negative_duration(
         cls,

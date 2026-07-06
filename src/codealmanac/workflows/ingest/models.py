@@ -11,8 +11,8 @@ from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
 
 
 class IngestPromptPayload(CodeAlmanacModel):
-    workspace_name: str
-    workspace_root: Path
+    repository_name: str
+    repository_root: Path
     almanac_root: Path
     sources: tuple[SourceBrief, ...]
     source_runtime: tuple[SourceRuntime, ...]

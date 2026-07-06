@@ -8,7 +8,7 @@ from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.runs.models import RunId
 
 
-class RunGardenRequest(CodeAlmanacModel):
+class GardenRequest(CodeAlmanacModel):
     cwd: Path
     harness: HarnessKind
     wiki: str | None = None
@@ -24,5 +24,5 @@ class RunGardenRequest(CodeAlmanacModel):
         return required_text(value, "garden request text")
 
 
-class RunGardenWithRunRequest(RunGardenRequest):
+class StartedGardenRequest(GardenRequest):
     run_id: RunId

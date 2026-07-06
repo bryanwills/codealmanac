@@ -9,7 +9,6 @@ def dispatch_run_worker(args: argparse.Namespace, app: CodeAlmanac) -> int:
     app.workflows.queue.drain(
         DrainRunQueueRequest(
             cwd=Path(args.cwd),
-            wiki=args.wiki,
         )
     )
     return 0

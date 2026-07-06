@@ -5,11 +5,16 @@ from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
+from codealmanac.services.harnesses.models import HarnessKind
+
+
+class ScheduledGardenRequest(CodeAlmanacModel):
+    harness: HarnessKind
+    auto_commit: bool = True
 
 
 class DrainRunQueueRequest(CodeAlmanacModel):
     cwd: Path
-    wiki: str | None = None
     owner: str = "codealmanac-worker"
     pid: int | None = None
     now: datetime | None = None

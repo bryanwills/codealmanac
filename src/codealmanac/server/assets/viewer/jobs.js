@@ -38,7 +38,7 @@ export async function renderJob(context, runId) {
   setRouteTitle(run.title || run.run_id);
   replaceMain(
     elements,
-    pageIntro("Job", run.title || run.run_id, `${run.operation} · ${run.status}`),
+    pageIntro("Job", run.title || run.run_id, `${run.kind} · ${run.status}`),
     jobDetail(run),
     eventList(detail.events),
   );
@@ -97,7 +97,7 @@ function jobRow(run) {
   meta.className = "job-row-meta";
   meta.append(
     jobPill(run.status),
-    textSpan(run.operation),
+    textSpan(run.kind),
     textSpan(shortTime(run.updated_at)),
   );
 
@@ -111,9 +111,9 @@ function jobDetail(run) {
   section.append(
     detailRow("Run", run.run_id),
     detailRow("Status", run.status),
-    detailRow("Operation", run.operation),
+    detailRow("Kind", run.kind),
     detailRow("Updated", run.updated_at),
-    detailRow("Log", run.log_path),
+    detailRow("Logs", "event log below"),
   );
   if (run.harness_transcript) {
     section.append(

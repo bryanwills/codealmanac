@@ -1,51 +1,48 @@
 from datetime import UTC, datetime
 from pathlib import Path
-from uuid import uuid4
 
-from pydantic import ValidationError
+from codealmanac.core.paths import normalize_path
+from codealmanac.database.local import connect_local_database
+from codealmanac.workflows.sync.models import SyncState
 
-from codealmanac.workflows.sync.models import SyncLedger
-
-SYNC_LEDGER_VERSION = 1
+SYNC_STATE_KEY = "sync"
 
 
-class SyncLedgerStore:
-    def load(self, runtime_path: Path) -> SyncLedger:
-        path = sync_ledger_path(runtime_path)
-        try:
-            return SyncLedger.model_validate_json(path.read_text(encoding="utf-8"))
-        except (OSError, ValidationError, ValueError):
-            return empty_ledger()
+class SyncStateStore:
+    def __init__(self, database_path: Path):
+        self.database_path = normalize_path(database_path)
 
-    def save(
-        self,
-        runtime_path: Path,
-        ledger: SyncLedger,
-        now: datetime,
-    ) -> SyncLedger:
-        updated = ledger.model_copy(update={"updated_at": now})
-        path = sync_ledger_path(runtime_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
-        try:
-            temporary.write_text(
-                updated.model_dump_json(indent=2),
-                encoding="utf-8",
+    def read(self) -> SyncState:
+        with self.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT last_completed_at
+                FROM sync_state
+                WHERE name = ?
+                """,
+                (SYNC_STATE_KEY,),
+            ).fetchone()
+        if row is None or row["last_completed_at"] is None:
+            return SyncState()
+        return SyncState(
+            last_completed_at=datetime.fromisoformat(
+                str(row["last_completed_at"])
+            ).astimezone(UTC)
+        )
+
+    def record_completed(self, completed_at: datetime) -> SyncState:
+        with self.connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO sync_state (name, last_completed_at)
+                VALUES (?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                    last_completed_at = excluded.last_completed_at
+                """,
+                (SYNC_STATE_KEY, completed_at.astimezone(UTC).isoformat()),
             )
-            temporary.replace(path)
-        finally:
-            if temporary.exists():
-                temporary.unlink()
-        return updated
+            connection.commit()
+        return SyncState(last_completed_at=completed_at.astimezone(UTC))
 
-
-def sync_ledger_path(runtime_path: Path) -> Path:
-    return runtime_path / "runs" / "sync-ledger.json"
-
-
-def empty_ledger() -> SyncLedger:
-    return SyncLedger(
-        version=SYNC_LEDGER_VERSION,
-        updated_at=datetime.fromtimestamp(0, UTC),
-        sessions={},
-    )
+    def connect(self):
+        return connect_local_database(self.database_path)

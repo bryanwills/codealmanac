@@ -3,26 +3,84 @@ from pathlib import Path
 
 from codealmanac.cli.render.common import index_summary, print_json_model
 from codealmanac.cli.render.style import style
-from codealmanac.services.index.models import HealthReport, IndexRefreshResult
-from codealmanac.services.workspaces.models import Workspace
+from codealmanac.services.index.models import HealthReport
+from codealmanac.services.runs.models import RunKind, RunRecord
+from codealmanac.workflows.build.models import BuildResult
 from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.ingest.models import IngestResult
-from codealmanac.workflows.run_queue.models import RunQueueStartResult
+from codealmanac.workflows.run_queue.models import (
+    RunQueueStartResult,
+    ScheduledGardenResult,
+)
 from codealmanac.workflows.sync.models import SyncMode, SyncSummary
 
+RUN_QUIPS = {
+    RunKind.BUILD: "every codebase deserves a biography — writing yours now.",
+    RunKind.INGEST: "the wiki is hungry — feeding it your latest work.",
+    RunKind.GARDEN: "weeding, pruning, watering. your wiki, but tidier.",
+}
 
-def render_init(
-    workspace: Workspace,
-    result: IndexRefreshResult,
-    registry_path: Path,
+
+def render_run_started(
+    record: RunRecord,
+    label: str | None = None,
+    worker_pid: int | None = None,
 ) -> None:
-    print(f"initialized {workspace.name}: {index_summary(result)}")
-    print(f"wiki: {workspace.almanac_path}")
-    print(f"registry: {registry_path}")
+    blue = style.BLUE
+    dim = style.DIM
+    bold = style.BOLD
+    rst = style.RST
+    name = label or record.kind.value
+    print(f"{blue}◆{rst} {name} started: {blue}{record.run_id}{rst}")
+    where = "in a worker" if worker_pid is not None else "in this terminal"
+    print(f"{dim}│{rst} the agent is working {where} — this can take a few minutes.")
+    print(f"{dim}│{rst} track:   {bold}codealmanac jobs attach {record.run_id}{rst}")
+    print(f"{dim}│{rst} details: {bold}codealmanac jobs show {record.run_id}{rst}")
+    if worker_pid is not None:
+        print(f"{dim}│ worker: pid {worker_pid}{rst}")
+    quip = RUN_QUIPS.get(record.kind)
+    if quip is not None:
+        print(f"{dim}◇ {quip}{rst}")
 
 
-def render_build(workspace_name: str, result: IndexRefreshResult) -> None:
-    print(f"built {workspace_name}: {index_summary(result)}")
+def render_run_queued(record: RunRecord, worker_pid: int | None = None) -> None:
+    blue = style.BLUE
+    dim = style.DIM
+    bold = style.BOLD
+    rst = style.RST
+    print(f"{blue}◆{rst} {record.kind.value} queued: {blue}{record.run_id}{rst}")
+    print(f"{dim}│{rst} status:  {record.status.value}")
+    print(f"{dim}│{rst} follow:  {bold}codealmanac jobs attach {record.run_id}{rst}")
+    print(f"{dim}│{rst} details: {bold}codealmanac jobs show {record.run_id}{rst}")
+    if worker_pid is not None:
+        print(f"{dim}│ worker: pid {worker_pid}{rst}")
+    quip = RUN_QUIPS.get(record.kind)
+    if quip is not None:
+        print(f"{dim}◇ {quip}{rst}")
+
+
+def render_init(result: BuildResult, database_path: Path) -> None:
+    repository = result.repository
+    print(f"initialized {repository.name}: {index_summary(result.index)}")
+    print(f"wiki: {repository.almanac_path}")
+    print(f"database: {database_path}")
+    if result.run.summary is not None:
+        print(f"summary: {result.run.summary}")
+
+
+def render_init_json(result: BuildResult, database_path: Path) -> None:
+    repository = result.repository
+    receipt = {
+        "repository": repository.name,
+        "wiki": repository.almanac_path.as_posix(),
+        "database": database_path.as_posix(),
+        "pages_indexed": result.index.pages_indexed,
+    }
+    receipt["run_id"] = result.run.run_id
+    receipt["status"] = result.run.status.value
+    if result.run.summary is not None:
+        receipt["summary"] = result.run.summary
+    print(json.dumps(receipt, indent=2))
 
 
 def render_ingest(result: IngestResult) -> None:
@@ -50,6 +108,8 @@ def render_run_queue_start(
             json.dumps(
                 {
                     "run_id": result.run.run_id,
+                    "repository": result.repository.name,
+                    "runs_ahead": result.runs_ahead,
                     "status": result.run.status.value,
                     "child_pid": result.worker.child_pid,
                 },
@@ -57,16 +117,34 @@ def render_run_queue_start(
             )
         )
         return
+    render_run_queue_started(result)
+
+
+def render_run_queue_started(result: RunQueueStartResult) -> None:
     record = result.run
-    print(
-        f"{record.operation.value} started: "
-        f"{style.BLUE}{record.run_id}{style.RST}"
-    )
-    print(
-        f"{style.DIM}attach:{style.RST}  "
-        f"codealmanac jobs attach {record.run_id}"
-    )
-    print(f"{style.DIM}worker:{style.RST}  pid {result.worker.child_pid}")
+    blue = style.BLUE
+    dim = style.DIM
+    bold = style.BOLD
+    rst = style.RST
+    print(f"{blue}◆{rst} {record.kind.value} queued: {blue}{record.run_id}{rst}")
+    print(f"{dim}│{rst} repo:    {result.repository.name}")
+    print(f"{dim}│{rst} ahead:   {result.runs_ahead} run(s)")
+    print(f"{dim}│{rst} follow:  {bold}codealmanac jobs attach {record.run_id}{rst}")
+    print(f"{dim}│{rst} details: {bold}codealmanac jobs show {record.run_id}{rst}")
+    print(f"{dim}│ worker: pid {result.worker.child_pid}{rst}")
+    quip = RUN_QUIPS.get(record.kind)
+    if quip is not None:
+        print(f"{dim}◇ {quip}{rst}")
+
+
+def render_scheduled_garden(result: ScheduledGardenResult) -> None:
+    print(f"scheduled garden: {len(result.runs)} run(s)")
+    for run in result.runs:
+        print(f"  - {run.kind.value} {run.run_id}")
+    if result.worker is not None:
+        print(f"worker: pid {result.worker.child_pid}")
+    if result.worker_error is not None:
+        print(f"  ! worker spawn failed: {result.worker_error}")
 
 
 def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
@@ -75,6 +153,7 @@ def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
         return
     status_mode = summary.mode == SyncMode.STATUS
     print("sync status:" if status_mode else "sync:")
+    print(f"  since: {summary.since.isoformat()}")
     print(f"  scanned: {summary.scanned}")
     print(f"  eligible: {summary.eligible}")
     if status_mode:
@@ -82,19 +161,16 @@ def render_sync_status(summary: SyncSummary, json_output: bool) -> None:
     else:
         print(f"  started: {len(summary.started)}")
     print(f"  skipped: {len(summary.skipped)}")
-    print(f"  needs_attention: {len(summary.needs_attention)}")
     for ready in summary.ready:
         print(
-            f"  - ready {ready.app.value} {ready.session_id}: "
-            f"lines {ready.from_line}-{ready.to_line}"
+            f"  - ready {ready.repository_name}: "
+            f"{ready.transcript_count} transcript(s)"
         )
     for started in summary.started:
         print(
-            f"  - started {started.app.value} {started.session_id}: "
-            f"{started.run_id} (lines {started.from_line}-{started.to_line})"
+            f"  - started {started.repository_name}: "
+            f"{started.run_id} ({started.transcript_count} transcript(s))"
         )
-    for item in summary.needs_attention:
-        print(f"  - needs attention {item.transcript_path}: {item.reason}")
 
 
 def health_issue_count(report: HealthReport) -> int:

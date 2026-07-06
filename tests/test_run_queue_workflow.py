@@ -1,10 +1,8 @@
 import subprocess
 from pathlib import Path
 
-from conftest import runtime_runs_path
-
 from codealmanac.app import create_app
-from codealmanac.core.models import AppConfig
+from codealmanac.services.config.models import AppConfig
 from codealmanac.integrations.runs.process import worker_command
 from codealmanac.services.harnesses.models import (
     HarnessKind,
@@ -13,6 +11,7 @@ from codealmanac.services.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunStatus, RunWorkerSpawnResult
 from codealmanac.services.runs.requests import (
     CancelRunRequest,
@@ -21,7 +20,6 @@ from codealmanac.services.runs.requests import (
     SpawnRunWorkerRequest,
 )
 from codealmanac.services.search.requests import SearchPagesRequest
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 from codealmanac.workflows.run_queue import DrainRunQueueRequest
 
@@ -75,7 +73,7 @@ class FakeWorkerSpawner:
         )
 
 
-def test_run_queue_background_start_persists_spec_and_spawns_worker(
+def test_run_queue_start_persists_spec_and_spawns_worker(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -84,13 +82,13 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
     (repo / "note.md").write_text("queue design note\n", encoding="utf-8")
     spawner = FakeWorkerSpawner()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(QueueWritingHarnessAdapter(),),
         worker_spawner=spawner,
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
-    result = app.workflows.queue.start_ingest_background(
+    result = app.workflows.queue.start_ingest(
         RunIngestRequest(
             cwd=repo,
             inputs=("note.md",),
@@ -103,9 +101,7 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
     assert result.run.status == RunStatus.QUEUED
     assert runs[0].run_id == result.run.run_id
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (
-        runtime_runs_path(isolated_home, workspace) / f"{result.run.run_id}.spec.json"
-    ).is_file()
+    assert (isolated_home / ".codealmanac/codealmanac.db").is_file()
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -118,10 +114,10 @@ def test_run_queue_drains_persisted_ingest_spec(
     (repo / "note.md").write_text("queue design note\n", encoding="utf-8")
     harness = QueueWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
     )
-    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
@@ -153,7 +149,6 @@ def test_run_queue_drains_persisted_ingest_spec(
         "queued ingest",
         "running",
     )
-    assert not (runtime_runs_path(isolated_home, workspace) / "worker.lock").exists()
 
 
 def test_run_queue_skips_cancelled_queued_runs(
@@ -165,10 +160,10 @@ def test_run_queue_skips_cancelled_queued_runs(
     (repo / "note.md").write_text("cancelled queue note\n", encoding="utf-8")
     harness = QueueWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     queued = app.workflows.queue.queue_ingest(
         RunIngestRequest(
             cwd=repo,

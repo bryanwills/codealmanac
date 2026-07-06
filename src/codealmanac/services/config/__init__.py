@@ -3,7 +3,6 @@ from codealmanac.services.config.models import (
     ConfigKey,
     ConfigSetResult,
     HarnessConfig,
-    SyncConfig,
 )
 from codealmanac.services.config.requests import (
     LoadConfigRequest,
@@ -21,5 +20,4 @@ __all__ = [
     "HarnessConfig",
     "LoadConfigRequest",
     "SetConfigValueRequest",
-    "SyncConfig",
 ]

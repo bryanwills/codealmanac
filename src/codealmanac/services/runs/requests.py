@@ -9,14 +9,13 @@ from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscrip
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunId,
-    RunOperation,
+    RunKind,
     RunSpec,
     RunStatus,
 )
 
 
 class ListRunsRequest(CodeAlmanacModel):
-    cwd: Path
     wiki: str | None = None
     limit: int | None = None
 
@@ -29,25 +28,21 @@ class ListRunsRequest(CodeAlmanacModel):
 
 
 class ShowRunRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
 class ReadRunLogRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
 class AttachRunRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
 class StreamRunAttachRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
     poll_interval_seconds: float = 0.5
@@ -61,14 +56,13 @@ class StreamRunAttachRequest(CodeAlmanacModel):
 
 
 class CancelRunRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
 class StartRunRequest(CodeAlmanacModel):
     cwd: Path
-    operation: RunOperation
+    kind: RunKind
     wiki: str | None = None
     title: str | None = None
 
@@ -81,19 +75,11 @@ class QueueRunRequest(CodeAlmanacModel):
 
 
 class ReadRunSpecRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
-class NextQueuedRunRequest(CodeAlmanacModel):
-    cwd: Path
-    wiki: str | None = None
-
-
 class AcquireRunWorkerLockRequest(CodeAlmanacModel):
-    cwd: Path
-    wiki: str | None = None
     owner: str
     pid: int | None = None
     now: datetime | None = None
@@ -121,11 +107,9 @@ class AcquireRunWorkerLockRequest(CodeAlmanacModel):
 
 class SpawnRunWorkerRequest(CodeAlmanacModel):
     cwd: Path
-    wiki: str | None = None
 
 
 class RecordRunEventRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     kind: RunEventKind
     message: str
@@ -134,20 +118,17 @@ class RecordRunEventRequest(CodeAlmanacModel):
 
 
 class MarkRunRunningRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     wiki: str | None = None
 
 
 class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     transcript: HarnessTranscriptRef
     wiki: str | None = None
 
 
 class FinishRunRequest(CodeAlmanacModel):
-    cwd: Path
     run_id: RunId
     status: RunStatus
     wiki: str | None = None

@@ -38,7 +38,7 @@ class SetupService:
 
     def run(self, request: RunSetupRequest) -> SetupResult:
         plan = setup_plan(request)
-        config_update = self._set_auto_commit(request.auto_commit)
+        config_update = self.set_auto_commit(request.auto_commit)
         changes = ()
         if not request.skip_instructions:
             changes = self._instructions.install(request.targets)
@@ -77,7 +77,7 @@ class SetupService:
             package_uninstall=package_uninstall,
         )
 
-    def _set_auto_commit(self, enabled: bool) -> ConfigSetResult | None:
+    def set_auto_commit(self, enabled: bool) -> ConfigSetResult | None:
         if self._config is None:
             return None
         return self._config.set(

@@ -36,7 +36,7 @@ def commit_instructions(auto_commit: bool) -> tuple[str, ...]:
     if auto_commit:
         return (
             "You may commit wiki source changes during this run.",
-            "Use normal git commands from the workspace root.",
+            "Use normal git commands from the repository root.",
             "Commit only allowed wiki source files.",
             f"Use commit message shape `{COMMIT_MESSAGE_SHAPE}`.",
             "Do not commit runtime state, app source files, logs, or unrelated files.",

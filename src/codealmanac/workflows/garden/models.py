@@ -14,8 +14,8 @@ from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
 
 
 class GardenPromptPayload(CodeAlmanacModel):
-    workspace_name: str
-    workspace_root: Path
+    repository_name: str
+    repository_root: Path
     almanac_root: Path
     wiki_source_root: Path
     topics_file: Path

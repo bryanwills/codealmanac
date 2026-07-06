@@ -4,11 +4,11 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import CodeAlmanac, create_app
-from codealmanac.core.models import AppConfig
+from codealmanac.services.config.models import AppConfig
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.workspaces.identity import workspace_id_for
-from codealmanac.services.workspaces.models import Workspace
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.services.repositories.identity import repository_id_for
+from codealmanac.services.repositories.models import Repository
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 
 
 @pytest.fixture
@@ -24,9 +24,9 @@ def viewer_repo(tmp_path: Path, isolated_home: Path) -> tuple[Path, CodeAlmanac]
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     (repo / "src/auth").mkdir(parents=True)
     (repo / "src/auth/session.py").write_text("SESSION = True\n", encoding="utf-8")
     write_page(
@@ -78,17 +78,18 @@ def write_page(repo: Path, name: str, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def runtime_repo_path(home: Path, workspace: Workspace) -> Path:
-    return home / ".codealmanac" / "repos" / workspace.workspace_id
+def runtime_repo_path(home: Path, repository: Repository) -> Path:
+    return home / ".codealmanac" / "repos" / repository.repository_id
 
 
 def runtime_repo_path_for_root(home: Path, root_path: Path) -> Path:
-    return home / ".codealmanac" / "repos" / workspace_id_for(normalize_path(root_path))
+    repository_id = repository_id_for(normalize_path(root_path))
+    return home / ".codealmanac" / "repos" / repository_id
 
 
-def runtime_index_path(home: Path, workspace: Workspace) -> Path:
-    return runtime_repo_path(home, workspace) / "index.db"
+def runtime_index_path(home: Path, repository: Repository) -> Path:
+    return runtime_repo_path(home, repository) / "index.db"
 
 
-def runtime_runs_path(home: Path, workspace: Workspace) -> Path:
-    return runtime_repo_path(home, workspace) / "runs"
+def runtime_runs_path(home: Path, repository: Repository) -> Path:
+    return runtime_repo_path(home, repository) / "runs"

@@ -41,7 +41,7 @@ def register_api_routes(server: FastAPI, context: ServerApiContext) -> None:
             ViewerOverviewRequest(
                 cwd=context.cwd,
                 wiki=context.selected_wiki(wiki),
-                include_workspaces=context.scope_wiki is None,
+                include_repositories=context.scope_wiki is None,
             )
         )
 

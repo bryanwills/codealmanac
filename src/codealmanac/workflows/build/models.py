@@ -4,15 +4,15 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.manual import ManualDocument
 from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.index.models import IndexRefreshResult
+from codealmanac.services.repositories.models import Repository
 from codealmanac.services.runs.models import RunRecord
-from codealmanac.services.workspaces.models import Workspace
 from codealmanac.workflows.lifecycle import LifecycleMutationReport
 from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
 
 
 class BuildPromptPayload(CodeAlmanacModel):
-    workspace_name: str
-    workspace_root: Path
+    repository_name: str
+    repository_root: Path
     almanac_root: Path
     wiki_source_root: Path
     topics_file: Path
@@ -21,9 +21,14 @@ class BuildPromptPayload(CodeAlmanacModel):
     guidance: str | None = None
 
 
+class StartedBuild(CodeAlmanacModel):
+    repository: Repository
+    run: RunRecord
+
+
 class BuildResult(CodeAlmanacModel):
-    workspace: Workspace
+    repository: Repository
     index: IndexRefreshResult
-    run: RunRecord | None = None
-    harness: HarnessRunResult | None = None
-    safety: LifecycleMutationReport | None = None
+    run: RunRecord
+    harness: HarnessRunResult
+    safety: LifecycleMutationReport

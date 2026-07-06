@@ -11,7 +11,8 @@ from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessTranscriptRef,
 )
-from codealmanac.services.runs.models import RunEventKind, RunOperation, RunStatus
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
+from codealmanac.services.runs.models import RunEventKind, RunKind, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     MarkRunRunningRequest,
@@ -28,7 +29,6 @@ from codealmanac.services.viewer.requests import (
     ViewerSearchRequest,
     ViewerTopicRequest,
 )
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
 def test_viewer_overview_search_and_topic_use_index_read_model(
@@ -40,7 +40,7 @@ def test_viewer_overview_search_and_topic_use_index_read_model(
     search = app.viewer.search(ViewerSearchRequest(cwd=repo, query="login"))
     topic = app.viewer.topic(ViewerTopicRequest(cwd=repo, slug="auth"))
 
-    assert overview.workspace.name == "repo"
+    assert overview.repository.name == "repo"
     assert overview.featured_page is not None
     assert overview.featured_page.slug == "getting-started"
     assert "auth-flow" in [page.slug for page in overview.pages]
@@ -55,7 +55,7 @@ def test_viewer_overview_lists_available_registered_wikis(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    other = app.workflows.build.initialize(InitializeRepositoryRequest(path=other_repo))
     write_viewer_page(
         other_repo,
         "ops-note.md",
@@ -71,22 +71,28 @@ Tracks operational decisions.
     missing_repo = tmp_path / "missing"
     missing_repo.mkdir()
     missing = app.workflows.build.initialize(
-        InitializeWorkspaceRequest(path=missing_repo)
+        InitializeRepositoryRequest(path=missing_repo)
     )
     shutil.rmtree(missing_repo)
 
     overview = app.viewer.overview(ViewerOverviewRequest(cwd=repo))
     selected = app.viewer.overview(
-        ViewerOverviewRequest(cwd=repo, wiki=other.workspace_id)
+        ViewerOverviewRequest(cwd=repo, wiki=other.repository_id)
     )
 
-    assert overview.workspace.name == "repo"
-    assert [workspace.name for workspace in overview.workspaces] == ["repo", "other"]
-    assert missing.workspace_id not in [
-        workspace.workspace_id for workspace in overview.workspaces
+    assert overview.repository.name == "repo"
+    assert [repository.name for repository in overview.repositories] == [
+        "repo",
+        "other",
     ]
-    assert selected.workspace.name == "other"
-    assert [workspace.name for workspace in selected.workspaces] == ["other", "repo"]
+    assert missing.repository_id not in [
+        repository.repository_id for repository in overview.repositories
+    ]
+    assert selected.repository.name == "other"
+    assert [repository.name for repository in selected.repositories] == [
+        "other",
+        "repo",
+    ]
     assert "ops-note" in [page.slug for page in selected.pages]
 
 
@@ -97,19 +103,19 @@ def test_viewer_overview_can_be_narrowed_to_one_wiki(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeWorkspaceRequest(path=other_repo))
+    other = app.workflows.build.initialize(InitializeRepositoryRequest(path=other_repo))
 
     overview = app.viewer.overview(
         ViewerOverviewRequest(
             cwd=repo,
-            wiki=other.workspace_id,
-            include_workspaces=False,
+            wiki=other.repository_id,
+            include_repositories=False,
         )
     )
 
-    assert overview.workspace.workspace_id == other.workspace_id
-    assert [workspace.workspace_id for workspace in overview.workspaces] == [
-        other.workspace_id
+    assert overview.repository.repository_id == other.repository_id
+    assert [repository.repository_id for repository in overview.repositories] == [
+        other.repository_id
     ]
 
 
@@ -184,9 +190,9 @@ def test_viewer_jobs_expose_runs_and_normalized_harness_events(
     jobs = app.viewer.jobs(ViewerJobsRequest(cwd=repo))
     detail = app.viewer.job(ViewerJobRequest(cwd=repo, run_id=record.run_id))
 
-    assert jobs.workspace.name == "repo"
+    assert jobs.repository.name == "repo"
     assert [run.run_id for run in jobs.runs] == [record.run_id]
-    assert jobs.runs[0].operation == "ingest"
+    assert jobs.runs[0].kind == "ingest"
     assert jobs.runs[0].status == "done"
     assert jobs.runs[0].harness_transcript is not None
     assert jobs.runs[0].harness_transcript.kind == "codex"
@@ -222,7 +228,7 @@ def create_viewer_run(repo: Path, app: CodeAlmanac):
     record = app.runs.start(
         StartRunRequest(
             cwd=repo,
-            operation=RunOperation.INGEST,
+            kind=RunKind.INGEST,
             title="Digest auth session",
         )
     )

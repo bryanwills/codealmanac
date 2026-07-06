@@ -5,7 +5,7 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, ValidationFailed
-from codealmanac.core.models import AppConfig
+from codealmanac.services.config.models import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -14,10 +14,10 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.services.search.requests import SearchPagesRequest
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.garden.requests import RunGardenRequest
 
 
@@ -92,10 +92,10 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     repo.mkdir()
     adapter = GardenWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -131,7 +131,7 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert '"wiki_source_root"' in adapter.requests[0].prompt
     assert '"source_control": {' in adapter.requests[0].prompt
     assert '"auto_commit": true' in adapter.requests[0].prompt
-    assert "Use normal git commands from the workspace root." in (
+    assert "Use normal git commands from the repository root." in (
         adapter.requests[0].prompt
     )
     assert "Improve a single page if useful." in adapter.requests[0].prompt
@@ -154,10 +154,10 @@ def test_garden_prompt_disables_commit_policy(
     repo.mkdir()
     adapter = GardenWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -182,10 +182,10 @@ def test_garden_workflow_allows_preexisting_dirty_almanac_edits(
     repo.mkdir()
     adapter = GardenWritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     getting_started = repo / "almanac/getting-started.md"
@@ -220,10 +220,10 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
     (repo / "src").mkdir()
     (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(DirtyAppGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -248,10 +248,10 @@ def test_garden_workflow_records_failed_harness_output_before_error(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(FailedGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 

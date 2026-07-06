@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.core.paths import global_state_dir
+from codealmanac.core.paths import default_database_path, global_state_dir
 from codealmanac.services.updates.activity import active_run_count
 from codealmanac.services.updates.lock import UpdateLockStore
 from codealmanac.services.updates.models import (
@@ -31,11 +31,13 @@ class UpdatesService:
         metadata: PackageInstallMetadataProvider,
         runner: PackageCommandRunner,
         state_dir: Path | None = None,
+        database_path: Path | None = None,
         lock_store: UpdateLockStore | None = None,
     ):
         self.metadata = metadata
         self.runner = runner
         self.state_dir = state_dir or global_state_dir()
+        self.database_path = database_path or default_database_path()
         self.lock_store = lock_store or UpdateLockStore()
 
     def check(self, request: CheckUpdateRequest) -> UpdatePlan:
@@ -73,7 +75,7 @@ class UpdatesService:
                 message="scheduled update skipped: update already in progress",
             )
         try:
-            active = active_run_count(self.state_dir)
+            active = active_run_count(self.database_path)
             if active > 0:
                 return UpdateResult(
                     status=UpdateStatus.SKIPPED,
@@ -180,7 +182,7 @@ def runnable_plan(
         method=method,
         installed_version=metadata.version,
         command=command,
-        message="ready to run foreground package update",
+        message="ready to run package update",
         installer=metadata.installer,
         editable=metadata.editable,
         source_url=metadata.source_url,

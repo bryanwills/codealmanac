@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
-from codealmanac.core.models import AppConfig
+from codealmanac.services.config.models import AppConfig
 from codealmanac.integrations.automation.scheduler.launchd import (
     LaunchdSchedulerAdapter,
 )
@@ -26,7 +26,7 @@ from codealmanac.services.automation.requests import (
     InstallAutomationRequest,
     UninstallAutomationRequest,
 )
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 
 
 class FakeSchedulerAdapter:
@@ -73,10 +73,10 @@ def test_automation_install_plans_sync_and_garden(
     repo.mkdir()
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
     result = app.automation.install(
         InstallAutomationRequest(
@@ -143,7 +143,7 @@ def test_automation_install_sync_only_does_not_require_repo(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
 
@@ -166,7 +166,7 @@ def test_automation_install_update_only_can_override_interval(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
 
@@ -189,10 +189,10 @@ def test_automation_install_preserves_zero_quiet(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=tmp_path))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=tmp_path))
 
     app.automation.install(
         InstallAutomationRequest(
@@ -215,7 +215,7 @@ def test_automation_status_and_uninstall_work_outside_repo(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
 
@@ -237,7 +237,7 @@ def test_automation_garden_off_installs_sync_and_removes_garden(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
 
@@ -263,10 +263,10 @@ def test_automation_multi_task_every_keeps_update_daily(
 ):
     scheduler = FakeSchedulerAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=tmp_path))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=tmp_path))
 
     app.automation.install(
         InstallAutomationRequest(

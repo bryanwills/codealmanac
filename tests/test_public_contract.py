@@ -6,15 +6,15 @@ from ruamel.yaml import YAML
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
-from codealmanac.core.models import AppConfig
-from codealmanac.services.runs.models import RunOperation
-from codealmanac.services.sources.models import SourceKind
-from codealmanac.services.sources.requests import ResolveSourcesRequest
-from codealmanac.services.workspaces.roots import (
+from codealmanac.services.config.models import AppConfig
+from codealmanac.services.repositories.roots import (
     CONVENTIONAL_ALMANAC_ROOTS,
     DEFAULT_ALMANAC_ROOT,
     normalize_almanac_root,
 )
+from codealmanac.services.runs.models import RunKind
+from codealmanac.services.sources.models import SourceKind
+from codealmanac.services.sources.requests import ResolveSourcesRequest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src/codealmanac"
@@ -160,7 +160,7 @@ def test_python_package_metadata_declares_readme_and_license():
 def test_default_user_state_paths_are_product_specific(isolated_home: Path):
     config = AppConfig()
 
-    assert config.registry_path == isolated_home / ".codealmanac/registry.json"
+    assert config.database_path == isolated_home / ".codealmanac/codealmanac.db"
     assert config.config_path == isolated_home / ".codealmanac/config.toml"
 
 
@@ -206,8 +206,8 @@ def test_build_is_not_a_public_command(capsys):
     assert "invalid choice: 'build'" in output.err
 
 
-def test_internal_run_operations_are_only_build_ingest_and_garden():
-    assert tuple(operation.value for operation in RunOperation) == (
+def test_internal_run_kinds_are_only_build_ingest_and_garden():
+    assert tuple(kind.value for kind in RunKind) == (
         "build",
         "ingest",
         "garden",

@@ -221,7 +221,7 @@ def test_uninstall_removes_global_state_without_deleting_repo_almanac(
 ):
     global_state = home / ".codealmanac"
     global_state.mkdir(parents=True)
-    (global_state / "registry.json").write_text("{}", encoding="utf-8")
+    (global_state / "codealmanac.db").write_text("{}", encoding="utf-8")
     repo = tmp_path / "repo"
     repo_almanac = repo / "almanac"
     repo_almanac.mkdir(parents=True)

@@ -19,7 +19,7 @@ import {
 
 const state = {
   overview: null,
-  selectedWiki: "",
+  selectedRepository: "",
 };
 
 export function startViewer() {
@@ -28,10 +28,10 @@ export function startViewer() {
     event.preventDefault();
     window.location.hash = searchHref(elements.searchInput.value.trim());
   });
-  elements.workspaceSelect.addEventListener("change", async () => {
+  elements.repositorySelect.addEventListener("change", async () => {
     clearJobPolling();
-    state.selectedWiki = elements.workspaceSelect.value;
-    await loadOverview(elements, state.selectedWiki);
+    state.selectedRepository = elements.repositorySelect.value;
+    await loadOverview(elements, state.selectedRepository);
     await route(elements);
   });
 
@@ -39,10 +39,10 @@ export function startViewer() {
   loadOverview(elements).then(() => route(elements));
 }
 
-async function loadOverview(elements, wiki = state.selectedWiki) {
+async function loadOverview(elements, wiki = state.selectedRepository) {
   state.overview = await viewerApi.overview(wiki);
-  state.selectedWiki = state.overview.workspace.workspace_id;
-  renderWorkspaceOptions(elements, state.overview);
+  state.selectedRepository = state.overview.repository.name;
+  renderRepositoryOptions(elements, state.overview);
   renderNav(elements, state.overview);
 }
 
@@ -52,7 +52,7 @@ async function route(elements) {
   const context = {
     elements,
     overview: state.overview,
-    wiki: state.selectedWiki,
+    wiki: state.selectedRepository,
     setRouteTitle: (title) => setRouteTitle(elements, title),
   };
   try {
@@ -90,7 +90,7 @@ async function route(elements) {
 
 function readElements() {
   return {
-    workspaceSelect: document.getElementById("workspace-select"),
+    repositorySelect: document.getElementById("repository-select"),
     routeTitle: document.getElementById("route-title"),
     searchForm: document.getElementById("search-form"),
     searchInput: document.getElementById("search-input"),
@@ -102,17 +102,17 @@ function readElements() {
   };
 }
 
-function renderWorkspaceOptions(elements, overview) {
-  elements.workspaceSelect.replaceChildren(
-    ...overview.workspaces.map((workspace) => {
+function renderRepositoryOptions(elements, overview) {
+  elements.repositorySelect.replaceChildren(
+    ...overview.repositories.map((repository) => {
       const option = document.createElement("option");
-      option.value = workspace.workspace_id;
-      option.textContent = workspace.name;
+      option.value = repository.name;
+      option.textContent = repository.name;
       return option;
     }),
   );
-  elements.workspaceSelect.value = overview.workspace.workspace_id;
-  elements.workspaceSelect.disabled = overview.workspaces.length <= 1;
+  elements.repositorySelect.value = overview.repository.name;
+  elements.repositorySelect.disabled = overview.repositories.length <= 1;
 }
 
 function renderNav(elements, overview) {

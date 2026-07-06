@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.services.runs.models import RunOperation, RunRecord, RunStatus
+from codealmanac.services.runs.models import RunKind, RunRecord, RunStatus
 from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
@@ -263,8 +263,8 @@ def write_run_record(state_dir: Path, status: RunStatus) -> None:
     now = datetime(2026, 7, 6, tzinfo=UTC)
     record = RunRecord(
         run_id="run_active",
-        workspace_id="repo-id",
-        operation=RunOperation.INGEST,
+        repository_id="repo-id",
+        kind=RunKind.INGEST,
         status=status,
         title="Active run",
         created_at=now,

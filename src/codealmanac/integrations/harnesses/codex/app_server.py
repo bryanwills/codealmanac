@@ -62,13 +62,13 @@ class CodexAppServerClient:
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         try:
-            return self._run(request)
+            return self.run_once(request)
         except FileNotFoundError:
             return failed_result("codex not found on PATH")
         except CodexAppServerError as error:
             return failed_result(str(error))
 
-    def _run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run_once(self, request: RunHarnessRequest) -> HarnessRunResult:
         state = CodexRunState()
         events: list[HarnessEvent] = []
         rpc_timeout = self.resolved_rpc_timeout_seconds()

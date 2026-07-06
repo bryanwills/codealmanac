@@ -8,7 +8,7 @@ from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.runs.models import RunId
 
 
-class RunIngestRequest(CodeAlmanacModel):
+class IngestRequest(CodeAlmanacModel):
     cwd: Path
     inputs: tuple[str, ...]
     harness: HarnessKind
@@ -32,5 +32,5 @@ class RunIngestRequest(CodeAlmanacModel):
         return required_text(value, "ingest request text")
 
 
-class RunIngestWithRunRequest(RunIngestRequest):
+class StartedIngestRequest(IngestRequest):
     run_id: RunId

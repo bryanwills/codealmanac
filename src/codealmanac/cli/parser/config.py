@@ -7,6 +7,6 @@ def add_config_commands(subcommands: argparse._SubParsersAction) -> None:
     set_parser = config_subcommands.add_parser("set", help="set a user config value")
     set_parser.add_argument(
         "key",
-        choices=("auto_commit", "harness.default", "sync.quiet"),
+        choices=("auto_commit", "harness.default"),
     )
     set_parser.add_argument("value")

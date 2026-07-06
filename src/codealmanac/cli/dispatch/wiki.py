@@ -2,9 +2,9 @@ import argparse
 from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
+from codealmanac.cli.dispatch.repositories import dispatch_repositories
 from codealmanac.cli.dispatch.serve import run_serve
 from codealmanac.cli.dispatch.topics import dispatch_topics
-from codealmanac.cli.dispatch.workspaces import dispatch_workspaces
 from codealmanac.cli.render.root import (
     render_health,
     render_page,
@@ -41,7 +41,7 @@ def is_wiki_command(command: str | None) -> bool:
 
 def dispatch_wiki(args: argparse.Namespace, app: CodeAlmanac) -> int:
     if args.command == "list":
-        return dispatch_workspaces(args, app)
+        return dispatch_repositories(args, app)
     if args.command == "search":
         rows = app.search.search(
             SearchPagesRequest(
