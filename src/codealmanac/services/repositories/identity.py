@@ -2,6 +2,7 @@ from hashlib import sha256
 from pathlib import Path
 
 from codealmanac.core.errors import ValidationFailed
+from codealmanac.core.paths import normalize_path
 from codealmanac.core.slug import to_kebab_case
 
 
@@ -13,5 +14,5 @@ def repository_name_for(root_path: Path, requested_name: str | None) -> str:
 
 
 def repository_id_for(root_path: Path) -> str:
-    digest = sha256(str(root_path).encode("utf-8")).hexdigest()[:16]
-    return f"w_{digest}"
+    digest = sha256(str(normalize_path(root_path)).encode("utf-8")).hexdigest()[:16]
+    return f"repo_{digest}"
