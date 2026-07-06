@@ -255,6 +255,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "default agent" in captured.out
     assert "codex" in captured.out
     assert "Next steps" in captured.out
+    assert "Auto commit" in captured.out
     assert "codealmanac init" in captured.out
     assert "codealmanac automation install sync --every 5h --quiet 45m" in (
         captured.out
@@ -274,6 +275,20 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert not agents_path.exists()
 
 
+def test_cli_setup_no_auto_commit_writes_user_config(
+    isolated_home: Path,
+    capsys,
+):
+    exit_code = main(["setup", "--yes", "--target", "codex", "--no-auto-commit"])
+
+    captured = capsys.readouterr()
+    config_path = isolated_home / ".codealmanac/config.toml"
+    assert exit_code == 0
+    assert "Auto commit" in captured.out
+    assert "off" in captured.out
+    assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
+
+
 def test_cli_setup_skip_instructions_json(capsys):
     exit_code = main(["setup", "--yes", "--skip-instructions", "--json"])
 
@@ -283,6 +298,9 @@ def test_cli_setup_skip_instructions_json(capsys):
     assert payload["skipped_instructions"] is True
     assert payload["changes"] == []
     assert payload["plan"]["default_harness"] == "codex"
+    assert payload["plan"]["auto_commit"] is True
+    assert payload["config_update"]["key"] == "auto_commit"
+    assert payload["config_update"]["value"] is True
     assert payload["plan"]["instruction_targets"] == ["codex", "claude"]
     assert payload["plan"]["automation"][0]["command"] == [
         "codealmanac",
@@ -540,6 +558,20 @@ def test_cli_help_includes_update():
     help_text = parser.format_help()
 
     assert "update" in help_text
+    assert "config" in help_text
+
+
+def test_cli_config_set_auto_commit(
+    isolated_home: Path,
+    capsys,
+):
+    exit_code = main(["config", "set", "auto_commit", "false"])
+
+    output = capsys.readouterr()
+    config_path = isolated_home / ".codealmanac/config.toml"
+    assert exit_code == 0
+    assert output.out == "config: auto_commit = false\n"
+    assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
 
 
 def test_cli_update_check_json_reports_plan(monkeypatch, capsys):
@@ -614,6 +646,7 @@ def test_cli_help_includes_serve(capsys):
     assert "garden" in output.out
     assert "sync" in output.out
     assert "automation" in output.out
+    assert "config" in output.out
 
 
 def test_cli_ingest_runs_workflow_with_selected_harness(
@@ -659,6 +692,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
     assert "summary: ingested through CLI\n" in output.out
     assert adapter.requests[0].title == "Digest note"
     assert "Write one short page." in adapter.requests[0].prompt
+    assert '"auto_commit": true' in adapter.requests[0].prompt
     assert (repo / "almanac/cli-ingest-note.md").is_file()
 
 
@@ -779,6 +813,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
     assert adapter.requests[0].title == "Clean up graph"
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Improve one page boundary." in adapter.requests[0].prompt
+    assert '"auto_commit": true' in adapter.requests[0].prompt
     assert (repo / "almanac/cli-garden-note.md").is_file()
 
 
@@ -1043,6 +1078,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
     assert "started: 1\n" in output.out
     assert "started codex codex-session: ingest-" in output.out
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
+    assert '"auto_commit": true' in harness.requests[0].prompt
     assert f"transcript:{transcript}" in harness.requests[0].prompt
     assert (runtime_runs_path(isolated_home, workspace) / "sync-ledger.json").is_file()
     assert not (repo / "almanac/jobs").exists()

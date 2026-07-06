@@ -13,6 +13,11 @@ def add_setup_commands(subcommands: argparse._SubParsersAction) -> None:
     )
     setup.add_argument("--yes", action="store_true", help="run without prompts")
     setup.add_argument(
+        "--no-auto-commit",
+        action="store_true",
+        help="tell lifecycle agents not to commit wiki changes",
+    )
+    setup.add_argument(
         "--skip-instructions",
         action="store_true",
         help="skip global agent instruction installation",

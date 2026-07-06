@@ -228,6 +228,8 @@ almanac/config.toml
 The first supported defaults are:
 
 ```toml
+auto_commit = true
+
 [harness]
 default = "codex"
 
@@ -236,6 +238,16 @@ quiet = "30m"
 ```
 
 CLI flags still win over config.
+
+`auto_commit` means lifecycle prompts may tell the selected agent to use normal
+Git commands for wiki source changes. CodeAlmanac does not stage files, split
+diffs, or commit internally.
+
+```bash
+codealmanac setup --no-auto-commit
+codealmanac config set auto_commit false
+codealmanac config set auto_commit true
+```
 
 ## Local Viewer
 

@@ -34,6 +34,7 @@ def dispatch_sync(args: argparse.Namespace, app: CodeAlmanac) -> int:
             harness=resolve_harness(args.using, cli_config),
             execution=sync_execution(args),
             claim_owner=args.claim_owner,
+            auto_commit=cli_config.auto_commit,
         )
     )
     render_sync_status(result, json_output=args.json)

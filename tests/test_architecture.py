@@ -197,6 +197,33 @@ def test_active_python_model_has_no_page_archive_lineage():
     assert offenders == []
 
 
+def test_auto_commit_stays_prompt_policy_not_git_committer():
+    forbidden_filenames = {
+        "committer.py",
+        "git_committer.py",
+        "staging.py",
+        "commit_service.py",
+    }
+    forbidden_commands = (
+        '"git", "add"',
+        "'git', 'add'",
+        '"git", "commit"',
+        "'git', 'commit'",
+    )
+    filename_offenders = []
+    command_offenders = []
+    for path in SRC_ROOT.rglob("*.py"):
+        relative = path.relative_to(PROJECT_ROOT)
+        if path.name in forbidden_filenames:
+            filename_offenders.append(str(relative))
+        text = path.read_text(encoding="utf-8")
+        if any(fragment in text for fragment in forbidden_commands):
+            command_offenders.append(str(relative))
+
+    assert filename_offenders == []
+    assert command_offenders == []
+
+
 def test_serve_css_does_not_scale_type_with_viewport_width():
     css = (SRC_ROOT / "server/assets/app.css").read_text(encoding="utf-8")
 
@@ -501,6 +528,7 @@ def test_cli_parser_is_split_by_command_domain():
         "__init__.py",
         "admin.py",
         "automation.py",
+        "config.py",
         "diagnostics.py",
         "jobs.py",
         "lifecycle.py",
@@ -521,6 +549,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
     admin = (parser_root / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("AutomationTask", "def add_automation_commands("),
+        "config.py": ('add_parser("config"', "def add_config_commands("),
         "diagnostics.py": ('add_parser("doctor"', "def add_diagnostics_commands("),
         "jobs.py": ('add_parser("jobs"', "def add_jobs_commands("),
         "setup.py": ('add_parser("setup"', "def add_setup_commands("),
@@ -550,6 +579,7 @@ def test_cli_admin_parser_stays_split_by_command_family():
         fragment for fragment in forbidden_admin_fragments if fragment in admin
     ] == []
     assert "add_setup_commands(subcommands)" in admin
+    assert "add_config_commands(subcommands)" in admin
     assert "add_diagnostics_commands(subcommands)" in admin
     assert "add_update_commands(subcommands)" in admin
     assert "add_jobs_commands(subcommands)" in admin
@@ -562,6 +592,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
 
     assert (cli_root / "parser/root.py").is_file()
     assert (cli_root / "parser/automation.py").is_file()
+    assert (cli_root / "parser/config.py").is_file()
     assert (cli_root / "parser/diagnostics.py").is_file()
     assert (cli_root / "parser/jobs.py").is_file()
     assert (cli_root / "parser/setup.py").is_file()
@@ -571,6 +602,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "dispatch/automation.py").is_file()
     assert (cli_root / "dispatch/build.py").is_file()
     assert (cli_root / "dispatch/config.py").is_file()
+    assert (cli_root / "dispatch/config_command.py").is_file()
     assert (cli_root / "dispatch/diagnostics.py").is_file()
     assert (cli_root / "dispatch/jobs.py").is_file()
     assert (cli_root / "dispatch/lifecycle.py").is_file()
@@ -585,6 +617,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/root.py").is_file()
     assert (cli_root / "render/automation.py").is_file()
     assert (cli_root / "render/common.py").is_file()
+    assert (cli_root / "render/config.py").is_file()
     assert (cli_root / "render/diagnostics.py").is_file()
     assert (cli_root / "render/health.py").is_file()
     assert (cli_root / "render/jobs.py").is_file()
@@ -652,6 +685,7 @@ def test_cli_admin_render_stays_split_by_output_family():
     admin = (render_path / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("AutomationInstallResult", "def render_automation_install("),
+        "config.py": ("ConfigSetResult", "def render_config_set("),
         "diagnostics.py": ("DoctorReport", "def render_doctor("),
         "jobs.py": ("RunRecord", "def render_runs("),
         "setup.py": ("SetupResult", "def render_setup_result("),
@@ -681,6 +715,7 @@ def test_cli_admin_render_stays_split_by_output_family():
         fragment for fragment in forbidden_admin_fragments if fragment in admin
     ] == []
     assert "from codealmanac.cli.render.automation import" in admin
+    assert "from codealmanac.cli.render.config import render_config_set" in admin
     assert "from codealmanac.cli.render.jobs import" in admin
     assert oversized == []
 
@@ -781,6 +816,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     admin = (dispatch_path / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("InstallAutomationRequest", "def dispatch_automation("),
+        "config_command.py": ("SetConfigValueRequest", "def dispatch_config("),
         "diagnostics.py": ("DoctorRequest", "def dispatch_doctor("),
         "jobs.py": ("ShowRunRequest", "def dispatch_jobs("),
         "setup.py": ("RunSetupRequest", "def dispatch_setup("),
@@ -815,6 +851,7 @@ def test_cli_admin_dispatch_stays_split_by_command_family():
     ] == []
     assert "dispatch_setup(args, app)" in admin
     assert "dispatch_uninstall(args, app)" in admin
+    assert "dispatch_config(args, app)" in admin
     assert "dispatch_jobs(args, app)" in admin
     assert "dispatch_automation(args, app)" in admin
     assert oversized == []

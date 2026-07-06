@@ -48,6 +48,9 @@ def render_setup_text(result: SetupResult) -> None:
         console.print(status_panel("Instructions skipped", "No files changed."))
     else:
         console.print(changes_panel("Agent instructions", result.changes))
+    if result.config_update is not None:
+        value = "on" if result.config_update.value else "off"
+        console.print(status_panel("Auto commit", value))
     if result.automation_install is not None:
         console.print(automation_install_panel(result.automation_install))
     console.print(next_steps_panel(result))
@@ -103,6 +106,7 @@ def plan_panel(result: SetupResult) -> Panel:
         "instruction targets",
         ", ".join(target.value for target in plan.instruction_targets),
     )
+    table.add_row("auto commit", "on" if plan.auto_commit else "off")
     table.add_row("automation mode", plan.automation_mode.value)
     for recommendation in plan.automation:
         label = (

@@ -56,6 +56,7 @@ class RunSyncRequest(SyncSelectionRequest):
     harness: HarnessKind
     execution: SyncExecution = SyncExecution.FOREGROUND
     claim_owner: str | None = None
+    auto_commit: bool = True
 
     @field_validator("claim_owner")
     @classmethod

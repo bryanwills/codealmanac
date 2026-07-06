@@ -6,6 +6,7 @@ from codealmanac.services.index.models import IndexRefreshResult
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.services.sources.models import SourceBrief, SourceRuntime
 from codealmanac.workflows.lifecycle import LifecycleMutationReport
+from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
 
 
 class IngestPromptPayload(CodeAlmanacModel):
@@ -14,6 +15,7 @@ class IngestPromptPayload(CodeAlmanacModel):
     almanac_root: Path
     sources: tuple[SourceBrief, ...]
     source_runtime: tuple[SourceRuntime, ...]
+    source_control: LifecycleCommitPolicy
     guidance: str | None = None
 
 

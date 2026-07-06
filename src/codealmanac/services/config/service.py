@@ -2,8 +2,15 @@ from pathlib import Path
 
 from codealmanac.core.errors import NotFoundError
 from codealmanac.core.paths import normalize_path
-from codealmanac.services.config.models import CodeAlmanacConfig
-from codealmanac.services.config.requests import LoadConfigRequest
+from codealmanac.services.config.models import (
+    CodeAlmanacConfig,
+    ConfigKey,
+    ConfigSetResult,
+)
+from codealmanac.services.config.requests import (
+    LoadConfigRequest,
+    SetConfigValueRequest,
+)
 from codealmanac.services.config.store import ConfigStore
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
 from codealmanac.services.workspaces.service import WorkspacesService
@@ -29,6 +36,17 @@ class ConfigService:
             project_config_path=project_config_path,
         )
         return self.store.load(paths)
+
+    def set(self, request: SetConfigValueRequest) -> ConfigSetResult:
+        if request.key == ConfigKey.AUTO_COMMIT:
+            path = normalize_path(self.user_config_path)
+            self.store.set_auto_commit(path, request.value)
+            return ConfigSetResult(
+                path=path.as_posix(),
+                key=request.key,
+                value=request.value,
+            )
+        raise AssertionError(f"unhandled config key: {request.key}")
 
     def _project_config_path(self, request: LoadConfigRequest) -> Path | None:
         if request.wiki is not None:

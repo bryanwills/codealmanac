@@ -39,6 +39,7 @@ def test_setup_installs_codex_block_idempotently(home: Path):
     assert body.count(CODEALMANAC_END) == 1
     assert "codealmanac search" in body
     assert first.plan.default_harness.value == "codex"
+    assert first.plan.auto_commit is True
     assert first.plan.instruction_targets == (SetupTarget.CODEX,)
     assert first.plan.automation[0].command == (
         "codealmanac",

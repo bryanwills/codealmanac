@@ -1,4 +1,5 @@
 from datetime import timedelta
+from enum import StrEnum
 from typing import Any
 
 from humanfriendly import InvalidTimespan, parse_timespan
@@ -10,6 +11,11 @@ from codealmanac.services.harnesses.models import HarnessKind
 
 DEFAULT_HARNESS = HarnessKind.CODEX
 DEFAULT_SYNC_QUIET = timedelta(minutes=45)
+DEFAULT_AUTO_COMMIT = True
+
+
+class ConfigKey(StrEnum):
+    AUTO_COMMIT = "auto_commit"
 
 
 class HarnessConfig(CodeAlmanacModel):
@@ -35,6 +41,7 @@ class SyncConfig(CodeAlmanacModel):
 class CodeAlmanacConfig(BaseSettings):
     model_config = SettingsConfigDict(frozen=True, extra="forbid")
 
+    auto_commit: bool = DEFAULT_AUTO_COMMIT
     harness: HarnessConfig = Field(default_factory=HarnessConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
 
@@ -59,3 +66,9 @@ def parse_duration(value: Any, label: str) -> Any:
         return timedelta(seconds=parse_timespan(value))
     except InvalidTimespan as error:
         raise ValueError(f"{label} must be a duration") from error
+
+
+class ConfigSetResult(CodeAlmanacModel):
+    path: str
+    key: ConfigKey
+    value: bool

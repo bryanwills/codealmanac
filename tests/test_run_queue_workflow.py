@@ -131,6 +131,7 @@ def test_run_queue_drains_persisted_ingest_spec(
             harness=HarnessKind.CODEX,
             title="Ingest queued note",
             guidance="Keep the page short.",
+            auto_commit=False,
         )
     )
 
@@ -146,6 +147,8 @@ def test_run_queue_drains_persisted_ingest_spec(
     assert matches[0].slug == "queued-note"
     assert len(harness.requests) == 1
     assert "Keep the page short." in harness.requests[0].prompt
+    assert '"auto_commit": false' in harness.requests[0].prompt
+    assert "Do not run git commit." in harness.requests[0].prompt
     assert tuple(event.message for event in log[:2]) == (
         "queued ingest",
         "running",

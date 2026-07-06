@@ -318,6 +318,12 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
     assert '"source_runtime": [' in adapter.requests[0].prompt
+    assert '"source_control": {' in adapter.requests[0].prompt
+    assert '"auto_commit": true' in adapter.requests[0].prompt
+    assert "Use normal git commands from the workspace root." in (
+        adapter.requests[0].prompt
+    )
+    assert "almanac: <summary>" in adapter.requests[0].prompt
     assert "auth decision" in adapter.requests[0].prompt
     assert "Prefer short pages." in adapter.requests[0].prompt
     assert "public command and product name is `codealmanac`" in (
@@ -333,6 +339,36 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
         RunEventKind.STATUS,
     )
     assert log[1].message == RunStatus.RUNNING.value
+
+
+def test_ingest_prompt_disables_commit_policy(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
+    adapter = WritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    app.workflows.ingest.run(
+        RunIngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
+            auto_commit=False,
+        )
+    )
+
+    assert '"auto_commit": false' in adapter.requests[0].prompt
+    assert "Do not run git commit." in adapter.requests[0].prompt
+    assert "Do not stage files." in adapter.requests[0].prompt
 
 
 def test_ingest_workflow_records_normalized_harness_events(

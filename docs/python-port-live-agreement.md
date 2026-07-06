@@ -15,7 +15,8 @@ It is the constraint document for future agents.
   hosted-product assumptions, or retired syntaxes.
 - 2026-07-05: Intelligence lives in prompts, not pipelines. Auto-commit is
   prompt policy given to lifecycle agents, not CodeAlmanac staging or smart Git
-  orchestration.
+  orchestration. The default is `auto_commit = true`; `setup --no-auto-commit`
+  and `config set auto_commit false` only change the prompt permission.
 - 2026-07-06: Lifecycle runs do not require a clean `almanac/` before starting.
   Explicit runs snapshot the current Git state, allow pre-existing wiki edits,
   reject files changed during the run outside `almanac/`, and validate the final

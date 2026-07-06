@@ -12,6 +12,7 @@ from codealmanac.workflows.garden.requests import (
     RunGardenRequest,
     RunGardenWithRunRequest,
 )
+from codealmanac.workflows.lifecycle_commit import lifecycle_commit_policy
 from codealmanac.workflows.page_run import (
     PageRunBeginRequest,
     PageRunExecuteRequest,
@@ -56,6 +57,7 @@ class GardenWorkflow:
                 wiki=request.wiki,
                 title=request.title,
                 guidance=request.guidance,
+                auto_commit=request.auto_commit,
                 run_id=started.run_id,
             )
         )
@@ -91,6 +93,7 @@ class GardenWorkflow:
                         index_before,
                         health_before,
                         request.guidance,
+                        request.auto_commit,
                     ),
                     title=request.title,
                     success_summary="garden completed",
@@ -114,6 +117,7 @@ def render_garden_prompt(
     index: IndexSummary,
     health: HealthReport,
     guidance: str | None,
+    auto_commit: bool,
 ) -> str:
     payload = GardenPromptPayload(
         workspace_name=workspace.name,
@@ -123,6 +127,7 @@ def render_garden_prompt(
         topics_file=workspace.almanac_path / "topics.yaml",
         index=index,
         health=health,
+        source_control=lifecycle_commit_policy(auto_commit),
         guidance=guidance,
     )
     return prompts.render(

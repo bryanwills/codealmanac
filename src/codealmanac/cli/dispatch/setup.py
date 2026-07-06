@@ -22,6 +22,7 @@ def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
             cwd=Path.cwd(),
             targets=parse_setup_targets(args.target),
             yes=args.yes,
+            auto_commit=not args.no_auto_commit,
             skip_instructions=args.skip_instructions,
             install_automation=install_automation,
             sync_every=parse_optional_duration(args.sync_every, "--sync-every"),

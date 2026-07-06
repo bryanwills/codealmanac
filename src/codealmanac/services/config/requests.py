@@ -4,6 +4,7 @@ from pydantic import Field, field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
+from codealmanac.services.config.models import ConfigKey
 
 
 class LoadConfigRequest(CodeAlmanacModel):
@@ -19,3 +20,8 @@ class LoadConfigRequest(CodeAlmanacModel):
         if value is None:
             return None
         return required_text(value, "wiki selector")
+
+
+class SetConfigValueRequest(CodeAlmanacModel):
+    key: ConfigKey
+    value: bool

@@ -9,6 +9,7 @@ from codealmanac.services.index.models import (
 )
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.workflows.lifecycle import LifecycleMutationReport
+from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
 
 
 class GardenPromptPayload(CodeAlmanacModel):
@@ -19,6 +20,7 @@ class GardenPromptPayload(CodeAlmanacModel):
     topics_file: Path
     index: IndexSummary
     health: HealthReport
+    source_control: LifecycleCommitPolicy
     guidance: str | None = None
 
 

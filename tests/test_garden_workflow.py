@@ -129,6 +129,11 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Runtime context:" in adapter.requests[0].prompt
     assert '"wiki_source_root"' in adapter.requests[0].prompt
+    assert '"source_control": {' in adapter.requests[0].prompt
+    assert '"auto_commit": true' in adapter.requests[0].prompt
+    assert "Use normal git commands from the workspace root." in (
+        adapter.requests[0].prompt
+    )
     assert "Improve a single page if useful." in adapter.requests[0].prompt
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
@@ -139,6 +144,34 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
         RunEventKind.STATUS,
     )
     assert log[1].message == RunStatus.RUNNING.value
+
+
+def test_garden_prompt_disables_commit_policy(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = GardenWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+
+    app.workflows.garden.run(
+        RunGardenRequest(
+            cwd=repo,
+            harness=HarnessKind.CODEX,
+            auto_commit=False,
+        )
+    )
+
+    assert '"auto_commit": false' in adapter.requests[0].prompt
+    assert "Do not run git commit." in adapter.requests[0].prompt
+    assert "Do not stage files." in adapter.requests[0].prompt
 
 
 def test_garden_workflow_allows_preexisting_dirty_almanac_edits(

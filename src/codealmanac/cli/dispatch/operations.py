@@ -22,6 +22,7 @@ def dispatch_ingest(args: argparse.Namespace, app: CodeAlmanac) -> int:
         harness=resolve_harness(args.using, cli_config),
         title=args.title,
         guidance=args.guidance,
+        auto_commit=cli_config.auto_commit,
     )
     if args.background:
         result = app.workflows.queue.start_ingest_background(request)
@@ -42,6 +43,7 @@ def dispatch_garden(args: argparse.Namespace, app: CodeAlmanac) -> int:
         harness=resolve_harness(args.using, cli_config),
         title=args.title,
         guidance=args.guidance,
+        auto_commit=cli_config.auto_commit,
     )
     if args.background:
         result = app.workflows.queue.start_garden_background(request)

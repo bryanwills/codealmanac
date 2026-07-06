@@ -39,3 +39,7 @@ architecture prose that could describe any repository.
 Only edit wiki source files under `almanac/` unless the operation explicitly
 says otherwise. Runtime state belongs under `~/.codealmanac/`, not in
 `almanac/`.
+
+Follow the runtime `source_control` policy for whether this run may commit wiki
+source changes. If committing is allowed, use normal Git commands and commit
+only the allowed wiki source files named by that policy.

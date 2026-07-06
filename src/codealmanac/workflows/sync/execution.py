@@ -164,6 +164,7 @@ class SyncRunExecutor:
                     wiki=ingest_request.wiki,
                     title=ingest_request.title,
                     guidance=ingest_request.guidance,
+                    auto_commit=ingest_request.auto_commit,
                     run_id=run.run_id,
                 )
             )
@@ -227,4 +228,5 @@ def sync_ingest_request(
         wiki=request.wiki,
         title=sync_ingest_title(item.candidate),
         guidance=sync_ingest_guidance(item),
+        auto_commit=request.auto_commit,
     )

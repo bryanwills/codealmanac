@@ -19,12 +19,16 @@ sources:
     type: file
     path: src/codealmanac/prompts/operations/garden.md
     note: Garden operation prompt.
+  - id: commit-policy
+    type: file
+    path: src/codealmanac/workflows/lifecycle_commit.py
+    note: Prompt-facing lifecycle commit policy.
 ---
 
 # Prompt Intelligence
 
 CodeAlmanac puts judgment in prompts and lifecycle agents, not in propose/review/apply state machines, dry-run rehearsals, orchestration JSON schemas, or smart Git pipelines [@manual]. The writer owns outcomes and may use review feedback without a product-level approve/revise/reject machine [@manual].
 
-Auto-commit is prompt policy, not a CodeAlmanac staging engine [@agreement]. Lifecycle agents may be instructed to use Git, but CodeAlmanac itself should not classify changes, stage files intelligently, or decide commit boundaries.
+Auto-commit is prompt policy, not a CodeAlmanac staging engine [@agreement]. Lifecycle agents may be instructed to use normal Git commands for wiki source files, but CodeAlmanac itself does not classify changes, stage files intelligently, or decide commit boundaries [@commit-policy].
 
 Ingest and garden assemble base prompt sections plus operation-specific prompt files [@ingest-prompt] [@garden-prompt]. When the product needs better judgment, the happy path is to improve those prompts and manuals before adding deterministic orchestration.

@@ -226,6 +226,7 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
             quiet=timedelta(),
             harness=HarnessKind.CODEX,
             now=current_time(),
+            auto_commit=False,
         )
     )
 
@@ -242,6 +243,8 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
     assert "Focus on line 1 onward." in harness.requests[0].prompt
     assert "Sync should preserve the release blocker." in harness.requests[0].prompt
+    assert '"auto_commit": false' in harness.requests[0].prompt
+    assert "Do not run git commit." in harness.requests[0].prompt
 
     status = app.workflows.sync.status(
         RunSyncStatusRequest(
@@ -283,6 +286,7 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
             execution=SyncExecution.BACKGROUND,
             now=current_time(),
             claim_owner="background-sync-owner",
+            auto_commit=False,
         )
     )
 
@@ -305,6 +309,10 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
     assert (
         runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
     ).is_file()
+    spec = (
+        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
+    ).read_text(encoding="utf-8")
+    assert '"auto_commit": false' in spec
     assert not (repo / "almanac/jobs").exists()
 
 

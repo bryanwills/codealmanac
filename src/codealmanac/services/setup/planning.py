@@ -28,6 +28,7 @@ def setup_plan(request: RunSetupRequest) -> SetupPlan:
     return SetupPlan(
         default_harness=DEFAULT_HARNESS,
         instruction_targets=request.targets,
+        auto_commit=request.auto_commit,
         automation_mode=mode,
         automation=automation,
         next_commands=next_commands(automation, mode),

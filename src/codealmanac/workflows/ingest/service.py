@@ -19,6 +19,7 @@ from codealmanac.workflows.ingest.requests import (
     RunIngestRequest,
     RunIngestWithRunRequest,
 )
+from codealmanac.workflows.lifecycle_commit import lifecycle_commit_policy
 from codealmanac.workflows.page_run import (
     PageRunBeginRequest,
     PageRunExecuteRequest,
@@ -55,6 +56,7 @@ class IngestWorkflow:
                 wiki=request.wiki,
                 title=request.title,
                 guidance=request.guidance,
+                auto_commit=request.auto_commit,
                 run_id=started.run_id,
             )
         )
@@ -111,6 +113,7 @@ class IngestWorkflow:
                         sources,
                         source_runtime,
                         request.guidance,
+                        request.auto_commit,
                     ),
                     title=request.title,
                     success_summary="ingest completed",
@@ -153,6 +156,7 @@ def render_ingest_prompt(
     sources: tuple[SourceBrief, ...],
     source_runtime: tuple[SourceRuntime, ...],
     guidance: str | None,
+    auto_commit: bool,
 ) -> str:
     payload = IngestPromptPayload(
         workspace_name=workspace.name,
@@ -160,6 +164,7 @@ def render_ingest_prompt(
         almanac_root=workspace.almanac_path,
         sources=sources,
         source_runtime=source_runtime,
+        source_control=lifecycle_commit_policy(auto_commit),
         guidance=guidance,
     )
     return prompts.render(

@@ -128,6 +128,7 @@ def create_app(
     setup = SetupService(
         instruction_installer or FileInstructionInstaller(),
         automation,
+        config_service,
     )
     runs = RunsService(workspaces, RunStore(), runtime_paths)
     viewer = ViewerService(workspaces, index, runs, MarkdownRenderer())

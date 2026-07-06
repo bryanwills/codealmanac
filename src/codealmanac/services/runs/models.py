@@ -123,6 +123,7 @@ class RunSpec(CodeAlmanacModel):
     inputs: tuple[str, ...] = ()
     title: str | None = None
     guidance: str | None = None
+    auto_commit: bool = True
 
     @field_validator("inputs")
     @classmethod

@@ -58,6 +58,7 @@ class RunQueueWorkflow:
                     inputs=request.inputs,
                     title=request.title,
                     guidance=request.guidance,
+                    auto_commit=request.auto_commit,
                 ),
             )
         )
@@ -80,6 +81,7 @@ class RunQueueWorkflow:
                     harness=request.harness,
                     title=request.title,
                     guidance=request.guidance,
+                    auto_commit=request.auto_commit,
                 ),
             )
         )
@@ -146,6 +148,7 @@ class RunQueueWorkflow:
                     harness=spec.harness,
                     title=spec.title,
                     guidance=spec.guidance,
+                    auto_commit=spec.auto_commit,
                     run_id=queued.record.run_id,
                 )
             )
@@ -158,6 +161,7 @@ class RunQueueWorkflow:
                     harness=spec.harness,
                     title=spec.title,
                     guidance=spec.guidance,
+                    auto_commit=spec.auto_commit,
                     run_id=queued.record.run_id,
                 )
             )

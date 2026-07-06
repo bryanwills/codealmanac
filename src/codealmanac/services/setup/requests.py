@@ -14,6 +14,7 @@ class RunSetupRequest(CodeAlmanacModel):
     cwd: Path = Field(default_factory=Path.cwd)
     targets: tuple[SetupTarget, ...] = DEFAULT_SETUP_TARGETS
     yes: bool = False
+    auto_commit: bool = True
     skip_instructions: bool = False
     home: Path | None = None
     install_automation: bool = False
