@@ -403,13 +403,48 @@ Todos:
 - Keep Python implementation patterns.
 - Remove hosted/self-managed split.
 - New setup flow:
-  - install agent instructions,
-  - install sync automation,
-  - install Garden automation,
-  - install update automation,
-  - ask whether CodeAlmanac should stay up to date automatically,
-  - set auto-commit on by default,
-  - print next steps.
+  - `[1/4] Agent instructions`,
+  - `[2/4] Wiki maintenance`,
+  - `[3/4] Product updates`,
+  - `[4/4] Agent change handling`,
+  - final next step: `cd /path/to/your/repo` then `codealmanac init`.
+- Every interactive setup choice uses a left/right or equivalent directional
+  visual surface, with a visible `[n/4]` progress marker.
+- The agent change handling screen previews the literal consequence of each
+  choice:
+  - commit mode shows a small git log with a new `almanac: ...` commit,
+  - worktree mode shows a simplified VS Code-style diff list with file paths
+    and `-N +N` counts.
+- Approved agent change handling mock:
+
+```text
+◆  [4/4] Agent change handling
+
+   Should agents commit wiki changes or leave them in the worktree?
+
+   ┌────────────────────────────────────┐   ┌────────────────────────────────────┐
+   │ Commit changes                     │   │ Leave in worktree                  │
+   │                                    │   │                                    │
+   │  ● almanac: update wiki context    │   │  almanac/architecture/indexing.md  │
+   │  │ rohan · just now                │   │                         -18 +42    │
+   │  │                                 │   │  almanac/decisions/local-first.md  │
+   │  ● docs: previous repo commit      │   │                          -4 +19    │
+   │  │ rohan · earlier                 │   │  almanac/guides/setup.md           │
+   │                                    │   │                          -2 +11    │
+   └────────────────────────────────────┘   └────────────────────────────────────┘
+              selected
+
+   [←/→] switch   [enter] choose
+```
+
+- When worktree mode is selected, the same screen moves the selected indicator
+  under the diff card.
+- The implementation should color the selected border/indicator, dim the
+  unselected card, color diff counts red/green, and keep the commit preview
+  legible.
+- The mental model is:
+  - commit mode means the user sees a clean `almanac: ...` commit,
+  - worktree mode means the user sees modified files and diff counts.
 - `codealmanac setup` is computer-level onboarding. It must not initialize,
   detect, register, or mutate a repo `almanac/` tree.
 - Support `--yes`.
