@@ -29,13 +29,13 @@ class UpdatesService:
         self,
         metadata: PackageInstallMetadataProvider,
         runner: PackageCommandRunner,
-        state_dir: Path,
+        lock_path: Path,
         database_path: Path,
         lock_store: UpdateLockStore | None = None,
     ):
         self.metadata = metadata
         self.runner = runner
-        self.state_dir = state_dir
+        self.lock_path = lock_path
         self.database_path = database_path
         self.lock_store = lock_store or UpdateLockStore()
 
@@ -63,7 +63,7 @@ class UpdatesService:
             )
         now = request.now or datetime.now(UTC)
         lease = self.lock_store.acquire(
-            update_lock_path(self.state_dir),
+            self.lock_path,
             now,
             request.lock_stale_after,
         )
@@ -119,11 +119,6 @@ class UpdatesService:
                 )
             )
         return tuple(results)
-
-
-def update_lock_path(state_dir: Path) -> Path:
-    return state_dir / "update.lock"
-
 
 def active_runs_message(active: int) -> str:
     suffix = "job is" if active == 1 else "jobs are"

@@ -200,7 +200,7 @@ def create_services(
     updates = UpdatesService(
         package_metadata,
         package_runner,
-        local_state.state_dir,
+        local_state.update_lock_path,
         local_state.database_path,
     )
     setup = SetupService(

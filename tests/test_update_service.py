@@ -149,7 +149,7 @@ def test_scheduled_update_skips_editable_install(tmp_path: Path):
             )
         ),
         runner,
-        state_dir=tmp_path / ".codealmanac",
+        lock_path=tmp_path / ".codealmanac" / "update.lock",
         database_path=tmp_path / ".codealmanac" / "codealmanac.db",
     )
 
@@ -171,7 +171,7 @@ def test_scheduled_update_skips_when_lifecycle_run_is_active(tmp_path: Path):
     service = UpdatesService(
         FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
         runner,
-        state_dir=state_dir,
+        lock_path=state_dir / "update.lock",
         database_path=database_path,
     )
 
@@ -194,7 +194,7 @@ def test_scheduled_update_skips_when_update_lock_is_held(tmp_path: Path):
     service = UpdatesService(
         FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
         runner,
-        state_dir=state_dir,
+        lock_path=state_dir / "update.lock",
         database_path=state_dir / "codealmanac.db",
     )
 
@@ -222,7 +222,7 @@ def test_scheduled_update_runs_smoke_after_success(tmp_path: Path):
     service = UpdatesService(
         FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
         runner,
-        state_dir=tmp_path / ".codealmanac",
+        lock_path=tmp_path / ".codealmanac" / "update.lock",
         database_path=tmp_path / ".codealmanac" / "codealmanac.db",
     )
 
@@ -249,7 +249,7 @@ def test_scheduled_update_fails_when_smoke_fails(tmp_path: Path):
     service = UpdatesService(
         FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
         runner,
-        state_dir=tmp_path / ".codealmanac",
+        lock_path=tmp_path / ".codealmanac" / "update.lock",
         database_path=tmp_path / ".codealmanac" / "codealmanac.db",
     )
 
@@ -273,7 +273,7 @@ def update_service_with_runner(
     return UpdatesService(
         metadata,
         runner,
-        state_dir=Path(":memory:").parent,
+        lock_path=Path(":memory:").parent / "update.lock",
         database_path=Path(":memory:"),
     )
 

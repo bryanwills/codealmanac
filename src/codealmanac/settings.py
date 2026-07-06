@@ -48,3 +48,7 @@ class LocalStatePaths(CodeAlmanacModel):
 
     def repository_dir(self, repository_id: str) -> Path:
         return self.state_dir / "repos" / repository_id
+
+    @property
+    def update_lock_path(self) -> Path:
+        return self.state_dir / "update.lock"
