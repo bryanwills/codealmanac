@@ -150,5 +150,5 @@ def registered_check(
         key="wiki.registered",
         status=DoctorStatus.PROBLEM,
         message=f"{registered}, but Almanac root is missing: {workspace.almanac_path}",
-        fix="run: codealmanac build",
+        fix="run: codealmanac init",
     )

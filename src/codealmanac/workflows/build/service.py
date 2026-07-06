@@ -21,9 +21,12 @@ class BuildWorkflow:
         self.index = index
 
     def initialize(self, request: InitializeWorkspaceRequest) -> Workspace:
-        return self._initialize_workspace(request)
+        return self.initialize_ready(request).workspace
 
     def build(self, request: InitializeWorkspaceRequest) -> BuildResult:
+        return self.initialize_ready(request)
+
+    def initialize_ready(self, request: InitializeWorkspaceRequest) -> BuildResult:
         workspace = self._initialize_workspace(request)
         index = self.index.ensure_fresh(workspace.workspace_id)
         return BuildResult(workspace=workspace, index=index)

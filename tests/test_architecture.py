@@ -968,7 +968,6 @@ def test_cli_lifecycle_dispatch_stays_split_by_command_family():
         if fragment in lifecycle
     ] == []
     assert "dispatch_init(args, app)" in lifecycle
-    assert "dispatch_build(args, app)" in lifecycle
     assert "dispatch_ingest(args, app)" in lifecycle
     assert "dispatch_garden(args, app)" in lifecycle
     assert "dispatch_sync(args, app)" in lifecycle

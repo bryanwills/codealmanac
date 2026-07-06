@@ -42,7 +42,7 @@ def test_doctor_does_not_materialize_missing_registered_wiki(
 
     checks = {check.key: check for check in report.wiki}
     assert checks["wiki.registered"].status == DoctorStatus.PROBLEM
-    assert checks["wiki.registered"].fix == "run: codealmanac build"
+    assert checks["wiki.registered"].fix == "run: codealmanac init"
     assert not (repo / "almanac").exists()
 
 

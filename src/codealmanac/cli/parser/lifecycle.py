@@ -9,11 +9,6 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     init.add_argument("--name")
     init.add_argument("--description", default="")
 
-    build = subcommands.add_parser("build", help="build or refresh a local wiki")
-    build.add_argument("path", nargs="?", default=".")
-    build.add_argument("--name")
-    build.add_argument("--description", default="")
-
     ingest = subcommands.add_parser("ingest", help="ingest local material")
     ingest.add_argument("inputs", nargs="+")
     ingest.add_argument("--wiki")

@@ -249,8 +249,10 @@ def test_cli_init_creates_wiki_and_prints_name(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == "my-repo\n"
-    assert "initialized" in captured.err
+    assert "initialized my-repo: 2 pages (2 updated, 0 removed)\n" in captured.out
+    assert f"wiki: {repo / 'almanac'}\n" in captured.out
+    assert f"registry: {isolated_home / '.codealmanac/registry.json'}\n" in captured.out
+    assert captured.err == ""
     assert (repo / "almanac/getting-started.md").is_file()
     assert (isolated_home / ".codealmanac/registry.json").is_file()
 
@@ -302,15 +304,16 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "│" in captured.out
     assert "Agent instructions" in captured.out
     assert "Codex" in captured.out
+    assert "Product updates" in captured.out
     assert "permission granted; updater installed" in captured.out
-    assert "commit permission in instructions" in captured.out
+    assert "Agent change handling" in captured.out
+    assert "agents may create almanac: commits" in captured.out
     assert "Next steps" in captured.out
-    assert "Auto commit" in captured.out
     assert "╭" in captured.out
     assert "╰" in captured.out
-    assert "Create a repo wiki" in captured.out
+    assert "Navigate to your repo of choice" in captured.out
     assert "codealmanac init" in captured.out
-    assert "codealmanac automation status" in captured.out
+    assert "codealmanac automation status" not in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
@@ -402,39 +405,47 @@ def test_cli_uninstall_returns_nonzero_when_package_uninstall_fails(
     assert package_uninstaller.calls == 1
 
 
-def test_cli_setup_interactive_prompt_can_disable_auto_update(
+def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     isolated_home: Path,
     monkeypatch,
     capsys,
 ):
-    prompts: list[str] = []
     scheduler = CliSchedulerAdapter()
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         scheduler=scheduler,
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
-    monkeypatch.setattr("codealmanac.cli.dispatch.setup.sys.stdin", InteractiveInput())
     monkeypatch.setattr(
-        "builtins.input",
-        lambda prompt: prompts.append(prompt) or "n",
+        "codealmanac.cli.dispatch.setup_tui.supports_interactive_setup",
+        lambda: True,
+    )
+    keys = iter(("\r", "\r", "\x1b[C", "\r", "\x1b[C", "\r"))
+    monkeypatch.setattr(
+        "codealmanac.cli.dispatch.setup_tui.read_setup_key",
+        lambda: next(keys),
     )
 
     assert main(["setup", "--target", "codex"]) == 0
 
     output = capsys.readouterr()
-    assert prompts == [
-        "  \x1b[38;5;75m◆\x1b[0m  "
-        "Do you want to keep CodeAlmanac up to date automatically? "
-        "This gives setup permission to install a local scheduled updater. "
-        "\x1b[2m\x1b[1m[Y/n]\x1b[0m "
-    ]
-    assert "Update automation" in output.out
+    assert "[1/4]" in output.out
+    assert "[2/4]" in output.out
+    assert "[3/4]" in output.out
+    assert "[4/4]" in output.out
+    assert "almanac: update wiki context" in output.out
+    assert "almanac/architecture/indexing.md" in output.out
+    assert "Product updates" in output.out
     assert "permission not granted; updater skipped" in output.out
+    assert "Agent change handling" in output.out
+    assert "agents leave wiki edits in the worktree for review" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
     )
+    assert (
+        isolated_home / ".codealmanac/config.toml"
+    ).read_text(encoding="utf-8") == "auto_commit = false\n"
 
 
 def test_cli_setup_json_does_not_prompt_for_auto_update(
@@ -507,8 +518,8 @@ def test_cli_setup_no_auto_commit_writes_user_config(
     captured = capsys.readouterr()
     config_path = isolated_home / ".codealmanac/config.toml"
     assert exit_code == 0
-    assert "Auto commit" in captured.out
-    assert "off" in captured.out
+    assert "Agent change handling" in captured.out
+    assert "worktree" in captured.out
     assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
 
 
@@ -580,9 +591,9 @@ def test_cli_setup_installs_automation_with_explicit_flags(
     )
 
     output = capsys.readouterr()
-    assert "Sync automation" in output.out
-    assert "Garden automation" in output.out
-    assert "Update automation" in output.out
+    assert "Wiki maintenance" in output.out
+    assert "automatic" in output.out
+    assert "Product updates" in output.out
     assert "installed" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
@@ -730,7 +741,7 @@ def test_cli_list_drop_missing_removes_unreachable_wikis(
     assert list_output.out == f"live\t{live_repo}\talmanac\n"
 
 
-def test_cli_build_and_reindex_commands(
+def test_cli_init_and_reindex_commands(
     tmp_path: Path,
     isolated_home: Path,
     monkeypatch,
@@ -739,9 +750,9 @@ def test_cli_build_and_reindex_commands(
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    assert main(["build", str(repo)]) == 0
-    build_output = capsys.readouterr()
-    assert build_output.out == "built repo: 2 pages (2 updated, 0 removed)\n"
+    assert main(["init", str(repo)]) == 0
+    init_output = capsys.readouterr()
+    assert "initialized repo: 2 pages (2 updated, 0 removed)\n" in init_output.out
     assert (runtime_repo_path_for_root(isolated_home, repo) / "index.db").is_file()
     assert not (repo / "almanac/index.db").exists()
 
@@ -771,9 +782,9 @@ def test_cli_reindex_can_target_registered_wiki(
     first.mkdir()
     second.mkdir()
 
-    assert main(["build", str(first), "--name", "first"]) == 0
+    assert main(["init", str(first), "--name", "first"]) == 0
     capsys.readouterr()
-    assert main(["build", str(second), "--name", "second"]) == 0
+    assert main(["init", str(second), "--name", "second"]) == 0
     capsys.readouterr()
     (first / "almanac/remote.md").write_text(
         "# Remote\n\nTargeted reindex.\n",
@@ -795,7 +806,7 @@ def test_cli_doctor_reports_local_state(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["build", str(repo)]) == 0
+    assert main(["init", str(repo)]) == 0
     capsys.readouterr()
     monkeypatch.chdir(repo)
 
@@ -817,7 +828,7 @@ def test_cli_doctor_ignores_repo_manual_drift(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
-    assert main(["build", str(repo)]) == 0
+    assert main(["init", str(repo)]) == 0
     capsys.readouterr()
     (repo / "almanac/manual").mkdir()
     (repo / "almanac/manual/README.md").write_text(
@@ -830,7 +841,7 @@ def test_cli_doctor_ignores_repo_manual_drift(
 
     output = capsys.readouterr()
     assert "manual differs" not in output.out
-    assert "codealmanac build preserves existing files" not in output.out
+    assert "codealmanac build" not in output.out
 
 
 def test_cli_help_includes_update():

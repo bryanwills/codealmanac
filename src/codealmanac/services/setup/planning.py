@@ -32,7 +32,7 @@ def setup_plan(request: RunSetupRequest) -> SetupPlan:
         auto_commit=request.auto_commit,
         automation_mode=mode,
         automation=automation,
-        next_commands=next_commands(automation, mode),
+        next_commands=next_commands(),
     )
 
 
@@ -112,32 +112,11 @@ def update_recommendation(update_every: str) -> SetupAutomationRecommendation:
     )
 
 
-def next_commands(
-    automation: tuple[SetupAutomationRecommendation, ...],
-    mode: SetupAutomationMode,
-) -> tuple[SetupCommand, ...]:
-    commands = [
-        SetupCommand(label="Create a repo wiki", command=("codealmanac", "init")),
+def next_commands() -> tuple[SetupCommand, ...]:
+    return (
         SetupCommand(
-            label="Search the repo wiki",
-            command=("codealmanac", "search", "getting"),
+            label="Navigate to your repo of choice",
+            command=("cd", "/path/to/your/repo"),
         ),
-    ]
-    if len(automation) > 0:
-        commands.append(automation_command(automation, mode))
-    return tuple(commands)
-
-
-def automation_command(
-    automation: tuple[SetupAutomationRecommendation, ...],
-    mode: SetupAutomationMode,
-) -> SetupCommand:
-    if mode == SetupAutomationMode.INSTALL:
-        return SetupCommand(
-            label="Check scheduled automation",
-            command=("codealmanac", "automation", "status"),
-        )
-    return SetupCommand(
-        label="Install scheduled automation",
-        command=automation[0].command,
+        SetupCommand(label="Initialize the repo wiki", command=("codealmanac", "init")),
     )

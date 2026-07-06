@@ -315,6 +315,7 @@ def test_search_rebuilds_stale_existing_index_schema(
     write_page(repo, "note.md", "# Note\n\nStaleSchemaNeedle context.\n")
     db_path = runtime_index_path(isolated_home, workspace)
     db_path.parent.mkdir(parents=True, exist_ok=True)
+    db_path.unlink()
     with sqlite3.connect(db_path) as connection:
         connection.execute("CREATE TABLE pages (slug TEXT PRIMARY KEY)")
         connection.execute("PRAGMA user_version = 1")

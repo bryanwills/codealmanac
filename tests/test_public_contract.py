@@ -185,15 +185,24 @@ def test_almanac_root_is_not_configurable():
         normalize_almanac_root(Path(".almanac"))
 
 
-@pytest.mark.parametrize("command", ("init", "build"))
-def test_lifecycle_commands_do_not_accept_root_flag(command: str, capsys):
+def test_init_does_not_accept_root_flag(capsys):
     parser = build_parser()
 
     with pytest.raises(SystemExit):
-        parser.parse_args((command, "--root", "docs/almanac"))
+        parser.parse_args(("init", "--root", "docs/almanac"))
 
     output = capsys.readouterr()
     assert "unrecognized arguments: --root" in output.err
+
+
+def test_build_is_not_a_public_command(capsys):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(("build",))
+
+    output = capsys.readouterr()
+    assert "invalid choice: 'build'" in output.err
 
 
 def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():

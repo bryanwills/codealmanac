@@ -1,11 +1,23 @@
 import json
+from pathlib import Path
 
 from codealmanac.cli.render.common import index_summary, print_json_model
 from codealmanac.services.index.models import HealthReport, IndexRefreshResult
+from codealmanac.services.workspaces.models import Workspace
 from codealmanac.workflows.garden.models import GardenResult
 from codealmanac.workflows.ingest.models import IngestResult
 from codealmanac.workflows.run_queue.models import RunQueueStartResult
 from codealmanac.workflows.sync.models import SyncMode, SyncSummary
+
+
+def render_init(
+    workspace: Workspace,
+    result: IndexRefreshResult,
+    registry_path: Path,
+) -> None:
+    print(f"initialized {workspace.name}: {index_summary(result)}")
+    print(f"wiki: {workspace.almanac_path}")
+    print(f"registry: {registry_path}")
 
 
 def render_build(workspace_name: str, result: IndexRefreshResult) -> None:

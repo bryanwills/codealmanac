@@ -59,10 +59,9 @@ def test_setup_installs_codex_block_idempotently(home: Path):
         AutomationTask.GARDEN,
         AutomationTask.UPDATE,
     )
-    assert first.plan.next_commands[-1].command == (
-        "codealmanac",
-        "automation",
-        "status",
+    assert tuple(command.command for command in first.plan.next_commands) == (
+        ("cd", "/path/to/your/repo"),
+        ("codealmanac", "init"),
     )
     assert first.automation_install is not None
     assert tuple(job.task for job in first.automation_install.jobs) == (
@@ -162,10 +161,9 @@ def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
         AutomationTask.SYNC,
         AutomationTask.UPDATE,
     )
-    assert result.plan.next_commands[-1].command == (
-        "codealmanac",
-        "automation",
-        "status",
+    assert tuple(command.command for command in result.plan.next_commands) == (
+        ("cd", "/path/to/your/repo"),
+        ("codealmanac", "init"),
     )
     assert result.automation_install is not None
     assert tuple(job.task for job in result.automation_install.jobs) == (

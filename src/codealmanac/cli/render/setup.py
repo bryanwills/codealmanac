@@ -58,6 +58,22 @@ class SetupStep:
     detail: str
 
 
+@dataclass(frozen=True)
+class SetupChoiceOption:
+    label: str
+    description: tuple[str, ...]
+    shortcuts: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class SetupChoiceScreen:
+    step: int
+    title: str
+    question: str
+    options: tuple[SetupChoiceOption, ...]
+    visual: str = "cards"
+
+
 def render_setup_result(result: SetupResult, json_output: bool) -> None:
     if json_output:
         print_json_model(result)
@@ -87,12 +103,172 @@ def render_setup_text(result: SetupResult) -> None:
     render_next_steps_box(next_step_lines(result))
 
 
-def print_banner() -> None:
+def render_setup_choice_screen(
+    screen: SetupChoiceScreen,
+    selected_index: int,
+) -> None:
+    write_line("\x1b[2J\x1b[H")
+    print_banner("Local codebase memory, maintained by your coding agents.")
+    print_badge()
+    write_line("")
+    write_line(
+        f"  {BLUE}◆{RST}  "
+        f"{DIM}[{screen.step}/4]{RST} "
+        f"{WHITE_BOLD}{screen.title}{RST}"
+    )
+    write_line(BAR)
+    for line in wrap_with_prefixes(screen.question, f"{BAR}   ", f"{BAR}   ", 78):
+        write_line(line)
+    write_line(BAR)
+    write_line("")
+    if screen.visual == "change-handling":
+        render_change_handling_choice(selected_index)
+    else:
+        render_option_cards(screen.options, selected_index)
+    write_line("")
+    write_line(
+        f"  {DIM}│{RST}   "
+        f"{BLUE}{BOLD}[←/→]{RST} switch   "
+        f"{BLUE}{BOLD}[enter]{RST} choose"
+    )
+    shortcut_text = setup_shortcut_text(screen.options)
+    if shortcut_text:
+        write_line(f"  {DIM}│{RST}   {shortcut_text}")
+    write_line("")
+
+
+def setup_shortcut_text(options: tuple[SetupChoiceOption, ...]) -> str:
+    shortcuts: list[str] = []
+    for option in options:
+        if len(option.shortcuts) == 0:
+            continue
+        shortcut = option.shortcuts[0]
+        shortcuts.append(f"{BLUE}{BOLD}[{shortcut}]{RST} {option.label}")
+    return f"  {'   '.join(shortcuts)}" if shortcuts else ""
+
+
+def render_option_cards(
+    options: tuple[SetupChoiceOption, ...],
+    selected_index: int,
+) -> None:
+    card_width = 30 if len(options) == 3 else 36
+    card_lines = tuple(
+        option_card(option, card_width, index == selected_index)
+        for index, option in enumerate(options)
+    )
+    rows = max(len(lines) for lines in card_lines)
+    for row in range(rows):
+        parts = []
+        for lines in card_lines:
+            parts.append(lines[row] if row < len(lines) else " " * (card_width + 2))
+        write_line("   " + "   ".join(parts))
+    indicator_parts = [
+        selected_indicator(card_width)
+        if index == selected_index
+        else " " * (card_width + 2)
+        for index in range(len(options))
+    ]
+    write_line("   " + "   ".join(indicator_parts))
+
+
+def option_card(
+    option: SetupChoiceOption,
+    width: int,
+    selected: bool,
+) -> tuple[str, ...]:
+    border = BLUE if selected else DIM
+    title = WHITE_BOLD if selected else DIM
+    body = RST if selected else DIM
+    lines = [
+        f"{border}┌{'─' * width}┐{RST}",
+        card_row(f"{title}{option.label}{RST}", width, border),
+        card_row("", width, border),
+    ]
+    for description in option.description:
+        lines.append(card_row(f"{body}{description}{RST}", width, border))
+    lines.append(f"{border}└{'─' * width}┘{RST}")
+    return tuple(lines)
+
+
+def card_row(content: str, width: int, border: str) -> str:
+    padding = max(0, width - visible_length(content))
+    return f"{border}│{RST}{content}{' ' * padding}{border}│{RST}"
+
+
+def selected_indicator(width: int) -> str:
+    label = f"{BLUE}{BOLD}selected{RST}"
+    left_padding = max(0, (width + 2 - len("selected")) // 2)
+    right_padding = max(0, width + 2 - left_padding - len("selected"))
+    return f"{' ' * left_padding}{label}{' ' * right_padding}"
+
+
+def render_change_handling_choice(selected_index: int) -> None:
+    width = 36
+    cards = (
+        change_handling_commit_card(width, selected_index == 0),
+        change_handling_worktree_card(width, selected_index == 1),
+    )
+    rows = max(len(lines) for lines in cards)
+    for row in range(rows):
+        left = cards[0][row] if row < len(cards[0]) else " " * (width + 2)
+        right = cards[1][row] if row < len(cards[1]) else " " * (width + 2)
+        write_line(f"   {left}   {right}")
+    left_indicator = (
+        selected_indicator(width) if selected_index == 0 else " " * (width + 2)
+    )
+    right_indicator = (
+        selected_indicator(width) if selected_index == 1 else " " * (width + 2)
+    )
+    write_line(f"   {left_indicator}   {right_indicator}")
+
+
+def change_handling_commit_card(width: int, selected: bool) -> tuple[str, ...]:
+    border = BLUE if selected else DIM
+    title = WHITE_BOLD if selected else DIM
+    muted = RST if selected else DIM
+    commit = BLUE if selected else DIM
+    return (
+        f"{border}┌{'─' * width}┐{RST}",
+        card_row(f"{title}Commit changes{RST}", width, border),
+        card_row("", width, border),
+        card_row(f" {commit}● almanac: update wiki context{RST}", width, border),
+        card_row(f" {muted}│ rohan · just now{RST}", width, border),
+        card_row(f" {muted}│{RST}", width, border),
+        card_row(f" {muted}● docs: previous repo commit{RST}", width, border),
+        card_row(f" {muted}│ rohan · earlier{RST}", width, border),
+        f"{border}└{'─' * width}┘{RST}",
+    )
+
+
+def change_handling_worktree_card(width: int, selected: bool) -> tuple[str, ...]:
+    border = BLUE if selected else DIM
+    title = WHITE_BOLD if selected else DIM
+    muted = RST if selected else DIM
+    delete = "\x1b[38;5;203m" if selected else DIM
+    add = "\x1b[38;5;76m" if selected else DIM
+    return (
+        f"{border}┌{'─' * width}┐{RST}",
+        card_row(f"{title}Leave in worktree{RST}", width, border),
+        card_row("", width, border),
+        card_row(f" {muted}almanac/architecture/indexing.md{RST}", width, border),
+        card_row(f" {delete}-18{RST} {add}+42{RST}", width, border),
+        card_row(f" {muted}almanac/decisions/local-first.md{RST}", width, border),
+        card_row(f" {delete}-4{RST}  {add}+19{RST}", width, border),
+        card_row(f" {muted}almanac/guides/setup.md{RST}", width, border),
+        card_row(f" {delete}-2{RST}  {add}+11{RST}", width, border),
+        f"{border}└{'─' * width}┘{RST}",
+    )
+
+
+def print_banner(subtitle: str | None = None) -> None:
     write_line("")
     for index, line in enumerate(SETUP_BANNER):
         color = GRADIENT[index]
         write_line(f"{color}{line}{RST}")
     write_line("")
+    if subtitle is not None:
+        write_line(f"{WHITE_BOLD}  {subtitle}{RST}")
+        return
     write_line(
         f"{WHITE_BOLD}  CodeAlmanac is a local codebase wiki,"
         f" maintained by your coding agents.{RST}"
@@ -134,11 +310,10 @@ def wrap_step_detail(detail: str) -> tuple[str, ...]:
 
 def next_step_lines(result: SetupResult) -> tuple[str, ...]:
     lines: list[str] = [
-        f"  {WHITE_BOLD}Create almanac/ inside a repo when you are ready.{RST}",
+        f"  {WHITE_BOLD}Navigate to your repo of choice:{RST}",
         "",
     ]
     for command in result.plan.next_commands:
-        lines.append(f"  {BOLD}{command.label}{RST}")
         lines.append(f"  {BLUE}{shell_command(command.command)}{RST}")
     return tuple(lines)
 
@@ -256,10 +431,9 @@ def changes_panel(title: str, changes: tuple[InstructionChange, ...]) -> Panel:
 def setup_steps(result: SetupResult) -> tuple[SetupStep, ...]:
     return (
         instruction_step(result),
-        automation_step(result, AutomationTask.SYNC, "Sync automation"),
-        automation_step(result, AutomationTask.GARDEN, "Garden automation"),
-        automation_step(result, AutomationTask.UPDATE, "Update automation"),
-        auto_commit_step(result),
+        wiki_maintenance_step(result),
+        product_update_step(result),
+        change_handling_step(result),
     )
 
 
@@ -277,11 +451,11 @@ def instruction_detail(result: SetupResult) -> str:
     return "; ".join(change.message for change in result.changes)
 
 
-def automation_step(
-    result: SetupResult,
-    task: AutomationTask,
-    label: str,
-) -> SetupStep:
+def product_update_step(result: SetupResult) -> SetupStep:
+    return automation_step(result, AutomationTask.UPDATE, "Product updates")
+
+
+def automation_step(result: SetupResult, task: AutomationTask, label: str) -> SetupStep:
     if result.automation_install is None:
         return SetupStep(label, "skipped", "not requested")
     installed = {job.task for job in result.automation_install.jobs}
@@ -291,6 +465,31 @@ def automation_step(
     if task in disabled:
         return SetupStep(label, "disabled", disabled_automation_detail(task))
     return SetupStep(label, "skipped", skipped_automation_detail(task))
+
+
+def wiki_maintenance_step(result: SetupResult) -> SetupStep:
+    if result.automation_install is None:
+        return SetupStep("Wiki maintenance", "manual", "no schedules installed")
+    installed = {job.task for job in result.automation_install.jobs}
+    if AutomationTask.SYNC in installed and AutomationTask.GARDEN in installed:
+        return SetupStep(
+            "Wiki maintenance",
+            "automatic",
+            "sync quiet agent sessions and garden initialized repo wikis",
+        )
+    if AutomationTask.SYNC in installed:
+        return SetupStep(
+            "Wiki maintenance",
+            "partial",
+            "sync quiet agent sessions; Garden schedule is off",
+        )
+    if AutomationTask.GARDEN in installed:
+        return SetupStep(
+            "Wiki maintenance",
+            "partial",
+            "Garden initialized repo wikis; sync schedule is off",
+        )
+    return SetupStep("Wiki maintenance", "manual", "no schedules installed")
 
 
 def installed_automation_detail(result: SetupResult, task: AutomationTask) -> str:
@@ -318,15 +517,15 @@ def automation_detail(result: SetupResult, task: AutomationTask) -> str:
     return "scheduled"
 
 
-def auto_commit_step(result: SetupResult) -> SetupStep:
+def change_handling_step(result: SetupResult) -> SetupStep:
     enabled = result.plan.auto_commit
-    status = "on" if enabled else "off"
+    status = "commit" if enabled else "worktree"
     detail = (
-        "commit permission in instructions"
+        "agents may create almanac: commits after wiki edits"
         if enabled
-        else "commit permission withheld"
+        else "agents leave wiki edits in the worktree for review"
     )
-    return SetupStep("Auto commit", status, detail)
+    return SetupStep("Agent change handling", status, detail)
 
 
 def automation_uninstall_panel(result: AutomationUninstallResult) -> Panel:

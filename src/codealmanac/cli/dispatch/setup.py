@@ -6,59 +6,44 @@ from codealmanac.app import CodeAlmanac
 from codealmanac.cli.dispatch.config import (
     parse_optional_duration,
 )
+from codealmanac.cli.dispatch.setup_tui import (
+    SetupCancelled,
+    resolve_setup_selections,
+)
 from codealmanac.cli.render.admin import render_setup_result, render_uninstall_result
 from codealmanac.services.setup.models import (
     PackageUninstallStatus,
-    SetupTarget,
     UninstallResult,
 )
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 
-RST = "\x1b[0m"
-BOLD = "\x1b[1m"
-DIM = "\x1b[2m"
-BLUE = "\x1b[38;5;75m"
-
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
-    auto_update = resolve_setup_auto_update(args)
+    try:
+        selections = resolve_setup_selections(args)
+    except SetupCancelled:
+        print("CodeAlmanac setup canceled.", file=sys.stderr)
+        return 1
     result = app.setup.run(
         RunSetupRequest(
             cwd=Path.cwd(),
-            targets=parse_setup_targets(args.target),
+            targets=selections.targets,
             yes=args.yes,
-            auto_commit=not args.no_auto_commit,
-            auto_update=auto_update,
+            auto_commit=selections.auto_commit,
+            auto_update=selections.auto_update,
             skip_instructions=args.skip_instructions,
             sync_every=parse_optional_duration(args.sync_every, "--sync-every"),
             sync_quiet=parse_optional_duration(args.sync_quiet, "--sync-quiet"),
-            sync_off=args.sync_off,
+            sync_off=selections.sync_off,
             garden_every=parse_optional_duration(
                 args.garden_every,
                 "--garden-every",
             ),
-            garden_off=args.garden_off,
+            garden_off=selections.garden_off,
         )
     )
     render_setup_result(result, json_output=args.json)
     return 0
-
-
-def resolve_setup_auto_update(args: argparse.Namespace) -> bool:
-    if args.no_auto_update:
-        return False
-    if args.yes or args.json or not sys.stdin.isatty():
-        return True
-    return confirm_setup_auto_update()
-
-
-def confirm_setup_auto_update() -> bool:
-    response = input(
-        f"  {BLUE}◆{RST}  Do you want to keep CodeAlmanac up to date automatically? "
-        f"This gives setup permission to install a local scheduled updater. "
-        f"{DIM}{BOLD}[Y/n]{RST} "
-    )
-    return response.strip().casefold() not in {"n", "no"}
 
 
 def dispatch_uninstall(args: argparse.Namespace, app: CodeAlmanac) -> int:
@@ -94,9 +79,3 @@ def uninstall_exit_code(result: UninstallResult) -> int:
     ):
         return 1
     return 0
-
-
-def parse_setup_targets(value: str) -> tuple[SetupTarget, ...]:
-    if value == "all":
-        return (SetupTarget.CODEX, SetupTarget.CLAUDE)
-    return (SetupTarget(value),)
