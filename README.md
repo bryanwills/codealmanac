@@ -202,12 +202,13 @@ For auto-detection, a repository counts as a CodeAlmanac wiki when
 Derived local state lives under `~/.codealmanac/`:
 
 ```text
+~/.codealmanac/codealmanac.db
 ~/.codealmanac/repos/<repo-id>/index.db
-~/.codealmanac/repos/<repo-id>/runs/
 ```
 
-Those runtime files are rebuildable local machine state. They do not belong in
-the committed `almanac/` tree.
+The local database records repositories, runs, run events, worker locks, and
+sync state. Per-repository runtime files contain derived indexes. They do not
+belong in the committed `almanac/` tree.
 
 ## Configuration
 
