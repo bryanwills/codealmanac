@@ -24,7 +24,7 @@ def dispatch_init(args: argparse.Namespace, app: CodeAlmanac) -> int:
     start = app.workflows.build.start(request)
     if not args.json:
         render_run_started(start.run, label="init")
-    result = app.workflows.build.run_with_start(request, start)
+    result = app.workflows.build.run_started(request, start)
     if args.json:
         render_init_json(result, app.local_state.database_path)
         return 0

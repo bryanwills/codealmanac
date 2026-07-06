@@ -160,7 +160,7 @@ class ViewerService:
         repository = self.repository_scope.select(request.cwd, request.repository_name)
         runs = self.runs.list(
             ListRunsRequest(
-                wiki=repository.name,
+                repository_name=repository.name,
                 limit=request.limit,
             )
         )
@@ -173,7 +173,7 @@ class ViewerService:
         repository = self.repository_scope.select(request.cwd, request.repository_name)
         snapshot = self.runs.attach(
             AttachRunRequest(
-                wiki=repository.name,
+                repository_name=repository.name,
                 run_id=request.run_id,
             )
         )

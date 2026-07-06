@@ -47,7 +47,7 @@ class BuildWorkflow:
         self.manual = manual
 
     def run(self, request: BuildRequest) -> BuildResult:
-        return self.run_with_start(request, self.start(request))
+        return self.run_started(request, self.start(request))
 
     def start(self, request: BuildRequest) -> StartedBuild:
         target = self.repositories.prepare_target(request.path, None)
@@ -58,14 +58,14 @@ class BuildWorkflow:
         run = self.runs.start(
             StartRunRequest(
                 cwd=repository.root_path,
-                wiki=repository.name,
+                repository_name=repository.name,
                 kind=RunKind.BUILD,
                 title=request.title or "Build wiki",
             )
         )
         return StartedBuild(repository=repository, run=run)
 
-    def run_with_start(
+    def run_started(
         self,
         request: BuildRequest,
         start: StartedBuild,
@@ -74,7 +74,7 @@ class BuildWorkflow:
         context = self.operations.begin(
             BeginOperationRequest(
                 cwd=repository.root_path,
-                wiki=repository.name,
+                repository_name=repository.name,
                 run_id=start.run.run_id,
             )
         )
