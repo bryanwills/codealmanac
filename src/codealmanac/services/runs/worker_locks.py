@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.services.runs.locks import RunWorkerLease, worker_lock_is_stale
 from codealmanac.services.runs.models import RunWorkerLockOwner
@@ -11,7 +12,7 @@ WORKER_LOCK_NAME = "runs"
 
 class RunWorkerLockStore:
     def __init__(self, database_path: Path):
-        self.database_path = database_path
+        self.database_path = normalize_path(database_path)
 
     def acquire(
         self,

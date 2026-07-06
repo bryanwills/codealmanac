@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from codealmanac.core.errors import ConflictError, NotFoundError
+from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
 from codealmanac.services.runs.events import RunEventStore
@@ -32,9 +33,9 @@ class RunStore:
         event_store: RunEventStore | None = None,
         lock_store: RunWorkerLockStore | None = None,
     ):
-        self.database_path = database_path
-        self.event_store = event_store or RunEventStore(database_path)
-        self.lock_store = lock_store or RunWorkerLockStore(database_path)
+        self.database_path = normalize_path(database_path)
+        self.event_store = event_store or RunEventStore(self.database_path)
+        self.lock_store = lock_store or RunWorkerLockStore(self.database_path)
 
     def create(
         self,
@@ -97,13 +98,14 @@ class RunStore:
         return run_record_from_json(row["record_json"])
 
     def read_spec(self, run_id: str) -> RunSpec | None:
-        self.read(run_id)
         with self.connect() as connection:
             row = connection.execute(
                 "SELECT spec_json FROM runs WHERE run_id = ?",
                 (run_id,),
             ).fetchone()
-        if row is None or row["spec_json"] is None:
+        if row is None:
+            raise NotFoundError("run", run_id)
+        if row["spec_json"] is None:
             return None
         return RunSpec.model_validate_json(row["spec_json"])
 
@@ -180,7 +182,7 @@ class RunStore:
         now = datetime.now(UTC)
         event = self.event_store.new_event(run_id, now, kind, message, harness_event)
         updated = record.model_copy(update={"updated_at": event.timestamp})
-        self.write_record(updated, spec=self.read_spec(run_id))
+        self.update_record_preserving_spec(updated)
         self.event_store.write(event)
         return event
 
@@ -200,7 +202,7 @@ class RunStore:
                 "started_at": now,
             }
         )
-        self.write_record(running, spec=self.read_spec(run_id))
+        self.update_record_preserving_spec(running)
         self.event_store.append_status(run_id, now, RunStatus.RUNNING.value)
         return running
 
@@ -216,7 +218,7 @@ class RunStore:
                 "updated_at": datetime.now(UTC),
             }
         )
-        self.write_record(updated, spec=self.read_spec(run_id))
+        self.update_record_preserving_spec(updated)
         return updated
 
     def finish(
@@ -239,7 +241,7 @@ class RunStore:
                 "finished_at": now,
             }
         )
-        self.write_record(finished, spec=self.read_spec(run_id))
+        self.update_record_preserving_spec(finished)
         self.event_store.append_status(run_id, now, status.value)
         return finished
 
@@ -257,9 +259,12 @@ class RunStore:
                 "error": record.error,
             }
         )
-        self.write_record(cancelled, spec=self.read_spec(run_id))
+        self.update_record_preserving_spec(cancelled)
         self.event_store.append_status(run_id, now, RunStatus.CANCELLED.value)
         return RunCancelResult(record=cancelled, changed=True)
+
+    def update_record_preserving_spec(self, record: RunRecord) -> None:
+        self.write_record(record, spec=self.read_spec(record.run_id))
 
     def write_record(self, record: RunRecord, spec: RunSpec | None) -> None:
         with self.connect() as connection:

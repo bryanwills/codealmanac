@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
+from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.services.harnesses.models import HarnessEvent
 from codealmanac.services.runs.models import RunEventKind, RunLogEvent
@@ -9,7 +10,7 @@ from codealmanac.services.runs.tables import RUN_EVENT_TABLES
 
 class RunEventStore:
     def __init__(self, database_path: Path):
-        self.database_path = database_path
+        self.database_path = normalize_path(database_path)
 
     def append_status(
         self,
