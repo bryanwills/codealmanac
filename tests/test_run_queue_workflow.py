@@ -46,10 +46,7 @@ class QueueWritingHarnessAdapter:
             """---
 title: Queued Note
 topics: [concepts]
-sources:
-  - id: note
-    type: file
-    target: note.md
+sources: []
 ---
 # Queued Note
 

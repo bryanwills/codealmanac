@@ -16,6 +16,7 @@ from codealmanac.cli.render.wiki import (
     render_topic_mutation,
     render_topic_rewrite_mutation,
     render_topics,
+    render_validate,
 )
 from codealmanac.cli.render.workspaces import (
     render_workspace_drop,
@@ -33,6 +34,7 @@ __all__ = [
     "render_search",
     "render_sync_status",
     "render_tagging",
+    "render_validate",
     "render_topic",
     "render_topic_edge_mutation",
     "render_topic_mutation",

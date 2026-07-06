@@ -23,6 +23,10 @@ sources:
     type: file
     path: src/codealmanac/services/index/health_views.py
     note: Health report read model.
+  - id: validation
+    type: file
+    path: src/codealmanac/services/health/service.py
+    note: Validate command service boundary.
 ---
 
 # Indexing
@@ -33,4 +37,4 @@ The schema includes pages, topics, page-topic edges, topic-parent edges, file re
 
 Page documents load title, summary, topics, sources, file references, page links, and body from Markdown files [@documents]. File references come from `sources:` file entries. Page links come from ordinary Markdown links whose href resolves to another page id.
 
-Health views read the derived tables to report graph and source problems [@health]. Ticket 6 turns that health surface into the public `codealmanac validate` command.
+Health views read the derived tables to report graph and source problems [@health]. `HealthService.validate` combines index refresh, health findings, raw `sources:` shape checks, and runtime-state leak checks for the public `codealmanac validate` command [@validation].

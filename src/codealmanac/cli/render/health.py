@@ -1,4 +1,5 @@
 from codealmanac.cli.render.common import print_json_model
+from codealmanac.services.health.models import ValidationIssue, ValidationResult
 from codealmanac.services.index.models import HealthReport
 
 
@@ -56,3 +57,30 @@ def render_health_section(name: str, rows: tuple[str, ...]) -> None:
     print(f"{name} ({len(rows)}):")
     for row in rows:
         print(f"  {row}")
+
+
+def render_validate(result: ValidationResult, json_output: bool) -> None:
+    if json_output:
+        print_json_model(result)
+        return
+    status = "ok" if result.ok else "failed"
+    print(f"validate: {status}")
+    print(f"wiki: {result.workspace_name}")
+    print(f"path: {result.almanac_path}")
+    if result.index is not None:
+        print(f"index: {result.index.pages_indexed} pages")
+    if result.ok:
+        return
+    print(f"issues: {len(result.issues)}")
+    for issue in result.issues:
+        print(f"  {format_validation_issue(issue)}")
+
+
+def format_validation_issue(issue: ValidationIssue) -> str:
+    parts = [issue.category]
+    if issue.page:
+        parts.append(issue.page)
+    if issue.path:
+        parts.append(issue.path)
+    parts.append(issue.message)
+    return "\t".join(parts)

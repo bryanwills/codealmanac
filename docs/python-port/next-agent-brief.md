@@ -329,7 +329,7 @@ Updated: 2026-07-01
   `cli/render/wiki.py` by output family. `wiki.py` is now a facade;
   `render/search.py` owns search/reindex output, `render/pages.py` owns
   show/page output, `render/topics.py` owns topic output, `render/health.py`
-  owns health output, and `render/tagging.py` owns tag/untag output.
+  owns health and validate output, and `render/tagging.py` owns tag/untag output.
   Architecture tests keep service model imports and render definitions out of
   `cli/render/wiki.py`.
 - Slice 123 keeps admin CLI output unchanged while splitting

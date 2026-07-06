@@ -64,10 +64,7 @@ class WritingHarnessAdapter:
             """---
 title: Ingested Note
 topics: [getting-started]
-sources:
-  - id: note
-    type: file
-    target: note.md
+sources: []
 ---
 # Ingested Note
 

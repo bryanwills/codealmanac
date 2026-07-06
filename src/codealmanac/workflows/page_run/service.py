@@ -5,6 +5,7 @@ from codealmanac.core.errors import ValidationFailed
 from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
+from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import (
@@ -40,12 +41,14 @@ class PageRunWorkflow:
         harnesses: HarnessesService,
         runs: RunsService,
         index: IndexService,
+        health: HealthService,
         mutation_policy: LifecycleMutationPolicy,
     ):
         self.workspaces = workspaces
         self.harnesses = harnesses
         self.runs = runs
         self.index = index
+        self.health = health
         self.mutation_policy = mutation_policy
 
     def begin(self, request: PageRunBeginRequest) -> PageRunContext:
@@ -110,6 +113,7 @@ class PageRunWorkflow:
         )
         validate_harness_result(harness)
         index = self.index.ensure_fresh(workspace.workspace_id)
+        self.health.ensure_valid(workspace)
         finished = self.runs.finish(
             FinishRunRequest(
                 cwd=request.context.cwd,

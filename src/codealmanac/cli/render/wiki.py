@@ -1,4 +1,4 @@
-from codealmanac.cli.render.health import render_health
+from codealmanac.cli.render.health import render_health, render_validate
 from codealmanac.cli.render.pages import render_page
 from codealmanac.cli.render.search import render_reindex, render_search
 from codealmanac.cli.render.tagging import render_tagging
@@ -12,6 +12,7 @@ from codealmanac.cli.render.topics import (
 
 __all__ = [
     "render_health",
+    "render_validate",
     "render_page",
     "render_reindex",
     "render_search",

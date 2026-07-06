@@ -149,6 +149,7 @@ def create_app(
         harnesses,
         runs,
         index,
+        health,
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="ingest"),
     )
     garden_page_runs = PageRunWorkflow(
@@ -156,6 +157,7 @@ def create_app(
         harnesses,
         runs,
         index,
+        health,
         LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="garden"),
     )
     ingest = IngestWorkflow(

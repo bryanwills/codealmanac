@@ -94,6 +94,7 @@ codealmanac search --mentions src/checkout/
 codealmanac show checkout-flow
 codealmanac topics
 codealmanac health
+codealmanac validate
 ```
 
 Use `--wiki <name>` to read another registered local wiki. By default,

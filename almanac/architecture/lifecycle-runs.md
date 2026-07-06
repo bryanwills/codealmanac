@@ -27,13 +27,17 @@ sources:
     type: file
     path: src/codealmanac/services/workspaces/runtime.py
     note: Per-workspace runtime path mapping.
+  - id: validation
+    type: file
+    path: src/codealmanac/services/health/service.py
+    note: Validation service used before lifecycle success.
 ---
 
 # Lifecycle Runs
 
 `IngestWorkflow` resolves sources, loads runtime snapshots, renders the ingest prompt, and delegates the page-writing execution to `PageRunWorkflow` [@ingest] [@page-run]. `GardenWorkflow` prepares index and health context, renders the garden prompt, and delegates the same execution path [@garden] [@page-run].
 
-`PageRunWorkflow` marks a run as running, records lifecycle events, executes the selected harness, records harness transcript and harness events, validates mutation safety, refreshes the index, and finishes the run [@page-run]. This keeps harness plumbing out of individual operation workflows.
+`PageRunWorkflow` marks a run as running, records lifecycle events, executes the selected harness, records harness transcript and harness events, validates mutation safety, refreshes the index, runs wiki validation, and finishes the run [@page-run] [@validation]. This keeps harness plumbing out of individual operation workflows.
 
 Mutation policy snapshots Git status before the harness runs and validates that changed files stay under the configured `almanac/` root after the harness finishes [@mutation]. The current policy still requires a clean `almanac/` before lifecycle mutation; the product discussion says this should become more generous later.
 

@@ -56,7 +56,7 @@ It is the constraint document for future agents.
   `cli/render/root.py` is a small re-export facade for dispatcher stability.
   `cli/render/wiki.py` is a wiki-render facade only; `search.py` owns
   search/reindex output, `pages.py` owns show/page output, `topics.py` owns
-  topic output, `health.py` owns health output, and `tagging.py` owns
+  topic output, `health.py` owns health and validate output, and `tagging.py` owns
   tag/untag output. `lifecycle.py` owns lifecycle/sync/job-start output,
   `workspaces.py` owns local wiki registry list/drop output, and
   `cli/render/admin.py` is an admin-render facade only; `automation.py` owns
@@ -65,7 +65,7 @@ It is the constraint document for future agents.
   output plus Rich presentation. `common.py` owns shared formatting helpers.
 - 2026-07-01: Wiki CLI dispatch follows the same command-family split.
   `cli/dispatch/wiki.py` remains the wiki-command facade for
-  search/show/health/reindex/tag/untag routing. `topics.py` owns topic
+  search/show/health/validate/reindex/tag/untag routing. `topics.py` owns topic
   subcommand request construction, `workspaces.py` owns list/drop/drop-missing,
   and `serve.py` owns local viewer startup. Do not move topic request
   construction, workspace drop request construction, or uvicorn startup back
@@ -789,6 +789,7 @@ codealmanac search [query]
 codealmanac show <page-id>
 codealmanac topics
 codealmanac health
+codealmanac validate
 codealmanac serve
 codealmanac reindex
 codealmanac ingest <inputs...>
@@ -820,6 +821,10 @@ There is no public `capture` verb. Conversation collection is part of `sync` or
 a future explicit local source workflow.
 
 There is no public `absorb` command. The public lifecycle word is `ingest`.
+
+`codealmanac validate` is the explicit correctness gate for agents and lifecycle
+runs. It refreshes the derived index, checks links, sources, runtime leakage,
+and health findings, and exits nonzero when the wiki has validation issues.
 
 `codealmanac reindex` is the explicit escape hatch for rebuilding the derived
 SQLite read model. Query commands may refresh the index implicitly and silently.

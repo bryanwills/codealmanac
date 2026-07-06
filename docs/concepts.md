@@ -95,14 +95,15 @@ codealmanac search --mentions src/auth/
 Markdown is the source of truth. SQLite is a derived local cache under
 `~/.codealmanac/`.
 
-Query commands refresh the index silently when pages change. `codealmanac
-reindex` forces a full rebuild.
+Query commands refresh the index silently when pages change.
+`codealmanac validate` checks the wiki tree, links, sources, runtime state,
+and derived index. `codealmanac reindex` forces a full rebuild.
 
 Command groups:
 
 | Group | Commands | AI needed? |
 |---|---|---|
-| Read | `list`, `search`, `show`, `topics`, `health`, `serve` | No |
+| Read | `list`, `search`, `show`, `topics`, `health`, `validate`, `serve` | No |
 | Organize | `tag`, `untag`, `topics create/rename/delete/link` | No |
 | Lifecycle | `init`, `build`, `ingest`, `garden`, `sync`, `jobs` | `ingest`, `garden`, and write-capable `sync` |
 | Admin | `setup`, `uninstall`, `doctor`, `update`, `automation`, `reindex` | No |
