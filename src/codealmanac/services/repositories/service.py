@@ -41,22 +41,19 @@ class RepositoriesService:
     def prepare_target(
         self,
         path: Path,
-        almanac_root: Path | None,
     ) -> RepositoryTarget:
         normalized = normalize_path(path)
         if normalized.is_file():
             raise ValidationFailed(f"repository path must be a directory: {normalized}")
-        if almanac_root is None:
-            almanac_root = DEFAULT_ALMANAC_ROOT
         return RepositoryTarget(
             root_path=normalized,
-            almanac_root=almanac_root,
-            almanac_path=normalized / almanac_root,
+            almanac_root=DEFAULT_ALMANAC_ROOT,
+            almanac_path=normalized / DEFAULT_ALMANAC_ROOT,
         )
 
     def register(self, request: RegisterRepositoryRequest) -> Repository:
         root_path = normalize_path(request.root_path)
-        almanac_path = root_path / request.almanac_root
+        almanac_path = root_path / DEFAULT_ALMANAC_ROOT
         existing = entry_by_exact_path(root_path, self.store.list())
         name = repository_name_for(
             root_path,
@@ -71,7 +68,7 @@ class RepositoriesService:
             name=name,
             description=description,
             root_path=root_path,
-            almanac_root=request.almanac_root,
+            almanac_root=DEFAULT_ALMANAC_ROOT,
             almanac_path=almanac_path,
             registered_at=(
                 existing.registered_at if existing is not None else datetime.now(UTC)
@@ -124,7 +121,6 @@ class RepositoriesService:
             return self.register(
                 RegisterRepositoryRequest(
                     root_path=match.root_path,
-                    almanac_root=match.almanac_root,
                 )
             )
         raise NoRepositorySelected()

@@ -1,11 +1,9 @@
-from collections.abc import Iterable
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.paths import normalize_path
 
 DEFAULT_ALMANAC_ROOT = Path("almanac")
-CONVENTIONAL_ALMANAC_ROOTS = (DEFAULT_ALMANAC_ROOT,)
 ALMANAC_ROOT_MARKER_FILE = "topics.yaml"
 ALMANAC_ROOT_MARKER_README = "README.md"
 
@@ -32,31 +30,15 @@ def normalize_almanac_root(value: Path | str | None) -> Path:
     return normalized
 
 
-def normalized_almanac_roots(values: Iterable[Path | str]) -> tuple[Path, ...]:
-    roots: list[Path] = []
-    for value in values:
-        root = normalize_almanac_root(value)
-        if root not in roots:
-            roots.append(root)
-    if len(roots) == 0:
-        roots.append(DEFAULT_ALMANAC_ROOT)
-    return tuple(roots)
-
-
-def direct_almanac_root(
-    path: Path,
-    almanac_roots: Iterable[Path | str] = (DEFAULT_ALMANAC_ROOT,),
-) -> RepositoryTarget | None:
+def direct_almanac_root(path: Path) -> RepositoryTarget | None:
     current = normalize_path(path)
-    roots = normalized_almanac_roots(almanac_roots)
-    for almanac_root in roots:
-        almanac_path = current / almanac_root
-        if is_initialized_almanac_root(almanac_path):
-            return RepositoryTarget(
-                root_path=current,
-                almanac_root=almanac_root,
-                almanac_path=normalize_path(almanac_path),
-            )
+    almanac_path = current / DEFAULT_ALMANAC_ROOT
+    if is_initialized_almanac_root(almanac_path):
+        return RepositoryTarget(
+            root_path=current,
+            almanac_root=DEFAULT_ALMANAC_ROOT,
+            almanac_path=normalize_path(almanac_path),
+        )
     return None
 
 
