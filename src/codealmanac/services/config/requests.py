@@ -19,7 +19,7 @@ class LoadConfigRequest(CodeAlmanacModel):
     def require_repository_name(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return required_text(value, "wiki selector")
+        return required_text(value, "repository name")
 
 
 class SetConfigValueRequest(CodeAlmanacModel):

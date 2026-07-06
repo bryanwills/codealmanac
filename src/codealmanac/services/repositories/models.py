@@ -8,7 +8,7 @@ from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.services.repositories.roots import (
     DEFAULT_ALMANAC_ROOT,
-    validate_almanac_root_field,
+    require_default_almanac_root,
 )
 
 
@@ -34,7 +34,7 @@ class Repository(CodeAlmanacModel):
     @field_validator("almanac_root")
     @classmethod
     def validate_almanac_root(cls, value: Path) -> Path:
-        return validate_almanac_root_field(value)
+        return require_default_almanac_root(value)
 
     @model_validator(mode="after")
     def validate_almanac_path_matches_root(self) -> "Repository":
@@ -62,7 +62,7 @@ class RepositoryRecord(CodeAlmanacModel):
     @field_validator("almanac_root")
     @classmethod
     def validate_almanac_root(cls, value: Path) -> Path:
-        return validate_almanac_root_field(value)
+        return require_default_almanac_root(value)
 
     def to_repository(self) -> Repository:
         return Repository(

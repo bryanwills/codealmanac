@@ -14,7 +14,7 @@ class RepositoryTarget(CodeAlmanacModel):
     almanac_path: Path
 
 
-def normalize_almanac_root(value: Path | str | None) -> Path:
+def require_default_almanac_root(value: Path | str | None) -> Path:
     if value is None:
         return DEFAULT_ALMANAC_ROOT
     path = Path(value)
@@ -50,9 +50,3 @@ def is_initialized_almanac_root(path: Path) -> bool:
         and (path / ALMANAC_ROOT_MARKER_README).is_file()
     )
 
-
-def validate_almanac_root_field(value: Path | str | None) -> Path:
-    try:
-        return normalize_almanac_root(value)
-    except ValueError as error:
-        raise ValueError(str(error)) from error

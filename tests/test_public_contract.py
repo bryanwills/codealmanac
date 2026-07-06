@@ -6,15 +6,14 @@ from ruamel.yaml import YAML
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
-from codealmanac.settings import AppConfig
 from codealmanac.services.repositories.roots import (
-    CONVENTIONAL_ALMANAC_ROOTS,
     DEFAULT_ALMANAC_ROOT,
-    normalize_almanac_root,
+    require_default_almanac_root,
 )
 from codealmanac.services.runs.models import RunKind
 from codealmanac.services.sources.models import SourceKind
 from codealmanac.services.sources.requests import ResolveSourcesRequest
+from codealmanac.settings import AppConfig
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src/codealmanac"
@@ -41,7 +40,7 @@ README_REQUIRED_FRAGMENTS = (
     "uv tool install codealmanac",
     "codealmanac setup --yes",
     "codealmanac setup --yes --no-auto-update",
-    "codealmanac setup --yes --sync-every 5h --sync-quiet 45m",
+    "codealmanac setup --yes --sync-every 5h",
     "codealmanac setup --yes --sync-off",
     "codealmanac init",
     'codealmanac search "getting"',
@@ -176,14 +175,13 @@ def test_readme_documents_python_local_public_surface():
 
 def test_almanac_root_is_not_configurable():
     assert Path("almanac") == DEFAULT_ALMANAC_ROOT
-    assert (Path("almanac"),) == CONVENTIONAL_ALMANAC_ROOTS
-    assert normalize_almanac_root(None) == Path("almanac")
+    assert require_default_almanac_root(None) == Path("almanac")
 
     with pytest.raises(ValueError, match="fixed at almanac"):
-        normalize_almanac_root(Path("docs/almanac"))
+        require_default_almanac_root(Path("docs/almanac"))
 
     with pytest.raises(ValueError, match="fixed at almanac"):
-        normalize_almanac_root(Path(".almanac"))
+        require_default_almanac_root(Path(".almanac"))
 
 
 def test_init_does_not_accept_root_flag(capsys):
