@@ -117,9 +117,9 @@ def next_commands(
     mode: SetupAutomationMode,
 ) -> tuple[SetupCommand, ...]:
     commands = [
-        SetupCommand(label="Initialize this repo", command=("codealmanac", "init")),
+        SetupCommand(label="Create a repo wiki", command=("codealmanac", "init")),
         SetupCommand(
-            label="Read the starter page",
+            label="Search the repo wiki",
             command=("codealmanac", "search", "getting"),
         ),
     ]

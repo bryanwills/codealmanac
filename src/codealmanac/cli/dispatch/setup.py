@@ -49,7 +49,8 @@ def resolve_setup_auto_update(args: argparse.Namespace) -> bool:
 
 def confirm_setup_auto_update() -> bool:
     response = input(
-        "Do you want to keep CodeAlmanac up to date automatically? [Y/n] "
+        "Do you want to keep CodeAlmanac up to date automatically? "
+        "This gives setup permission to install a local scheduled updater. [Y/n] "
     )
     return response.strip().casefold() not in {"n", "no"}
 

@@ -292,12 +292,19 @@ def test_cli_setup_and_uninstall_codex_instructions(
     agents_path = isolated_home / ".codex/AGENTS.md"
     assert exit_code == 0
     assert "CODEALMANAC" in captured.out
+    assert "A local codebase wiki" in captured.out
+    assert "Machine setup only" in captured.out
+    assert "local-only" in captured.out
     assert "codealmanac" in captured.out
     assert "Setup complete" in captured.out
+    assert "Machine-level agent instructions and schedules are ready." in captured.out
     assert "1. Agent instructions" in captured.out
     assert "Codex" in captured.out
+    assert "permission granted; updater installed" in captured.out
+    assert "commit permission in instructions" in captured.out
     assert "Next steps" in captured.out
     assert "5. Auto commit" in captured.out
+    assert "Create a repo wiki" in captured.out
     assert "codealmanac init" in captured.out
     assert "codealmanac automation status" in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
@@ -413,10 +420,11 @@ def test_cli_setup_interactive_prompt_can_disable_auto_update(
 
     output = capsys.readouterr()
     assert prompts == [
-        "Do you want to keep CodeAlmanac up to date automatically? [Y/n] "
+        "Do you want to keep CodeAlmanac up to date automatically? "
+        "This gives setup permission to install a local scheduled updater. [Y/n] "
     ]
     assert "Update automation" in output.out
-    assert "disabled by setup option" in output.out
+    assert "permission not granted; updater skipped" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
@@ -603,7 +611,8 @@ def test_cli_setup_can_skip_update_automation(
 
     assert main(["setup", "--yes", "--no-auto-update"]) == 0
 
-    capsys.readouterr()
+    output = capsys.readouterr()
+    assert "permission not granted; updater skipped" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,

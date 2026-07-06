@@ -29,6 +29,14 @@ SETUP_BANNER = (
     "  \\_____\\___/ \\__,_|\\___/_/   \\_\\|_| |_| |_|\\__,_|___/",
 )
 
+ACCENT_STYLE = "bright_blue"
+BRAND_STYLE = "bold bright_blue"
+LOGO_STYLE = "bold bright_white"
+MUTED_STYLE = "dim"
+BADGE_STYLE = "black on bright_white"
+SUCCESS_STYLE = "green"
+WARNING_STYLE = "yellow"
+
 
 @dataclass(frozen=True)
 class SetupStep:
@@ -54,12 +62,23 @@ def render_uninstall_result(result: UninstallResult, json_output: bool) -> None:
 def render_setup_text(result: SetupResult) -> None:
     console = setup_console()
     console.print()
-    console.print(Text("  CODEALMANAC", style="bold blue"))
+    console.print(Text("  CODEALMANAC", style=BRAND_STYLE))
     for line in SETUP_BANNER:
-        console.print(Text(line, style="bold white"))
-    console.print(Text("  Local repo wiki, maintained by coding agents.", style="dim"))
+        console.print(Text(line, style=LOGO_STYLE))
+    console.print(
+        Text(
+            "  A local codebase wiki, maintained by your coding agents.",
+            style="bold",
+        )
+    )
+    console.print(
+        Text(
+            "  Machine setup only. Repo wikis still start with codealmanac init.",
+            style=MUTED_STYLE,
+        )
+    )
     console.print()
-    console.print(Text(" codealmanac ", style="black on white"))
+    console.print(Text(" codealmanac  local-only ", style=BADGE_STYLE))
     console.print()
     console.print(setup_steps_panel(result))
     console.print(next_steps_panel(result))
@@ -80,7 +99,7 @@ def render_uninstall_text(result: UninstallResult) -> None:
 def setup_panel(title: str, subtitle: str) -> Panel:
     heading = Text(title, style="bold")
     body = Group(heading, Text(subtitle))
-    return Panel(body, border_style="blue", padding=(1, 2))
+    return Panel(body, border_style=ACCENT_STYLE, padding=(1, 2))
 
 
 def changes_panel(title: str, changes: tuple[InstructionChange, ...]) -> Panel:
@@ -94,7 +113,7 @@ def changes_panel(title: str, changes: tuple[InstructionChange, ...]) -> Panel:
             table.add_row("", "", str(path))
     return Panel(
         Group(Text(title, style="bold"), table),
-        border_style="blue",
+        border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
 
@@ -105,10 +124,21 @@ def setup_steps_panel(result: SetupResult) -> Panel:
     table.add_column("status")
     table.add_column("detail")
     for index, step in enumerate(setup_steps(result), start=1):
-        table.add_row(f"{index}. {step.label}", step.status, step.detail)
+        table.add_row(
+            f"{index}. {step.label}",
+            Text(step.status, style=status_style(step.status)),
+            step.detail,
+        )
     return Panel(
-        Group(Text("Setup complete", style="bold"), table),
-        border_style="blue",
+        Group(
+            Text("Setup complete", style="bold"),
+            Text(
+                "Machine-level agent instructions and schedules are ready.",
+                style=MUTED_STYLE,
+            ),
+            table,
+        ),
+        border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
 
@@ -147,10 +177,28 @@ def automation_step(
     installed = {job.task for job in result.automation_install.jobs}
     disabled = {job.task for job in result.automation_install.disabled}
     if task in installed:
-        return SetupStep(label, "installed", automation_detail(result, task))
+        return SetupStep(label, "installed", installed_automation_detail(result, task))
     if task in disabled:
-        return SetupStep(label, "disabled", "removed existing schedule")
-    return SetupStep(label, "skipped", "disabled by setup option")
+        return SetupStep(label, "disabled", disabled_automation_detail(task))
+    return SetupStep(label, "skipped", skipped_automation_detail(task))
+
+
+def installed_automation_detail(result: SetupResult, task: AutomationTask) -> str:
+    if task == AutomationTask.UPDATE:
+        return "permission granted; updater installed"
+    return automation_detail(result, task)
+
+
+def skipped_automation_detail(task: AutomationTask) -> str:
+    if task == AutomationTask.UPDATE:
+        return "permission not granted; updater skipped"
+    return "disabled by setup option"
+
+
+def disabled_automation_detail(task: AutomationTask) -> str:
+    if task == AutomationTask.UPDATE:
+        return "permission not granted; updater removed"
+    return "removed existing schedule"
 
 
 def automation_detail(result: SetupResult, task: AutomationTask) -> str:
@@ -163,7 +211,11 @@ def automation_detail(result: SetupResult, task: AutomationTask) -> str:
 def auto_commit_step(result: SetupResult) -> SetupStep:
     enabled = result.plan.auto_commit
     status = "on" if enabled else "off"
-    detail = "agents may commit wiki changes" if enabled else "agents will not commit"
+    detail = (
+        "commit permission in instructions"
+        if enabled
+        else "commit permission withheld"
+    )
     return SetupStep("Auto commit", status, detail)
 
 
@@ -177,7 +229,7 @@ def automation_uninstall_panel(result: AutomationUninstallResult) -> Panel:
         table.add_row("removed", str(path))
     return Panel(
         Group(Text("Scheduled automation", style="bold"), table),
-        border_style="blue",
+        border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
 
@@ -191,7 +243,7 @@ def global_state_panel(result: GlobalStateRemovalResult) -> Panel:
     table.add_row("message", result.message)
     return Panel(
         Group(Text("Global state", style="bold"), table),
-        border_style="blue",
+        border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
 
@@ -209,7 +261,7 @@ def package_uninstall_panel(result: PackageUninstallResult) -> Panel:
         table.add_row("exit code", str(result.exit_code))
     return Panel(
         Group(Text("Installed tool", style="bold"), table),
-        border_style="blue",
+        border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
 
@@ -218,16 +270,31 @@ def next_steps_panel(result: SetupResult) -> Panel:
     table = Table.grid()
     for command in result.plan.next_commands:
         table.add_row(Text(command.label, style="bold"))
-        table.add_row(Text(shell_command(command.command), style="cyan"))
+        table.add_row(Text(shell_command(command.command), style=ACCENT_STYLE))
     return Panel(
-        Group(Text("Next steps", style="bold"), table),
-        border_style="green",
+        Group(
+            Text("Next steps", style="bold"),
+            Text(
+                "Create almanac/ inside a repo when you are ready.",
+                style=MUTED_STYLE,
+            ),
+            table,
+        ),
+        border_style=SUCCESS_STYLE,
         padding=(1, 2),
     )
 
 
 def change_status(change: InstructionChange) -> str:
     return "changed" if change.changed else "ok"
+
+
+def status_style(status: str) -> str:
+    if status in {"installed", "ready", "on", "changed", "ok"}:
+        return SUCCESS_STYLE
+    if status in {"disabled", "off"}:
+        return WARNING_STYLE
+    return MUTED_STYLE
 
 
 def shell_command(command: tuple[str, ...]) -> str:
