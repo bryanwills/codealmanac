@@ -152,3 +152,12 @@
   - `uv run pytest`: 402 passed.
   - `uv run ruff check .`: passed.
   - `git diff --check`: passed.
+
+## Stop Condition
+
+- Added `docs/refactor-audit-2026-07-06/final-audit.md`.
+- Re-scanned large files and large classes after the fifth batch.
+- Remaining large modules are mostly documented facades, service/workflow
+  orchestration, or provider adapters.
+- The next likely changes would be local taste unless a new feature exposes
+  a concrete reason-to-change problem.

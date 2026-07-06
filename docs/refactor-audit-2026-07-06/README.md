@@ -60,3 +60,4 @@ The likely refactor work is local and architectural:
   product decision.
 - `target-architecture.md`: desired end shape.
 - `refactor-roadmap.md`: ordered implementation batches.
+- `final-audit.md`: stop-condition audit for this branch.
