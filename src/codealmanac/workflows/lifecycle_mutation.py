@@ -30,17 +30,6 @@ class LifecycleMutationPolicy:
         before = self.probe.snapshot(workspace.root_path)
         validate_snapshot_available(before, self.operation)
         almanac_prefix = almanac_relative_path(workspace)
-        dirty_almanac = tuple(
-            change.path
-            for change in before.changes
-            if path_is_under(change.path, almanac_prefix)
-        )
-        if dirty_almanac:
-            almanac_label = almanac_prefix.as_posix()
-            raise ValidationFailed(
-                f"{self.operation} requires a clean {almanac_label} before running: "
-                f"{format_paths(dirty_almanac)}"
-            )
         return LifecycleMutationPreflight(
             before=before,
             almanac_prefix=almanac_prefix,

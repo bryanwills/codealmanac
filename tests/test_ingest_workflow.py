@@ -201,6 +201,25 @@ Ingested durable wiki knowledge from the note.
         )
 
 
+class DirtyWikiMutatingHarnessAdapter(WritingHarnessAdapter):
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        result = super().run(request)
+        dirty_page = request.cwd / "almanac/getting-started.md"
+        dirty_page.write_text(
+            dirty_page.read_text(encoding="utf-8")
+            + "\nAgent continued the preexisting wiki edit.\n",
+            encoding="utf-8",
+        )
+        return result.model_copy(
+            update={
+                "changed_files": (
+                    dirty_page,
+                    *result.changed_files,
+                )
+            }
+        )
+
+
 class FailedDirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         self.requests.append(request)
@@ -701,7 +720,7 @@ def test_ingest_workflow_rejects_harness_mutation_to_dirty_app_file(
     assert run.error == "ingest changed file outside almanac: src/app.py"
 
 
-def test_ingest_workflow_rejects_dirty_almanac_preflight(
+def test_ingest_workflow_allows_preexisting_dirty_almanac_edits(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -710,30 +729,35 @@ def test_ingest_workflow_rejects_dirty_almanac_preflight(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
-        harness_adapters=(WritingHarnessAdapter(),),
+        harness_adapters=(DirtyWikiMutatingHarnessAdapter(),),
     )
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
-    (repo / "almanac/getting-started.md").write_text(
-        "local wiki edit\n",
+    getting_started = repo / "almanac/getting-started.md"
+    getting_started.write_text(
+        getting_started.read_text(encoding="utf-8")
+        + "\nUser started a local wiki edit.\n",
         encoding="utf-8",
     )
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.ingest.run(
-            RunIngestRequest(
-                cwd=repo,
-                inputs=("note.md",),
-                harness=HarnessKind.CODEX,
-            )
+    result = app.workflows.ingest.run(
+        RunIngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
         )
+    )
 
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    page_text = getting_started.read_text(encoding="utf-8")
 
-    assert run.status == RunStatus.FAILED
-    assert run.error is not None
-    assert run.error.startswith("ingest requires a clean almanac before running:")
+    assert result.run.status == RunStatus.DONE
+    assert result.safety.changed_files == (
+        repo / "almanac/getting-started.md",
+        repo / "almanac/ingested-note.md",
+    )
+    assert "User started a local wiki edit." in page_text
+    assert "Agent continued the preexisting wiki edit." in page_text
 
 
 def test_ingest_workflow_requires_git_change_tracking(

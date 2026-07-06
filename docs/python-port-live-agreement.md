@@ -16,6 +16,10 @@ It is the constraint document for future agents.
 - 2026-07-05: Intelligence lives in prompts, not pipelines. Auto-commit is
   prompt policy given to lifecycle agents, not CodeAlmanac staging or smart Git
   orchestration.
+- 2026-07-06: Lifecycle runs do not require a clean `almanac/` before starting.
+  Explicit runs snapshot the current Git state, allow pre-existing wiki edits,
+  reject files changed during the run outside `almanac/`, and validate the final
+  wiki before marking the run done.
 - 2026-06-29: The branch may contain merged `dev` / `origin/dev` work that
   assumes hosted shipping. Treat that work as reference or archive material,
   not as product direction for this rewrite.

@@ -39,6 +39,6 @@ sources:
 
 `PageRunWorkflow` marks a run as running, records lifecycle events, executes the selected harness, records harness transcript and harness events, validates mutation safety, refreshes the index, runs wiki validation, and finishes the run [@page-run] [@validation]. This keeps harness plumbing out of individual operation workflows.
 
-Mutation policy snapshots Git status before the harness runs and validates that changed files stay under the configured `almanac/` root after the harness finishes [@mutation]. The current policy still requires a clean `almanac/` before lifecycle mutation; the product discussion says this should become more generous later.
+Mutation policy snapshots Git status before the harness runs and validates that files changed during the run stay under the configured `almanac/` root after the harness finishes [@mutation]. A run may start with pre-existing user edits in `almanac/`; the before/after comparison is what decides what the agent changed [@mutation].
 
 The run store writes queued records, spec-backed queued records, events, harness transcript references, running transitions, terminal transitions, cancellation, and worker lock state under the per-workspace runtime directory [@runs] [@runtime].

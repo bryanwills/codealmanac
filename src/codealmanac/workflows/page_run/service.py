@@ -74,8 +74,8 @@ class PageRunWorkflow:
                 context=context,
                 kind=RunEventKind.MESSAGE,
                 message=(
-                    "verified clean "
-                    f"{context.workspace.almanac_root.as_posix()} preflight"
+                    "captured "
+                    f"{context.workspace.almanac_root.as_posix()} mutation preflight"
                 ),
             )
         )

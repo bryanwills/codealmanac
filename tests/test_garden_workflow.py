@@ -141,6 +141,43 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert log[1].message == RunStatus.RUNNING.value
 
 
+def test_garden_workflow_allows_preexisting_dirty_almanac_edits(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = GardenWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    getting_started = repo / "almanac/getting-started.md"
+    getting_started.write_text(
+        getting_started.read_text(encoding="utf-8")
+        + "\nUser started a local wiki edit.\n",
+        encoding="utf-8",
+    )
+
+    result = app.workflows.garden.run(
+        RunGardenRequest(
+            cwd=repo,
+            harness=HarnessKind.CODEX,
+        )
+    )
+
+    assert result.run.status == RunStatus.DONE
+    assert result.safety.changed_files == (
+        repo / "almanac/gardened-note.md",
+    )
+    assert "User started a local wiki edit." in getting_started.read_text(
+        encoding="utf-8"
+    )
+
+
 def test_garden_workflow_rejects_harness_mutation_outside_almanac(
     tmp_path: Path,
     isolated_home: Path,
