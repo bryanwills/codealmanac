@@ -98,10 +98,10 @@ class SyncEvaluator:
         self,
         request: SyncSelectionRequest,
     ) -> tuple[Repository, ...]:
-        if request.wiki is None:
+        if request.repository_name is None:
             return tuple(self.repositories.list())
         repository = self.repositories.select(
-            SelectRepositoryRequest(name=request.wiki)
+            SelectRepositoryRequest(name=request.repository_name)
         )
         return (repository,)
 

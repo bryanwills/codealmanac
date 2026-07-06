@@ -11,7 +11,7 @@ from codealmanac.services.runs.models import RunId
 class GardenRequest(CodeAlmanacModel):
     cwd: Path
     harness: HarnessKind
-    wiki: str | None = None
+    repository_name: str | None = None
     title: str | None = None
     guidance: str | None = None
     auto_commit: bool = True

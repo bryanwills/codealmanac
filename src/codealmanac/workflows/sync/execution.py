@@ -88,7 +88,7 @@ def sync_ingest_request(
             for candidate in item.candidates
         ),
         harness=request.harness,
-        wiki=item.repository.name,
+        repository_name=item.repository.name,
         title=sync_ingest_title(item),
         guidance=sync_ingest_guidance(item),
         auto_commit=request.auto_commit,

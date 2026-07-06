@@ -50,7 +50,7 @@ class GardenWorkflow:
             StartedGardenRequest(
                 cwd=request.cwd,
                 harness=request.harness,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 title=request.title,
                 guidance=request.guidance,
                 auto_commit=request.auto_commit,
@@ -62,7 +62,7 @@ class GardenWorkflow:
         return self.runs.start(
             StartRunRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 kind=RunKind.GARDEN,
                 title=request.title or "Garden wiki",
             )
@@ -72,14 +72,17 @@ class GardenWorkflow:
         context = self.operations.begin(
             BeginOperationRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 run_id=request.run_id,
             )
         )
         try:
             index_before = self.index.summary(context.repository.repository_id)
             health_before = self.health.check(
-                HealthCheckRequest(cwd=request.cwd, wiki=request.wiki)
+                HealthCheckRequest(
+                    cwd=request.cwd,
+                    repository_name=request.repository_name,
+                )
             )
             self.operations.record(
                 RecordOperationEventRequest(

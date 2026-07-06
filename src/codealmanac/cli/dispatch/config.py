@@ -11,7 +11,7 @@ from codealmanac.services.harnesses.models import HarnessKind
 
 
 def load_cli_config(app: CodeAlmanac, wiki: str | None) -> CodeAlmanacConfig:
-    return app.config.load(LoadConfigRequest(cwd=Path.cwd(), wiki=wiki))
+    return app.config.load(LoadConfigRequest(cwd=Path.cwd(), repository_name=wiki))
 
 
 def load_user_cli_config(app: CodeAlmanac) -> CodeAlmanacConfig:

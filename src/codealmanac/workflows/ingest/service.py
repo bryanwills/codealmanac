@@ -56,7 +56,7 @@ class IngestWorkflow:
                 cwd=request.cwd,
                 inputs=request.inputs,
                 harness=request.harness,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 title=request.title,
                 guidance=request.guidance,
                 auto_commit=request.auto_commit,
@@ -68,7 +68,7 @@ class IngestWorkflow:
         return self.runs.start(
             StartRunRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 kind=RunKind.INGEST,
                 title=request.title or default_title(request.inputs),
             )
@@ -79,7 +79,7 @@ class IngestWorkflow:
         context = self.operations.begin(
             BeginOperationRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 run_id=run_id,
             )
         )

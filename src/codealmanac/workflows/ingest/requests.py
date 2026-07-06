@@ -12,7 +12,7 @@ class IngestRequest(CodeAlmanacModel):
     cwd: Path
     inputs: tuple[str, ...]
     harness: HarnessKind
-    wiki: str | None = None
+    repository_name: str | None = None
     title: str | None = None
     guidance: str | None = None
     auto_commit: bool = True

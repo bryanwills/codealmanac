@@ -12,7 +12,7 @@ DEFAULT_SYNC_INTERVAL = timedelta(hours=5)
 
 class SyncSelectionRequest(CodeAlmanacModel):
     apps: tuple[TranscriptApp, ...]
-    wiki: str | None = None
+    repository_name: str | None = None
     home: Path | None = None
     now: datetime | None = None
     interval: timedelta = DEFAULT_SYNC_INTERVAL

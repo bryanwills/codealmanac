@@ -43,7 +43,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         slug = to_kebab_case(request.name)
         if not slug:
@@ -81,7 +81,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         existing = existing_topic_slugs(self.index, repository.repository_id)
         if request.slug not in existing:
@@ -104,7 +104,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         validate_not_self_parent(request.child, request.parent)
         existing = existing_topic_slugs(self.index, repository.repository_id)
@@ -131,7 +131,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         topic_file = load_topics_file(repository.almanac_path)
         if not topic_file.remove_parent(request.child, request.parent):
@@ -152,7 +152,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         if request.old_slug == request.new_slug:
             return TopicRewriteMutationResult(
@@ -193,7 +193,7 @@ class TopicMutationExecutor:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         existing = existing_topic_slugs(self.index, repository.repository_id)
         if request.slug not in existing:

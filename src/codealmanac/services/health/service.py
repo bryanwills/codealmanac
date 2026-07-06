@@ -21,11 +21,11 @@ class HealthService:
         self.index = index
 
     def check(self, request: HealthCheckRequest) -> HealthReport:
-        repository = self.select_repository(request.cwd, request.wiki)
+        repository = self.select_repository(request.cwd, request.repository_name)
         return self.index.health_report(repository.repository_id)
 
     def validate(self, request: ValidateWikiRequest) -> ValidationResult:
-        repository = self.select_repository(request.cwd, request.wiki)
+        repository = self.select_repository(request.cwd, request.repository_name)
         return self.validate_repository(repository)
 
     def validate_repository(self, repository: Repository) -> ValidationResult:
@@ -56,8 +56,8 @@ class HealthService:
             raise ValidationFailed(validation_failure_message(result))
         return result
 
-    def select_repository(self, cwd: Path, wiki: str | None) -> Repository:
-        return self.repositories.select_read_target(cwd, wiki)
+    def select_repository(self, cwd: Path, repository_name: str | None) -> Repository:
+        return self.repositories.select_read_target(cwd, repository_name)
 
 
 def validation_result(

@@ -11,7 +11,10 @@ class SearchService:
         self.index = index
 
     def search(self, request: SearchPagesRequest) -> tuple[SearchPageResult, ...]:
-        repository = self.repositories.select_read_target(request.cwd, request.wiki)
+        repository = self.repositories.select_read_target(
+            request.cwd,
+            request.repository_name,
+        )
         return self.index.search(
             repository.repository_id,
             SearchIndexRequest(

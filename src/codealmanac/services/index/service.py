@@ -35,7 +35,10 @@ class IndexService:
         )
 
     def reindex(self, request: ReindexRequest) -> IndexRefreshResult:
-        repository = self.repositories.select_read_target(request.cwd, request.wiki)
+        repository = self.repositories.select_read_target(
+            request.cwd,
+            request.repository_name,
+        )
         return self.store.rebuild(
             repository.almanac_path,
             self.runtime_path(repository),

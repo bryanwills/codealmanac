@@ -7,6 +7,6 @@ from codealmanac.services.repositories.service import RepositoriesService
 def resolve_topic_repository(
     repositories: RepositoriesService,
     cwd: Path,
-    wiki: str | None,
+    repository_name: str | None,
 ) -> Repository:
-    return repositories.select_read_target(cwd, wiki)
+    return repositories.select_read_target(cwd, repository_name)

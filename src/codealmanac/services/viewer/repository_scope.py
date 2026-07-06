@@ -11,9 +11,9 @@ class ViewerRepositoryScope:
     def __init__(self, repositories: RepositoriesService):
         self.repositories = repositories
 
-    def select(self, cwd: Path, wiki: str | None) -> Repository:
-        if wiki is not None:
-            return self.repositories.select_read_target(cwd, wiki)
+    def select(self, cwd: Path, repository_name: str | None) -> Repository:
+        if repository_name is not None:
+            return self.repositories.select_read_target(cwd, repository_name)
         return self.select_default(cwd)
 
     def select_default(self, cwd: Path) -> Repository:

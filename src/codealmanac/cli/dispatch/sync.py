@@ -20,7 +20,7 @@ def dispatch_sync(args: argparse.Namespace, app: CodeAlmanac) -> int:
     cli_config = load_cli_config(app, args.wiki)
     result = app.workflows.sync.run(
         RunSyncRequest(
-            wiki=args.wiki,
+            repository_name=args.wiki,
             apps=parse_sync_apps(args.source_apps),
             harness=resolve_harness(args.using, cli_config),
             auto_commit=cli_config.auto_commit,
@@ -33,7 +33,7 @@ def dispatch_sync(args: argparse.Namespace, app: CodeAlmanac) -> int:
 def dispatch_sync_status(args: argparse.Namespace, app: CodeAlmanac) -> int:
     result = app.workflows.sync.status(
         RunSyncStatusRequest(
-            wiki=args.wiki,
+            repository_name=args.wiki,
             apps=parse_sync_apps(args.source_apps),
         )
     )

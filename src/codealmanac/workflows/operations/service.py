@@ -51,10 +51,10 @@ class OperationRunner:
         self.mutation_policy = mutation_policy
 
     def begin(self, request: BeginOperationRequest) -> OperationContext:
-        repository = self.resolve_repository(request.cwd, request.wiki)
+        repository = self.resolve_repository(request.cwd, request.repository_name)
         self.runs.mark_running(
             MarkRunRunningRequest(
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 run_id=request.run_id,
             )
         )
@@ -140,8 +140,8 @@ class OperationRunner:
                 )
             )
 
-    def resolve_repository(self, cwd: Path, wiki: str | None) -> Repository:
-        return self.repositories.select_operation_target(cwd, wiki)
+    def resolve_repository(self, cwd: Path, repository_name: str | None) -> Repository:
+        return self.repositories.select_operation_target(cwd, repository_name)
 
     def record_harness_transcript(
         self,

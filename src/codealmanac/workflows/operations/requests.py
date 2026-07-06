@@ -12,7 +12,7 @@ from codealmanac.workflows.operations.models import OperationContext
 class BeginOperationRequest(CodeAlmanacModel):
     cwd: Path
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class RecordOperationEventRequest(CodeAlmanacModel):

@@ -11,7 +11,10 @@ class PagesService:
         self.index = index
 
     def show(self, request: ShowPageRequest) -> PageView:
-        repository = self.repositories.select_read_target(request.cwd, request.wiki)
+        repository = self.repositories.select_read_target(
+            request.cwd,
+            request.repository_name,
+        )
         page = self.index.get_page(repository.repository_id, request.slug)
         if page is None:
             raise NotFoundError("page", request.slug)

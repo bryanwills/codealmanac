@@ -32,7 +32,7 @@ class TopicsService:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         return self.index.list_topics(repository.repository_id)
 
@@ -40,7 +40,7 @@ class TopicsService:
         repository = resolve_topic_repository(
             self.repositories,
             request.cwd,
-            request.wiki,
+            request.repository_name,
         )
         slug = to_kebab_case(request.slug)
         topic = self.index.get_topic(

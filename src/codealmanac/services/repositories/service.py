@@ -105,10 +105,14 @@ class RepositoriesService:
             return exact.to_repository()
         raise NoRepositorySelected()
 
-    def select_operation_target(self, cwd: Path, wiki: str | None) -> Repository:
-        if wiki is None:
+    def select_operation_target(
+        self,
+        cwd: Path,
+        repository_name: str | None,
+    ) -> Repository:
+        if repository_name is None:
             return self.resolve(cwd)
-        return self.select(SelectRepositoryRequest(name=wiki))
+        return self.select(SelectRepositoryRequest(name=repository_name))
 
     def resolve_read_target(self, path: Path) -> Repository:
         registered = self.find_by_path(path)
@@ -125,10 +129,14 @@ class RepositoriesService:
             )
         raise NoRepositorySelected()
 
-    def select_read_target(self, cwd: Path, wiki: str | None) -> Repository:
-        if wiki is None:
+    def select_read_target(
+        self,
+        cwd: Path,
+        repository_name: str | None,
+    ) -> Repository:
+        if repository_name is None:
             return self.resolve_read_target(cwd)
-        return self.select(SelectRepositoryRequest(name=wiki))
+        return self.select(SelectRepositoryRequest(name=repository_name))
 
     def validate_path(self, repository_id: str, path: Path) -> Path:
         repository = self.get(repository_id)

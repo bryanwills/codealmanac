@@ -58,7 +58,7 @@ class RunQueue:
         return self.runs.queue(
             QueueRunRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 title=request.title or default_ingest_title(request.inputs),
                 spec=RunSpec(
                     kind=RunKind.INGEST,
@@ -80,7 +80,7 @@ class RunQueue:
         return self.runs.queue(
             QueueRunRequest(
                 cwd=request.cwd,
-                wiki=request.wiki,
+                repository_name=request.repository_name,
                 title=request.title or "Garden wiki",
                 spec=RunSpec(
                     kind=RunKind.GARDEN,
@@ -107,7 +107,7 @@ class RunQueue:
             run = self.queue_garden(
                 GardenRequest(
                     cwd=repository.root_path,
-                    wiki=repository.name,
+                    repository_name=repository.name,
                     harness=request.harness,
                     auto_commit=request.auto_commit,
                 )
@@ -184,7 +184,7 @@ class RunQueue:
             result = self.ingest.run_started(
                 StartedIngestRequest(
                     cwd=repository.root_path,
-                    wiki=repository.name,
+                    repository_name=repository.name,
                     inputs=spec.inputs,
                     harness=spec.harness,
                     title=spec.title,
@@ -198,7 +198,7 @@ class RunQueue:
             result = self.garden.run_started(
                 StartedGardenRequest(
                     cwd=repository.root_path,
-                    wiki=repository.name,
+                    repository_name=repository.name,
                     harness=spec.harness,
                     title=spec.title,
                     guidance=spec.guidance,

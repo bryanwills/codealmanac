@@ -55,7 +55,7 @@ class ViewerService:
         self.repository_scope = ViewerRepositoryScope(repositories)
 
     def overview(self, request: ViewerOverviewRequest) -> ViewerOverview:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         summary = self.index.summary(repository.repository_id)
         pages = self.index.search(
             repository.repository_id,
@@ -76,7 +76,7 @@ class ViewerService:
         )
 
     def page(self, request: ViewerPageRequest) -> ViewerPage:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         page = self.get_page_or_raise(repository, request.slug)
         related_pages = self.related_pages(repository, page)
         return ViewerPage(
@@ -102,7 +102,7 @@ class ViewerService:
         )
 
     def search(self, request: ViewerSearchRequest) -> ViewerSearch:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         pages = self.index.search(
             repository.repository_id,
             SearchIndexRequest(query=request.query, limit=request.limit),
@@ -114,7 +114,7 @@ class ViewerService:
         )
 
     def file(self, request: ViewerFileRequest) -> ViewerFile:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         pages = self.index.search(
             repository.repository_id,
             SearchIndexRequest(mentions=request.path, limit=request.limit),
@@ -132,7 +132,7 @@ class ViewerService:
         )
 
     def topic(self, request: ViewerTopicRequest) -> ViewerTopic:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         slug = to_kebab_case(request.slug)
         topic = self.index.get_topic(
             repository.repository_id,
@@ -157,7 +157,7 @@ class ViewerService:
         )
 
     def jobs(self, request: ViewerJobsRequest) -> ViewerJobs:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         runs = self.runs.list(
             ListRunsRequest(
                 wiki=repository.name,
@@ -170,7 +170,7 @@ class ViewerService:
         )
 
     def job(self, request: ViewerJobRequest) -> ViewerJob:
-        repository = self.repository_scope.select(request.cwd, request.wiki)
+        repository = self.repository_scope.select(request.cwd, request.repository_name)
         snapshot = self.runs.attach(
             AttachRunRequest(
                 wiki=repository.name,

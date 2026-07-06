@@ -16,7 +16,7 @@ from codealmanac.services.runs.models import (
 
 
 class ListRunsRequest(CodeAlmanacModel):
-    wiki: str | None = None
+    repository_name: str | None = None
     limit: int | None = None
 
     @field_validator("limit")
@@ -29,22 +29,22 @@ class ListRunsRequest(CodeAlmanacModel):
 
 class ShowRunRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class ReadRunLogRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class AttachRunRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class StreamRunAttachRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
     poll_interval_seconds: float = 0.5
 
     @field_validator("poll_interval_seconds")
@@ -57,26 +57,26 @@ class StreamRunAttachRequest(CodeAlmanacModel):
 
 class CancelRunRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class StartRunRequest(CodeAlmanacModel):
     cwd: Path
     kind: RunKind
-    wiki: str | None = None
+    repository_name: str | None = None
     title: str | None = None
 
 
 class QueueRunRequest(CodeAlmanacModel):
     cwd: Path
     spec: RunSpec
-    wiki: str | None = None
+    repository_name: str | None = None
     title: str | None = None
 
 
 class ReadRunSpecRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class AcquireRunWorkerLockRequest(CodeAlmanacModel):
@@ -113,25 +113,25 @@ class RecordRunEventRequest(CodeAlmanacModel):
     run_id: RunId
     kind: RunEventKind
     message: str
-    wiki: str | None = None
+    repository_name: str | None = None
     harness_event: HarnessEvent | None = None
 
 
 class MarkRunRunningRequest(CodeAlmanacModel):
     run_id: RunId
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class RecordRunHarnessTranscriptRequest(CodeAlmanacModel):
     run_id: RunId
     transcript: HarnessTranscriptRef
-    wiki: str | None = None
+    repository_name: str | None = None
 
 
 class FinishRunRequest(CodeAlmanacModel):
     run_id: RunId
     status: RunStatus
-    wiki: str | None = None
+    repository_name: str | None = None
     summary: str | None = None
     error: str | None = None
 

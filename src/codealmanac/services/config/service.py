@@ -66,7 +66,7 @@ class ConfigService:
         try:
             repository = self.repositories.select_read_target(
                 request.cwd,
-                request.wiki,
+                request.repository_name,
             )
         except (NoRepositorySelected, NotFoundError, OSError):
             return None

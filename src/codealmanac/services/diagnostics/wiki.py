@@ -52,7 +52,7 @@ def select_repository(
     repositories: RepositoriesService,
 ) -> Repository | DoctorCheck:
     try:
-        return repositories.select_read_target(request.cwd, request.wiki)
+        return repositories.select_read_target(request.cwd, request.repository_name)
     except NoRepositorySelected:
         return DoctorCheck(
             key="wiki.none",
@@ -61,7 +61,7 @@ def select_repository(
             fix="run from a registered repository root or pass --wiki <name>",
         )
     except NotFoundError as error:
-        if request.wiki is None:
+        if request.repository_name is None:
             return DoctorCheck(
                 key="wiki.none",
                 status=DoctorStatus.INFO,

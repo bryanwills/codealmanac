@@ -16,7 +16,7 @@ def dispatch_ingest(args: argparse.Namespace, app: CodeAlmanac) -> int:
     cli_config = load_cli_config(app, args.wiki)
     request = IngestRequest(
         cwd=Path.cwd(),
-        wiki=args.wiki,
+        repository_name=args.wiki,
         inputs=tuple(args.inputs),
         harness=resolve_harness(args.using, cli_config),
         title=args.title,
@@ -32,7 +32,7 @@ def dispatch_garden(args: argparse.Namespace, app: CodeAlmanac) -> int:
     cli_config = load_cli_config(app, args.wiki)
     request = GardenRequest(
         cwd=Path.cwd(),
-        wiki=args.wiki,
+        repository_name=args.wiki,
         harness=resolve_harness(args.using, cli_config),
         title=args.title,
         guidance=args.guidance,
