@@ -1,4 +1,5 @@
 import shlex
+import shutil
 import sys
 from dataclasses import dataclass
 
@@ -20,22 +21,34 @@ from codealmanac.services.setup.models import (
     UninstallResult,
 )
 
+RST = "\x1b[0m"
+BOLD = "\x1b[1m"
+DIM = "\x1b[2m"
+WHITE_BOLD = "\x1b[1;37m"
+BLUE = "\x1b[38;5;75m"
+BLUE_DIM = "\x1b[38;5;69m"
+ACCENT_BG = "\x1b[48;5;252m\x1b[38;5;16m"
+
+GRADIENT = (
+    "\x1b[38;5;255m",
+    "\x1b[38;5;253m",
+    "\x1b[38;5;251m",
+    "\x1b[38;5;249m",
+    "\x1b[38;5;246m",
+    "\x1b[38;5;243m",
+)
+
 SETUP_BANNER = (
-    "   _____          _        _                         ",
-    "  / ____|        | |      / \\                        ",
-    " | |     ___   __| | ___ / _ \\   _ __ ___   __ _ ___ ",
-    " | |    / _ \\ / _` |/ _ / ___ \\ | '_ ` _ \\ / _` / __|",
-    " | |___| (_) | (_| |  __/ ___ \\ | | | | | | (_| \\__ \\",
-    "  \\_____\\___/ \\__,_|\\___/_/   \\_\\|_| |_| |_|\\__,_|___/",
+    " █████╗ ██╗     ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗",
+    "██╔══██╗██║     ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝",
+    "███████║██║     ██╔████╔██║███████║██╔██╗ ██║███████║██║     ",
+    "██╔══██║██║     ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║     ",
+    "██║  ██║███████╗██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╗",
+    "╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝",
 )
 
 ACCENT_STYLE = "bright_blue"
-BRAND_STYLE = "bold bright_blue"
-LOGO_STYLE = "bold bright_white"
-MUTED_STYLE = "dim"
-BADGE_STYLE = "black on bright_white"
-SUCCESS_STYLE = "green"
-WARNING_STYLE = "yellow"
+BAR = f"  {DIM}│{RST}"
 
 
 @dataclass(frozen=True)
@@ -60,28 +73,150 @@ def render_uninstall_result(result: UninstallResult, json_output: bool) -> None:
 
 
 def render_setup_text(result: SetupResult) -> None:
-    console = setup_console()
-    console.print()
-    console.print(Text("  CODEALMANAC", style=BRAND_STYLE))
-    for line in SETUP_BANNER:
-        console.print(Text(line, style=LOGO_STYLE))
-    console.print(
-        Text(
-            "  A local codebase wiki, maintained by your coding agents.",
-            style="bold",
-        )
+    print_banner()
+    print_badge()
+    write_line("")
+    write_line(f"  {WHITE_BOLD}Setup complete{RST}")
+    write_line(BAR)
+    steps = setup_steps(result)
+    for index, step in enumerate(steps):
+        render_setup_step(step)
+        if index < len(steps) - 1:
+            write_line(BAR)
+    write_line("")
+    render_next_steps_box(next_step_lines(result))
+
+
+def print_banner() -> None:
+    write_line("")
+    for index, line in enumerate(SETUP_BANNER):
+        color = GRADIENT[index]
+        write_line(f"{color}{line}{RST}")
+    write_line("")
+    write_line(
+        f"{WHITE_BOLD}  CodeAlmanac is a local codebase wiki,"
+        f" maintained by your coding agents.{RST}"
     )
-    console.print(
-        Text(
-            "  Machine setup only. Repo wikis still start with codealmanac init.",
-            style=MUTED_STYLE,
-        )
+    write_line(
+        f"{DIM}  Machine setup only. Repo wikis still start with"
+        f" codealmanac init.{RST}"
     )
-    console.print()
-    console.print(Text(" codealmanac  local-only ", style=BADGE_STYLE))
-    console.print()
-    console.print(setup_steps_panel(result))
-    console.print(next_steps_panel(result))
+
+
+def print_badge() -> None:
+    write_line("")
+    write_line(f"   {ACCENT_BG} codealmanac {RST}")
+
+
+def render_setup_step(step: SetupStep) -> None:
+    marker = "◇"
+    marker_style = BLUE
+    label_style = WHITE_BOLD
+    status_style = BLUE
+    if step.status in {"skipped", "disabled", "off"}:
+        marker = "○"
+        marker_style = DIM
+        label_style = DIM
+        status_style = DIM
+    write_line(
+        f"  {marker_style}{marker}{RST}  "
+        f"{label_style}{step.label}{RST} "
+        f"{status_style}{step.status}{RST}"
+    )
+    for detail in wrap_step_detail(step.detail):
+        write_line(detail)
+
+
+def wrap_step_detail(detail: str) -> tuple[str, ...]:
+    width = max(40, terminal_width() - 6)
+    return tuple(wrap_with_prefixes(detail, f"{BAR}   ", f"{BAR}   ", width))
+
+
+def next_step_lines(result: SetupResult) -> tuple[str, ...]:
+    lines: list[str] = [
+        f"  {WHITE_BOLD}Create almanac/ inside a repo when you are ready.{RST}",
+        "",
+    ]
+    for command in result.plan.next_commands:
+        lines.append(f"  {BOLD}{command.label}{RST}")
+        lines.append(f"  {BLUE}{shell_command(command.command)}{RST}")
+    return tuple(lines)
+
+
+def render_next_steps_box(lines: tuple[str, ...]) -> None:
+    header = f"  {WHITE_BOLD}Next steps{RST}"
+    inner_width = box_inner_width((header, *lines))
+    empty = box_row("", inner_width)
+    write_line(f"  {BLUE_DIM}╭{'─' * inner_width}╮{RST}")
+    write_line(empty)
+    write_line(box_row(header, inner_width))
+    write_line(empty)
+    for line in lines:
+        write_line(box_row(line, inner_width))
+    write_line(empty)
+    write_line(f"  {BLUE_DIM}╰{'─' * inner_width}╯{RST}")
+    write_line("")
+
+
+def box_inner_width(contents: tuple[str, ...], min_width: int = 62) -> int:
+    available = max(40, terminal_width() - 6)
+    widest = max((visible_length(content) for content in contents), default=0)
+    return min(max(min_width, widest), available)
+
+
+def box_row(content: str, inner_width: int) -> str:
+    padding = max(0, inner_width - visible_length(content))
+    return f"  {BLUE_DIM}│{RST}{content}{' ' * padding}{BLUE_DIM}│{RST}"
+
+
+def wrap_with_prefixes(
+    text: str,
+    first_prefix: str,
+    next_prefix: str,
+    width: int,
+) -> tuple[str, ...]:
+    words = tuple(word for word in text.split(" ") if len(word) > 0)
+    if len(words) == 0:
+        return (first_prefix,)
+    lines: list[str] = []
+    prefix = first_prefix
+    line = prefix
+    has_word = False
+    for word in words:
+        candidate = f"{line} {word}" if has_word else f"{prefix}{word}"
+        if has_word and visible_length(candidate) > width:
+            lines.append(line)
+            prefix = next_prefix
+            line = f"{prefix}{word}"
+            has_word = True
+            continue
+        line = candidate
+        has_word = True
+    lines.append(line)
+    return tuple(lines)
+
+
+def visible_length(value: str) -> int:
+    count = 0
+    in_escape = False
+    for character in value:
+        if character == "\x1b":
+            in_escape = True
+            continue
+        if in_escape:
+            if character == "m":
+                in_escape = False
+            continue
+        count += 1
+    return count
+
+
+def terminal_width() -> int:
+    return shutil.get_terminal_size((80, 24)).columns
+
+
+def write_line(line: str) -> None:
+    sys.stdout.write(f"{line}\n")
 
 
 def render_uninstall_text(result: UninstallResult) -> None:
@@ -113,31 +248,6 @@ def changes_panel(title: str, changes: tuple[InstructionChange, ...]) -> Panel:
             table.add_row("", "", str(path))
     return Panel(
         Group(Text(title, style="bold"), table),
-        border_style=ACCENT_STYLE,
-        padding=(1, 2),
-    )
-
-
-def setup_steps_panel(result: SetupResult) -> Panel:
-    table = Table.grid(padding=(0, 2))
-    table.add_column("step", style="bold")
-    table.add_column("status")
-    table.add_column("detail")
-    for index, step in enumerate(setup_steps(result), start=1):
-        table.add_row(
-            f"{index}. {step.label}",
-            Text(step.status, style=status_style(step.status)),
-            step.detail,
-        )
-    return Panel(
-        Group(
-            Text("Setup complete", style="bold"),
-            Text(
-                "Machine-level agent instructions and schedules are ready.",
-                style=MUTED_STYLE,
-            ),
-            table,
-        ),
         border_style=ACCENT_STYLE,
         padding=(1, 2),
     )
@@ -266,35 +376,8 @@ def package_uninstall_panel(result: PackageUninstallResult) -> Panel:
     )
 
 
-def next_steps_panel(result: SetupResult) -> Panel:
-    table = Table.grid()
-    for command in result.plan.next_commands:
-        table.add_row(Text(command.label, style="bold"))
-        table.add_row(Text(shell_command(command.command), style=ACCENT_STYLE))
-    return Panel(
-        Group(
-            Text("Next steps", style="bold"),
-            Text(
-                "Create almanac/ inside a repo when you are ready.",
-                style=MUTED_STYLE,
-            ),
-            table,
-        ),
-        border_style=SUCCESS_STYLE,
-        padding=(1, 2),
-    )
-
-
 def change_status(change: InstructionChange) -> str:
     return "changed" if change.changed else "ok"
-
-
-def status_style(status: str) -> str:
-    if status in {"installed", "ready", "on", "changed", "ok"}:
-        return SUCCESS_STYLE
-    if status in {"disabled", "off"}:
-        return WARNING_STYLE
-    return MUTED_STYLE
 
 
 def shell_command(command: tuple[str, ...]) -> str:

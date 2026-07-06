@@ -14,6 +14,11 @@ from codealmanac.services.setup.models import (
 )
 from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallRequest
 
+RST = "\x1b[0m"
+BOLD = "\x1b[1m"
+DIM = "\x1b[2m"
+BLUE = "\x1b[38;5;75m"
+
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
     auto_update = resolve_setup_auto_update(args)
@@ -49,8 +54,9 @@ def resolve_setup_auto_update(args: argparse.Namespace) -> bool:
 
 def confirm_setup_auto_update() -> bool:
     response = input(
-        "Do you want to keep CodeAlmanac up to date automatically? "
-        "This gives setup permission to install a local scheduled updater. [Y/n] "
+        f"  {BLUE}◆{RST}  Do you want to keep CodeAlmanac up to date automatically? "
+        f"This gives setup permission to install a local scheduled updater. "
+        f"{DIM}{BOLD}[Y/n]{RST} "
     )
     return response.strip().casefold() not in {"n", "no"}
 
