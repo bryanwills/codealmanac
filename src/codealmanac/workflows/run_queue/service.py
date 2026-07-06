@@ -131,7 +131,7 @@ class RunQueue:
             )
         return ScheduledGardenResult(runs=tuple(runs), worker=worker)
 
-    def spawn_worker(self, cwd: Path):
+    def spawn_worker(self, cwd: Path) -> RunWorkerSpawnResult:
         return self.spawner.spawn(SpawnRunWorkerRequest(cwd=cwd))
 
     def start_result(
@@ -163,7 +163,7 @@ class RunQueue:
                 queued = self.runs.next_queued()
                 if queued is None:
                     break
-                processed.append(self.run_one(queued, request))
+                processed.append(self.run_one(queued))
             return RunQueueDrainResult(
                 lock_acquired=True,
                 processed=tuple(processed),
@@ -171,11 +171,7 @@ class RunQueue:
         finally:
             lease.release()
 
-    def run_one(
-        self,
-        queued: QueuedRun,
-        request: DrainRunQueueRequest,
-    ) -> RunRecord:
+    def run_one(self, queued: QueuedRun) -> RunRecord:
         spec = queued.spec
         if spec is None:
             return self.runs.finish(
