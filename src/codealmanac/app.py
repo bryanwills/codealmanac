@@ -106,6 +106,20 @@ class CodeAlmanac:
 
 
 @dataclass(frozen=True)
+class AppAdapters:
+    harness_adapters: Sequence[HarnessAdapter] | None = None
+    transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None = None
+    source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None
+    scheduler: SchedulerAdapter | None = None
+    worker_spawner: RunWorkerSpawner | None = None
+    update_metadata: PackageInstallMetadataProvider | None = None
+    update_runner: PackageCommandRunner | None = None
+    instruction_installer: InstructionInstaller | None = None
+    global_state_remover: GlobalStateRemover | None = None
+    package_uninstaller: PackageUninstaller | None = None
+
+
+@dataclass(frozen=True)
 class Services:
     local_state: LocalStatePaths
     automation: AutomationService
@@ -144,43 +158,36 @@ def create_app(
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     local_state = LocalStatePaths.from_config(app_config)
-    services = create_services(
-        app_config,
-        local_state,
+    adapters = AppAdapters(
         harness_adapters=harness_adapters,
         transcript_discovery_adapters=transcript_discovery_adapters,
         source_runtime_adapters=source_runtime_adapters,
         scheduler=scheduler,
+        worker_spawner=worker_spawner,
         update_metadata=update_metadata,
         update_runner=update_runner,
         instruction_installer=instruction_installer,
         global_state_remover=global_state_remover,
         package_uninstaller=package_uninstaller,
     )
+    services = create_services(
+        local_state,
+        adapters,
+    )
     workflows = create_workflows(
         services,
-        worker_spawner=worker_spawner,
+        adapters,
     )
     return assemble_app(services, workflows)
 
 
 def create_services(
-    app_config: AppConfig,
     local_state: LocalStatePaths,
-    *,
-    harness_adapters: Sequence[HarnessAdapter] | None,
-    transcript_discovery_adapters: Sequence[TranscriptDiscoveryAdapter] | None,
-    source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None,
-    scheduler: SchedulerAdapter | None,
-    update_metadata: PackageInstallMetadataProvider | None,
-    update_runner: PackageCommandRunner | None,
-    instruction_installer: InstructionInstaller | None,
-    global_state_remover: GlobalStateRemover | None,
-    package_uninstaller: PackageUninstaller | None,
+    adapters: AppAdapters,
 ) -> Services:
     repositories = RepositoriesService(RepositoryStore(local_state.database_path))
     config_service = ConfigService(repositories, ConfigStore(), local_state.config_path)
-    automation = AutomationService(scheduler or LaunchdSchedulerAdapter())
+    automation = AutomationService(adapters.scheduler or LaunchdSchedulerAdapter())
     manual = ManualLibrary()
     wiki = WikiService(repositories, manual)
     index = IndexService(repositories, IndexStore(), local_state)
@@ -196,8 +203,8 @@ def create_services(
         __version__,
     )
     tagging = TaggingService(pages)
-    package_metadata = update_metadata or InstalledPackageMetadataProvider()
-    package_runner = update_runner or SubprocessPackageCommandRunner()
+    package_metadata = adapters.update_metadata or InstalledPackageMetadataProvider()
+    package_runner = adapters.update_runner or SubprocessPackageCommandRunner()
     updates = UpdatesService(
         package_metadata,
         package_runner,
@@ -205,11 +212,11 @@ def create_services(
         local_state.database_path,
     )
     setup = SetupService(
-        instruction_installer or FileInstructionInstaller(),
+        adapters.instruction_installer or FileInstructionInstaller(),
         automation,
-        global_state_remover
+        adapters.global_state_remover
         or FilesystemGlobalStateRemover(local_state.state_dir),
-        package_uninstaller
+        adapters.package_uninstaller
         or PackageToolUninstaller(package_metadata, package_runner),
         config_service,
     )
@@ -217,15 +224,17 @@ def create_services(
     viewer = ViewerService(repositories, index, runs, MarkdownRenderer())
     sources = SourcesService(
         default_transcript_discovery_adapters()
-        if transcript_discovery_adapters is None
-        else transcript_discovery_adapters,
+        if adapters.transcript_discovery_adapters is None
+        else adapters.transcript_discovery_adapters,
         default_source_runtime_adapters()
-        if source_runtime_adapters is None
-        else source_runtime_adapters,
+        if adapters.source_runtime_adapters is None
+        else adapters.source_runtime_adapters,
     )
     prompts = PromptRenderer()
     harnesses = HarnessesService(
-        default_harness_adapters() if harness_adapters is None else harness_adapters
+        default_harness_adapters()
+        if adapters.harness_adapters is None
+        else adapters.harness_adapters
     )
     return Services(
         local_state=local_state,
@@ -264,8 +273,7 @@ def create_operation(services: Services, kind: RunKind) -> OperationRunner:
 
 def create_workflows(
     services: Services,
-    *,
-    worker_spawner: RunWorkerSpawner | None,
+    adapters: AppAdapters,
 ) -> CodeAlmanacWorkflows:
     build_operations = create_operation(services, RunKind.BUILD)
     ingest_operations = create_operation(services, RunKind.INGEST)
@@ -298,7 +306,7 @@ def create_workflows(
         services.runs,
         ingest,
         garden,
-        worker_spawner or SubprocessRunWorkerSpawner(),
+        adapters.worker_spawner or SubprocessRunWorkerSpawner(),
     )
     sync = SyncWorkflow(
         services.repositories,
