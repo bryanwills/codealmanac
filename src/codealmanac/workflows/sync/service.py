@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.sources.service import SourcesService
+from codealmanac.services.workspaces.runtime import WorkspaceRuntimePaths
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.run_queue.service import RunQueueWorkflow
@@ -30,6 +31,7 @@ class SyncWorkflow:
         ingest: IngestWorkflow,
         queue: RunQueueWorkflow,
         ledger_store: SyncLedgerStore,
+        runtime_paths: WorkspaceRuntimePaths,
     ):
         self.workspaces = workspaces
         self.sources = sources
@@ -40,12 +42,15 @@ class SyncWorkflow:
             sources=sources,
             runs=runs,
             ledger_store=ledger_store,
+            runtime_paths=runtime_paths,
         )
         self.executor = SyncRunExecutor(
             runs=runs,
+            workspaces=workspaces,
             ingest=ingest,
             queue=queue,
             ledger_store=ledger_store,
+            runtime_paths=runtime_paths,
         )
 
     def status(self, request: RunSyncStatusRequest) -> SyncSummary:

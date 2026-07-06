@@ -6,7 +6,11 @@ sources:
   - id: schema
     type: file
     path: src/codealmanac/services/index/schema.py
-    note: SQLite schema and current index database path.
+    note: SQLite schema and index database connection.
+  - id: runtime
+    type: file
+    path: src/codealmanac/services/workspaces/runtime.py
+    note: Per-workspace runtime path mapping.
   - id: projection
     type: file
     path: src/codealmanac/services/index/projection.py
@@ -23,7 +27,7 @@ sources:
 
 # Indexing
 
-The index is derived state. `src/codealmanac/services/index/schema.py` currently stores the database at `almanac/index.db` and recreates the derived schema through one migration version [@schema].
+The index is derived runtime state. `WorkspaceRuntimePaths` maps each workspace to `~/.codealmanac/repos/<workspace-id>/`, and `src/codealmanac/services/index/schema.py` stores `index.db` inside that runtime directory [@runtime] [@schema].
 
 The schema includes pages, topics, page-topic edges, topic-parent edges, file references, page sources, page links, cross-wiki links, FTS5 content, and index metadata [@schema]. The projection deletes and rebuilds those tables from loaded page documents and topic definitions [@projection].
 

@@ -105,8 +105,8 @@ INDEX_MIGRATIONS = (
 )
 
 
-def index_db_path(almanac_path: Path) -> Path:
-    return almanac_path / "index.db"
+def index_db_path(runtime_path: Path) -> Path:
+    return runtime_path / "index.db"
 
 
 def connect_index(path: Path) -> SQLiteConnection:

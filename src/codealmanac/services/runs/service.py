@@ -33,6 +33,7 @@ from codealmanac.services.runs.store import RunStore, RunWorkerLease
 from codealmanac.services.runs.streaming import RunAttachStreamer
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
+from codealmanac.services.workspaces.runtime import WorkspaceRuntimePaths
 from codealmanac.services.workspaces.service import WorkspacesService
 
 
@@ -41,17 +42,18 @@ class RunsService:
         self,
         workspaces: WorkspacesService,
         store: RunStore,
+        runtime_paths: WorkspaceRuntimePaths,
         streamer: RunAttachStreamer | None = None,
     ):
         self.workspaces = workspaces
         self.store = store
+        self.runtime_paths = runtime_paths
         self.streamer = streamer or RunAttachStreamer(store)
 
     def start(self, request: StartRunRequest) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.create(
-            workspace.almanac_path,
-            workspace.almanac_root,
+            self.runtime_paths.repo_dir(workspace),
             workspace.workspace_id,
             request.operation,
             request.title,
@@ -63,8 +65,7 @@ class RunsService:
             update={"cwd": request.cwd, "wiki": request.wiki}
         )
         return self.store.queue(
-            workspace.almanac_path,
-            workspace.almanac_root,
+            self.runtime_paths.repo_dir(workspace),
             workspace.workspace_id,
             spec,
             request.title,
@@ -72,19 +73,22 @@ class RunsService:
 
     def list(self, request: ListRunsRequest) -> tuple[RunRecord, ...]:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.list(workspace.almanac_path, request.limit)
+        return self.store.list(self.runtime_paths.repo_dir(workspace), request.limit)
 
     def show(self, request: ShowRunRequest) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.read(workspace.almanac_path, request.run_id)
+        return self.store.read(self.runtime_paths.repo_dir(workspace), request.run_id)
 
     def read_spec(self, request: ReadRunSpecRequest) -> RunSpec | None:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.read_spec(workspace.almanac_path, request.run_id)
+        return self.store.read_spec(
+            self.runtime_paths.repo_dir(workspace),
+            request.run_id,
+        )
 
     def next_queued(self, request: NextQueuedRunRequest) -> QueuedRun | None:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.next_queued(workspace.almanac_path)
+        return self.store.next_queued(self.runtime_paths.repo_dir(workspace))
 
     def acquire_worker_lock(
         self,
@@ -92,7 +96,7 @@ class RunsService:
     ) -> RunWorkerLease | None:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.acquire_worker_lock(
-            workspace.almanac_path,
+            self.runtime_paths.repo_dir(workspace),
             request.owner,
             request.pid or os.getpid(),
             request.now or datetime.now(UTC),
@@ -101,11 +105,11 @@ class RunsService:
 
     def log(self, request: ReadRunLogRequest) -> tuple[RunLogEvent, ...]:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.log(workspace.almanac_path, request.run_id)
+        return self.store.log(self.runtime_paths.repo_dir(workspace), request.run_id)
 
     def attach(self, request: AttachRunRequest) -> RunAttachSnapshot:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.attach(workspace.almanac_path, request.run_id)
+        return self.store.attach(self.runtime_paths.repo_dir(workspace), request.run_id)
 
     def stream_attach(
         self,
@@ -113,7 +117,7 @@ class RunsService:
     ) -> Iterator[RunAttachUpdate]:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.streamer.stream(
-            workspace.almanac_path,
+            self.runtime_paths.repo_dir(workspace),
             request.run_id,
             request.poll_interval_seconds,
         )
@@ -121,7 +125,7 @@ class RunsService:
     def record_event(self, request: RecordRunEventRequest) -> RunLogEvent:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.append(
-            workspace.almanac_path,
+            self.runtime_paths.repo_dir(workspace),
             request.run_id,
             request.kind,
             request.message,
@@ -130,7 +134,10 @@ class RunsService:
 
     def mark_running(self, request: MarkRunRunningRequest) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.mark_running(workspace.almanac_path, request.run_id)
+        return self.store.mark_running(
+            self.runtime_paths.repo_dir(workspace),
+            request.run_id,
+        )
 
     def record_harness_transcript(
         self,
@@ -138,7 +145,7 @@ class RunsService:
     ) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.record_harness_transcript(
-            workspace.almanac_path,
+            self.runtime_paths.repo_dir(workspace),
             request.run_id,
             request.transcript,
         )
@@ -146,7 +153,7 @@ class RunsService:
     def finish(self, request: FinishRunRequest) -> RunRecord:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
         return self.store.finish(
-            workspace.almanac_path,
+            self.runtime_paths.repo_dir(workspace),
             request.run_id,
             request.status,
             request.summary,
@@ -155,7 +162,7 @@ class RunsService:
 
     def cancel(self, request: CancelRunRequest) -> RunCancelResult:
         workspace = self.resolve_workspace(request.cwd, request.wiki)
-        return self.store.cancel(workspace.almanac_path, request.run_id)
+        return self.store.cancel(self.runtime_paths.repo_dir(workspace), request.run_id)
 
     def resolve_workspace(self, cwd: Path, wiki: str | None) -> Workspace:
         if wiki is None:

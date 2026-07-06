@@ -10,8 +10,8 @@ SYNC_LEDGER_VERSION = 1
 
 
 class SyncLedgerStore:
-    def load(self, almanac_path: Path) -> SyncLedger:
-        path = sync_ledger_path(almanac_path)
+    def load(self, runtime_path: Path) -> SyncLedger:
+        path = sync_ledger_path(runtime_path)
         try:
             return SyncLedger.model_validate_json(path.read_text(encoding="utf-8"))
         except (OSError, ValidationError, ValueError):
@@ -19,12 +19,12 @@ class SyncLedgerStore:
 
     def save(
         self,
-        almanac_path: Path,
+        runtime_path: Path,
         ledger: SyncLedger,
         now: datetime,
     ) -> SyncLedger:
         updated = ledger.model_copy(update={"updated_at": now})
-        path = sync_ledger_path(almanac_path)
+        path = sync_ledger_path(runtime_path)
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
         try:
@@ -39,8 +39,8 @@ class SyncLedgerStore:
         return updated
 
 
-def sync_ledger_path(almanac_path: Path) -> Path:
-    return almanac_path / "jobs" / "sync-ledger.json"
+def sync_ledger_path(runtime_path: Path) -> Path:
+    return runtime_path / "runs" / "sync-ledger.json"
 
 
 def empty_ledger() -> SyncLedger:

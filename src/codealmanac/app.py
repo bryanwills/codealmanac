@@ -50,6 +50,7 @@ from codealmanac.services.updates.service import UpdatesService
 from codealmanac.services.viewer.renderer import MarkdownRenderer
 from codealmanac.services.viewer.service import ViewerService
 from codealmanac.services.wiki.service import WikiService
+from codealmanac.services.workspaces.runtime import WorkspaceRuntimePaths
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.services.workspaces.store import WorkspaceRegistryStore
 from codealmanac.workflows.build.service import BuildWorkflow
@@ -108,11 +109,12 @@ def create_app(
 ) -> CodeAlmanac:
     app_config = config or AppConfig()
     workspaces = WorkspacesService(WorkspaceRegistryStore(app_config.registry_path))
+    runtime_paths = WorkspaceRuntimePaths(app_config.registry_path.parent)
     config_service = ConfigService(workspaces, ConfigStore(), app_config.config_path)
     automation = AutomationService(workspaces, scheduler or LaunchdSchedulerAdapter())
     manual = ManualLibrary()
     wiki = WikiService(workspaces, manual)
-    index = IndexService(workspaces, IndexStore())
+    index = IndexService(workspaces, IndexStore(), runtime_paths)
     search = SearchService(workspaces, index)
     pages = PagesService(workspaces, index)
     topics = TopicsService(workspaces, index)
@@ -127,7 +129,7 @@ def create_app(
         instruction_installer or FileInstructionInstaller(),
         automation,
     )
-    runs = RunsService(workspaces, RunStore())
+    runs = RunsService(workspaces, RunStore(), runtime_paths)
     viewer = ViewerService(workspaces, index, runs, MarkdownRenderer())
     sources = SourcesService(
         default_transcript_discovery_adapters()
@@ -175,7 +177,15 @@ def create_app(
         garden,
         worker_spawner or SubprocessRunWorkerSpawner(),
     )
-    sync = SyncWorkflow(workspaces, sources, runs, ingest, queue, SyncLedgerStore())
+    sync = SyncWorkflow(
+        workspaces,
+        sources,
+        runs,
+        ingest,
+        queue,
+        SyncLedgerStore(),
+        runtime_paths,
+    )
     workflows = CodeAlmanacWorkflows(
         build=build,
         ingest=ingest,

@@ -22,13 +22,13 @@ class RunWorkerLease:
 
 
 def acquire_worker_lock(
-    almanac_path: Path,
+    runtime_path: Path,
     owner: str,
     pid: int,
     now: datetime,
     stale_after: timedelta,
 ) -> RunWorkerLease | None:
-    path = worker_lock_path(almanac_path)
+    path = worker_lock_path(runtime_path)
     lock_owner = RunWorkerLockOwner(owner=owner, pid=pid, acquired_at=now)
     path.parent.mkdir(parents=True, exist_ok=True)
     for _ in range(2):

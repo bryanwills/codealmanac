@@ -19,14 +19,14 @@ class RunAttachStreamer:
 
     def stream(
         self,
-        almanac_path: Path,
+        runtime_path: Path,
         run_id: str,
         poll_interval_seconds: float,
     ) -> Iterator[RunAttachUpdate]:
         last_sequence = 0
         terminal_settle_polls = TERMINAL_SETTLE_POLLS
         while True:
-            snapshot = self.store.attach(almanac_path, run_id)
+            snapshot = self.store.attach(runtime_path, run_id)
             if (
                 snapshot.terminal
                 and terminal_settle_polls > 0

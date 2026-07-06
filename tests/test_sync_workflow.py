@@ -3,6 +3,8 @@ from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from pathlib import Path
 
+from conftest import runtime_repo_path_for_root, runtime_runs_path
+
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.core.paths import normalize_path
@@ -103,16 +105,15 @@ class FailedSyncHarnessAdapter(SyncWritingHarnessAdapter):
 
 
 class LedgerObservingHarnessAdapter(SyncWritingHarnessAdapter):
-    def __init__(self, candidate: TranscriptCandidate):
+    def __init__(self, candidate: TranscriptCandidate, ledger_path: Path):
         super().__init__()
         self.candidate = candidate
+        self.ledger_path = ledger_path
         self.observed_entry: SyncLedgerEntry | None = None
 
     def run(self, request: RunHarnessRequest) -> HarnessRunResult:
         ledger = SyncLedger.model_validate_json(
-            (request.cwd / "almanac/jobs/sync-ledger.json").read_text(
-                encoding="utf-8"
-            )
+            self.ledger_path.read_text(encoding="utf-8")
         )
         self.observed_entry = ledger.sessions[sync_ledger_key(self.candidate)]
         return super().run(request)
@@ -213,7 +214,8 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
     harness = SyncWritingHarnessAdapter()
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -227,9 +229,7 @@ def test_sync_run_ingests_ready_transcripts_and_advances_ledger(
         )
     )
 
-    ledger = SyncLedger.model_validate_json(
-        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
-    )
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.mode == SyncMode.SYNC
     assert summary.eligible == 1
@@ -271,7 +271,8 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
         harness=harness,
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
 
     summary = app.workflows.sync.run(
         RunSyncRequest(
@@ -285,9 +286,7 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
         )
     )
 
-    ledger = SyncLedger.model_validate_json(
-        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
-    )
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     run = app.runs.show(ShowRunRequest(cwd=repo, run_id=summary.started[0].run_id))
 
@@ -303,7 +302,10 @@ def test_sync_background_queues_ingest_and_leaves_pending_claim(
     assert entry.pending_prefix_hash == sha256_text("one\ntwo\n")
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+    assert (
+        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
+    ).is_file()
+    assert not (repo / "almanac/jobs").exists()
 
 
 def test_sync_background_spawn_failure_marks_run_and_ledger_failed(
@@ -321,7 +323,8 @@ def test_sync_background_spawn_failure_marks_run_and_ledger_failed(
         harness=SyncWritingHarnessAdapter(),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
 
     summary = app.workflows.sync.run(
         RunSyncRequest(
@@ -334,9 +337,7 @@ def test_sync_background_spawn_failure_marks_run_and_ledger_failed(
         )
     )
 
-    ledger = SyncLedger.model_validate_json(
-        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
-    )
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     run = app.runs.show(ShowRunRequest(cwd=repo, run_id=entry.last_job_id or ""))
 
@@ -358,7 +359,10 @@ def test_sync_run_writes_pending_claim_before_ingest(
     repo.mkdir()
     transcript = write_transcript(tmp_path, "one\ntwo\n")
     candidate = transcript_candidate(repo, transcript, modified_at=old_time())
-    harness = LedgerObservingHarnessAdapter(candidate)
+    ledger_path = (
+        runtime_repo_path_for_root(isolated_home, repo) / "runs" / "sync-ledger.json"
+    )
+    harness = LedgerObservingHarnessAdapter(candidate, ledger_path)
     app = app_with_candidates(isolated_home, (candidate,), harness=harness)
     app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
@@ -384,9 +388,7 @@ def test_sync_run_writes_pending_claim_before_ingest(
     assert harness.observed_entry.pending_prefix_hash == sha256_text("one\ntwo\n")
     assert harness.observed_entry.pending_from_line == 1
     assert harness.observed_entry.pending_to_line == 2
-    ledger = SyncLedger.model_validate_json(
-        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
-    )
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert entry.status == SyncLedgerStatus.DONE
     assert entry.last_job_id == summary.started[0].run_id
@@ -424,11 +426,8 @@ def test_sync_run_records_failed_attempt_after_ingest_failure(
         )
     )
 
-    ledger = SyncLedger.model_validate_json(
-        (workspace.almanac_path / "jobs/sync-ledger.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.started == ()
     assert summary.needs_attention[0].reason == "ingest-failed"
@@ -450,7 +449,7 @@ def test_sync_status_skips_active_pending_ledger_entry(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -488,7 +487,7 @@ def test_sync_status_reports_stale_pending_ledger_entry(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -530,7 +529,7 @@ def test_sync_status_skips_active_pending_run(
     )
     app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=run.run_id))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -583,7 +582,7 @@ def test_sync_status_reports_done_pending_run_needs_reconcile(
         )
     )
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -640,7 +639,7 @@ def test_sync_run_reconciles_done_pending_run_before_new_work(
         )
     )
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -665,9 +664,8 @@ def test_sync_run_reconciles_done_pending_run_before_new_work(
         )
     )
 
-    ledger = SyncLedger.model_validate_json(
-        (repo / "almanac/jobs/sync-ledger.json").read_text(encoding="utf-8")
-    )
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
+    ledger = SyncLedger.model_validate_json(ledger_path.read_text(encoding="utf-8"))
     entry = ledger.sessions[sync_ledger_key(candidate)]
     assert summary.eligible == 1
     assert summary.started[0].from_line == 3
@@ -706,7 +704,7 @@ def test_sync_run_reconciles_failed_pending_run_and_retries(
         )
     )
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -747,7 +745,7 @@ def test_sync_status_reports_exhausted_retry_budget(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -788,7 +786,7 @@ def test_sync_status_matches_normalized_transcript_ledger_key(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -829,7 +827,7 @@ def test_sync_status_matches_ledger_entry_by_normalized_identity(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=0,
         last_absorbed_line=0,
@@ -978,7 +976,7 @@ def test_sync_status_reports_prefix_mismatch_from_ledger(
     app = app_with_candidates(isolated_home, (candidate,))
     workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     write_sync_ledger(
-        workspace.almanac_path,
+        runtime_runs_path(isolated_home, workspace),
         candidate,
         last_absorbed_size=3,
         last_absorbed_line=1,
@@ -1045,7 +1043,7 @@ def old_time() -> datetime:
 
 
 def write_sync_ledger(
-    almanac_path: Path,
+    runs_path: Path,
     candidate: TranscriptCandidate,
     last_absorbed_size: int,
     last_absorbed_line: int,
@@ -1062,7 +1060,7 @@ def write_sync_ledger(
     session_key: str | None = None,
     entry_transcript_path: Path | None = None,
 ) -> None:
-    path = almanac_path / "jobs/sync-ledger.json"
+    path = runs_path / "sync-ledger.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     ledger = SyncLedger(
         version=1,

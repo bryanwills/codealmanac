@@ -10,6 +10,7 @@ from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.services.sources.requests import DiscoverTranscriptsRequest
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.services.workspaces.requests import SelectWorkspaceRequest
+from codealmanac.services.workspaces.runtime import WorkspaceRuntimePaths
 from codealmanac.services.workspaces.service import WorkspacesService
 from codealmanac.workflows.sync.models import (
     SyncDecisionKind,
@@ -52,11 +53,13 @@ class SyncEvaluator:
         sources: SourcesService,
         runs: RunsService,
         ledger_store: SyncLedgerStore,
+        runtime_paths: WorkspaceRuntimePaths,
     ):
         self.workspaces = workspaces
         self.sources = sources
         self.runs = runs
         self.ledger_store = ledger_store
+        self.runtime_paths = runtime_paths
 
     def evaluate(
         self,
@@ -130,7 +133,7 @@ class SyncEvaluator:
             )
         ledger = ledgers.setdefault(
             candidate.repo_root,
-            self.ledger_store.load(candidate.almanac_path),
+            self.ledger_store.load(self.runtime_path_for_repo(candidate.repo_root)),
         )
         snapshot = read_transcript(candidate)
         if snapshot is None:
@@ -145,7 +148,7 @@ class SyncEvaluator:
             if reconciled != entry:
                 ledger.sessions[key] = reconciled
                 ledger = self.ledger_store.save(
-                    candidate.almanac_path,
+                    self.runtime_path_for_repo(candidate.repo_root),
                     ledger,
                     current_time,
                 )
@@ -221,3 +224,7 @@ class SyncEvaluator:
             for candidate in candidates
             if same_workspace(candidate.repo_root, workspace)
         )
+
+    def runtime_path_for_repo(self, repo_root: Path) -> Path:
+        workspace = self.workspaces.resolve(repo_root)
+        return self.runtime_paths.repo_dir(workspace)

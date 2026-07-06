@@ -23,6 +23,10 @@ sources:
     type: file
     path: src/codealmanac/services/runs/store.py
     note: Run ledger repository and state transitions.
+  - id: runtime
+    type: file
+    path: src/codealmanac/services/workspaces/runtime.py
+    note: Per-workspace runtime path mapping.
 ---
 
 # Lifecycle Runs
@@ -33,4 +37,4 @@ sources:
 
 Mutation policy snapshots Git status before the harness runs and validates that changed files stay under the configured `almanac/` root after the harness finishes [@mutation]. The current policy still requires a clean `almanac/` before lifecycle mutation; the product discussion says this should become more generous later.
 
-The run store writes queued records, spec-backed queued records, events, harness transcript references, running transitions, terminal transitions, cancellation, and worker lock state [@runs].
+The run store writes queued records, spec-backed queued records, events, harness transcript references, running transitions, terminal transitions, cancellation, and worker lock state under the per-workspace runtime directory [@runs] [@runtime].

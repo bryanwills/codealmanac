@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from conftest import runtime_index_path
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
@@ -37,8 +38,7 @@ def test_initialize_creates_almanac_wiki_and_registry(
     assert (repo / "almanac/topics.yaml").is_file()
     assert (repo / "almanac/getting-started.md").is_file()
     assert not (repo / "almanac/manual").exists()
-    gitignore_lines = (repo / ".gitignore").read_text(encoding="utf-8").splitlines()
-    assert gitignore_lines.count("almanac/index.db") == 1
+    assert not (repo / ".gitignore").exists()
     assert app.workspaces.list()[0].description == "test wiki"
 
 
@@ -265,7 +265,8 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     assert result.workspace.name == "repo"
     assert result.index.pages_indexed == 2
     assert result.index.files_seen == 2
-    assert (repo / "almanac/index.db").is_file()
+    assert runtime_index_path(isolated_home, result.workspace).is_file()
+    assert not (repo / "almanac/index.db").exists()
 
 
 def test_workspace_selection_supports_name_id_and_path(

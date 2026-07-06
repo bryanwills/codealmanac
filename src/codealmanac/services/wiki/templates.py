@@ -1,6 +1,3 @@
-from pathlib import Path
-
-
 def starter_readme() -> str:
     return """---
 title: CodeAlmanac Wiki
@@ -62,13 +59,3 @@ status: active
 This starter page marks the wiki as initialized. Replace it with the first
 durable reading path for this repository.
 """
-
-
-def gitignore_runtime_block(almanac_root: Path) -> list[str]:
-    root = almanac_root.as_posix().rstrip("/")
-    return [
-        f"{root}/index.db",
-        f"{root}/index.db-wal",
-        f"{root}/index.db-shm",
-        f"{root}/jobs/",
-    ]

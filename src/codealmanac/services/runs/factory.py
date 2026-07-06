@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 from uuid import uuid4
 
 from codealmanac.services.runs.models import RunOperation, RunRecord, RunStatus
@@ -12,7 +11,6 @@ def new_run_id(operation: RunOperation, now: datetime) -> str:
 
 
 def new_run_record(
-    almanac_root: Path,
     workspace_id: str,
     operation: RunOperation,
     title: str | None,
@@ -27,5 +25,5 @@ def new_run_record(
         title=title,
         created_at=now,
         updated_at=now,
-        log_path=run_log_reference_path(almanac_root, run_id),
+        log_path=run_log_reference_path(run_id),
     )

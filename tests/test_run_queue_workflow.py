@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+from conftest import runtime_runs_path
+
 from codealmanac.app import create_app
 from codealmanac.core.models import AppConfig
 from codealmanac.integrations.runs.process import worker_command
@@ -89,7 +91,7 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
         harness_adapters=(QueueWritingHarnessAdapter(),),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
 
     result = app.workflows.queue.start_ingest_background(
         RunIngestRequest(
@@ -104,7 +106,10 @@ def test_run_queue_background_start_persists_spec_and_spawns_worker(
     assert result.run.status == RunStatus.QUEUED
     assert runs[0].run_id == result.run.run_id
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{result.run.run_id}.spec.json").is_file()
+    assert (
+        runtime_runs_path(isolated_home, workspace) / f"{result.run.run_id}.spec.json"
+    ).is_file()
+    assert not (repo / "almanac/jobs").exists()
 
 
 def test_run_queue_drains_persisted_ingest_spec(
@@ -119,7 +124,7 @@ def test_run_queue_drains_persisted_ingest_spec(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         harness_adapters=(harness,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
@@ -148,7 +153,7 @@ def test_run_queue_drains_persisted_ingest_spec(
         "queued ingest",
         "running",
     )
-    assert not (repo / "almanac/jobs/worker.lock").exists()
+    assert not (runtime_runs_path(isolated_home, workspace) / "worker.lock").exists()
 
 
 def test_run_queue_skips_cancelled_queued_runs(

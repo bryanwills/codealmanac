@@ -5,6 +5,9 @@ import pytest
 
 from codealmanac.app import CodeAlmanac, create_app
 from codealmanac.core.models import AppConfig
+from codealmanac.core.paths import normalize_path
+from codealmanac.services.workspaces.identity import workspace_id_for
+from codealmanac.services.workspaces.models import Workspace
 from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 
 
@@ -73,3 +76,19 @@ def write_page(repo: Path, name: str, body: str) -> None:
     path = repo / "almanac" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
+
+
+def runtime_repo_path(home: Path, workspace: Workspace) -> Path:
+    return home / ".codealmanac" / "repos" / workspace.workspace_id
+
+
+def runtime_repo_path_for_root(home: Path, root_path: Path) -> Path:
+    return home / ".codealmanac" / "repos" / workspace_id_for(normalize_path(root_path))
+
+
+def runtime_index_path(home: Path, workspace: Workspace) -> Path:
+    return runtime_repo_path(home, workspace) / "index.db"
+
+
+def runtime_runs_path(home: Path, workspace: Workspace) -> Path:
+    return runtime_repo_path(home, workspace) / "runs"

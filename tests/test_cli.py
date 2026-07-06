@@ -6,6 +6,7 @@ from hashlib import sha256
 from pathlib import Path
 
 import pytest
+from conftest import runtime_repo_path_for_root, runtime_runs_path
 
 from codealmanac import __version__
 from codealmanac.app import create_app
@@ -442,7 +443,8 @@ def test_cli_build_and_reindex_commands(
     assert main(["build", str(repo)]) == 0
     build_output = capsys.readouterr()
     assert build_output.out == "built repo: 2 pages (2 updated, 0 removed)\n"
-    assert (repo / "almanac/index.db").is_file()
+    assert (runtime_repo_path_for_root(isolated_home, repo) / "index.db").is_file()
+    assert not (repo / "almanac/index.db").exists()
 
     (repo / "almanac/note.md").write_text(
         "# Note\n\nReindexNeedle.\n",
@@ -729,7 +731,11 @@ def test_cli_ingest_background_queues_run_and_spawns_worker(
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+    workspace = app.workspaces.resolve(repo)
+    assert (
+        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
+    ).is_file()
+    assert not (repo / "almanac/jobs").exists()
 
 
 def test_cli_garden_runs_workflow_with_selected_harness(
@@ -949,8 +955,8 @@ def test_cli_sync_status_uses_retry_budget_flags(
         AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    ledger_path = repo / "almanac/jobs/sync-ledger.json"
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    ledger_path = runtime_runs_path(isolated_home, workspace) / "sync-ledger.json"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger = SyncLedger(
         version=1,
@@ -1022,7 +1028,7 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
         harness_adapters=(harness,),
         transcript_discovery_adapters=(transcript_adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    workspace = app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1038,7 +1044,8 @@ def test_cli_sync_runs_ingest_for_ready_transcripts(
     assert "started codex codex-session: ingest-" in output.out
     assert "Scheduled sync cursor:" in harness.requests[0].prompt
     assert f"transcript:{transcript}" in harness.requests[0].prompt
-    assert (repo / "almanac/jobs/sync-ledger.json").is_file()
+    assert (runtime_runs_path(isolated_home, workspace) / "sync-ledger.json").is_file()
+    assert not (repo / "almanac/jobs").exists()
 
 
 def test_cli_sync_background_queues_ingest_for_ready_transcripts(
@@ -1099,7 +1106,11 @@ def test_cli_sync_background_queues_ingest_for_ready_transcripts(
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert (repo / "almanac/jobs" / f"{run.run_id}.spec.json").is_file()
+    workspace = app.workspaces.resolve(repo)
+    assert (
+        runtime_runs_path(isolated_home, workspace) / f"{run.run_id}.spec.json"
+    ).is_file()
+    assert not (repo / "almanac/jobs").exists()
 
 
 def test_cli_automation_install_status_and_uninstall(
