@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from codealmanac.app import CodeAlmanac
 from codealmanac.server.app import create_server_app
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessEventKind
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
+from codealmanac.services.repositories.requests import RegisterRepositoryRequest
 from codealmanac.services.runs.models import RunEventKind, RunKind, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
@@ -103,7 +103,8 @@ def test_server_viewer_api_switches_between_registered_wikis(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeRepositoryRequest(path=other_repo))
+    other = app.repositories.register(RegisterRepositoryRequest(root_path=other_repo))
+    app.wiki.initialize(other.repository_id)
     write_server_page(
         other_repo,
         "ops-note.md",
@@ -119,12 +120,12 @@ Tracks operational decisions.
     client = TestClient(create_server_app(app, repo))
 
     overview = client.get("/api/overview")
-    other_overview = client.get("/api/overview", params={"wiki": other.repository_id})
+    other_overview = client.get("/api/overview", params={"wiki": other.name})
     other_page = client.get(
         "/api/page/ops-note",
-        params={"wiki": other.repository_id},
+        params={"wiki": other.name},
     )
-    locked_client = TestClient(create_server_app(app, repo, other.repository_id))
+    locked_client = TestClient(create_server_app(app, repo, other.name))
     locked_overview = locked_client.get("/api/overview")
     locked_page = locked_client.get("/api/page/ops-note")
 
@@ -221,17 +222,17 @@ def write_server_page(repo: Path, name: str, body: str) -> None:
 
 
 def create_server_run(repo: Path, app: CodeAlmanac):
+    repository = app.repositories.resolve(repo)
     record = app.runs.start(
         StartRunRequest(
-            cwd=repo,
+            repository_id=repository.repository_id,
             kind=RunKind.INGEST,
             title="Digest auth note",
         )
     )
-    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
+    app.runs.mark_running(MarkRunRunningRequest(run_id=record.run_id))
     app.runs.record_event(
         RecordRunEventRequest(
-            cwd=repo,
             run_id=record.run_id,
             kind=RunEventKind.OUTPUT,
             message="Created auth-flow.md",
@@ -243,7 +244,6 @@ def create_server_run(repo: Path, app: CodeAlmanac):
     )
     return app.runs.finish(
         FinishRunRequest(
-            cwd=repo,
             run_id=record.run_id,
             status=RunStatus.DONE,
             summary="updated wiki",
