@@ -439,7 +439,55 @@ Verification:
 - Tests for idempotent rerun.
 - `uv run pytest tests/test_setup_service.py tests/test_cli.py`
 
-## Ticket 13: Rebuild Viewer Around Folder Browsing
+## Ticket 13: Make Init Build And Index Like Archive
+
+Goal: make `codealmanac init` feel complete like archive `init`.
+
+Archive behavior:
+
+- `archive/code/src/cli/register-wiki-lifecycle-commands.ts` described `init`
+  as "initialize and build this repo's Almanac wiki".
+- `archive/code/src/operations/build.ts` called `initWiki(...)`, checked page
+  count, and started the build operation.
+
+Current Python behavior:
+
+- `codealmanac init` creates/registers `almanac/`.
+- `codealmanac build` refreshes the index separately.
+- This split is not the desired happy path.
+- `codealmanac build` should not remain a public-facing command.
+
+Todos:
+
+- Make `codealmanac init` create/register the repo wiki and leave it ready for
+  immediate use.
+- Decide whether "ready" means:
+  - rebuild the deterministic index immediately, or
+  - run the full lifecycle build operation after scaffolding.
+- Prefer the archive feel: one command gets the repo from zero to usable.
+- Remove `codealmanac build` from the public CLI surface.
+- Keep any needed build/index behavior internal to `init`, query-time refresh,
+  or service/workflow code.
+- Update setup next steps to only tell the user:
+  - navigate to the repo,
+  - run `codealmanac init`.
+- Test that `init` produces an immediately searchable starter wiki.
+- Test idempotent rerun behavior.
+- Test that `codealmanac build` is no longer exposed as a public command.
+
+Files:
+
+- `src/codealmanac/cli/dispatch/build.py`
+- `src/codealmanac/workflows/build/`
+- `src/codealmanac/services/index/`
+- `tests/test_build_workflow.py`
+- `tests/test_cli.py`
+
+Verification:
+
+- `uv run pytest tests/test_build_workflow.py tests/test_cli.py`
+
+## Ticket 14: Rebuild Viewer Around Folder Browsing
 
 Goal: make the viewer match the new `almanac/` tree.
 
@@ -470,7 +518,7 @@ Verification:
 - Browser/manual smoke after dev server starts.
 - `uv run pytest tests/test_viewer_service.py tests/test_viewer_ui_assets.py`
 
-## Ticket 14: End-To-End Cleanup And Release Audit
+## Ticket 15: End-To-End Cleanup And Release Audit
 
 Goal: prove the rebuilt local product is coherent.
 

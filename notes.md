@@ -112,9 +112,43 @@ Adapt for the new Python product:
   partial-uninstall flags.
 - `codealmanac setup` is computer-level onboarding. It does not initialize,
   detect, register, or mutate a repo `almanac/` tree.
+- Current Python `codealmanac init` differs from archive behavior. Archive
+  `init` was described as "initialize and build this repo's Almanac wiki" and
+  routed through the build operation. Current Python `init` only creates and
+  registers the repo wiki; `build` refreshes the index separately. Bring back
+  archive-like init behavior in a ticket. `build` should not remain a
+  public-facing operation; initialization should be the zero-to-usable command,
+  and index refresh should be implicit or internal.
 
 The setup flow feels like the archive installer, not the current plain panel
 summary.
+
+Setup asks four questions, in this order:
+
+1. agent instruction targets,
+2. initialized repo wiki maintenance model,
+3. automatic product updates,
+4. agent change handling.
+
+Every interactive choice uses left/right or equivalent directional selection
+with a visual choice surface. Do not use plain `[Y/n]` as the primary
+experience for multi-option product decisions. The screen shows how many
+questions remain, such as `[2/4]`.
+
+The maintenance question is about initialized repo wikis, not "keeping
+CodeAlmanac running." The user-facing framing is: "How should CodeAlmanac keep
+initialized repo wikis updated?" Automatic mode syncs quiet agent sessions into
+the right repo's `almanac/` and gardens initialized wikis. Manual mode installs
+no wiki maintenance schedules.
+
+The final next step is only:
+
+```text
+Navigate to your repo of choice:
+
+cd /path/to/your/repo
+codealmanac init
+```
 
 ## How `almanac/` Feels
 
