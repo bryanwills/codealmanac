@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from pydantic import field_validator
 
@@ -14,7 +13,6 @@ class ScheduledGardenRequest(CodeAlmanacModel):
 
 
 class DrainRunQueueRequest(CodeAlmanacModel):
-    cwd: Path
     owner: str = "codealmanac-worker"
     pid: int | None = None
     now: datetime | None = None
