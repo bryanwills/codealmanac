@@ -163,15 +163,70 @@ quiet = "30m"
     )
 
     result = app.config.set(
-        SetConfigValueRequest(key=ConfigKey.AUTO_COMMIT, value=False)
+        SetConfigValueRequest(key=ConfigKey.AUTO_COMMIT, value="false")
     )
     config = app.config.load(LoadConfigRequest(cwd=tmp_path))
 
     assert result.key == ConfigKey.AUTO_COMMIT
-    assert result.value is False
+    assert result.value == "false"
     assert result.path == config_path.as_posix()
     assert config.auto_commit is False
     assert config.sync.quiet == timedelta(minutes=30)
     assert config_path.read_text(encoding="utf-8").startswith(
         "auto_commit = false\n\n[sync]"
     )
+
+
+def test_config_service_sets_harness_default_and_sync_quiet(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    config_path = isolated_home / ".codealmanac/config.toml"
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            config_path=config_path,
+        )
+    )
+
+    harness_result = app.config.set(
+        SetConfigValueRequest(key=ConfigKey.HARNESS_DEFAULT, value="claude")
+    )
+    quiet_result = app.config.set(
+        SetConfigValueRequest(key=ConfigKey.SYNC_QUIET, value="30m")
+    )
+    config = app.config.load(LoadConfigRequest(cwd=tmp_path))
+
+    assert harness_result.value == "claude"
+    assert quiet_result.value == "30m"
+    assert config.harness.default == HarnessKind.CLAUDE
+    assert config.sync.quiet == timedelta(minutes=30)
+    body = config_path.read_text(encoding="utf-8")
+    assert '[harness]\ndefault = "claude"' in body
+    assert '[sync]\nquiet = "30m"' in body
+
+
+def test_config_service_rejects_invalid_set_values(
+    isolated_home: Path,
+):
+    config_path = isolated_home / ".codealmanac/config.toml"
+    app = create_app(
+        AppConfig(
+            registry_path=isolated_home / ".codealmanac/registry.json",
+            config_path=config_path,
+        )
+    )
+
+    with pytest.raises(ValidationFailed, match="harness.default must be one of"):
+        app.config.set(
+            SetConfigValueRequest(key=ConfigKey.HARNESS_DEFAULT, value="gpt")
+        )
+    with pytest.raises(ValidationFailed, match="sync.quiet must be a duration"):
+        app.config.set(
+            SetConfigValueRequest(key=ConfigKey.SYNC_QUIET, value="soon")
+        )
+    with pytest.raises(ValidationFailed, match="auto_commit must be true or false"):
+        app.config.set(
+            SetConfigValueRequest(key=ConfigKey.AUTO_COMMIT, value="maybe")
+        )
+    assert not config_path.exists()

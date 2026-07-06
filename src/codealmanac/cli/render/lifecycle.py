@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from codealmanac.cli.render.common import index_summary, print_json_model
+from codealmanac.cli.render.style import style
 from codealmanac.services.index.models import HealthReport, IndexRefreshResult
 from codealmanac.services.workspaces.models import Workspace
 from codealmanac.workflows.garden.models import GardenResult
@@ -56,8 +57,16 @@ def render_run_queue_start(
             )
         )
         return
-    print(f"queued {result.run.run_id}: {result.run.status.value}")
-    print(f"worker_pid: {result.worker.child_pid}")
+    record = result.run
+    print(
+        f"{record.operation.value} started: "
+        f"{style.BLUE}{record.run_id}{style.RST}"
+    )
+    print(
+        f"{style.DIM}attach:{style.RST}  "
+        f"codealmanac jobs attach {record.run_id}"
+    )
+    print(f"{style.DIM}worker:{style.RST}  pid {result.worker.child_pid}")
 
 
 def render_sync_status(summary: SyncSummary, json_output: bool) -> None:

@@ -16,6 +16,8 @@ DEFAULT_AUTO_COMMIT = True
 
 class ConfigKey(StrEnum):
     AUTO_COMMIT = "auto_commit"
+    HARNESS_DEFAULT = "harness.default"
+    SYNC_QUIET = "sync.quiet"
 
 
 class HarnessConfig(CodeAlmanacModel):
@@ -71,4 +73,4 @@ def parse_duration(value: Any, label: str) -> Any:
 class ConfigSetResult(CodeAlmanacModel):
     path: str
     key: ConfigKey
-    value: bool
+    value: str

@@ -24,12 +24,12 @@ def dispatch_ingest(args: argparse.Namespace, app: CodeAlmanac) -> int:
         guidance=args.guidance,
         auto_commit=cli_config.auto_commit,
     )
-    if args.background:
+    if not args.foreground:
         result = app.workflows.queue.start_ingest_background(request)
         render_run_queue_start(result, json_output=args.json)
         return 0
     if args.json:
-        raise ValidationFailed("--json is only supported with --background")
+        raise ValidationFailed("--json is not supported with --foreground")
     result = app.workflows.ingest.run(request)
     render_ingest(result)
     return 0
@@ -45,12 +45,12 @@ def dispatch_garden(args: argparse.Namespace, app: CodeAlmanac) -> int:
         guidance=args.guidance,
         auto_commit=cli_config.auto_commit,
     )
-    if args.background:
+    if not args.foreground:
         result = app.workflows.queue.start_garden_background(request)
         render_run_queue_start(result, json_output=args.json)
         return 0
     if args.json:
-        raise ValidationFailed("--json is only supported with --background")
+        raise ValidationFailed("--json is not supported with --foreground")
     result = app.workflows.garden.run(request)
     render_garden(result)
     return 0

@@ -24,4 +24,9 @@ class LoadConfigRequest(CodeAlmanacModel):
 
 class SetConfigValueRequest(CodeAlmanacModel):
     key: ConfigKey
-    value: bool
+    value: str
+
+    @field_validator("value")
+    @classmethod
+    def require_value(cls, value: str) -> str:
+        return required_text(value, "config value")

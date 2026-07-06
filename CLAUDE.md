@@ -109,6 +109,8 @@ _Cross-cutting architectural choices. Keep current, concise, and explanatory. Up
 - **Stores own persistence behavior.** Shared SQLite mechanics live in `codealmanac.database`; store packages own schemas, migrations, queries, and row conversion.
 - **Integrations implement service-owned ports.** Harnesses, transcript discovery, source runtime, Git probes, and scheduler adapters stay behind service/workflow contracts.
 - **Review prompts are separate by job.** `src/codealmanac/prompts/operations/garden.md` and `ingest.md` guide wiki writes; `.claude/agents/review.md` reviews code architecture and implementation.
+- **Terminal output is behavior.** One render path per command — the human shape, with `cli/render/style.py` color constants degrading to empty strings when piped or `NO_COLOR` is set; `--json` is the piping format. Refactors must preserve output byte-for-byte.
+- **Code-style principles live in the wiki.** `almanac/style/` (query: `codealmanac search --topic style`) holds the standing principles — types, naming, boundaries, libraries, behavior-frozen refactoring. Read them before any large write or refactor.
 
 ## Non-negotiables
 

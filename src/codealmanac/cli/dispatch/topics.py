@@ -31,7 +31,7 @@ def dispatch_topics(args: argparse.Namespace, app: CodeAlmanac) -> int:
                 include_descendants=args.descendants,
             )
         )
-        render_topic(topic)
+        render_topic(topic, descendants=args.descendants)
         return 0
     if args.topic_command == "create":
         result = app.topics.create(

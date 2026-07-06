@@ -38,3 +38,8 @@ topics:
     title: Migration
     description: Notes about replacing the old repo wiki and dropping retired product assumptions.
     parents: [decisions]
+
+  - slug: style
+    title: Style
+    description: Standing code-style principles for writing and refactoring codealmanac.
+    parents: [decisions]

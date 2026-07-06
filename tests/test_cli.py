@@ -574,7 +574,7 @@ def test_cli_setup_skip_instructions_json(isolated_home: Path, monkeypatch, caps
     assert payload["plan"]["default_harness"] == "codex"
     assert payload["plan"]["auto_commit"] is True
     assert payload["config_update"]["key"] == "auto_commit"
-    assert payload["config_update"]["value"] is True
+    assert payload["config_update"]["value"] == "true"
     assert payload["plan"]["instruction_targets"] == ["codex", "claude"]
     assert [item["task"] for item in payload["plan"]["automation"]] == [
         "sync",
@@ -712,7 +712,7 @@ def test_cli_list_outputs_registered_wikis(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out == f"repo\t{repo}\talmanac\n"
+    assert captured.out == f"repo  —\n      {repo}\n"
 
 
 def test_cli_list_json_reports_registry_status(
@@ -747,11 +747,11 @@ def test_cli_list_drop_removes_selected_wiki(
 
     assert main(["list", "--drop", "repo"]) == 0
     drop_output = capsys.readouterr()
-    assert drop_output.out == f"dropped repo\t{repo}\talmanac\n"
+    assert drop_output.out == f"dropped repo ({repo})\n"
 
     assert main(["list"]) == 0
     list_output = capsys.readouterr()
-    assert list_output.out == ""
+    assert "no wikis registered" in list_output.out
 
 
 def test_cli_list_drop_missing_removes_unreachable_wikis(
@@ -773,11 +773,11 @@ def test_cli_list_drop_missing_removes_unreachable_wikis(
 
     assert main(["list", "--drop-missing"]) == 0
     drop_output = capsys.readouterr()
-    assert drop_output.out == f"dropped missing\t{missing_repo}\talmanac\n"
+    assert drop_output.out == f"dropped missing ({missing_repo})\n"
 
     assert main(["list"]) == 0
     list_output = capsys.readouterr()
-    assert list_output.out == f"live\t{live_repo}\talmanac\n"
+    assert list_output.out == f"live  —\n      {live_repo}\n"
 
 
 def test_cli_init_and_reindex_commands(
@@ -1054,6 +1054,7 @@ def test_cli_ingest_runs_workflow_with_selected_harness(
             [
                 "ingest",
                 "note.md",
+                "--foreground",
                 "--using",
                 "codex",
                 "--title",
@@ -1103,7 +1104,7 @@ default = "codex"
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["ingest", "note.md"]) == 0
+    assert main(["ingest", "note.md", "--foreground"]) == 0
 
     output = capsys.readouterr()
     assert "ingested " in output.out
@@ -1175,6 +1176,7 @@ def test_cli_garden_runs_workflow_with_selected_harness(
         main(
             [
                 "garden",
+                "--foreground",
                 "--using",
                 "codex",
                 "--title",
@@ -1221,8 +1223,9 @@ def test_cli_garden_background_plain_output(
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(cwd=repo))[0]
 
-    assert f"queued {run.run_id}: queued" in output.out
-    assert "worker_pid: 5151" in output.out
+    assert f"garden started: {run.run_id}" in output.out
+    assert f"attach:  codealmanac jobs attach {run.run_id}" in output.out
+    assert "worker:  pid 5151" in output.out
     assert run.operation == RunOperation.GARDEN
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
@@ -1563,10 +1566,10 @@ def test_cli_automation_install_status_and_uninstall(
     )
     install_output = capsys.readouterr()
     assert "automation installed\n" in install_output.out
-    assert "sync interval: 60s\n" in install_output.out
+    assert "sync interval: 1m\n" in install_output.out
     assert "sync quiet: 1s\n" in install_output.out
-    assert "garden interval: 120s\n" in install_output.out
-    assert "update interval: 86400s\n" in install_output.out
+    assert "garden interval: 2m\n" in install_output.out
+    assert "update interval: 1d\n" in install_output.out
     assert tuple(job.task.value for job in scheduler.installed) == (
         "sync",
         "garden",
@@ -1626,19 +1629,29 @@ def test_cli_jobs_inspects_local_run_records(
 
     assert main(["jobs"]) == 0
     list_output = capsys.readouterr()
-    assert f"{record.run_id}\tqueued\tingest\tDigest note\n" in list_output.out
+    header = list_output.out.splitlines()[0]
+    assert header.startswith("ID")
+    for column in ("OPERATION", "STATUS", "ELAPSED", "TITLE"):
+        assert column in header
+    list_row = next(
+        line for line in list_output.out.splitlines() if record.run_id in line
+    )
+    assert "ingest" in list_row
+    assert "queued" in list_row
+    assert "Digest note" in list_row
 
     assert main(["jobs", "show", record.run_id]) == 0
     show_output = capsys.readouterr()
-    assert f"id: {record.run_id}\n" in show_output.out
-    assert "operation: ingest\n" in show_output.out
-    assert "harness_transcript: codex codex-job-session\n" in show_output.out
-    assert f"harness_transcript_path: {repo / 'codex-job.jsonl'}\n" in (show_output.out)
+    assert f"job:        {record.run_id}\n" in show_output.out
+    assert "operation:  ingest\n" in show_output.out
+    assert "session:    codex codex-job-session\n" in show_output.out
+    assert f"transcript: {repo / 'codex-job.jsonl'}\n" in show_output.out
+    assert "log:        " in show_output.out
 
     assert main(["jobs", "logs", record.run_id]) == 0
     log_output = capsys.readouterr()
-    assert "1\tstatus\tqueued ingest\n" in log_output.out
-    assert "2\tmessage\tread note\n" in log_output.out
+    assert "   1  status  queued ingest\n" in log_output.out
+    assert "   2  message  read note\n" in log_output.out
 
     assert main(["jobs", "logs", record.run_id, "--json"]) == 0
     logs_json_output = capsys.readouterr()
@@ -1656,10 +1669,11 @@ def test_cli_jobs_inspects_local_run_records(
 
     assert main(["jobs", "attach", record.run_id]) == 0
     attach_output = capsys.readouterr()
-    assert "1\tstatus\tqueued ingest\n" in attach_output.out
-    assert "2\tmessage\tread note\n" in attach_output.out
-    assert "3\tstatus\tdone\n" in attach_output.out
+    assert "   1  status  queued ingest\n" in attach_output.out
+    assert "   2  message  read note\n" in attach_output.out
+    assert "   3  status  done\n" in attach_output.out
     assert "status: done\n" in attach_output.out
+    assert "summary: digest complete\n" in attach_output.out
 
     cancellable = app.runs.start(
         StartRunRequest(
@@ -1728,15 +1742,29 @@ Login reads `src/auth/session.py`. [@auth-folder]
 
     assert main(["search", "login"]) == 0
     search_output = capsys.readouterr()
-    assert search_output.out == "auth-flow\n"
+    assert search_output.out.startswith("auth-flow\n")
+
+    assert main(["search", "login", "--slugs"]) == 0
+    slugs_output = capsys.readouterr()
+    assert slugs_output.out == "auth-flow\n"
 
     assert main(["show", "auth-flow", "--lead"]) == 0
     show_output = capsys.readouterr()
     assert show_output.out == "# Auth Flow\n"
 
-    assert main(["show", "auth-flow", "--body", "--meta"]) == 0
+    assert main(["show", "auth-flow", "--body", "--meta"]) != 0
+    conflict_output = capsys.readouterr()
+    assert "show flags conflict: --body, --meta" in conflict_output.err
+
+    assert main(["show", "auth-flow", "--body"]) == 0
     body_output = capsys.readouterr()
     assert body_output.out.startswith("# Auth Flow\n\nLogin reads")
+
+    assert main(["show", "auth-flow"]) == 0
+    full_output = capsys.readouterr()
+    assert full_output.out.startswith("slug:       auth-flow\n")
+    assert "\n---\n" in full_output.out
+    assert "# Auth Flow" in full_output.out
 
     assert main(["show", "auth-flow", "--meta"]) == 0
     meta_output = capsys.readouterr()
@@ -1744,6 +1772,7 @@ Login reads `src/auth/session.py`. [@auth-folder]
     assert "auth-folder [file] src/auth/ - Auth implementation folder." in (
         meta_output.out
     )
+    assert "path:" in meta_output.out
 
     assert main(["search", "missing"]) == 0
     empty_output = capsys.readouterr()
@@ -1799,11 +1828,28 @@ def test_cli_topics_and_health_read_current_repo_wiki(
 
     assert main(["topics"]) == 0
     topics_output = capsys.readouterr()
-    assert "auth\t1\tAuth\n" in topics_output.out
+    topics_header = topics_output.out.splitlines()[0]
+    assert topics_header.startswith("TOPIC")
+    assert "PAGES" in topics_header
+    auth_row = next(
+        line
+        for line in topics_output.out.splitlines()
+        if line.startswith("auth ")
+    )
+    assert "(1 page)" in auth_row
 
     assert main(["topics", "show", "auth"]) == 0
     topic_output = capsys.readouterr()
     assert "pages:\n  auth-flow\n" in topic_output.out
+
+    assert main(["health"]) == 0
+    health_text_output = capsys.readouterr()
+    assert "broken-links (1):" in health_text_output.out
+    assert (
+        "auth-flow -> missing-page (target does not exist)"
+        in health_text_output.out
+    )
+    assert "dead-refs (0): ok" in health_text_output.out
 
     assert main(["health", "--json"]) == 0
     health_output = capsys.readouterr()
@@ -1883,8 +1929,8 @@ def test_cli_topics_mutation_commands(
 
     assert main(["topics", "show", "auth"]) == 0
     show_output = capsys.readouterr()
-    assert "description: Authentication\n" in show_output.out
-    assert "children: jwt\n" in show_output.out
+    assert "description:  Authentication\n" in show_output.out
+    assert "children:     jwt\n" in show_output.out
 
     assert main(["topics", "rename", "auth", "security"]) == 0
     rename_output = capsys.readouterr()

@@ -1,4 +1,5 @@
 from codealmanac.cli.render.common import page_word
+from codealmanac.cli.render.style import EM_DASH, style, table
 from codealmanac.services.index.models import TopicDetail, TopicSummary
 from codealmanac.services.topics.models import (
     TopicEdgeMutationResult,
@@ -9,26 +10,44 @@ from codealmanac.services.topics.models import (
 
 
 def render_topics(rows: tuple[TopicSummary, ...]) -> None:
-    for row in rows:
-        title = row.title or row.slug
-        print(f"{row.slug}\t{row.page_count}\t{title}")
+    if len(rows) == 0:
+        print(
+            "no topics. create one with `codealmanac topics create <name>` "
+            "or tag a page."
+        )
+        return
+    lines = table(
+        ("TOPIC", "PAGES", "TITLE"),
+        [
+            (
+                f"{style.BLUE}{row.slug}{style.RST}",
+                f"{style.DIM}({row.page_count} {page_word(row.page_count)}){style.RST}",
+                row.title or "",
+            )
+            for row in rows
+        ],
+    )
+    for line in lines:
+        print(line)
 
 
-def render_topic(topic: TopicDetail) -> None:
-    print(f"slug: {topic.slug}")
-    print(f"title: {topic.title or ''}")
-    if topic.description:
-        print(f"description: {topic.description}")
-    if topic.parents:
-        print(f"parents: {', '.join(topic.parents)}")
-    if topic.children:
-        print(f"children: {', '.join(topic.children)}")
+def render_topic(topic: TopicDetail, descendants: bool = False) -> None:
+    dim = style.DIM
+    rst = style.RST
+    print(f"{dim}slug:{rst}         {style.BLUE}{topic.slug}{rst}")
+    print(f"{dim}title:{rst}        {topic.title or EM_DASH}")
+    print(f"{dim}description:{rst}  {topic.description or EM_DASH}")
+    parents = ", ".join(topic.parents) if topic.parents else EM_DASH
+    print(f"{dim}parents:{rst}      {parents}")
+    children = ", ".join(topic.children) if topic.children else EM_DASH
+    print(f"{dim}children:{rst}     {children}")
+    label = "pages (incl. descendants)" if descendants else "pages"
+    print(f"{dim}{label}:{rst}")
     if topic.pages:
-        print("pages:")
         for slug in topic.pages:
-            print(f"  {slug}")
+            print(f"  {style.BLUE}{slug}{rst}")
     else:
-        print("pages: none")
+        print(f"  {EM_DASH}")
 
 
 def render_topic_mutation(result: TopicMutationResult) -> None:

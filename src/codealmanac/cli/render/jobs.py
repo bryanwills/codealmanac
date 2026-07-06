@@ -1,15 +1,39 @@
-import json
 import sys
-from collections.abc import Iterable
 
 from codealmanac.cli.render.common import print_json_model, print_json_rows
-from codealmanac.services.runs.models import (
-    RunAttachSnapshot,
-    RunAttachUpdate,
-    RunCancelResult,
-    RunLogEvent,
-    RunRecord,
+from codealmanac.cli.render.style import (
+    EM_DASH,
+    humanize_elapsed,
+    style,
+    table,
 )
+from codealmanac.services.runs.models import (
+    PageChangeSet,
+    RunCancelResult,
+    RunRecord,
+    RunStatus,
+)
+
+
+def status_label(status: RunStatus) -> str:
+    if status == RunStatus.DONE:
+        color = style.GREEN
+    elif status == RunStatus.FAILED:
+        color = style.RED
+    elif status == RunStatus.CANCELLED:
+        color = style.YELLOW
+    elif status == RunStatus.RUNNING:
+        color = style.BLUE
+    else:
+        color = style.DIM
+    return f"{color}{status.value}{style.RST}"
+
+
+def elapsed_label(record: RunRecord) -> str:
+    if record.status == RunStatus.QUEUED:
+        return EM_DASH
+    start = record.started_at or record.created_at
+    return humanize_elapsed(start, record.finished_at)
 
 
 def render_runs(records: tuple[RunRecord, ...], json_output: bool) -> None:
@@ -19,83 +43,76 @@ def render_runs(records: tuple[RunRecord, ...], json_output: bool) -> None:
     if len(records) == 0:
         print("# 0 jobs", file=sys.stderr)
         return
-    for record in records:
-        title = record.title or ""
-        print(
-            f"{record.run_id}\t{record.status.value}\t"
-            f"{record.operation.value}\t{title}"
-        )
+    lines = table(
+        ("ID", "OPERATION", "STATUS", "ELAPSED", "TITLE"),
+        [
+            (
+                f"{style.BLUE}{record.run_id}{style.RST}",
+                record.operation.value,
+                status_label(record.status),
+                elapsed_label(record),
+                record.title or "",
+            )
+            for record in records
+        ],
+    )
+    for line in lines:
+        print(line)
 
 
 def render_run(record: RunRecord, json_output: bool) -> None:
     if json_output:
         print_json_model(record)
         return
-    print(f"id: {record.run_id}")
-    print(f"operation: {record.operation.value}")
-    print(f"status: {record.status.value}")
+    dim = style.DIM
+    rst = style.RST
+    print(f"{dim}job:{rst}        {style.BLUE}{record.run_id}{rst}")
+    print(f"{dim}operation:{rst}  {record.operation.value}")
+    print(f"{dim}status:{rst}     {status_label(record.status)}")
+    print(f"{dim}elapsed:{rst}    {elapsed_label(record)}")
     if record.title is not None:
-        print(f"title: {record.title}")
+        print(f"{dim}title:{rst}      {record.title}")
     if record.summary is not None:
-        print(f"summary: {record.summary}")
-    if record.error is not None:
-        print(f"error: {record.error}")
+        print(f"{dim}summary:{rst}    {record.summary}")
+    for line in page_change_lines(record.page_changes):
+        print(line)
     if record.harness_transcript is not None:
+        transcript = record.harness_transcript
         print(
-            "harness_transcript: "
-            f"{record.harness_transcript.kind.value} "
-            f"{record.harness_transcript.session_id}"
+            f"{dim}session:{rst}    "
+            f"{transcript.kind.value} {transcript.session_id}"
         )
-        if record.harness_transcript.transcript_path is not None:
-            print(
-                "harness_transcript_path: "
-                f"{record.harness_transcript.transcript_path}"
-            )
-    print(f"created_at: {record.created_at.isoformat()}")
-    print(f"updated_at: {record.updated_at.isoformat()}")
+        if transcript.transcript_path is not None:
+            print(f"{dim}transcript:{rst} {transcript.transcript_path}")
+    print(f"{dim}log:{rst}        {record.log_path}")
+    print(f"{dim}created:{rst}    {record.created_at.isoformat()}")
+    print(f"{dim}updated:{rst}    {record.updated_at.isoformat()}")
+    if record.error is not None:
+        print(f"{dim}error:{rst}      {style.RED}{record.error}{rst}")
 
 
-def render_run_log(events: tuple[RunLogEvent, ...], json_output: bool) -> None:
-    if json_output:
-        data = [event.model_dump(mode="json", exclude_none=True) for event in events]
-        print(json.dumps(data, indent=2))
-        return
-    for event in events:
-        render_run_log_event(event)
-
-
-def render_run_attach(snapshot: RunAttachSnapshot, json_output: bool) -> None:
-    if json_output:
-        print_json_model(snapshot)
-        return
-    render_run_log(snapshot.events, json_output=False)
-    if len(snapshot.events) == 0:
-        print("no log events")
-    print(f"status: {snapshot.record.status.value}")
-
-
-def render_run_attach_stream(
-    updates: Iterable[RunAttachUpdate],
-    json_output: bool,
-) -> None:
-    saw_event = False
-    for update in updates:
-        if json_output:
-            print(update.model_dump_json(exclude_none=True))
-            sys.stdout.flush()
-            continue
-        for event in update.events:
-            render_run_log_event(event)
-            saw_event = True
-        if update.terminal:
-            if not saw_event:
-                print("no log events")
-            print(f"status: {update.record.status.value}")
-        sys.stdout.flush()
-
-
-def render_run_log_event(event: RunLogEvent) -> None:
-    print(f"{event.sequence}\t{event.kind.value}\t{event.message}")
+def page_change_lines(changes: PageChangeSet | None) -> list[str]:
+    if changes is None:
+        return []
+    dim = style.DIM
+    rst = style.RST
+    total = len(changes.created) + len(changes.updated) + len(changes.deleted)
+    if total == 0:
+        return [f"{dim}changes:{rst}    none"]
+    lines = [
+        f"{dim}changes:{rst}    "
+        f"{len(changes.created)} created, {len(changes.updated)} updated, "
+        f"{len(changes.deleted)} deleted"
+    ]
+    for label, slugs in (
+        ("created", changes.created),
+        ("updated", changes.updated),
+        ("deleted", changes.deleted),
+    ):
+        if slugs:
+            styled = ", ".join(f"{style.BLUE}{slug}{rst}" for slug in slugs)
+            lines.append(f"{dim}{label}:{rst}    {styled}")
+    return lines
 
 
 def render_run_cancel(result: RunCancelResult, json_output: bool) -> None:

@@ -26,7 +26,13 @@ class ConfigStore:
         except ValidationError as error:
             raise ValidationFailed(f"invalid config: {error}") from error
 
-    def set_auto_commit(self, path: Path, enabled: bool) -> None:
+    def set_value(
+        self,
+        path: Path,
+        table: str | None,
+        key: str,
+        literal: str,
+    ) -> None:
         body = ""
         if path.exists():
             try:
@@ -36,11 +42,7 @@ class ConfigStore:
                 raise ValidationFailed(f"invalid config TOML: {error}") from error
             except OSError as error:
                 raise ValidationFailed(f"cannot read config: {error}") from error
-        updated = update_top_level_bool(
-            body=body,
-            key="auto_commit",
-            value=enabled,
-        )
+        updated = update_toml_value(body=body, table=table, key=key, literal=literal)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(updated, encoding="utf-8")
@@ -48,9 +50,15 @@ class ConfigStore:
             raise ValidationFailed(f"cannot write config: {error}") from error
 
 
-def update_top_level_bool(body: str, key: str, value: bool) -> str:
-    replacement = f"{key} = {bool_literal(value)}"
+def update_toml_value(body: str, table: str | None, key: str, literal: str) -> str:
+    replacement = f"{key} = {literal}"
     lines = strip_leading_blank_lines(body.splitlines())
+    if table is None:
+        return update_top_level_value(lines, key, replacement)
+    return update_table_value(lines, table, key, replacement)
+
+
+def update_top_level_value(lines: list[str], key: str, replacement: str) -> str:
     for index, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith("["):
@@ -59,6 +67,38 @@ def update_top_level_bool(body: str, key: str, value: bool) -> str:
             lines[index] = replacement
             return with_trailing_newline(lines)
     return with_trailing_newline([replacement, *lines])
+
+
+def update_table_value(
+    lines: list[str],
+    table: str,
+    key: str,
+    replacement: str,
+) -> str:
+    header = f"[{table}]"
+    in_table = False
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("["):
+            if in_table:
+                return insert_into_table(lines, index, replacement)
+            in_table = stripped == header
+            continue
+        if in_table and top_level_key(stripped) == key:
+            lines[index] = replacement
+            return with_trailing_newline(lines)
+    if in_table:
+        return with_trailing_newline([*lines, replacement])
+    if lines and lines[-1].strip():
+        return with_trailing_newline([*lines, "", header, replacement])
+    return with_trailing_newline([*lines, header, replacement])
+
+
+def insert_into_table(lines: list[str], index: int, replacement: str) -> str:
+    prefix = lines[:index]
+    while prefix and not prefix[-1].strip():
+        prefix = prefix[:-1]
+    return with_trailing_newline([*prefix, replacement, "", *lines[index:]])
 
 
 def strip_leading_blank_lines(lines: list[str]) -> list[str]:

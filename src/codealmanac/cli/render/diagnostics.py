@@ -1,5 +1,10 @@
 from codealmanac.cli.render.common import print_json_model
-from codealmanac.services.diagnostics.models import DoctorCheck, DoctorReport
+from codealmanac.cli.render.style import style
+from codealmanac.services.diagnostics.models import (
+    DoctorCheck,
+    DoctorReport,
+    DoctorStatus,
+)
 
 
 def render_doctor(report: DoctorReport, json_output: bool) -> None:
@@ -15,9 +20,18 @@ def render_doctor(report: DoctorReport, json_output: bool) -> None:
 def render_doctor_section(title: str, checks: tuple[DoctorCheck, ...]) -> None:
     if len(checks) == 0:
         return
-    print(f"## {title}")
+    print(f"{style.BOLD}## {title}{style.RST}")
     for check in checks:
-        print(f"  {check.status.value} {check.message}")
+        icon, tint = status_icon(check.status)
+        print(f"  {tint}{icon}{style.RST} {check.message}")
         if check.fix is not None:
-            print(f"    {check.fix}")
+            print(f"    {style.DIM}{check.fix}{style.RST}")
     print("")
+
+
+def status_icon(status: DoctorStatus) -> tuple[str, str]:
+    if status == DoctorStatus.OK:
+        return "✓", style.GREEN
+    if status == DoctorStatus.PROBLEM:
+        return "✗", style.RED
+    return "◇", style.BLUE

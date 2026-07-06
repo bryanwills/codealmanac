@@ -17,6 +17,11 @@ def add_wiki_commands(subcommands: argparse._SubParsersAction) -> None:
     search.add_argument("--topic", action="append", default=[])
     search.add_argument("--mentions")
     search.add_argument("--limit", type=int)
+    search.add_argument(
+        "--slugs",
+        action="store_true",
+        help="emit only result slugs, without summaries",
+    )
     search.add_argument("--json", action="store_true")
 
     show = subcommands.add_parser("show", help="show a wiki page")

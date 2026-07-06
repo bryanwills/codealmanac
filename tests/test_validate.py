@@ -141,7 +141,8 @@ def test_cli_validate_returns_nonzero_for_issues(
     output = capsys.readouterr()
     assert exit_code == 1
     assert "validate: failed\n" in output.out
-    assert "broken_links\tauth-flow\t" in output.out
+    assert "(broken_links)" in output.out
+    assert "auth-flow" in output.out
 
 
 def test_lifecycle_run_fails_when_validation_fails(

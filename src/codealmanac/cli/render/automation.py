@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from codealmanac.cli.render.common import print_json_model
+from codealmanac.cli.render.style import humanize_duration
 from codealmanac.services.automation.models import (
     AutomationInstallResult,
     AutomationStatusReport,
@@ -77,5 +78,4 @@ def render_automation_job_status(status: ScheduledJobStatus) -> None:
 
 
 def duration_label(value: timedelta) -> str:
-    seconds = int(value.total_seconds())
-    return f"{seconds}s"
+    return humanize_duration(value)

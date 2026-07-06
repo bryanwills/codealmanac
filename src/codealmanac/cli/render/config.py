@@ -6,5 +6,4 @@ def render_config_set(result: ConfigSetResult, json_output: bool) -> None:
     if json_output:
         print_json_model(result)
         return
-    value = "true" if result.value else "false"
-    print(f"config: {result.key.value} = {value}")
+    print(f"config: {result.key.value} = {result.value}")

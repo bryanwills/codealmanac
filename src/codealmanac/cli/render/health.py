@@ -1,4 +1,5 @@
 from codealmanac.cli.render.common import print_json_model
+from codealmanac.cli.render.style import style
 from codealmanac.services.health.models import ValidationIssue, ValidationResult
 from codealmanac.services.index.models import HealthReport
 
@@ -7,80 +8,99 @@ def render_health(report: HealthReport, json_output: bool) -> None:
     if json_output:
         print_json_model(report)
         return
-    render_health_section("orphans", tuple(item.slug for item in report.orphans))
-    render_health_section(
-        "dead_refs",
-        tuple(f"{item.slug}\t{item.path}" for item in report.dead_refs),
-    )
-    render_health_section(
-        "broken_links",
-        tuple(
-            f"{item.source_slug}\t{item.target_slug}" for item in report.broken_links
+    blue = style.BLUE
+    dim = style.DIM
+    rst = style.RST
+    sections = [
+        ("orphans", tuple(f"{blue}{item.slug}{rst}" for item in report.orphans)),
+        (
+            "dead-refs",
+            tuple(
+                f"{blue}{item.slug}{rst}  references {item.path} {dim}(missing){rst}"
+                for item in report.dead_refs
+            ),
         ),
-    )
-    render_health_section(
-        "broken_xwiki",
-        tuple(
-            f"{item.source_slug}\t{item.target_wiki}:{item.target_slug}"
-            for item in report.broken_xwiki
+        (
+            "broken-links",
+            tuple(
+                f"{blue}{item.source_slug}{rst} -> {item.target_slug} "
+                f"{dim}(target does not exist){rst}"
+                for item in report.broken_links
+            ),
         ),
-    )
-    render_health_section(
-        "empty_topics",
-        tuple(item.slug for item in report.empty_topics),
-    )
-    render_health_section(
-        "empty_pages",
-        tuple(item.slug for item in report.empty_pages),
-    )
-    render_health_section(
-        "missing_source_citations",
-        tuple(
-            f"{item.slug}\t{item.source_id}"
-            for item in report.missing_source_citations
+        (
+            "broken-xwiki",
+            tuple(
+                f"{blue}{item.source_slug}{rst} -> "
+                f"{item.target_wiki}:{item.target_slug} "
+                f"{dim}(wiki unregistered or unreachable){rst}"
+                for item in report.broken_xwiki
+            ),
         ),
-    )
-    render_health_section(
-        "unused_sources",
-        tuple(f"{item.slug}\t{item.source_id}" for item in report.unused_sources),
-    )
-    render_health_section(
-        "duplicate_sources",
-        tuple(f"{item.slug}\t{item.source_id}" for item in report.duplicate_sources),
-    )
+        (
+            "empty-topics",
+            tuple(f"{blue}{item.slug}{rst}" for item in report.empty_topics),
+        ),
+        (
+            "empty-pages",
+            tuple(f"{blue}{item.slug}{rst}" for item in report.empty_pages),
+        ),
+        (
+            "missing-source-citations",
+            tuple(
+                f"{blue}{item.slug}{rst} cites {item.source_id} "
+                f"{dim}(missing source){rst}"
+                for item in report.missing_source_citations
+            ),
+        ),
+        (
+            "unused-sources",
+            tuple(
+                f"{blue}{item.slug}{rst} lists {item.source_id} {dim}(not cited){rst}"
+                for item in report.unused_sources
+            ),
+        ),
+        (
+            "duplicate-sources",
+            tuple(
+                f"{blue}{item.slug}{rst} repeats {item.source_id}"
+                for item in report.duplicate_sources
+            ),
+        ),
+    ]
+    rendered = [health_section(name, rows) for name, rows in sections]
+    print("\n\n".join(rendered))
 
 
-def render_health_section(name: str, rows: tuple[str, ...]) -> None:
+def health_section(name: str, rows: tuple[str, ...]) -> str:
     if not rows:
-        print(f"{name} (0): ok")
-        return
-    print(f"{name} ({len(rows)}):")
-    for row in rows:
-        print(f"  {row}")
+        return f"{style.BOLD}{name}{style.RST} {style.GREEN}(0): ok{style.RST}"
+    lines = [f"{style.BOLD}{name}{style.RST} {style.RED}({len(rows)}){style.RST}:"]
+    lines.extend(f"  {row}" for row in rows)
+    return "\n".join(lines)
 
 
 def render_validate(result: ValidationResult, json_output: bool) -> None:
     if json_output:
         print_json_model(result)
         return
-    status = "ok" if result.ok else "failed"
-    print(f"validate: {status}")
-    print(f"wiki: {result.workspace_name}")
-    print(f"path: {result.almanac_path}")
+    if result.ok:
+        status = f"{style.GREEN}ok{style.RST}"
+    else:
+        status = f"{style.RED}failed{style.RST}"
+    print(f"{style.BOLD}validate{style.RST}: {status}")
+    print(f"{style.DIM}wiki:{style.RST}  {result.workspace_name}")
+    print(f"{style.DIM}path:{style.RST}  {result.almanac_path}")
     if result.index is not None:
-        print(f"index: {result.index.pages_indexed} pages")
+        print(f"{style.DIM}index:{style.RST} {result.index.pages_indexed} pages")
     if result.ok:
         return
-    print(f"issues: {len(result.issues)}")
+    print(f"issues ({len(result.issues)}):")
     for issue in result.issues:
         print(f"  {format_validation_issue(issue)}")
 
 
 def format_validation_issue(issue: ValidationIssue) -> str:
-    parts = [issue.category]
-    if issue.page:
-        parts.append(issue.page)
-    if issue.path:
-        parts.append(issue.path)
-    parts.append(issue.message)
-    return "\t".join(parts)
+    location = issue.page or issue.path or ""
+    subject = f"{style.BLUE}{location}{style.RST} " if location else ""
+    return f"{subject}{issue.message} {style.DIM}({issue.category}){style.RST}"

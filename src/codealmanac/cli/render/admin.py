@@ -5,12 +5,14 @@ from codealmanac.cli.render.automation import (
 )
 from codealmanac.cli.render.config import render_config_set
 from codealmanac.cli.render.diagnostics import render_doctor
-from codealmanac.cli.render.jobs import (
-    render_run,
+from codealmanac.cli.render.job_logs import (
     render_run_attach,
     render_run_attach_stream,
-    render_run_cancel,
     render_run_log,
+)
+from codealmanac.cli.render.jobs import (
+    render_run,
+    render_run_cancel,
     render_runs,
 )
 from codealmanac.cli.render.setup import render_setup_result, render_uninstall_result

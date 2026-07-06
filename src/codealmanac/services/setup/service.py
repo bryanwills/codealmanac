@@ -83,6 +83,6 @@ class SetupService:
         return self._config.set(
             SetConfigValueRequest(
                 key=ConfigKey.AUTO_COMMIT,
-                value=enabled,
+                value="true" if enabled else "false",
             )
         )

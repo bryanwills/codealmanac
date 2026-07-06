@@ -53,7 +53,12 @@ def dispatch_wiki(args: argparse.Namespace, app: CodeAlmanac) -> int:
                 limit=args.limit,
             )
         )
-        render_search(rows, json_output=args.json)
+        render_search(
+            rows,
+            json_output=args.json,
+            slugs_only=args.slugs,
+            limited=args.limit is not None,
+        )
         return 0
     if args.command == "show":
         page = app.pages.show(
