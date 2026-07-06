@@ -4,6 +4,7 @@ from pathlib import Path
 from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.workflows.sync.models import SyncState
+from codealmanac.workflows.sync.tables import SYNC_STATE_TABLES
 
 SYNC_STATE_KEY = "sync"
 
@@ -45,4 +46,7 @@ class SyncStateStore:
         return SyncState(last_completed_at=completed_at.astimezone(UTC))
 
     def connect(self):
-        return connect_local_database(self.database_path)
+        connection = connect_local_database(self.database_path)
+        connection.executescript(SYNC_STATE_TABLES)
+        connection.commit()
+        return connection

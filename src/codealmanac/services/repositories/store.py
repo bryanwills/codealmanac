@@ -8,6 +8,7 @@ from codealmanac.services.repositories.records import (
     repository_record_from_row,
     repository_values,
 )
+from codealmanac.services.repositories.tables import REPOSITORY_TABLES
 
 
 class RepositoryStore:
@@ -84,4 +85,7 @@ class RepositoryStore:
         return [repository_record_from_row(row) for row in rows]
 
     def connect(self):
-        return connect_local_database(self.database_path)
+        connection = connect_local_database(self.database_path)
+        connection.executescript(REPOSITORY_TABLES)
+        connection.commit()
+        return connection

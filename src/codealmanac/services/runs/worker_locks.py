@@ -4,6 +4,7 @@ from pathlib import Path
 from codealmanac.database.local import connect_local_database
 from codealmanac.services.runs.locks import RunWorkerLease, worker_lock_is_stale
 from codealmanac.services.runs.models import RunWorkerLockOwner
+from codealmanac.services.runs.tables import WORKER_LOCK_TABLES
 
 WORKER_LOCK_NAME = "runs"
 
@@ -58,4 +59,7 @@ class RunWorkerLockStore:
             connection.commit()
 
     def connect(self):
-        return connect_local_database(self.database_path)
+        connection = connect_local_database(self.database_path)
+        connection.executescript(WORKER_LOCK_TABLES)
+        connection.commit()
+        return connection

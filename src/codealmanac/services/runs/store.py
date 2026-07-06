@@ -21,6 +21,7 @@ from codealmanac.services.runs.models import (
     RunSpec,
     RunStatus,
 )
+from codealmanac.services.runs.tables import RUN_TABLES
 from codealmanac.services.runs.worker_locks import RunWorkerLockStore
 
 
@@ -293,7 +294,10 @@ class RunStore:
             connection.commit()
 
     def connect(self):
-        return connect_local_database(self.database_path)
+        connection = connect_local_database(self.database_path)
+        connection.executescript(RUN_TABLES)
+        connection.commit()
+        return connection
 
 
 def run_record_from_json(value: str) -> RunRecord:
