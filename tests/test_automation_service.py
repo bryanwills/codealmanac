@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import create_app
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.integrations.automation.scheduler.launchd import (
     LaunchdSchedulerAdapter,
 )

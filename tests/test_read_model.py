@@ -6,7 +6,7 @@ from conftest import runtime_index_path
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.repositories.requests import (

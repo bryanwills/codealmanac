@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.diagnostics.models import DoctorStatus
 from codealmanac.services.diagnostics.requests import DoctorRequest
 from codealmanac.services.repositories.requests import (

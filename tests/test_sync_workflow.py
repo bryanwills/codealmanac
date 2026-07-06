@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunKind, RunWorkerSpawnResult

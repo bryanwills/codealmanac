@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
-from codealmanac.core.paths import default_database_path, global_state_dir
 from codealmanac.services.updates.activity import active_run_count
 from codealmanac.services.updates.lock import UpdateLockStore
 from codealmanac.services.updates.models import (
@@ -30,14 +29,14 @@ class UpdatesService:
         self,
         metadata: PackageInstallMetadataProvider,
         runner: PackageCommandRunner,
-        state_dir: Path | None = None,
-        database_path: Path | None = None,
+        state_dir: Path,
+        database_path: Path,
         lock_store: UpdateLockStore | None = None,
     ):
         self.metadata = metadata
         self.runner = runner
-        self.state_dir = state_dir or global_state_dir()
-        self.database_path = database_path or default_database_path()
+        self.state_dir = state_dir
+        self.database_path = database_path
         self.lock_store = lock_store or UpdateLockStore()
 
     def check(self, request: CheckUpdateRequest) -> UpdatePlan:

@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.integrations.runs.process import worker_command
 from codealmanac.services.harnesses.models import (
     HarnessKind,

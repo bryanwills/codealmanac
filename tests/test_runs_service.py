@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessEvent,
     HarnessEventKind,

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFailed
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 from codealmanac.services.harnesses.models import (
     HarnessActorConfidence,

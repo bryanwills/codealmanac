@@ -5,7 +5,7 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, ValidationFailed
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,

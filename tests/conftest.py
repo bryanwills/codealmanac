@@ -4,11 +4,11 @@ from pathlib import Path
 import pytest
 
 from codealmanac.app import CodeAlmanac, create_app
-from codealmanac.services.config.models import AppConfig
 from codealmanac.core.paths import normalize_path
 from codealmanac.services.repositories.identity import repository_id_for
 from codealmanac.services.repositories.models import Repository
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
+from codealmanac.services.repositories.requests import RegisterRepositoryRequest
+from codealmanac.settings import AppConfig
 
 
 @pytest.fixture
@@ -26,7 +26,8 @@ def viewer_repo(tmp_path: Path, isolated_home: Path) -> tuple[Path, CodeAlmanac]
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = app.repositories.register(RegisterRepositoryRequest(root_path=repo))
+    app.wiki.initialize(repository.repository_id)
     (repo / "src/auth").mkdir(parents=True)
     (repo / "src/auth/session.py").write_text("SESSION = True\n", encoding="utf-8")
     write_page(

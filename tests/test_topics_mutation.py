@@ -4,7 +4,7 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError, NotFoundError, ValidationFailed
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.topics.models import TopicMutationAction
 from codealmanac.services.topics.requests import (
     CreateTopicRequest,

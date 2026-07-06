@@ -10,7 +10,7 @@ from conftest import runtime_repo_path_for_root
 from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     AutomationTask,

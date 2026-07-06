@@ -6,7 +6,7 @@ from ruamel.yaml import YAML
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
-from codealmanac.services.config.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.repositories.roots import (
     CONVENTIONAL_ALMANAC_ROOTS,
     DEFAULT_ALMANAC_ROOT,
