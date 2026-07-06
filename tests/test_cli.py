@@ -232,6 +232,11 @@ class NonInteractiveInput:
         return False
 
 
+class InteractiveInput:
+    def isatty(self) -> bool:
+        return True
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -286,12 +291,13 @@ def test_cli_setup_and_uninstall_codex_instructions(
     captured = capsys.readouterr()
     agents_path = isolated_home / ".codex/AGENTS.md"
     assert exit_code == 0
-    assert "CodeAlmanac setup" in captured.out
-    assert "Agent instructions" in captured.out
-    assert "default agent" in captured.out
-    assert "codex" in captured.out
+    assert "CODEALMANAC" in captured.out
+    assert "codealmanac" in captured.out
+    assert "Setup complete" in captured.out
+    assert "1. Agent instructions" in captured.out
+    assert "Codex" in captured.out
     assert "Next steps" in captured.out
-    assert "Auto commit" in captured.out
+    assert "5. Auto commit" in captured.out
     assert "codealmanac init" in captured.out
     assert "codealmanac automation status" in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
@@ -385,6 +391,92 @@ def test_cli_uninstall_returns_nonzero_when_package_uninstall_fails(
     assert package_uninstaller.calls == 1
 
 
+def test_cli_setup_interactive_prompt_can_disable_auto_update(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    prompts: list[str] = []
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+    monkeypatch.setattr("codealmanac.cli.dispatch.setup.sys.stdin", InteractiveInput())
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: prompts.append(prompt) or "n",
+    )
+
+    assert main(["setup", "--target", "codex"]) == 0
+
+    output = capsys.readouterr()
+    assert prompts == [
+        "Do you want to keep CodeAlmanac up to date automatically? [Y/n] "
+    ]
+    assert "Update automation" in output.out
+    assert "disabled by setup option" in output.out
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+    )
+
+
+def test_cli_setup_json_does_not_prompt_for_auto_update(
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    scheduler = CliSchedulerAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=scheduler,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+    monkeypatch.setattr("codealmanac.cli.dispatch.setup.sys.stdin", InteractiveInput())
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: pytest.fail(f"unexpected setup prompt: {prompt}"),
+    )
+
+    assert main(["setup", "--json", "--target", "codex"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert [job["task"] for job in payload["automation_install"]["jobs"]] == [
+        "sync",
+        "garden",
+        "update",
+    ]
+    assert tuple(job.task for job in scheduler.installed) == (
+        AutomationTask.SYNC,
+        AutomationTask.GARDEN,
+        AutomationTask.UPDATE,
+    )
+
+
+def test_cli_setup_does_not_initialize_repo_almanac(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        scheduler=CliSchedulerAdapter(),
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["setup", "--yes", "--target", "codex"]) == 0
+
+    capsys.readouterr()
+    assert not (repo / "almanac").exists()
+    assert not (isolated_home / ".codealmanac/registry.json").exists()
+
+
 def test_cli_setup_no_auto_commit_writes_user_config(
     isolated_home: Path,
     monkeypatch,
@@ -474,9 +566,10 @@ def test_cli_setup_installs_automation_with_explicit_flags(
     )
 
     output = capsys.readouterr()
-    assert "automation mode" in output.out
-    assert "install" in output.out
-    assert "Scheduled automation" in output.out
+    assert "Sync automation" in output.out
+    assert "Garden automation" in output.out
+    assert "Update automation" in output.out
+    assert "installed" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,

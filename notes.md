@@ -110,6 +110,8 @@ Adapt for the new Python product:
 - uninstall has one meaning: uninstall everything CodeAlmanac owns. Do not add
   `--target`, `--keep-automation`, `--keep-instructions`, or other
   partial-uninstall flags.
+- `codealmanac setup` is computer-level onboarding. It does not initialize,
+  detect, register, or mutate a repo `almanac/` tree.
 
 The setup flow feels like the archive installer, not the current plain panel
 summary.

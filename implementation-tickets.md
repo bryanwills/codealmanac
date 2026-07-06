@@ -409,8 +409,9 @@ Todos:
   - install update automation,
   - ask whether CodeAlmanac should stay up to date automatically,
   - set auto-commit on by default,
-  - initialize or detect `almanac/`,
   - print next steps.
+- `codealmanac setup` is computer-level onboarding. It must not initialize,
+  detect, register, or mutate a repo `almanac/` tree.
 - Support `--yes`.
 - Support non-TTY behavior.
 - Keep JSON output for scripts.

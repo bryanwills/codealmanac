@@ -119,7 +119,7 @@ def test_automation_install_plans_sync_and_garden(
         "garden",
     )
     assert garden.interval == timedelta(minutes=2)
-    assert garden.working_directory == repo
+    assert garden.working_directory is None
     assert update.program_arguments == (
         "/usr/bin/python3",
         "-m",

@@ -1,16 +1,12 @@
 import argparse
 import sys
-from datetime import timedelta
 from pathlib import Path
 
 from codealmanac.app import CodeAlmanac
-from codealmanac.cli.dispatch.automation import resolve_automation_quiet
 from codealmanac.cli.dispatch.config import (
-    load_cli_config,
     parse_optional_duration,
 )
 from codealmanac.cli.render.admin import render_setup_result, render_uninstall_result
-from codealmanac.services.config.models import CodeAlmanacConfig
 from codealmanac.services.setup.models import (
     PackageUninstallStatus,
     SetupTarget,
@@ -20,17 +16,17 @@ from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallReq
 
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
-    cli_config = load_cli_config(app, None)
+    auto_update = resolve_setup_auto_update(args)
     result = app.setup.run(
         RunSetupRequest(
             cwd=Path.cwd(),
             targets=parse_setup_targets(args.target),
             yes=args.yes,
             auto_commit=not args.no_auto_commit,
-            auto_update=not args.no_auto_update,
+            auto_update=auto_update,
             skip_instructions=args.skip_instructions,
             sync_every=parse_optional_duration(args.sync_every, "--sync-every"),
-            sync_quiet=resolve_setup_quiet(args.sync_quiet, cli_config),
+            sync_quiet=parse_optional_duration(args.sync_quiet, "--sync-quiet"),
             sync_off=args.sync_off,
             garden_every=parse_optional_duration(
                 args.garden_every,
@@ -41,6 +37,21 @@ def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
     )
     render_setup_result(result, json_output=args.json)
     return 0
+
+
+def resolve_setup_auto_update(args: argparse.Namespace) -> bool:
+    if args.no_auto_update:
+        return False
+    if args.yes or args.json or not sys.stdin.isatty():
+        return True
+    return confirm_setup_auto_update()
+
+
+def confirm_setup_auto_update() -> bool:
+    response = input(
+        "Do you want to keep CodeAlmanac up to date automatically? [Y/n] "
+    )
+    return response.strip().casefold() not in {"n", "no"}
 
 
 def dispatch_uninstall(args: argparse.Namespace, app: CodeAlmanac) -> int:
@@ -76,15 +87,6 @@ def uninstall_exit_code(result: UninstallResult) -> int:
     ):
         return 1
     return 0
-
-
-def resolve_setup_quiet(
-    value: str | None,
-    config: CodeAlmanacConfig | None,
-) -> timedelta | None:
-    if config is None:
-        raise AssertionError("setup config is required")
-    return resolve_automation_quiet(value, config)
 
 
 def parse_setup_targets(value: str) -> tuple[SetupTarget, ...]:

@@ -50,5 +50,5 @@ def task_definition(task: AutomationTask) -> AutomationTaskDefinition:
         default_interval=DEFAULT_GARDEN_INTERVAL,
         stdout_log_name="garden.out.log",
         stderr_log_name="garden.err.log",
-        working_directory=AutomationWorkingDirectory.CURRENT_WIKI,
+        working_directory=AutomationWorkingDirectory.NONE,
     )
