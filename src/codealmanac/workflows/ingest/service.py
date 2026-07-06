@@ -1,3 +1,4 @@
+from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
 from codealmanac.services.runs.models import (
     RunEventKind,
@@ -40,11 +41,13 @@ class IngestWorkflow:
         runs: RunsService,
         page_runs: PageRunWorkflow,
         prompts: PromptRenderer,
+        manual: ManualLibrary,
     ):
         self.sources = sources
         self.runs = runs
         self.page_runs = page_runs
         self.prompts = prompts
+        self.manual = manual
 
     def run(self, request: RunIngestRequest) -> IngestResult:
         started = self.start(request)
@@ -114,6 +117,7 @@ class IngestWorkflow:
                         source_runtime,
                         request.guidance,
                         request.auto_commit,
+                        self.manual,
                     ),
                     title=request.title,
                     success_summary="ingest completed",
@@ -157,6 +161,7 @@ def render_ingest_prompt(
     source_runtime: tuple[SourceRuntime, ...],
     guidance: str | None,
     auto_commit: bool,
+    manual: ManualLibrary,
 ) -> str:
     payload = IngestPromptPayload(
         workspace_name=workspace.name,
@@ -164,6 +169,7 @@ def render_ingest_prompt(
         almanac_root=workspace.almanac_path,
         sources=sources,
         source_runtime=source_runtime,
+        manual_documents=manual.inventory().documents,
         source_control=lifecycle_commit_policy(auto_commit),
         guidance=guidance,
     )

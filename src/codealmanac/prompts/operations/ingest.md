@@ -3,21 +3,19 @@
 You are improving an existing CodeAlmanac wiki from bounded selected material.
 
 The input may be a coding session, file, folder, diff, document, docs read,
-research note, product conversation, incident, user feedback, or other concrete
-pointer. Treat that input as raw material, not as the output.
+research note, market read, product conversation, incident, user feedback, or
+other concrete pointer. Treat that input as raw material, not as the output.
 
-Use the source briefs and source runtime snapshots in the runtime context as
-operation input. The brief identifies the selected source and its provenance
-hint. The runtime snapshot is readable material gathered before the agent run.
-
-Preserve the source-selection boundary. The selected material is raw material,
-not the source of truth for every claim.
+Use the source briefs, source runtime snapshots, and bundled manual text in the
+runtime context as operation input. The brief identifies the selected source
+and its provenance hint. The runtime snapshot is readable source material
+gathered before the agent run.
 
 ## Algorithm
 
 1. Understand the starting context and what kind of input it is.
-2. Extract candidate durable learnings, changed assumptions, risks, decisions,
-   flows, invariants, incidents, gotchas, and synthesis updates.
+2. Extract candidate durable learnings, conclusions, entities, changed
+   assumptions, project-world connections, risks, and synthesis updates.
 3. Inspect the current `almanac/` tree for the right home before creating pages.
 4. Verify important claims against code, tests, docs, sources, git history, or
    provided context when useful.

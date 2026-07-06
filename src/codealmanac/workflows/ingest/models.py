@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.manual import ManualDocument
 from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.index.models import IndexRefreshResult
 from codealmanac.services.runs.models import RunRecord
@@ -15,6 +16,7 @@ class IngestPromptPayload(CodeAlmanacModel):
     almanac_root: Path
     sources: tuple[SourceBrief, ...]
     source_runtime: tuple[SourceRuntime, ...]
+    manual_documents: tuple[ManualDocument, ...]
     source_control: LifecycleCommitPolicy
     guidance: str | None = None
 

@@ -8,6 +8,11 @@ def add_lifecycle_commands(subcommands: argparse._SubParsersAction) -> None:
     init.add_argument("path", nargs="?", default=".")
     init.add_argument("--name")
     init.add_argument("--description", default="")
+    init.add_argument(
+        "--using",
+        choices=tuple(kind.value for kind in HarnessKind),
+    )
+    init.add_argument("--guidance")
 
     ingest = subcommands.add_parser("ingest", help="ingest local material")
     ingest.add_argument("inputs", nargs="+")

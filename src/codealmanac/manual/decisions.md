@@ -34,4 +34,12 @@ The consequences explain the resulting situation after the decision. Include
 positive, negative, and neutral consequences. A useful consequence says what is
 now easier, harder, required, forbidden, risky, or intentionally deferred.
 
+If a later page reverses the decision, keep the old decision page and mark it as
+superseded or link to the replacement. The old decision still matters because it
+records what used to be true and why.
+
+Write decision pages as a conversation with a future maintainer. Use
+paragraphs, not bullet fragments. Bullets are fine for readability, but they
+should not replace explanation.
+
 Do not bundle several unrelated choices into one decision page.

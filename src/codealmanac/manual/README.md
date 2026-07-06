@@ -52,6 +52,10 @@ almanac/
 `almanac/README.md` plus `almanac/topics.yaml` identify an initialized
 CodeAlmanac wiki.
 
+The category folders are the default first-build structure. Do not add
+`active/`, `_meta/`, or `context/` during build unless repository evidence
+makes that structure necessary.
+
 Runtime state is local and rebuildable:
 
 ```text

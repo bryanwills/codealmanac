@@ -1,3 +1,4 @@
+from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
 from codealmanac.services.health.requests import HealthCheckRequest
 from codealmanac.services.health.service import HealthService
@@ -34,12 +35,14 @@ class GardenWorkflow:
         health: HealthService,
         page_runs: PageRunWorkflow,
         prompts: PromptRenderer,
+        manual: ManualLibrary,
     ):
         self.runs = runs
         self.index = index
         self.health = health
         self.page_runs = page_runs
         self.prompts = prompts
+        self.manual = manual
 
     def run(self, request: RunGardenRequest) -> GardenResult:
         started = self.runs.start(
@@ -94,6 +97,7 @@ class GardenWorkflow:
                         health_before,
                         request.guidance,
                         request.auto_commit,
+                        self.manual,
                     ),
                     title=request.title,
                     success_summary="garden completed",
@@ -118,6 +122,7 @@ def render_garden_prompt(
     health: HealthReport,
     guidance: str | None,
     auto_commit: bool,
+    manual: ManualLibrary,
 ) -> str:
     payload = GardenPromptPayload(
         workspace_name=workspace.name,
@@ -127,6 +132,7 @@ def render_garden_prompt(
         topics_file=workspace.almanac_path / "topics.yaml",
         index=index,
         health=health,
+        manual_documents=manual.inventory().documents,
         source_control=lifecycle_commit_policy(auto_commit),
         guidance=guidance,
     )

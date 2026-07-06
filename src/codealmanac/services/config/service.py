@@ -37,6 +37,9 @@ class ConfigService:
         )
         return self.store.load(paths)
 
+    def load_user(self) -> CodeAlmanacConfig:
+        return self.store.load((normalize_path(self.user_config_path),))
+
     def set(self, request: SetConfigValueRequest) -> ConfigSetResult:
         if request.key == ConfigKey.AUTO_COMMIT:
             path = normalize_path(self.user_config_path)

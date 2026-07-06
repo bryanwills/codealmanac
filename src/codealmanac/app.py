@@ -161,7 +161,14 @@ def create_app(
     harnesses = HarnessesService(
         default_harness_adapters() if harness_adapters is None else harness_adapters
     )
-    build = BuildWorkflow(workspaces, wiki, index)
+    build_page_runs = PageRunWorkflow(
+        workspaces,
+        harnesses,
+        runs,
+        index,
+        health,
+        LifecycleMutationPolicy(GitWorkspaceChangeProbe(), operation="build"),
+    )
     ingest_page_runs = PageRunWorkflow(
         workspaces,
         harnesses,
@@ -183,6 +190,7 @@ def create_app(
         runs,
         ingest_page_runs,
         prompts,
+        manual,
     )
     garden = GardenWorkflow(
         runs,
@@ -190,6 +198,16 @@ def create_app(
         health,
         garden_page_runs,
         prompts,
+        manual,
+    )
+    build = BuildWorkflow(
+        workspaces,
+        wiki,
+        index,
+        runs,
+        build_page_runs,
+        prompts,
+        manual,
     )
     queue = RunQueueWorkflow(
         runs,

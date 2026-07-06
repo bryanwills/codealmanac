@@ -7,6 +7,7 @@ from ruamel.yaml import YAML
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
 from codealmanac.core.models import AppConfig
+from codealmanac.services.runs.models import RunOperation
 from codealmanac.services.sources.models import SourceKind
 from codealmanac.services.sources.requests import ResolveSourcesRequest
 from codealmanac.services.workspaces.roots import (
@@ -203,6 +204,14 @@ def test_build_is_not_a_public_command(capsys):
 
     output = capsys.readouterr()
     assert "invalid choice: 'build'" in output.err
+
+
+def test_internal_run_operations_are_only_build_ingest_and_garden():
+    assert tuple(operation.value for operation in RunOperation) == (
+        "build",
+        "ingest",
+        "garden",
+    )
 
 
 def test_user_facing_docs_do_not_advertise_node_or_old_state_paths():

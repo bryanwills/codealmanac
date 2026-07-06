@@ -5,8 +5,9 @@ topics: [manual]
 
 # Evidence
 
-Use this manual when grounding factual claims in wiki pages. Evidence lets a
-future maintainer trust a page without redoing the whole investigation.
+Use this manual when grounding factual claims in wiki pages. Evidence is what
+lets a future maintainer trust the page without redoing the whole
+investigation.
 
 Every durable claim should be supported by a named source. Use frontmatter
 `sources:` entries for the materials that support the page, then cite
@@ -16,14 +17,14 @@ A page with factual code, architecture, product, workflow, or decision claims
 but no inline citations is suspect. Navigation pages and manual pages can be
 lighter when they do not make those claims.
 
-Authority depends on the claim:
+Choose the source that is authoritative for the claim:
 
-- Code is authoritative for runtime behavior.
-- Tests are authoritative for enforced contracts.
-- Docs are authoritative for stated intent.
-- Transcripts are authoritative for what was discussed.
-- PRs and commits are authoritative for review, merge, and change context.
-- The wiki is maintained synthesis, not proof when code or docs disagree.
+- code is authoritative for runtime behavior
+- tests are authoritative for enforced contracts
+- docs are authoritative for stated intent
+- transcripts are authoritative for what was discussed
+- PRs and commits are authoritative for review, merge, and change context
+- the wiki is maintained synthesis, not proof when code or docs disagree
 
 Citations should be close to the claims they support. Do not put all citations
 only in the lead or only at the end of the page.

@@ -15,6 +15,10 @@ def load_cli_config(app: CodeAlmanac, wiki: str | None) -> CodeAlmanacConfig:
     return app.config.load(LoadConfigRequest(cwd=Path.cwd(), wiki=wiki))
 
 
+def load_user_cli_config(app: CodeAlmanac) -> CodeAlmanacConfig:
+    return app.config.load_user()
+
+
 def resolve_harness(value: str | None, config: CodeAlmanacConfig) -> HarnessKind:
     if value is None:
         return config.harness.default

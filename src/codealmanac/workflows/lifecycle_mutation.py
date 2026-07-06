@@ -35,6 +35,9 @@ class LifecycleMutationPolicy:
             almanac_prefix=almanac_prefix,
         )
 
+    def ensure_tracking_available(self, root_path: Path) -> None:
+        validate_snapshot_available(self.probe.snapshot(root_path), self.operation)
+
     def validate(
         self,
         preflight: LifecycleMutationPreflight,

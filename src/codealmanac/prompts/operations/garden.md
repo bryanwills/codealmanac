@@ -7,8 +7,8 @@ project memory more coherent, navigable, current, and trustworthy.
 
 ## Algorithm
 
-1. Inspect pages, topics, Markdown links, hubs, referenced files, cited sources,
-   and health issues where useful.
+1. Inspect pages, topics, Markdown links, hubs, referenced files, cited
+   sources, and health issues where useful.
 2. Find graph problems: duplicate pages, thin placeholders, stale claims,
    missing anchors, missing links, bloated pages, confusing topics, broken
    references, unsupported claims, disconnected temporal notes, and clusters
@@ -43,9 +43,9 @@ structured `sources:` entries or remove it if it no longer supports a claim.
 
 Raise a conflict in prose only when competing sources both plausibly describe
 intended truth and choosing between them requires a human decision. Before
-marking a conflict, verify against current code, tests, config, current docs,
-and existing wiki pages. If one source is stale, remove the stale claim or mark
-it historical.
+marking a conflict, verify against current code, tests, config, current
+external docs, and existing wiki pages. If one source is stale, remove the stale
+claim or mark it historical.
 
 ## Helper Agents
 

@@ -28,8 +28,8 @@ complete the task.
 ## Write The Lead
 
 Start with the situation, the task, and the successful outcome. After the lead,
-the reader should know when to use the guide and what should be true by the
-end.
+the reader should know when to use the guide and what they should have achieved
+by the end.
 
 ## Keep The Body Action-Focused
 
@@ -45,6 +45,18 @@ Order the guide around how the maintainer will actually work. Reduce
 context-switching. If the task branches, state the condition and what to do in
 each case.
 
+## Choose Headings For This Task
+
+Use headings that fit the work. Preconditions, steps, decision points,
+verification, and recovery notes are useful, but they are not required sections.
+
+Do not collapse a guide into only a list of steps when the task can fail or be
+verified. Most debugging, release, adapter, command, and workflow-change guides
+should explain how the maintainer knows the task succeeded.
+
 Use verification and recovery material when it helps the task. Verification
 answers "how do I know this worked?" Recovery answers "what should I check or
 undo if this fails?"
+
+You may notice that this manual is itself written in the format of a how-to
+guide. That is intentional: use its shape as a model, not as a rigid template.

@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -6,9 +7,17 @@ from conftest import runtime_index_path
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import NotFoundError
+from codealmanac.core.errors import NotFoundError, ValidationFailed
 from codealmanac.core.models import AppConfig
+from codealmanac.services.harnesses.models import (
+    HarnessKind,
+    HarnessReadiness,
+    HarnessRunResult,
+    HarnessRunStatus,
+)
+from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.health.requests import HealthCheckRequest
+from codealmanac.services.runs.models import RunOperation, RunStatus
 from codealmanac.services.workspaces.models import WorkspaceRegistryStatus
 from codealmanac.services.workspaces.requests import (
     DropWorkspaceRequest,
@@ -17,6 +26,45 @@ from codealmanac.services.workspaces.requests import (
     SelectWorkspaceRequest,
 )
 from codealmanac.services.workspaces.roots import is_initialized_almanac_root
+from codealmanac.workflows.build.requests import RunBuildRequest
+
+
+class BuildWritingHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        page = request.cwd / "almanac/architecture/build-flow.md"
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text(
+            """---
+title: Build Flow
+topics: [getting-started]
+sources: []
+---
+# Build Flow
+
+Build creates the first useful wiki for this repository.
+""",
+            encoding="utf-8",
+        )
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="built wiki",
+            summary="built wiki",
+            changed_files=(page,),
+        )
 
 
 def test_initialize_creates_almanac_wiki_and_registry(
@@ -269,6 +317,72 @@ def test_build_refreshes_wiki_and_rebuilds_index(
     assert not (repo / "almanac/index.db").exists()
 
 
+def test_run_build_uses_harness_prompt_and_records_build_operation(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    initialize_git(repo)
+    adapter = BuildWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+
+    result = app.workflows.build.run(
+        RunBuildRequest(
+            path=repo,
+            harness=HarnessKind.CODEX,
+            name="repo",
+            guidance="Write the smallest useful first wiki.",
+        )
+    )
+
+    assert result.run is not None
+    assert result.run.operation == RunOperation.BUILD
+    assert result.run.status == RunStatus.DONE
+    assert result.run.summary == "built wiki"
+    assert result.index.pages_indexed == 3
+    assert result.safety is not None
+    assert repo / "almanac/README.md" in result.safety.changed_files
+    assert repo / "almanac/architecture/build-flow.md" in result.safety.changed_files
+    assert "Build Operation" in adapter.requests[0].prompt
+    assert '"manual_documents": [' in adapter.requests[0].prompt
+    assert "Phase 1: Scan And Plan" in adapter.requests[0].prompt
+    assert "Use read-only research sub-agents" in adapter.requests[0].prompt
+    assert "Use writing sub-agents" in adapter.requests[0].prompt
+    assert "Write the smallest useful first wiki." in adapter.requests[0].prompt
+    assert "pages/" not in adapter.requests[0].prompt
+    assert "[[" not in adapter.requests[0].prompt
+
+
+def test_run_build_rejects_non_git_repo_without_registering(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adapter = BuildWritingHarnessAdapter()
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(adapter,),
+    )
+
+    with pytest.raises(ValidationFailed, match="build requires Git change tracking"):
+        app.workflows.build.run(
+            RunBuildRequest(
+                path=repo,
+                harness=HarnessKind.CODEX,
+                name="repo",
+            )
+        )
+
+    assert app.workspaces.list() == []
+    assert not (repo / "almanac").exists()
+    assert adapter.requests == []
+
+
 def test_workspace_selection_supports_name_id_and_path(
     tmp_path: Path,
     isolated_home: Path,
@@ -357,3 +471,7 @@ def test_workspace_registry_drops_selected_wiki(
 
 def remove_tree(path: Path) -> None:
     shutil.rmtree(path)
+
+
+def initialize_git(repo: Path) -> None:
+    subprocess.run(("git", "init"), cwd=repo, check=True, capture_output=True)

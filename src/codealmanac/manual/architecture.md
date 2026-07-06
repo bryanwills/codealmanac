@@ -16,9 +16,9 @@ Write the page so a maintainer can safely change the area. Explain the static
 shape, the runtime flow, and the constraints that future work must preserve.
 
 Architecture pages should use design evidence when it exists. Look for
-architecture docs, decision records, design notes, plans, live agreements,
-README sections, and other Markdown files that explain why the system is shaped
-this way.
+architecture docs, ADRs, RFCs, design notes, plans, live agreements, README
+sections, and other Markdown files that explain why the system is shaped this
+way.
 
 Use source code and tests to verify what exists. Use design evidence to explain
 intent, constraints, tradeoffs, and historical reasons. If design evidence
@@ -40,3 +40,10 @@ Do not use these as required sections. Use headings that fit the system area.
 Do not turn an architecture page into a file-by-file tour. Mention files when
 they anchor the explanation, but keep the page about responsibility, flow, and
 system shape.
+
+Architecture coverage should form a system map. Do not write only one or two
+architecture pages when the repository has many real subsystems.
+
+Split architecture pages by owner and flow. If one page would need to explain
+several entrypoints, adapters, state machines, or storage boundaries, it is
+probably several pages with links between them.

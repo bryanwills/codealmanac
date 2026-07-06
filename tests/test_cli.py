@@ -136,6 +136,25 @@ The public CLI gardened the local wiki graph.
         )
 
 
+class CliNoopHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=True,
+            message="codex ready",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        return HarnessRunResult(
+            kind=self.kind,
+            status=HarnessRunStatus.SUCCEEDED,
+            output_text="completed through CLI",
+            summary="completed through CLI",
+        )
+
+
 class CliWorkerSpawner:
     def __init__(self):
         self.requests: list[SpawnRunWorkerRequest] = []
@@ -237,6 +256,15 @@ class InteractiveInput:
         return True
 
 
+@pytest.fixture(autouse=True)
+def default_cli_app(monkeypatch, isolated_home):
+    app = create_app(
+        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        harness_adapters=(CliNoopHarnessAdapter(),),
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -244,6 +272,7 @@ def test_cli_init_creates_wiki_and_prints_name(
 ):
     repo = tmp_path / "My Repo"
     repo.mkdir()
+    initialize_git(repo)
 
     exit_code = main(["init", str(repo), "--description", "cli test"])
 
@@ -674,6 +703,7 @@ def test_cli_list_outputs_registered_wikis(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
 
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
@@ -692,6 +722,7 @@ def test_cli_list_json_reports_registry_status(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
 
@@ -710,6 +741,7 @@ def test_cli_list_drop_removes_selected_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
 
@@ -731,6 +763,8 @@ def test_cli_list_drop_missing_removes_unreachable_wikis(
     missing_repo = tmp_path / "missing"
     live_repo.mkdir()
     missing_repo.mkdir()
+    initialize_git(live_repo)
+    initialize_git(missing_repo)
     assert main(["init", str(live_repo), "--name", "live"]) == 0
     capsys.readouterr()
     assert main(["init", str(missing_repo), "--name", "missing"]) == 0
@@ -754,6 +788,7 @@ def test_cli_init_and_reindex_commands(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
 
     assert main(["init", str(repo)]) == 0
     init_output = capsys.readouterr()
@@ -786,6 +821,8 @@ def test_cli_reindex_can_target_registered_wiki(
     second = tmp_path / "second"
     first.mkdir()
     second.mkdir()
+    initialize_git(first)
+    initialize_git(second)
 
     assert main(["init", str(first), "--name", "first"]) == 0
     capsys.readouterr()
@@ -811,6 +848,7 @@ def test_cli_doctor_reports_local_state(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
     monkeypatch.chdir(repo)
@@ -833,6 +871,7 @@ def test_cli_doctor_ignores_repo_manual_drift(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
     (repo / "almanac/manual").mkdir()
@@ -1665,6 +1704,7 @@ def test_cli_search_and_show_read_current_repo_wiki(
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
+    initialize_git(repo)
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
     page_path = repo / "almanac/auth-flow.md"

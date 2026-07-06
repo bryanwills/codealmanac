@@ -23,7 +23,6 @@ RunId = Annotated[
 class RunOperation(StrEnum):
     BUILD = "build"
     INGEST = "ingest"
-    SYNC = "sync"
     GARDEN = "garden"
 
 

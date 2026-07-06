@@ -4,9 +4,9 @@ import select
 import sys
 import termios
 import tty
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Iterator
 
 from codealmanac.cli.render.setup import (
     SetupChoiceOption,
@@ -65,8 +65,12 @@ def wizard_terminal() -> Iterator[None]:
     cbreak keeps keys immediate and unechoed while leaving output newline
     translation on; the alternate screen keeps repaints out of scrollback.
     """
-    fd = sys.stdin.fileno()
-    previous = termios.tcgetattr(fd)
+    try:
+        fd = sys.stdin.fileno()
+        previous = termios.tcgetattr(fd)
+    except (OSError, termios.error):
+        yield
+        return
     sys.stdout.write("\x1b[?1049h\x1b[?25l")
     sys.stdout.flush()
     tty.setcbreak(fd)
