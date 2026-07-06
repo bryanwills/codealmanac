@@ -295,7 +295,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert exit_code == 0
     assert "\x1b[38;5;255m" in captured.out
     assert "█████╗ ██╗" in captured.out
-    assert "CodeAlmanac is a local codebase wiki" in captured.out
+    assert "The self-updating wiki for your coding agents" in captured.out
     assert "Machine setup only" in captured.out
     assert "\x1b[48;5;252m\x1b[38;5;16m codealmanac " in captured.out
     assert "codealmanac" in captured.out
@@ -305,7 +305,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "Agent instructions" in captured.out
     assert "Codex" in captured.out
     assert "Product updates" in captured.out
-    assert "permission granted; updater installed" in captured.out
+    assert "auto-update on" in captured.out
     assert "Agent change handling" in captured.out
     assert "agents may create almanac: commits" in captured.out
     assert "Next steps" in captured.out
@@ -314,6 +314,7 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "Navigate to your repo of choice" in captured.out
     assert "codealmanac init" in captured.out
     assert "codealmanac automation status" not in captured.out
+    assert "[b] Codex + Claude" not in captured.out
     assert CODEALMANAC_START in agents_path.read_text(encoding="utf-8")
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
@@ -435,8 +436,12 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     assert "[4/4]" in output.out
     assert "almanac: update wiki context" in output.out
     assert "almanac/architecture/indexing.md" in output.out
+    assert "How should your wikis be updated?" in output.out
+    assert "[b] Codex + Claude" not in output.out
+    assert "sync quiet agent sessions" not in output.out
+    assert "install local scheduled updater" not in output.out
     assert "Product updates" in output.out
-    assert "permission not granted; updater skipped" in output.out
+    assert "auto-update off" in output.out
     assert "Agent change handling" in output.out
     assert "agents leave wiki edits in the worktree for review" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
@@ -629,7 +634,7 @@ def test_cli_setup_can_skip_update_automation(
     assert main(["setup", "--yes", "--no-auto-update"]) == 0
 
     output = capsys.readouterr()
-    assert "permission not granted; updater skipped" in output.out
+    assert "auto-update off" in output.out
     assert tuple(job.task for job in scheduler.installed) == (
         AutomationTask.SYNC,
         AutomationTask.GARDEN,

@@ -61,7 +61,7 @@ def interactive_setup_selections(defaults: SetupSelections) -> SetupSelections:
         SetupChoiceScreen(
             step=2,
             title="Wiki maintenance",
-            question="How should CodeAlmanac keep initialized repo wikis updated?",
+            question="How should your wikis be updated?",
             options=maintenance_options(),
         ),
         initial_index=1 if defaults.sync_off and defaults.garden_off else 0,
@@ -98,17 +98,17 @@ def target_options() -> tuple[SetupChoiceOption, ...]:
     return (
         SetupChoiceOption(
             "Codex + Claude",
-            ("install both instruction guides", "best first-run default"),
+            (),
             ("b",),
         ),
         SetupChoiceOption(
             "Codex only",
-            ("install Codex instructions", "leave Claude untouched"),
+            (),
             ("c",),
         ),
         SetupChoiceOption(
             "Claude only",
-            ("install Claude instructions", "leave Codex untouched"),
+            (),
             ("l",),
         ),
     )
@@ -116,27 +116,15 @@ def target_options() -> tuple[SetupChoiceOption, ...]:
 
 def maintenance_options() -> tuple[SetupChoiceOption, ...]:
     return (
-        SetupChoiceOption(
-            "Automatic",
-            ("sync quiet agent sessions", "garden initialized repo wikis"),
-        ),
-        SetupChoiceOption(
-            "Manual",
-            ("install no wiki schedules", "run sync/garden yourself"),
-        ),
+        SetupChoiceOption("Automatic", ()),
+        SetupChoiceOption("Manual", ()),
     )
 
 
 def update_options() -> tuple[SetupChoiceOption, ...]:
     return (
-        SetupChoiceOption(
-            "Automatic",
-            ("install local scheduled updater", "new features arrive quietly"),
-        ),
-        SetupChoiceOption(
-            "Manual",
-            ("no product update schedule", "update when you choose"),
-        ),
+        SetupChoiceOption("Automatic", ()),
+        SetupChoiceOption("Manual", ()),
     )
 
 

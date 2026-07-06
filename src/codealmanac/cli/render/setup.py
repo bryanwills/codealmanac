@@ -108,7 +108,7 @@ def render_setup_choice_screen(
     selected_index: int,
 ) -> None:
     write_line("\x1b[2J\x1b[H")
-    print_banner("Local codebase memory, maintained by your coding agents.")
+    print_banner("The self-updating wiki for your coding agents.")
     print_badge()
     write_line("")
     write_line(
@@ -131,20 +131,7 @@ def render_setup_choice_screen(
         f"{BLUE}{BOLD}[←/→]{RST} switch   "
         f"{BLUE}{BOLD}[enter]{RST} choose"
     )
-    shortcut_text = setup_shortcut_text(screen.options)
-    if shortcut_text:
-        write_line(f"  {DIM}│{RST}   {shortcut_text}")
     write_line("")
-
-
-def setup_shortcut_text(options: tuple[SetupChoiceOption, ...]) -> str:
-    shortcuts: list[str] = []
-    for option in options:
-        if len(option.shortcuts) == 0:
-            continue
-        shortcut = option.shortcuts[0]
-        shortcuts.append(f"{BLUE}{BOLD}[{shortcut}]{RST} {option.label}")
-    return f"  {'   '.join(shortcuts)}" if shortcuts else ""
 
 
 def render_option_cards(
@@ -182,8 +169,9 @@ def option_card(
     lines = [
         f"{border}┌{'─' * width}┐{RST}",
         card_row(f"{title}{option.label}{RST}", width, border),
-        card_row("", width, border),
     ]
+    if len(option.description) > 0:
+        lines.append(card_row("", width, border))
     for description in option.description:
         lines.append(card_row(f"{body}{description}{RST}", width, border))
     lines.append(f"{border}└{'─' * width}┘{RST}")
@@ -269,10 +257,7 @@ def print_banner(subtitle: str | None = None) -> None:
     if subtitle is not None:
         write_line(f"{WHITE_BOLD}  {subtitle}{RST}")
         return
-    write_line(
-        f"{WHITE_BOLD}  CodeAlmanac is a local codebase wiki,"
-        f" maintained by your coding agents.{RST}"
-    )
+    write_line(f"{WHITE_BOLD}  The self-updating wiki for your coding agents.{RST}")
     write_line(
         f"{DIM}  Machine setup only. Repo wikis still start with"
         f" codealmanac init.{RST}"
@@ -475,38 +460,38 @@ def wiki_maintenance_step(result: SetupResult) -> SetupStep:
         return SetupStep(
             "Wiki maintenance",
             "automatic",
-            "sync quiet agent sessions and garden initialized repo wikis",
+            "sync and garden your wikis",
         )
     if AutomationTask.SYNC in installed:
         return SetupStep(
             "Wiki maintenance",
             "partial",
-            "sync quiet agent sessions; Garden schedule is off",
+            "sync is on; Garden is off",
         )
     if AutomationTask.GARDEN in installed:
         return SetupStep(
             "Wiki maintenance",
             "partial",
-            "Garden initialized repo wikis; sync schedule is off",
+            "Garden is on; sync is off",
         )
     return SetupStep("Wiki maintenance", "manual", "no schedules installed")
 
 
 def installed_automation_detail(result: SetupResult, task: AutomationTask) -> str:
     if task == AutomationTask.UPDATE:
-        return "permission granted; updater installed"
+        return "auto-update on"
     return automation_detail(result, task)
 
 
 def skipped_automation_detail(task: AutomationTask) -> str:
     if task == AutomationTask.UPDATE:
-        return "permission not granted; updater skipped"
+        return "auto-update off"
     return "disabled by setup option"
 
 
 def disabled_automation_detail(task: AutomationTask) -> str:
     if task == AutomationTask.UPDATE:
-        return "permission not granted; updater removed"
+        return "auto-update off"
     return "removed existing schedule"
 
 
