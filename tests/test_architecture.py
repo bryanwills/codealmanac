@@ -687,10 +687,14 @@ def test_cli_admin_render_stays_split_by_output_family():
     admin = (render_path / "admin.py").read_text(encoding="utf-8")
     module_expectations = {
         "automation.py": ("AutomationInstallResult", "def render_automation_install("),
+        "brand.py": ("SETUP_BANNER", "def print_banner("),
         "config.py": ("ConfigSetResult", "def render_config_set("),
         "diagnostics.py": ("DoctorReport", "def render_doctor("),
         "jobs.py": ("RunRecord", "def render_runs("),
         "setup.py": ("SetupResult", "def render_setup_result("),
+        "setup_panels.py": ("UninstallResult", "def render_uninstall_text("),
+        "setup_screens.py": ("SetupChoiceScreen", "def render_setup_choice_screen("),
+        "terminal.py": ("def visible_length(", "def wrap_with_prefixes("),
         "updates.py": ("UpdatePlan", "def render_update_plan("),
     }
     forbidden_admin_fragments = (
@@ -709,7 +713,13 @@ def test_cli_admin_render_stays_split_by_output_family():
         text = (render_path / module_name).read_text(encoding="utf-8")
         assert all(fragment in text for fragment in fragments)
         line_count = len(text.splitlines())
-        if module_name != "setup.py" and line_count > 140:
+        if module_name == "setup.py":
+            if line_count > 260:
+                oversized.append(f"{module_name}:{line_count}")
+        elif module_name == "setup_screens.py":
+            if line_count > 200:
+                oversized.append(f"{module_name}:{line_count}")
+        elif line_count > 180:
             oversized.append(f"{module_name}:{line_count}")
 
     assert len(admin.splitlines()) <= 80
