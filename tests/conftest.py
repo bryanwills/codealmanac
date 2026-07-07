@@ -79,6 +79,23 @@ def write_page(repo: Path, name: str, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
+def initialize_repository(
+    app: CodeAlmanac,
+    path: Path,
+    name: str | None = None,
+    description: str = "",
+) -> Repository:
+    repository = app.repositories.register(
+        RegisterRepositoryRequest(
+            root_path=path,
+            name=name,
+            description=description,
+        )
+    )
+    app.wiki.initialize(repository.repository_id)
+    return repository
+
+
 def runtime_repo_path(home: Path, repository: Repository) -> Path:
     return home / ".codealmanac" / "repos" / repository.repository_id
 

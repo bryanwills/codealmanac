@@ -2,10 +2,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from conftest import initialize_repository
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, ValidationFailed
-from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -14,11 +14,11 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.services.search.requests import SearchPagesRequest
-from codealmanac.workflows.garden.requests import RunGardenRequest
+from codealmanac.settings import AppConfig
+from codealmanac.workflows.garden.requests import GardenRequest
 
 
 class GardenWritingHarnessAdapter:
@@ -95,21 +95,22 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
     result = app.workflows.garden.run(
-        RunGardenRequest(
+        GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             title="Garden wiki",
             guidance="Improve a single page if useful.",
         )
     )
 
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="coherent"))
-    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=result.run.run_id))
+    log = app.runs.log(ReadRunLogRequest(run_id=result.run.run_id))
 
     assert result.run.status == RunStatus.DONE
     assert result.run.started_at is not None
@@ -124,7 +125,7 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert result.safety.changed_files == (
         repo / "almanac/gardened-note.md",
     )
-    assert result.index.pages_indexed == 3
+    assert result.index.pages_indexed == 2
     assert matches[0].slug == "gardened-note"
     assert "Garden Operation" in adapter.requests[0].prompt
     assert "Runtime context:" in adapter.requests[0].prompt
@@ -157,14 +158,15 @@ def test_garden_prompt_disables_commit_policy(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
     app.workflows.garden.run(
-        RunGardenRequest(
+        GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             auto_commit=False,
         )
     )
@@ -185,10 +187,10 @@ def test_garden_workflow_allows_preexisting_dirty_almanac_edits(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
-    getting_started = repo / "almanac/getting-started.md"
+    getting_started = repo / "almanac/README.md"
     getting_started.write_text(
         getting_started.read_text(encoding="utf-8")
         + "\nUser started a local wiki edit.\n",
@@ -196,9 +198,10 @@ def test_garden_workflow_allows_preexisting_dirty_almanac_edits(
     )
 
     result = app.workflows.garden.run(
-        RunGardenRequest(
+        GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
         )
     )
 
@@ -223,19 +226,20 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(DirtyAppGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ValidationFailed):
         app.workflows.garden.run(
-            RunGardenRequest(
+            GardenRequest(
                 cwd=repo,
                 harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             )
         )
 
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
     assert run.status == RunStatus.FAILED
     assert run.error == "garden changed file outside almanac: src/app.py"
@@ -251,20 +255,21 @@ def test_garden_workflow_records_failed_harness_output_before_error(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(FailedGardenHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ExecutionFailed, match="harness codex failed"):
         app.workflows.garden.run(
-            RunGardenRequest(
+            GardenRequest(
                 cwd=repo,
                 harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             )
         )
 
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
-    log = app.runs.log(ReadRunLogRequest(cwd=repo, run_id=run.run_id))
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
+    log = app.runs.log(ReadRunLogRequest(run_id=run.run_id))
 
     assert run.status == RunStatus.FAILED
     assert run.error == "harness codex failed with status failed: garden agent failed"

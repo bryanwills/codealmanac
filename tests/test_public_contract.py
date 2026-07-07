@@ -387,8 +387,8 @@ def test_github_workflows_are_parseable_python_workflows():
 def test_package_build_artifacts_are_ignored():
     gitignore = (PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8")
 
-    assert "\ndist/\n" in gitignore
-    assert "\nbuild/\n" in gitignore
+    assert "\n/dist/\n" in gitignore
+    assert "\n/build/\n" in gitignore
 
 
 @pytest.mark.parametrize("command", FORBIDDEN_TOP_LEVEL_COMMANDS)

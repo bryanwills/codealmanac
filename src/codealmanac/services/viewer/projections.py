@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from codealmanac.services.index.models import (
     PageSourceReference,
     PageView,
@@ -72,19 +74,40 @@ def source_sort_key(source: ViewerPageSource) -> tuple[int, int, str]:
     return (0, source.citation_number, source.source_id)
 
 
-def page_summary_from_search(page: SearchPageResult) -> ViewerPageSummary:
+def page_summary_from_search(
+    repository: Repository,
+    page: SearchPageResult,
+) -> ViewerPageSummary:
     return ViewerPageSummary(
         slug=page.slug,
         title=page.title,
         summary=page.summary,
+        path=viewer_relative_path(repository, page.file_path),
         topics=page.topics,
     )
 
 
-def page_summary_from_view(page: PageView) -> ViewerPageSummary:
+def page_summary_from_view(
+    repository: Repository,
+    page: PageView,
+) -> ViewerPageSummary:
     return ViewerPageSummary(
         slug=page.slug,
         title=page.title,
         summary=page.summary,
+        path=viewer_relative_path(repository, page.file_path),
         topics=page.topics,
     )
+
+
+def viewer_relative_path(repository: Repository, path: Path) -> str:
+    try:
+        normalized = path.relative_to(repository.almanac_path)
+    except ValueError:
+        normalized = path
+
+    prefix = "pages/"
+    relative = normalized.as_posix()
+    if relative.startswith(prefix):
+        return relative[len(prefix) :]
+    return relative

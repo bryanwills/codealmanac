@@ -418,6 +418,7 @@ def fake_codex_path(tmp_path: Path, scenario: str) -> str:
 def run_request(tmp_path: Path) -> RunHarnessRequest:
     return RunHarnessRequest(
         kind=HarnessKind.CODEX,
+                model="gpt-5.5",
         cwd=tmp_path,
         prompt="Update the wiki.",
     )

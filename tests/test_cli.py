@@ -5,12 +5,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from conftest import runtime_repo_path_for_root
+from conftest import initialize_repository, runtime_repo_path_for_root
 
 from codealmanac import __version__
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser, main
-from codealmanac.settings import AppConfig
 from codealmanac.integrations.setup.instructions import CODEALMANAC_START
 from codealmanac.services.automation.models import (
     AutomationTask,
@@ -25,7 +24,6 @@ from codealmanac.services.harnesses.models import (
     HarnessTranscriptRef,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunKind,
@@ -53,7 +51,8 @@ from codealmanac.services.updates.models import (
     PackageInstallMetadata,
     UpdateInstallMethod,
 )
-from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.settings import AppConfig
+from codealmanac.workflows.ingest.requests import IngestRequest
 
 
 class CliWritingHarnessAdapter:
@@ -259,6 +258,10 @@ def default_cli_app(monkeypatch, isolated_home):
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
 
+def repository_id_for(app, repo: Path) -> str:
+    return app.repositories.resolve(repo).repository_id
+
+
 def test_cli_init_creates_wiki_and_prints_name(
     tmp_path: Path,
     isolated_home: Path,
@@ -272,12 +275,15 @@ def test_cli_init_creates_wiki_and_prints_name(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "initialized my-repo: 2 pages (2 updated, 0 removed)\n" in captured.out
+    assert "◆ init started: build-" in captured.out
+    assert "the agent is working in this terminal" in captured.out
     assert f"wiki: {repo / 'almanac'}\n" in captured.out
     database_path = isolated_home / ".codealmanac/codealmanac.db"
     assert f"database: {database_path}\n" in captured.out
+    assert "summary: completed through CLI\n" in captured.out
     assert captured.err == ""
-    assert (repo / "almanac/getting-started.md").is_file()
+    assert (repo / "almanac/README.md").is_file()
+    assert (repo / "almanac/topics.yaml").is_file()
     assert (isolated_home / ".codealmanac/codealmanac.db").is_file()
 
 
@@ -445,7 +451,7 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
         "codealmanac.cli.dispatch.setup_tui.supports_interactive_setup",
         lambda: True,
     )
-    keys = iter(("\r", "\r", "\x1b[C", "\r", "\x1b[C", "\r"))
+    keys = iter(("\r", "\r", "\r", "\r", "\x1b[C", "\r", "\x1b[C", "\r"))
     monkeypatch.setattr(
         "codealmanac.cli.dispatch.setup_tui.read_setup_key",
         lambda: next(keys),
@@ -454,10 +460,12 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     assert main(["setup", "--target", "codex"]) == 0
 
     output = capsys.readouterr()
-    assert "[1/4]" in output.out
-    assert "[2/4]" in output.out
-    assert "[3/4]" in output.out
-    assert "[4/4]" in output.out
+    assert "[1/6]" in output.out
+    assert "[2/6]" in output.out
+    assert "[3/6]" in output.out
+    assert "[4/6]" in output.out
+    assert "[5/6]" in output.out
+    assert "[6/6]" in output.out
     assert "almanac: update wiki context" in output.out
     assert "almanac/architecture/indexing.md" in output.out
     assert "How should your wikis be updated?" in output.out
@@ -472,9 +480,12 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
         AutomationTask.SYNC,
         AutomationTask.GARDEN,
     )
-    assert (
-        isolated_home / ".codealmanac/config.toml"
-    ).read_text(encoding="utf-8") == "auto_commit = false\n"
+    config_text = (isolated_home / ".codealmanac/config.toml").read_text(
+        encoding="utf-8"
+    )
+    assert "auto_commit = false\n" in config_text
+    assert 'default = "codex"\n' in config_text
+    assert 'model = "gpt-5.5"\n' in config_text
 
 
 def test_cli_setup_json_does_not_prompt_for_auto_update(
@@ -549,7 +560,10 @@ def test_cli_setup_no_auto_commit_writes_user_config(
     assert exit_code == 0
     assert "Agent change handling" in captured.out
     assert "worktree" in captured.out
-    assert config_path.read_text(encoding="utf-8") == "auto_commit = false\n"
+    config_text = config_path.read_text(encoding="utf-8")
+    assert "auto_commit = false\n" in config_text
+    assert 'default = "codex"\n' in config_text
+    assert 'model = "gpt-5.5"\n' in config_text
 
 
 def test_cli_setup_skip_instructions_json(isolated_home: Path, monkeypatch, capsys):
@@ -597,7 +611,7 @@ def test_cli_setup_installs_automation_with_explicit_flags(
         scheduler=scheduler,
         package_uninstaller=CliPackageUninstaller(),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -610,8 +624,6 @@ def test_cli_setup_installs_automation_with_explicit_flags(
                 "codex",
                 "--sync-every",
                 "1m",
-                "--sync-quiet",
-                "1s",
                 "--garden-every",
                 "2m",
             ]
@@ -678,7 +690,7 @@ def test_cli_setup_can_skip_sync_automation(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -729,7 +741,7 @@ def test_cli_list_json_reports_database_status(
     assert '"status": "available"' in captured.out
 
 
-def test_cli_list_drop_removes_selected_wiki(
+def test_cli_list_rejects_drop_option(
     tmp_path: Path,
     isolated_home: Path,
     capsys,
@@ -740,16 +752,14 @@ def test_cli_list_drop_removes_selected_wiki(
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
 
-    assert main(["list", "--drop", "repo"]) == 0
-    drop_output = capsys.readouterr()
-    assert drop_output.out == f"dropped repo ({repo})\n"
+    with pytest.raises(SystemExit):
+        main(["list", "--drop", "repo"])
 
-    assert main(["list"]) == 0
-    list_output = capsys.readouterr()
-    assert "no wikis registered" in list_output.out
+    output = capsys.readouterr()
+    assert "unrecognized arguments: --drop" in output.err
 
 
-def test_cli_list_drop_missing_removes_unreachable_wikis(
+def test_cli_list_keeps_missing_repositories_registered(
     tmp_path: Path,
     isolated_home: Path,
     capsys,
@@ -766,13 +776,12 @@ def test_cli_list_drop_missing_removes_unreachable_wikis(
     capsys.readouterr()
     shutil.rmtree(missing_repo)
 
-    assert main(["list", "--drop-missing"]) == 0
-    drop_output = capsys.readouterr()
-    assert drop_output.out == f"dropped missing ({missing_repo})\n"
-
     assert main(["list"]) == 0
     list_output = capsys.readouterr()
-    assert list_output.out == f"live  —\n      {live_repo}\n"
+    assert "live" in list_output.out
+    assert str(live_repo) in list_output.out
+    assert "missing" in list_output.out
+    assert str(missing_repo) in list_output.out
 
 
 def test_cli_init_and_reindex_commands(
@@ -787,7 +796,7 @@ def test_cli_init_and_reindex_commands(
 
     assert main(["init", str(repo)]) == 0
     init_output = capsys.readouterr()
-    assert "initialized repo: 2 pages (2 updated, 0 removed)\n" in init_output.out
+    assert "◆ init started: build-" in init_output.out
     assert (runtime_repo_path_for_root(isolated_home, repo) / "index.db").is_file()
     assert not (repo / "almanac/index.db").exists()
 
@@ -799,11 +808,11 @@ def test_cli_init_and_reindex_commands(
 
     assert main(["reindex"]) == 0
     reindex_output = capsys.readouterr()
-    assert reindex_output.out == "reindexed: 3 pages (3 updated, 0 removed)\n"
+    assert reindex_output.out == "reindexed: 2 pages (2 updated, 0 removed)\n"
 
     assert main(["reindex", "--json"]) == 0
     json_output = capsys.readouterr()
-    assert '"pages_indexed": 3' in json_output.out
+    assert '"pages_indexed": 2' in json_output.out
 
 
 def test_cli_reindex_can_target_registered_wiki(
@@ -832,7 +841,7 @@ def test_cli_reindex_can_target_registered_wiki(
     assert main(["reindex", "--wiki", "first"]) == 0
 
     output = capsys.readouterr()
-    assert output.out == "reindexed: 3 pages (3 updated, 0 removed)\n"
+    assert output.out == "reindexed: 2 pages (2 updated, 0 removed)\n"
 
 
 def test_cli_doctor_reports_local_state(
@@ -855,7 +864,7 @@ def test_cli_doctor_reports_local_state(
     assert "## Install\n" in output.out
     assert "manual: 13 bundled docs" in output.out
     assert f"repo: {repo}\n" in output.out
-    assert "index: 2 pages, 1 topic" in output.out
+    assert "index: 1 page, 1 topic" in output.out
 
 
 def test_cli_doctor_ignores_repo_manual_drift(
@@ -1004,7 +1013,9 @@ def test_cli_doctor_json_reports_no_wiki(
 
     output = capsys.readouterr()
     assert '"key": "wiki.none"' in output.out
-    assert '"fix": "run: codealmanac init"' in output.out
+    assert '"fix": "run from a registered repository root or pass --wiki <name>"' in (
+        output.out
+    )
 
 
 def test_cli_help_includes_serve(capsys):
@@ -1040,7 +1051,7 @@ def test_cli_ingest_queues_run_with_selected_harness(
         harness_adapters=(adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1063,8 +1074,8 @@ def test_cli_ingest_queues_run_with_selected_harness(
     )
 
     output = capsys.readouterr()
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
-    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
     assert f"ingest queued: {run.run_id}" in output.out
     assert "follow:  codealmanac jobs attach" in output.out
     assert run.status == RunStatus.QUEUED
@@ -1073,7 +1084,7 @@ def test_cli_ingest_queues_run_with_selected_harness(
     assert spec.title == "Digest note"
     assert spec.guidance == "Write one short page."
     assert adapter.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
 
 
 def test_cli_ingest_uses_configured_default_harness(
@@ -1092,7 +1103,7 @@ def test_cli_ingest_uses_configured_default_harness(
         harness_adapters=(adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     (repo / "almanac/config.toml").write_text(
         """
 [harness]
@@ -1108,13 +1119,13 @@ default = "codex"
     assert main(["ingest", "note.md"]) == 0
 
     output = capsys.readouterr()
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
-    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
     assert f"ingest queued: {run.run_id}" in output.out
     assert spec is not None
     assert spec.harness == HarnessKind.CODEX
     assert adapter.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
 
 
 def test_cli_ingest_json_queues_run_and_spawns_worker(
@@ -1133,7 +1144,7 @@ def test_cli_ingest_json_queues_run_and_spawns_worker(
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1141,14 +1152,14 @@ def test_cli_ingest_json_queues_run_and_spawns_worker(
 
     output = capsys.readouterr()
     data = json.loads(output.out)
-    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=data["run_id"]))
+    run = app.runs.show(ShowRunRequest(run_id=data["run_id"]))
 
     assert data["status"] == "queued"
     assert data["child_pid"] == 5151
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
-    assert app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
+    assert app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -1167,7 +1178,7 @@ def test_cli_garden_queues_run_with_selected_harness(
         harness_adapters=(adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     monkeypatch.chdir(repo)
@@ -1189,8 +1200,8 @@ def test_cli_garden_queues_run_with_selected_harness(
     )
 
     output = capsys.readouterr()
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
-    spec = app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
+    spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
     assert f"garden queued: {run.run_id}" in output.out
     assert run.status == RunStatus.QUEUED
     assert spec is not None
@@ -1198,7 +1209,7 @@ def test_cli_garden_queues_run_with_selected_harness(
     assert spec.title == "Clean up graph"
     assert spec.guidance == "Improve one page boundary."
     assert adapter.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
 
 
 def test_cli_garden_plain_output(
@@ -1216,21 +1227,21 @@ def test_cli_garden_plain_output(
         harness_adapters=(harness,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert main(["garden", "--using", "codex"]) == 0
 
     output = capsys.readouterr()
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
     assert f"garden queued: {run.run_id}" in output.out
     assert f"follow:  codealmanac jobs attach {run.run_id}" in output.out
     assert "worker: pid 5151" in output.out
     assert run.kind == RunKind.GARDEN
     assert harness.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki=None)]
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
 
 
 def test_cli_hidden_run_worker_drains_queued_run(
@@ -1247,21 +1258,22 @@ def test_cli_hidden_run_worker_drains_queued_run(
         harness_adapters=(harness,),
         worker_spawner=CliWorkerSpawner(),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     queued = app.workflows.queue.queue_ingest(
-        RunIngestRequest(
+        IngestRequest(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
         )
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert main(["__run-worker", "--cwd", str(repo)]) == 0
 
-    run = app.runs.show(ShowRunRequest(cwd=repo, run_id=queued.run_id))
+    run = app.runs.show(ShowRunRequest(run_id=queued.run_id))
 
     assert run.status == RunStatus.DONE
     assert harness.requests[0].kind == HarnessKind.CODEX
@@ -1283,8 +1295,6 @@ def test_cli_sync_status_reports_ready_transcripts(
         session_id="codex-session",
         transcript_path=transcript,
         cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
         modified_at=datetime.now(UTC),
         size_bytes=transcript.stat().st_size,
     )
@@ -1293,7 +1303,7 @@ def test_cli_sync_status_reports_ready_transcripts(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         transcript_discovery_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1322,8 +1332,6 @@ def test_cli_sync_queues_ingest_for_ready_transcripts(
         session_id="codex-session",
         transcript_path=transcript,
         cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
         modified_at=datetime.now(UTC),
         size_bytes=transcript.stat().st_size,
     )
@@ -1336,14 +1344,14 @@ def test_cli_sync_queues_ingest_for_ready_transcripts(
         transcript_discovery_adapters=(transcript_adapter,),
         worker_spawner=spawner,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
     assert main(["sync", "--from", "codex", "--using", "codex"]) == 0
 
     output = capsys.readouterr()
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     assert "sync:\n" in output.out
     assert "scanned: 1\n" in output.out
     assert "eligible: 1\n" in output.out
@@ -1351,8 +1359,8 @@ def test_cli_sync_queues_ingest_for_ready_transcripts(
     assert f"started repo: {run.run_id}" in output.out
     assert run.status == RunStatus.QUEUED
     assert harness.requests == []
-    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo, wiki="repo")]
-    assert app.runs.read_spec(ReadRunSpecRequest(cwd=repo, run_id=run.run_id))
+    assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
+    assert app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
     assert not (repo / "almanac/jobs").exists()
 
 
@@ -1369,7 +1377,7 @@ def test_cli_automation_install_status_and_uninstall(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         scheduler=scheduler,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     monkeypatch.chdir(repo)
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
@@ -1380,8 +1388,6 @@ def test_cli_automation_install_status_and_uninstall(
                 "install",
                 "--every",
                 "1m",
-                "--quiet",
-                "1s",
                 "--garden-every",
                 "2m",
             ]
@@ -1391,7 +1397,6 @@ def test_cli_automation_install_status_and_uninstall(
     install_output = capsys.readouterr()
     assert "automation installed\n" in install_output.out
     assert "sync interval: 1m\n" in install_output.out
-    assert "sync quiet: 1s\n" in install_output.out
     assert "garden interval: 2m\n" in install_output.out
     assert "update interval: 1d\n" in install_output.out
     assert tuple(job.task.value for job in scheduler.installed) == (
@@ -1422,17 +1427,16 @@ def test_cli_jobs_inspects_local_run_records(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     record = app.runs.start(
         StartRunRequest(
-            cwd=repo,
+            repository_id=repository_id_for(app, repo),
             kind=RunKind.INGEST,
             title="Digest note",
         )
     )
     app.runs.record_event(
         RecordRunEventRequest(
-            cwd=repo,
             run_id=record.run_id,
             kind=RunEventKind.MESSAGE,
             message="read note",
@@ -1440,7 +1444,6 @@ def test_cli_jobs_inspects_local_run_records(
     )
     app.runs.record_harness_transcript(
         RecordRunHarnessTranscriptRequest(
-            cwd=repo,
             run_id=record.run_id,
             transcript=HarnessTranscriptRef(
                 kind=HarnessKind.CODEX,
@@ -1470,7 +1473,6 @@ def test_cli_jobs_inspects_local_run_records(
     assert "kind:       ingest\n" in show_output.out
     assert "session:    codex codex-job-session\n" in show_output.out
     assert f"transcript: {repo / 'codex-job.jsonl'}\n" in show_output.out
-    assert "log:        " in show_output.out
 
     assert main(["jobs", "logs", record.run_id]) == 0
     log_output = capsys.readouterr()
@@ -1484,7 +1486,6 @@ def test_cli_jobs_inspects_local_run_records(
 
     app.runs.finish(
         FinishRunRequest(
-            cwd=repo,
             run_id=record.run_id,
             status=RunStatus.DONE,
             summary="digest complete",
@@ -1501,7 +1502,7 @@ def test_cli_jobs_inspects_local_run_records(
 
     cancellable = app.runs.start(
         StartRunRequest(
-            cwd=repo,
+            repository_id=repository_id_for(app, repo),
             kind=RunKind.GARDEN,
             title="Garden later",
         )
@@ -1510,9 +1511,7 @@ def test_cli_jobs_inspects_local_run_records(
     assert main(["jobs", "cancel", cancellable.run_id]) == 0
     cancel_output = capsys.readouterr()
     assert f"cancelled {cancellable.run_id}\n" in cancel_output.out
-    cancelled_record = app.runs.show(
-        ShowRunRequest(cwd=repo, run_id=cancellable.run_id)
-    )
+    cancelled_record = app.runs.show(ShowRunRequest(run_id=cancellable.run_id))
     assert cancelled_record.status == RunStatus.CANCELLED
 
     assert main(["jobs", "--json"]) == 0

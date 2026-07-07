@@ -2,9 +2,10 @@ import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from conftest import initialize_repository
+
 from codealmanac.app import create_app
 from codealmanac.services.harnesses.models import HarnessKind
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunKind, RunWorkerSpawnResult
 from codealmanac.services.runs.requests import ReadRunSpecRequest, SpawnRunWorkerRequest
 from codealmanac.services.sources.models import TranscriptApp, TranscriptCandidate
@@ -60,11 +61,10 @@ def test_sync_status_groups_active_transcripts_by_repository(
         isolated_home,
         candidates=(active, inactive),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
 
     summary = app.workflows.sync.status(
         SyncStatusRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             now=current_time(),
         )
@@ -90,11 +90,10 @@ def test_sync_uses_exact_registered_cwd_without_root_hopping(
     nested.mkdir(parents=True)
     candidate = transcript_candidate(nested, tmp_path / "nested.jsonl", current_time())
     app, _, _ = app_with_sync(isolated_home, candidates=(candidate,))
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
 
     summary = app.workflows.sync.status(
         SyncStatusRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             now=current_time(),
         )
@@ -127,13 +126,13 @@ def test_sync_run_queues_one_ingest_run_per_repository_and_records_scan_time(
         candidates=(first, second),
         database_path=database_path,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
 
     summary = app.workflows.sync.run(
         SyncRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             now=current_time(),
             auto_commit=False,
         )
@@ -148,8 +147,6 @@ def test_sync_run_queues_one_ingest_run_per_repository_and_records_scan_time(
     assert len(spawner.requests) == 1
     spec = app.runs.read_spec(
         ReadRunSpecRequest(
-            cwd=repo,
-            wiki="repo",
             run_id=summary.started[0].run_id,
         )
     )
@@ -164,7 +161,6 @@ def test_sync_run_queues_one_ingest_run_per_repository_and_records_scan_time(
 
     next_status = app.workflows.sync.status(
         SyncStatusRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             now=current_time() + timedelta(minutes=1),
         )
@@ -186,20 +182,20 @@ def test_sync_advances_scan_time_even_when_queueing_fails(
         database_path=database_path,
         spawner=SyncWorkerSpawner(error=OSError("spawn failed")),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
 
     summary = app.workflows.sync.run(
         SyncRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             now=current_time(),
         )
     )
 
     assert summary.eligible == 1
     assert len(summary.started) == 1
-    assert summary.needs_attention[0].reason == "worker-spawn-failed: spawn failed"
+    assert summary.skipped[0].reason == "worker-spawn-failed: spawn failed"
     assert sync_completed_at(database_path) == current_time().isoformat()
 
 
@@ -220,12 +216,11 @@ def test_sync_uses_last_completed_time_before_interval_fallback(
         candidates=(active_after_sleep,),
         database_path=database_path,
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_sync_completed_at(database_path, previous)
 
     summary = app.workflows.sync.status(
         SyncStatusRequest(
-            cwd=repo,
             apps=(TranscriptApp.CODEX,),
             now=current_time(),
         )
@@ -274,8 +269,6 @@ def transcript_candidate(
         session_id=session_id,
         transcript_path=path,
         cwd=repo,
-        repo_root=repo,
-        almanac_path=repo / "almanac",
         modified_at=modified_at,
         size_bytes=path.stat().st_size,
     )

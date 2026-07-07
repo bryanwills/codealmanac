@@ -2,18 +2,17 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from conftest import runtime_index_path
+from conftest import initialize_repository, runtime_index_path
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import NotFoundError, ValidationFailed
-from codealmanac.settings import AppConfig
 from codealmanac.services.index.requests import ReindexRequest
 from codealmanac.services.pages.requests import ShowPageRequest
 from codealmanac.services.repositories.requests import (
-    InitializeRepositoryRequest,
     RegisterRepositoryRequest,
 )
 from codealmanac.services.search.requests import SearchPagesRequest
+from codealmanac.settings import AppConfig
 
 
 def test_search_indexes_pages_topics_mentions_and_links(
@@ -25,7 +24,7 @@ def test_search_indexes_pages_topics_mentions_and_links(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_page(
         repo,
         "auth-flow.md",
@@ -79,7 +78,7 @@ def test_legacy_files_frontmatter_does_not_create_file_refs(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     legacy_key = "fil" "es"
     write_page(
         repo,
@@ -114,7 +113,7 @@ def test_read_model_projects_structured_page_sources(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_page(
         repo,
         "source-backed.md",
@@ -166,7 +165,7 @@ def test_read_model_projects_generic_source_targets(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_page(
         repo,
         "target-backed.md",
@@ -226,7 +225,7 @@ def test_nested_page_ids_are_paths_under_almanac(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_page(
         repo,
         "architecture/viewer/navigation/sidebar.md",
@@ -252,7 +251,7 @@ def test_readme_pages_map_to_folder_routes(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     (repo / "almanac/architecture").mkdir()
     (repo / "almanac/architecture/README.md").write_text(
         "# Architecture\n\nFolderNeedle.\n",
@@ -277,7 +276,7 @@ def test_readme_route_collision_fails_refresh(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    repository = app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = initialize_repository(app, path=repo)
     write_page(repo, "architecture.md", "# Architecture\n")
     write_page(repo, "architecture/README.md", "# Architecture Folder\n")
 
@@ -311,11 +310,11 @@ def test_search_rebuilds_stale_existing_index_schema(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    repository = app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = initialize_repository(app, path=repo)
     write_page(repo, "note.md", "# Note\n\nStaleSchemaNeedle context.\n")
     db_path = runtime_index_path(isolated_home, repository)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    db_path.unlink()
+    db_path.unlink(missing_ok=True)
     with sqlite3.connect(db_path) as connection:
         connection.execute("CREATE TABLE pages (slug TEXT PRIMARY KEY)")
         connection.execute("PRAGMA user_version = 1")
@@ -334,7 +333,7 @@ def test_rebuild_removes_stale_topic_rows(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    repository = app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = initialize_repository(app, path=repo)
     page_path = repo / "almanac/note.md"
     page_path.write_text("---\ntopics: [old]\n---\n# Note\n", encoding="utf-8")
     app.search.search(SearchPagesRequest(cwd=repo, query="note"))
@@ -358,7 +357,7 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    repository = app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = initialize_repository(app, path=repo)
     write_page(repo, "note.md", "# Note\n\nOriginalNeedle.\n")
 
     first = app.index.ensure_fresh(repository.repository_id)
@@ -385,11 +384,11 @@ def test_ensure_fresh_skips_unchanged_projection_and_refreshes_edits(
         ).fetchone()[0]
     rows = app.search.search(SearchPagesRequest(cwd=repo, query="changedneedle"))
 
-    assert first.changed == 3
+    assert first.changed == 2
     assert unchanged.changed == 0
     assert rewrites == 0
-    assert refreshed.changed == 3
-    assert refreshed_rewrites == 3
+    assert refreshed.changed == 2
+    assert refreshed_rewrites == 2
     assert [row.slug for row in rows] == ["note"]
 
 
@@ -402,14 +401,14 @@ def test_reindex_forces_projection_rebuild_when_index_is_fresh(
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     write_page(repo, "note.md", "# Note\n\nForceNeedle.\n")
     app.search.search(SearchPagesRequest(cwd=repo, query="forceneedle"))
 
     result = app.index.reindex(ReindexRequest(cwd=repo))
 
-    assert result.changed == 3
-    assert result.pages_indexed == 3
+    assert result.changed == 2
+    assert result.pages_indexed == 2
 
 
 def write_page(repo: Path, name: str, body: str) -> None:

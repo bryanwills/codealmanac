@@ -4,7 +4,6 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ConflictError, NotFoundError, ValidationFailed
-from codealmanac.settings import AppConfig
 from codealmanac.services.topics.models import TopicMutationAction
 from codealmanac.services.topics.requests import (
     CreateTopicRequest,
@@ -15,6 +14,7 @@ from codealmanac.services.topics.requests import (
     ShowTopicRequest,
     UnlinkTopicRequest,
 )
+from codealmanac.settings import AppConfig
 
 
 def test_create_topic_with_parent_preserves_topics_yaml_comment(

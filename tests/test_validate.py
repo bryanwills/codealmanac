@@ -2,11 +2,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from conftest import initialize_repository
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import main
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -15,10 +15,10 @@ from codealmanac.services.harnesses.models import (
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.health.requests import ValidateWikiRequest
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest
-from codealmanac.workflows.ingest.requests import RunIngestRequest
+from codealmanac.settings import AppConfig
+from codealmanac.workflows.ingest.requests import IngestRequest
 
 
 def test_validate_passes_starter_wiki(tmp_path: Path, isolated_home: Path):
@@ -27,14 +27,14 @@ def test_validate_passes_starter_wiki(tmp_path: Path, isolated_home: Path):
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
 
     assert result.ok is True
     assert result.issues == ()
     assert result.index is not None
-    assert result.index.pages_indexed == 2
+    assert result.index.pages_indexed == 1
 
 
 def test_validate_reports_broken_markdown_links(
@@ -156,20 +156,21 @@ def test_lifecycle_run_fails_when_validation_fails(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(InvalidSourceHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ValidationFailed, match="validation failed"):
         app.workflows.ingest.run(
-            RunIngestRequest(
+            IngestRequest(
                 cwd=repo,
                 inputs=("note.md",),
                 harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             )
         )
 
-    run = app.runs.list(ListRunsRequest(cwd=repo))[0]
+    run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     assert run.status == RunStatus.FAILED
     assert run.error is not None
     assert run.error.startswith("validation failed")
@@ -216,7 +217,7 @@ def initialized_repo(tmp_path: Path, isolated_home: Path) -> Path:
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    initialize_repository(app, path=repo)
     return repo
 
 

@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+from conftest import initialize_repository
+
 from codealmanac.app import create_app
 from codealmanac.integrations.runs.process import worker_command
 from codealmanac.services.harnesses.models import (
@@ -10,7 +12,6 @@ from codealmanac.services.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
-from codealmanac.services.repositories.requests import RegisterRepositoryRequest
 from codealmanac.services.runs.models import RunStatus, RunWorkerSpawnResult
 from codealmanac.services.runs.requests import (
     CancelRunRequest,
@@ -93,6 +94,7 @@ def test_run_queue_start_persists_spec_and_spawns_worker(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
         )
     )
     runs = app.runs.list(ListRunsRequest(repository_name=repo.name))
@@ -125,6 +127,7 @@ def test_run_queue_drains_persisted_ingest_spec(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
             title="Ingest queued note",
             guidance="Keep the page short.",
             auto_commit=False,
@@ -171,6 +174,7 @@ def test_run_queue_skips_cancelled_queued_runs(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
+            model="gpt-5.5",
         )
     )
     app.runs.cancel(CancelRunRequest(repository_name=repo.name, run_id=queued.run_id))
@@ -194,11 +198,6 @@ def test_worker_command_targets_codealmanac_module(tmp_path: Path):
         "--cwd",
         str(tmp_path),
     ]
-
-
-def initialize_repository(app, repo: Path) -> None:
-    repository = app.repositories.register(RegisterRepositoryRequest(root_path=repo))
-    app.wiki.initialize(repository.repository_id)
 
 
 def initialize_git(repo: Path) -> None:
