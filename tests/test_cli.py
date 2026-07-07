@@ -268,8 +268,10 @@ def default_cli_app(monkeypatch, isolated_home):
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(CliNoopHarnessAdapter(),),
+        worker_spawner=CliWorkerSpawner(),
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+    return app
 
 
 def repository_id_for(app, repo: Path) -> str:
@@ -289,12 +291,10 @@ def test_cli_init_creates_wiki_and_prints_name(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "◆ init started: build-" in captured.out
-    assert "the agent is working in this terminal" in captured.out
-    assert f"wiki: {repo / 'almanac'}\n" in captured.out
-    database_path = isolated_home / ".codealmanac/codealmanac.db"
-    assert f"database: {database_path}\n" in captured.out
-    assert "summary: completed through CLI\n" in captured.out
+    assert "◆ build queued: build-" in captured.out
+    assert "repo:    my-repo" in captured.out
+    assert "follow:  codealmanac jobs attach build-" in captured.out
+    assert "◇ every codebase deserves a biography" in captured.out
     assert captured.err == ""
     assert (repo / "almanac/README.md").is_file()
     assert (repo / "almanac/topics.yaml").is_file()
@@ -865,8 +865,7 @@ def test_cli_init_and_reindex_commands(
 
     assert main(["init", str(repo)]) == 0
     init_output = capsys.readouterr()
-    assert "◆ init started: build-" in init_output.out
-    assert (runtime_repo_path_for_root(isolated_home, repo) / "index.db").is_file()
+    assert "◆ build queued: build-" in init_output.out
     assert not (repo / "almanac/index.db").exists()
 
     (repo / "almanac/note.md").write_text(
@@ -878,6 +877,7 @@ def test_cli_init_and_reindex_commands(
     assert main(["reindex"]) == 0
     reindex_output = capsys.readouterr()
     assert reindex_output.out == "reindexed: 2 pages (2 updated, 0 removed)\n"
+    assert (runtime_repo_path_for_root(isolated_home, repo) / "index.db").is_file()
 
     assert main(["reindex", "--json"]) == 0
     json_output = capsys.readouterr()

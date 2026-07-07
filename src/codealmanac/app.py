@@ -297,7 +297,6 @@ def create_workflows(
     build = BuildWorkflow(
         services.repositories,
         services.wiki,
-        services.runs,
         build_operations,
         services.prompts,
         services.manual,
@@ -305,6 +304,7 @@ def create_workflows(
     queue = RunQueue(
         services.repositories,
         services.runs,
+        build,
         ingest,
         garden,
         adapters.worker_spawner or SubprocessRunWorkerSpawner(),
