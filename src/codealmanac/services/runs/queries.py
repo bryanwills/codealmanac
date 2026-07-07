@@ -1,10 +1,11 @@
-from codealmanac.database.sqlite import SQLiteConnection, SQLiteRow
+from codealmanac.database.sqlite import SQLiteConnection
 from codealmanac.services.runs.models import (
     QueuedRun,
     RunRecord,
     RunSpec,
     RunStatus,
 )
+from codealmanac.services.runs.records import run_record_from_row, run_spec_from_row
 
 
 def list_run_records(
@@ -66,10 +67,7 @@ def read_run_with_spec(
     ).fetchone()
     if row is None:
         return None
-    spec = None
-    if row["spec_json"] is not None:
-        spec = RunSpec.model_validate_json(row["spec_json"])
-    return (run_record_from_row(row), spec)
+    return (run_record_from_row(row), run_spec_from_row(row))
 
 
 def next_queued_run(connection: SQLiteConnection) -> QueuedRun | None:
@@ -87,7 +85,7 @@ def next_queued_run(connection: SQLiteConnection) -> QueuedRun | None:
         return None
     return QueuedRun(
         record=run_record_from_row(row),
-        spec=RunSpec.model_validate_json(row["spec_json"]),
+        spec=run_spec_from_row(row),
     )
 
 
@@ -114,7 +112,3 @@ def count_queued_runs_before(
         ),
     ).fetchone()
     return int(row[0])
-
-
-def run_record_from_row(row: SQLiteRow) -> RunRecord:
-    return RunRecord.model_validate_json(row["record_json"])

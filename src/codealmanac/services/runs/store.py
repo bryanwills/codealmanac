@@ -29,6 +29,7 @@ from codealmanac.services.runs.queries import (
     read_run_record,
     read_run_with_spec,
 )
+from codealmanac.services.runs.records import run_record_json, run_spec_json
 from codealmanac.services.runs.tables import RUN_TABLES
 from codealmanac.services.runs.transitions import (
     attach_harness_transcript,
@@ -218,8 +219,8 @@ class RunStore:
                     record.title,
                     record.created_at.isoformat(),
                     record.updated_at.isoformat(),
-                    record.model_dump_json(),
-                    spec.model_dump_json() if spec is not None else None,
+                    run_record_json(record),
+                    run_spec_json(spec),
                 ),
             )
             connection.commit()
