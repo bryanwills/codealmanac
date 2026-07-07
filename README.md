@@ -76,8 +76,15 @@ codealmanac setup --yes --target claude
 Plain setup installs local agent instructions plus the default local automation:
 sync, Garden, and daily package update. It does not connect to a hosted service.
 
+`--yes` picks Codex as the AI runner. If you don't have Codex or prefer Claude:
+
 ```bash
 codealmanac setup --yes --runner claude
+```
+
+Other setup flags:
+
+```bash
 codealmanac setup --yes --sync-every 5h
 codealmanac setup --yes --sync-off
 codealmanac setup --yes --garden-off
