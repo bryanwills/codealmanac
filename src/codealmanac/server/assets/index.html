@@ -67,10 +67,11 @@
       <main id="viewer-main" class="dashboard-main">
         <header class="dashboard-header">
           <div class="dashboard-header-inner">
-            <div class="min-w-0">
-              <p class="dashboard-page-eyebrow">CodeAlmanac</p>
-              <h1 class="dashboard-header-title" id="route-title">Wiki</h1>
-            </div>
+            <nav
+              class="dashboard-crumbs"
+              id="route-crumb"
+              aria-label="Breadcrumb"
+            ></nav>
             <form id="search-form" class="wiki-search-form">
               <label class="sr-only" for="search-input">Search wiki</label>
               <input id="search-input" name="q" type="search" placeholder="Search pages" />

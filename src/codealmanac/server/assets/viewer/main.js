@@ -10,6 +10,7 @@ import {
   renderTopic,
 } from "./renderers.js";
 import {
+  homeHref,
   pageHref,
   parseHash,
   RouteKind,
@@ -60,7 +61,7 @@ async function route(elements) {
     elements,
     overview: state.overview,
     wiki: state.selectedRepository,
-    setRouteTitle: (title) => setRouteTitle(elements, title),
+    setBreadcrumb: (trail) => renderBreadcrumb(elements, trail),
   };
   try {
     const routeState = parseHash(window.location.hash);
@@ -98,7 +99,7 @@ async function route(elements) {
 function readElements() {
   return {
     repositorySelect: document.getElementById("repository-select"),
-    routeTitle: document.getElementById("route-title"),
+    routeCrumb: document.getElementById("route-crumb"),
     searchForm: document.getElementById("search-form"),
     searchInput: document.getElementById("search-input"),
     topicList: document.getElementById("topic-list"),
@@ -271,7 +272,41 @@ function activeNavKind(routeState) {
   return "";
 }
 
-function setRouteTitle(elements, title) {
-  document.title = `${title} | CodeAlmanac`;
-  elements.routeTitle.textContent = title;
+function renderBreadcrumb(elements, trail) {
+  const leaf = trail[trail.length - 1];
+  document.title = leaf ? `${leaf.label} | CodeAlmanac` : "CodeAlmanac";
+
+  const crumbs = [{ label: "CodeAlmanac", href: homeHref() }, ...trail];
+  const nodes = [];
+  crumbs.forEach((crumb, index) => {
+    if (index > 0) nodes.push(crumbSeparator());
+    nodes.push(crumbNode(crumb, index === crumbs.length - 1));
+  });
+  elements.routeCrumb.replaceChildren(...nodes);
+}
+
+function crumbNode(crumb, isCurrent) {
+  if (!isCurrent && crumb.href) {
+    const link = document.createElement("a");
+    link.className = "dashboard-crumb";
+    link.href = crumb.href;
+    link.textContent = crumb.label;
+    return link;
+  }
+  const span = document.createElement("span");
+  span.className = "dashboard-crumb";
+  if (isCurrent) {
+    span.classList.add("is-current");
+    span.setAttribute("aria-current", "page");
+  }
+  span.textContent = crumb.label;
+  return span;
+}
+
+function crumbSeparator() {
+  const sep = document.createElement("span");
+  sep.className = "dashboard-crumb-sep";
+  sep.setAttribute("aria-hidden", "true");
+  sep.textContent = "›";
+  return sep;
 }

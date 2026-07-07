@@ -1,6 +1,6 @@
 import { viewerApi } from "./api.js";
 import { emptyState, pageIntro } from "./components.js";
-import { jobHref } from "./routes.js";
+import { jobHref, jobsHref } from "./routes.js";
 
 const ACTIVE_JOB_STATUSES = new Set(["queued", "running"]);
 const JOB_POLL_INTERVAL_MS = 1500;
@@ -14,11 +14,11 @@ export function clearJobPolling() {
 }
 
 export async function renderJobs(context) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   const routeHash = window.location.hash;
   const result = await viewerApi.jobs(wiki);
   if (window.location.hash !== routeHash) return;
-  setRouteTitle("Jobs");
+  setBreadcrumb([{ label: "Jobs" }]);
   replaceMain(
     elements,
     pageIntro("CodeAlmanac runs", "Jobs", jobsDeck(result.runs)),
@@ -30,12 +30,15 @@ export async function renderJobs(context) {
 }
 
 export async function renderJob(context, runId) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   const routeHash = window.location.hash;
   const detail = await viewerApi.job(runId, wiki);
   if (window.location.hash !== routeHash) return;
   const run = detail.run;
-  setRouteTitle(run.title || run.run_id);
+  setBreadcrumb([
+    { label: "Jobs", href: jobsHref() },
+    { label: run.title || run.run_id },
+  ]);
   replaceMain(elements, jobOverview(run), transcript(detail.steps));
   if (isActiveJobStatus(run.status)) {
     scheduleJobPolling(routeHash, () => renderJob(context, runId));

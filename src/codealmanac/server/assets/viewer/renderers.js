@@ -13,9 +13,9 @@ import {
 } from "./components.js";
 
 export function renderHome(context) {
-  const { elements, overview, setRouteTitle } = context;
+  const { elements, overview, setBreadcrumb } = context;
   const title = overview.featured_page?.title || "Wiki";
-  setRouteTitle(title);
+  setBreadcrumb([]);
   elements.searchInput.value = "";
   replaceMain(
     elements,
@@ -30,9 +30,9 @@ export function renderHome(context) {
 }
 
 export async function renderPage(context, slug) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   const page = await viewerApi.page(slug, wiki);
-  setRouteTitle(page.title || page.slug);
+  setBreadcrumb(pageTrail(page));
 
   const grid = document.createElement("div");
   grid.className = "wiki-detail-grid";
@@ -61,9 +61,9 @@ export async function renderPage(context, slug) {
 }
 
 export async function renderTopic(context, slug) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   const topic = await viewerApi.topic(slug, wiki);
-  setRouteTitle(topic.title || topic.slug);
+  setBreadcrumb([{ label: topic.title || topic.slug }]);
   replaceMain(
     elements,
     pageIntro("Topic", topic.title || topic.slug, topic.description || ""),
@@ -72,9 +72,9 @@ export async function renderTopic(context, slug) {
 }
 
 export async function renderSearch(context, query) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   elements.searchInput.value = query;
-  setRouteTitle(query ? `Search: ${query}` : "Search");
+  setBreadcrumb([{ label: query ? `Search: ${query}` : "Search" }]);
   if (!query) {
     replaceMain(
       elements,
@@ -94,10 +94,10 @@ export async function renderSearch(context, query) {
 }
 
 export async function renderFile(context, path) {
-  const { elements, setRouteTitle, wiki } = context;
+  const { elements, setBreadcrumb, wiki } = context;
   const result = await viewerApi.file(path, wiki);
   const noun = result.kind === "directory" ? "folder" : "file";
-  setRouteTitle(result.path);
+  setBreadcrumb([{ label: result.path }]);
   replaceMain(
     elements,
     pageIntro(
@@ -110,12 +110,18 @@ export async function renderFile(context, path) {
 }
 
 export function renderError(context, error) {
-  const { elements, setRouteTitle } = context;
-  setRouteTitle("Error");
+  const { elements, setBreadcrumb } = context;
+  setBreadcrumb([{ label: "Error" }]);
   const message = document.createElement("p");
   message.className = "error";
   message.textContent = error.message;
   replaceMain(elements, pageIntro("Viewer error", "Error", ""), message);
+}
+
+function pageTrail(page) {
+  const parts = page.slug.split("/").filter(Boolean);
+  const folders = parts.slice(0, -1).map((name) => ({ label: name }));
+  return [...folders, { label: page.title || page.slug }];
 }
 
 function replaceMain(elements, ...children) {
