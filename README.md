@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/readme-hero.png" alt="CodeAlmanac - A living wiki for your codebase">
+  <img src="docs/assets/readme-banner.png" alt="CodeAlmanac - A living wiki for your codebase">
 </p>
 
 <p align="center">
@@ -23,41 +23,28 @@ indexed locally, and reviewed in Git like any other code change.
 ## Quickstart
 
 ```bash
-uv tool install codealmanac
+curl -fsSL https://raw.githubusercontent.com/AlmanacCode/codealmanac/main/install.sh | sh
 
 cd your-repo
+codealmanac setup --yes
 codealmanac init
 codealmanac search "getting"
 codealmanac show getting-started
 codealmanac serve
 ```
 
-That is the first path: install CodeAlmanac, build the first repo wiki, search
-it, read a page, and open the local viewer.
-
-## Why Star It
-
-AI coding agents can read code. They still miss the durable project memory that
-maintainers carry in their heads: tradeoffs, incidents, gotchas, boundaries,
-and "do not break this again" rules.
-
-CodeAlmanac makes that memory part of the repo:
-
-- **Repo-owned knowledge**: pages live under `almanac/`, not in a vendor silo.
-- **Agent-native context**: pages are short, linked, sourced, and meant to be
-  read before edits.
-- **Local-first workflow**: no hosted service is required to build, search, or
-  maintain a wiki.
-- **Git-reviewed output**: wiki changes appear in your working tree.
-- **Fast lookup**: local SQLite indexing powers search, backlinks, topics, and
-  file-reference navigation.
-
 ## Install
 
-From a published package:
+With the install script:
 
 ```bash
-uv tool install codealmanac
+curl -fsSL https://raw.githubusercontent.com/AlmanacCode/codealmanac/main/install.sh | sh
+```
+
+or directly:
+
+```bash
+uv tool install codealmanac@latest
 ```
 
 or:
@@ -94,9 +81,6 @@ codealmanac setup --yes --sync-off
 codealmanac setup --yes --garden-off
 codealmanac setup --yes --no-auto-update
 ```
-
-During interactive onboarding, setup asks whether to keep CodeAlmanac up to
-date automatically. `--yes` chooses the default happy path and enables it.
 
 To uninstall CodeAlmanac-owned local artifacts:
 
