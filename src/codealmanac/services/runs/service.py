@@ -63,18 +63,18 @@ class RunsService:
         )
 
     def list(self, request: ListRunsRequest) -> tuple[RunRecord, ...]:
-        repository = self.selected_repository(request.repository_name)
+        repository = self.repository_filter(request.repository_name)
         repository_id = None if repository is None else repository.repository_id
         return self.store.list(request.limit, repository_id=repository_id)
 
     def show(self, request: ShowRunRequest) -> RunRecord:
         record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.require_run_matches_repository(record, request.repository_name)
         return record
 
     def read_spec(self, request: ReadRunSpecRequest) -> RunSpec | None:
         record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.require_run_matches_repository(record, request.repository_name)
         return self.store.read_spec(request.run_id)
 
     def next_queued(self) -> QueuedRun | None:
@@ -102,12 +102,12 @@ class RunsService:
 
     def log(self, request: ReadRunLogRequest) -> tuple[RunLogEvent, ...]:
         record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.require_run_matches_repository(record, request.repository_name)
         return self.store.log(request.run_id)
 
     def attach(self, request: AttachRunRequest) -> RunAttachSnapshot:
         snapshot = self.store.attach(request.run_id)
-        self.require_selected_run(snapshot.record, request.repository_name)
+        self.require_run_matches_repository(snapshot.record, request.repository_name)
         return snapshot
 
     def stream_attach(
@@ -115,7 +115,7 @@ class RunsService:
         request: StreamRunAttachRequest,
     ) -> Iterator[RunAttachUpdate]:
         record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.require_run_matches_repository(record, request.repository_name)
         return self.streamer.stream(
             request.run_id,
             request.poll_interval_seconds,
@@ -151,10 +151,10 @@ class RunsService:
 
     def cancel(self, request: CancelRunRequest) -> RunCancelResult:
         record = self.store.read(request.run_id)
-        self.require_selected_run(record, request.repository_name)
+        self.require_run_matches_repository(record, request.repository_name)
         return self.store.cancel(request.run_id)
 
-    def selected_repository(
+    def repository_filter(
         self,
         repository_name: RepositoryName | None,
     ) -> Repository | None:
@@ -164,12 +164,12 @@ class RunsService:
             SelectRepositoryRequest(name=repository_name)
         )
 
-    def require_selected_run(
+    def require_run_matches_repository(
         self,
         record: RunRecord,
         repository_name: RepositoryName | None,
     ) -> None:
-        repository = self.selected_repository(repository_name)
+        repository = self.repository_filter(repository_name)
         if repository is None:
             return
         if record.repository_id != repository.repository_id:
