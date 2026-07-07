@@ -99,6 +99,24 @@ worker locks already have; (b) unexpected non-CodeAlmanacError exceptions
 reach the user as raw tracebacks; (c) event recording opens two connections
 per event — correct now, but worth batching for long runs.
 
+### S7. Concurrent runs on one repo, and safety validation misattributes foreign edits — OPEN
+
+Found in the same session's ledger: scheduled garden
+`garden-20260707064814-10359b5f` executed against this repo while build
+`build-20260707063602-deac88ea` was still running. Two problems:
+
+- **No cross-kind run exclusion per repository.** `has_active_run` guards
+  garden-vs-garden only, so a scheduled garden gardened a half-built wiki
+  while the build agent was mid-write. Lifecycle runs on one repository
+  should be mutually exclusive regardless of kind.
+- **Mutation safety blames the harness for concurrent edits.** The guard
+  diffs whole-repo git status snapshots around the agent run; a human (or
+  another agent) editing source concurrently fails the run with "harness
+  reported change outside almanac/: src/..." even though the harness never
+  touched that file. Fail-safe is the right default, but the attribution and
+  message are wrong, and the run had already committed its wiki changes by
+  then.
+
 ---
 
 ## Must-fix
