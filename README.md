@@ -1,23 +1,56 @@
+<p align="center">
+  <img src="docs/assets/readme-hero.png" alt="CodeAlmanac - A living wiki for your codebase">
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/codealmanac/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/codealmanac?label=pypi&color=ef6c35"></a>
+  <a href="https://pepy.tech/projects/codealmanac"><img alt="PyPI downloads" src="https://static.pepy.tech/badge/codealmanac"></a>
+  <a href="https://github.com/AlmanacCode/codealmanac"><img alt="GitHub stars" src="https://img.shields.io/github/stars/AlmanacCode/codealmanac?style=social"></a>
+  <a href="https://discord.com/invite/jjuxtrGvJ"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white"></a>
+  <a href="https://www.linkedin.com/company/codealmanac/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-CodeAlmanac-0A66C2?logo=linkedin&logoColor=white"></a>
+  <a href="./LICENSE.md"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-df7b40"></a>
+</p>
+
 # CodeAlmanac
 
-CodeAlmanac is a local codebase wiki maintained by AI coding agents.
+A living wiki for your codebase, maintained by AI coding agents.
 
-It keeps durable project knowledge next to the code: decisions, workflows,
-invariants, incidents, gotchas, and context from real engineering sessions.
-The wiki is markdown in your repository, backed by a local SQLite index for
-fast search.
+CodeAlmanac gives AI agents the context code alone cannot hold: why a system is
+shaped the way it is, what broke before, which invariants matter, and how
+workflows cross files and services. The wiki is plain markdown in your repo,
+indexed locally, and reviewed in Git like any other code change.
 
-## Current Status
+## Quickstart
 
-This Python rewrite is usable as a local alpha. It is not the old Node CLI and
-it does not require a hosted service.
+```bash
+uv tool install codealmanac
 
-- Public command: `codealmanac`
-- Repo wiki root: `almanac/` only
-- Alternate repo wiki roots: none
-- User state root: `~/.codealmanac/`
-- Runtime: Python 3.12+
-- Storage: local markdown plus derived state under `~/.codealmanac/`
+cd your-repo
+codealmanac init
+codealmanac search "getting"
+codealmanac show getting-started
+codealmanac serve
+```
+
+That is the first path: install CodeAlmanac, build the first repo wiki, search
+it, read a page, and open the local viewer.
+
+## Why Star It
+
+AI coding agents can read code. They still miss the durable project memory that
+maintainers carry in their heads: tradeoffs, incidents, gotchas, boundaries,
+and "do not break this again" rules.
+
+CodeAlmanac makes that memory part of the repo:
+
+- **Repo-owned knowledge**: pages live under `almanac/`, not in a vendor silo.
+- **Agent-native context**: pages are short, linked, sourced, and meant to be
+  read before edits.
+- **Local-first workflow**: no hosted service is required to build, search, or
+  maintain a wiki.
+- **Git-reviewed output**: wiki changes appear in your working tree.
+- **Fast lookup**: local SQLite indexing powers search, backlinks, topics, and
+  file-reference navigation.
 
 ## Install
 
@@ -39,6 +72,8 @@ From this checkout:
 uv sync
 uv run codealmanac --help
 ```
+
+Requires Python 3.12+.
 
 ## Setup
 
@@ -68,20 +103,6 @@ To uninstall CodeAlmanac-owned local artifacts:
 ```bash
 codealmanac uninstall --yes
 ```
-
-## Quickstart
-
-Inside a repository:
-
-```bash
-codealmanac init
-codealmanac search "getting"
-codealmanac show getting-started
-codealmanac serve
-```
-
-`init` creates a local wiki scaffold under `almanac/`. CodeAlmanac does not
-support alternate repo wiki roots.
 
 ## Daily Read Surface
 
@@ -256,10 +277,16 @@ file-reference navigation from local wiki data. By default it can switch across
 available registered local wikis. Use `codealmanac serve --wiki <name>` to
 narrow the viewer to one wiki.
 
-## Public Contract
+## Current Contract
 
 This rewrite is local-only for now.
 
+- Public command: `codealmanac`
+- Repo wiki root: `almanac/` only
+- Alternate repo wiki roots: none
+- User state root: `~/.codealmanac/`
+- Runtime: Python 3.12+
+- Storage: local markdown plus derived state under `~/.codealmanac/`
 - No hosted login/connect/upload commands.
 - No public SDK or MCP package.
 - No compatibility aliases.
@@ -267,5 +294,6 @@ This rewrite is local-only for now.
 - No hidden cloud write path.
 - No second wiki command name.
 
-Hosted integration can be added later around the same repo-owned wiki artifact,
-but it is not part of this release surface.
+This is the Python/PyPI product surface. Hosted integration can be added later
+around the same repo-owned wiki artifact, but it is not part of this release
+surface.
