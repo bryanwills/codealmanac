@@ -39,7 +39,7 @@ class QueueWritingHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/queued-note.md"
         page.write_text(

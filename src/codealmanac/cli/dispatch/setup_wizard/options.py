@@ -1,6 +1,6 @@
 from codealmanac.cli.render.setup import SetupChoiceOption, SetupChoiceScreen
 from codealmanac.services.config.models import HARNESS_MODELS
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.harnesses.models import HarnessKind, HarnessReadiness
 from codealmanac.services.setup.models import SetupTarget
 
 
@@ -31,11 +31,32 @@ def maintenance_options() -> tuple[SetupChoiceOption, ...]:
     )
 
 
-def runner_options() -> tuple[SetupChoiceOption, ...]:
+def runner_options(
+    readiness: tuple[HarnessReadiness, ...] = (),
+) -> tuple[SetupChoiceOption, ...]:
+    by_kind = {item.kind: item for item in readiness}
     return (
-        SetupChoiceOption("Codex", ("runs CodeAlmanac jobs",), ("c",)),
-        SetupChoiceOption("Claude", ("runs CodeAlmanac jobs",), ("l",)),
+        runner_option(HarnessKind.CODEX, by_kind.get(HarnessKind.CODEX), ("c",)),
+        runner_option(HarnessKind.CLAUDE, by_kind.get(HarnessKind.CLAUDE), ("l",)),
     )
+
+
+def runner_option(
+    kind: HarnessKind,
+    readiness: HarnessReadiness | None,
+    shortcuts: tuple[str, ...],
+) -> SetupChoiceOption:
+    label = RUNNER_LABELS[kind]
+    if readiness is None:
+        return SetupChoiceOption(label, ("checking status in setup",), shortcuts)
+    if readiness.available:
+        return SetupChoiceOption(
+            label,
+            ("ready", readiness.message),
+            shortcuts,
+        )
+    details = ("not configured", readiness.repair or readiness.message)
+    return SetupChoiceOption(label, details, shortcuts, disabled=True)
 
 
 def model_options(harness: HarnessKind) -> tuple[SetupChoiceOption, ...]:
@@ -65,6 +86,8 @@ def change_options() -> tuple[SetupChoiceOption, ...]:
 def shortcut_option_index(screen: SetupChoiceScreen, key: str) -> int | None:
     normalized = key.casefold()
     for index, option in enumerate(screen.options):
+        if option.disabled:
+            continue
         if normalized in option.shortcuts:
             return index
     return None
@@ -122,6 +145,10 @@ MODEL_LABELS = {
     "claude-sonnet-4-6": "Claude Sonnet 4.6",
     "claude-opus-4-7": "Claude Opus 4.7",
     "claude-haiku-4-5": "Claude Haiku 4.5",
+}
+RUNNER_LABELS = {
+    HarnessKind.CODEX: "Codex",
+    HarnessKind.CLAUDE: "Claude",
 }
 MODEL_DETAILS = {
     "gpt-5.5": "recommended wiki-writing runner",

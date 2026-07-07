@@ -9,15 +9,12 @@ from codealmanac.integrations.command import (
 from codealmanac.integrations.harnesses.codex.app_server import (
     CodexAppServerClient,
 )
-from codealmanac.integrations.harnesses.git_status import (
-    changed_paths,
-    git_status_snapshot,
-)
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
 )
+from codealmanac.services.harnesses.ports import HarnessEventSink
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CODEX_COMMAND = "codex"
@@ -80,10 +77,9 @@ class CodexAppServerHarnessAdapter:
             message=first_line(result.stdout, result.stderr) or "codex authenticated",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
-        before = git_status_snapshot(self.runner, request.cwd)
-        result = self.app_server.run(request)
-        after = git_status_snapshot(self.runner, request.cwd)
-        return result.model_copy(
-            update={"changed_files": changed_paths(request.cwd, before, after)}
-        )
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
+        return self.app_server.run(request, on_event)

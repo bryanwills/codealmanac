@@ -36,11 +36,11 @@ The service graph encodes ownership. `SearchService` depends on repositories and
 
 ## Workflow Assembly
 
-`create_workflows` constructs the lifecycle layer. It creates one `OperationRunner` for each run kind: build, ingest, and garden [@app-root]. Each runner receives repositories, harnesses, runs, index, health, and an `OperationMutationPolicy` backed by `GitRepositoryChangeProbe` for that kind [@app-root].
+`create_workflows` constructs the lifecycle layer. It creates one `OperationRunner` for each run kind: build, ingest, and garden [@app-root]. Each runner receives repositories, harnesses, runs, index, and health [@app-root].
 
-The workflows then compose services around the shared operation runner. `IngestWorkflow` receives sources, runs, ingest operations, prompts, and manuals. `GardenWorkflow` receives runs, index, health, garden operations, prompts, and manuals. `BuildWorkflow` receives repositories, wiki, runs, build operations, prompts, and manuals [@app-root]. This is the bridge to the broader [Service Boundaries](service-boundaries) rule: workflows coordinate services, but the composition root provides the machinery.
+The workflows then compose services around the shared operation runner. `IngestWorkflow` receives sources, ingest operations, prompts, and manuals. `GardenWorkflow` receives index, health, garden operations, prompts, and manuals. `BuildWorkflow` receives repositories, wiki, build operations, prompts, and manuals [@app-root]. This is the bridge to the broader [Service Boundaries](service-boundaries) rule: workflows coordinate services, but the composition root provides the machinery.
 
-`RunQueue` and `SyncWorkflow` are also assembled here. The queue receives repositories, runs, ingest, garden, and a worker spawner. Sync receives repositories, sources, the queue, and `SyncStateStore` [@app-root]. That keeps scheduled or queued execution on the same app graph as direct commands.
+`RunQueue` and `SyncWorkflow` are also assembled here. The queue receives repositories, runs, build, ingest, garden, and a worker spawner. Sync receives repositories, sources, the queue, and `SyncStateStore` [@app-root]. That keeps scheduled or queued execution on the same app graph as direct commands.
 
 ## Why It Stays Small
 

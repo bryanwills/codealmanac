@@ -10,7 +10,6 @@ from codealmanac.services.index.models import (
 )
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.workflows.operations.commit import OperationCommitPolicy
-from codealmanac.workflows.operations.mutation import OperationMutationReport
 
 
 class GardenPromptPayload(CodeAlmanacModel):
@@ -29,6 +28,5 @@ class GardenPromptPayload(CodeAlmanacModel):
 class GardenResult(CodeAlmanacModel):
     run: RunRecord
     harness: HarnessRunResult
-    safety: OperationMutationReport
     index: IndexRefreshResult
     health_before: HealthReport

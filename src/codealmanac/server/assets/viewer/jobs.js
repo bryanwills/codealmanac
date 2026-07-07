@@ -40,7 +40,7 @@ export async function renderJob(context, runId) {
     elements,
     pageIntro("Job", run.title || run.run_id, `${run.kind} · ${run.status}`),
     jobDetail(run),
-    eventList(detail.events),
+    stepList(detail.steps),
   );
   if (isActiveJobStatus(run.status)) {
     scheduleJobPolling(routeHash, () => renderJob(context, runId));
@@ -112,8 +112,8 @@ function jobDetail(run) {
     detailRow("Run", run.run_id),
     detailRow("Status", run.status),
     detailRow("Kind", run.kind),
-    detailRow("Updated", run.updated_at),
-    detailRow("Logs", "event log below"),
+    detailRow("Updated", shortTime(run.updated_at)),
+    detailRow("Logs", "run output below"),
   );
   if (run.harness_transcript) {
     section.append(
@@ -128,153 +128,71 @@ function jobDetail(run) {
   return section;
 }
 
-function eventList(events) {
-  if (events.length === 0) {
-    return emptyState("No events", "This run has no persisted log events.");
+function stepList(steps) {
+  if (steps.length === 0) {
+    return emptyState("No output", "This run has no readable output yet.");
   }
   const section = document.createElement("section");
-  section.className = "job-events";
+  section.className = "job-steps";
   const heading = document.createElement("h2");
-  heading.textContent = "Event log";
+  heading.textContent = "Run output";
   section.append(heading);
-  for (const event of events) {
-    section.append(eventRow(event));
+  for (const step of steps) {
+    section.append(stepRow(step));
   }
   return section;
 }
 
-function eventRow(event) {
+function stepRow(step) {
   const row = document.createElement("article");
-  row.className = "job-event";
+  row.className = `job-step job-step--${step.kind}`;
+  if (step.error) row.classList.add("job-step--error");
 
   const header = document.createElement("header");
-  header.className = "job-event-header";
+  header.className = "job-step-header";
   header.append(
-    textSpan(`#${event.sequence}`),
-    jobPill(event.kind),
-    textSpan(shortTime(event.timestamp)),
+    textSpan(`#${step.sequence}`),
+    jobPill(step.kind),
+    textSpan(shortTime(step.timestamp)),
   );
+  if (step.status) header.append(jobPill(step.status));
 
-  const message = document.createElement("p");
-  message.className = "job-event-message";
-  message.textContent = event.message;
+  const title = document.createElement("h3");
+  title.className = "job-step-title";
+  title.textContent = step.title;
 
-  row.append(header, message);
-  if (event.harness_event) {
-    row.append(harnessSummary(event.harness_event));
+  row.append(header, title);
+  if (step.body) {
+    const body = document.createElement("p");
+    body.className = "job-step-body";
+    body.textContent = step.body;
+    row.append(body);
+  }
+  const meta = stepMeta(step);
+  if (meta.length > 0) {
+    const list = document.createElement("dl");
+    list.className = "job-step-meta";
+    for (const [label, value] of meta) {
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const detail = document.createElement("dd");
+      detail.textContent = valueText(value);
+      list.append(term, detail);
+    }
+    row.append(list);
   }
   return row;
 }
 
-function harnessSummary(event) {
-  const box = document.createElement("div");
-  box.className = "job-harness";
-  box.append(detailRow("Harness", event.kind));
-  if (event.status) box.append(detailRow("Run status", event.status));
-  if (event.actor) box.append(actorRows(event.actor));
-  if (event.tool_name) box.append(detailRow("Tool", event.tool_name));
-  if (event.tool_id) box.append(detailRow("Tool id", event.tool_id));
-  if (event.tool_input) box.append(detailRow("Tool input", event.tool_input));
-  if (event.tool_result !== null && event.tool_result !== undefined) {
-    box.append(detailRow("Tool result", valueText(event.tool_result)));
-  }
-  if (event.tool_is_error === true) box.append(detailRow("Tool error", "true"));
-  if (event.provider_session_id) box.append(detailRow("Session", event.provider_session_id));
-  if (event.provider_event_id) box.append(detailRow("Event id", event.provider_event_id));
-  if (event.tool_display) box.append(toolDisplayRows(event.tool_display));
-  if (event.usage) box.append(usageRows(event.usage));
-  if (event.failure) box.append(failureRows(event.failure));
-  if (event.agent_trace) box.append(agentTraceRows(event.agent_trace));
-  return box;
-}
-
-function actorRows(actor) {
-  return detailGroup(
-    "Actor",
-    [
-      ["Role", actor.role],
-      ["Label", actor.label],
-      ["Thread", actor.thread_id],
-      ["Parent", actor.parent_thread_id],
-      ["Confidence", actor.confidence],
-    ],
-  );
-}
-
-function toolDisplayRows(display) {
-  return detailGroup(
-    "Tool display",
-    [
-      ["Kind", display.kind],
-      ["Title", display.title],
-      ["Path", display.path],
-      ["Command", display.command],
-      ["Cwd", display.cwd],
-      ["Status", display.status],
-      ["Exit code", display.exit_code],
-      ["Duration", millis(display.duration_ms)],
-      ["Summary", display.summary],
-      ["Thread", display.provider_thread_id],
-      ["Turn", display.provider_turn_id],
-    ],
-  );
-}
-
-function usageRows(usage) {
-  return detailGroup(
-    "Usage",
-    [
-      ["Input tokens", usage.input_tokens],
-      ["Cached input", usage.cached_input_tokens],
-      ["Output tokens", usage.output_tokens],
-      ["Reasoning output", usage.reasoning_output_tokens],
-      ["Total tokens", usage.total_tokens],
-      ["Processed tokens", usage.total_processed_tokens],
-      ["Max tokens", usage.max_tokens],
-    ],
-  );
-}
-
-function failureRows(failure) {
-  return detailGroup(
-    "Failure",
-    [
-      ["Provider", failure.provider],
-      ["Code", failure.code],
-      ["Message", failure.message],
-      ["Fix", failure.fix],
-      ["Raw", failure.raw],
-      ["Details", failure.details],
-    ],
-  );
-}
-
-function agentTraceRows(trace) {
-  return detailGroup(
-    "Agent trace",
-    [
-      ["Parent", trace.parent_thread_id],
-      ["Child", trace.child_thread_id],
-      ["Children", trace.child_thread_ids?.join(", ")],
-      ["Model", trace.model],
-      ["Reasoning", trace.reasoning_effort],
-      ["Prompt", trace.prompt],
-      ["Result", trace.result],
-    ],
-  );
-}
-
-function detailGroup(title, rows) {
-  const group = document.createElement("section");
-  group.className = "job-detail-group";
-  const heading = document.createElement("h3");
-  heading.textContent = title;
-  group.append(heading);
-  for (const [label, value] of rows) {
-    if (value === null || value === undefined || value === "") continue;
-    group.append(detailRow(label, valueText(value)));
-  }
-  return group;
+function stepMeta(step) {
+  return [
+    ["Tool", step.tool],
+    ["Target", step.target],
+    ["Detail", step.detail],
+    ["Input", step.input],
+    ["Output", step.output],
+    ["Actor", step.actor],
+  ].filter(([, value]) => value !== null && value !== undefined && value !== "");
 }
 
 function detailRow(label, value) {
@@ -294,11 +212,6 @@ function valueText(value) {
   return JSON.stringify(value);
 }
 
-function millis(value) {
-  if (value === null || value === undefined) return null;
-  return `${value}ms`;
-}
-
 function jobPill(value) {
   const pill = document.createElement("span");
   pill.className = `job-pill job-pill--${String(value).replace(/[^a-z0-9_-]/gi, "")}`;
@@ -314,7 +227,16 @@ function textSpan(value) {
 
 function shortTime(value) {
   if (!value) return "";
-  return String(value).replace("T", " ").replace(/\.\d+.*$/, " UTC");
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
 }
 
 function replaceMain(elements, ...children) {

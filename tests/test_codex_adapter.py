@@ -39,7 +39,7 @@ class FakeAppServer:
         self.result = result
         self.requests: list[RunHarnessRequest] = []
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         return self.result
 
@@ -99,15 +99,10 @@ def test_codex_adapter_repairs_broken_binary_with_reinstall_hint():
     assert "npm install -g @openai/codex" in readiness.repair
 
 
-def test_codex_adapter_wraps_app_server_run_with_git_change_detection(
+def test_codex_adapter_runs_app_server_without_git_change_probe(
     tmp_path: Path,
 ):
-    runner = FakeCommandRunner(
-        (
-            CommandResult(returncode=0, stdout=""),
-            CommandResult(returncode=0, stdout="?? almanac/codex-note.md\0"),
-        )
-    )
+    runner = FakeCommandRunner(())
     app_server = FakeAppServer(
         HarnessRunResult(
             kind=HarnessKind.CODEX,
@@ -130,9 +125,8 @@ def test_codex_adapter_wraps_app_server_run_with_git_change_detection(
     assert app_server.requests == [request]
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
-    assert result.changed_files == (tmp_path / "almanac/codex-note.md",)
-    assert runner.calls[0][0] == "git"
-    assert runner.calls[1][0] == "git"
+    assert result.changed_files == ()
+    assert runner.calls == []
 
 
 def test_create_app_wires_default_codex_app_server_adapter():

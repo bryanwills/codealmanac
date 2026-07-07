@@ -46,7 +46,7 @@ sources:
 
 # Add A Harness Provider Adapter
 
-Use this guide when CodeAlmanac needs to run lifecycle agents through a new provider. A harness provider adapter is the integration edge for an agent runtime. It checks local readiness, runs one normalized task, and returns a normalized `HarnessRunResult` with output, status, changed files, transcript metadata, and optional event stream [@harness-port] [@harness-results].
+Use this guide when CodeAlmanac needs to run lifecycle agents through a new provider. A harness provider adapter is the integration edge for an agent runtime. It checks local readiness, runs one normalized task, and returns a normalized `HarnessRunResult` with output, status, optional changed files, transcript metadata, and optional event stream [@harness-port] [@harness-results].
 
 The goal is not to add provider branching to workflows. Build, ingest, and garden call the harness service through the shared [Harness contract](../architecture/agent-runs/harness-contract); provider-specific code lives under `integrations/harnesses/` and is registered at the [provider adapter](../architecture/agent-runs/provider-adapters) boundary. The normalized event shape is described by [Harness event shape](../reference/harness-event-shape).
 
@@ -66,7 +66,9 @@ Return `HarnessReadiness(available=False, message=..., repair=...)` for missing 
 
 `run(request)` receives a `RunHarnessRequest` with the provider kind, model, working directory, prompt, and optional title [@harness-request]. The adapter should translate that request into the provider call, then translate provider output back into CodeAlmanac models.
 
-Follow the existing provider shape. Both Codex and Claude snapshot Git status before and after the provider call, then return `changed_files` as paths added during the run [@codex-adapter] [@claude-adapter]. This lets lifecycle mutation safety validate what the agent changed without knowing provider details.
+Follow the existing provider shape. Codex and Claude keep provider execution in the adapter layer: readiness checks happen before the run, provider clients execute the prompt, and provider output is normalized into `HarnessRunResult` and `HarnessEvent` values [@codex-adapter] [@claude-adapter] [@harness-results] [@harness-events].
+
+Populate `changed_files` only when the adapter has a deliberate, tested mechanism for that metadata. Do not add workflow-level parsing or provider-specific branches to recover changed files.
 
 If the provider exposes structured events, map them into `HarnessEvent`. The event model covers text, tool use, tool results, usage, provider sessions, warnings, errors, done events, and helper-agent trace events [@harness-events]. Keep raw provider payloads at the edge as optional `raw` fields; do not make workflows parse provider transcripts.
 

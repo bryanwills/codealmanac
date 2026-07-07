@@ -6,7 +6,7 @@ from codealmanac.services.harnesses.models import (
     HarnessReadiness,
     HarnessRunResult,
 )
-from codealmanac.services.harnesses.ports import HarnessAdapter
+from codealmanac.services.harnesses.ports import HarnessAdapter, HarnessEventSink
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 
@@ -36,9 +36,13 @@ class HarnessesService:
             unavailable_harness_message(readiness, self.alternatives_to(kind))
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         self.ensure_ready(request.kind)
-        return self.adapter_for(request.kind).run(request)
+        return self.adapter_for(request.kind).run(request, on_event)
 
     def alternatives_to(self, kind: HarnessKind) -> tuple[HarnessKind, ...]:
         return tuple(other for other in self.adapters if other != kind)

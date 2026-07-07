@@ -18,7 +18,7 @@ sources:
 
 # Debug A Failed Lifecycle Run
 
-Use this guide when `ingest` or `garden` leaves a run failed. The goal is to inspect the durable run record, read the event stream, identify whether the failure came from the harness, mutation safety, indexing, or validation, and then fix the wiki source or environment that caused it.
+Use this guide when `ingest` or `garden` leaves a run failed. The goal is to inspect the durable run record, read the event stream, identify whether the failure came from the harness, indexing, or validation, and then fix the wiki source or environment that caused it.
 
 ## Inspect The Run
 
@@ -28,6 +28,6 @@ If the run is still active, `codealmanac jobs attach <run-id>` reads the same re
 
 ## Interpret The Failure
 
-Harness errors appear as run error or tool events because the operation runner records harness output before it validates success [@operation_runner]. Mutation safety errors mean the agent changed files outside the allowed wiki source area. Validation errors mean the Markdown tree could not pass the same checks described in [Health And Validation](../architecture/wiki/health-and-validation).
+Harness errors appear as run error or tool events because the operation runner records harness output before it validates success [@operation_runner]. Validation errors mean the Markdown tree could not pass the same checks described in [Health And Validation](../architecture/wiki/health-and-validation). Indexing errors usually point to page route collisions or malformed wiki source that prevented the derived index from refreshing.
 
 After fixing wiki source, run [Verify A Wiki Change](verify-a-wiki-change). If the failure was provider readiness or authentication, fix the local harness environment and queue a new lifecycle run.

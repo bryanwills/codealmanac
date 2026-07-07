@@ -55,10 +55,11 @@ def test_server_serves_static_assets_and_viewer_api(
     assert "clearJobPolling" in jobs_module.text
     assert "setTimeout" in jobs_module.text
     assert '"queued", "running"' in jobs_module.text
-    assert "Tool display" in jobs_module.text
-    assert "Input tokens" in jobs_module.text
-    assert "Failure" in jobs_module.text
-    assert "Agent trace" in jobs_module.text
+    assert "Run output" in jobs_module.text
+    assert "stepMeta" in jobs_module.text
+    assert "Intl.DateTimeFormat" in jobs_module.text
+    assert "timeZoneName" in jobs_module.text
+    assert 'replace("T", " ")' not in jobs_module.text
     assert overview.json()["repository"]["name"] == "repo"
     assert overview.json()["repositories"][0]["name"] == "repo"
     assert page.json()["slug"] == "auth-flow"
@@ -74,7 +75,7 @@ def test_server_serves_static_assets_and_viewer_api(
     ]
 
 
-def test_server_serves_jobs_api_with_normalized_harness_events(
+def test_server_serves_jobs_api_with_readable_steps(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
@@ -90,10 +91,8 @@ def test_server_serves_jobs_api_with_normalized_harness_events(
     assert jobs.json()["runs"][0]["status"] == "done"
     assert detail.status_code == 200
     assert detail.json()["run"]["summary"] == "updated wiki"
-    assert detail.json()["events"][2]["harness_event"]["kind"] == "text"
-    assert detail.json()["events"][2]["harness_event"]["message"] == (
-        "Created auth-flow.md"
-    )
+    assert detail.json()["steps"][2]["kind"] == "assistant"
+    assert detail.json()["steps"][2]["body"] == "Created auth-flow.md"
 
 
 def test_server_viewer_api_switches_between_registered_wikis(

@@ -45,20 +45,17 @@ class BuildWorkflow:
         """Validate, register, and scaffold the wiki before the run is queued."""
         target = self.repositories.prepare_repository_target(request.path)
         reject_existing_almanac(target)
-        self.operations.mutation_policy.ensure_tracking_available(target.root_path)
-        self.operations.harnesses.ensure_ready(request.harness)
         repository = self.register_target(target, request)
         self.wiki.initialize(repository.repository_id)
         return repository
 
-    def run_started(self, request: StartedBuildRequest) -> BuildResult:
+    def execute_started(self, request: StartedBuildRequest) -> BuildResult:
         context = self.operations.begin(
             BeginOperationRequest(
                 run_id=request.run_id,
             )
         )
         try:
-            context = self.operations.preflight(context)
             self.operations.record(
                 RecordOperationEventRequest(
                     context=context,
@@ -86,7 +83,6 @@ class BuildWorkflow:
                 repository=context.repository,
                 run=operation.run,
                 harness=operation.harness,
-                safety=operation.safety,
                 index=operation.index,
             )
         except Exception as error:

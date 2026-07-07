@@ -14,15 +14,11 @@ sources:
     type: file
     path: docs/python-port-live-agreement.md
     note: Current Python rewrite agreement and active decisions.
-  - id: coverage-map
-    type: file
-    path: almanac/coverage-map.md
-    note: Planned page graph and reading neighborhoods.
 ---
 
 # Getting Started
 
-Getting started is the routing page for this CodeAlmanac wiki. It gives future agents the shortest useful path through the repo knowledge: first understand the local wiki model, then the lifecycle workflows that write pages, then the index and search surface that make the wiki usable day to day [@coverage-map]. The goal is not to read every page first; it is to build the right mental map before changing the system.
+Getting started is the routing page for this CodeAlmanac wiki. It gives future agents the shortest useful path through the repo knowledge: first understand the local wiki model, then the lifecycle workflows that write pages, then the index and search surface that make the wiki usable day to day. The goal is not to read every page first; it is to build the right mental map before changing the system.
 
 CodeAlmanac is a local Python product in this rewrite. It stores committed wiki pages under `almanac/`, keeps derived runtime state under `~/.codealmanac/`, and avoids hosted login, upload, SDK, and cloud capture surfaces in v1 [@live-agreement]. The public README describes the same split for users: Markdown pages live in the repo, while indexes, runs, events, locks, and sync state live outside the repo [@repo-readme].
 
@@ -58,3 +54,4 @@ Use these routes when you already know the kind of work:
 - For page identity, routes, and `README.md` landing pages, read [Page identity](architecture/wiki/page-identity).
 - For page evidence and frontmatter, read [Frontmatter and sources](reference/page-format/frontmatter-and-sources).
 - For lifecycle run state, logs, and attach behavior, read [Run states and events](reference/runs/run-states-and-events).
+- For the local browser UI, read [Local viewer](architecture/viewer/local-viewer).

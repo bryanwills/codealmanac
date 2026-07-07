@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from codealmanac.core.errors import ExecutionFailed
 from codealmanac.integrations.setup.instructions import (
     CLAUDE_IMPORT_LINE,
     CODEALMANAC_END,
@@ -335,16 +336,14 @@ def test_package_uninstaller_reports_failed_command():
     assert result.stderr == "permission denied"
 
 
-def test_setup_reports_unavailable_runner_readiness(home: Path):
+def test_setup_rejects_unavailable_runner(home: Path):
     probe = FakeRunnerProbe(available=False, message="codex not found on PATH")
     service = setup_service(home, runner_probe=probe)
 
-    result = service.run(RunSetupRequest(targets=(SetupTarget.CODEX,)))
+    with pytest.raises(ExecutionFailed, match="codex is not configured"):
+        service.run(RunSetupRequest(targets=(SetupTarget.CODEX,)))
 
     assert probe.checked == [HarnessKind.CODEX]
-    assert result.runner_readiness is not None
-    assert result.runner_readiness.available is False
-    assert result.runner_readiness.message == "codex not found on PATH"
 
 
 def test_setup_without_probe_reports_no_readiness(home: Path):

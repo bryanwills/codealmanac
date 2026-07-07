@@ -38,6 +38,7 @@ from codealmanac.services.harnesses.models import (
     HarnessRunResult,
     HarnessRunStatus,
 )
+from codealmanac.services.harnesses.ports import HarnessEventSink
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CLAUDE_COMMAND = "claude"
@@ -76,26 +77,37 @@ class ClaudeSdkClient:
         self.command = command
         self.run_timeout_seconds = run_timeout_seconds
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         try:
             return asyncio.run(
                 asyncio.wait_for(
-                    self.run_once(request),
+                    self.run_once(request, on_event),
                     timeout=self.run_timeout_seconds,
                 )
             )
         except TimeoutError:
-            return failed_result("claude run timed out")
+            return emit_result(failed_result("claude run timed out"), on_event)
         except CLINotFoundError:
-            return failed_result("claude not found on PATH")
+            return emit_result(failed_result("claude not found on PATH"), on_event)
         except CLIJSONDecodeError as error:
-            return failed_result(f"claude returned invalid JSON: {error}")
+            return emit_result(
+                failed_result(f"claude returned invalid JSON: {error}"),
+                on_event,
+            )
         except ProcessError as error:
-            return failed_result(str(error))
+            return emit_result(failed_result(str(error)), on_event)
         except ClaudeSDKError as error:
-            return failed_result(str(error))
+            return emit_result(failed_result(str(error)), on_event)
 
-    async def run_once(self, request: RunHarnessRequest) -> HarnessRunResult:
+    async def run_once(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         state = ClaudeRunState()
         events: list[HarnessEvent] = []
         announced_session_id: str | None = None
@@ -114,9 +126,14 @@ class ClaudeSdkClient:
                 and announced_session_id != state.provider_session_id
             ):
                 announced_session_id = state.provider_session_id
-                events.append(provider_session_event(state.provider_session_id))
-            events.extend(map_claude_message(message, state))
-        events.append(done_event(state))
+                append_event(
+                    events,
+                    provider_session_event(state.provider_session_id),
+                    on_event,
+                )
+            for event in map_claude_message(message, state):
+                append_event(events, event, on_event)
+        append_event(events, done_event(state), on_event)
         return result_from_state(state, tuple(events))
 
 
@@ -158,3 +175,23 @@ def failed_result(output_text: str) -> HarnessRunResult:
             ),
         ),
     )
+
+
+def append_event(
+    events: list[HarnessEvent],
+    event: HarnessEvent,
+    on_event: HarnessEventSink | None,
+) -> None:
+    events.append(event)
+    if on_event is not None:
+        on_event(event)
+
+
+def emit_result(
+    result: HarnessRunResult,
+    on_event: HarnessEventSink | None,
+) -> HarnessRunResult:
+    if on_event is not None:
+        for event in result.events:
+            on_event(event)
+    return result

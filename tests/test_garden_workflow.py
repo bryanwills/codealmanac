@@ -5,7 +5,7 @@ import pytest
 from conftest import initialize_repository
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import ExecutionFailed, ValidationFailed
+from codealmanac.core.errors import ExecutionFailed
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -18,7 +18,7 @@ from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.services.search.requests import SearchPagesRequest
 from codealmanac.settings import AppConfig
-from codealmanac.workflows.garden.requests import GardenRequest
+from codealmanac.workflows.garden.requests import GardenRequest, StartedGardenRequest
 
 
 class GardenWritingHarnessAdapter:
@@ -34,7 +34,7 @@ class GardenWritingHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/gardened-note.md"
         page.write_text(
@@ -64,14 +64,14 @@ Garden preserved one coherent wiki improvement.
 
 
 class DirtyAppGardenHarnessAdapter(GardenWritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         result = super().run(request)
         (request.cwd / "src/app.py").write_text("agent mutation\n", encoding="utf-8")
         return result
 
 
 class FailedGardenHarnessAdapter(GardenWritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         return HarnessRunResult(
             kind=self.kind,
@@ -82,6 +82,22 @@ class FailedGardenHarnessAdapter(GardenWritingHarnessAdapter):
                 session_id="failed-garden-session",
             ),
         )
+
+
+def run_garden(app, request: GardenRequest):
+    queued = app.workflows.queue.queue_garden(request)
+    return app.workflows.garden.execute_started(
+        StartedGardenRequest(
+            cwd=request.cwd,
+            repository_name=request.repository_name,
+            harness=request.harness,
+            model=request.model,
+            title=request.title,
+            guidance=request.guidance,
+            auto_commit=request.auto_commit,
+            run_id=queued.run_id,
+        )
+    )
 
 
 def test_garden_workflow_runs_harness_and_refreshes_index(
@@ -99,14 +115,15 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.garden.run(
+    result = run_garden(
+        app,
         GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
             title="Garden wiki",
             guidance="Improve a single page if useful.",
-        )
+        ),
     )
 
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="coherent"))
@@ -119,12 +136,7 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript is not None
     assert result.run.harness_transcript.session_id == "codex-garden-session"
     assert result.health_before.empty_pages == ()
-    assert result.harness.changed_files == (
-        repo / "almanac/gardened-note.md",
-    )
-    assert result.safety.changed_files == (
-        repo / "almanac/gardened-note.md",
-    )
+    assert result.harness.changed_files == (repo / "almanac/gardened-note.md",)
     assert result.index.pages_indexed == 2
     assert matches[0].slug == "gardened-note"
     assert "Garden Operation" in adapter.requests[0].prompt
@@ -139,7 +151,6 @@ def test_garden_workflow_runs_harness_and_refreshes_index(
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.STATUS,
-        RunEventKind.MESSAGE,
         RunEventKind.MESSAGE,
         RunEventKind.OUTPUT,
         RunEventKind.STATUS,
@@ -162,13 +173,14 @@ def test_garden_prompt_disables_commit_policy(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    app.workflows.garden.run(
+    run_garden(
+        app,
         GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
             auto_commit=False,
-        )
+        ),
     )
 
     assert '"auto_commit": false' in adapter.requests[0].prompt
@@ -197,24 +209,22 @@ def test_garden_workflow_allows_preexisting_dirty_almanac_edits(
         encoding="utf-8",
     )
 
-    result = app.workflows.garden.run(
+    result = run_garden(
+        app,
         GardenRequest(
             cwd=repo,
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     assert result.run.status == RunStatus.DONE
-    assert result.safety.changed_files == (
-        repo / "almanac/gardened-note.md",
-    )
     assert "User started a local wiki edit." in getting_started.read_text(
         encoding="utf-8"
     )
 
 
-def test_garden_workflow_rejects_harness_mutation_outside_almanac(
+def test_garden_workflow_allows_harness_mutation_outside_almanac(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -230,19 +240,21 @@ def test_garden_workflow_rejects_harness_mutation_outside_almanac(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.garden.run(
-            GardenRequest(
-                cwd=repo,
-                harness=HarnessKind.CODEX,
+    result = run_garden(
+        app,
+        GardenRequest(
+            cwd=repo,
+            harness=HarnessKind.CODEX,
             model="gpt-5.5",
-            )
-        )
+        ),
+    )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
-    assert run.status == RunStatus.FAILED
-    assert run.error == "garden changed file outside almanac: src/app.py"
+    assert result.run.status == RunStatus.DONE
+    assert run.status == RunStatus.DONE
+    assert run.error is None
+    assert (repo / "src/app.py").read_text(encoding="utf-8") == "agent mutation\n"
 
 
 def test_garden_workflow_records_failed_harness_output_before_error(
@@ -260,12 +272,13 @@ def test_garden_workflow_records_failed_harness_output_before_error(
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ExecutionFailed, match="harness codex failed"):
-        app.workflows.garden.run(
+        run_garden(
+            app,
             GardenRequest(
                 cwd=repo,
                 harness=HarnessKind.CODEX,
-            model="gpt-5.5",
-            )
+                model="gpt-5.5",
+            ),
         )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]

@@ -1039,12 +1039,11 @@ def test_operation_runner_owns_shared_operation_execution():
     operation_text = operation_service.read_text(encoding="utf-8")
     operation_commit_text = operation_commit.read_text(encoding="utf-8")
     operation_harness_text = operation_harness.read_text(encoding="utf-8")
-    operation_mutation_text = operation_mutation.read_text(encoding="utf-8")
 
     assert operation_service.is_file()
     assert operation_commit.is_file()
     assert operation_harness.is_file()
-    assert operation_mutation.is_file()
+    assert not operation_mutation.exists()
     assert not (SRC_ROOT / "workflows/lifecycle.py").exists()
     assert not (SRC_ROOT / "workflows/lifecycle_commit.py").exists()
     assert not (SRC_ROOT / "workflows/lifecycle_harness.py").exists()
@@ -1052,9 +1051,8 @@ def test_operation_runner_owns_shared_operation_execution():
     assert "RunHarnessRequest" in operation_text
     assert "RecordRunHarnessTranscriptRequest" in operation_text
     assert "validate_harness_result" in operation_text
-    assert "class OperationMutationPolicy" in operation_mutation_text
-    assert "def changed_paths(" in operation_mutation_text
-    assert "def validate_reported_changes(" in operation_mutation_text
+    assert "OperationMutationPolicy" not in operation_text
+    assert "validate_reported_changes" not in operation_text
     assert "def validate_harness_result(" in operation_harness_text
     assert "def harness_run_event_kind(" in operation_harness_text
     assert "def operation_commit_policy(" in operation_commit_text

@@ -2,13 +2,13 @@ from datetime import datetime
 
 from codealmanac.services.runs.models import (
     PageChangeSet,
-    RunLogEvent,
     RunRecord,
 )
+from codealmanac.services.runs.transcript import RunStep
 from codealmanac.services.viewer.models import (
-    ViewerJobEvent,
     ViewerJobPageChanges,
     ViewerJobRun,
+    ViewerJobStep,
     ViewerJobTranscript,
 )
 
@@ -30,13 +30,21 @@ def viewer_job_run(record: RunRecord) -> ViewerJobRun:
     )
 
 
-def viewer_job_event(event: RunLogEvent) -> ViewerJobEvent:
-    return ViewerJobEvent(
-        sequence=event.sequence,
-        timestamp=timestamp(event.timestamp),
-        kind=event.kind.value,
-        message=event.message,
-        harness_event=event.harness_event,
+def viewer_job_step(step: RunStep) -> ViewerJobStep:
+    return ViewerJobStep(
+        sequence=step.sequence,
+        timestamp=timestamp(step.timestamp),
+        kind=step.kind.value,
+        title=step.title,
+        body=step.body,
+        detail=step.detail,
+        actor=step.actor,
+        tool=step.tool,
+        target=step.target,
+        status=step.status,
+        input=step.input,
+        output=step.output,
+        error=step.error,
     )
 
 

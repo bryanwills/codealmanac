@@ -56,4 +56,4 @@ This keeps navigation separate from evidence. A source file path should be recor
 
 Loaded page documents store sorted, deduplicated outgoing page links [@wiki_documents]. The health graph view reports a broken Markdown page link when a stored `page_links` target does not match any indexed page slug [@health_graph]. Cross-wiki link rows have a separate table and health category, but current Markdown link extraction records local page links only [@wiki_documents].
 
-The links manual says to link only real targets, or pages being created in the same run [@links_manual]. Use the coverage map as the link plan during writing, then verify with [Verify a wiki change](../../guides/verify-a-wiki-change) when a wiki update needs checking.
+The links manual says to link only real targets, or pages being created in the same run [@links_manual]. When a build or Garden run has a page plan, use it as local planning context rather than finished article content, then verify with [Verify a wiki change](../../guides/verify-a-wiki-change) when a wiki update needs checking.

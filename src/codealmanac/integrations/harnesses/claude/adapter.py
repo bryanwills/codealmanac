@@ -15,16 +15,12 @@ from codealmanac.integrations.harnesses.claude.client import (
     CLAUDE_RUN_TIMEOUT_SECONDS,
     ClaudeSdkClient,
 )
-from codealmanac.integrations.harnesses.git_status import (
-    changed_paths,
-    git_status_snapshot,
-    parse_git_status_paths,
-)
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
 )
+from codealmanac.services.harnesses.ports import HarnessEventSink
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CLAUDE_STATUS_TIMEOUT_SECONDS = 10
@@ -132,13 +128,12 @@ class ClaudeSdkHarnessAdapter:
             message=status.email or status.auth_method or "claude authenticated",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
-        before = git_status_snapshot(self.runner, request.cwd)
-        result = self.client.run(request)
-        after = git_status_snapshot(self.runner, request.cwd)
-        return result.model_copy(
-            update={"changed_files": changed_paths(request.cwd, before, after)}
-        )
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
+        return self.client.run(request, on_event)
 
 
 def has_anthropic_api_key() -> bool:
@@ -160,5 +155,4 @@ __all__ = [
     "CLAUDE_STATUS_TIMEOUT_SECONDS",
     "ClaudeSdkHarnessAdapter",
     "CommandResult",
-    "parse_git_status_paths",
 ]

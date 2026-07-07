@@ -5,14 +5,9 @@ from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.models import HealthReport, IndexSummary
 from codealmanac.services.index.service import IndexService
 from codealmanac.services.repositories.models import Repository
-from codealmanac.services.runs.models import RunEventKind, RunKind, RunRecord
-from codealmanac.services.runs.requests import StartRunRequest
-from codealmanac.services.runs.service import RunsService
+from codealmanac.services.runs.models import RunEventKind
 from codealmanac.workflows.garden.models import GardenPromptPayload, GardenResult
-from codealmanac.workflows.garden.requests import (
-    GardenRequest,
-    StartedGardenRequest,
-)
+from codealmanac.workflows.garden.requests import StartedGardenRequest
 from codealmanac.workflows.operations import (
     BeginOperationRequest,
     ExecuteOperationRequest,
@@ -30,49 +25,19 @@ GARDEN_PROMPT_SECTIONS = (
 class GardenWorkflow:
     def __init__(
         self,
-        runs: RunsService,
         index: IndexService,
         health: HealthService,
         operations: OperationRunner,
         prompts: PromptRenderer,
         manual: ManualLibrary,
     ):
-        self.runs = runs
         self.index = index
         self.health = health
         self.operations = operations
         self.prompts = prompts
         self.manual = manual
 
-    def run(self, request: GardenRequest) -> GardenResult:
-        started = self.start(request)
-        return self.run_started(
-            StartedGardenRequest(
-                cwd=request.cwd,
-                harness=request.harness,
-                model=request.model,
-                repository_name=request.repository_name,
-                title=request.title,
-                guidance=request.guidance,
-                auto_commit=request.auto_commit,
-                run_id=started.run_id,
-            )
-        )
-
-    def start(self, request: GardenRequest) -> RunRecord:
-        repository = self.operations.resolve_repository(
-            request.cwd,
-            request.repository_name,
-        )
-        return self.runs.start(
-            StartRunRequest(
-                repository_id=repository.repository_id,
-                kind=RunKind.GARDEN,
-                title=request.title or "Garden wiki",
-            )
-        )
-
-    def run_started(self, request: StartedGardenRequest) -> GardenResult:
+    def execute_started(self, request: StartedGardenRequest) -> GardenResult:
         context = self.operations.begin(
             BeginOperationRequest(
                 run_id=request.run_id,
@@ -93,7 +58,6 @@ class GardenWorkflow:
                     message="prepared garden context",
                 )
             )
-            context = self.operations.preflight(context)
             operation = self.operations.execute(
                 ExecuteOperationRequest(
                     context=context,
@@ -115,7 +79,6 @@ class GardenWorkflow:
             return GardenResult(
                 run=operation.run,
                 harness=operation.harness,
-                safety=operation.safety,
                 index=operation.index,
                 health_before=health_before,
             )

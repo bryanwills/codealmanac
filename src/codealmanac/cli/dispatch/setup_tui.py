@@ -30,14 +30,17 @@ from codealmanac.cli.render.setup import (
     render_setup_choice_screen,
 )
 from codealmanac.services.config.models import DEFAULT_HARNESS, DEFAULT_HARNESS_MODELS
-from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.harnesses.models import HarnessKind, HarnessReadiness
 
 
-def resolve_setup_selections(args: argparse.Namespace) -> SetupSelections:
+def resolve_setup_selections(
+    args: argparse.Namespace,
+    runner_status: tuple[HarnessReadiness, ...] = (),
+) -> SetupSelections:
     defaults = default_setup_selections(args)
     if args.yes or args.json or not supports_interactive_setup():
         return defaults
-    return interactive_setup_selections(defaults)
+    return interactive_setup_selections(defaults, runner_status)
 
 
 def default_setup_selections(args: argparse.Namespace) -> SetupSelections:
@@ -53,15 +56,21 @@ def default_setup_selections(args: argparse.Namespace) -> SetupSelections:
     )
 
 
-def interactive_setup_selections(defaults: SetupSelections) -> SetupSelections:
+def interactive_setup_selections(
+    defaults: SetupSelections,
+    runner_status: tuple[HarnessReadiness, ...],
+) -> SetupSelections:
     try:
         with wizard_terminal():
-            return wizard_selections(defaults)
+            return wizard_selections(defaults, runner_status)
     except KeyboardInterrupt as error:
         raise SetupCancelled() from error
 
 
-def wizard_selections(defaults: SetupSelections) -> SetupSelections:
+def wizard_selections(
+    defaults: SetupSelections,
+    runner_status: tuple[HarnessReadiness, ...],
+) -> SetupSelections:
     target_index = choose_setup_option(
         SetupChoiceScreen(
             step=1,
@@ -76,7 +85,7 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
             step=2,
             title="AI runner",
             question="Which agent should run CodeAlmanac jobs?",
-            options=runner_options(),
+            options=runner_options(runner_status),
         ),
         initial_index=runner_index(defaults.harness),
     )
@@ -131,13 +140,16 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
 
 
 def choose_setup_option(screen: SetupChoiceScreen, initial_index: int) -> int:
-    selected_index = initial_index
+    selected_index = enabled_index(screen, initial_index)
     render_setup_choice_screen(screen, selected_index)
     while True:
         key = read_setup_key()
         if key in {"\x03", "\x1b", "q"}:
             raise SetupCancelled()
         if key in {"\r", "\n"}:
+            if screen.options[selected_index].disabled:
+                render_setup_choice_screen(screen, selected_index)
+                continue
             return selected_index
         shortcut_index = shortcut_option_index(screen, key)
         if shortcut_index is not None:
@@ -152,5 +164,21 @@ def choose_setup_option(screen: SetupChoiceScreen, initial_index: int) -> int:
         elif key in {"\x1b[B", "s"}:
             next_index = (selected_index + 1) % len(screen.options)
         if next_index != selected_index:
-            selected_index = next_index
+            selected_index = enabled_index(screen, next_index, selected_index)
             render_setup_choice_screen(screen, selected_index)
+
+
+def enabled_index(
+    screen: SetupChoiceScreen,
+    index: int,
+    fallback: int = 0,
+) -> int:
+    if len(screen.options) == 0:
+        return index
+    if not screen.options[index].disabled:
+        return index
+    for offset in range(1, len(screen.options) + 1):
+        candidate = (index + offset) % len(screen.options)
+        if not screen.options[candidate].disabled:
+            return candidate
+    return fallback

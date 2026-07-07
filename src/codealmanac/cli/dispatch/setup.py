@@ -20,7 +20,8 @@ from codealmanac.services.setup.requests import RunSetupRequest, RunUninstallReq
 
 def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
     try:
-        selections = resolve_setup_selections(args)
+        runner_status = () if args.yes or args.json else app.harnesses.check()
+        selections = resolve_setup_selections(args, runner_status)
     except SetupCancelled:
         print("CodeAlmanac setup canceled.", file=sys.stderr)
         return 1

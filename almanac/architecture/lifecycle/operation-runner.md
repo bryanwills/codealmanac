@@ -10,10 +10,6 @@ sources:
     type: file
     path: src/codealmanac/workflows/operations/harness.py
     note: Harness result validation and event classification.
-  - id: operation_mutation
-    type: file
-    path: src/codealmanac/workflows/operations/mutation.py
-    note: Mutation preflight and validation policy.
   - id: operation-models
     type: file
     path: src/codealmanac/workflows/operations/models.py
@@ -22,23 +18,19 @@ sources:
     type: file
     path: tests/test_architecture.py
     note: Tests that keep shared operation execution out of individual workflows.
-  - id: live-agreement
-    type: file
-    path: docs/python-port-live-agreement.md
-    note: Active decision that shared page-writing execution belongs to OperationRunner.
 ---
 
 # Operation Runner
 
-`OperationRunner` is the shared execution path for page-writing lifecycle operations. Build, ingest, and garden prepare their own context and prompt, then delegate the common run mechanics to this service [@operation-service]. The runner owns the sequence from running-state transition through harness execution, mutation validation, index refresh, final wiki validation, and terminal run state.
+`OperationRunner` is the shared execution path for page-writing lifecycle operations. Build, ingest, and garden prepare their own context and prompt, then delegate the common run mechanics to this service [@operation-service]. The runner owns the sequence from running-state transition through harness execution, transcript and event recording, harness success validation, index refresh, final wiki validation, and terminal run state.
 
-This shape exists so lifecycle workflows do not reimplement safety and run plumbing. The live agreement states that operation workflows prepare operation-specific context, while `OperationRunner` owns running-state transition, mutation preflight, harness invocation, transcript recording, mutation validation, index refresh, terminal success, and failure recording [@live-agreement].
+This shape exists so lifecycle workflows do not reimplement harness and run plumbing. The architecture tests keep shared operation execution in the operation package and reject copied fragments such as `RunHarnessRequest`, run finishing requests, and harness event helpers inside ingest and garden services [@architecture-tests].
 
-## Context And Preflight
+## Context
 
-`begin` marks the run running and resolves the repository for that run [@operation-service]. The returned `OperationContext` carries the run id, repository, and later the mutation preflight snapshot [@operation-models].
+`begin` marks the run running and resolves the repository for that run [@operation-service]. The returned `OperationContext` carries the run id and repository [@operation-models].
 
-`preflight` asks the mutation policy to snapshot the repository before the harness runs. It records a run message saying that mutation preflight was captured, then returns a copied context with the preflight attached [@operation-service]. `execute` refuses to run without that preflight, because changed-file validation needs a before/after comparison [@operation-service].
+`OperationContext` is intentionally small. It carries the run id and selected repository, which are the only shared facts the runner needs for recording events, invoking the harness, refreshing the index, validating the wiki, and finishing the run [@operation-models] [@operation-service].
 
 ## Harness Execution
 
@@ -50,16 +42,16 @@ If a harness returns no event stream, the harness helper creates a terminal fall
 
 ## Safety And Completion
 
-After recording harness output, the runner validates mutations before validating harness success [@operation-service] [@operation_mutation]. This order is intentional: a failed harness that also touched an unsafe file should leave its output in the log, then fail on the safety boundary if the mutation was unsafe.
+After recording harness output, the runner validates harness success [@operation-service] [@operation-harness]. A failed harness therefore leaves its transcript and output in the run log before the run is marked failed.
 
-The runner then validates harness success, refreshes the index, validates the wiki through `HealthService.ensure_valid`, and finishes the run as `DONE` with the harness summary or operation success summary [@operation-service]. If any step raises, `fail` records a first-line error and tries to finish the run as failed [@operation-service].
+The runner then refreshes the index, validates the wiki through `HealthService.ensure_valid`, and finishes the run as `DONE` with the harness summary or operation success summary [@operation-service]. If any step raises, `fail` records a first-line error and tries to finish the run as failed [@operation-service].
 
 ## Architectural Boundary
 
-The architecture tests enforce this ownership. They require operation service, harness, commit, and mutation modules to exist, and they reject fragments such as `RunHarnessRequest`, `FinishRunRequest`, and harness event helpers inside ingest and garden workflow services [@architecture-tests].
+The architecture tests enforce this ownership. They require operation service, harness, and commit modules to exist; require `workflows/operations/mutation.py` to be absent; and reject fragments such as `RunHarnessRequest`, `FinishRunRequest`, and harness event helpers inside ingest and garden workflow services [@architecture-tests].
 
 That guardrail matters for future changes. New page-writing operation kinds should call the runner with their own prompt and context. They should not copy the lifecycle machinery that already lives here.
 
 ## Related Safety Page
 
-Mutation safety is the runner's strictest boundary. The details are in [Mutation safety](mutation-safety), which explains Git snapshots, reported changed files, and the rule that lifecycle agents may only change `almanac/`.
+The write boundary for lifecycle agents is covered in [Mutation safety](mutation-safety). That page explains the current split between prompt-level source-control policy and runtime wiki validation.

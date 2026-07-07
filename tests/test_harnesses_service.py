@@ -26,7 +26,7 @@ class FakeHarnessAdapter:
             message=f"{self.kind.value} ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         return HarnessRunResult(
             kind=self.kind,
@@ -70,7 +70,7 @@ class UnavailableHarnessAdapter:
             repair="reinstall with `npm install -g @openai/codex`",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         raise AssertionError("an unavailable harness never runs")
 

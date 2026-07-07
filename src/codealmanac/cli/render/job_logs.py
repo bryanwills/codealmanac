@@ -12,15 +12,17 @@ from codealmanac.services.runs.models import (
     RunRecord,
     RunStatus,
 )
+from codealmanac.services.runs.transcript import RunStep, RunStepKind, project_run_steps
 
 
 def render_run_log(events: tuple[RunLogEvent, ...], json_output: bool) -> None:
+    steps = project_run_steps(events)
     if json_output:
-        data = [event.model_dump(mode="json", exclude_none=True) for event in events]
+        data = [step.model_dump(mode="json", exclude_none=True) for step in steps]
         print(json.dumps(data, indent=2))
         return
-    for event in events:
-        render_run_log_event(event)
+    for step in steps:
+        render_run_step(step)
 
 
 def render_run_attach(snapshot: RunAttachSnapshot, json_output: bool) -> None:
@@ -43,8 +45,9 @@ def render_run_attach_stream(
             print(update.model_dump_json(exclude_none=True))
             sys.stdout.flush()
             continue
-        for event in update.events:
-            render_run_log_event(event)
+        steps = project_run_steps(update.events)
+        for step in steps:
+            render_run_step(step)
             saw_event = True
         if update.terminal:
             if not saw_event:
@@ -61,7 +64,39 @@ def print_terminal_status(record: RunRecord) -> None:
         print(f"summary: {record.summary}")
 
 
-def render_run_log_event(event: RunLogEvent) -> None:
-    sequence = f"{style.DIM}{event.sequence:>4}{style.RST}"
-    kind = f"{style.BLUE}{event.kind.value}{style.RST}"
-    print(f"{sequence}  {kind}  {event.message}")
+def render_run_step(step: RunStep) -> None:
+    sequence = f"{style.DIM}{step.sequence:>4}{style.RST}"
+    kind = step_kind_label(step)
+    print(f"{sequence}  {kind}  {step.title}")
+    if step.body:
+        print_indented(step.body)
+    meta = step_meta(step)
+    if meta:
+        print(f"      {style.DIM}{meta}{style.RST}")
+
+
+def step_kind_label(step: RunStep) -> str:
+    if step.error or step.kind == RunStepKind.ERROR:
+        return f"{style.RED}error{style.RST}"
+    if step.kind == RunStepKind.TOOL:
+        return f"{style.BLUE}tool{style.RST}"
+    if step.kind == RunStepKind.AGENT:
+        return f"{style.BLUE}agent{style.RST}"
+    if step.kind == RunStepKind.STATUS:
+        return f"{style.DIM}status{style.RST}"
+    return f"{style.BLUE}text{style.RST}"
+
+
+def step_meta(step: RunStep) -> str:
+    parts = [
+        step.status,
+        step.tool,
+        step.target,
+        step.detail,
+    ]
+    return " · ".join(part for part in parts if part)
+
+
+def print_indented(value: str) -> None:
+    for line in value.splitlines() or [value]:
+        print(f"      {line}")

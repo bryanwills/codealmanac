@@ -7,7 +7,6 @@ from codealmanac.services.index.models import IndexRefreshResult
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.workflows.operations.commit import OperationCommitPolicy
-from codealmanac.workflows.operations.mutation import OperationMutationReport
 
 
 class BuildPromptPayload(CodeAlmanacModel):
@@ -26,4 +25,3 @@ class BuildResult(CodeAlmanacModel):
     index: IndexRefreshResult
     run: RunRecord
     harness: HarnessRunResult
-    safety: OperationMutationReport

@@ -1,11 +1,15 @@
+from collections.abc import Callable
 from typing import Protocol
 
 from codealmanac.services.harnesses.models import (
+    HarnessEvent,
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+
+HarnessEventSink = Callable[[HarnessEvent], None]
 
 
 class HarnessAdapter(Protocol):
@@ -14,5 +18,9 @@ class HarnessAdapter(Protocol):
     def check(self) -> HarnessReadiness:
         """Return local readiness without starting an agent run."""
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         """Run one normalized agent task."""

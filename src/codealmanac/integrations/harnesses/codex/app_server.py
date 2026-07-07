@@ -31,14 +31,17 @@ from codealmanac.integrations.harnesses.codex.sandbox import (
     resolve_sandbox_mode,
     sandbox_policy,
 )
+from codealmanac.integrations.harnesses.codex.stream import (
+    append_event,
+    append_events,
+    emit_result,
+)
 from codealmanac.integrations.harnesses.codex.timeouts import env_milliseconds
 from codealmanac.integrations.harnesses.codex.turn_completion import (
     root_turn_completion,
 )
-from codealmanac.services.harnesses.models import (
-    HarnessEvent,
-    HarnessRunResult,
-)
+from codealmanac.services.harnesses.models import HarnessEvent, HarnessRunResult
+from codealmanac.services.harnesses.ports import HarnessEventSink
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 
 CODEX_APP_SERVER_RPC_TIMEOUT_MS = 30_000
@@ -60,15 +63,23 @@ class CodexAppServerClient:
         self.turn_timeout_seconds = turn_timeout_seconds
         self.sandbox_mode = sandbox_mode
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         try:
-            return self.run_once(request)
+            return self.run_once(request, on_event)
         except FileNotFoundError:
-            return failed_result("codex not found on PATH")
+            return emit_result(failed_result("codex not found on PATH"), on_event)
         except CodexAppServerError as error:
-            return failed_result(str(error))
+            return emit_result(failed_result(str(error)), on_event)
 
-    def run_once(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run_once(
+        self,
+        request: RunHarnessRequest,
+        on_event: HarnessEventSink | None = None,
+    ) -> HarnessRunResult:
         state = CodexRunState()
         events: list[HarnessEvent] = []
         rpc_timeout = self.resolved_rpc_timeout_seconds()
@@ -94,6 +105,7 @@ class CodexAppServerClient:
                 rpc_timeout,
                 state,
                 events,
+                on_event,
             )
             thread = as_record(
                 self.request_rpc(
@@ -110,6 +122,7 @@ class CodexAppServerClient:
                     rpc_timeout,
                     state,
                     events,
+                    on_event,
                 )
             )
             thread_id = string_field(as_record(thread.get("thread")), "id")
@@ -119,7 +132,7 @@ class CodexAppServerClient:
                 )
             state.provider_session_id = thread_id
             state.root_thread_id = thread_id
-            events.append(provider_session_event(thread_id))
+            append_event(events, provider_session_event(thread_id), on_event)
             turn = as_record(
                 self.request_rpc(
                     process,
@@ -143,10 +156,11 @@ class CodexAppServerClient:
                     rpc_timeout,
                     state,
                     events,
+                    on_event,
                 )
             )
             state.root_turn_id = string_field(as_record(turn.get("turn")), "id")
-            return self.read_turn(process, turn_timeout, state, events)
+            return self.read_turn(process, turn_timeout, state, events, on_event)
         finally:
             process.terminate()
 
@@ -158,6 +172,7 @@ class CodexAppServerClient:
         timeout_seconds: float,
         state: CodexRunState,
         events: list[HarnessEvent],
+        on_event: HarnessEventSink | None,
     ) -> JsonValue:
         request_id = process.next_request_id()
         process.write({"id": request_id, "method": method, "params": params})
@@ -176,7 +191,11 @@ class CodexAppServerClient:
                     raise CodexAppServerError(f"Codex app-server {method}: {detail}")
                 return message.get("result")
             if string_field(message, "method") is not None:
-                events.extend(map_codex_notification(message, state))
+                append_events(
+                    events,
+                    map_codex_notification(message, state),
+                    on_event,
+                )
 
     def read_turn(
         self,
@@ -184,6 +203,7 @@ class CodexAppServerClient:
         timeout_seconds: float,
         state: CodexRunState,
         events: list[HarnessEvent],
+        on_event: HarnessEventSink | None,
     ) -> HarnessRunResult:
         deadline = time.monotonic() + timeout_seconds
         while True:
@@ -196,11 +216,11 @@ class CodexAppServerClient:
                 continue
             is_root_completion = root_turn_completion(message, state)
             mapped = map_codex_notification(message, state, is_root_completion)
-            events.extend(mapped)
+            append_events(events, mapped, on_event)
             if method == "error":
                 return result_from_state(state, events)
             if method == "turn/completed" and is_root_completion:
-                events.append(done_event(state))
+                append_event(events, done_event(state), on_event)
                 return result_from_state(state, events)
 
     def respond_to_server_request(

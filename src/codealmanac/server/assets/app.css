@@ -897,7 +897,7 @@ button {
 }
 
 .job-list,
-.job-events,
+.job-steps,
 .job-detail {
   display: grid;
   max-width: var(--dashboard-panel-max);
@@ -981,25 +981,25 @@ button {
   font-weight: 600;
 }
 
-.job-events {
+.job-steps {
   margin-top: 18px;
 }
 
-.job-events h2 {
+.job-steps h2 {
   margin: 0 0 4px;
   color: var(--ink);
   font-size: 18px;
   font-weight: 650;
 }
 
-.job-event {
+.job-step {
   display: grid;
   gap: 8px;
   border-top: 1px solid var(--hair);
   padding: 12px 0;
 }
 
-.job-event-header {
+.job-step-header {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -1009,34 +1009,44 @@ button {
   font-size: 11px;
 }
 
-.job-event-message {
+.job-step-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.job-step-body {
   margin: 0;
   color: var(--text);
   font-size: 13px;
   line-height: 1.55;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
-.job-harness {
+.job-step-meta {
   display: grid;
-  gap: 8px;
-  border-left: 2px solid rgba(152, 118, 26, 0.28);
-  padding-left: 10px;
-}
-
-.job-detail-group {
-  display: grid;
-  gap: 5px;
-  border-top: 1px solid var(--hair);
-  padding-top: 8px;
-}
-
-.job-detail-group h3 {
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 5px 10px;
   margin: 0;
+  border-left: 2px solid rgba(51, 112, 179, 0.24);
+  padding-left: 10px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.job-step-meta dt {
   color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 650;
+}
+
+.job-step-meta dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-family: var(--code);
 }
 
 .job-pill {
