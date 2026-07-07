@@ -27,6 +27,11 @@ install/update or a disk cleanup). `codex --version` run directly fails with
 the exact same spawn ENOENT, so every codex invocation on this machine fails,
 not just ours. codealmanac correctly surfaced a real harness failure.
 
+**Repaired 2026-07-07:** `npm install -g @openai/codex` restored the binary in
+seconds (`codex-cli 0.142.5`) and the ChatGPT login survived — codex keeps
+auth under `~/.codex`, outside the npm package. The README troubleshooting
+entry documents this repair.
+
 ### S2. `init` does not preflight the configured harness before starting the build job — FIXED 2026-07-07
 
 `init` announced the job id, printed the tagline ("every codebase deserves a

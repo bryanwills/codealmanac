@@ -287,7 +287,12 @@ If that fails with the same `spawn ... ENOENT`, reinstall the Codex CLI:
 
 ```bash
 npm install -g @openai/codex
+codex --version       # confirm the binary runs
+codex login status    # confirm you are still signed in
 ```
+
+Reinstalling does not sign you out: codex keeps its login under `~/.codex`,
+outside the npm package.
 
 Or switch CodeAlmanac to the Claude harness instead:
 
