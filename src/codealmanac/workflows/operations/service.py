@@ -7,7 +7,7 @@ from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
-from codealmanac.services.repositories.models import Repository
+from codealmanac.services.repositories.models import Repository, RepositoryName
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import (
@@ -142,7 +142,11 @@ class OperationRunner:
                 )
             )
 
-    def resolve_repository(self, cwd: Path, repository_name: str | None) -> Repository:
+    def resolve_repository(
+        self,
+        cwd: Path,
+        repository_name: RepositoryName | None,
+    ) -> Repository:
         return self.repositories.select_for_operation(cwd, repository_name)
 
     def record_harness_transcript(

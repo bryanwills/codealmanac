@@ -15,6 +15,7 @@ from codealmanac.services.repositories.models import (
     RegisteredRepositories,
     RegisteredRepository,
     Repository,
+    RepositoryName,
 )
 from codealmanac.services.repositories.requests import (
     RegisterRepositoryRequest,
@@ -95,7 +96,7 @@ class RepositoriesService:
             return selected.to_repository()
         raise NotFoundError("repository", request.name)
 
-    def resolve(self, path: Path) -> Repository:
+    def registered_repository_at(self, path: Path) -> Repository:
         normalized = normalize_path(path)
         exact = entry_by_exact_path(normalized, self.store.list())
         if exact is not None:
@@ -105,13 +106,13 @@ class RepositoriesService:
     def select_for_operation(
         self,
         cwd: Path,
-        repository_name: str | None,
+        repository_name: RepositoryName | None,
     ) -> Repository:
         if repository_name is None:
-            return self.resolve(cwd)
+            return self.registered_repository_at(cwd)
         return self.select_by_name(SelectRepositoryRequest(name=repository_name))
 
-    def repository_for_read_path(self, path: Path) -> Repository:
+    def read_repository_at(self, path: Path) -> Repository:
         registered = self.find_by_root_path(path)
         if registered is not None:
             return registered
@@ -128,10 +129,10 @@ class RepositoriesService:
     def select_for_read(
         self,
         cwd: Path,
-        repository_name: str | None,
+        repository_name: RepositoryName | None,
     ) -> Repository:
         if repository_name is None:
-            return self.repository_for_read_path(cwd)
+            return self.read_repository_at(cwd)
         return self.select_by_name(SelectRepositoryRequest(name=repository_name))
 
     def validate_path(self, repository_id: str, path: Path) -> Path:

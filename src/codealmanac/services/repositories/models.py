@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, StringConstraints, field_validator, model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
@@ -11,10 +12,15 @@ from codealmanac.services.repositories.roots import (
     require_default_almanac_root,
 )
 
+RepositoryName = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1),
+]
+
 
 class Repository(CodeAlmanacModel):
     repository_id: str
-    name: str
+    name: RepositoryName
     description: str
     root_path: Path
     almanac_root: Path = Field(default=DEFAULT_ALMANAC_ROOT)
@@ -25,11 +31,6 @@ class Repository(CodeAlmanacModel):
     @classmethod
     def require_repository_id(cls, value: str) -> str:
         return required_text(value, "repository_id")
-
-    @field_validator("name")
-    @classmethod
-    def require_name(cls, value: str) -> str:
-        return required_text(value, "repository name")
 
     @field_validator("almanac_root")
     @classmethod
@@ -47,17 +48,12 @@ class Repository(CodeAlmanacModel):
 
 
 class RepositoryRecord(CodeAlmanacModel):
-    name: str
+    name: RepositoryName
     description: str = ""
     path: Path
     almanac_root: Path = Field(default=DEFAULT_ALMANAC_ROOT)
     registered_at: datetime
     repository_id: str
-
-    @field_validator("name")
-    @classmethod
-    def require_name(cls, value: str) -> str:
-        return required_text(value, "repository name")
 
     @field_validator("almanac_root")
     @classmethod
