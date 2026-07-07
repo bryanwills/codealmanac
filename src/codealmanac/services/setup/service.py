@@ -2,7 +2,6 @@ from codealmanac.services.automation.requests import UninstallAutomationRequest
 from codealmanac.services.config.models import ConfigKey, ConfigSetResult
 from codealmanac.services.config.requests import SetConfigValueRequest
 from codealmanac.services.config.service import ConfigService
-from codealmanac.services.harnesses.models import HarnessReadiness
 from codealmanac.services.setup.automation import (
     install_automation_request,
     should_install_automation,
@@ -21,6 +20,7 @@ from codealmanac.services.setup.requests import (
     RunSetupRequest,
     RunUninstallRequest,
 )
+from codealmanac.services.setup.runners import require_runner
 
 
 class SetupService:
@@ -41,6 +41,7 @@ class SetupService:
         self._runner_probe = runner_probe
 
     def run(self, request: RunSetupRequest) -> SetupResult:
+        readiness = require_runner(self._runner_probe, request)
         config_updates = self.set_config(request)
         changes = ()
         if not request.skip_instructions:
@@ -57,13 +58,8 @@ class SetupService:
             config_update=config_updates[0] if len(config_updates) > 0 else None,
             config_updates=config_updates,
             automation_install=automation_install,
-            runner_readiness=self.runner_readiness(request),
+            runner_readiness=readiness,
         )
-
-    def runner_readiness(self, request: RunSetupRequest) -> HarnessReadiness | None:
-        if self._runner_probe is None:
-            return None
-        return self._runner_probe.readiness(request.harness)
 
     def uninstall(self, request: RunUninstallRequest) -> UninstallResult:
         changes = self._instructions.uninstall(DEFAULT_SETUP_TARGETS)

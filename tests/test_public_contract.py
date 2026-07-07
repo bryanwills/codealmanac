@@ -6,6 +6,7 @@ from ruamel.yaml import YAML
 
 from codealmanac.app import create_app
 from codealmanac.cli.main import build_parser
+from codealmanac.cli.syntax.models import CliSyntaxError, SyntaxProblemKind
 from codealmanac.services.repositories.roots import (
     DEFAULT_ALMANAC_ROOT,
     require_default_almanac_root,
@@ -190,21 +191,25 @@ def test_almanac_root_is_not_configurable():
 def test_init_does_not_accept_root_flag(capsys):
     parser = build_parser()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CliSyntaxError) as error:
         parser.parse_args(("init", "--root", "docs/almanac"))
 
     output = capsys.readouterr()
-    assert "unrecognized arguments: --root" in output.err
+    assert output.err == ""
+    assert error.value.problem.kind == SyntaxProblemKind.UNKNOWN_OPTION
+    assert error.value.problem.token == "--root"
 
 
 def test_build_is_not_a_public_command(capsys):
     parser = build_parser()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CliSyntaxError) as error:
         parser.parse_args(("build",))
 
     output = capsys.readouterr()
-    assert "invalid choice: 'build'" in output.err
+    assert output.err == ""
+    assert error.value.problem.kind == SyntaxProblemKind.UNKNOWN_COMMAND
+    assert error.value.problem.token == "build"
 
 
 def test_internal_run_kinds_are_only_build_ingest_and_garden():
@@ -401,11 +406,12 @@ def test_local_cli_rejects_hosted_and_alias_commands(
 ):
     parser = build_parser()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(CliSyntaxError) as error:
         parser.parse_args((command,))
 
     output = capsys.readouterr()
-    assert "invalid choice" in output.err
+    assert output.err == ""
+    assert error.value.problem.kind == SyntaxProblemKind.UNKNOWN_COMMAND
 
 
 def test_local_cli_help_does_not_advertise_hosted_or_alias_commands():

@@ -28,7 +28,7 @@ sources:
 
 A lifecycle operation is a page-writing workflow that asks a configured local agent harness to create or improve wiki Markdown. In this codebase, the lifecycle operation kinds are build, ingest, and garden: build creates the first useful wiki, ingest folds selected source material into an existing wiki, and garden improves the existing wiki graph [@build-workflow] [@ingest-workflow] [@garden-workflow]. These operations are the only normal paths that invoke AI to write page prose.
 
-The concept matters because it keeps judgmentful wiki writing separate from read commands and deterministic organization commands. Search, show, health, and validate may read or refresh derived state, but they do not decide what prose belongs in a page. Lifecycle operations prepare context, call a harness, validate the mutation, refresh the index, and finish the run [@operation-runner].
+The concept matters because it keeps judgmentful wiki writing separate from read commands and deterministic organization commands. Search, show, health, and validate may read or refresh derived state, but they do not decide what prose belongs in a page. Lifecycle operations prepare context, call a harness, refresh the index after a successful harness run, validate the wiki, and finish the run [@operation-runner].
 
 ## The Three Operation Kinds
 
@@ -40,9 +40,9 @@ Garden starts a `GARDEN` run for an existing wiki. It reads the current index su
 
 ## Shared Execution
 
-The individual workflows do not each own harness plumbing. They delegate the common page-run path to `OperationRunner`, which marks the run running, captures mutation preflight, calls the harness, records transcript events, validates changed files, refreshes the index, validates wiki health, and marks the run done [@operation-runner].
+The individual workflows do not each own harness plumbing. They delegate the common page-run path to `OperationRunner`, which marks the run running, calls the harness, records transcript events, validates harness success, refreshes the index, validates wiki health, and marks the run done [@operation-runner].
 
-That shared path makes lifecycle operations one product family. The operation-specific workflow decides what context and prompt to provide. The runner owns the safety and run-state mechanics.
+That shared path makes lifecycle operations one product family. The operation-specific workflow decides what context and prompt to provide. The runner owns run-state mechanics, harness recording, index refresh, and final validation.
 
 ## Sync Is Not An Operation
 

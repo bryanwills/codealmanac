@@ -32,13 +32,13 @@ sources:
 
 Lifecycle workflows are the high-level flows that create or improve a repo wiki. Build creates the first wiki, ingest folds selected source material into pages, and garden improves the existing wiki graph and content [@build-workflow] [@ingest-workflow] [@garden-workflow]. These three are the page-writing operation family described by [Lifecycle operation](../../concepts/lifecycle-operation).
 
-The workflows prepare operation-specific context, but they do not each own harness execution, run completion, mutation safety, index refresh, or final validation. They delegate that common path to [Operation runner](operation-runner) [@operation-runner]. This keeps build, ingest, and garden different in purpose while making their safety rules the same.
+The workflows prepare operation-specific context, but they do not each own harness execution, run completion, index refresh, or final validation. They delegate that common path to [Operation runner](operation-runner) [@operation-runner]. This keeps build, ingest, and garden different in purpose while sharing one run-execution path.
 
 ## Build
 
 Build is the initialization workflow. It prepares a repository target, rejects an existing `almanac/`, checks that Git change tracking and the requested harness are available, registers the repository, initializes a minimal wiki, and starts a `BUILD` run [@build-workflow].
 
-After the run starts, build calls the shared operation runner. Its prompt payload includes repository paths, the almanac root, `topics.yaml`, manual documents, optional guidance, and source-control policy [@build-workflow]. Build is therefore both setup and the first agent-authored wiki pass.
+After the run starts, build calls the shared operation runner. Its prompt payload includes repository paths, the almanac root, `topics.yaml`, manual documents, optional guidance, and source-control policy [@build-workflow]. The prompt and manual resources come from the packaged runtime-resource layer described in [Prompts and manuals](../runtime-resources/prompts-and-manuals). Build is therefore both setup and the first agent-authored wiki pass.
 
 ## Ingest
 
@@ -60,6 +60,6 @@ The live agreement says the same thing as product design: sync is a scanner and 
 
 ## Shared Contract
 
-All page-writing workflows end at the operation runner. The runner marks the run running, captures mutation preflight, invokes the harness, records transcript events, validates changed files, refreshes the index, validates the wiki, and only then marks the run done [@operation-runner].
+All page-writing workflows end at the operation runner. The runner marks the run running, invokes the harness, records transcript events, validates harness success, refreshes the index, validates the wiki, and only then marks the run done [@operation-runner].
 
-When changing a workflow, preserve that division. Workflow services should decide what context and prompt the agent receives. Shared run state, harness recording, mutation validation, indexing, and final validation belong in the operation path.
+When changing a workflow, preserve that division. Workflow services should decide what context and prompt the agent receives. Shared run state, harness recording, indexing, and final validation belong in the operation path.

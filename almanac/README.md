@@ -14,10 +14,6 @@ sources:
     type: file
     path: src/codealmanac/prompts/base/kernel.md
     note: Runtime rules for wiki-writing agents.
-  - id: coverage-map
-    type: file
-    path: almanac/coverage-map.md
-    note: Frozen page inventory for this wiki build.
 ---
 
 # CodeAlmanac Wiki
@@ -43,8 +39,6 @@ The wiki is organized by page role, not by source file:
 - `guides/` gives task-oriented procedures for changing or verifying the wiki.
 - `decisions/` records constraints that shape future work.
 - `reference/` documents exact contracts, commands, formats, and state shapes.
-
-This first wiki build uses `almanac/coverage-map.md` as its page inventory. The map names each planned page, its purpose, nearby links, and evidence files [@coverage-map]. Treat it as build context, not as product documentation.
 
 ## Reading Rule
 

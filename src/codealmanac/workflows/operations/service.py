@@ -1,8 +1,7 @@
 from contextlib import suppress
 from pathlib import Path
 
-from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.harnesses.models import HarnessRunResult
+from codealmanac.services.harnesses.models import HarnessEvent, HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import HarnessesService
 from codealmanac.services.health.service import HealthService
@@ -25,10 +24,6 @@ from codealmanac.workflows.operations.harness import (
     validate_harness_result,
 )
 from codealmanac.workflows.operations.models import OperationContext, OperationResult
-from codealmanac.workflows.operations.mutation import (
-    OperationMutationPolicy,
-    OperationMutationPreflight,
-)
 from codealmanac.workflows.operations.requests import (
     BeginOperationRequest,
     ExecuteOperationRequest,
@@ -44,14 +39,12 @@ class OperationRunner:
         runs: RunsService,
         index: IndexService,
         health: HealthService,
-        mutation_policy: OperationMutationPolicy,
     ):
         self.repositories = repositories
         self.harnesses = harnesses
         self.runs = runs
         self.index = index
         self.health = health
-        self.mutation_policy = mutation_policy
 
     def begin(self, request: BeginOperationRequest) -> OperationContext:
         run = self.runs.mark_running(
@@ -65,20 +58,6 @@ class OperationRunner:
             repository=repository,
         )
 
-    def preflight(self, context: OperationContext) -> OperationContext:
-        preflight = self.mutation_policy.preflight(context.repository)
-        self.record(
-            RecordOperationEventRequest(
-                context=context,
-                kind=RunEventKind.MESSAGE,
-                message=(
-                    "captured "
-                    f"{context.repository.almanac_root.as_posix()} mutation preflight"
-                ),
-            )
-        )
-        return context.model_copy(update={"preflight": preflight})
-
     def record(self, request: RecordOperationEventRequest) -> None:
         self.runs.record_event(
             RecordRunEventRequest(
@@ -90,8 +69,13 @@ class OperationRunner:
         )
 
     def execute(self, request: ExecuteOperationRequest) -> OperationResult:
-        preflight = require_preflight(request.context)
         repository = request.context.repository
+        emitted_events: list[HarnessEvent] = []
+
+        def record_live_event(event: HarnessEvent) -> None:
+            emitted_events.append(event)
+            self.record_harness_event(request.context, event)
+
         harness = self.harnesses.run(
             RunHarnessRequest(
                 kind=request.harness,
@@ -99,15 +83,12 @@ class OperationRunner:
                 cwd=repository.root_path,
                 prompt=request.prompt,
                 title=request.title,
-            )
+            ),
+            on_event=record_live_event,
         )
         self.record_harness_transcript(request.context, harness)
-        self.record_harness_events(request.context, harness)
-        safety = self.mutation_policy.validate(
-            preflight,
-            repository,
-            harness.changed_files,
-        )
+        if len(emitted_events) == 0:
+            self.record_harness_events(request.context, harness)
         validate_harness_result(harness)
         index = self.index.ensure_fresh(repository.repository_id)
         self.health.ensure_valid(repository)
@@ -121,7 +102,6 @@ class OperationRunner:
         return OperationResult(
             run=finished,
             harness=harness,
-            safety=safety,
             index=index,
         )
 
@@ -170,19 +150,20 @@ class OperationRunner:
         harness: HarnessRunResult,
     ) -> None:
         for event in harness_events(harness):
-            if not should_record_harness_event(event):
-                continue
-            self.record(
-                RecordOperationEventRequest(
-                    context=context,
-                    kind=harness_run_event_kind(event),
-                    message=event.message,
-                    harness_event=event,
-                )
+            self.record_harness_event(context, event)
+
+    def record_harness_event(
+        self,
+        context: OperationContext,
+        event: HarnessEvent,
+    ) -> None:
+        if not should_record_harness_event(event):
+            return
+        self.record(
+            RecordOperationEventRequest(
+                context=context,
+                kind=harness_run_event_kind(event),
+                message=event.message,
+                harness_event=event,
             )
-
-
-def require_preflight(context: OperationContext) -> OperationMutationPreflight:
-    if context.preflight is None:
-        raise ValidationFailed("operation requires mutation preflight before harness")
-    return context.preflight
+        )

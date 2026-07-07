@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from codealmanac import __version__
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
-from codealmanac.integrations.repositories.git import GitRepositoryChangeProbe
 from codealmanac.integrations.runs import SubprocessRunWorkerSpawner
 from codealmanac.integrations.setup import (
     FileInstructionInstaller,
@@ -34,7 +33,6 @@ from codealmanac.services.index.store import IndexStore
 from codealmanac.services.pages.service import PagesService
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.repositories.store import RepositoryStore
-from codealmanac.services.runs.models import RunKind
 from codealmanac.services.runs.ports import RunWorkerSpawner
 from codealmanac.services.runs.service import RunsService
 from codealmanac.services.runs.store import RunStore
@@ -65,7 +63,6 @@ from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.operations import OperationRunner
-from codealmanac.workflows.operations.mutation import OperationMutationPolicy
 from codealmanac.workflows.run_queue import RunQueue
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncStateStore
@@ -261,14 +258,13 @@ def create_services(
     )
 
 
-def create_operation(services: Services, kind: RunKind) -> OperationRunner:
+def create_operation(services: Services) -> OperationRunner:
     return OperationRunner(
         services.repositories,
         services.harnesses,
         services.runs,
         services.index,
         services.health,
-        OperationMutationPolicy(GitRepositoryChangeProbe(), kind=kind),
     )
 
 
@@ -276,18 +272,16 @@ def create_workflows(
     services: Services,
     adapters: AppAdapters,
 ) -> CodeAlmanacWorkflows:
-    build_operations = create_operation(services, RunKind.BUILD)
-    ingest_operations = create_operation(services, RunKind.INGEST)
-    garden_operations = create_operation(services, RunKind.GARDEN)
+    build_operations = create_operation(services)
+    ingest_operations = create_operation(services)
+    garden_operations = create_operation(services)
     ingest = IngestWorkflow(
         services.sources,
-        services.runs,
         ingest_operations,
         services.prompts,
         services.manual,
     )
     garden = GardenWorkflow(
-        services.runs,
         services.index,
         services.health,
         garden_operations,

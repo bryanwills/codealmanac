@@ -66,4 +66,4 @@ Route collisions are handled through index refresh. If two files map to the same
 
 Lifecycle operations rely on validation as their final quality gate. A test harness that writes a page with malformed source metadata causes ingest to raise `ValidationFailed`, and the persisted run ends in the failed state with a validation error [@validate-tests].
 
-That makes validation more than a user command. It is part of the shared operation contract described by [Operation runner](../lifecycle/operation-runner): page-writing agents may mutate the wiki, but the run only succeeds after mutation safety, index refresh, and wiki validation all pass.
+That makes validation more than a user command. It is part of the shared operation contract described by [Operation runner](../lifecycle/operation-runner): page-writing agents may mutate the wiki, but the run only succeeds after index refresh and wiki validation pass.

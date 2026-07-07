@@ -7,14 +7,19 @@ from pydantic import ValidationError
 from codealmanac.app import create_app
 from codealmanac.cli.dispatch.root import dispatch as dispatch_app
 from codealmanac.cli.parser.root import build_parser
+from codealmanac.cli.render.syntax import render_syntax_problem
+from codealmanac.cli.syntax.models import CliSyntaxError
 from codealmanac.core.errors import CodeAlmanacError
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
     try:
+        args = parser.parse_args(argv)
         return dispatch(args)
+    except CliSyntaxError as error:
+        render_syntax_problem(error.problem)
+        return 2
     except (CodeAlmanacError, ValidationError) as error:
         print(f"codealmanac: {error}", file=sys.stderr)
         return 1

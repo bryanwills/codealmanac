@@ -557,6 +557,7 @@ def test_cli_parser_is_split_by_command_domain():
     assert parser_files == {
         "__init__.py",
         "admin.py",
+        "argument_parser.py",
         "automation.py",
         "config.py",
         "diagnostics.py",
@@ -568,6 +569,7 @@ def test_cli_parser_is_split_by_command_domain():
         "wiki.py",
     }
     assert len(root.splitlines()) <= 80
+    assert "CodeAlmanacArgumentParser" in root
     assert "add_run_commands(subcommands)" in root
     assert "add_wiki_commands(subcommands)" in root
     assert "add_admin_commands(subcommands)" in root
@@ -623,6 +625,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     cli_root = SRC_ROOT / "cli"
 
     assert (cli_root / "parser/root.py").is_file()
+    assert (cli_root / "parser/argument_parser.py").is_file()
     assert (cli_root / "parser/automation.py").is_file()
     assert (cli_root / "parser/config.py").is_file()
     assert (cli_root / "parser/diagnostics.py").is_file()
@@ -656,6 +659,7 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/run_commands.py").is_file()
     assert (cli_root / "render/pages.py").is_file()
     assert (cli_root / "render/search.py").is_file()
+    assert (cli_root / "render/syntax.py").is_file()
     assert (cli_root / "render/setup/__init__.py").is_file()
     assert (cli_root / "render/setup/result.py").is_file()
     assert (cli_root / "render/setup/screens.py").is_file()
@@ -664,6 +668,10 @@ def test_cli_has_separate_parser_dispatch_and_render_packages():
     assert (cli_root / "render/topics.py").is_file()
     assert (cli_root / "render/updates.py").is_file()
     assert (cli_root / "render/wiki.py").is_file()
+    assert (cli_root / "syntax/__init__.py").is_file()
+    assert (cli_root / "syntax/catalog.py").is_file()
+    assert (cli_root / "syntax/classify.py").is_file()
+    assert (cli_root / "syntax/models.py").is_file()
     assert (cli_root / "render/repositories.py").is_file()
     assert (cli_root / "render/admin.py").is_file()
 
@@ -1039,12 +1047,11 @@ def test_operation_runner_owns_shared_operation_execution():
     operation_text = operation_service.read_text(encoding="utf-8")
     operation_commit_text = operation_commit.read_text(encoding="utf-8")
     operation_harness_text = operation_harness.read_text(encoding="utf-8")
-    operation_mutation_text = operation_mutation.read_text(encoding="utf-8")
 
     assert operation_service.is_file()
     assert operation_commit.is_file()
     assert operation_harness.is_file()
-    assert operation_mutation.is_file()
+    assert not operation_mutation.exists()
     assert not (SRC_ROOT / "workflows/lifecycle.py").exists()
     assert not (SRC_ROOT / "workflows/lifecycle_commit.py").exists()
     assert not (SRC_ROOT / "workflows/lifecycle_harness.py").exists()
@@ -1052,9 +1059,8 @@ def test_operation_runner_owns_shared_operation_execution():
     assert "RunHarnessRequest" in operation_text
     assert "RecordRunHarnessTranscriptRequest" in operation_text
     assert "validate_harness_result" in operation_text
-    assert "class OperationMutationPolicy" in operation_mutation_text
-    assert "def changed_paths(" in operation_mutation_text
-    assert "def validate_reported_changes(" in operation_mutation_text
+    assert "OperationMutationPolicy" not in operation_text
+    assert "validate_reported_changes" not in operation_text
     assert "def validate_harness_result(" in operation_harness_text
     assert "def harness_run_event_kind(" in operation_harness_text
     assert "def operation_commit_policy(" in operation_commit_text

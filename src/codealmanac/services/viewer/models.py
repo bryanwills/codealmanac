@@ -1,8 +1,9 @@
 from enum import StrEnum
 from pathlib import Path
 
+from pydantic import JsonValue
+
 from codealmanac.core.models import CodeAlmanacModel
-from codealmanac.services.harnesses.models import HarnessEvent
 
 
 class ViewerFileKind(StrEnum):
@@ -122,12 +123,20 @@ class ViewerJobRun(CodeAlmanacModel):
     harness_transcript: ViewerJobTranscript | None
 
 
-class ViewerJobEvent(CodeAlmanacModel):
+class ViewerJobStep(CodeAlmanacModel):
     sequence: int
     timestamp: str
     kind: str
-    message: str
-    harness_event: HarnessEvent | None
+    title: str
+    body: str | None
+    detail: str | None
+    actor: str | None
+    tool: str | None
+    target: str | None
+    status: str | None
+    input: str | None
+    output: JsonValue | None
+    error: bool
 
 
 class ViewerJobs(CodeAlmanacModel):
@@ -138,4 +147,4 @@ class ViewerJobs(CodeAlmanacModel):
 class ViewerJob(CodeAlmanacModel):
     repository: ViewerRepository
     run: ViewerJobRun
-    events: tuple[ViewerJobEvent, ...]
+    steps: tuple[ViewerJobStep, ...]

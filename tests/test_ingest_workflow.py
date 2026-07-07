@@ -7,7 +7,7 @@ from conftest import initialize_repository
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
-from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFailed
+from codealmanac.core.errors import ExecutionFailed, NotFoundError
 from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 from codealmanac.services.harnesses.models import (
     HarnessActorConfidence,
@@ -41,7 +41,7 @@ from codealmanac.services.sources.requests import (
     ResolveSourcesRequest,
 )
 from codealmanac.settings import AppConfig
-from codealmanac.workflows.ingest.requests import IngestRequest
+from codealmanac.workflows.ingest.requests import IngestRequest, StartedIngestRequest
 
 
 class WritingHarnessAdapter:
@@ -57,7 +57,7 @@ class WritingHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/ingested-note.md"
         page.write_text(
@@ -87,7 +87,7 @@ Ingested durable wiki knowledge from the note.
 
 
 class UnsafeHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         outside = request.cwd / "README.md"
         return HarnessRunResult(
@@ -99,7 +99,7 @@ class UnsafeHarnessAdapter(WritingHarnessAdapter):
 
 
 class EventfulHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         result = super().run(request)
         return result.model_copy(
             update={
@@ -182,7 +182,7 @@ class EventfulHarnessAdapter(WritingHarnessAdapter):
 
 
 class FailedHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         return HarnessRunResult(
             kind=self.kind,
@@ -196,7 +196,7 @@ class FailedHarnessAdapter(WritingHarnessAdapter):
 
 
 class DirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/ingested-note.md"
         page.write_text(
@@ -222,7 +222,7 @@ Ingested durable wiki knowledge from the note.
 
 
 class DirtyWikiMutatingHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         result = super().run(request)
         dirty_page = request.cwd / "almanac/README.md"
         dirty_page.write_text(
@@ -241,7 +241,7 @@ class DirtyWikiMutatingHarnessAdapter(WritingHarnessAdapter):
 
 
 class FailedDirtyFileMutatingHarnessAdapter(WritingHarnessAdapter):
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         (request.cwd / "src/app.py").write_text("agent mutation\n", encoding="utf-8")
         return HarnessRunResult(
@@ -272,6 +272,23 @@ class FakeSourceRuntimeAdapter:
             title="Fake Git diff",
             content="diff --git a/src/auth.py b/src/auth.py\n+new auth invariant",
         )
+
+
+def run_ingest(app, request: IngestRequest):
+    queued = app.workflows.queue.queue_ingest(request)
+    return app.workflows.ingest.execute_started(
+        StartedIngestRequest(
+            cwd=request.cwd,
+            repository_name=request.repository_name,
+            inputs=request.inputs,
+            harness=request.harness,
+            model=request.model,
+            title=request.title,
+            guidance=request.guidance,
+            auto_commit=request.auto_commit,
+            run_id=queued.run_id,
+        )
+    )
 
 
 class RecordingPathSourceRuntimeAdapter:
@@ -307,7 +324,8 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("note.md",),
@@ -315,7 +333,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
             model="gpt-5.5",
             title="Ingest note",
             guidance="Prefer short pages.",
-        )
+        ),
     )
 
     matches = app.search.search(SearchPagesRequest(cwd=repo, query="durable"))
@@ -329,12 +347,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert result.run.harness_transcript.session_id == "codex-ingest-session"
     assert result.sources[0].ref.fingerprint is not None
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
-    assert result.harness.changed_files == (
-        repo / "almanac/ingested-note.md",
-    )
-    assert result.safety.changed_files == (
-        repo / "almanac/ingested-note.md",
-    )
+    assert result.harness.changed_files == (repo / "almanac/ingested-note.md",)
     assert result.index.pages_indexed == 2
     assert matches[0].slug == "ingested-note"
     assert "path.file" in adapter.requests[0].prompt
@@ -353,7 +366,6 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert tuple(entry.kind for entry in log) == (
         RunEventKind.STATUS,
         RunEventKind.STATUS,
-        RunEventKind.MESSAGE,
         RunEventKind.MESSAGE,
         RunEventKind.MESSAGE,
         RunEventKind.OUTPUT,
@@ -378,14 +390,15 @@ def test_ingest_prompt_disables_commit_policy(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    app.workflows.ingest.run(
+    run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
             auto_commit=False,
-        )
+        ),
     )
 
     assert '"auto_commit": false' in adapter.requests[0].prompt
@@ -408,13 +421,14 @@ def test_ingest_workflow_records_normalized_harness_events(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     log = app.runs.log(ReadRunLogRequest(run_id=result.run.run_id))
@@ -432,9 +446,7 @@ def test_ingest_workflow_records_normalized_harness_events(
     assert log[-6].harness_event.actor.role == HarnessActorRole.ROOT
     assert log[-5].harness_event is not None
     assert log[-5].harness_event.tool_display is not None
-    assert log[-5].harness_event.tool_display.path == (
-        "almanac/ingested-note.md"
-    )
+    assert log[-5].harness_event.tool_display.path == ("almanac/ingested-note.md")
     assert log[-4].harness_event is not None
     assert log[-4].harness_event.usage is not None
     assert log[-4].harness_event.usage.total_tokens == 42
@@ -466,13 +478,14 @@ def test_ingest_prompt_includes_git_source_runtime(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("git:diff",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
@@ -496,13 +509,14 @@ def test_ingest_prompt_includes_github_source_runtime(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("https://github.com/acme/project/pull/42",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
@@ -541,13 +555,14 @@ def test_ingest_prompt_includes_web_source_runtime(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("https://example.test/retention",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     assert result.source_runtime[0].status == SourceRuntimeStatus.AVAILABLE
@@ -593,13 +608,14 @@ def test_ingest_workflow_fails_run_when_harness_is_missing(
     commit_all(repo, "initial wiki")
 
     with pytest.raises(NotFoundError):
-        app.workflows.ingest.run(
+        run_ingest(
+            app,
             IngestRequest(
                 cwd=repo,
                 inputs=("note.md",),
                 harness=HarnessKind.CODEX,
-            model="gpt-5.5",
-            )
+                model="gpt-5.5",
+            ),
         )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
@@ -610,7 +626,7 @@ def test_ingest_workflow_fails_run_when_harness_is_missing(
     assert RunEventKind.ERROR in {entry.kind for entry in log}
 
 
-def test_ingest_workflow_rejects_harness_changes_outside_almanac(
+def test_ingest_workflow_ignores_reported_changed_files(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -625,22 +641,21 @@ def test_ingest_workflow_rejects_harness_changes_outside_almanac(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.ingest.run(
-            IngestRequest(
-                cwd=repo,
-                inputs=("note.md",),
-                harness=HarnessKind.CODEX,
+    result = run_ingest(
+        app,
+        IngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
             model="gpt-5.5",
-            )
-        )
+        ),
+    )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
-    assert run.status == RunStatus.FAILED
-    assert run.error is not None
-    assert run.error.startswith("harness reported change outside almanac/:")
-    assert "README.md" in run.error
+    assert result.run.status == RunStatus.DONE
+    assert run.status == RunStatus.DONE
+    assert run.error is None
 
 
 def test_ingest_workflow_fails_when_harness_returns_failed_status(
@@ -659,13 +674,14 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ExecutionFailed):
-        app.workflows.ingest.run(
+        run_ingest(
+            app,
             IngestRequest(
                 cwd=repo,
                 inputs=("note.md",),
                 harness=HarnessKind.CODEX,
-            model="gpt-5.5",
-            )
+                model="gpt-5.5",
+            ),
         )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
@@ -683,7 +699,7 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
     assert log[-3].message == "codex failed: agent failed"
 
 
-def test_ingest_workflow_checks_mutations_before_failed_harness_status(
+def test_ingest_workflow_reports_failed_harness_even_when_files_changed(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -700,21 +716,26 @@ def test_ingest_workflow_checks_mutations_before_failed_harness_status(
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.ingest.run(
+    with pytest.raises(ExecutionFailed):
+        run_ingest(
+            app,
             IngestRequest(
                 cwd=repo,
                 inputs=("note.md",),
                 harness=HarnessKind.CODEX,
-            model="gpt-5.5",
-            )
+                model="gpt-5.5",
+            ),
         )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     log = app.runs.log(ReadRunLogRequest(run_id=run.run_id))
 
     assert run.status == RunStatus.FAILED
-    assert run.error == "ingest changed file outside almanac: src/app.py"
+    assert (
+        run.error
+        == "harness codex failed with status failed: agent failed after mutation"
+    )
+    assert (repo / "src/app.py").read_text(encoding="utf-8") == "agent mutation\n"
     assert tuple(entry.kind for entry in log)[-3:] == (
         RunEventKind.OUTPUT,
         RunEventKind.ERROR,
@@ -742,23 +763,21 @@ def test_ingest_workflow_allows_preexisting_dirty_app_files_when_unchanged(
     commit_all(repo, "initial wiki")
     (repo / "src/app.py").write_text("user edit\n", encoding="utf-8")
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     assert result.run.status == RunStatus.DONE
-    assert result.safety.changed_files == (
-        repo / "almanac/ingested-note.md",
-    )
     assert (repo / "src/app.py").read_text(encoding="utf-8") == "user edit\n"
 
 
-def test_ingest_workflow_rejects_harness_mutation_to_dirty_app_file(
+def test_ingest_workflow_allows_harness_mutation_to_dirty_app_file(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -776,21 +795,22 @@ def test_ingest_workflow_rejects_harness_mutation_to_dirty_app_file(
     commit_all(repo, "initial wiki")
     (repo / "src/app.py").write_text("user edit\n", encoding="utf-8")
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.ingest.run(
-            IngestRequest(
-                cwd=repo,
-                inputs=("note.md",),
-                harness=HarnessKind.CODEX,
+    result = run_ingest(
+        app,
+        IngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
             model="gpt-5.5",
-            )
-        )
+        ),
+    )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
-    assert run.status == RunStatus.FAILED
-    assert run.error is not None
-    assert run.error == "ingest changed file outside almanac: src/app.py"
+    assert result.run.status == RunStatus.DONE
+    assert run.status == RunStatus.DONE
+    assert run.error is None
+    assert (repo / "src/app.py").read_text(encoding="utf-8") == "agent mutation\n"
 
 
 def test_ingest_workflow_allows_preexisting_dirty_almanac_edits(
@@ -814,27 +834,24 @@ def test_ingest_workflow_allows_preexisting_dirty_almanac_edits(
         encoding="utf-8",
     )
 
-    result = app.workflows.ingest.run(
+    result = run_ingest(
+        app,
         IngestRequest(
             cwd=repo,
             inputs=("note.md",),
             harness=HarnessKind.CODEX,
             model="gpt-5.5",
-        )
+        ),
     )
 
     page_text = getting_started.read_text(encoding="utf-8")
 
     assert result.run.status == RunStatus.DONE
-    assert result.safety.changed_files == (
-        repo / "almanac/README.md",
-        repo / "almanac/ingested-note.md",
-    )
     assert "User started a local wiki edit." in page_text
     assert "Agent continued the preexisting wiki edit." in page_text
 
 
-def test_ingest_workflow_requires_git_change_tracking(
+def test_ingest_workflow_runs_without_git_change_tracking(
     tmp_path: Path,
     isolated_home: Path,
 ):
@@ -847,21 +864,21 @@ def test_ingest_workflow_requires_git_change_tracking(
     )
     initialize_repository(app, path=repo)
 
-    with pytest.raises(ValidationFailed):
-        app.workflows.ingest.run(
-            IngestRequest(
-                cwd=repo,
-                inputs=("note.md",),
-                harness=HarnessKind.CODEX,
+    result = run_ingest(
+        app,
+        IngestRequest(
+            cwd=repo,
+            inputs=("note.md",),
+            harness=HarnessKind.CODEX,
             model="gpt-5.5",
-            )
-        )
+        ),
+    )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
-    assert run.status == RunStatus.FAILED
-    assert run.error is not None
-    assert run.error.startswith("ingest requires Git change tracking:")
+    assert result.run.status == RunStatus.DONE
+    assert run.status == RunStatus.DONE
+    assert run.error is None
 
 
 def test_run_ingest_request_requires_inputs(tmp_path: Path):

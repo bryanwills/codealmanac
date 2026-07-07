@@ -1,4 +1,6 @@
+from codealmanac.core.errors import error_summary
 from codealmanac.services.runs.models import (
+    TERMINAL_RUN_STATUSES,
     QueuedRun,
     RunKind,
     RunQueueDrainResult,
@@ -8,6 +10,7 @@ from codealmanac.services.runs.models import (
 from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
     FinishRunRequest,
+    ShowRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
 from codealmanac.workflows.build.requests import StartedBuildRequest
@@ -58,6 +61,15 @@ class RunQueueWorker:
             lease.release()
 
     def run_queued(self, queued: QueuedRun) -> RunRecord:
+        try:
+            return self.execute_queued(queued)
+        except Exception as error:
+            record = self.runs.show(ShowRunRequest(run_id=queued.record.run_id))
+            if record.status in TERMINAL_RUN_STATUSES:
+                return record
+            return self.fail_queued_run(record, error_summary(error))
+
+    def execute_queued(self, queued: QueuedRun) -> RunRecord:
         spec = queued.spec
         if spec is None:
             return self.fail_queued_run(
@@ -66,7 +78,7 @@ class RunQueueWorker:
             )
         repository = self.runs.repository_for(queued.record)
         if spec.kind == RunKind.BUILD:
-            result = self.build.run_started(
+            result = self.build.execute_started(
                 StartedBuildRequest(
                     run_id=queued.record.run_id,
                     harness=spec.harness,
@@ -78,7 +90,7 @@ class RunQueueWorker:
             )
             return result.run
         if spec.kind == RunKind.INGEST:
-            result = self.ingest.run_started(
+            result = self.ingest.execute_started(
                 StartedIngestRequest(
                     cwd=repository.root_path,
                     repository_name=repository.name,
@@ -93,7 +105,7 @@ class RunQueueWorker:
             )
             return result.run
         if spec.kind == RunKind.GARDEN:
-            result = self.garden.run_started(
+            result = self.garden.execute_started(
                 StartedGardenRequest(
                     cwd=repository.root_path,
                     repository_name=repository.name,

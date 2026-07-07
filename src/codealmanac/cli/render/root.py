@@ -6,6 +6,7 @@ from codealmanac.cli.render.run_commands import (
     render_scheduled_garden,
 )
 from codealmanac.cli.render.sync import render_sync_status
+from codealmanac.cli.render.syntax import render_syntax_problem
 from codealmanac.cli.render.wiki import (
     render_health,
     render_page,
@@ -28,6 +29,7 @@ __all__ = [
     "render_scheduled_garden",
     "render_search",
     "render_sync_status",
+    "render_syntax_problem",
     "render_tagging",
     "render_validate",
     "render_topic",

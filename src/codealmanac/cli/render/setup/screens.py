@@ -27,6 +27,7 @@ class SetupChoiceOption:
     label: str
     description: tuple[str, ...]
     shortcuts: tuple[str, ...] = ()
+    disabled: bool = False
 
 
 @dataclass(frozen=True)
@@ -89,7 +90,7 @@ def render_option_cards(
         write_line("   " + "   ".join(parts))
     indicator_parts = [
         selected_indicator(card_width)
-        if index == selected_index
+        if index == selected_index and not options[index].disabled
         else " " * (card_width + 2)
         for index in range(len(options))
     ]
@@ -105,8 +106,11 @@ def render_vertical_options(
     write_line(f"   {border}╭{'─' * width}╮{RST}")
     for index, option in enumerate(options):
         selected = index == selected_index
-        marker = f"{BLUE}{BOLD}◆{RST}" if selected else f"{DIM}◇{RST}"
-        label = option_label(option.label, selected)
+        enabled = not option.disabled
+        marker = f"{BLUE}{BOLD}◆{RST}" if selected and enabled else f"{DIM}◇{RST}"
+        label = option_label(option.label, selected and enabled)
+        if option.disabled:
+            label = f"{DIM}{option.label}{RST}"
         write_line(card_row(f" {marker} {label}", width, border, RST))
         for description in option.description:
             body = RST if selected else DIM
@@ -121,12 +125,16 @@ def option_card(
     width: int,
     selected: bool,
 ) -> tuple[str, ...]:
-    border = BLUE if selected else DIM
-    body = RST if selected else DIM
+    enabled = not option.disabled
+    border = BLUE if selected and enabled else DIM
+    body = RST if selected and enabled else DIM
+    label = option_label(option.label, selected and enabled)
+    if option.disabled:
+        label = f"{DIM}{option.label}{RST}"
     lines = [
         f"{border}╭{'─' * width}╮{RST}",
         card_row("", width, border, RST),
-        card_center_row(option_label(option.label, selected), width, border, RST),
+        card_center_row(label, width, border, RST),
     ]
     for description in option.description:
         lines.append(card_center_row(f"{body}{description}{RST}", width, border, RST))

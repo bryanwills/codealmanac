@@ -68,7 +68,7 @@ class CliWritingHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/cli-ingest-note.md"
         page.write_text(
@@ -105,7 +105,7 @@ class CliGardenHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
         page = request.cwd / "almanac/cli-garden-note.md"
         page.write_text(
@@ -139,7 +139,7 @@ class CliNoopHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         return HarnessRunResult(
             kind=self.kind,
             status=HarnessRunStatus.SUCCEEDED,
@@ -158,7 +158,7 @@ class CliUnavailableHarnessAdapter:
             message="codex not found on PATH",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         raise AssertionError("an unavailable harness never runs")
 
 
@@ -309,12 +309,12 @@ def test_cli_init_rejects_root_option(
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    with pytest.raises(SystemExit):
-        main(["init", str(repo), "--root", "docs/almanac"])
+    assert main(["init", str(repo), "--root", "docs/almanac"]) == 2
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "unrecognized arguments: --root" in captured.err
+    assert "Unknown option" in captured.err
+    assert "--root docs/almanac" in captured.err
     assert not (repo / "docs").exists()
 
 
@@ -506,7 +506,7 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     assert 'model = "gpt-5.5"\n' in config_text
 
 
-def test_cli_setup_warns_when_default_runner_is_unavailable(
+def test_cli_setup_fails_when_default_runner_is_unavailable(
     isolated_home: Path,
     monkeypatch,
     capsys,
@@ -518,15 +518,14 @@ def test_cli_setup_warns_when_default_runner_is_unavailable(
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["setup", "--yes", "--target", "codex"]) == 0
+    assert main(["setup", "--yes", "--target", "codex"]) == 1
 
     captured = capsys.readouterr()
-    assert "codex unavailable" in captured.out
-    assert "codex not found on PATH" in captured.out
-    assert "codealmanac doctor" in captured.out
+    assert captured.out == ""
+    assert "codex is not configured: codex not found on PATH" in captured.err
 
 
-def test_cli_setup_runner_flag_selects_claude_without_prompts(
+def test_cli_setup_runner_flag_rejects_unavailable_claude(
     isolated_home: Path,
     monkeypatch,
     capsys,
@@ -538,15 +537,13 @@ def test_cli_setup_runner_flag_selects_claude_without_prompts(
     )
     monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
 
-    assert main(["setup", "--yes", "--runner", "claude", "--json"]) == 0
+    assert main(["setup", "--yes", "--runner", "claude", "--json"]) == 1
 
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["plan"]["default_harness"] == "claude"
-    assert payload["plan"]["harness_model"] == "claude-sonnet-4-6"
-    assert payload["runner_readiness"]["available"] is False
+    captured = capsys.readouterr()
+    assert captured.out == ""
     assert (
-        payload["runner_readiness"]["message"]
-        == "no claude harness adapter is registered"
+        "claude is not configured: no claude harness adapter is registered"
+        in captured.err
     )
 
 
@@ -821,11 +818,12 @@ def test_cli_list_rejects_drop_option(
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
 
-    with pytest.raises(SystemExit):
-        main(["list", "--drop", "repo"])
+    assert main(["list", "--drop", "repo"]) == 2
 
     output = capsys.readouterr()
-    assert "unrecognized arguments: --drop" in output.err
+    assert output.out == ""
+    assert "Unknown option" in output.err
+    assert "codealmanac list --drop repo" in output.err
 
 
 def test_cli_list_keeps_missing_repositories_registered(
@@ -1546,13 +1544,16 @@ def test_cli_jobs_inspects_local_run_records(
 
     assert main(["jobs", "logs", record.run_id]) == 0
     log_output = capsys.readouterr()
-    assert "   1  status  queued ingest\n" in log_output.out
-    assert "   2  message  read note\n" in log_output.out
+    assert "  · Queued Ingest\n" in log_output.out
+    assert "  · Read Note\n" in log_output.out
+    assert "      queued ingest\n" not in log_output.out
 
     assert main(["jobs", "logs", record.run_id, "--json"]) == 0
     logs_json_output = capsys.readouterr()
-    log_events = json.loads(logs_json_output.out)
-    assert "harness_event" not in log_events[0]
+    log_steps = json.loads(logs_json_output.out)
+    assert log_steps[0]["kind"] == "status"
+    assert log_steps[0]["title"] == "Queued Ingest"
+    assert "harness_event" not in log_steps[0]
 
     app.runs.finish(
         FinishRunRequest(
@@ -1564,9 +1565,9 @@ def test_cli_jobs_inspects_local_run_records(
 
     assert main(["jobs", "attach", record.run_id]) == 0
     attach_output = capsys.readouterr()
-    assert "   1  status  queued ingest\n" in attach_output.out
-    assert "   2  message  read note\n" in attach_output.out
-    assert "   3  status  done\n" in attach_output.out
+    assert "  · Queued Ingest\n" in attach_output.out
+    assert "  · Read Note\n" in attach_output.out
+    assert "  · Done\n" in attach_output.out
     assert "status: done\n" in attach_output.out
     assert "summary: digest complete\n" in attach_output.out
 
@@ -1674,19 +1675,19 @@ Login reads `src/auth/session.py`. [@auth-folder]
 
 
 def test_cli_search_rejects_removed_archive_flags(capsys):
-    with pytest.raises(SystemExit) as include_archive:
-        main(["search", "--include-archive"])
+    assert main(["search", "--include-archive"]) == 2
     include_output = capsys.readouterr()
 
-    assert include_archive.value.code == 2
-    assert "unrecognized arguments: --include-archive" in include_output.err
+    assert include_output.out == ""
+    assert "Unknown option" in include_output.err
+    assert "codealmanac search --include-archive" in include_output.err
 
-    with pytest.raises(SystemExit) as archived:
-        main(["search", "--archived"])
+    assert main(["search", "--archived"]) == 2
     archive_output = capsys.readouterr()
 
-    assert archived.value.code == 2
-    assert "unrecognized arguments: --archived" in archive_output.err
+    assert archive_output.out == ""
+    assert "Unknown option" in archive_output.err
+    assert "codealmanac search --archived" in archive_output.err
 
 
 def test_cli_topics_and_health_read_current_repo_wiki(

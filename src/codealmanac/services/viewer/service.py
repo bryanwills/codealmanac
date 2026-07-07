@@ -7,7 +7,8 @@ from codealmanac.services.repositories.models import Repository
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.runs.requests import AttachRunRequest, ListRunsRequest
 from codealmanac.services.runs.service import RunsService
-from codealmanac.services.viewer.jobs import viewer_job_event, viewer_job_run
+from codealmanac.services.runs.transcript import project_run_steps
+from codealmanac.services.viewer.jobs import viewer_job_run, viewer_job_step
 from codealmanac.services.viewer.models import (
     ViewerFile,
     ViewerFileKind,
@@ -189,7 +190,7 @@ class ViewerService:
         return ViewerJob(
             repository=viewer_repository(repository),
             run=viewer_job_run(snapshot.record),
-            events=tuple(viewer_job_event(event) for event in snapshot.events),
+            steps=tuple(map(viewer_job_step, project_run_steps(snapshot.events))),
         )
 
     def get_page_or_raise(self, repository: Repository, slug: str) -> PageView:

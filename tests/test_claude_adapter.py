@@ -21,9 +21,6 @@ from codealmanac.integrations.harnesses.claude.client import (
     CLAUDE_ALLOWED_TOOLS,
     ClaudeSdkClient,
 )
-from codealmanac.integrations.harnesses.git_status import (
-    parse_git_status_paths,
-)
 from codealmanac.services.harnesses.models import (
     HarnessActorRole,
     HarnessEventKind,
@@ -59,9 +56,11 @@ class FakeClaudeClient:
     def __init__(self, result: HarnessRunResult):
         self.result = result
         self.requests: list[RunHarnessRequest] = []
+        self.on_events = []
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         self.requests.append(request)
+        self.on_events.append(on_event)
         return self.result
 
 
@@ -161,16 +160,8 @@ def test_claude_adapter_reports_api_key_ready_when_cli_is_not_logged_in(
     assert readiness.message == f"{ANTHROPIC_API_KEY} set"
 
 
-def test_claude_adapter_wraps_sdk_run_with_git_change_detection(tmp_path: Path):
-    runner = FakeCommandRunner(
-        (
-            CommandResult(returncode=0, stdout=""),
-            CommandResult(
-                returncode=0,
-                stdout="?? almanac/new-page.md\0 M src/app.py\0",
-            ),
-        )
-    )
+def test_claude_adapter_runs_sdk_client_without_git_change_probe(tmp_path: Path):
+    runner = FakeCommandRunner(())
     client = FakeClaudeClient(
         HarnessRunResult(
             kind=HarnessKind.CLAUDE,
@@ -191,14 +182,11 @@ def test_claude_adapter_wraps_sdk_run_with_git_change_detection(tmp_path: Path):
     result = adapter.run(request)
 
     assert client.requests == [request]
+    assert client.on_events == [None]
     assert result.status == HarnessRunStatus.SUCCEEDED
     assert result.output_text == "updated wiki"
-    assert result.changed_files == (
-        tmp_path / "almanac/new-page.md",
-        tmp_path / "src/app.py",
-    )
-    assert runner.calls[0][0] == "git"
-    assert runner.calls[1][0] == "git"
+    assert result.changed_files == ()
+    assert runner.calls == []
 
 
 def test_claude_sdk_client_maps_typed_message_stream(tmp_path: Path):
@@ -336,12 +324,6 @@ def test_claude_sdk_client_reports_timeout(tmp_path: Path):
     assert result.events[-1].kind == HarnessEventKind.DONE
 
 
-def test_parse_git_status_paths_handles_renames():
-    paths = parse_git_status_paths("R  new.md\0old.md\0?? added.md\0")
-
-    assert paths == (Path("new.md"), Path("added.md"))
-
-
 def test_create_app_wires_default_claude_sdk_adapter():
     app = create_app()
 
@@ -370,7 +352,7 @@ def successful_result() -> ResultMessage:
 def run_request(tmp_path: Path) -> RunHarnessRequest:
     return RunHarnessRequest(
         kind=HarnessKind.CLAUDE,
-            model="claude-sonnet-4-6",
+        model="claude-sonnet-4-6",
         cwd=tmp_path,
         prompt="Update the wiki.",
     )

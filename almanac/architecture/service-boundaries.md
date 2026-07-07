@@ -20,7 +20,7 @@ sources:
 
 CodeAlmanac uses service boundaries to keep product behavior out of adapters and provider code. The intended dependency direction is `cli -> app -> workflows -> services -> stores/ports -> integrations`, with `src/codealmanac/app.py` as the place where those layers are assembled [@cosmic-translation] [@app-root]. This means a command, server wrapper, worker, or test should call a service or workflow through a typed request, while provider-specific code stays behind a port.
 
-The boundary matters because this repository is a local product with many edges: terminal commands, local SQLite state, Git probes, scheduled automation, source runtimes, and agent harnesses. The code shape keeps those edges from becoming the core. Tests make that rule executable by failing if `cli`, `workflows`, or `services` import `integrations` directly [@architecture-tests].
+The boundary matters because this repository is a local product with many edges: terminal commands, local SQLite state, scheduled automation, source runtimes, and agent harnesses. The code shape keeps those edges from becoming the core. Tests make that rule executable by failing if `cli`, `workflows`, or `services` import `integrations` directly [@architecture-tests].
 
 ## Dependency Rule
 
@@ -38,7 +38,7 @@ The boundary is that workflows may orchestrate services, but they still should n
 
 Persistence and outside systems sit below services, but they are different kinds of dependencies. Stores such as `RepositoryStore`, `IndexStore`, `RunStore`, `ConfigStore`, and `SyncStateStore` are constructed in the composition root and handed to the service that owns the data [@app-root]. Ports such as `HarnessAdapter`, `SourceRuntimeAdapter`, `TranscriptDiscoveryAdapter`, `SchedulerAdapter`, and `RunWorkerSpawner` describe outside capabilities in service-owned terms [@app-root].
 
-Integrations implement those ports. The composition root chooses defaults such as `LaunchdSchedulerAdapter`, `GitRepositoryChangeProbe`, `SubprocessRunWorkerSpawner`, default harness adapters, and default source runtime adapters [@app-root]. This preserves a clear rule: the core asks for a capability, and the integration decides how to talk to the outside world.
+Integrations implement those ports. The composition root chooses defaults such as `LaunchdSchedulerAdapter`, `SubprocessRunWorkerSpawner`, default harness adapters, and default source runtime adapters [@app-root]. This preserves a clear rule: the core asks for a capability, and the integration decides how to talk to the outside world.
 
 ## Enforced Shape
 

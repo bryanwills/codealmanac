@@ -7,7 +7,6 @@ from codealmanac.services.index.models import IndexRefreshResult
 from codealmanac.services.runs.models import RunRecord
 from codealmanac.services.sources.models import SourceBrief, SourceRuntime
 from codealmanac.workflows.operations.commit import OperationCommitPolicy
-from codealmanac.workflows.operations.mutation import OperationMutationReport
 
 
 class IngestPromptPayload(CodeAlmanacModel):
@@ -26,5 +25,4 @@ class IngestResult(CodeAlmanacModel):
     sources: tuple[SourceBrief, ...]
     source_runtime: tuple[SourceRuntime, ...]
     harness: HarnessRunResult
-    safety: OperationMutationReport
     index: IndexRefreshResult

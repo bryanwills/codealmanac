@@ -179,7 +179,7 @@ def test_viewer_file_request_rejects_paths_outside_reference_space(
         ViewerFileRequest(cwd=repo, path="../secret.txt")
 
 
-def test_viewer_jobs_expose_runs_and_normalized_harness_events(
+def test_viewer_jobs_expose_runs_and_readable_steps(
     viewer_repo: tuple[Path, CodeAlmanac],
 ):
     repo, app = viewer_repo
@@ -196,15 +196,14 @@ def test_viewer_jobs_expose_runs_and_normalized_harness_events(
     assert jobs.runs[0].harness_transcript.kind == "codex"
     assert detail.run.run_id == record.run_id
     assert detail.run.summary == "updated auth page"
-    assert [event.kind for event in detail.events] == [
+    assert [step.kind for step in detail.steps] == [
         "status",
         "status",
-        "output",
+        "assistant",
         "status",
     ]
-    assert detail.events[2].harness_event is not None
-    assert detail.events[2].harness_event.kind == HarnessEventKind.TEXT
-    assert detail.events[2].harness_event.message == "Edited auth-flow.md"
+    assert detail.steps[2].title == "Assistant"
+    assert detail.steps[2].body == "Edited auth-flow.md"
 
 
 def test_viewer_job_request_rejects_path_shaped_run_ids(

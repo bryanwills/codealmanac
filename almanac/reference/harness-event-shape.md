@@ -120,4 +120,4 @@ Helper-agent metadata is represented by `HarnessAgentTrace`. It may include pare
 
 `HarnessRunResult` stores the full event stream as `events: tuple[HarnessEvent, ...]` beside the terminal status, output text, changed files, and transcript reference [@harness-results]. A terminal helper can create a fallback `done` event whose message is built from provider kind, terminal status, and the first output line [@harness-results].
 
-That relationship matters for lifecycle runs: the result gives mutation safety and terminal status one stable object, while the event stream gives logs and attach views a provider-neutral transcript. New adapters should satisfy this event shape before linking into the broader harness contract; see [add a harness provider adapter](../guides/add-a-harness-provider-adapter).
+That relationship matters for lifecycle runs: the result gives terminal status one stable object, while the event stream gives logs and attach views a provider-neutral transcript. New adapters should satisfy this event shape before linking into the broader harness contract; see [add a harness provider adapter](../guides/add-a-harness-provider-adapter).

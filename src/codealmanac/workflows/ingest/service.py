@@ -1,13 +1,7 @@
 from codealmanac.manual import ManualLibrary
 from codealmanac.prompts import PromptName, PromptRenderer, RenderPromptRequest
 from codealmanac.services.repositories.models import Repository
-from codealmanac.services.runs.models import (
-    RunEventKind,
-    RunKind,
-    RunRecord,
-)
-from codealmanac.services.runs.requests import StartRunRequest
-from codealmanac.services.runs.service import RunsService
+from codealmanac.services.runs.models import RunEventKind
 from codealmanac.services.sources.models import SourceBrief, SourceRuntime
 from codealmanac.services.sources.requests import (
     InspectSourceRuntimeRequest,
@@ -16,10 +10,7 @@ from codealmanac.services.sources.requests import (
 )
 from codealmanac.services.sources.service import SourcesService
 from codealmanac.workflows.ingest.models import IngestPromptPayload, IngestResult
-from codealmanac.workflows.ingest.requests import (
-    IngestRequest,
-    StartedIngestRequest,
-)
+from codealmanac.workflows.ingest.requests import StartedIngestRequest
 from codealmanac.workflows.operations import (
     BeginOperationRequest,
     ExecuteOperationRequest,
@@ -38,47 +29,16 @@ class IngestWorkflow:
     def __init__(
         self,
         sources: SourcesService,
-        runs: RunsService,
         operations: OperationRunner,
         prompts: PromptRenderer,
         manual: ManualLibrary,
     ):
         self.sources = sources
-        self.runs = runs
         self.operations = operations
         self.prompts = prompts
         self.manual = manual
 
-    def run(self, request: IngestRequest) -> IngestResult:
-        started = self.start(request)
-        return self.run_started(
-            StartedIngestRequest(
-                cwd=request.cwd,
-                inputs=request.inputs,
-                harness=request.harness,
-                model=request.model,
-                repository_name=request.repository_name,
-                title=request.title,
-                guidance=request.guidance,
-                auto_commit=request.auto_commit,
-                run_id=started.run_id,
-            )
-        )
-
-    def start(self, request: IngestRequest) -> RunRecord:
-        repository = self.operations.resolve_repository(
-            request.cwd,
-            request.repository_name,
-        )
-        return self.runs.start(
-            StartRunRequest(
-                repository_id=repository.repository_id,
-                kind=RunKind.INGEST,
-                title=request.title or default_title(request.inputs),
-            )
-        )
-
-    def run_started(self, request: StartedIngestRequest) -> IngestResult:
+    def execute_started(self, request: StartedIngestRequest) -> IngestResult:
         run_id = request.run_id
         context = self.operations.begin(
             BeginOperationRequest(
@@ -86,7 +46,6 @@ class IngestWorkflow:
             )
         )
         try:
-            context = self.operations.preflight(context)
             sources = self.sources.resolve(
                 ResolveSourcesRequest(cwd=request.cwd, inputs=request.inputs)
             )
@@ -131,7 +90,6 @@ class IngestWorkflow:
                 sources=sources,
                 source_runtime=source_runtime,
                 harness=operation.harness,
-                safety=operation.safety,
                 index=operation.index,
             )
         except Exception as error:

@@ -18,7 +18,7 @@ from codealmanac.services.health.requests import ValidateWikiRequest
 from codealmanac.services.runs.models import RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest
 from codealmanac.settings import AppConfig
-from codealmanac.workflows.ingest.requests import IngestRequest
+from codealmanac.workflows.ingest.requests import IngestRequest, StartedIngestRequest
 
 
 def test_validate_passes_starter_wiki(tmp_path: Path, isolated_home: Path):
@@ -161,13 +161,14 @@ def test_lifecycle_run_fails_when_validation_fails(
     commit_all(repo, "initial wiki")
 
     with pytest.raises(ValidationFailed, match="validation failed"):
-        app.workflows.ingest.run(
+        run_ingest(
+            app,
             IngestRequest(
                 cwd=repo,
                 inputs=("note.md",),
                 harness=HarnessKind.CODEX,
-            model="gpt-5.5",
-            )
+                model="gpt-5.5",
+            ),
         )
 
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
@@ -186,7 +187,7 @@ class InvalidSourceHarnessAdapter:
             message="codex ready",
         )
 
-    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+    def run(self, request: RunHarnessRequest, on_event=None) -> HarnessRunResult:
         page = request.cwd / "almanac/invalid-source.md"
         page.write_text(
             """---
@@ -209,6 +210,23 @@ The harness wrote a page with invalid source metadata.
             summary="updated wiki",
             changed_files=(page,),
         )
+
+
+def run_ingest(app, request: IngestRequest):
+    queued = app.workflows.queue.queue_ingest(request)
+    return app.workflows.ingest.execute_started(
+        StartedIngestRequest(
+            cwd=request.cwd,
+            repository_name=request.repository_name,
+            inputs=request.inputs,
+            harness=request.harness,
+            model=request.model,
+            title=request.title,
+            guidance=request.guidance,
+            auto_commit=request.auto_commit,
+            run_id=queued.run_id,
+        )
+    )
 
 
 def initialized_repo(tmp_path: Path, isolated_home: Path) -> Path:

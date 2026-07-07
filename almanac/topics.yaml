@@ -27,10 +27,6 @@ topics:
     title: Wiki
     description: Authored Markdown, page graph, topics, links, and validation
     parents: [architecture]
-  - slug: wiki-build
-    title: Wiki Build
-    description: First-build inventory and build context
-    parents: [wiki]
   - slug: page-format
     title: Page Format
     description: Frontmatter, sources, citations, page links, and routes
