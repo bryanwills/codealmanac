@@ -5,14 +5,14 @@ import pytest
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.core.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.config.models import ConfigKey
 from codealmanac.services.config.requests import (
     LoadConfigRequest,
     SetConfigValueRequest,
 )
 from codealmanac.services.harnesses.models import HarnessKind
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 
 
 def test_config_service_returns_defaults_without_files(
@@ -20,7 +20,7 @@ def test_config_service_returns_defaults_without_files(
     isolated_home: Path,
 ):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     config = app.config.load(LoadConfigRequest(cwd=tmp_path))
@@ -52,11 +52,11 @@ quiet = "30m"
     repo.mkdir()
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=user_config,
         )
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     (repo / "almanac/config.toml").write_text(
         """
 auto_commit = true
@@ -83,10 +83,10 @@ def test_config_service_uses_explicit_wiki_project_config(
     first.mkdir()
     second.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=first))
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=second))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=first))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=second))
     (second / "almanac/config.toml").write_text(
         """
 [harness]
@@ -109,7 +109,7 @@ def test_config_service_reports_invalid_toml(
     config_path.write_text('[sync\nquiet = "0s"\n', encoding="utf-8")
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=config_path,
         )
     )
@@ -133,7 +133,7 @@ default = "cursor"
     )
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=config_path,
         )
     )
@@ -157,7 +157,7 @@ quiet = "30m"
     )
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=config_path,
         )
     )
@@ -184,7 +184,7 @@ def test_config_service_sets_harness_default_and_sync_quiet(
     config_path = isolated_home / ".codealmanac/config.toml"
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=config_path,
         )
     )
@@ -212,7 +212,7 @@ def test_config_service_rejects_invalid_set_values(
     config_path = isolated_home / ".codealmanac/config.toml"
     app = create_app(
         AppConfig(
-            registry_path=isolated_home / ".codealmanac/registry.json",
+            database_path=isolated_home / ".codealmanac/codealmanac.db",
             config_path=config_path,
         )
     )

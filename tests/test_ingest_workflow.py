@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import ExecutionFailed, NotFoundError, ValidationFailed
-from codealmanac.core.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.integrations.sources.web import WebSourceRuntimeAdapter
 from codealmanac.services.harnesses.models import (
     HarnessActorConfidence,
@@ -27,6 +27,7 @@ from codealmanac.services.harnesses.models import (
     HarnessUsage,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunEventKind, RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest, ReadRunLogRequest
 from codealmanac.services.search.requests import SearchPagesRequest
@@ -40,7 +41,6 @@ from codealmanac.services.sources.requests import (
     InspectSourceRuntimeRequest,
     ResolveSourcesRequest,
 )
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 
 
@@ -280,10 +280,10 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = WritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -320,7 +320,7 @@ def test_ingest_workflow_resolves_sources_runs_harness_and_refreshes_index(
     assert '"source_runtime": [' in adapter.requests[0].prompt
     assert '"source_control": {' in adapter.requests[0].prompt
     assert '"auto_commit": true' in adapter.requests[0].prompt
-    assert "Use normal git commands from the workspace root." in (
+    assert "Use normal git commands from the repository root." in (
         adapter.requests[0].prompt
     )
     assert "almanac: <summary>" in adapter.requests[0].prompt
@@ -350,10 +350,10 @@ def test_ingest_prompt_disables_commit_policy(
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     adapter = WritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -379,10 +379,10 @@ def test_ingest_workflow_records_normalized_harness_events(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(EventfulHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -430,11 +430,11 @@ def test_ingest_prompt_includes_git_source_runtime(
     repo.mkdir()
     adapter = WritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
         source_runtime_adapters=(FakeSourceRuntimeAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -459,11 +459,11 @@ def test_ingest_prompt_includes_github_source_runtime(
     repo.mkdir()
     adapter = WritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
         source_runtime_adapters=(FakeSourceRuntimeAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -503,11 +503,11 @@ def test_ingest_prompt_includes_web_source_runtime(
         )
     )
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
         source_runtime_adapters=(web,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -532,14 +532,14 @@ def test_ingest_workflow_passes_almanac_root_to_source_runtime(
     repo.mkdir()
     runtime = RecordingPathSourceRuntimeAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         source_runtime_adapters=(runtime,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
-    workspace = app.workspaces.resolve(repo)
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
+    repository = app.repositories.resolve(repo)
     sources = app.sources.resolve(ResolveSourcesRequest(cwd=repo, inputs=(".",)))
 
-    result = app.workflows.ingest.inspect_source_runtime(workspace, sources)
+    result = app.workflows.ingest.inspect_source_runtime(repository, sources)
 
     assert result[0].status == SourceRuntimeStatus.AVAILABLE
     assert runtime.requests[0].cwd == repo
@@ -554,10 +554,10 @@ def test_ingest_workflow_fails_run_when_harness_is_missing(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -586,10 +586,10 @@ def test_ingest_workflow_rejects_harness_changes_outside_almanac(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(UnsafeHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -618,10 +618,10 @@ def test_ingest_workflow_fails_when_harness_returns_failed_status(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(FailedHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -659,10 +659,10 @@ def test_ingest_workflow_checks_mutations_before_failed_harness_status(
     (repo / "src").mkdir()
     (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(FailedDirtyFileMutatingHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -699,10 +699,10 @@ def test_ingest_workflow_allows_preexisting_dirty_app_files_when_unchanged(
     (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
     adapter = WritingHarnessAdapter()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     (repo / "src/app.py").write_text("user edit\n", encoding="utf-8")
@@ -732,10 +732,10 @@ def test_ingest_workflow_rejects_harness_mutation_to_dirty_app_file(
     (repo / "src").mkdir()
     (repo / "src/app.py").write_text("clean\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(DirtyFileMutatingHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     (repo / "src/app.py").write_text("user edit\n", encoding="utf-8")
@@ -764,10 +764,10 @@ def test_ingest_workflow_allows_preexisting_dirty_almanac_edits(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(DirtyWikiMutatingHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
     getting_started = repo / "almanac/getting-started.md"
@@ -804,10 +804,10 @@ def test_ingest_workflow_requires_git_change_tracking(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(WritingHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
     with pytest.raises(ValidationFailed):
         app.workflows.ingest.run(

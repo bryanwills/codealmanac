@@ -28,7 +28,7 @@ export function statsGrid(overview) {
   grid.append(
     statCard(String(overview.page_count), "Pages"),
     statCard(String(overview.topic_count), "Topics"),
-    statCard(overview.workspace.name, "Current wiki"),
+    statCard(overview.repository.name, "Current wiki"),
   );
   return grid;
 }

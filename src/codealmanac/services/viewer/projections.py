@@ -4,20 +4,20 @@ from codealmanac.services.index.models import (
     SearchPageResult,
     TopicSummary,
 )
+from codealmanac.services.repositories.models import Repository
 from codealmanac.services.viewer.models import (
     ViewerPageSource,
     ViewerPageSummary,
+    ViewerRepository,
     ViewerTopicSummary,
-    ViewerWorkspace,
 )
-from codealmanac.services.workspaces.models import Workspace
 
 
-def viewer_workspace(workspace: Workspace) -> ViewerWorkspace:
-    return ViewerWorkspace(
-        workspace_id=workspace.workspace_id,
-        name=workspace.name,
-        root_path=workspace.root_path,
+def viewer_repository(repository: Repository) -> ViewerRepository:
+    return ViewerRepository(
+        repository_id=repository.repository_id,
+        name=repository.name,
+        root_path=repository.root_path,
     )
 
 

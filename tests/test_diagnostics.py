@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.core.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.diagnostics.models import DoctorStatus
 from codealmanac.services.diagnostics.requests import DoctorRequest
-from codealmanac.services.workspaces.requests import (
-    InitializeWorkspaceRequest,
-    RegisterWorkspaceRequest,
+from codealmanac.services.repositories.requests import (
+    InitializeRepositoryRequest,
+    RegisterRepositoryRequest,
 )
 
 
@@ -15,7 +15,7 @@ def test_doctor_reports_no_wiki_without_failing(
     isolated_home: Path,
 ):
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path))
@@ -34,9 +34,9 @@ def test_doctor_does_not_materialize_missing_registered_wiki(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workspaces.register(RegisterWorkspaceRequest(root_path=repo, name="repo"))
+    app.repositories.register(RegisterRepositoryRequest(root_path=repo, name="repo"))
 
     report = app.diagnostics.check(DoctorRequest(cwd=repo))
 
@@ -53,9 +53,9 @@ def test_doctor_reports_index_and_health_for_selected_wiki(
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.build(InitializeWorkspaceRequest(path=repo, name="repo"))
+    app.workflows.build.build(InitializeRepositoryRequest(path=repo, name="repo"))
 
     report = app.diagnostics.check(DoctorRequest(cwd=tmp_path, wiki="repo"))
 

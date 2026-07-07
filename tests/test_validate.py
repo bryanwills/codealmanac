@@ -6,7 +6,7 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.cli.main import main
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.core.models import AppConfig
+from codealmanac.settings import AppConfig
 from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessReadiness,
@@ -15,9 +15,9 @@ from codealmanac.services.harnesses.models import (
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.health.requests import ValidateWikiRequest
+from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunStatus
 from codealmanac.services.runs.requests import ListRunsRequest
-from codealmanac.services.workspaces.requests import InitializeWorkspaceRequest
 from codealmanac.workflows.ingest.requests import RunIngestRequest
 
 
@@ -25,9 +25,9 @@ def test_validate_passes_starter_wiki(tmp_path: Path, isolated_home: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
 
@@ -44,7 +44,7 @@ def test_validate_reports_broken_markdown_links(
     repo = initialized_repo(tmp_path, isolated_home)
     write_page(repo, "auth-flow.md", "# Auth Flow\n\nSee [Missing](missing-page).\n")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
@@ -63,7 +63,7 @@ def test_validate_reports_route_collisions_without_traceback(
     write_page(repo, "architecture.md", "# Architecture\n\nPage.\n")
     write_page(repo, "architecture/README.md", "# Architecture\n\nFolder page.\n")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
@@ -95,7 +95,7 @@ The source entry is malformed.
 """,
     )
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
@@ -114,7 +114,7 @@ def test_validate_reports_runtime_state_leaks(
     (repo / "almanac/index.db").write_text("runtime leak\n", encoding="utf-8")
     (repo / "almanac/jobs").mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
 
     result = app.health.validate(ValidateWikiRequest(cwd=repo))
@@ -153,10 +153,10 @@ def test_lifecycle_run_fails_when_validation_fails(
     repo.mkdir()
     (repo / "note.md").write_text("note\n", encoding="utf-8")
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json"),
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(InvalidSourceHarnessAdapter(),),
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     initialize_git(repo)
     commit_all(repo, "initial wiki")
 
@@ -214,9 +214,9 @@ def initialized_repo(tmp_path: Path, isolated_home: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
     app = create_app(
-        AppConfig(registry_path=isolated_home / ".codealmanac/registry.json")
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
     )
-    app.workflows.build.initialize(InitializeWorkspaceRequest(path=repo))
+    app.workflows.build.initialize(InitializeRepositoryRequest(path=repo))
     return repo
 
 
