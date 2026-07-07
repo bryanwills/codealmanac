@@ -8,6 +8,7 @@ from conftest import initialize_repository, runtime_index_path
 from codealmanac.app import create_app
 from codealmanac.core.errors import (
     AlreadyExists,
+    ExecutionFailed,
     NoRepositorySelected,
     ValidationFailed,
 )
@@ -184,6 +185,53 @@ def test_run_build_uses_harness_prompt_and_records_build_operation(
     assert adapter.requests[0].model == "gpt-5.5"
     assert "Build Operation" in adapter.requests[0].prompt
     assert "Write the smallest useful first wiki." in adapter.requests[0].prompt
+
+
+class BrokenHarnessAdapter:
+    kind = HarnessKind.CODEX
+
+    def __init__(self):
+        self.requests: list[RunHarnessRequest] = []
+
+    def check(self) -> HarnessReadiness:
+        return HarnessReadiness(
+            kind=self.kind,
+            available=False,
+            message="Error: spawn codex ENOENT",
+            repair="reinstall with `npm install -g @openai/codex`",
+        )
+
+    def run(self, request: RunHarnessRequest) -> HarnessRunResult:
+        self.requests.append(request)
+        raise AssertionError("a broken harness never runs")
+
+
+def test_build_start_fails_before_creating_job_when_harness_is_broken(
+    tmp_path: Path,
+    isolated_home: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    initialize_git(repo)
+    adapter = BrokenHarnessAdapter()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
+        harness_adapters=(adapter,),
+    )
+
+    with pytest.raises(ExecutionFailed, match="harness codex is not available"):
+        app.workflows.build.start(
+            BuildRequest(
+                path=repo,
+                harness=HarnessKind.CODEX,
+                model="gpt-5.5",
+                name="repo",
+            )
+        )
+
+    assert app.repositories.list() == []
+    assert not (repo / "almanac").exists()
+    assert adapter.requests == []
 
 
 def test_run_build_rejects_non_git_repo_without_registering(

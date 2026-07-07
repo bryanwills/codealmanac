@@ -53,6 +53,7 @@ class BuildWorkflow:
         target = self.repositories.prepare_repository_target(request.path)
         reject_existing_almanac(target)
         self.operations.mutation_policy.ensure_tracking_available(target.root_path)
+        self.operations.harnesses.ensure_ready(request.harness)
         repository = self.register_target(target, request)
         self.wiki.initialize(repository.repository_id)
         run = self.runs.start(
