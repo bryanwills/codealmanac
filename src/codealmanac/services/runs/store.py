@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from codealmanac.core.errors import ConflictError, NotFoundError
+from codealmanac.core.errors import NotFoundError
 from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
@@ -23,6 +23,13 @@ from codealmanac.services.runs.models import (
     RunStatus,
 )
 from codealmanac.services.runs.tables import RUN_TABLES
+from codealmanac.services.runs.transitions import (
+    attach_harness_transcript,
+    cancel_run,
+    finish_run,
+    queued_message,
+    start_run,
+)
 from codealmanac.services.runs.worker_locks import RunWorkerLockStore
 
 
@@ -188,20 +195,10 @@ class RunStore:
 
     def mark_running(self, run_id: str) -> RunRecord:
         record = self.read(run_id)
-        if record.status == RunStatus.RUNNING:
-            return record
-        if record.status != RunStatus.QUEUED:
-            raise ConflictError(
-                f"run {run_id} cannot start from {record.status.value}"
-            )
         now = datetime.now(UTC)
-        running = record.model_copy(
-            update={
-                "status": RunStatus.RUNNING,
-                "updated_at": now,
-                "started_at": now,
-            }
-        )
+        running = start_run(record, now)
+        if running is record:
+            return record
         self.update_record_preserving_spec(running)
         self.event_store.append_status(run_id, now, RunStatus.RUNNING.value)
         return running
@@ -212,12 +209,7 @@ class RunStore:
         transcript: HarnessTranscriptRef,
     ) -> RunRecord:
         record = self.read(run_id)
-        updated = record.model_copy(
-            update={
-                "harness_transcript": transcript,
-                "updated_at": datetime.now(UTC),
-            }
-        )
+        updated = attach_harness_transcript(record, transcript, datetime.now(UTC))
         self.update_record_preserving_spec(updated)
         return updated
 
@@ -229,36 +221,21 @@ class RunStore:
         error: str | None,
     ) -> RunRecord:
         record = self.read(run_id)
-        if record.status == RunStatus.CANCELLED:
-            return record
         now = datetime.now(UTC)
-        finished = record.model_copy(
-            update={
-                "status": status,
-                "summary": summary,
-                "error": error,
-                "updated_at": now,
-                "finished_at": now,
-            }
-        )
+        finished = finish_run(record, status, summary, error, now)
+        if finished is record:
+            return record
         self.update_record_preserving_spec(finished)
         self.event_store.append_status(run_id, now, status.value)
         return finished
 
     def cancel(self, run_id: str) -> RunCancelResult:
         record = self.read(run_id)
-        if record.status in TERMINAL_RUN_STATUSES:
-            return RunCancelResult(record=record, changed=False)
         now = datetime.now(UTC)
-        cancelled = record.model_copy(
-            update={
-                "status": RunStatus.CANCELLED,
-                "updated_at": now,
-                "finished_at": now,
-                "summary": record.summary,
-                "error": record.error,
-            }
-        )
+        result = cancel_run(record, now)
+        if not result.changed:
+            return result
+        cancelled = result.record
         self.update_record_preserving_spec(cancelled)
         self.event_store.append_status(run_id, now, RunStatus.CANCELLED.value)
         return RunCancelResult(record=cancelled, changed=True)
@@ -307,7 +284,3 @@ class RunStore:
 
 def run_record_from_json(value: str) -> RunRecord:
     return RunRecord.model_validate_json(value)
-
-
-def queued_message(kind: RunKind) -> str:
-    return f"queued {kind.value}"

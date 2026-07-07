@@ -1808,6 +1808,7 @@ def test_run_persistence_stays_split_by_responsibility():
     service_text = (runs_root / "service.py").read_text(encoding="utf-8")
     streaming_text = (runs_root / "streaming.py").read_text(encoding="utf-8")
     tables_text = (runs_root / "tables.py").read_text(encoding="utf-8")
+    transitions_text = (runs_root / "transitions.py").read_text(encoding="utf-8")
     worker_locks_text = (runs_root / "worker_locks.py").read_text(encoding="utf-8")
     forbidden_store_fragments = (
         "write_json_atomically",
@@ -1828,6 +1829,7 @@ def test_run_persistence_stays_split_by_responsibility():
         "locks.py",
         "streaming.py",
         "tables.py",
+        "transitions.py",
         "worker_locks.py",
     } <= module_names
     assert len(store_text.splitlines()) <= 330
@@ -1837,6 +1839,10 @@ def test_run_persistence_stays_split_by_responsibility():
     assert "def new_run_record(" in factory_text
     assert "uuid4" in factory_text
     assert "strftime" in factory_text
+    assert "def start_run(" in transitions_text
+    assert "def finish_run(" in transitions_text
+    assert "def cancel_run(" in transitions_text
+    assert "ConflictError" in transitions_text
     assert "class RunEventStore" in events_text
     assert "run_events" in events_text
     assert "RunWorkerLease" in locks_text
