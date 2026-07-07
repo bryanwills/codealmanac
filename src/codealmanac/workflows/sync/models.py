@@ -78,3 +78,8 @@ class SyncRepositoryIngest(CodeAlmanacModel):
 class SyncEvaluation(CodeAlmanacModel):
     summary: SyncSummary
     repository_ingests: tuple[SyncRepositoryIngest, ...]
+
+
+class SyncQueueResult(CodeAlmanacModel):
+    started: tuple[SyncStarted, ...]
+    skipped: tuple[SyncSkipped, ...]

@@ -1,9 +1,14 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 
 from codealmanac.core.paths import normalize_path
 from codealmanac.database.local import connect_local_database
 from codealmanac.workflows.sync.models import SyncState
+from codealmanac.workflows.sync.records import (
+    sync_completed_at_value,
+    sync_completed_state,
+    sync_state_from_row,
+)
 from codealmanac.workflows.sync.tables import SYNC_STATE_TABLES
 
 SYNC_STATE_KEY = "sync"
@@ -23,13 +28,7 @@ class SyncStateStore:
                 """,
                 (SYNC_STATE_KEY,),
             ).fetchone()
-        if row is None or row["last_completed_at"] is None:
-            return SyncState()
-        return SyncState(
-            last_completed_at=datetime.fromisoformat(
-                str(row["last_completed_at"])
-            ).astimezone(UTC)
-        )
+        return sync_state_from_row(row)
 
     def record_completed(self, completed_at: datetime) -> SyncState:
         with self.connect() as connection:
@@ -40,10 +39,10 @@ class SyncStateStore:
                 ON CONFLICT(name) DO UPDATE SET
                     last_completed_at = excluded.last_completed_at
                 """,
-                (SYNC_STATE_KEY, completed_at.astimezone(UTC).isoformat()),
+                (SYNC_STATE_KEY, sync_completed_at_value(completed_at)),
             )
             connection.commit()
-        return SyncState(last_completed_at=completed_at.astimezone(UTC))
+        return sync_completed_state(completed_at)
 
     def connect(self):
         connection = connect_local_database(self.database_path)

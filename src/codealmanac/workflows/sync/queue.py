@@ -1,14 +1,13 @@
 from datetime import datetime
 
 from codealmanac.core.errors import error_summary
-from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.workflows.ingest.requests import IngestRequest
 from codealmanac.workflows.run_queue.service import RunQueue
 from codealmanac.workflows.sync.guidance import sync_ingest_guidance
 from codealmanac.workflows.sync.models import (
     SyncEvaluation,
+    SyncQueueResult,
     SyncRepositoryIngest,
-    SyncSkipped,
     SyncStarted,
 )
 from codealmanac.workflows.sync.requests import SyncRequest
@@ -33,7 +32,7 @@ class SyncIngestQueue:
         request: SyncRequest,
         evaluation: SyncEvaluation,
         now: datetime,
-    ) -> "SyncQueueResult":
+    ) -> SyncQueueResult:
         started: list[SyncStarted] = []
         skipped = list(evaluation.summary.skipped)
         worker_cwd = None
@@ -70,11 +69,6 @@ class SyncIngestQueue:
             started=tuple(started),
             skipped=tuple(skipped),
         )
-
-
-class SyncQueueResult(CodeAlmanacModel):
-    started: tuple[SyncStarted, ...]
-    skipped: tuple[SyncSkipped, ...]
 
 
 def sync_ingest_request(
