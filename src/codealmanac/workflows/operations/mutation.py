@@ -13,27 +13,27 @@ from codealmanac.workflows.change_tracking import (
 )
 
 
-class LifecycleMutationPreflight(CodeAlmanacModel):
+class OperationMutationPreflight(CodeAlmanacModel):
     before: RepositoryChangeSnapshot
     almanac_prefix: Path
 
 
-class LifecycleMutationReport(CodeAlmanacModel):
+class OperationMutationReport(CodeAlmanacModel):
     before: RepositoryChangeSnapshot
     after: RepositoryChangeSnapshot
     changed_files: tuple[Path, ...]
 
 
-class LifecycleMutationPolicy:
+class OperationMutationPolicy:
     def __init__(self, probe: RepositoryChangeProbe, kind: RunKind):
         self.probe = probe
         self.kind = kind
 
-    def preflight(self, repository: Repository) -> LifecycleMutationPreflight:
+    def preflight(self, repository: Repository) -> OperationMutationPreflight:
         before = self.probe.snapshot(repository.root_path)
         validate_snapshot_available(before, self.kind)
         almanac_prefix = almanac_relative_path(repository)
-        return LifecycleMutationPreflight(
+        return OperationMutationPreflight(
             before=before,
             almanac_prefix=almanac_prefix,
         )
@@ -43,10 +43,10 @@ class LifecycleMutationPolicy:
 
     def validate(
         self,
-        preflight: LifecycleMutationPreflight,
+        preflight: OperationMutationPreflight,
         repository: Repository,
         reported_changed_files: tuple[Path, ...],
-    ) -> LifecycleMutationReport:
+    ) -> OperationMutationReport:
         validate_reported_changes(repository, reported_changed_files)
         after = self.probe.snapshot(repository.root_path)
         validate_snapshot_available(after, self.kind)
@@ -62,7 +62,7 @@ class LifecycleMutationPolicy:
                 f"{self.kind} changed file outside {almanac_label}: "
                 f"{format_paths(unsafe)}"
             )
-        return LifecycleMutationReport(
+        return OperationMutationReport(
             before=preflight.before,
             after=after,
             changed_files=tuple(

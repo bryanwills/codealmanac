@@ -1029,33 +1029,33 @@ def test_cli_dispatch_files_stay_small():
     assert oversized == []
 
 
-def test_operation_runner_owns_shared_lifecycle_execution():
+def test_operation_runner_owns_shared_operation_execution():
     operation_service = SRC_ROOT / "workflows/operations/service.py"
-    lifecycle = SRC_ROOT / "workflows/lifecycle.py"
-    lifecycle_harness = SRC_ROOT / "workflows/lifecycle_harness.py"
-    lifecycle_mutation = SRC_ROOT / "workflows/lifecycle_mutation.py"
+    operation_commit = SRC_ROOT / "workflows/operations/commit.py"
+    operation_harness = SRC_ROOT / "workflows/operations/harness.py"
+    operation_mutation = SRC_ROOT / "workflows/operations/mutation.py"
     operation_text = operation_service.read_text(encoding="utf-8")
-    lifecycle_text = lifecycle.read_text(encoding="utf-8")
-    lifecycle_harness_text = lifecycle_harness.read_text(encoding="utf-8")
-    lifecycle_mutation_text = lifecycle_mutation.read_text(encoding="utf-8")
+    operation_commit_text = operation_commit.read_text(encoding="utf-8")
+    operation_harness_text = operation_harness.read_text(encoding="utf-8")
+    operation_mutation_text = operation_mutation.read_text(encoding="utf-8")
 
     assert operation_service.is_file()
-    assert lifecycle_harness.is_file()
-    assert lifecycle_mutation.is_file()
+    assert operation_commit.is_file()
+    assert operation_harness.is_file()
+    assert operation_mutation.is_file()
+    assert not (SRC_ROOT / "workflows/lifecycle.py").exists()
+    assert not (SRC_ROOT / "workflows/lifecycle_commit.py").exists()
+    assert not (SRC_ROOT / "workflows/lifecycle_harness.py").exists()
+    assert not (SRC_ROOT / "workflows/lifecycle_mutation.py").exists()
     assert "RunHarnessRequest" in operation_text
     assert "RecordRunHarnessTranscriptRequest" in operation_text
     assert "validate_harness_result" in operation_text
-    assert len(lifecycle_text.splitlines()) <= 40
-    assert "from codealmanac.workflows.lifecycle_harness import" in lifecycle_text
-    assert "from codealmanac.workflows.lifecycle_mutation import" in lifecycle_text
-    assert "class LifecycleMutationPolicy" not in lifecycle_text
-    assert "def validate_harness_result(" not in lifecycle_text
-    assert "def changed_paths(" not in lifecycle_text
-    assert "class LifecycleMutationPolicy" in lifecycle_mutation_text
-    assert "def changed_paths(" in lifecycle_mutation_text
-    assert "def validate_reported_changes(" in lifecycle_mutation_text
-    assert "def validate_harness_result(" in lifecycle_harness_text
-    assert "def harness_run_event_kind(" in lifecycle_harness_text
+    assert "class OperationMutationPolicy" in operation_mutation_text
+    assert "def changed_paths(" in operation_mutation_text
+    assert "def validate_reported_changes(" in operation_mutation_text
+    assert "def validate_harness_result(" in operation_harness_text
+    assert "def harness_run_event_kind(" in operation_harness_text
+    assert "def operation_commit_policy(" in operation_commit_text
 
     operation_services = (
         SRC_ROOT / "workflows/ingest/service.py",
@@ -1552,7 +1552,7 @@ def test_run_queue_stays_operation_dispatch_only():
         "RenderPromptRequest",
         "ResolveSourcesRequest",
         "InspectSourceRuntimeRequest",
-        "LifecycleMutationPolicy",
+        "OperationMutationPolicy",
         "StartedIngestRequest",
         "StartedGardenRequest",
     )

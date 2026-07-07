@@ -14,7 +14,7 @@ FORBIDDEN_COMMIT_FILES = (
 COMMIT_MESSAGE_SHAPE = "almanac: <summary>"
 
 
-class LifecycleCommitPolicy(CodeAlmanacModel):
+class OperationCommitPolicy(CodeAlmanacModel):
     auto_commit: bool
     allowed_files: tuple[str, ...]
     forbidden_files: tuple[str, ...]
@@ -22,8 +22,8 @@ class LifecycleCommitPolicy(CodeAlmanacModel):
     instructions: tuple[str, ...]
 
 
-def lifecycle_commit_policy(auto_commit: bool) -> LifecycleCommitPolicy:
-    return LifecycleCommitPolicy(
+def operation_commit_policy(auto_commit: bool) -> OperationCommitPolicy:
+    return OperationCommitPolicy(
         auto_commit=auto_commit,
         allowed_files=ALLOWED_WIKI_SOURCE_FILES,
         forbidden_files=FORBIDDEN_COMMIT_FILES,

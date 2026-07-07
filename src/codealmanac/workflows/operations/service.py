@@ -17,15 +17,17 @@ from codealmanac.services.runs.requests import (
     RecordRunHarnessTranscriptRequest,
 )
 from codealmanac.services.runs.service import RunsService
-from codealmanac.workflows.lifecycle import (
-    LifecycleMutationPolicy,
-    LifecycleMutationPreflight,
+from codealmanac.workflows.operations.harness import (
     first_line,
     harness_events,
     harness_run_event_kind,
     validate_harness_result,
 )
 from codealmanac.workflows.operations.models import OperationContext, OperationResult
+from codealmanac.workflows.operations.mutation import (
+    OperationMutationPolicy,
+    OperationMutationPreflight,
+)
 from codealmanac.workflows.operations.requests import (
     BeginOperationRequest,
     ExecuteOperationRequest,
@@ -41,7 +43,7 @@ class OperationRunner:
         runs: RunsService,
         index: IndexService,
         health: HealthService,
-        mutation_policy: LifecycleMutationPolicy,
+        mutation_policy: OperationMutationPolicy,
     ):
         self.repositories = repositories
         self.harnesses = harnesses
@@ -172,7 +174,7 @@ class OperationRunner:
             )
 
 
-def require_preflight(context: OperationContext) -> LifecycleMutationPreflight:
+def require_preflight(context: OperationContext) -> OperationMutationPreflight:
     if context.preflight is None:
         raise ValidationFailed("operation requires mutation preflight before harness")
     return context.preflight

@@ -13,13 +13,13 @@ from codealmanac.workflows.garden.requests import (
     GardenRequest,
     StartedGardenRequest,
 )
-from codealmanac.workflows.lifecycle_commit import lifecycle_commit_policy
 from codealmanac.workflows.operations import (
     BeginOperationRequest,
     ExecuteOperationRequest,
     OperationRunner,
     RecordOperationEventRequest,
 )
+from codealmanac.workflows.operations.commit import operation_commit_policy
 
 GARDEN_PROMPT_SECTIONS = (
     PromptName.BASE_KERNEL,
@@ -140,7 +140,7 @@ def render_garden_prompt(
         index=index,
         health=health,
         manual_documents=manual.inventory().documents,
-        source_control=lifecycle_commit_policy(auto_commit),
+        source_control=operation_commit_policy(auto_commit),
         guidance=guidance,
     )
     return prompts.render(

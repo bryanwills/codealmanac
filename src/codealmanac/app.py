@@ -64,8 +64,8 @@ from codealmanac.settings import AppConfig, LocalStatePaths
 from codealmanac.workflows.build.service import BuildWorkflow
 from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
-from codealmanac.workflows.lifecycle import LifecycleMutationPolicy
 from codealmanac.workflows.operations import OperationRunner
+from codealmanac.workflows.operations.mutation import OperationMutationPolicy
 from codealmanac.workflows.run_queue import RunQueue
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncStateStore
@@ -267,7 +267,7 @@ def create_operation(services: Services, kind: RunKind) -> OperationRunner:
         services.runs,
         services.index,
         services.health,
-        LifecycleMutationPolicy(GitRepositoryChangeProbe(), kind=kind),
+        OperationMutationPolicy(GitRepositoryChangeProbe(), kind=kind),
     )
 
 

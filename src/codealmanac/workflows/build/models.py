@@ -6,8 +6,8 @@ from codealmanac.services.harnesses.models import HarnessRunResult
 from codealmanac.services.index.models import IndexRefreshResult
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.runs.models import RunRecord
-from codealmanac.workflows.lifecycle import LifecycleMutationReport
-from codealmanac.workflows.lifecycle_commit import LifecycleCommitPolicy
+from codealmanac.workflows.operations.commit import OperationCommitPolicy
+from codealmanac.workflows.operations.mutation import OperationMutationReport
 
 
 class BuildPromptPayload(CodeAlmanacModel):
@@ -17,7 +17,7 @@ class BuildPromptPayload(CodeAlmanacModel):
     wiki_source_root: Path
     topics_file: Path
     manual_documents: tuple[ManualDocument, ...]
-    source_control: LifecycleCommitPolicy
+    source_control: OperationCommitPolicy
     guidance: str | None = None
 
 
@@ -31,4 +31,4 @@ class BuildResult(CodeAlmanacModel):
     index: IndexRefreshResult
     run: RunRecord
     harness: HarnessRunResult
-    safety: LifecycleMutationReport
+    safety: OperationMutationReport
