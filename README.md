@@ -8,6 +8,7 @@
   <a href="https://github.com/AlmanacCode/codealmanac"><img alt="GitHub stars" src="https://img.shields.io/github/stars/AlmanacCode/codealmanac?style=social"></a>
   <a href="https://discord.com/invite/jjuxtrGvJ"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white"></a>
   <a href="https://www.linkedin.com/company/codealmanac/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-CodeAlmanac-0A66C2?logo=linkedin&logoColor=white"></a>
+  <a href="https://www.ycombinator.com"><img alt="Y Combinator S26" src="https://img.shields.io/badge/Y%20Combinator-S26-f26625?logo=ycombinator&logoColor=white"></a>
   <a href="./LICENSE.md"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-df7b40"></a>
 </p>
 
