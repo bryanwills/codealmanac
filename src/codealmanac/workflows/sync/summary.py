@@ -1,9 +1,9 @@
 from codealmanac.services.sources.models import TranscriptCandidate
 from codealmanac.workflows.sync.models import (
     SyncReady,
+    SyncRepositoryIngest,
     SyncSkipped,
     SyncStarted,
-    SyncWorkItem,
 )
 
 
@@ -17,7 +17,7 @@ def skipped_transcript(candidate: TranscriptCandidate, reason: str) -> SyncSkipp
     )
 
 
-def ready_repository(item: SyncWorkItem) -> SyncReady:
+def ready_sync_repository(item: SyncRepositoryIngest) -> SyncReady:
     return SyncReady(
         repository_id=item.repository.repository_id,
         repository_name=item.repository.name,
@@ -29,7 +29,7 @@ def ready_repository(item: SyncWorkItem) -> SyncReady:
     )
 
 
-def started_repository(item: SyncWorkItem, run_id: str) -> SyncStarted:
+def started_sync_repository(item: SyncRepositoryIngest, run_id: str) -> SyncStarted:
     return SyncStarted(
         repository_id=item.repository.repository_id,
         repository_name=item.repository.name,

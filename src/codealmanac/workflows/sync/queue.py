@@ -7,15 +7,15 @@ from codealmanac.workflows.run_queue.service import RunQueue
 from codealmanac.workflows.sync.guidance import sync_ingest_guidance
 from codealmanac.workflows.sync.models import (
     SyncEvaluation,
+    SyncRepositoryIngest,
     SyncSkipped,
     SyncStarted,
-    SyncWorkItem,
 )
 from codealmanac.workflows.sync.requests import SyncRequest
 from codealmanac.workflows.sync.store import SyncStateStore
 from codealmanac.workflows.sync.summary import (
     skipped_transcript,
-    started_repository,
+    started_sync_repository,
 )
 
 
@@ -37,8 +37,8 @@ class SyncIngestQueue:
         started: list[SyncStarted] = []
         skipped = list(evaluation.summary.skipped)
         worker_cwd = None
-        queued_items: list[SyncWorkItem] = []
-        for item in evaluation.work_items:
+        queued_ingests: list[SyncRepositoryIngest] = []
+        for item in evaluation.repository_ingests:
             try:
                 run = self.queue.queue_ingest(sync_ingest_request(request, item))
             except Exception as error:
@@ -50,9 +50,9 @@ class SyncIngestQueue:
                     for candidate in item.transcripts
                 )
                 continue
-            started.append(started_repository(item, run.run_id))
+            started.append(started_sync_repository(item, run.run_id))
             worker_cwd = worker_cwd or item.repository.root_path
-            queued_items.append(item)
+            queued_ingests.append(item)
         if worker_cwd is not None:
             try:
                 self.queue.spawn_worker(worker_cwd)
@@ -62,7 +62,7 @@ class SyncIngestQueue:
                         candidate,
                         f"worker-spawn-failed: {error_summary(error)}",
                     )
-                    for item in queued_items
+                    for item in queued_ingests
                     for candidate in item.transcripts
                 )
         self.state_store.record_completed(now)
@@ -79,7 +79,7 @@ class SyncQueueResult(CodeAlmanacModel):
 
 def sync_ingest_request(
     request: SyncRequest,
-    item: SyncWorkItem,
+    item: SyncRepositoryIngest,
 ) -> IngestRequest:
     return IngestRequest(
         cwd=item.repository.root_path,
@@ -95,7 +95,7 @@ def sync_ingest_request(
     )
 
 
-def sync_ingest_title(item: SyncWorkItem) -> str:
+def sync_ingest_title(item: SyncRepositoryIngest) -> str:
     if len(item.transcripts) == 1:
         candidate = item.transcripts[0]
         return f"Sync {candidate.app.value} transcript {candidate.session_id}"

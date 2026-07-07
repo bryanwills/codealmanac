@@ -1572,104 +1572,54 @@ def test_run_queue_stays_operation_dispatch_only():
     assert "def garden_run_spec(" in specs_text
 
 
-def test_sync_workflow_policy_stays_out_of_service_orchestration():
+def test_sync_workflow_evaluation_stays_simple_and_separate():
     service = SRC_ROOT / "workflows/sync/service.py"
     sync_root = SRC_ROOT / "workflows/sync"
     evaluation = sync_root / "evaluation.py"
-    policy = sync_root / "policy.py"
-    policy_modules = tuple(
-        path
-        for path in (
-            policy,
-            sync_root / "guidance.py",
-            sync_root / "reporting.py",
-        )
-        if path.is_file()
-    )
+    guidance = sync_root / "guidance.py"
+    summary = sync_root / "summary.py"
     service_text = service.read_text(encoding="utf-8")
     evaluation_text = evaluation.read_text(encoding="utf-8")
-    policy_text = policy.read_text(encoding="utf-8")
-    combined_policy_text = "\n".join(
-        path.read_text(encoding="utf-8") for path in policy_modules
-    )
+    guidance_text = guidance.read_text(encoding="utf-8")
+    summary_text = summary.read_text(encoding="utf-8")
 
     forbidden_service_fragments = (
-        "def evaluate_cursor(",
-        "def reconcile_pending_entry(",
-        "def pending_entry(",
-        "def absorbed_entry(",
-        "def failed_entry(",
-        "def ledger_key(",
-        "def sync_ingest_guidance(",
-        "EMPTY_SHA256",
-    )
-    forbidden_service_evaluation_fragments = (
         "DiscoverTranscriptsRequest",
-        "ListRunsRequest",
         "SelectRepositoryRequest",
-        "SyncReady(",
-        "SyncWorkItem(",
+        "SyncRepositoryIngest(",
+        "def sync_ingest_guidance(",
+        "queue_ingest(",
+        "spawn_worker(",
+    )
+    forbidden_evaluation_fragments = (
+        "ListRunsRequest",
+        "IngestRequest",
+        "RunStatus.FAILED",
         "read_transcript(",
         "quiet_window_skip(",
-        "evaluate_pending_run(",
-    )
-    forbidden_policy_imports = (
-        "codealmanac.integrations",
-        "codealmanac.workflows.ingest",
-        "codealmanac.workflows.run_queue",
-        "codealmanac.services.sources.service",
-        "codealmanac.services.runs.service",
-        "codealmanac.services.repositories.service",
+        "ledger_key(",
     )
 
     assert evaluation.is_file()
-    assert all(path.is_file() for path in policy_modules)
+    assert guidance.is_file()
+    assert summary.is_file()
     assert len(service_text.splitlines()) <= 120
     assert "SyncEvaluator(" in service_text
     assert "class SyncEvaluator" in evaluation_text
     assert "DiscoverTranscriptsRequest" in evaluation_text
-    assert "ListRunsRequest" in evaluation_text
     assert "SelectRepositoryRequest" in evaluation_text
+    assert "SyncRepositoryIngest(" in evaluation_text
+    assert "def sync_ingest_guidance(" in guidance_text
+    assert "def ready_sync_repository(" in summary_text
+    assert "def started_sync_repository(" in summary_text
     assert [
-        fragment
-        for fragment in forbidden_service_evaluation_fragments
-        if fragment in service_text
-    ] == []
-    assert len(policy_text.splitlines()) <= 80
-    assert [
-        fragment
-        for fragment in forbidden_service_fragments
-        if fragment in service_text
+        fragment for fragment in forbidden_service_fragments if fragment in service_text
     ] == []
     assert [
         fragment
-        for fragment in forbidden_policy_imports
-        if fragment in combined_policy_text
+        for fragment in forbidden_evaluation_fragments
+        if fragment in evaluation_text
     ] == []
-    assert "from codealmanac.workflows.sync.decisions import" in policy_text
-    assert "from codealmanac.workflows.sync.entries import" in policy_text
-    assert "from codealmanac.workflows.sync.guidance import" in policy_text
-    assert "from codealmanac.workflows.sync.identity import" in policy_text
-    assert "from codealmanac.workflows.sync.reporting import" in policy_text
-    assert "from codealmanac.workflows.sync.snapshots import" in policy_text
-    assert "def evaluate_cursor(" in (
-        sync_root / "decisions.py"
-    ).read_text(encoding="utf-8")
-    assert "def pending_entry(" in (sync_root / "entries.py").read_text(
-        encoding="utf-8"
-    )
-    assert "def ledger_key(" in (sync_root / "identity.py").read_text(
-        encoding="utf-8"
-    )
-    assert "def read_transcript(" in (sync_root / "snapshots.py").read_text(
-        encoding="utf-8"
-    )
-    assert "def sync_ingest_guidance(" in (sync_root / "guidance.py").read_text(
-        encoding="utf-8"
-    )
-    assert "def sync_started(" in (sync_root / "reporting.py").read_text(
-        encoding="utf-8"
-    )
 
 
 def test_sync_queue_effects_stay_out_of_service_orchestration():

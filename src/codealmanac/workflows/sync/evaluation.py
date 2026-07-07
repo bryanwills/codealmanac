@@ -12,14 +12,14 @@ from codealmanac.services.sources.service import SourcesService
 from codealmanac.workflows.sync.models import (
     SyncEvaluation,
     SyncMode,
+    SyncRepositoryIngest,
     SyncSkipped,
     SyncSummary,
-    SyncWorkItem,
 )
 from codealmanac.workflows.sync.requests import SyncSelectionRequest
 from codealmanac.workflows.sync.store import SyncStateStore
 from codealmanac.workflows.sync.summary import (
-    ready_repository,
+    ready_sync_repository,
     skipped_transcript,
 )
 
@@ -72,8 +72,8 @@ class SyncEvaluator:
                 continue
             transcripts_by_repository_id[repository.repository_id].append(transcript)
 
-        work_items = tuple(
-            SyncWorkItem(
+        repository_ingests = tuple(
+            SyncRepositoryIngest(
                 repository=repositories_by_id[repository_id],
                 transcripts=tuple(sorted(transcripts, key=transcript_sort_key)),
             )
@@ -81,16 +81,16 @@ class SyncEvaluator:
                 transcripts_by_repository_id.items()
             )
         )
-        ready = tuple(ready_repository(item) for item in work_items)
+        ready = tuple(ready_sync_repository(item) for item in repository_ingests)
         summary = SyncSummary(
             mode=mode,
             since=active_since,
             scanned=len(transcripts),
-            eligible=sum(len(item.transcripts) for item in work_items),
+            eligible=sum(len(item.transcripts) for item in repository_ingests),
             ready=ready if mode == SyncMode.STATUS else (),
             skipped=tuple(skipped),
         )
-        return SyncEvaluation(summary=summary, work_items=work_items)
+        return SyncEvaluation(summary=summary, repository_ingests=repository_ingests)
 
     def active_since(self, request: SyncSelectionRequest, now: datetime) -> datetime:
         state = self.state_store.read()

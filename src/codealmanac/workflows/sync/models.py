@@ -70,11 +70,11 @@ class SyncSummary(CodeAlmanacModel):
     skipped: tuple[SyncSkipped, ...] = ()
 
 
-class SyncWorkItem(CodeAlmanacModel):
+class SyncRepositoryIngest(CodeAlmanacModel):
     repository: Repository
     transcripts: tuple[TranscriptCandidate, ...]
 
 
 class SyncEvaluation(CodeAlmanacModel):
     summary: SyncSummary
-    work_items: tuple[SyncWorkItem, ...]
+    repository_ingests: tuple[SyncRepositoryIngest, ...]

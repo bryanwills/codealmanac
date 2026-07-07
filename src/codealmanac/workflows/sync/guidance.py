@@ -1,7 +1,7 @@
-from codealmanac.workflows.sync.models import SyncWorkItem
+from codealmanac.workflows.sync.models import SyncRepositoryIngest
 
 
-def sync_ingest_guidance(item: SyncWorkItem) -> str:
+def sync_ingest_guidance(item: SyncRepositoryIngest) -> str:
     lines = [
         "Scheduled sync:",
         f"- Repository: {item.repository.name}",
