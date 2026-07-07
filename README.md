@@ -25,9 +25,9 @@ indexed locally, and reviewed in Git like any other code change.
 
 ```bash
 curl -fsSL https://codealmanac.com/install.sh | sh
+codealmanac setup --yes
 
 cd your-repo
-codealmanac setup --yes
 codealmanac init
 codealmanac search "getting"
 codealmanac show getting-started
