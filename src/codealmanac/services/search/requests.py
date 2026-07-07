@@ -3,11 +3,12 @@ from pathlib import Path
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.repositories.models import RepositoryName
 
 
 class SearchPagesRequest(CodeAlmanacModel):
     cwd: Path
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
     query: str | None = None
     topics: tuple[str, ...] = ()
     mentions: str | None = None

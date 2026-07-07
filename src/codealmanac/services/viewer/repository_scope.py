@@ -1,7 +1,11 @@
 from pathlib import Path
 
 from codealmanac.core.errors import NotFoundError
-from codealmanac.services.repositories.models import Repository, RepositoryState
+from codealmanac.services.repositories.models import (
+    Repository,
+    RepositoryName,
+    RepositoryState,
+)
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.viewer.models import ViewerRepository
 from codealmanac.services.viewer.projections import viewer_repository
@@ -11,7 +15,7 @@ class ViewerRepositoryScope:
     def __init__(self, repositories: RepositoriesService):
         self.repositories = repositories
 
-    def select(self, cwd: Path, repository_name: str | None) -> Repository:
+    def select(self, cwd: Path, repository_name: RepositoryName | None) -> Repository:
         if repository_name is not None:
             return self.repositories.select_for_read(cwd, repository_name)
         return self.select_default(cwd)

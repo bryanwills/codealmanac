@@ -5,6 +5,7 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessKind
+from codealmanac.services.repositories.models import RepositoryName
 from codealmanac.services.runs.models import RunId
 
 
@@ -13,7 +14,7 @@ class IngestRequest(CodeAlmanacModel):
     inputs: tuple[str, ...]
     harness: HarnessKind
     model: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
     title: str | None = None
     guidance: str | None = None
     auto_commit: bool = True

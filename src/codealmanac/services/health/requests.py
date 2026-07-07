@@ -1,13 +1,14 @@
 from pathlib import Path
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.repositories.models import RepositoryName
 
 
 class HealthCheckRequest(CodeAlmanacModel):
     cwd: Path
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class ValidateWikiRequest(CodeAlmanacModel):
     cwd: Path
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None

@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic import field_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.repositories.models import RepositoryName
 
 
 class SearchIndexRequest(CodeAlmanacModel):
@@ -21,4 +22,4 @@ class SearchIndexRequest(CodeAlmanacModel):
 
 class ReindexRequest(CodeAlmanacModel):
     cwd: Path
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None

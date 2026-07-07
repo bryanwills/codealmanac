@@ -6,6 +6,7 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.text import required_text
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessTranscriptRef
+from codealmanac.services.repositories.models import RepositoryName
 from codealmanac.services.runs.models import (
     RunEventKind,
     RunId,
@@ -16,7 +17,7 @@ from codealmanac.services.runs.models import (
 
 
 class ListRunsRequest(CodeAlmanacModel):
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
     limit: int | None = None
 
     @field_validator("limit")
@@ -29,22 +30,22 @@ class ListRunsRequest(CodeAlmanacModel):
 
 class ShowRunRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class ReadRunLogRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class AttachRunRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class StreamRunAttachRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
     poll_interval_seconds: float = 0.5
 
     @field_validator("poll_interval_seconds")
@@ -57,7 +58,7 @@ class StreamRunAttachRequest(CodeAlmanacModel):
 
 class CancelRunRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class StartRunRequest(CodeAlmanacModel):
@@ -84,7 +85,7 @@ class QueueRunRequest(CodeAlmanacModel):
 
 class ReadRunSpecRequest(CodeAlmanacModel):
     run_id: RunId
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class AcquireRunWorkerLockRequest(CodeAlmanacModel):

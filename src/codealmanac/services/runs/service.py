@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 
 from codealmanac.core.errors import NotFoundError
-from codealmanac.services.repositories.models import Repository
+from codealmanac.services.repositories.models import Repository, RepositoryName
 from codealmanac.services.repositories.requests import SelectRepositoryRequest
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.runs.locks import RunWorkerLease
@@ -154,7 +154,10 @@ class RunsService:
         self.require_selected_run(record, request.repository_name)
         return self.store.cancel(request.run_id)
 
-    def selected_repository(self, repository_name: str | None) -> Repository | None:
+    def selected_repository(
+        self,
+        repository_name: RepositoryName | None,
+    ) -> Repository | None:
         if repository_name is None:
             return None
         return self.repositories.select_by_name(
@@ -164,7 +167,7 @@ class RunsService:
     def require_selected_run(
         self,
         record: RunRecord,
-        repository_name: str | None,
+        repository_name: RepositoryName | None,
     ) -> None:
         repository = self.selected_repository(repository_name)
         if repository is None:

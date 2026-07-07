@@ -15,6 +15,7 @@ from codealmanac.services.repositories.models import (
     RegisteredRepositories,
     RegisteredRepository,
     Repository,
+    RepositoryName,
 )
 from codealmanac.services.repositories.requests import (
     RegisterRepositoryRequest,
@@ -105,7 +106,7 @@ class RepositoriesService:
     def select_for_operation(
         self,
         cwd: Path,
-        repository_name: str | None,
+        repository_name: RepositoryName | None,
     ) -> Repository:
         if repository_name is None:
             return self.registered_repository_at(cwd)
@@ -128,7 +129,7 @@ class RepositoriesService:
     def select_for_read(
         self,
         cwd: Path,
-        repository_name: str | None,
+        repository_name: RepositoryName | None,
     ) -> Repository:
         if repository_name is None:
             return self.read_repository_at(cwd)
