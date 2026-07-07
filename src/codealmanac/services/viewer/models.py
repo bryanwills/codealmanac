@@ -42,6 +42,7 @@ class ViewerPageSource(CodeAlmanacModel):
     title: str | None
     retrieved_at: str | None
     note: str | None
+    citation_number: int | None
 
 
 class ViewerOverview(CodeAlmanacModel):
