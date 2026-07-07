@@ -1,6 +1,7 @@
 from codealmanac.database.sqlite import SQLiteConnection
 from codealmanac.services.runs.models import (
     QueuedRun,
+    RunKind,
     RunRecord,
     RunSpec,
     RunStatus,
@@ -112,3 +113,27 @@ def count_queued_runs_before(
         ),
     ).fetchone()
     return int(row[0])
+
+
+def active_run_exists(
+    connection: SQLiteConnection,
+    repository_id: str,
+    kind: RunKind,
+) -> bool:
+    row = connection.execute(
+        """
+        SELECT 1
+        FROM runs
+        WHERE repository_id = ?
+          AND kind = ?
+          AND status IN (?, ?)
+        LIMIT 1
+        """,
+        (
+            repository_id,
+            kind.value,
+            RunStatus.QUEUED.value,
+            RunStatus.RUNNING.value,
+        ),
+    ).fetchone()
+    return row is not None

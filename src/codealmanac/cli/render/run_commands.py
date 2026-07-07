@@ -137,9 +137,11 @@ def render_run_queue_started(result: RunQueueStartResult) -> None:
 
 
 def render_scheduled_garden(result: ScheduledGardenResult) -> None:
-    print(f"scheduled garden: {len(result.runs)} run(s)")
+    print(f"scheduled garden: {len(result.runs)} queued, {len(result.skipped)} skipped")
     for run in result.runs:
         print(f"  - {run.kind.value} {run.run_id}")
+    for repository in result.skipped:
+        print(f"  - skipped {repository.name}: garden already queued or running")
     if result.worker is not None:
         print(f"worker: pid {result.worker.child_pid}")
     if result.worker_error is not None:

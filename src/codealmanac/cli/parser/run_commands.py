@@ -36,10 +36,10 @@ def add_run_commands(subcommands: argparse._SubParsersAction) -> None:
     garden.add_argument("--guidance")
     garden.add_argument("--json", action="store_true")
 
-    worker = subcommands.add_parser("__run-worker", help=argparse.SUPPRESS)
+    worker = hidden_run_command(subcommands, "__run-worker")
     worker.add_argument("--cwd", required=True)
 
-    subcommands.add_parser("__garden-scheduler", help=argparse.SUPPRESS)
+    hidden_run_command(subcommands, "__garden-scheduler")
 
     sync = subcommands.add_parser("sync", help="sync recently active transcripts")
     sync.add_argument("--wiki")
@@ -54,3 +54,14 @@ def add_run_commands(subcommands: argparse._SubParsersAction) -> None:
     sync_status.add_argument("--wiki")
     sync_status.add_argument("--from", dest="source_apps")
     sync_status.add_argument("--json", action="store_true")
+
+
+def hidden_run_command(
+    subcommands: argparse._SubParsersAction,
+    name: str,
+) -> argparse.ArgumentParser:
+    parser = subcommands.add_parser(name, help=argparse.SUPPRESS)
+    subcommands._choices_actions = [
+        action for action in subcommands._choices_actions if action.dest != name
+    ]
+    return parser

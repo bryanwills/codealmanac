@@ -3,6 +3,7 @@ from pathlib import Path
 from codealmanac.core.errors import error_summary
 from codealmanac.services.repositories.service import RepositoriesService
 from codealmanac.services.runs.models import (
+    RunKind,
     RunQueueDrainResult,
     RunRecord,
     RunWorkerSpawnResult,
@@ -95,8 +96,12 @@ class RunQueue:
         request: ScheduledGardenRequest,
     ) -> ScheduledGardenResult:
         runs: list[RunRecord] = []
+        skipped = []
         worker_cwd = None
         for repository in self.repositories.list():
+            if self.runs.has_active_run(repository.repository_id, RunKind.GARDEN):
+                skipped.append(repository)
+                continue
             run = self.queue_garden(
                 GardenRequest(
                     cwd=repository.root_path,
@@ -108,15 +113,20 @@ class RunQueue:
             runs.append(run)
             worker_cwd = worker_cwd or repository.root_path
         if worker_cwd is None:
-            return ScheduledGardenResult(runs=tuple(runs))
+            return ScheduledGardenResult(runs=tuple(runs), skipped=tuple(skipped))
         try:
             worker = self.spawn_worker(worker_cwd)
         except Exception as error:
             return ScheduledGardenResult(
                 runs=tuple(runs),
+                skipped=tuple(skipped),
                 worker_error=error_summary(error),
             )
-        return ScheduledGardenResult(runs=tuple(runs), worker=worker)
+        return ScheduledGardenResult(
+            runs=tuple(runs),
+            skipped=tuple(skipped),
+            worker=worker,
+        )
 
     def spawn_worker(self, cwd: Path) -> RunWorkerSpawnResult:
         return self.spawner.spawn(SpawnRunWorkerRequest(cwd=cwd))

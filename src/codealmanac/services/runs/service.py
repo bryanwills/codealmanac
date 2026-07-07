@@ -12,6 +12,7 @@ from codealmanac.services.runs.models import (
     RunAttachSnapshot,
     RunAttachUpdate,
     RunCancelResult,
+    RunKind,
     RunLogEvent,
     RunRecord,
     RunSpec,
@@ -81,6 +82,9 @@ class RunsService:
 
     def queued_before(self, record: RunRecord) -> int:
         return self.store.queued_before(record)
+
+    def has_active_run(self, repository_id: str, kind: RunKind) -> bool:
+        return self.store.has_active_run(repository_id, kind)
 
     def repository_for(self, record: RunRecord) -> Repository:
         return self.repositories.get(record.repository_id)

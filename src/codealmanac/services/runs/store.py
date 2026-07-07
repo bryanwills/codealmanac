@@ -23,6 +23,7 @@ from codealmanac.services.runs.models import (
     RunStatus,
 )
 from codealmanac.services.runs.queries import (
+    active_run_exists,
     count_queued_runs_before,
     list_run_records,
     next_queued_run,
@@ -106,6 +107,10 @@ class RunStore:
     def queued_before(self, record: RunRecord) -> int:
         with self.connect() as connection:
             return count_queued_runs_before(connection, record)
+
+    def has_active_run(self, repository_id: str, kind: RunKind) -> bool:
+        with self.connect() as connection:
+            return active_run_exists(connection, repository_id, kind)
 
     def acquire_worker_lock(
         self,

@@ -12,5 +12,6 @@ class RunQueueStartResult(CodeAlmanacModel):
 
 class ScheduledGardenResult(CodeAlmanacModel):
     runs: tuple[RunRecord, ...]
+    skipped: tuple[Repository, ...] = ()
     worker: RunWorkerSpawnResult | None = None
     worker_error: str | None = None
