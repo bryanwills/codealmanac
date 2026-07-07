@@ -5,13 +5,14 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.slug import to_kebab_case
 from codealmanac.core.text import required_text
+from codealmanac.services.repositories.models import RepositoryName
 
 
 class TagPageRequest(CodeAlmanacModel):
     cwd: Path
     slug: str
     topics: tuple[str, ...]
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("slug")
     @classmethod

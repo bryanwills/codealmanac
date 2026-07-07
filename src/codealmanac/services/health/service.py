@@ -11,7 +11,7 @@ from codealmanac.services.health.runtime import runtime_state_issues
 from codealmanac.services.health.sources import source_shape_issues
 from codealmanac.services.index.models import HealthReport, IndexRefreshResult
 from codealmanac.services.index.service import IndexService
-from codealmanac.services.repositories.models import Repository
+from codealmanac.services.repositories.models import Repository, RepositoryName
 from codealmanac.services.repositories.service import RepositoriesService
 
 
@@ -56,7 +56,11 @@ class HealthService:
             raise ValidationFailed(validation_failure_message(result))
         return result
 
-    def select_repository(self, cwd: Path, repository_name: str | None) -> Repository:
+    def select_repository(
+        self,
+        cwd: Path,
+        repository_name: RepositoryName | None,
+    ) -> Repository:
         return self.repositories.select_for_read(cwd, repository_name)
 
 

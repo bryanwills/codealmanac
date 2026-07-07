@@ -5,17 +5,18 @@ from pydantic import field_validator
 from codealmanac.core.models import CodeAlmanacModel
 from codealmanac.core.slug import to_kebab_case
 from codealmanac.core.text import required_text
+from codealmanac.services.repositories.models import RepositoryName
 
 
 class ListTopicsRequest(CodeAlmanacModel):
     cwd: Path
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
 
 class ShowTopicRequest(CodeAlmanacModel):
     cwd: Path
     slug: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
     include_descendants: bool = False
 
     @field_validator("slug")
@@ -28,7 +29,7 @@ class CreateTopicRequest(CodeAlmanacModel):
     cwd: Path
     name: str
     parents: tuple[str, ...] = ()
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("name")
     @classmethod
@@ -50,7 +51,7 @@ class DescribeTopicRequest(CodeAlmanacModel):
     cwd: Path
     slug: str
     description: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("slug")
     @classmethod
@@ -70,7 +71,7 @@ class LinkTopicRequest(CodeAlmanacModel):
     cwd: Path
     child: str
     parent: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("child", "parent")
     @classmethod
@@ -89,7 +90,7 @@ class RenameTopicRequest(CodeAlmanacModel):
     cwd: Path
     old_slug: str
     new_slug: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("old_slug", "new_slug")
     @classmethod
@@ -103,7 +104,7 @@ class RenameTopicRequest(CodeAlmanacModel):
 class DeleteTopicRequest(CodeAlmanacModel):
     cwd: Path
     slug: str
-    repository_name: str | None = None
+    repository_name: RepositoryName | None = None
 
     @field_validator("slug")
     @classmethod

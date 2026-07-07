@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from codealmanac.app import CodeAlmanac
+from codealmanac.services.repositories.models import RepositoryName
 from codealmanac.services.viewer.models import (
     ViewerFile,
     ViewerJob,
@@ -28,7 +29,7 @@ from codealmanac.services.viewer.requests import (
 class ServerApiContext:
     codealmanac: CodeAlmanac
     cwd: Path
-    scoped_repository_name: str | None = None
+    scoped_repository_name: RepositoryName | None = None
 
     def repository_name(self, request_wiki: str | None) -> str | None:
         return self.scoped_repository_name or request_wiki

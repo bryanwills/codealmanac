@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.repositories.store import RepositoryStore
 
@@ -23,6 +25,30 @@ def test_repository_store_remembers_repository(tmp_path: Path):
     assert stored.to_repository() == repository
     assert store.find_by_repository_id("repo-1") == stored
     assert store.list() == [stored]
+
+
+def test_repository_name_is_a_shared_pydantic_boundary(tmp_path: Path):
+    repository = Repository(
+        repository_id="repo-1",
+        name="  repo  ",
+        description="",
+        root_path=tmp_path / "repo",
+        almanac_root=Path("almanac"),
+        almanac_path=tmp_path / "repo/almanac",
+        registered_at=datetime(2026, 7, 6, tzinfo=UTC),
+    )
+
+    assert repository.name == "repo"
+    with pytest.raises(ValueError):
+        Repository(
+            repository_id="repo-1",
+            name="  ",
+            description="",
+            root_path=tmp_path / "repo",
+            almanac_root=Path("almanac"),
+            almanac_path=tmp_path / "repo/almanac",
+            registered_at=datetime(2026, 7, 6, tzinfo=UTC),
+        )
 
 
 def test_repository_store_updates_existing_repository(tmp_path: Path):
