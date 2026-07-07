@@ -88,6 +88,7 @@ class BuildWorkflow:
                 ExecuteOperationRequest(
                     context=context,
                     harness=request.harness,
+                    model=request.model,
                     prompt=render_build_prompt(
                         self.prompts,
                         self.manual,

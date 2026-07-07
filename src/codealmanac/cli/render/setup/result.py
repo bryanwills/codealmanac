@@ -127,6 +127,7 @@ def box_row(content: str, inner_width: int) -> str:
 def setup_steps(result: SetupResult) -> tuple[SetupStep, ...]:
     return (
         instruction_step(result),
+        ai_runner_step(result),
         wiki_maintenance_step(result),
         product_update_step(result),
         change_handling_step(result),
@@ -145,6 +146,14 @@ def instruction_detail(result: SetupResult) -> str:
     if len(result.changes) == 0:
         return ", ".join(target.value for target in result.plan.instruction_targets)
     return "; ".join(change.message for change in result.changes)
+
+
+def ai_runner_step(result: SetupResult) -> SetupStep:
+    return SetupStep(
+        "AI runner",
+        result.plan.default_harness.value,
+        f"{result.plan.harness_model} will run CodeAlmanac jobs",
+    )
 
 
 def product_update_step(result: SetupResult) -> SetupStep:

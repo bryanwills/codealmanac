@@ -50,6 +50,7 @@ class GardenWorkflow:
             StartedGardenRequest(
                 cwd=request.cwd,
                 harness=request.harness,
+                model=request.model,
                 repository_name=request.repository_name,
                 title=request.title,
                 guidance=request.guidance,
@@ -97,6 +98,7 @@ class GardenWorkflow:
                 ExecuteOperationRequest(
                     context=context,
                     harness=request.harness,
+                    model=request.model,
                     prompt=render_garden_prompt(
                         self.prompts,
                         context.repository,

@@ -82,6 +82,7 @@ def sync_ingest_request(
             for candidate in item.transcripts
         ),
         harness=request.harness,
+        model=request.model,
         repository_name=item.repository.name,
         title=sync_ingest_title(item),
         guidance=sync_ingest_guidance(item),

@@ -30,3 +30,7 @@ class SetConfigValueRequest(CodeAlmanacModel):
     @classmethod
     def require_value(cls, value: str) -> str:
         return required_text(value, "config value")
+
+
+class GetConfigValueRequest(CodeAlmanacModel):
+    key: ConfigKey

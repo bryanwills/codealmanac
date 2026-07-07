@@ -56,6 +56,7 @@ class IngestWorkflow:
                 cwd=request.cwd,
                 inputs=request.inputs,
                 harness=request.harness,
+                model=request.model,
                 repository_name=request.repository_name,
                 title=request.title,
                 guidance=request.guidance,
@@ -111,6 +112,7 @@ class IngestWorkflow:
                 ExecuteOperationRequest(
                     context=context,
                     harness=request.harness,
+                    model=request.model,
                     prompt=render_ingest_prompt(
                         self.prompts,
                         context.repository,

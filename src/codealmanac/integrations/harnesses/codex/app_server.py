@@ -101,7 +101,7 @@ class CodexAppServerClient:
                     "thread/start",
                     {
                         "cwd": str(request.cwd),
-                        "model": None,
+                        "model": request.model,
                         "approvalPolicy": "never",
                         "sandbox": sandbox_mode,
                         "developerInstructions": None,
@@ -136,7 +136,7 @@ class CodexAppServerClient:
                         ],
                         "approvalPolicy": "never",
                         "sandboxPolicy": sandbox_policy(request.cwd, sandbox_mode),
-                        "model": None,
+                        "model": request.model,
                         "effort": None,
                         "outputSchema": None,
                     },

@@ -7,7 +7,13 @@ from codealmanac.cli.dispatch.setup_wizard.models import (
 from codealmanac.cli.dispatch.setup_wizard.options import (
     change_options,
     maintenance_options,
+    model_for_index,
+    model_index,
+    model_options,
     parse_setup_targets,
+    runner_for_index,
+    runner_index,
+    runner_options,
     shortcut_option_index,
     target_default_index,
     target_options,
@@ -23,6 +29,7 @@ from codealmanac.cli.render.setup import (
     SetupChoiceScreen,
     render_setup_choice_screen,
 )
+from codealmanac.services.config.models import DEFAULT_HARNESS, DEFAULT_HARNESS_MODEL
 
 
 def resolve_setup_selections(args: argparse.Namespace) -> SetupSelections:
@@ -35,6 +42,8 @@ def resolve_setup_selections(args: argparse.Namespace) -> SetupSelections:
 def default_setup_selections(args: argparse.Namespace) -> SetupSelections:
     return SetupSelections(
         targets=parse_setup_targets(args.target),
+        harness=DEFAULT_HARNESS,
+        model=DEFAULT_HARNESS_MODEL,
         auto_update=not args.no_auto_update,
         auto_commit=not args.no_auto_commit,
         sync_off=args.sync_off,
@@ -60,9 +69,29 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
         ),
         initial_index=target_default_index(defaults.targets),
     )
-    maintenance_index = choose_setup_option(
+    runner_index_value = choose_setup_option(
         SetupChoiceScreen(
             step=2,
+            title="AI runner",
+            question="Which agent should run CodeAlmanac jobs?",
+            options=runner_options(),
+        ),
+        initial_index=runner_index(defaults.harness),
+    )
+    harness = runner_for_index(runner_index_value)
+    model_index_value = choose_setup_option(
+        SetupChoiceScreen(
+            step=3,
+            title="Runner model",
+            question=f"Which {harness.value} model should maintain your wiki?",
+            options=model_options(harness),
+            visual="list",
+        ),
+        initial_index=model_index(harness, defaults.model),
+    )
+    maintenance_index = choose_setup_option(
+        SetupChoiceScreen(
+            step=4,
             title="Wiki maintenance",
             question="How should your wikis be updated?",
             options=maintenance_options(),
@@ -71,7 +100,7 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
     )
     update_index = choose_setup_option(
         SetupChoiceScreen(
-            step=3,
+            step=5,
             title="Product updates",
             question="Keep CodeAlmanac up to date automatically?",
             options=update_options(),
@@ -80,7 +109,7 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
     )
     change_index = choose_setup_option(
         SetupChoiceScreen(
-            step=4,
+            step=6,
             title="Agent change handling",
             question="Should agents commit wiki changes or leave them in the worktree?",
             options=change_options(),
@@ -90,6 +119,8 @@ def wizard_selections(defaults: SetupSelections) -> SetupSelections:
     )
     return SetupSelections(
         targets=targets_for_index(target_index),
+        harness=harness,
+        model=model_for_index(harness, model_index_value),
         auto_update=update_index == 0,
         auto_commit=change_index == 0,
         sync_off=maintenance_index == 1,
@@ -113,6 +144,10 @@ def choose_setup_option(screen: SetupChoiceScreen, initial_index: int) -> int:
         if key in {"\x1b[D", "a"}:
             next_index = (selected_index - 1) % len(screen.options)
         elif key in {"\x1b[C", "d"}:
+            next_index = (selected_index + 1) % len(screen.options)
+        elif key in {"\x1b[A", "w"}:
+            next_index = (selected_index - 1) % len(screen.options)
+        elif key in {"\x1b[B", "s"}:
             next_index = (selected_index + 1) % len(screen.options)
         if next_index != selected_index:
             selected_index = next_index

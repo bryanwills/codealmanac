@@ -12,6 +12,7 @@ class IngestRequest(CodeAlmanacModel):
     cwd: Path
     inputs: tuple[str, ...]
     harness: HarnessKind
+    model: str
     repository_name: str | None = None
     title: str | None = None
     guidance: str | None = None
@@ -24,7 +25,7 @@ class IngestRequest(CodeAlmanacModel):
             raise ValueError("at least one ingest input is required")
         return value
 
-    @field_validator("title", "guidance")
+    @field_validator("model", "title", "guidance")
     @classmethod
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:

@@ -28,6 +28,8 @@ def dispatch_setup(args: argparse.Namespace, app: CodeAlmanac) -> int:
         RunSetupRequest(
             cwd=Path.cwd(),
             targets=selections.targets,
+            harness=selections.harness,
+            model=selections.model,
             yes=args.yes,
             auto_commit=selections.auto_commit,
             auto_update=selections.auto_update,

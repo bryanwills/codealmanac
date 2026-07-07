@@ -9,7 +9,13 @@ from codealmanac.services.harnesses.models import HarnessKind
 
 class ScheduledGardenRequest(CodeAlmanacModel):
     harness: HarnessKind
+    model: str
     auto_commit: bool = True
+
+    @field_validator("model")
+    @classmethod
+    def require_model(cls, value: str) -> str:
+        return required_text(value, "scheduled garden model")
 
 
 class DrainRunQueueRequest(CodeAlmanacModel):

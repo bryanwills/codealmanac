@@ -26,11 +26,12 @@ class RecordOperationEventRequest(CodeAlmanacModel):
 class ExecuteOperationRequest(CodeAlmanacModel):
     context: OperationContext
     harness: HarnessKind
+    model: str
     prompt: str
     title: str | None = None
     success_summary: str
 
-    @field_validator("prompt", "success_summary")
+    @field_validator("model", "prompt", "success_summary")
     @classmethod
     def require_text(cls, value: str) -> str:
         return required_text(value, "operation request text")

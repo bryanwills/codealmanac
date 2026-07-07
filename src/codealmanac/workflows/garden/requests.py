@@ -11,12 +11,13 @@ from codealmanac.services.runs.models import RunId
 class GardenRequest(CodeAlmanacModel):
     cwd: Path
     harness: HarnessKind
+    model: str
     repository_name: str | None = None
     title: str | None = None
     guidance: str | None = None
     auto_commit: bool = True
 
-    @field_validator("title", "guidance")
+    @field_validator("model", "title", "guidance")
     @classmethod
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:

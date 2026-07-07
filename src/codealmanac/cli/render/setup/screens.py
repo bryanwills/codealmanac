@@ -48,7 +48,7 @@ def render_setup_choice_screen(
     write_line("")
     write_line(
         f"  {BLUE}◆{RST}  "
-        f"{DIM}[{screen.step}/4]{RST} "
+        f"{DIM}[{screen.step}/6]{RST} "
         f"{WHITE_BOLD}{screen.title}{RST}"
     )
     write_line(BAR)
@@ -58,12 +58,15 @@ def render_setup_choice_screen(
     write_line("")
     if screen.visual == "change-handling":
         render_change_handling_choice(selected_index)
+    elif screen.visual == "list":
+        render_vertical_options(screen.options, selected_index)
     else:
         render_option_cards(screen.options, selected_index)
     write_line("")
     write_line(
         f"  {DIM}│{RST}   "
         f"{BLUE}{BOLD}[←/→]{RST} switch   "
+        f"{BLUE}{BOLD}[↑/↓]{RST} switch   "
         f"{BLUE}{BOLD}[enter]{RST} choose"
     )
     write_line("")
@@ -91,6 +94,26 @@ def render_option_cards(
         for index in range(len(options))
     ]
     write_line("   " + "   ".join(indicator_parts))
+
+
+def render_vertical_options(
+    options: tuple[SetupChoiceOption, ...],
+    selected_index: int,
+) -> None:
+    width = 56
+    border = BLUE
+    write_line(f"   {border}╭{'─' * width}╮{RST}")
+    for index, option in enumerate(options):
+        selected = index == selected_index
+        marker = f"{BLUE}{BOLD}◆{RST}" if selected else f"{DIM}◇{RST}"
+        label = option_label(option.label, selected)
+        write_line(card_row(f" {marker} {label}", width, border, RST))
+        for description in option.description:
+            body = RST if selected else DIM
+            write_line(card_row(f"   {body}{description}{RST}", width, border, RST))
+        if index < len(options) - 1:
+            write_line(card_row("", width, border, RST))
+    write_line(f"   {border}╰{'─' * width}╯{RST}")
 
 
 def option_card(

@@ -41,4 +41,5 @@ class SyncStatusRequest(SyncSelectionRequest):
 
 class SyncRequest(SyncSelectionRequest):
     harness: HarnessKind
+    model: str
     auto_commit: bool = True

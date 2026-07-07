@@ -115,6 +115,7 @@ class RunSpec(CodeAlmanacModel):
     version: int = 1
     kind: RunKind
     harness: HarnessKind
+    model: str
     inputs: tuple[str, ...] = ()
     title: str | None = None
     guidance: str | None = None
@@ -127,7 +128,7 @@ class RunSpec(CodeAlmanacModel):
             required_text(item, "run spec input")
         return value
 
-    @field_validator("title", "guidance")
+    @field_validator("model", "title", "guidance")
     @classmethod
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:

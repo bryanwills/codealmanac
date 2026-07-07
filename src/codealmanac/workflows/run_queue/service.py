@@ -107,6 +107,7 @@ class RunQueue:
                     cwd=repository.root_path,
                     repository_name=repository.name,
                     harness=request.harness,
+                    model=request.model,
                     auto_commit=request.auto_commit,
                 )
             )

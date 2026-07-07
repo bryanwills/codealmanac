@@ -5,7 +5,7 @@ from humanfriendly import InvalidTimespan, parse_timespan
 
 from codealmanac.app import CodeAlmanac
 from codealmanac.core.errors import ValidationFailed
-from codealmanac.services.config.models import UserConfig
+from codealmanac.services.config.models import DEFAULT_HARNESS_MODELS, UserConfig
 from codealmanac.services.config.requests import LoadConfigRequest
 from codealmanac.services.harnesses.models import HarnessKind
 
@@ -22,6 +22,12 @@ def resolve_harness(value: str | None, config: UserConfig) -> HarnessKind:
     if value is None:
         return config.harness.default
     return HarnessKind(value)
+
+
+def resolve_harness_model(harness: HarnessKind, config: UserConfig) -> str:
+    if harness == config.harness.default:
+        return config.harness.model
+    return DEFAULT_HARNESS_MODELS[harness]
 
 
 def parse_optional_duration(value: str | None, flag: str) -> timedelta | None:

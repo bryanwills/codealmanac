@@ -103,6 +103,7 @@ class ClaudeSdkClient:
             options=claude_options(
                 cwd=request.cwd,
                 command=self.command,
+                model=request.model,
             ),
         )
         async for message in stream:
@@ -118,10 +119,11 @@ class ClaudeSdkClient:
         return result_from_state(state, tuple(events))
 
 
-def claude_options(cwd: Path, command: str) -> ClaudeAgentOptions:
+def claude_options(cwd: Path, command: str, model: str) -> ClaudeAgentOptions:
     return ClaudeAgentOptions(
         cwd=cwd,
         cli_path=command,
+        model=model,
         tools=list(CLAUDE_ALLOWED_TOOLS),
         allowed_tools=list(CLAUDE_ALLOWED_TOOLS),
         mcp_servers={},

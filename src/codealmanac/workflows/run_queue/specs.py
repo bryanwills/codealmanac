@@ -15,6 +15,7 @@ def ingest_run_spec(request: IngestRequest) -> RunSpec:
     return RunSpec(
         kind=RunKind.INGEST,
         harness=request.harness,
+        model=request.model,
         inputs=request.inputs,
         title=request.title,
         guidance=request.guidance,
@@ -30,6 +31,7 @@ def garden_run_spec(request: GardenRequest) -> RunSpec:
     return RunSpec(
         kind=RunKind.GARDEN,
         harness=request.harness,
+        model=request.model,
         title=request.title,
         guidance=request.guidance,
         auto_commit=request.auto_commit,

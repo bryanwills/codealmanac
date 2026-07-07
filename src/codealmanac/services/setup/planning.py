@@ -5,7 +5,6 @@ from codealmanac.services.automation.defaults import (
     duration_text,
 )
 from codealmanac.services.automation.models import AutomationTask
-from codealmanac.services.config.models import DEFAULT_HARNESS
 from codealmanac.services.setup.automation import (
     recommendation_tasks,
     should_install_automation,
@@ -27,7 +26,8 @@ def setup_plan(request: RunSetupRequest) -> SetupPlan:
         else SetupAutomationMode.RECOMMEND
     )
     return SetupPlan(
-        default_harness=DEFAULT_HARNESS,
+        default_harness=request.harness,
+        harness_model=request.model,
         instruction_targets=request.targets,
         auto_commit=request.auto_commit,
         automation_mode=mode,

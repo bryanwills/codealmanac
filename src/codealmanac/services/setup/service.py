@@ -38,7 +38,8 @@ class SetupService:
 
     def run(self, request: RunSetupRequest) -> SetupResult:
         plan = setup_plan(request)
-        config_update = self.set_auto_commit(request.auto_commit)
+        config_updates = self.set_config(request)
+        config_update = config_updates[0] if len(config_updates) > 0 else None
         changes = ()
         if not request.skip_instructions:
             changes = self._instructions.install(request.targets)
@@ -52,12 +53,14 @@ class SetupService:
                 plan=plan,
                 skipped_instructions=True,
                 config_update=config_update,
+                config_updates=config_updates,
                 automation_install=automation_install,
             )
         return SetupResult(
             plan=plan,
             changes=changes,
             config_update=config_update,
+            config_updates=config_updates,
             automation_install=automation_install,
         )
 
@@ -85,4 +88,28 @@ class SetupService:
                 key=ConfigKey.AUTO_COMMIT,
                 value="true" if enabled else "false",
             )
+        )
+
+    def set_config(self, request: RunSetupRequest) -> tuple[ConfigSetResult, ...]:
+        if self._config is None:
+            return ()
+        return (
+            self._config.set(
+                SetConfigValueRequest(
+                    key=ConfigKey.AUTO_COMMIT,
+                    value="true" if request.auto_commit else "false",
+                )
+            ),
+            self._config.set(
+                SetConfigValueRequest(
+                    key=ConfigKey.HARNESS_DEFAULT,
+                    value=request.harness.value,
+                )
+            ),
+            self._config.set(
+                SetConfigValueRequest(
+                    key=ConfigKey.HARNESS_MODEL,
+                    value=request.model,
+                )
+            ),
         )

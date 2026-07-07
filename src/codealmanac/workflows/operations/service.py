@@ -94,6 +94,7 @@ class OperationRunner:
         harness = self.harnesses.run(
             RunHarnessRequest(
                 kind=request.harness,
+                model=request.model,
                 cwd=repository.root_path,
                 prompt=request.prompt,
                 title=request.title,
