@@ -80,16 +80,6 @@ class SetupService:
             package_uninstall=package_uninstall,
         )
 
-    def set_auto_commit(self, enabled: bool) -> ConfigSetResult | None:
-        if self._config is None:
-            return None
-        return self._config.set(
-            SetConfigValueRequest(
-                key=ConfigKey.AUTO_COMMIT,
-                value="true" if enabled else "false",
-            )
-        )
-
     def set_config(self, request: RunSetupRequest) -> tuple[ConfigSetResult, ...]:
         if self._config is None:
             return ()

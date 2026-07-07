@@ -12,12 +12,12 @@ class BuildRequest(CodeAlmanacModel):
     harness: HarnessKind
     model: str
     name: str | None = None
-    description: str | None = None
+    description: str = ""
     title: str | None = None
     guidance: str | None = None
     auto_commit: bool = True
 
-    @field_validator("model", "name", "description", "title", "guidance")
+    @field_validator("model", "name", "title", "guidance")
     @classmethod
     def require_optional_text(cls, value: str | None) -> str | None:
         if value is None:

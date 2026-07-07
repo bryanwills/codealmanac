@@ -1,11 +1,12 @@
-from codealmanac.cli.render.common import print_json_rows
+import json
+
 from codealmanac.cli.render.style import EM_DASH, pad_visible, style
 from codealmanac.services.repositories.models import RegisteredRepositories
 
 
 def render_repository_list(result: RegisteredRepositories, json_output: bool) -> None:
     if json_output:
-        print_json_rows(repository_rows(result))
+        print(json.dumps(repository_rows(result), indent=2))
         return
     if len(result.repositories) == 0:
         print(

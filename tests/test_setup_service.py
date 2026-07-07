@@ -144,17 +144,13 @@ def test_setup_installs_requested_automation(home: Path, tmp_path: Path):
     automation = FakeSetupAutomationManager(home)
     result = setup_service(home, automation).run(
         RunSetupRequest(
-            cwd=tmp_path,
             sync_every=timedelta(minutes=2),
-            sync_quiet=timedelta(seconds=5),
             garden_off=True,
         )
     )
 
     request = automation.installed[0]
-    assert request.cwd == tmp_path
     assert request.every == timedelta(minutes=2)
-    assert request.quiet == timedelta(seconds=5)
     assert request.garden_off is True
     assert result.plan.automation_mode.value == "install"
     assert tuple(item.task for item in result.plan.automation) == (

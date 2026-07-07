@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from conftest import initialize_repository
 from pydantic import ValidationError
 
 from codealmanac.app import CodeAlmanac
@@ -11,7 +12,6 @@ from codealmanac.services.harnesses.models import (
     HarnessKind,
     HarnessTranscriptRef,
 )
-from codealmanac.services.repositories.requests import InitializeRepositoryRequest
 from codealmanac.services.runs.models import RunEventKind, RunKind, RunStatus
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
@@ -42,7 +42,7 @@ def test_viewer_overview_search_and_topic_use_index_read_model(
 
     assert overview.repository.name == "repo"
     assert overview.featured_page is not None
-    assert overview.featured_page.slug == "getting-started"
+    assert overview.featured_page.slug == "README"
     assert "auth-flow" in [page.slug for page in overview.pages]
     assert [page.slug for page in search.pages] == ["auth-flow"]
     assert [page.slug for page in topic.pages] == ["auth-flow", "session-store"]
@@ -55,7 +55,7 @@ def test_viewer_overview_lists_available_registered_wikis(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeRepositoryRequest(path=other_repo))
+    other = initialize_repository(app, path=other_repo)
     write_viewer_page(
         other_repo,
         "ops-note.md",
@@ -70,14 +70,12 @@ Tracks operational decisions.
     )
     missing_repo = tmp_path / "missing"
     missing_repo.mkdir()
-    missing = app.workflows.build.initialize(
-        InitializeRepositoryRequest(path=missing_repo)
-    )
+    missing = initialize_repository(app, path=missing_repo)
     shutil.rmtree(missing_repo)
 
     overview = app.viewer.overview(ViewerOverviewRequest(cwd=repo))
     selected = app.viewer.overview(
-        ViewerOverviewRequest(cwd=repo, wiki=other.repository_id)
+        ViewerOverviewRequest(cwd=repo, repository_name=other.name)
     )
 
     assert overview.repository.name == "repo"
@@ -103,12 +101,12 @@ def test_viewer_overview_can_be_narrowed_to_one_wiki(
     repo, app = viewer_repo
     other_repo = tmp_path / "other"
     other_repo.mkdir()
-    other = app.workflows.build.initialize(InitializeRepositoryRequest(path=other_repo))
+    other = initialize_repository(app, path=other_repo)
 
     overview = app.viewer.overview(
         ViewerOverviewRequest(
             cwd=repo,
-            wiki=other.repository_id,
+            repository_name=other.name,
             include_repositories=False,
         )
     )
@@ -225,17 +223,17 @@ def write_viewer_page(repo: Path, name: str, body: str) -> None:
 
 
 def create_viewer_run(repo: Path, app: CodeAlmanac):
+    repository = app.repositories.resolve(repo)
     record = app.runs.start(
         StartRunRequest(
-            cwd=repo,
+            repository_id=repository.repository_id,
             kind=RunKind.INGEST,
             title="Digest auth session",
         )
     )
-    app.runs.mark_running(MarkRunRunningRequest(cwd=repo, run_id=record.run_id))
+    app.runs.mark_running(MarkRunRunningRequest(run_id=record.run_id))
     app.runs.record_event(
         RecordRunEventRequest(
-            cwd=repo,
             run_id=record.run_id,
             kind=RunEventKind.OUTPUT,
             message="Edited auth-flow.md",
@@ -247,7 +245,6 @@ def create_viewer_run(repo: Path, app: CodeAlmanac):
     )
     app.runs.record_harness_transcript(
         RecordRunHarnessTranscriptRequest(
-            cwd=repo,
             run_id=record.run_id,
             transcript=HarnessTranscriptRef(
                 kind=HarnessKind.CODEX,
@@ -258,7 +255,6 @@ def create_viewer_run(repo: Path, app: CodeAlmanac):
     )
     return app.runs.finish(
         FinishRunRequest(
-            cwd=repo,
             run_id=record.run_id,
             status=RunStatus.DONE,
             summary="updated auth page",

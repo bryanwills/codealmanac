@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from codealmanac.app import create_app
-from codealmanac.settings import AppConfig
 from codealmanac.services.tagging.requests import TagPageRequest, UntagPageRequest
+from codealmanac.settings import AppConfig
 
 
 def test_tag_adds_topic_preserves_body_and_frontmatter_comment(

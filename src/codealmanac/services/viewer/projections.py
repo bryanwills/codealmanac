@@ -75,34 +75,34 @@ def source_sort_key(source: ViewerPageSource) -> tuple[int, int, str]:
 
 
 def page_summary_from_search(
-    workspace: Workspace,
+    repository: Repository,
     page: SearchPageResult,
 ) -> ViewerPageSummary:
     return ViewerPageSummary(
         slug=page.slug,
         title=page.title,
         summary=page.summary,
-        path=viewer_relative_path(workspace, page.file_path),
+        path=viewer_relative_path(repository, page.file_path),
         topics=page.topics,
     )
 
 
 def page_summary_from_view(
-    workspace: Workspace,
+    repository: Repository,
     page: PageView,
 ) -> ViewerPageSummary:
     return ViewerPageSummary(
         slug=page.slug,
         title=page.title,
         summary=page.summary,
-        path=viewer_relative_path(workspace, page.file_path),
+        path=viewer_relative_path(repository, page.file_path),
         topics=page.topics,
     )
 
 
-def viewer_relative_path(workspace: Workspace, path: Path) -> str:
+def viewer_relative_path(repository: Repository, path: Path) -> str:
     try:
-        normalized = path.relative_to(workspace.almanac_path)
+        normalized = path.relative_to(repository.almanac_path)
     except ValueError:
         normalized = path
 

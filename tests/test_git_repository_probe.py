@@ -4,7 +4,7 @@ from codealmanac.integrations.repositories.git.probe import (
     parse_git_status,
     state_from_status,
 )
-from codealmanac.services.repositories.models import RepositoryPathState
+from codealmanac.workflows.change_tracking import RepositoryPathState
 
 
 def test_parse_git_status_handles_renames_and_untracked_paths():

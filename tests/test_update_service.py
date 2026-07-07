@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.repositories.store import RepositoryStore
 from codealmanac.services.runs.models import RunKind, RunSpec, RunStatus
@@ -296,7 +297,12 @@ def write_run_record(
     store = RunStore(database_path)
     record = store.queue(
         repository.repository_id,
-        RunSpec(kind=RunKind.INGEST, harness="codex", inputs=("note.md",)),
+        RunSpec(
+            kind=RunKind.INGEST,
+            harness=HarnessKind.CODEX,
+            model="gpt-5.5",
+            inputs=("note.md",),
+        ),
         "Active run",
     )
     if status == RunStatus.RUNNING:

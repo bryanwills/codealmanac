@@ -25,7 +25,7 @@ def test_repository_store_remembers_repository(tmp_path: Path):
     assert store.list() == [stored]
 
 
-def test_repository_store_replaces_repositories(tmp_path: Path):
+def test_repository_store_updates_existing_repository(tmp_path: Path):
     store = RepositoryStore(tmp_path / "codealmanac.db")
     first = Repository(
         repository_id="repo-1",
@@ -36,18 +36,22 @@ def test_repository_store_replaces_repositories(tmp_path: Path):
         almanac_path=tmp_path / "one/almanac",
         registered_at=datetime(2026, 7, 6, tzinfo=UTC),
     )
-    second = Repository(
-        repository_id="repo-2",
-        name="repo-two",
-        description="",
-        root_path=tmp_path / "two",
+    changed = Repository(
+        repository_id="repo-1",
+        name="repo-renamed",
+        description="Updated",
+        root_path=tmp_path / "one",
         almanac_root=Path("almanac"),
-        almanac_path=tmp_path / "two/almanac",
-        registered_at=datetime(2026, 7, 6, tzinfo=UTC),
+        almanac_path=tmp_path / "one/almanac",
+        registered_at=datetime(2026, 7, 7, tzinfo=UTC),
     )
 
     store.remember(first)
-    store.replace([store.remember(second)])
+    store.remember(changed)
 
-    assert store.find_by_repository_id("repo-1") is None
-    assert [record.repository_id for record in store.list()] == ["repo-2"]
+    record = store.find_by_repository_id("repo-1")
+    assert record is not None
+    assert record.name == "repo-renamed"
+    assert record.description == "Updated"
+    assert record.registered_at == first.registered_at
+    assert [item.repository_id for item in store.list()] == ["repo-1"]
