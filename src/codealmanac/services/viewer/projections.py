@@ -32,11 +32,29 @@ def viewer_topic_summary(topic: TopicSummary) -> ViewerTopicSummary:
 
 def viewer_page_sources(
     sources: tuple[PageSourceReference, ...],
+    citation_order: tuple[str, ...] = (),
 ) -> tuple[ViewerPageSource, ...]:
-    return tuple(viewer_page_source(source) for source in sources)
+    citation_numbers = {
+        source_id: index + 1 for index, source_id in enumerate(citation_order)
+    }
+    return tuple(
+        sorted(
+            (
+                viewer_page_source(
+                    source,
+                    citation_number=citation_numbers.get(source.source_id),
+                )
+                for source in sources
+            ),
+            key=source_sort_key,
+        )
+    )
 
 
-def viewer_page_source(source: PageSourceReference) -> ViewerPageSource:
+def viewer_page_source(
+    source: PageSourceReference,
+    citation_number: int | None = None,
+) -> ViewerPageSource:
     return ViewerPageSource(
         source_id=source.source_id,
         source_type=source.source_type.value,
@@ -44,7 +62,14 @@ def viewer_page_source(source: PageSourceReference) -> ViewerPageSource:
         title=source.title,
         retrieved_at=source.retrieved_at,
         note=source.note,
+        citation_number=citation_number,
     )
+
+
+def source_sort_key(source: ViewerPageSource) -> tuple[int, int, str]:
+    if source.citation_number is None:
+        return (1, 0, source.source_id)
+    return (0, source.citation_number, source.source_id)
 
 
 def page_summary_from_search(page: SearchPageResult) -> ViewerPageSummary:

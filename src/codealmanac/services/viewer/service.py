@@ -79,6 +79,11 @@ class ViewerService:
         repository = self.repository_scope.select(request.cwd, request.repository_name)
         page = self.get_page_or_raise(repository, request.slug)
         related_pages = self.related_pages(repository, page)
+        rendered = self.renderer.render(
+            page.body,
+            page_id=page.slug,
+            source_is_folder_landing=page.file_path.name == "README.md",
+        )
         return ViewerPage(
             repository=viewer_repository(repository),
             slug=page.slug,
@@ -86,18 +91,14 @@ class ViewerService:
             summary=page.summary,
             topics=page.topics,
             body=page.body,
-            html=self.renderer.render(
-                page.body,
-                page_id=page.slug,
-                source_is_folder_landing=page.file_path.name == "README.md",
-            ),
+            html=rendered.html,
             backlinks=page.page_links_in,
             outgoing_links=page.page_links_out,
             file_refs=tuple(
                 ViewerFileReference(path=ref.path, is_dir=ref.is_dir)
                 for ref in page.file_refs
             ),
-            sources=viewer_page_sources(page.sources),
+            sources=viewer_page_sources(page.sources, rendered.citation_order),
             related_pages=related_pages,
         )
 
