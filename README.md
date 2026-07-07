@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/readme-banner.png" alt="CodeAlmanac - A living wiki for your codebase">
+  <img src="docs/assets/readme-hero.png" alt="CodeAlmanac - A living wiki for your codebase">
 </p>
 
 <p align="center">
