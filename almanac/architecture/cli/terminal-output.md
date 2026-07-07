@@ -6,6 +6,10 @@ sources:
     type: file
     path: src/codealmanac/cli/render/style.py
     note: Shared terminal styling, ANSI handling, tables, and duration formatting.
+  - id: syntax-render
+    type: file
+    path: src/codealmanac/cli/render/syntax.py
+    note: Blue command syntax error screens, replacement hints, and command-guide tables.
   - id: common-render
     type: file
     path: src/codealmanac/cli/render/common.py
@@ -17,7 +21,7 @@ sources:
   - id: cli-tests
     type: file
     path: tests/test_cli.py
-    note: CLI tests that assert terminal text, stderr, JSON output, and exit behavior.
+    note: CLI tests that assert terminal text, syntax screens, stderr, JSON output, and exit behavior.
   - id: architecture-tests
     type: file
     path: tests/test_architecture.py
@@ -49,6 +53,8 @@ Rich terminal UI is kept at the render edge. The architecture test `test_rich_te
 ## Error And Stream Placement
 
 The CLI treats stdout and stderr deliberately. `main()` prints product and validation errors to stderr with the `codealmanac:` prefix, while renderers choose stderr for advisory or empty-result messages when stdout should stay machine-friendly [@cli-tests] [@search-render]. For example, empty search writes only to stderr, leaving stdout empty [@cli-tests].
+
+Syntax errors use the same stderr rule. The parser edge raises a shaped syntax problem, and `cli/render/syntax.py` prints a blue CodeAlmanac heading, the command the user typed, an optional replacement, and a table from the command guide [@syntax-render]. This keeps raw parser implementation details out of the user-facing error path.
 
 This distinction supports scripts. A command can emit human warnings without polluting stdout, and `--json` remains the structured piping format described in the styling module docstring [@style].
 

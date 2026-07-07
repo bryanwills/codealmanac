@@ -309,12 +309,12 @@ def test_cli_init_rejects_root_option(
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    with pytest.raises(SystemExit):
-        main(["init", str(repo), "--root", "docs/almanac"])
+    assert main(["init", str(repo), "--root", "docs/almanac"]) == 2
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "unrecognized arguments: --root" in captured.err
+    assert "Unknown option" in captured.err
+    assert "--root docs/almanac" in captured.err
     assert not (repo / "docs").exists()
 
 
@@ -818,11 +818,12 @@ def test_cli_list_rejects_drop_option(
     assert main(["init", str(repo)]) == 0
     capsys.readouterr()
 
-    with pytest.raises(SystemExit):
-        main(["list", "--drop", "repo"])
+    assert main(["list", "--drop", "repo"]) == 2
 
     output = capsys.readouterr()
-    assert "unrecognized arguments: --drop" in output.err
+    assert output.out == ""
+    assert "Unknown option" in output.err
+    assert "codealmanac list --drop repo" in output.err
 
 
 def test_cli_list_keeps_missing_repositories_registered(
@@ -1675,19 +1676,19 @@ Login reads `src/auth/session.py`. [@auth-folder]
 
 
 def test_cli_search_rejects_removed_archive_flags(capsys):
-    with pytest.raises(SystemExit) as include_archive:
-        main(["search", "--include-archive"])
+    assert main(["search", "--include-archive"]) == 2
     include_output = capsys.readouterr()
 
-    assert include_archive.value.code == 2
-    assert "unrecognized arguments: --include-archive" in include_output.err
+    assert include_output.out == ""
+    assert "Unknown option" in include_output.err
+    assert "codealmanac search --include-archive" in include_output.err
 
-    with pytest.raises(SystemExit) as archived:
-        main(["search", "--archived"])
+    assert main(["search", "--archived"]) == 2
     archive_output = capsys.readouterr()
 
-    assert archived.value.code == 2
-    assert "unrecognized arguments: --archived" in archive_output.err
+    assert archive_output.out == ""
+    assert "Unknown option" in archive_output.err
+    assert "codealmanac search --archived" in archive_output.err
 
 
 def test_cli_topics_and_health_read_current_repo_wiki(

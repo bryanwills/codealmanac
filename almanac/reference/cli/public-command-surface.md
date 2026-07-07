@@ -13,7 +13,15 @@ sources:
   - id: parser_run
     type: file
     path: src/codealmanac/cli/parser/run_commands.py
-    note: Lifecycle command syntax, sync syntax, and hidden run worker commands.
+    note: Run command syntax, sync syntax, and hidden run worker commands.
+  - id: parser_argument
+    type: file
+    path: src/codealmanac/cli/parser/argument_parser.py
+    note: Custom parser class that turns parser failures into shaped syntax problems.
+  - id: syntax_catalog
+    type: file
+    path: src/codealmanac/cli/syntax/catalog.py
+    note: Command guides and replacements used when syntax errors render.
   - id: parser_wiki
     type: file
     path: src/codealmanac/cli/parser/wiki.py
@@ -56,15 +64,15 @@ sources:
 
 The public command surface is the set of terminal commands exposed by the `codealmanac` script. The package installs that script as `codealmanac = "codealmanac.cli.main:main"`, so the CLI parser is the user-facing contract for command names and flags [@pyproject]. Parser modules define syntax only; the [CLI adapter boundary](../../architecture/cli/adapter-boundary) explains how parsed commands cross into services and workflows.
 
-The root parser registers three command families: lifecycle run commands, wiki commands, and admin commands [@parser_root]. The admin family delegates to config, setup, diagnostics, update, jobs, and automation parser modules [@parser_admin]. It also exposes `--version` and lists the visible top-level command names in `PUBLIC_COMMAND_METAVAR` [@parser_root]. Hidden worker commands exist for internal scheduling and queue execution, but they are removed from argparse's visible choices [@parser_run].
+The root parser registers three command families: run commands, wiki commands, and admin commands [@parser_root]. The admin family delegates to config, setup, diagnostics, update, jobs, and automation parser modules [@parser_admin]. It also exposes `--version` and lists the visible top-level command names in `PUBLIC_COMMAND_METAVAR` [@parser_root]. Hidden worker commands exist for internal scheduling and queue execution, but they are removed from visible choices and from rendered syntax guidance [@parser_run] [@syntax_catalog].
 
 ## Top-Level Commands
 
 | Command | Purpose | Main options |
 |---|---|---|
 | `init [path]` | Initialize a local Almanac wiki. | `--name`, `--description`, `--using`, `--guidance`, `--json` [@parser_run] |
-| `ingest <inputs...>` | Queue an ingest lifecycle operation over local material. | `--wiki`, `--using`, `--title`, `--guidance`, `--json` [@parser_run] |
-| `garden` | Queue a garden lifecycle operation for the local wiki. | `--wiki`, `--using`, `--title`, `--guidance`, `--json` [@parser_run] |
+| `ingest <inputs...>` | Queue ingest work over local material. | `--wiki`, `--using`, `--title`, `--guidance`, `--json` [@parser_run] |
+| `garden` | Queue wiki improvement work. | `--wiki`, `--using`, `--title`, `--guidance`, `--json` [@parser_run] |
 | `sync` | Sync recently active transcripts into wiki work. | `--wiki`, `--from`, `--using`, `--json`; subcommand `status` [@parser_run] |
 | `list` | List registered local wikis. | `--json` [@parser_wiki] |
 | `search [query]` | Search the selected wiki. | `--wiki`, `--topic`, `--mentions`, `--limit`, `--slugs`, `--json` [@parser_wiki] |
@@ -81,14 +89,14 @@ The root parser registers three command families: lifecycle run commands, wiki c
 | `uninstall` | Remove setup-owned local artifacts. | `--yes`, `--json` [@parser_setup] |
 | `doctor` | Check the local install and selected wiki. | `--wiki`, `--json` [@parser_diagnostics] |
 | `update` | Update the local CLI. | `--check`, `--json`; `--scheduled` is hidden [@parser_updates] |
-| `jobs` | Inspect local lifecycle run records. | `--wiki`, `--limit`, `--json`; subcommands `show`, `logs`, `attach`, `cancel` [@parser_jobs] |
+| `jobs` | Inspect local run records. | `--wiki`, `--limit`, `--json`; subcommands `show`, `logs`, `attach`, `cancel` [@parser_jobs] |
 | `automation` | Manage scheduled local automation. | `install`, `uninstall`, `status`; task filters and `--json` [@parser_automation] |
 
-The lifecycle commands are covered as workflows in [Lifecycle workflows](../../architecture/lifecycle/workflows). The exact machine-readable output surface is covered by [JSON output contract](json-output-contract).
+The run commands are covered in the workflow architecture pages. The exact machine-readable output surface is covered by [JSON output contract](json-output-contract).
 
 ## Hidden Commands
 
-Two top-level commands are intentionally hidden from normal help: `__run-worker` and `__garden-scheduler` [@parser_run]. `__run-worker` requires `--cwd` and drains queued lifecycle work for a repository; `__garden-scheduler` is the scheduled garden entrypoint [@parser_run].
+Two top-level commands are intentionally hidden from normal help: `__run-worker` and `__garden-scheduler` [@parser_run]. `__run-worker` requires `--cwd` and drains queued run work for a repository; `__garden-scheduler` is the scheduled garden entrypoint [@parser_run].
 
 The `update --scheduled` flag is also hidden from help while remaining accepted by the update parser [@parser_updates]. These hidden entries are implementation entrypoints, not public user workflows.
 
