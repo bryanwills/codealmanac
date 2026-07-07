@@ -54,6 +54,7 @@ Before editing pages, read the relevant manual files under `src/codealmanac/manu
 Use these routes when you already know the kind of work:
 
 - For command behavior, read [CLI public command surface](reference/cli/public-command-surface).
+- For config defaults, model choices, and precedence, read [Config keys](reference/config-keys).
 - For page identity, routes, and `README.md` landing pages, read [Page identity](architecture/wiki/page-identity).
 - For page evidence and frontmatter, read [Frontmatter and sources](reference/page-format/frontmatter-and-sources).
 - For lifecycle run state, logs, and attach behavior, read [Run states and events](reference/runs/run-states-and-events).
