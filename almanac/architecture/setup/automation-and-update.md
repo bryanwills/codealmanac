@@ -44,7 +44,7 @@ sources:
 
 Setup, automation, and update form CodeAlmanac's machine-level maintenance layer. `setup` installs local agent instructions, writes user configuration, optionally installs scheduled local automation, and reports runner readiness. `automation` owns recurring launchd jobs. `update` owns package-manager upgrades for the installed CLI. These responsibilities are deliberately split so setup can compose the machine state without containing scheduler or updater details [@setup_service][@automation_service][@updates].
 
-The area matters because it is local-only product infrastructure. Scheduled work runs local `sync`, Garden, and `update` commands; it does not connect to a hosted service or perform cloud capture [@live_agreement]. Runtime state and scheduler logs belong under the user's machine state, while repository wiki source remains under `almanac/` [@live_agreement].
+The area matters because it is local-only product infrastructure. Scheduled work runs local CodeAlmanac task entrypoints for sync, Garden, and update; it does not connect to a hosted service or perform cloud capture [@live_agreement]. Runtime state and scheduler logs belong under the user's machine state, while repository wiki source remains under `almanac/` [@live_agreement].
 
 ## Setup Boundary
 

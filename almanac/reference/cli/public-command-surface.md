@@ -14,10 +14,6 @@ sources:
     type: file
     path: src/codealmanac/cli/parser/run_commands.py
     note: Run command syntax, sync syntax, and hidden run worker commands.
-  - id: parser_argument
-    type: file
-    path: src/codealmanac/cli/parser/argument_parser.py
-    note: Custom parser class that turns parser failures into shaped syntax problems.
   - id: syntax_catalog
     type: file
     path: src/codealmanac/cli/syntax/catalog.py
