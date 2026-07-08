@@ -40,6 +40,8 @@ The wiki is organized by page role, not by source file:
 - `decisions/` records constraints that shape future work.
 - `reference/` documents exact contracts, commands, formats, and state shapes.
 
+Topic navigation is the cross-folder route through those pages. Read [Topics DAG](architecture/wiki/topics-dag) for the topic graph, [Topics YAML](reference/topics-yaml) for the file format, and [Maintain topics](guides/maintain-topics) when changing topic assignments or parent links.
+
 ## Reading Rule
 
 Use the wiki as maintained synthesis, then verify behavior against current code when the two disagree. The runtime kernel gives the same rule to writing agents: code is authoritative for behavior, Markdown links are the page-link syntax, and file evidence belongs in structured `sources:` entries [@kernel-prompt].

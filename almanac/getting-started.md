@@ -45,6 +45,8 @@ Use the wiki as source-controlled product knowledge. Pages should preserve durab
 
 Before editing pages, read the relevant manual files under `src/codealmanac/manual/`. The writing manuals define leads, evidence, links, topics, and page-type shapes. After editing, run the repo's normal validation path for wiki changes; the public read surface includes `codealmanac health` and `codealmanac validate` [@repo-readme].
 
+For topic changes, use [Maintain topics](guides/maintain-topics) as the task guide, [Topics YAML](reference/topics-yaml) as the exact file reference, and [Topics DAG](architecture/wiki/topics-dag) for the architecture behind topic parents and cycle prevention.
+
 ## Common Work Areas
 
 Use these routes when you already know the kind of work:
