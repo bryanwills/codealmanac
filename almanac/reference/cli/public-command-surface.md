@@ -104,6 +104,6 @@ The `update --scheduled` flag is also hidden from help while remaining accepted 
 
 ## Intentionally Absent Legacy Surface
 
-The parser rejects removed or unsupported flags because they are not registered. Tests assert that `init --root`, `list --drop`, `search --include-archive`, and `search --archived` fail as unrecognized arguments rather than silently mapping to legacy behavior [@cli_tests].
+The parser rejects removed or unsupported flags because they are not registered. Tests assert that `init --root`, `list --drop`, `search --include-archive`, and `search --archived` render the CodeAlmanac `Unknown option` syntax screen rather than silently mapping to legacy behavior [@parser_argument] [@cli_tests].
 
 That absence is part of the surface. New repos use the fixed `almanac/` tree, registered repositories are not auto-dropped by `list`, and archive flags are not part of the current search parser. When adding a command, follow [Add a CLI command](../../guides/add-a-cli-command) and keep syntax in the parser family that owns the command.

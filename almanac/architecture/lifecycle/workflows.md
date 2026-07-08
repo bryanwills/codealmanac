@@ -36,9 +36,9 @@ The workflows prepare operation-specific context, but they do not each own harne
 
 ## Build
 
-Build is the initialization workflow. It prepares a repository target, rejects an existing `almanac/`, checks that Git change tracking and the requested harness are available, registers the repository, initializes a minimal wiki, and starts a `BUILD` run [@build-workflow].
+Build is the initialization workflow. At queue time, it prepares a repository target, rejects an existing `almanac/`, registers the repository, initializes a minimal wiki, and records a queued build run [@build-workflow]. Harness readiness is checked later by the worker through the shared operation path, not before the initial wiki scaffold is written.
 
-After the run starts, build calls the shared operation runner. Its prompt payload includes repository paths, the almanac root, `topics.yaml`, manual documents, optional guidance, and source-control policy [@build-workflow]. The prompt and manual resources come from the packaged runtime-resource layer described in [Prompts and manuals](../runtime-resources/prompts-and-manuals). Build is therefore both setup and the first agent-authored wiki pass.
+When the worker executes the queued run, build calls the shared operation runner. Its prompt payload includes repository paths, the almanac root, `topics.yaml`, manual documents, optional guidance, and source-control policy [@build-workflow]. The prompt and manual resources come from the packaged runtime-resource layer described in [Prompts and manuals](../runtime-resources/prompts-and-manuals). Build is therefore both setup and the first agent-authored wiki pass.
 
 ## Ingest
 

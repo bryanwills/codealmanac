@@ -42,7 +42,7 @@ The queue and worker path depends on this contract. Queued specs describe work t
 | `ingest` | Source-material ingestion into the wiki. |
 | `garden` | Maintenance and improvement work over the existing wiki. |
 
-`RunKind` is limited to `build`, `ingest`, and `garden` [@run-models]. Queued `RunSpec` validation is narrower: queued ingest requires at least one input, queued garden rejects inputs, and any other queued kind is rejected by the spec validator [@run-models].
+`RunKind` is limited to `build`, `ingest`, and `garden` [@run-models]. Queued `RunSpec` validation allows those same kinds: ingest requires at least one input, while build and garden reject inputs [@run-models].
 
 ## Statuses
 
@@ -72,7 +72,7 @@ Each `RunLogEvent` has a run id, positive sequence number, timestamp, event kind
 
 ## Queued Specs
 
-`RunSpec` stores the durable work request for queued runs. Its fields are `version`, `kind`, `harness`, `model`, `inputs`, `title`, `guidance`, and `auto_commit` [@run-models]. Version must be `1`. Ingest specs require at least one input; garden specs must not contain inputs; unsupported queued kinds fail validation [@run-models].
+`RunSpec` stores the durable work request for queued runs. Its fields are `version`, `kind`, `harness`, `model`, `inputs`, `title`, `guidance`, and `auto_commit` [@run-models]. Version must be `1`. Ingest specs require at least one input; build and garden specs must not contain inputs [@run-models].
 
 A queued run with no stored spec is not valid worker work. The run queue treats queue membership as a queued run with durable spec JSON, and the worker marks malformed queued work failed instead of guessing how to run it [@run-store].
 

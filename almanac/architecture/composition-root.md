@@ -36,7 +36,7 @@ The service graph encodes ownership. `SearchService` depends on repositories and
 
 ## Workflow Assembly
 
-`create_workflows` constructs the lifecycle layer. It creates one `OperationRunner` for each run kind: build, ingest, and garden [@app-root]. Each runner receives repositories, harnesses, runs, index, and health [@app-root].
+`create_workflows` constructs the [lifecycle workflow](lifecycle/workflows) layer. It creates one [Operation runner](lifecycle/operation-runner) for each run kind: build, ingest, and garden [@app-root]. Each runner receives repositories, harnesses, runs, index, and health [@app-root].
 
 The workflows then compose services around the shared operation runner. `IngestWorkflow` receives sources, ingest operations, prompts, and manuals. `GardenWorkflow` receives index, health, garden operations, prompts, and manuals. `BuildWorkflow` receives repositories, wiki, build operations, prompts, and manuals [@app-root]. This is the bridge to the broader [Service Boundaries](service-boundaries) rule: workflows coordinate services, but the composition root provides the machinery.
 

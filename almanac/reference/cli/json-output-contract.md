@@ -54,7 +54,7 @@ Other tested JSON surfaces include setup plans and results, update plans, doctor
 
 ## Streams And Exit Codes
 
-JSON output goes to stdout. Product and validation errors caught by `main()` still print text to stderr with the `codealmanac:` prefix and return exit code `1`, even when the user supplied `--json`; argparse syntax errors remain argparse errors [@cli_main] [@cli_tests]. See [Error and exit code contract](error-and-exit-code-contract) for the stderr and return-code rules.
+JSON output goes to stdout. Product and validation errors caught by `main()` still print text to stderr with the `codealmanac:` prefix and return exit code `1`, even when the user supplied `--json`; parser-edge syntax failures render CodeAlmanac syntax screens on stderr and return exit code `2` [@cli_main] [@cli_tests]. See [Error and exit code contract](error-and-exit-code-contract) for the stderr and return-code rules.
 
 `validate --json` is the main structured failure case. It prints a `ValidationResult` JSON object, then returns `0` when `ok` is true and `1` when `ok` is false [@wiki_dispatch]. Scripts should read both the JSON body and the process exit code.
 

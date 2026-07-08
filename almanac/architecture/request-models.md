@@ -46,7 +46,7 @@ All of these models inherit from `CodeAlmanacModel`, which is a frozen Pydantic 
 
 The run layer uses both request models and domain models. `RunKind`, `RunStatus`, and `RunEventKind` are string enums. `RunId` is constrained to non-empty alphanumeric, underscore, or dash characters. `RunRecord`, `RunLogEvent`, `RunSpec`, and worker models all inherit the same frozen base model [@run-models].
 
-`RunSpec` is the queued-run payload. It carries a version, run kind, harness, model, inputs, title, guidance, and auto-commit flag [@run-models]. Its model validator enforces that ingest specs have inputs and garden specs do not, and it rejects unsupported queued run kinds [@run-models]. That keeps queue persistence from becoming a loose JSON envelope.
+`RunSpec` is the queued-run payload. It carries a version, run kind, harness, model, inputs, title, guidance, and auto-commit flag [@run-models]. Its model validator enforces that ingest specs have inputs and that build and garden specs do not [@run-models]. The `RunKind` enum bounds the supported queued kinds to build, ingest, and garden [@run-models]. That keeps queue persistence from becoming a loose JSON envelope.
 
 The request objects in `services/runs/requests.py` protect service verbs. `FinishRunRequest` accepts only terminal statuses, `AcquireRunWorkerLockRequest` requires a positive stale interval and owner text, and `StreamRunAttachRequest` requires a positive poll interval [@run-requests]. These checks belong at the service boundary because callers may be the CLI, the hidden worker, tests, or future wrappers.
 

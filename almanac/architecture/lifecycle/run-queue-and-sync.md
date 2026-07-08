@@ -22,13 +22,15 @@ sources:
 
 # Run Queue And Sync
 
-The run queue stores ingest and garden work as durable run records with specs, then starts a local worker to drain queued work [@run_queue] [@run_models]. Sync is a scanner that can enqueue ingest work; it is not itself a page-writing lifecycle operation [@sync_workflow].
+The run queue stores build, ingest, and garden work as durable run records with specs, then starts a local worker to drain queued work [@run_queue] [@run_models]. Sync is a scanner that can enqueue ingest work; it is not itself a page-writing lifecycle operation [@sync_workflow].
 
 This page connects the [Run Ledger](../../concepts/run-ledger) concept to lifecycle execution. The exact states and event shapes are in [Run States And Events](../../reference/runs/run-states-and-events).
 
 ## Queueing
 
-`RunQueue.queue_ingest(...)` and `queue_garden(...)` select the target repository, build a durable run spec, and call the run service to queue the work [@run_queue]. `start_ingest(...)` and `start_garden(...)` queue the work and then spawn a worker process [@run_queue].
+`RunQueue.queue_build(...)` prepares the target repository, rejects an existing `almanac/`, registers the repository, scaffolds the minimal wiki, builds a durable build spec, and queues the run [@run_queue]. `start_build(...)` then spawns a worker from the requested repository path [@run_queue].
+
+`RunQueue.queue_ingest(...)` and `queue_garden(...)` select an existing target repository, build a durable run spec, and call the run service to queue the work [@run_queue]. `start_ingest(...)` and `start_garden(...)` queue the work and then spawn a worker process [@run_queue].
 
 Scheduled Garden iterates registered repositories and skips repositories that already have an active garden run [@run_queue]. When at least one run is queued, it spawns one worker from the first queued repository root [@run_queue].
 
@@ -36,7 +38,7 @@ Scheduled Garden iterates registered repositories and skips repositories that al
 
 `RunQueueWorker.drain(...)` acquires a worker lock through the run service before it drains queued records [@run_worker]. If the lock is unavailable, the drain result reports `lock_acquired=False` [@run_worker] [@run_models].
 
-For each queued run, the worker reads the stored spec and calls `IngestWorkflow.run_started(...)` or `GardenWorkflow.run_started(...)` with the existing run id [@run_worker]. A queued run without a durable spec is marked failed rather than guessed from process state [@run_worker].
+For each queued run, the worker reads the stored spec and calls `BuildWorkflow.execute_started(...)`, `IngestWorkflow.execute_started(...)`, or `GardenWorkflow.execute_started(...)` with the existing run id [@run_worker]. A queued run without a durable spec is marked failed rather than guessed from process state [@run_worker].
 
 ## Sync Boundary
 
