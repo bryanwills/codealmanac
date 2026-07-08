@@ -63,6 +63,37 @@ uv run codealmanac --help
 
 Requires Python 3.12+.
 
+## Migrating From The npm CLI
+
+The legacy `codealmanac` npm package is retired. PyPI is the only supported
+distribution. If you used the npm CLI, your machine may still carry the old
+global install plus the hooks and agent instructions it set up. Remove those
+before installing from PyPI.
+
+The easiest path is to hand this prompt to your coding agent:
+
+```text
+Migrate this machine from the old codealmanac npm CLI to the new PyPI CLI.
+
+1. Uninstall every old install of the CLI and its dependencies:
+   npm uninstall -g codealmanac
+   Also check bun, pnpm, and yarn global installs, and remove any stray
+   codealmanac, almanac, or alm binaries left on PATH.
+2. Remove everything the old CLI installed into agent tooling:
+   - Delete codealmanac hooks from Claude Code settings
+     (~/.claude/settings.json and any project .claude/settings*.json).
+   - Remove codealmanac sections and @-imports from ~/.claude/CLAUDE.md and
+     any other agent instruction files.
+3. Install the latest PyPI CLI:
+   curl -fsSL https://codealmanac.com/install.sh | sh
+4. Run codealmanac setup --yes to reinstall agent instructions and automation.
+5. Verify the migration:
+   which codealmanac points at the new install and codealmanac --help runs.
+
+Leave repo-local almanac/ wiki trees alone - they are committed wiki content,
+not part of the CLI install.
+```
+
 ## Setup
 
 Install global agent instructions for the local tools you use:
