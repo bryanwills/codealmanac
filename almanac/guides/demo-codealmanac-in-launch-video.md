@@ -20,6 +20,8 @@ sources:
 
 Use this guide when making a short product demo for CodeAlmanac. The demo should frame CodeAlmanac as a self-updating wiki for a codebase, maintained for agents, then prove that claim by moving quickly from the local viewer to an agent-style terminal query [@public-readme] [@bookface-post]. The durable rule is to show the wiki as proof that the knowledge base is real, but let `codealmanac search` and `codealmanac show` carry the main product payoff [@demo-brainstorm].
 
+For the broader YC launch story, comparison points, and final demo-asset notes, read [Launch positioning](../concepts/launch-positioning).
+
 ## Start With The Wiki, Not A Tour
 
 Open with the served wiki for a few seconds. `codealmanac serve` is already part of the public quickstart, and it makes the repo-owned Markdown tree visible as a real browseable product surface [@public-readme]. Use that view to establish the noun: CodeAlmanac is not hidden memory, a hosted dashboard, or a loose context file. It is a wiki in the repository.
