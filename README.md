@@ -25,7 +25,11 @@ indexed locally, and reviewed in Git like any other code change.
 
 ```bash
 curl -fsSL https://codealmanac.com/install.sh | sh
-codealmanac setup --yes
+
+# Choose one setup path:
+codealmanac setup                       # Interactive setup
+codealmanac setup --yes                 # Quick install; uses Codex as the AI runner
+codealmanac setup --yes --runner claude # Quick install; uses Claude as the AI runner
 
 cd your-repo
 codealmanac init                     # Makes your wiki, if you don't have one
