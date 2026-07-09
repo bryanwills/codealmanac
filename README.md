@@ -99,18 +99,27 @@ not part of the CLI install.
 Install global agent instructions for the local tools you use:
 
 ```bash
+# Interactive setup
+codealmanac setup
+
+# Quick install with recommended defaults; uses Codex as the AI runner
 codealmanac setup --yes
-codealmanac setup --yes --target codex
-codealmanac setup --yes --target claude
+
+# Quick install using Claude as the AI runner
+codealmanac setup --yes --runner claude
 ```
 
-Plain setup installs local agent instructions plus the default local automation:
-sync, Garden, and daily package update. It does not connect to a hosted service.
+Setup installs local agent instructions plus the default local automation: sync,
+Garden, and daily package update. It does not connect to a hosted service.
 
-`--yes` picks Codex as the AI runner. If you don't have Codex or prefer Claude:
+If you don't have Codex or prefer Claude, use `--runner claude`.
+
+`--target` only chooses which global agent instruction files to install; it does
+not choose the AI runner:
 
 ```bash
-codealmanac setup --yes --runner claude
+codealmanac setup --yes --target codex
+codealmanac setup --yes --target claude
 ```
 
 Other setup flags:
