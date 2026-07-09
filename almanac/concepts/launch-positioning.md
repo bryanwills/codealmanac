@@ -14,10 +14,6 @@ sources:
     type: file
     path: docs/launch/bookface-s26/assets/
     note: Final launch demo video and GIF assets.
-  - id: gif-conversion
-    type: conversation
-    path: /Users/rohan/.claude/projects/-Users-rohan-Desktop-Projects-codealmanac/19ed14fb-7371-4ad7-9358-99b53b48b69c.jsonl
-    note: Session that converted the launch MP4 into a sub-20 MB GIF.
   - id: openwiki-notes
     type: file
     path: docs/research/openwiki-launch-traction/notes.md
@@ -26,10 +22,10 @@ sources:
     type: file
     path: docs/research/openwiki-launch-traction/fetch-github-stargazers.mjs
     note: Script that exports GitHub stargazers with starred timestamps and public profile fields.
-  - id: openwiki-export-transcript
-    type: conversation
-    path: /Users/rohan/.codex/sessions/2026/07/07/rollout-2026-07-07T11-48-21-019f3de8-e706-7c10-ab2d-f4cffe903abf.jsonl
-    note: Session that ran the OpenWiki stargazer export and verified the CSV row count.
+  - id: openwiki-stargazers-csv
+    type: file
+    path: docs/research/openwiki-launch-traction/openwiki-stargazers.csv
+    note: Exported OpenWiki stargazer data with one header row and 10,807 total lines in the current checkout.
   - id: tagit
     type: web
     url: https://github.com/liliang-cn/tagit
@@ -52,12 +48,12 @@ The strongest example pattern is a future agent being asked to add Okta SSO and 
 
 ## Demo Asset
 
-The launch demo asset is a 35-second product video under `docs/launch/bookface-s26/assets/`, with MP4 and GIF versions present in the launch folder [@launch-assets]. The GIF was produced from the MP4 as a 960px-wide, 12fps, infinite-loop asset under 20 MB; the completed file was reported as 17 MB, which leaves little headroom for platforms that recompress uploads [@gif-conversion].
+The launch demo asset is a 35-second product video under `docs/launch/bookface-s26/assets/`, with MP4 and GIF versions present in the launch folder [@launch-assets]. The GIF asset is 17 MB in the current checkout, which leaves little headroom for platforms that recompress uploads [@launch-assets].
 
 For demo structure, use [Demo CodeAlmanac in a launch video](../guides/demo-codealmanac-in-launch-video). That guide keeps the video centered on the served wiki as proof and the terminal query as the product payoff.
 
 ## Market Comparison Notes
 
-OpenWiki research is raw launch analysis, not a final report. The useful reusable conclusion is that OpenWiki's early growth looked like a developer-viral open-source launch: the notes record about 9k GitHub stars in roughly a week, Trendshift daily rankings, HN activity, and LinkedIn/X repost waves, while also stating that exact referral sources are not public without repository-owner traffic data [@openwiki-notes]. A later export script fetched GitHub stargazers through GraphQL in `STARRED_AT` order with public profile fields such as login, location, company, bio, follower counts, and public repository count [@openwiki-export-script]. That run wrote and verified 9,743 data rows plus a header in `docs/research/openwiki-launch-traction/openwiki-stargazers.csv` [@openwiki-export-transcript].
+OpenWiki research is raw launch analysis, not a final report. The useful reusable conclusion is that OpenWiki's early growth looked like a developer-viral open-source launch: the notes record about 9k GitHub stars in roughly a week, Trendshift daily rankings, HN activity, and LinkedIn/X repost waves, while also stating that exact referral sources are not public without repository-owner traffic data [@openwiki-notes]. A later export script fetched GitHub stargazers through GraphQL in `STARRED_AT` order with public profile fields such as login, location, company, bio, follower counts, and public repository count [@openwiki-export-script]. The current `openwiki-stargazers.csv` file has 10,807 total lines, including its header row [@openwiki-stargazers-csv].
 
 The agent-chat comparison set from the July 8 lookup has two useful anchors. TagIt positions itself as a self-hosted chat interface where a team can `@mention` coding agents, register Claude Code and Codex CLIs, and route Slack or Feishu messages to the configured agent [@tagit]. agentchattr is the Slack-like local chat comparison: its README describes `@claude`, `@codex`, and other agent mentions, shared channels, and agent-to-agent wakeups through a local chat server [@agentchattr]. These tools are not direct wiki-memory substitutes, but they are relevant when launch copy mentions teams routing work to multiple agents.

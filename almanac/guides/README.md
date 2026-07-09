@@ -87,5 +87,5 @@ around the repo's service, workflow, store, port, and integration boundaries
 before adding behavior [@refactoring].
 
 [Demo CodeAlmanac in a launch video](demo-codealmanac-in-launch-video) is the
-product-demonstration guide for showing the local wiki, search, jobs, and
-viewer flow in a launch video [@launch-demo].
+product-demonstration guide for showing the local viewer and terminal query
+flow in a launch video [@launch-demo].
