@@ -37,7 +37,7 @@ sources:
   - id: sqlite-framing-transcript
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/07/08/rollout-2026-07-08T20-50-32-019f44ff-a4ea-7713-8f45-c0beb43c73ee.jsonl
-    note: Launch-copy discussion that placed SQLite index language in the How it works section instead of the opener.
+    note: Launch-copy discussion that framed CodeAlmanac as a compiled layer of understanding and placed SQLite index language in the How it works section.
   - id: traction-export-transcript
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/07/07/rollout-2026-07-07T11-48-21-019f3de8-e706-7c10-ab2d-f4cffe903abf.jsonl
@@ -59,6 +59,8 @@ Launch positioning is the reusable product story behind CodeAlmanac launch work.
 ## Core Claim
 
 The Bookface draft frames CodeAlmanac as open source, local, and free, then contrasts it with tools that make graphs or code search surfaces but do not maintain detailed connected Markdown articles from agent conversations [@bookface-post]. The skeptical-objection section should stay specific: the durable contrast is not "better docs"; it is conversation-updated Markdown in the repository, scheduled gardening, and an agent-native CLI read surface [@bookface-post] [@repo-readme].
+
+The precompilation framing is useful for explaining why CodeAlmanac is not just transcript search. Search retrieves what was said, while the wiki preserves the version of understanding worth carrying forward: what is true now, why it is true, what changed, and where the next agent should look [@sqlite-framing-transcript]. It can be compared loosely to a cache, but launch copy should avoid making it sound like passive storage; the important claim is that CodeAlmanac selects, compresses, updates, and organizes raw conversations into a compiled wiki layer [@sqlite-framing-transcript].
 
 The strongest example pattern is a future agent being asked to add Okta SSO and finding a previous WorkOS decision plus a webhook replay gotcha before coding [@bookface-post]. That example works because it names a concrete task, a concrete prior decision, and a concrete failure mode instead of only restating the product category.
 
