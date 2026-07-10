@@ -257,18 +257,31 @@ with `codealmanac jobs`.
 
 ## Jobs
 
-Lifecycle runs are recorded under `~/.codealmanac/`:
+Lifecycle runs are recorded under `~/.codealmanac/`. Use these commands to
+inspect and control them:
 
 ```bash
+# List recent jobs with their IDs, kinds, statuses, and elapsed times
 codealmanac jobs
+
+# Show one job's status, summary, page changes, timestamps, and error details
 codealmanac jobs show <run-id>
+
+# Print the events recorded so far, including progress, tool activity, and errors
 codealmanac jobs logs <run-id>
+
+# Follow new events live until the job finishes, fails, or is marked cancelled
 codealmanac jobs attach <run-id>
+
+# Prevent a queued job from starting, or mark a running job as cancelled
 codealmanac jobs cancel <run-id>
 ```
 
-Run logs include source-resolution facts, harness events, safety errors, and
-terminal status.
+`show` is a summary of the job; `logs` is a snapshot of its event history;
+`attach` keeps watching and prints events as they arrive. All of these commands
+read the same durable local job record, so they still work after the terminal
+that started the job has closed. Add `--json` when consuming their output from
+a script.
 
 ## Providers
 
