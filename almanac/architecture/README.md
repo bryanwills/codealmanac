@@ -26,6 +26,10 @@ sources:
     type: file
     path: almanac/architecture/wiki/index-refresh-and-search.md
     note: Architecture page for index refresh and read-side search.
+  - id: wiki-architecture
+    type: wiki
+    path: architecture/wiki
+    note: Architecture hub for page identity, file refs, indexing, topics, health, and validation.
   - id: operation-runner
     type: wiki
     path: architecture/lifecycle/operation-runner
@@ -121,6 +125,8 @@ Start with [Service boundaries](service-boundaries). It explains the main depend
 Use [Operation runner](lifecycle/operation-runner) when changing the shared run-execution path [@operation-runner]. Use [Mutation safety](lifecycle/mutation-safety) when changing the checks that keep lifecycle writes inside the allowed wiki source files [@mutation-safety].
 
 ## Read Side And Wiki Graph
+
+[Wiki architecture](wiki/) is the entry point for page identity, path and file references, indexing, topics, health, and validation [@wiki-architecture].
 
 [Index refresh and search](wiki/index-refresh-and-search) explains the derived SQLite read model, implicit refresh before read commands, FTS search, topic filters, and mention search [@index-search].
 
