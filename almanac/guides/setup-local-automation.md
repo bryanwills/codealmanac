@@ -14,6 +14,14 @@ sources:
     type: file
     path: src/codealmanac/cli/parser/automation.py
     note: Automation install, uninstall, and status command flags.
+  - id: automation-selection
+    type: file
+    path: src/codealmanac/services/automation/selection.py
+    note: Automation task defaulting, deduplication, and garden-off validation.
+  - id: automation-jobs
+    type: file
+    path: src/codealmanac/services/automation/jobs.py
+    note: Scheduled job construction and interval selection for each task.
   - id: setup-service
     type: file
     path: src/codealmanac/services/setup/service.py
@@ -68,12 +76,14 @@ Use the automation command when setup is already done or when you want to change
 
 ```bash
 codealmanac automation install sync --every 5h
-codealmanac automation install garden --garden-every 4h
+codealmanac automation install garden --every 4h
 codealmanac automation install update --every 24h
 codealmanac automation status
 ```
 
 The automation parser supports `install`, `uninstall`, and `status`. Each command can take zero or more task names from `sync`, `garden`, and `update`; install also accepts `--every`, `--garden-every`, and `--garden-off` [@automation-parser].
+
+The interval flags are task-sensitive. With no task names, `automation install --every 5h --garden-every 4h` installs sync, Garden, and update; `--every` sets the sync interval, `--garden-every` sets the Garden interval, and update keeps its daily default [@automation-selection] [@automation-jobs]. With one explicit task, `--every` sets that task's interval for sync, Garden, or update; `--garden-off` is valid only on the default install because explicit task selection already controls whether Garden is installed [@automation-selection] [@automation-jobs].
 
 ## Verify It Worked
 

@@ -54,6 +54,14 @@ sources:
     type: file
     path: src/codealmanac/cli/parser/automation.py
     note: Scheduled automation command syntax.
+  - id: automation_selection
+    type: file
+    path: src/codealmanac/services/automation/selection.py
+    note: Automation task defaults, explicit task handling, and garden-off validation.
+  - id: automation_jobs
+    type: file
+    path: src/codealmanac/services/automation/jobs.py
+    note: Scheduled automation interval selection for sync, Garden, and update.
   - id: cli_tests
     type: file
     path: tests/test_cli.py
@@ -93,6 +101,8 @@ The root parser registers three command families: run commands, wiki commands, a
 | `automation` | Manage scheduled local automation. | `install`, `uninstall`, `status`; task filters and `--json` [@parser_automation] |
 
 The run commands are covered in the workflow architecture pages. The exact machine-readable output surface is covered by [JSON output contract](json-output-contract).
+
+For `automation install`, zero task names means install the default sync, Garden, and update tasks; explicit task names narrow the install set and are deduplicated in request order [@automation_selection]. `--every` applies to sync during a default install, to Garden when Garden is an explicit selected task, and to update only when update is the only explicit selected task; `--garden-every` is the Garden-specific override, and `--garden-off` is accepted only for the default install [@automation_selection] [@automation_jobs].
 
 ## Hidden Commands
 
