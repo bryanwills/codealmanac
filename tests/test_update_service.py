@@ -1,11 +1,14 @@
-from datetime import UTC, datetime
+import os
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.repositories.store import RepositoryStore
 from codealmanac.services.runs.models import RunKind, RunSpec, RunStatus
 from codealmanac.services.runs.store import RunStore
+from codealmanac.services.updates.lock import UpdateLockStore
 from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
@@ -307,3 +310,68 @@ def write_run_record(
     )
     if status == RunStatus.RUNNING:
         store.mark_running(record.run_id)
+
+
+def test_update_lock_store_acquires_new_lock(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+    now = datetime(2026, 7, 11, tzinfo=UTC)
+
+    lease = store.acquire(lock_path, now, timedelta(minutes=10))
+    assert lease is not None
+    assert lock_path.exists()
+    
+    # Releasing deletes the lock file
+    lease.release()
+    assert not lock_path.exists()
+
+
+def test_update_lock_store_refuses_non_stale_lock(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+    now = datetime(2026, 7, 11, tzinfo=UTC)
+
+    # First acquisition
+    lease1 = store.acquire(lock_path, now, timedelta(minutes=10))
+    assert lease1 is not None
+
+    # Second acquisition immediately after should fail (non-stale)
+    lease2 = store.acquire(lock_path, now, timedelta(minutes=10))
+    assert lease2 is None
+
+
+def test_update_lock_store_acquires_stale_lock_via_atomic_replace(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+    now = datetime(2026, 7, 11, tzinfo=UTC)
+
+    # Acquire lock in past
+    past = now - timedelta(minutes=15)
+    lease1 = store.acquire(lock_path, past, timedelta(minutes=10))
+    assert lease1 is not None
+
+    # Acquire now (should succeed because the previous one is stale)
+    lease2 = store.acquire(lock_path, now, timedelta(minutes=10))
+    assert lease2 is not None
+    assert lock_path.exists()
+
+
+def test_update_lock_store_loses_race_on_stale_lock_replace(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+    now = datetime(2026, 7, 11, tzinfo=UTC)
+
+    # Lock created in the past by another PID/our own PID
+    past = now - timedelta(minutes=15)
+    lease1 = store.acquire(lock_path, past, timedelta(minutes=10))
+    assert lease1 is not None
+
+    # Simulate losing the race: another process overwrites the lock right
+    # after we write and before we read it back. We mock `read_lock` to return a different PID.
+    from codealmanac.services.updates.lock import UpdateLockRecord
+    fake_record = UpdateLockRecord(pid=os.getpid() + 999, created_at=now)
+
+    with patch("codealmanac.services.updates.lock.read_lock", return_value=fake_record):
+        lease2 = store.acquire(lock_path, now, timedelta(minutes=10))
+        assert lease2 is None
+
