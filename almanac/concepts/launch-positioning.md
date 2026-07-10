@@ -54,6 +54,14 @@ sources:
     type: file
     path: docs/research/openwiki-launch-traction/rohan-dm-available.csv
     note: Rohan-assigned Twitter outreach rows where X exposed a visible DM icon.
+  - id: rohan-dm-copy-paste-md
+    type: file
+    path: docs/research/openwiki-launch-traction/rohan-dm-copy-paste.md
+    note: Markdown copy-paste sheet for Rohan-assigned X profiles with visible DM icons.
+  - id: rohan-dm-copy-paste-csv
+    type: file
+    path: docs/research/openwiki-launch-traction/rohan-dm-copy-paste.csv
+    note: Simplified CSV copy-paste sheet for Rohan-assigned X profiles with visible DM icons.
   - id: rohan-dm-remaining-csv
     type: file
     path: docs/research/openwiki-launch-traction/rohan-dm-availability-remaining.csv
@@ -65,7 +73,7 @@ sources:
   - id: traction-export-transcript
     type: conversation
     path: /Users/rohan/.codex/sessions/2026/07/07/rollout-2026-07-07T11-48-21-019f3de8-e706-7c10-ab2d-f4cffe903abf.jsonl
-    note: Stargazer export and validation run that produced the enriched and combined CSV summaries.
+    note: Stargazer export, validation, DM-availability, and copy-paste artifact run for launch outreach.
   - id: tagit
     type: web
     url: https://github.com/liliang-cn/tagit
@@ -104,6 +112,6 @@ The later stargazer export broadened the comparison set to OpenWiki, Graphify, C
 
 The Twitter outreach sample is derived from the combined stargazer export, filtered to rows with `twitter_username`, shuffled with seed `20260709`, and cut to 300 profiles assigned evenly across Rohan, Kushagra, and Divit [@twitter-sample-script]. The sampled CSV adds `sampled_for_review`, `sample_number`, `assigned_to`, `assignee_sample_number`, and `review_status` columns before the GitHub profile fields [@twitter-sample-script] [@twitter-sample-csv]. After a DM is sent, `mark-twitter-dm-sent.mjs --login <github-login>` updates `review_status` to `DM_SENT` in both `twitter-stargazers.csv` and `twitter-stargazers-sample-300-assigned.csv`; the script errors unless each file has exactly one row for that lowercased login [@mark-twitter-dm-sent-script].
 
-The Rohan-assigned outreach pass has a separate DM-availability layer. The completed scan covers 100 Rohan rows, finds 36 rows with `dm_scan_status: DM_AVAILABLE`, 59 with `DM_UNAVAILABLE`, four missing X accounts, and one suspended X account; the available-only CSV contains exactly the 36 `DM_AVAILABLE` rows, and the retry CSV is header-only after completion [@rohan-dm-scan-csv] [@rohan-dm-available-csv] [@rohan-dm-remaining-csv] [@traction-export-transcript].
+The Rohan-assigned outreach pass has a separate DM-availability layer. The completed scan covers 100 Rohan rows, finds 36 rows with `dm_scan_status: DM_AVAILABLE`, 59 with `DM_UNAVAILABLE`, four missing X accounts, and one suspended X account; the available-only CSV contains exactly the 36 `DM_AVAILABLE` rows, and the retry CSV is header-only after completion [@rohan-dm-scan-csv] [@rohan-dm-available-csv] [@rohan-dm-remaining-csv] [@traction-export-transcript]. The follow-up copy-paste artifacts derive from the 36 available rows: the Markdown file repeats the X link plus three DM messages for each profile, and the simplified CSV keeps `number`, `github_login`, `name`, `handle`, `link`, and the three message fields [@rohan-dm-copy-paste-md] [@rohan-dm-copy-paste-csv] [@traction-export-transcript].
 
 The agent-chat comparison set from the July 8 lookup has two useful anchors. TagIt positions itself as a self-hosted chat interface where a team can `@mention` coding agents, register Claude Code and Codex CLIs, and route Slack or Feishu messages to the configured agent [@tagit]. agentchattr is the Slack-like local chat comparison: its README describes `@claude`, `@codex`, and other agent mentions, shared channels, and agent-to-agent wakeups through a local chat server [@agentchattr]. These tools are not direct wiki-memory substitutes, but they are relevant when launch copy mentions teams routing work to multiple agents.
