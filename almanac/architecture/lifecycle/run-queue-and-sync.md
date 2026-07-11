@@ -54,6 +54,12 @@ For each queued run, the worker starts a hidden `__run-executor <run-id>` child 
 
 Running cancellation goes through `RunCancellation`: record intent, terminate the verified executor and its descendant harness processes, confirm exit, then append the terminal `cancelled` status. The process adapter validates PID birth time before signaling and escalates from graceful termination to force kill when necessary [@run_processes].
 
+## Known Race: Stranded Queued Work
+
+Every `start_build`, `start_ingest`, and `start_garden` call queues its run and then spawns exactly one worker process; none of them retry if that worker cannot acquire the drain lock [@run_queue]. `RunQueueWorker.drain(...)` returns `lock_acquired=False` immediately when the lock is held, with no wait or retry [@run_worker]. The active worker's loop only continues while `next_queued()` returns a run; once it returns `None` the loop exits and the lock is released in a `finally` block, with no re-check for work queued in the window between that last `next_queued()` call and the release [@run_worker].
+
+This is a lost-wakeup race: if a caller queues a new run while another worker holds the lock, and that worker finishes draining before the new run's own spawned worker can acquire the lock, the new worker exits immediately (`lock_acquired=False`) and the lock-holding worker never sees the new run before releasing the lock. The run then sits queued with no worker guaranteed to process it until something else calls `drain` again, such as the next scheduled Garden tick or a manually triggered run. This has been observed in practice when a scheduled Garden run held the lock while a concurrent build was queued through repository init. The fix would need to make the "queue empty, about to release" check atomic with lock release, or give a worker that fails to acquire the lock a wakeup or retry path; neither exists today.
+
 ## Sync Boundary
 
 Sync discovers local transcript candidates and queues ordinary ingest runs through this queue boundary [@sync_workflow]. That keeps transcript discovery separate from authorship: sync decides what should be ingested, while ingest remains the operation that writes pages.
