@@ -108,7 +108,7 @@ Parser failures go through the custom argument parser, which classifies syntax p
 
 The run commands are covered in the workflow architecture pages. The exact machine-readable output surface is covered by [JSON output contract](json-output-contract).
 
-For `automation install`, zero task names means install the default sync, Garden, and update tasks; explicit task names narrow the install set and are deduplicated in request order [@automation_selection]. `--every` applies to sync during a default install, to Garden when Garden is an explicit selected task, and to update only when update is the only explicit selected task; `--garden-every` is the Garden-specific override, and `--garden-off` is accepted only for the default install [@automation_selection] [@automation_jobs].
+`automation` has no `install` or `uninstall` subcommand; its `status` subcommand only filters and reports scheduled tasks, defaulting to all three when no task names are given [@automation_selection]. Scheduled tasks are changed through `config set automation.<task>.enabled` and `config set automation.<task>.every`, which reconcile that task's scheduler entry immediately, or through `config apply` after a direct edit to `~/.codealmanac/config.toml` [@automation_jobs]. See [Config keys](../config-keys) for the full key set and [Setup local automation](../../guides/setup-local-automation) for the operational path.
 
 ## Hidden Commands
 

@@ -1,6 +1,6 @@
 ---
 title: Agents And Manuals
-topics: [architecture, runtime-resources, agents, manuals, yoke]
+topics: [architecture, runtime-resources, manuals, yoke]
 sources:
   - id: catalog
     type: file
@@ -29,6 +29,12 @@ sources:
   - id: manual-library
     type: file
     path: src/codealmanac/manual/library.py
+  - id: wiki-service
+    type: file
+    path: src/codealmanac/services/wiki/service.py
+  - id: wiki-paths
+    type: file
+    path: src/codealmanac/services/wiki/paths.py
   - id: package
     type: file
     path: pyproject.toml
@@ -44,9 +50,11 @@ manifest maps their stable product names to Yoke agent folders. Each folder's
 the complete durable CodeAlmanac kernel and operation instructions [@catalog]
 [@collection] [@build-agent] [@ingest-agent] [@garden-agent].
 
-Manuals remain separate packaged reference documents. Runtime payloads name the
-manual inventory so the agent can read the relevant document from the installed
-package when it needs detailed page-writing rules [@manual-library].
+Manuals remain separate packaged reference documents. During initialization,
+the wiki service copies missing package resources into `almanac/manual/` before
+the build agent starts [@wiki-service] [@manual-library]. The build runtime
+payload names that repository-local manual root, and the build instructions give
+writing sub-agents exact paths beneath it [@build-service] [@build-agent].
 
 ## What It Does Not Own
 
@@ -63,6 +71,10 @@ prompt under `Runtime context:` [@build-service] [@ingest-service]
 agent. This separates stable agent identity and instructions from facts that
 belong only to one run.
 
+Repository-local manual Markdown is support material, not wiki article prose.
+The page iterator reserves the `manual/` directory, so copied manuals do not
+become indexed page routes [@wiki-paths].
+
 The instruction words from the former base and operation prompt files are
 retained in the agent folders. They now occupy Yoke's intended agent-instruction
 channel rather than being rebuilt by a CodeAlmanac prompt-rendering service.
@@ -73,6 +85,7 @@ channel rather than being rebuilt by a CodeAlmanac prompt-rendering service.
 - `src/codealmanac/agents/<name>/agent.yaml` is Yoke agent metadata.
 - `src/codealmanac/agents/<name>/instructions.md` is the full agent instruction.
 - `src/codealmanac/manual/` contains shared writing references.
+- `almanac/manual/` contains the repository-local copies used by build agents.
 - `pyproject.toml` includes the YAML and Markdown agent resources in wheels
   [@collection] [@package].
 

@@ -13,15 +13,15 @@ sources:
   - id: automation-parser
     type: file
     path: src/codealmanac/cli/parser/automation.py
-    note: Automation install, uninstall, and status command flags.
-  - id: automation-selection
+    note: Automation status command flags; the parser has no install or uninstall subcommand.
+  - id: automation-service
     type: file
-    path: src/codealmanac/services/automation/selection.py
-    note: Automation task defaulting, deduplication, and garden-off validation.
-  - id: automation-jobs
+    path: src/codealmanac/services/automation/service.py
+    note: reconcile_task installs or removes one scheduled task; remove_all removes every task during uninstall.
+  - id: config-parser
     type: file
-    path: src/codealmanac/services/automation/jobs.py
-    note: Scheduled job construction and interval selection for each task.
+    path: src/codealmanac/cli/parser/config.py
+    note: config set and config apply command syntax.
   - id: setup-service
     type: file
     path: src/codealmanac/services/setup/service.py
@@ -72,18 +72,16 @@ The default intervals are 5 hours for sync, 4 hours for Garden, and 1 day for up
 
 ## Manage Automation Directly
 
-Use the automation command when setup is already done or when you want to change scheduled tasks:
+The `automation` command is read-only: its only subcommand is `status`, optionally filtered to specific task names, with `--json` [@automation-parser]. There is no `automation install` or `automation uninstall` subcommand. To change scheduled tasks after setup, write config keys and reconcile:
 
 ```bash
-codealmanac automation install sync --every 5h
-codealmanac automation install garden --every 4h
-codealmanac automation install update --every 24h
+codealmanac config set automation.sync.every 5h
+codealmanac config set automation.garden.every 4h
+codealmanac config set automation.update.every 24h
 codealmanac automation status
 ```
 
-The automation parser supports `install`, `uninstall`, and `status`. Each command can take zero or more task names from `sync`, `garden`, and `update`; install also accepts `--every`, `--garden-every`, and `--garden-off` [@automation-parser].
-
-The interval flags are task-sensitive. With no task names, `automation install --every 5h --garden-every 4h` installs sync, Garden, and update; `--every` sets the sync interval, `--garden-every` sets the Garden interval, and update keeps its daily default [@automation-selection] [@automation-jobs]. With one explicit task, `--every` sets that task's interval for sync, Garden, or update; `--garden-off` is valid only on the default install because explicit task selection already controls whether Garden is installed [@automation-selection] [@automation-jobs].
+`config set` writes one value to `~/.codealmanac/config.toml` and immediately reconciles that task's scheduled job through `AutomationService.reconcile_task`, which installs or removes the task's scheduler entry [@config-parser] [@automation-service]. Edit the file directly for multiple keys at once, then run `codealmanac config apply` to reconcile all three tasks against the file [@config-parser]. See [Config keys](../reference/config-keys) for the full `automation.<task>.enabled` and `automation.<task>.every` key set, defaults, and validation.
 
 ## Verify It Worked
 
@@ -110,10 +108,10 @@ To remove CodeAlmanac-owned local artifacts, run:
 codealmanac uninstall --yes
 ```
 
-`SetupService.uninstall` removes installed instructions, scheduled automation, global state, and the package when the package uninstaller is available [@setup-service]. Use direct automation removal when you only want to remove scheduled jobs:
+`SetupService.uninstall` removes installed instructions, scheduled automation, global state, and the package when the package uninstaller is available [@setup-service]. That call goes through `AutomationService.remove_all`, which uninstalls every task's scheduler entry [@automation-service]. To remove or disable scheduled jobs individually without a full uninstall, set the task's `enabled` key to `false` and let `config set` reconcile it immediately:
 
 ```bash
-codealmanac automation uninstall sync garden update
+codealmanac config set automation.sync.enabled false
+codealmanac config set automation.garden.enabled false
+codealmanac config set automation.update.enabled false
 ```
-
-The automation parser exposes task-scoped uninstall for that narrower cleanup [@automation-parser].

@@ -30,7 +30,7 @@ This design keeps provider selection at the edge. If no harness adapters are sup
 
 ## Service Assembly
 
-`create_services` constructs the stable service layer. It builds repository, config, automation, wiki, index, search, page, topic, health, diagnostics, tagging, update, setup, run, viewer, source, harness, prompt, and manual services [@app-root]. Store construction happens beside the service that uses the store: `RepositoriesService` receives `RepositoryStore`, `RunsService` receives `RunStore`, and `IndexService` receives `IndexStore` [@app-root].
+`create_services` constructs the stable service layer. It builds repository, config, automation, wiki, index, search, page, topic, health, diagnostics, tagging, update, setup, run, viewer, source, harness, and manual services [@app-root]. There is no separate prompt service; packaged Yoke agent instructions are loaded at the harness integration edge instead, as the Workflow Assembly section below explains. Store construction happens beside the service that uses the store: `RepositoriesService` receives `RepositoryStore`, `RunsService` receives `RunStore`, and `IndexService` receives `IndexStore` [@app-root].
 
 The service graph encodes ownership. `SearchService` depends on repositories and index; `ViewerService` depends on repositories, index, runs, and Markdown rendering; `SetupService` depends on setup adapters, automation, config, and harness readiness [@app-root]. This gives callers one application object while keeping responsibilities split internally.
 

@@ -1,5 +1,5 @@
 ---
-title: Extend The Yoke Harness Boundary
+title: Add A Harness Provider Adapter
 topics: [guides, harnesses, yoke]
 sources:
   - id: adapter
@@ -22,27 +22,37 @@ sources:
     path: tests/test_yoke_harness_integration.py
 ---
 
-# Extend The Yoke Harness Boundary
+# Add A Harness Provider Adapter
 
-Use this guide when CodeAlmanac needs a new provider, surface, or portable Yoke
-capability. CodeAlmanac does not implement another provider protocol adapter.
-Add or correct that support in Yoke, release it, and then keep the product
-boundary thin [@adapter].
+Use this guide when CodeAlmanac needs to add a new local agent runner (a new
+`HarnessKind`, such as a future harness alongside Codex and Claude) or change
+which Yoke surface an existing runner uses. The guide has two parts because the
+work usually spans two repos: provider or surface support belongs in Yoke, and
+the CodeAlmanac-side product choice — the `HarnessKind`, controlled models, and
+`YokeHarnessAdapter` registration — belongs here.
 
-## Add Provider Support To Yoke
+## Add Provider Support To Yoke First
 
-Yoke owns authentication, provider processes, native surface options, skills,
-subagents, sessions, models, and normalized provider events. Prove the feature
-against the real provider in Yoke before changing CodeAlmanac. Do not reproduce
-SDK or JSON-RPC behavior under `integrations/harnesses/`.
+If the provider or surface CodeAlmanac needs does not exist yet, add it in Yoke,
+not in this repo. CodeAlmanac does not implement its own provider protocol
+adapter [@adapter]. Yoke owns authentication, provider processes, native surface
+options, skills, subagents, sessions, models, and normalized provider events.
+Prove the feature against the real provider in Yoke before changing CodeAlmanac.
+Do not reproduce SDK or JSON-RPC behavior under `integrations/harnesses/`.
 
-## Add The Product Choice
+## Add The Product Choice In CodeAlmanac
 
-If this is a genuinely new CodeAlmanac runner, add its `HarnessKind`, controlled
-models, defaults, setup/config choices, and one `YokeHarnessAdapter` registration
-[@kinds] [@config] [@defaults]. If it is only a different Yoke surface for an
-existing runner, change the explicit surface selection in the Yoke adapter and
-document why the product requires it [@adapter].
+Once Yoke supports the provider or surface, wire the product-side choice:
+
+- For a genuinely new CodeAlmanac runner, add its `HarnessKind`, controlled
+  models, defaults, setup/config choices, and one `YokeHarnessAdapter`
+  registration [@kinds] [@config] [@defaults].
+- For a different Yoke surface on an existing runner (for example, switching
+  which Codex surface is selected), change the explicit surface selection in
+  the Yoke adapter and document why the product requires it [@adapter].
+
+See [Yoke harness boundary](../architecture/agent-runs/provider-adapters) for
+what the adapter currently owns before changing it.
 
 ## Preserve The Product Contract
 

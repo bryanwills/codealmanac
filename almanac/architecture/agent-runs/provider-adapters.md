@@ -71,11 +71,12 @@ workflow services [@adapter] [@events] [@results].
 
 ## How To Change It
 
-Add provider or surface behavior to Yoke first. CodeAlmanac should change this
-boundary only when its product-owned run configuration or durable event model
-changes. New lifecycle capabilities belong in the appropriate Yoke agent folder
-as instructions, skills, subagents, or workflows rather than as Python
-orchestration in the adapter.
+CodeAlmanac should change this boundary only when its product-owned run
+configuration or durable event model changes; new lifecycle capabilities belong
+in the appropriate Yoke agent folder as instructions, skills, subagents, or
+workflows rather than as Python orchestration in the adapter. See
+[Add a harness provider adapter](../../guides/add-a-harness-provider-adapter)
+for the ordered steps and boundary tests to add a new runner or Yoke surface.
 
 ## Related Pages
 

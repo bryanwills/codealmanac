@@ -1,6 +1,6 @@
 ---
 title: Local State Layout
-topics: [reference, local-state, repositories, persistence]
+topics: [reference, local-state, repositories, persistence, index]
 sources:
   - id: readme
     type: file

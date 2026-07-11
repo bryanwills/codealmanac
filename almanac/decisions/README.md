@@ -18,6 +18,10 @@ sources:
     type: wiki
     path: decisions/markdown-links-and-sources
     note: Decision that separates Markdown page links from structured source evidence.
+  - id: page-kind
+    type: wiki
+    path: decisions/no-page-kind-field
+    note: Decision that defers a validated page-kind frontmatter field.
   - id: no-propose
     type: wiki
     path: decisions/no-propose-apply-or-dry-run
@@ -57,6 +61,10 @@ root migration shims as current product surfaces [@root].
 [Markdown links and sources](markdown-links-and-sources) decides that page
 navigation uses normal Markdown links and evidence uses structured `sources:`
 entries with inline citations [@links-sources].
+
+[No page-kind field](no-page-kind-field) decides that page type stays
+expressed through folder placement and topics rather than a validated `kind`
+frontmatter field, until a concrete behavior needs it [@page-kind].
 
 ## Lifecycle Execution
 

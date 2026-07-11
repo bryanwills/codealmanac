@@ -1,6 +1,6 @@
 ---
 title: Markdown Links And Sources
-topics: [decisions, page-format]
+topics: [decisions, page-format, links, sources]
 sources:
   - id: kernel
     type: file

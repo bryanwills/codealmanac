@@ -46,9 +46,7 @@ File references come from structured page sources. The index stores the normaliz
 
 ## Health As Graph Inspection
 
-Health checks read the graph for structural problems. The graph views report pages with no topics, file references that no longer exist, page links whose targets are missing, empty topics, and pages without meaningful body text [@health_graph]. The top-level health report combines those findings with source-citation checks [@health_views].
-
-Source health is part of the same idea. It finds citations that name no source, sources that are never cited, and duplicate source ids on a page [@health_sources]. This keeps `sources:` and inline citations aligned, so evidence remains followable.
+Health checks are graph inspection, not a separate mechanism: they query the same tables described above for structural problems, such as pages with no topic rows or links whose targets are missing, plus a source-citation view that keeps `sources:` and inline citations aligned [@health_graph] [@health_sources]. See [Health and validation](../architecture/wiki/health-and-validation) for the full enumerated check list and the validation boundary built on top of it.
 
 ## Why It Matters
 

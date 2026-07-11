@@ -26,14 +26,6 @@ sources:
     type: wiki
     path: concepts/page-graph
     note: Concept page for the derived page, topic, link, source, and health graph.
-  - id: page-kinds
-    type: wiki
-    path: concepts/page-kinds
-    note: Concept page for possible future page-kind contracts.
-  - id: launch-positioning
-    type: wiki
-    path: concepts/launch-positioning
-    note: Concept page for reusable product launch framing.
 ---
 
 # Concepts
@@ -56,9 +48,9 @@ state instead [@local-repo-wiki].
 
 [Page graph](page-graph) explains the derived model that connects pages,
 topics, links, file references, sources, backlinks, and health checks
-[@page-graph]. [Future page kinds](page-kinds) explains why concept, guide,
-decision, and reference vocabulary exists today without being a validated
-frontmatter field [@page-kinds].
+[@page-graph]. Why concept, guide, decision, and reference vocabulary exists
+today without being a validated frontmatter field is a product decision; see
+[No page-kind field](../decisions/no-page-kind-field).
 
 ## Lifecycle And Inputs
 
@@ -71,8 +63,7 @@ page `sources:` evidence [@source-material].
 worker locks, and `codealmanac jobs` inspection surface used by lifecycle work
 [@run-ledger].
 
-## Product Framing
-
-[Launch positioning](launch-positioning) preserves reusable product-story
-language for launch and demo work [@launch-positioning]. Read it when changing
-copy or demos, not when looking for runtime behavior.
+Product-story and launch-demo framing is not a concept: it lives in
+[Demo CodeAlmanac in a launch video](../guides/demo-codealmanac-in-launch-video)
+in `guides/`, since it is task-oriented copy for a specific piece of work
+rather than vocabulary this repo's code depends on.

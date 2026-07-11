@@ -6,6 +6,14 @@ sources:
     type: file
     path: README.md
     note: Public product positioning, viewer command, and agent read commands.
+  - id: tagit
+    type: web
+    url: https://github.com/liliang-cn/tagit
+    note: Agent-in-team-chat comparison point.
+  - id: agentchattr
+    type: web
+    url: https://github.com/bcurts/agentchattr
+    note: Local multi-agent chat comparison point.
 ---
 
 # Demo CodeAlmanac In A Launch Video
@@ -27,5 +35,14 @@ Use this repository for the demo when one of its pages is concrete enough for a
 cold viewer. Otherwise choose a repository with a relatable decision or failure
 mode while keeping the same viewer-to-query sequence.
 
-See [Launch positioning](../concepts/launch-positioning) for the broader product
-distinction.
+## Positioning For The Demo
+
+The useful contrast is not generic "better documentation." CodeAlmanac preserves
+decisions, invariants, gotchas, flows, and operating knowledge that future agent
+sessions would otherwise rediscover. Git keeps that knowledge reviewable, while
+build, ingest, garden, and sync keep it current [@public-readme].
+
+Team-chat tools such as TagIt and agentchattr route work and conversation among
+agents [@tagit] [@agentchattr]. They are adjacent rather than equivalent:
+CodeAlmanac's primary artifact is the maintained repository wiki that later
+agents query before changing code, not a chat channel between agents.
