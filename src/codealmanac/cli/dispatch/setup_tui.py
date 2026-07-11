@@ -75,7 +75,7 @@ def wizard_selections(
         SetupChoiceScreen(
             step=1,
             title="Agent instructions",
-            question="Install CodeAlmanac instructions for:",
+            question="Add CodeAlmanac instructions to your AGENTS.md / CLAUDE.md:",
             options=target_options(),
         ),
         initial_index=target_default_index(defaults.targets),

@@ -491,6 +491,10 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     assert "[4/6]" in output.out
     assert "[5/6]" in output.out
     assert "[6/6]" in output.out
+    assert (
+        "Add CodeAlmanac instructions to your AGENTS.md / CLAUDE.md:" in output.out
+    )
+    assert "Install CodeAlmanac instructions for:" not in output.out
     assert "almanac: update wiki context" in output.out
     assert "almanac/architecture/indexing.md" in output.out
     assert "How should your wikis be updated?" in output.out

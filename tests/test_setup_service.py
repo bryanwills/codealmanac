@@ -52,7 +52,13 @@ def test_setup_installs_codex_block_idempotently(home: Path):
     assert second.changes[0].changed is False
     assert body.count(CODEALMANAC_START) == 1
     assert body.count(CODEALMANAC_END) == 1
-    assert "codealmanac search" in body
+    assert "## Finding knowledge" in body
+    assert 'codealmanac search "checkout timeout"' in body
+    assert "codealmanac search --mentions src/checkout/" in body
+    assert "## Reading pages" in body
+    assert "codealmanac show PAGE --backlinks" in body
+    assert "## Maintenance boundary" in body
+    assert "codealmanac topics create" not in body
     assert first.plan.default_harness.value == "codex"
     assert first.plan.auto_commit is True
     assert first.plan.instruction_targets == (SetupTarget.CODEX,)
@@ -93,7 +99,10 @@ def test_setup_installs_claude_guide_and_import_idempotently(home: Path):
     guide_path = home / ".claude/codealmanac.md"
     claude_md = (home / ".claude/CLAUDE.md").read_text(encoding="utf-8")
     assert result.changes[0].changed is False
-    assert "codealmanac search" in guide_path.read_text(encoding="utf-8")
+    guide = guide_path.read_text(encoding="utf-8")
+    assert "## Finding knowledge" in guide
+    assert "## Reading pages" in guide
+    assert "## Maintenance boundary" in guide
     assert claude_md.count(CLAUDE_IMPORT_LINE) == 1
 
 
