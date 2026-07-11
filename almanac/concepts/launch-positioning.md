@@ -46,6 +46,10 @@ sources:
     type: web
     url: https://github.com/bcurts/agentchattr
     note: GitHub repository for agentchattr, a local Slack-like agent chat comparison point.
+  - id: pr-first-transcript
+    type: conversation
+    path: /Users/rohan/.codex/sessions/2026/07/10/rollout-2026-07-10T19-01-57-019f4ee8-f32b-7e40-97ba-55c47580df71.jsonl
+    note: Outreach discussion that compared permission-seeking with finished documentation PRs.
 ---
 
 # Launch Positioning
@@ -75,3 +79,9 @@ OpenWiki research is raw launch analysis, not a final report. The reusable concl
 The stargazer export work is useful as audience research rather than as a standing operating procedure. The export fetched GitHub stargazers through GraphQL in `STARRED_AT` order with public profile fields, then combined OpenWiki, Graphify, CodeAlmanac, and Google OKF into one lowercased-login dataset with per-repository membership fields [@openwiki-export-script] [@stargazer-combine-script] [@combined-stargazers-csv]. The validated combined file contained 92,576 unique GitHub accounts, including 9,774 OpenWiki stargazers, 80,469 Graphify stargazers, 241 CodeAlmanac stargazers, and 6,513 Google OKF stargazers [@traction-export-transcript]. Those numbers are evidence for the July 2026 launch research set, not a live product metric.
 
 The agent-chat comparison set from the July 8 lookup has two useful anchors. TagIt positions itself as a self-hosted chat interface where a team can `@mention` coding agents, register Claude Code and Codex CLIs, and route Slack or Feishu messages to the configured agent [@tagit]. agentchattr is the Slack-like local chat comparison: its README describes `@claude`, `@codex`, and other agent mentions, shared channels, and agent-to-agent wakeups through a local chat server [@agentchattr]. These tools are not direct wiki-memory substitutes, but they are relevant when launch copy mentions teams routing work to multiple agents.
+
+## Repository Outreach
+
+For open-source repository outreach, a finished pull request can be stronger than asking maintainers to imagine the value first. The recommended framing is that the PR itself is the demo: ordinary Markdown under `almanac/`, no runtime impact, clear preview instructions, validation evidence, and no expectation that the project adopt CodeAlmanac automation [@pr-first-transcript].
+
+This strategy should stay selective. It fits repositories that accept documentation contributions, have enough complexity to justify a repo-local architecture wiki, and allow a high-quality source-grounded contribution. It should not be used for automated generic PRs or for pages that merely summarize files; the outreach value depends on proving that CodeAlmanac captured decisions, flows, gotchas, and contributor-navigation problems the maintainers can inspect directly [@pr-first-transcript].
