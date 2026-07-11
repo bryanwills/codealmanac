@@ -4,6 +4,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
 
+from pydantic import ValidationError
 from yoke import (
     ClaudeOptions,
     CodexApproval,
@@ -57,7 +58,10 @@ class YokeHarness(Protocol):
         """Run one provider task."""
 
 
-HarnessFactory = Callable[[HarnessKind, Path, HarnessAgentKind | None], YokeHarness]
+HarnessFactory = Callable[
+    [HarnessKind, Path, HarnessAgentKind | None, Path],
+    YokeHarness,
+]
 
 
 class YokeHarnessAdapter:
@@ -66,18 +70,27 @@ class YokeHarnessAdapter:
     def __init__(
         self,
         kind: HarnessKind,
+        runtime_root: Path,
         factory: HarnessFactory | None = None,
     ):
         self.kind = kind
+        self.runtime_root = runtime_root
         self.factory = factory or create_yoke_harness
 
     def check(self) -> HarnessReadiness:
         try:
+            readiness_cwd = self.runtime_root.parent / "readiness"
+            readiness_cwd.mkdir(parents=True, exist_ok=True)
             return project_readiness(
-                self.factory(self.kind, Path.cwd(), None).check_sync(),
+                self.factory(
+                    self.kind,
+                    readiness_cwd,
+                    None,
+                    self.runtime_root,
+                ).check_sync(),
                 self.kind,
             )
-        except (FileNotFoundError, TimeoutError, YokeError) as error:
+        except (FileNotFoundError, TimeoutError, ValidationError, YokeError) as error:
             return HarnessReadiness(
                 kind=self.kind,
                 available=False,
@@ -102,11 +115,16 @@ class YokeHarnessAdapter:
                     on_event(item)
 
         try:
-            run = self.factory(self.kind, request.cwd, request.agent).run_sync(
+            run = self.factory(
+                self.kind,
+                request.cwd,
+                request.agent,
+                self.runtime_root,
+            ).run_sync(
                 request.prompt,
                 run_options(request, project_live),
             )
-        except (FileNotFoundError, TimeoutError, YokeError) as error:
+        except (FileNotFoundError, TimeoutError, ValidationError, YokeError) as error:
             run = failed_yoke_run(self.kind, str(error))
         for event in run.events[observed:]:
             for item in projector.project(event):
@@ -123,6 +141,7 @@ def create_yoke_harness(
     kind: HarnessKind,
     cwd: Path,
     agent_name: HarnessAgentKind | None = None,
+    runtime_root: Path | None = None,
 ) -> Harness:
     agent_kind = agent_name or HarnessAgentKind.BUILD
     return Harness(
@@ -130,6 +149,7 @@ def create_yoke_harness(
         surface="codex_app_server" if kind is HarnessKind.CODEX else None,
         agent=load_agent(agent_kind),
         cwd=cwd,
+        runtime_root=runtime_root,
     )
 
 

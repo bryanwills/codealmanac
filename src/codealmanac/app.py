@@ -226,7 +226,7 @@ def create_services(
         local_state.database_path,
     )
     harnesses = HarnessesService(
-        default_harness_adapters()
+        default_harness_adapters(local_state.harness_runtime_dir)
         if adapters.harness_adapters is None
         else adapters.harness_adapters
     )

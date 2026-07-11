@@ -14,6 +14,7 @@ from yoke import (
 )
 
 from codealmanac.agents.catalog import agent_collection, load_agent
+from codealmanac.app import create_app
 from codealmanac.integrations.harnesses.yoke.adapter import (
     CLAUDE_ALLOWED_TOOLS,
     YokeHarnessAdapter,
@@ -30,6 +31,7 @@ from codealmanac.services.harnesses.models import (
     HarnessRunStatus,
 )
 from codealmanac.services.harnesses.requests import RunHarnessRequest
+from codealmanac.settings import AppConfig
 
 
 class RecordingHarness:
@@ -38,7 +40,12 @@ class RecordingHarness:
         self.calls = []
 
     def check_sync(self) -> Readiness:
-        return Readiness(available=True, message="ready")
+        return Readiness(
+            provider=Provider.CODEX,
+            surface="codex_app_server",
+            available=True,
+            message="ready",
+        )
 
     def run_sync(self, prompt, options):
         self.calls.append((prompt, options))
@@ -56,17 +63,60 @@ def request(kind: HarnessKind, prompt: str = "  preserve me exactly  "):
 
 
 @pytest.mark.parametrize("kind", tuple(HarnessKind))
-def test_adapter_forwards_exact_prompt_and_model(kind):
+def test_adapter_forwards_exact_prompt_and_model(kind, tmp_path):
     harness = RecordingHarness(
         Run(provider=Provider(kind.value), output="ok")
     )
     requested = request(kind)
-    result = YokeHarnessAdapter(kind, lambda *_: harness).run(requested)
+    result = YokeHarnessAdapter(
+        kind,
+        tmp_path / "harnesses",
+        lambda *_: harness,
+    ).run(requested)
 
     assert result.status is HarnessRunStatus.SUCCEEDED
     [(prompt, options)] = harness.calls
     assert prompt == requested.prompt
     assert options.model == "chosen-model"
+
+
+def test_readiness_uses_state_sibling_instead_of_callers_cwd(tmp_path):
+    harness = RecordingHarness(Run(provider=Provider.CODEX, output="ok"))
+    calls = []
+
+    def factory(kind, cwd, agent, runtime_root):
+        calls.append((kind, cwd, agent, runtime_root))
+        return harness
+
+    runtime_root = tmp_path / "state" / "harnesses"
+    readiness = YokeHarnessAdapter(
+        HarnessKind.CODEX,
+        runtime_root,
+        factory,
+    ).check()
+
+    assert readiness.available
+    assert calls == [
+        (
+            HarnessKind.CODEX,
+            runtime_root.parent / "readiness",
+            None,
+            runtime_root,
+        )
+    ]
+
+
+def test_repo_containing_runtime_state_fails_as_harness_result(tmp_path):
+    repository = tmp_path / "repository"
+    runtime_root = repository / ".state" / "harnesses"
+    repository.mkdir()
+    requested = request(HarnessKind.CODEX).model_copy(update={"cwd": repository})
+
+    result = YokeHarnessAdapter(HarnessKind.CODEX, runtime_root).run(requested)
+
+    assert result.status is HarnessRunStatus.FAILED
+    assert result.events[-1].failure is not None
+    assert "runtime_root must be outside cwd" in result.events[-1].failure.message
 
 
 def test_packaged_collection_loads_the_three_yoke_agents():
@@ -87,12 +137,19 @@ def test_packaged_collection_loads_the_three_yoke_agents():
 
 
 @pytest.mark.parametrize("kind", tuple(HarnessAgentKind))
-def test_yoke_harness_uses_the_requested_packaged_agent(kind):
-    harness = create_yoke_harness(HarnessKind.CODEX, Path("/tmp/project"), kind)
+def test_yoke_harness_uses_the_requested_packaged_agent(kind, tmp_path):
+    runtime_root = tmp_path / "harnesses"
+    harness = create_yoke_harness(
+        HarnessKind.CODEX,
+        Path("/tmp/project"),
+        kind,
+        runtime_root,
+    )
 
     assert harness.agent.root is not None
     assert harness.agent.root.name == kind.value
     assert harness.agent.instructions == load_agent(kind).instructions
+    assert harness.runtime_root == runtime_root.resolve(strict=False)
 
 
 def test_provider_options_are_explicit_and_provider_specific():
@@ -110,6 +167,17 @@ def test_provider_options_are_explicit_and_provider_specific():
     assert str(codex.approval) == "never"
     assert codex.network is False
     assert codex.app_server.ephemeral is True
+
+
+def test_composition_root_gives_both_harnesses_local_state_runtime(tmp_path):
+    database_path = tmp_path / "state" / "codealmanac.db"
+    app = create_app(config=AppConfig(database_path=database_path))
+    expected = database_path.parent / "harnesses"
+
+    for kind in HarnessKind:
+        adapter = app.harnesses.adapter_for(kind)
+        assert isinstance(adapter, YokeHarnessAdapter)
+        assert adapter.runtime_root == expected
 
 
 @pytest.mark.parametrize("kind", tuple(HarnessKind))
@@ -262,7 +330,7 @@ def test_failure_and_cancel_always_end_with_one_terminal(status, failure, expect
         assert result.events[-1].failure.message == "provider broke"
 
 
-def test_callback_receives_nonterminal_events_and_terminal_exactly_once():
+def test_callback_receives_nonterminal_events_and_terminal_exactly_once(tmp_path):
     harness = RecordingHarness(
         Run(
             provider=Provider.CODEX,
@@ -276,7 +344,9 @@ def test_callback_receives_nonterminal_events_and_terminal_exactly_once():
     observed = []
 
     result = YokeHarnessAdapter(
-        HarnessKind.CODEX, lambda *_: harness
+        HarnessKind.CODEX,
+        tmp_path / "harnesses",
+        lambda *_: harness,
     ).run(request(HarnessKind.CODEX), observed.append)
 
     assert observed == list(result.events)
