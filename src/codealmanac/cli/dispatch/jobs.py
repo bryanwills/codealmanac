@@ -37,7 +37,7 @@ def dispatch_jobs(args: argparse.Namespace, app: CodeAlmanac) -> int:
         render_run_attach_stream(updates, json_output=args.json)
         return 0
     if args.jobs_command == "cancel":
-        result = app.runs.cancel(
+        result = app.workflows.queue.cancel(
             CancelRunRequest(repository_name=args.wiki, run_id=args.run_id)
         )
         render_run_cancel(result, json_output=args.json)

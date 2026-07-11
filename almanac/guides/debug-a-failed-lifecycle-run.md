@@ -14,6 +14,10 @@ sources:
     type: file
     path: src/codealmanac/workflows/operations/service.py
     note: Operation failure recording and validation path.
+  - id: run_control
+    type: file
+    path: src/codealmanac/workflows/run_queue/control.py
+    note: Running cancellation coordination across the ledger and process controller.
 ---
 
 # Debug A Failed Lifecycle Run
@@ -26,7 +30,7 @@ Start with `codealmanac jobs`, then run `codealmanac jobs show <run-id>` and `co
 
 If the run is still active, `codealmanac jobs attach <run-id>` reads the same record and events plus a terminal flag [@run_store]. Attach is useful for watching a long harness run, but a failed run is usually debugged from `jobs logs`.
 
-If a run is stuck rather than failed, `codealmanac jobs cancel <run-id>` only marks the record `cancelled`; it does not stop the harness process actually doing the work [@run_store]. See [Run States And Events](../reference/runs/run-states-and-events) for the exact cancellation contract. To stop the work itself, kill the `child_pid` reported when the run was queued.
+If a run is stuck rather than failed, `codealmanac jobs cancel <run-id>` stops its executor and harness descendants before recording the terminal `cancelled` status [@run_control]. A successful command guarantees that execution stopped; it does not undo edits or commits already completed. See [Run States And Events](../reference/runs/run-states-and-events) for the exact cancellation contract.
 
 ## Interpret The Failure
 

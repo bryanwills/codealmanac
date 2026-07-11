@@ -4,7 +4,7 @@ from pathlib import Path
 from threading import Event, Thread
 
 import pytest
-from conftest import initialize_repository
+from conftest import FakeRunProcessController, initialize_repository
 from pydantic import ValidationError
 
 from codealmanac.app import create_app
@@ -27,6 +27,7 @@ from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
     AttachRunRequest,
     CancelRunRequest,
+    FinishRunCancellationRequest,
     FinishRunRequest,
     ListRunsRequest,
     MarkRunRunningRequest,
@@ -199,7 +200,7 @@ def test_runs_service_cancels_queued_run_and_attaches_log(
         StartRunRequest(repository_id=repository.repository_id, kind=RunKind.GARDEN)
     )
 
-    result = app.runs.cancel(CancelRunRequest(run_id=record.run_id))
+    result = app.runs.prepare_cancellation(CancelRunRequest(run_id=record.run_id))
     snapshot = app.runs.attach(AttachRunRequest(run_id=record.run_id))
 
     assert result.changed is True
@@ -225,8 +226,17 @@ def test_runs_service_finish_preserves_cancelled_run(
     record = app.runs.start(
         StartRunRequest(repository_id=repository.repository_id, kind=RunKind.GARDEN)
     )
-    app.runs.mark_running(MarkRunRunningRequest(run_id=record.run_id))
-    cancelled = app.runs.cancel(CancelRunRequest(run_id=record.run_id))
+    execution = FakeRunProcessController().execution
+    app.runs.mark_running(
+        MarkRunRunningRequest(run_id=record.run_id, execution=execution)
+    )
+    prepared = app.runs.prepare_cancellation(CancelRunRequest(run_id=record.run_id))
+    cancelled = app.runs.finish_cancellation(
+        FinishRunCancellationRequest(
+            run_id=record.run_id,
+            execution_id=execution.execution_id,
+        )
+    )
 
     finished = app.runs.finish(
         FinishRunRequest(
@@ -237,8 +247,87 @@ def test_runs_service_finish_preserves_cancelled_run(
     )
 
     assert cancelled.changed is True
+    assert prepared.execution == execution
     assert finished.status == RunStatus.CANCELLED
     assert finished.summary is None
+
+
+def test_live_event_transaction_preserves_concurrent_cancellation_request(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
+    )
+    repository = initialize_repository(app, path=repo)
+    execution = FakeRunProcessController().execution
+    run = app.runs.start(
+        StartRunRequest(
+            repository_id=repository.repository_id,
+            kind=RunKind.GARDEN,
+        )
+    )
+    app.runs.mark_running(
+        MarkRunRunningRequest(run_id=run.run_id, execution=execution)
+    )
+    event_written = Event()
+    release_event_transaction = Event()
+    original_append = app.runs.store.event_store.append_on_connection
+
+    def append_then_pause(*args, **kwargs):
+        event = original_append(*args, **kwargs)
+        if event.message == "live event":
+            event_written.set()
+            release_event_transaction.wait(timeout=2)
+        return event
+
+    monkeypatch.setattr(
+        app.runs.store.event_store,
+        "append_on_connection",
+        append_then_pause,
+    )
+    errors: list[Exception] = []
+
+    def write_event() -> None:
+        try:
+            app.runs.record_event(
+                RecordRunEventRequest(
+                    run_id=run.run_id,
+                    kind=RunEventKind.MESSAGE,
+                    message="live event",
+                )
+            )
+        except Exception as error:
+            errors.append(error)
+
+    def request_cancel() -> None:
+        try:
+            app.runs.prepare_cancellation(CancelRunRequest(run_id=run.run_id))
+        except Exception as error:
+            errors.append(error)
+
+    event_thread = Thread(target=write_event)
+    cancel_thread = Thread(target=request_cancel)
+    event_thread.start()
+    assert event_written.wait(timeout=2)
+    cancel_thread.start()
+    release_event_transaction.set()
+    event_thread.join(timeout=2)
+    cancel_thread.join(timeout=2)
+
+    current = app.runs.show(ShowRunRequest(run_id=run.run_id))
+    log = app.runs.log(ReadRunLogRequest(run_id=run.run_id))
+    assert errors == []
+    assert current.execution == execution
+    assert current.cancellation_requested_at is not None
+    assert tuple(event.sequence for event in log) == tuple(range(1, len(log) + 1))
+    assert tuple(event.message for event in log[-2:]) == (
+        "live event",
+        "cancellation requested",
+    )
 
 
 def test_runs_service_streams_attach_until_run_is_terminal(

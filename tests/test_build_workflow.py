@@ -3,7 +3,13 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from conftest import initialize_repository, runtime_index_path
+from conftest import (
+    FakeRunProcessController,
+    InlineRunExecutorSpawner,
+    bind_inline_executor,
+    initialize_repository,
+    runtime_index_path,
+)
 
 from codealmanac.app import create_app
 from codealmanac.core.errors import (
@@ -244,10 +250,14 @@ def test_worker_fails_build_when_selected_runner_is_not_ready(
     repo = tmp_path / "repo"
     repo.mkdir()
     adapter = BrokenHarnessAdapter()
+    executors = InlineRunExecutorSpawner()
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(adapter,),
+        executor_spawner=executors,
+        process_controller=FakeRunProcessController(),
     )
+    bind_inline_executor(app, executors)
     run = app.workflows.queue.queue_build(
         BuildRequest(
             path=repo,

@@ -165,6 +165,15 @@ It is the constraint document for future agents.
   Terminal runs are cancel no-ops; queued or running runs append a `cancelled`
   status event. Terminal finish calls must preserve an already-cancelled run
   rather than rewriting it as done or failed.
+- 2026-07-10: Running cancellation is execution control, not a status-only
+  write. `__run-worker` manages the serialized queue and starts one hidden
+  `__run-executor <run-id>` process per run. A running record stores a verified
+  execution id, PID, and process birth time. `jobs cancel` records non-terminal
+  cancellation intent, terminates and confirms the matching executor and its
+  harness descendants, then appends the terminal `cancelled` event. If process
+  termination cannot be confirmed, the run must not claim to be cancelled.
+  Queued cancellation remains an atomic terminal transition. Cancellation does
+  not roll back edits or commits completed before the process stopped.
 - 2026-07-01: Python `jobs attach` streams through a service-owned use case.
   `services/runs/streaming.py` polls `RunStore.attach(...)`, emits only new log
   events, and stops at `done`, `failed`, or `cancelled`; CLI rendering owns

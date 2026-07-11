@@ -273,7 +273,7 @@ codealmanac jobs logs <run-id>
 # Follow new events live until the job finishes, fails, or is marked cancelled
 codealmanac jobs attach <run-id>
 
-# Prevent a queued job from starting, or mark a running job as cancelled
+# Prevent a queued job from starting, or stop a running job and its agent
 codealmanac jobs cancel <run-id>
 ```
 

@@ -11,6 +11,7 @@ from codealmanac.services.runs.models import (
     QueuedRun,
     RunAttachSnapshot,
     RunAttachUpdate,
+    RunCancellationPlan,
     RunCancelResult,
     RunKind,
     RunLogEvent,
@@ -21,6 +22,7 @@ from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
     AttachRunRequest,
     CancelRunRequest,
+    FinishRunCancellationRequest,
     FinishRunRequest,
     ListRunsRequest,
     MarkRunRunningRequest,
@@ -130,7 +132,7 @@ class RunsService:
         )
 
     def mark_running(self, request: MarkRunRunningRequest) -> RunRecord:
-        return self.store.mark_running(request.run_id)
+        return self.store.mark_running(request.run_id, request.execution)
 
     def record_harness_transcript(
         self,
@@ -149,10 +151,22 @@ class RunsService:
             request.error,
         )
 
-    def cancel(self, request: CancelRunRequest) -> RunCancelResult:
+    def prepare_cancellation(
+        self,
+        request: CancelRunRequest,
+    ) -> RunCancellationPlan:
         record = self.store.read(request.run_id)
         self.require_run_matches_repository(record, request.repository_name)
-        return self.store.cancel(request.run_id)
+        return self.store.prepare_cancellation(request.run_id)
+
+    def finish_cancellation(
+        self,
+        request: FinishRunCancellationRequest,
+    ) -> RunCancelResult:
+        return self.store.finish_cancellation(
+            request.run_id,
+            request.execution_id,
+        )
 
     def repository_filter(
         self,

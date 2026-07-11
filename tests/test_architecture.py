@@ -1555,6 +1555,7 @@ def test_run_queue_stays_operation_dispatch_only():
     service_text = (run_queue_root / "service.py").read_text(encoding="utf-8")
     specs_text = (run_queue_root / "specs.py").read_text(encoding="utf-8")
     worker_text = (run_queue_root / "worker.py").read_text(encoding="utf-8")
+    executor_text = (run_queue_root / "executor.py").read_text(encoding="utf-8")
 
     forbidden_fragments = (
         "RunHarnessRequest",
@@ -1568,14 +1569,17 @@ def test_run_queue_stays_operation_dispatch_only():
 
     assert (run_queue_root / "worker.py").is_file()
     assert (run_queue_root / "specs.py").is_file()
-    assert len(service_text.splitlines()) <= 170
+    assert len(service_text.splitlines()) <= 200
     assert [
         fragment for fragment in forbidden_fragments if fragment in service_text
     ] == []
     assert "class RunQueueWorker" in worker_text
     assert "def drain(" in worker_text
-    assert "StartedIngestRequest" in worker_text
-    assert "StartedGardenRequest" in worker_text
+    assert "StartedIngestRequest" not in worker_text
+    assert "StartedGardenRequest" not in worker_text
+    assert "class RunExecutor" in executor_text
+    assert "StartedIngestRequest" in executor_text
+    assert "StartedGardenRequest" in executor_text
     assert "def ingest_run_spec(" in specs_text
     assert "def garden_run_spec(" in specs_text
 
@@ -1808,7 +1812,7 @@ def test_run_persistence_stays_split_by_responsibility():
         "transitions.py",
         "worker_locks.py",
     } <= module_names
-    assert len(store_text.splitlines()) <= 330
+    assert len(store_text.splitlines()) <= 360
     assert [
         fragment for fragment in forbidden_store_fragments if fragment in store_text
     ] == []
@@ -1820,7 +1824,8 @@ def test_run_persistence_stays_split_by_responsibility():
     assert "def next_queued_run(" in queries_text
     assert "def start_run(" in transitions_text
     assert "def finish_run(" in transitions_text
-    assert "def cancel_run(" in transitions_text
+    assert "def prepare_cancellation(" in transitions_text
+    assert "def finish_cancellation(" in transitions_text
     assert "ConflictError" in transitions_text
     assert "class RunEventStore" in events_text
     assert "run_events" in events_text

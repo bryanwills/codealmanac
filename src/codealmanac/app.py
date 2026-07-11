@@ -4,7 +4,11 @@ from dataclasses import dataclass
 from codealmanac import __version__
 from codealmanac.integrations.automation import LaunchdSchedulerAdapter
 from codealmanac.integrations.harnesses import default_harness_adapters
-from codealmanac.integrations.runs import SubprocessRunWorkerSpawner
+from codealmanac.integrations.runs import (
+    PsutilRunProcessController,
+    SubprocessRunExecutorSpawner,
+    SubprocessRunWorkerSpawner,
+)
 from codealmanac.integrations.setup import (
     FileInstructionInstaller,
     FilesystemGlobalStateRemover,
@@ -64,6 +68,12 @@ from codealmanac.workflows.garden.service import GardenWorkflow
 from codealmanac.workflows.ingest.service import IngestWorkflow
 from codealmanac.workflows.operations import OperationRunner
 from codealmanac.workflows.run_queue import RunQueue
+from codealmanac.workflows.run_queue.control import RunCancellation
+from codealmanac.workflows.run_queue.executor import RunExecutor
+from codealmanac.workflows.run_queue.ports import (
+    RunExecutorSpawner,
+    RunProcessController,
+)
 from codealmanac.workflows.sync.service import SyncWorkflow
 from codealmanac.workflows.sync.store import SyncStateStore
 
@@ -109,6 +119,8 @@ class AppAdapters:
     source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None
     scheduler: SchedulerAdapter | None = None
     worker_spawner: RunWorkerSpawner | None = None
+    executor_spawner: RunExecutorSpawner | None = None
+    process_controller: RunProcessController | None = None
     update_metadata: PackageInstallMetadataProvider | None = None
     update_runner: PackageCommandRunner | None = None
     instruction_installer: InstructionInstaller | None = None
@@ -147,6 +159,8 @@ def create_app(
     source_runtime_adapters: Sequence[SourceRuntimeAdapter] | None = None,
     scheduler: SchedulerAdapter | None = None,
     worker_spawner: RunWorkerSpawner | None = None,
+    executor_spawner: RunExecutorSpawner | None = None,
+    process_controller: RunProcessController | None = None,
     update_metadata: PackageInstallMetadataProvider | None = None,
     update_runner: PackageCommandRunner | None = None,
     instruction_installer: InstructionInstaller | None = None,
@@ -161,6 +175,8 @@ def create_app(
         source_runtime_adapters=source_runtime_adapters,
         scheduler=scheduler,
         worker_spawner=worker_spawner,
+        executor_spawner=executor_spawner,
+        process_controller=process_controller,
         update_metadata=update_metadata,
         update_runner=update_runner,
         instruction_installer=instruction_installer,
@@ -295,6 +311,15 @@ def create_workflows(
         services.prompts,
         services.manual,
     )
+    processes = adapters.process_controller or PsutilRunProcessController()
+    executor = RunExecutor(
+        services.runs,
+        build,
+        ingest,
+        garden,
+        processes,
+    )
+    cancellation = RunCancellation(services.runs, processes)
     queue = RunQueue(
         services.repositories,
         services.runs,
@@ -302,6 +327,9 @@ def create_workflows(
         ingest,
         garden,
         adapters.worker_spawner or SubprocessRunWorkerSpawner(),
+        executor,
+        adapters.executor_spawner or SubprocessRunExecutorSpawner(),
+        cancellation,
     )
     sync = SyncWorkflow(
         services.repositories,

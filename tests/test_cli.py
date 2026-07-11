@@ -5,7 +5,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from conftest import initialize_repository, runtime_repo_path_for_root
+from conftest import (
+    FakeRunProcessController,
+    InlineRunExecutorSpawner,
+    bind_inline_executor,
+    initialize_repository,
+    runtime_repo_path_for_root,
+)
 
 from codealmanac import __version__
 from codealmanac.app import create_app
@@ -33,6 +39,7 @@ from codealmanac.services.runs.models import (
 from codealmanac.services.runs.requests import (
     FinishRunRequest,
     ListRunsRequest,
+    MarkRunRunningRequest,
     ReadRunSpecRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
@@ -1320,11 +1327,15 @@ def test_cli_hidden_run_worker_drains_queued_run(
     repo.mkdir()
     (repo / "note.md").write_text("auth decision\n", encoding="utf-8")
     harness = CliWritingHarnessAdapter()
+    executors = InlineRunExecutorSpawner()
     app = create_app(
         AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
         harness_adapters=(harness,),
         worker_spawner=CliWorkerSpawner(),
+        executor_spawner=executors,
+        process_controller=FakeRunProcessController(),
     )
+    bind_inline_executor(app, executors)
     initialize_repository(app, path=repo)
     initialize_git(repo)
     commit_all(repo, "initial wiki")
@@ -1602,6 +1613,42 @@ def test_cli_jobs_rejects_path_shaped_run_ids(capsys):
     output = capsys.readouterr()
     assert output.out == ""
     assert "String should match pattern" in output.err
+
+
+def test_cli_jobs_cancel_stops_running_execution(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch,
+    capsys,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    processes = FakeRunProcessController()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
+        process_controller=processes,
+    )
+    repository = initialize_repository(app, repo)
+    run = app.runs.start(
+        StartRunRequest(
+            repository_id=repository.repository_id,
+            kind=RunKind.GARDEN,
+        )
+    )
+    app.runs.mark_running(
+        MarkRunRunningRequest(run_id=run.run_id, execution=processes.execution)
+    )
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    assert main(["jobs", "cancel", run.run_id]) == 0
+
+    output = capsys.readouterr()
+    assert output.out == f"cancelled {run.run_id}\n"
+    assert processes.terminated == [processes.execution]
+    assert app.runs.show(ShowRunRequest(run_id=run.run_id)).status == (
+        RunStatus.CANCELLED
+    )
 
 
 def test_cli_search_and_show_read_current_repo_wiki(
