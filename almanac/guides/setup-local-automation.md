@@ -81,7 +81,7 @@ codealmanac setup --yes --garden-off
 codealmanac setup --yes --no-auto-update
 ```
 
-Setup separates instruction installation from lifecycle execution. `--target` chooses which global agent instruction files to install (`all`, `codex`, or `claude`), while `--runner` chooses the default harness that runs CodeAlmanac jobs (`codex` or `claude`) [@setup-parser] [@setup-service]. The setup parser also exposes auto-commit policy, instruction skipping, sync interval, sync disable, Garden interval, Garden disable, and auto-update disable flags [@setup-parser].
+Setup separates instruction installation from lifecycle execution. `--target` chooses which global agent instruction files to install (`all`, `codex`, or `claude`), while `--runner` chooses the default harness that runs CodeAlmanac jobs (`codex` or `claude`) [@setup-parser] [@setup-service]. The setup parser also exposes auto-commit policy, instruction skipping, sync interval, sync disable, Garden interval, Garden disable, and auto-update disable flags [@setup-parser]. See [Instruction installation](../architecture/setup/instruction-installation) for what gets written for each target and the guide content itself.
 
 ## Understand The Default Tasks
 

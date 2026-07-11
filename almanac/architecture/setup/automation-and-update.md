@@ -56,7 +56,7 @@ The area matters because it is local-only product infrastructure. Scheduled work
 
 ## Setup Boundary
 
-`SetupService.run` builds one complete `UserConfig`, asks the config service to write it, and receives scheduler reconciliation results from that same update. It also installs instruction targets unless skipped and reports runner readiness [@setup_service]. Setup does not construct a separate automation-install command.
+`SetupService.run` builds one complete `UserConfig`, asks the config service to write it, and receives scheduler reconciliation results from that same update. It also installs instruction targets unless skipped and reports runner readiness [@setup_service]. Setup does not construct a separate automation-install command. Instruction installation is a separate concern with its own per-target mechanics; see [Instruction installation](instruction-installation).
 
 The request model defaults to both instruction targets, Codex as the harness, auto-commit enabled, and all three automation tasks enabled. It accepts setup-time interval and disable controls and validates positive durations [@setup_requests].
 
