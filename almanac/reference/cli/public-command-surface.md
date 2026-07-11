@@ -14,6 +14,10 @@ sources:
     type: file
     path: src/codealmanac/cli/parser/root.py
     note: Root parser, version flag, public command metavar, and command-family registration.
+  - id: parser_argument
+    type: file
+    path: src/codealmanac/cli/parser/argument_parser.py
+    note: Custom parser error path that classifies syntax problems.
   - id: parser_run
     type: file
     path: src/codealmanac/cli/parser/run_commands.py

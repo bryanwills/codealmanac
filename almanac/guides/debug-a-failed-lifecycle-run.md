@@ -18,14 +18,14 @@ sources:
     type: file
     path: src/codealmanac/workflows/operations/harness.py
     note: Harness failure validation and run-event classification.
-  - id: codex_result
+  - id: yoke_result
     type: file
-    path: src/codealmanac/integrations/harnesses/codex/run_result.py
-    note: Codex app-server state to HarnessRunResult conversion.
-  - id: codex_turn_events
+    path: src/codealmanac/integrations/harnesses/yoke/results.py
+    note: Yoke run to HarnessRunResult conversion and terminal event handling.
+  - id: yoke_events
     type: file
-    path: src/codealmanac/integrations/harnesses/codex/result.py
-    note: Codex turn completion, failure recording, and done-event rendering.
+    path: src/codealmanac/integrations/harnesses/yoke/events.py
+    note: Yoke event projection into normalized harness events.
 ---
 
 # Debug A Failed Lifecycle Run
@@ -42,6 +42,6 @@ If the run is still active, `codealmanac jobs attach <run-id>` reads the same re
 
 Harness errors appear as run error or tool events because the operation runner records harness output before it validates success [@operation_runner]. Validation errors mean the Markdown tree could not pass the same checks described in [Health And Validation](../architecture/wiki/health-and-validation). Indexing errors usually point to page route collisions or malformed wiki source that prevented the derived index from refreshing.
 
-When a Codex app-server run fails after it has already emitted assistant text, the run's visible `error` can quote the last assistant output instead of the provider failure. The Codex result builder sets `output_text` from `state.result or state.error`, and harness validation builds the failed-run message from that output text [@codex_result] [@operation_harness]. The structured failure is still recorded on the Codex error event when the root turn completion carries an error, so inspect the preceding `error` event and its `harness_event.failure` details before treating the run summary as the root cause [@codex_turn_events] [@operation_runner].
+For Yoke-backed runs, `project_run()` builds `output_text` from provider output, then provider failure message, then a provider-specific cancellation or completion fallback [@yoke_result]. Harness validation builds the failed-run message from the first line of that output text, while the normalized terminal `done` event carries structured failure details when Yoke reported a failure [@yoke_result] [@operation_harness]. Inspect the preceding `error`, `warning`, or terminal `done` event and its `harness_event.failure` details before treating the run summary as the root cause [@yoke_events] [@yoke_result] [@operation_runner].
 
 After fixing wiki source, run [Verify A Wiki Change](verify-a-wiki-change). If the failure was provider readiness or authentication, fix the local harness environment and queue a new lifecycle run.

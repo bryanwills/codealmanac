@@ -26,14 +26,18 @@ sources:
     type: file
     path: src/codealmanac/services/harnesses/requests.py
     note: Normalized harness run request.
-  - id: codex-adapter
+  - id: yoke-adapter
     type: file
-    path: src/codealmanac/integrations/harnesses/codex/adapter.py
-    note: Codex provider adapter example.
-  - id: claude-adapter
+    path: src/codealmanac/integrations/harnesses/yoke/adapter.py
+    note: Yoke-backed provider adapter example for Codex and Claude.
+  - id: yoke-events
     type: file
-    path: src/codealmanac/integrations/harnesses/claude/adapter.py
-    note: Claude provider adapter example.
+    path: src/codealmanac/integrations/harnesses/yoke/events.py
+    note: Yoke event projection into normalized harness events.
+  - id: yoke-results
+    type: file
+    path: src/codealmanac/integrations/harnesses/yoke/results.py
+    note: Yoke run projection into normalized harness results.
   - id: harness-defaults
     type: file
     path: src/codealmanac/integrations/harnesses/__init__.py
@@ -60,7 +64,7 @@ Do not encode provider names in workflow logic. `HarnessesService` indexes adapt
 
 ## Implement Readiness
 
-Implement `check()` first. It should inspect local availability without starting an agent run [@harness-port]. The Codex adapter runs `codex login status`; the Claude adapter runs `claude auth status` and can fall back to `ANTHROPIC_API_KEY` readiness [@codex-adapter] [@claude-adapter].
+Implement `check()` first. It should inspect local availability without starting an agent run [@harness-port]. The current Yoke adapter delegates readiness to Yoke and projects the result into `HarnessReadiness`; missing binaries, timeouts, and Yoke errors become unavailable readiness results [@yoke-adapter].
 
 Return `HarnessReadiness(available=False, message=..., repair=...)` for missing binaries, timeouts, auth failures, or malformed provider status [@harness-results]. The service includes that message in run failures and, when alternatives exist, suggests switching the default harness [@harness-service].
 
@@ -68,7 +72,7 @@ Return `HarnessReadiness(available=False, message=..., repair=...)` for missing 
 
 `run(request)` receives a `RunHarnessRequest` with the provider kind, model, working directory, prompt, and optional title [@harness-request]. The adapter should translate that request into the provider call, then translate provider output back into CodeAlmanac models.
 
-Follow the existing provider shape. Codex and Claude keep provider execution in the adapter layer: readiness checks happen before the run, provider clients execute the prompt, and provider output is normalized into `HarnessRunResult` and `HarnessEvent` values [@codex-adapter] [@claude-adapter] [@harness-results] [@harness-events].
+Follow the existing provider shape. The current Codex and Claude paths keep provider execution in the Yoke adapter layer: readiness checks happen before the run, Yoke executes the prompt, and provider output is normalized into `HarnessRunResult` and `HarnessEvent` values [@yoke-adapter] [@yoke-results] [@yoke-events] [@harness-results] [@harness-events].
 
 Populate `changed_files` only when the adapter has a deliberate, tested mechanism for that metadata. Do not add workflow-level parsing or provider-specific branches to recover changed files.
 
