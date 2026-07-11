@@ -56,6 +56,13 @@ the build agent starts [@wiki-service] [@manual-library]. The build runtime
 payload names that repository-local manual root, and the build instructions give
 writing sub-agents exact paths beneath it [@build-service] [@build-agent].
 
+Ingest and garden do not use this repository-local manual root. Their runtime
+payloads still embed the full manual document bodies from `ManualLibrary`
+directly as `manual_documents` [@ingest-service] [@garden-service]. Only build
+was moved to filesystem-reference manuals; a future change that extends this
+pattern to ingest and garden needs to touch both workflow services and their
+agent instructions the same way the build workflow was changed.
+
 ## What It Does Not Own
 
 Agent folders do not contain Python orchestration or provider configuration.

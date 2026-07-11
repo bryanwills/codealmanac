@@ -17,6 +17,12 @@ sources:
   - id: contract
     type: file
     path: src/codealmanac/services/harnesses/ports.py
+  - id: settings
+    type: file
+    path: src/codealmanac/settings.py
+  - id: app
+    type: file
+    path: src/codealmanac/app.py
   - id: tests
     type: file
     path: tests/test_yoke_harness_integration.py
@@ -35,6 +41,23 @@ The adapter explicitly selects Codex app-server and leaves Claude on Yoke's
 default Claude surface. It loads the requested build, ingest, or garden agent
 from the packaged Yoke collection, forwards the task prompt unchanged, and
 applies the trusted non-interactive permission and timeout policy [@adapter].
+
+## Runtime Root
+
+`YokeHarnessAdapter` also requires a `runtime_root: Path` at construction.
+`default_harness_adapters(runtime_root)` receives `LocalStatePaths.harness_runtime_dir`
+(`state_dir / "harnesses"`, so `~/.codealmanac/harnesses` by default) from the
+composition root and passes it to both the Claude and Codex adapters [@defaults]
+[@settings] [@app]. The adapter forwards `runtime_root` into `yoke.Harness(...)`
+on every `check()` and `run()` call, so Yoke's native provider compilation caches
+under CodeAlmanac's own local state instead of writing `.codex` or `.claude`
+configuration into the target repository [@adapter].
+
+`check()` cannot run a real repository task, so it uses a sibling working
+directory instead of the caller's `cwd`: `runtime_root.parent / "readiness"`
+(`~/.codealmanac/readiness` by default), created on demand [@adapter] [@tests].
+This keeps readiness probes off whatever directory the CLI happens to be
+invoked from.
 
 ## What It Does Not Own
 
@@ -64,10 +87,11 @@ CLI and viewer on CodeAlmanac's stable event vocabulary [@events].
 
 ## Failure Modes
 
-Missing tools, authentication failures, timeouts, and Yoke errors become
-unavailable readiness or failed normalized runs. Unknown future Yoke event kinds
-remain serializable as `unknown`; malformed provider JSON does not cross into
-workflow services [@adapter] [@events] [@results].
+Missing tools, authentication failures, timeouts, Pydantic validation errors
+from malformed Yoke options, and Yoke errors become unavailable readiness or
+failed normalized runs. Unknown future Yoke event kinds remain serializable as
+`unknown`; malformed provider JSON does not cross into workflow services
+[@adapter] [@events] [@results].
 
 ## How To Change It
 
