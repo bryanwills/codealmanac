@@ -20,18 +20,28 @@ sources:
   - id: yoke-results
     type: file
     path: src/codealmanac/integrations/harnesses/yoke/results.py
+  - id: jobs-dispatch
+    type: file
+    path: src/codealmanac/cli/dispatch/jobs.py
+    note: Jobs command dispatch, including attach interruption handling.
 ---
 
 # Debug A Failed Lifecycle Run
 
 Use this guide when build, ingest, or garden leaves a failed run. Start with
 `codealmanac jobs`, then inspect `jobs show <run-id>` and
-`jobs logs <run-id>`. The durable run store keeps the record and normalized
-event stream after the original process exits [@repo-readme] [@run-store].
+`jobs logs <run-id>`. The durable [run ledger](../concepts/run-ledger) keeps
+the record and normalized event stream after the original process exits
+[@repo-readme] [@run-store].
 
 If the run is active, `codealmanac jobs attach <run-id>` follows the same event
 record until it becomes terminal. The readable log is the primary debugging
 surface; JSON output exposes the corresponding structured harness fields.
+Pressing `Ctrl-C` while attached only detaches the foreground command; it does
+not cancel or otherwise mutate the run, and the CLI prints the exact
+`codealmanac jobs cancel <run-id>` command before exiting with status `130`
+[@jobs-dispatch]. See [Run states and events](../reference/runs/run-states-and-events)
+for the full attach and cancellation contract.
 
 ## Identify The Boundary
 

@@ -11,6 +11,10 @@ sources:
   - id: harness-actors
     type: file
     path: src/codealmanac/services/harnesses/actors.py
+  - id: yoke-event-projector
+    type: file
+    path: src/codealmanac/integrations/harnesses/yoke/events.py
+    note: Converts Yoke EventKind values into HarnessEventKind and builds HarnessEvent from a Yoke Event.
 ---
 
 # Harness Event Shape
@@ -21,7 +25,7 @@ A harness event always has a `kind` and non-empty `message`. All other fields ar
 
 ## Event Kinds
 
-`HarnessEventKind` is the event vocabulary. These values are stable product categories, not raw provider names [@harness-events].
+`HarnessEventKind` is the event vocabulary. These values are stable product categories, not raw provider names [@harness-events]. The first 20 kinds mirror the Yoke package's own provider-neutral `EventKind` vocabulary value for value, since the [Yoke harness adapter](../architecture/agent-runs/provider-adapters) converts a Yoke `Event.kind` straight into a `HarnessEventKind` with the same string value, falling back to `unknown` when a provider reports a kind Yoke does not recognize [@yoke-event-projector]. The last three kinds (`agent_spawned`, `agent_wait_started`, `agent_completed`) are CodeAlmanac-only additions the adapter synthesizes for helper-agent lifecycle tracking; Yoke has no equivalent kind for them [@yoke-event-projector].
 
 | Kind | Meaning |
 |---|---|
@@ -30,14 +34,26 @@ A harness event always has a `kind` and non-empty `message`. All other fields ar
 | `tool_use` | A tool call started or was reported. |
 | `tool_result` | A tool returned output or an error. |
 | `tool_summary` | A compact provider or adapter summary of tool activity. |
+| `tool_request` | The provider asked to run a tool and is waiting on a decision. |
+| `approval_request` | The provider asked for approval before continuing an action. |
+| `user_input_request` | The provider asked the user for input before continuing. |
+| `request_resolved` | A prior `tool_request`, `approval_request`, or `user_input_request` was answered. |
 | `context_usage` | Token or context-window usage was reported. |
 | `provider_session` | Provider session, thread, or turn identity was announced. |
 | `warning` | A non-terminal warning occurred. |
 | `error` | An error event occurred. |
 | `done` | The harness run reached a terminal status. |
+| `hook` | A provider-side lifecycle hook fired. |
+| `rate_limit` | The provider reported a rate limit condition. |
+| `goal_updated` | A provider-owned keep-working goal was set or changed. |
+| `goal_cleared` | A provider-owned keep-working goal was cleared. |
+| `stream_event` | A provider stream event without a more specific mapped kind. |
+| `unknown` | The provider reported a kind Yoke's `EventKind` does not recognize. |
 | `agent_spawned` | A helper agent or child turn was started. |
 | `agent_wait_started` | The root turn began waiting on helper work. |
 | `agent_completed` | A helper agent or child turn completed. |
+
+For `tool_request`, `approval_request`, `user_input_request`, `request_resolved`, `hook`, `rate_limit`, `goal_updated`, `goal_cleared`, and `stream_event`, `HarnessEvent` carries only `kind` and `message` today: the Yoke adapter's event projector does not copy Yoke's structured `request`, `response`, or `goal` payloads into any `HarnessEvent` field, so their detail is limited to whatever text `message` carries [@yoke-event-projector].
 
 ## Event Fields
 

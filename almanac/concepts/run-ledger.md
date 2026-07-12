@@ -22,6 +22,10 @@ sources:
     type: file
     path: src/codealmanac/workflows/run_queue/control.py
     note: Product cancellation use case coordinating durable state and process control.
+  - id: jobs_dispatch
+    type: file
+    path: src/codealmanac/cli/dispatch/jobs.py
+    note: Jobs command dispatch, including attach interruption handling.
 ---
 
 # Run Ledger
@@ -42,7 +46,7 @@ Events are stored separately from the run record. Each `RunLogEvent` has a seque
 
 `RunsService` is the service boundary around the ledger. It starts runs, queues specs, lists runs, reads specs, finds the next queued run, records events, atomically claims runs with execution identity, records cancellation intent, and finishes terminal transitions [@run_service]. Process termination is coordinated by the run-queue workflow rather than the persistence service [@run_control]. Repository-name filtering prevents a job id from another registered repository being exposed through the wrong wiki selection [@run_service].
 
-`RunStore` owns persistence. It writes run records to the local database, stores the serialized spec beside the run record, appends status events, and delegates event sequencing to the event store [@run_store]. The same store exposes `attach`, which returns the current run record, all events, and a `terminal` flag for attach-style streaming [@run_store].
+`RunStore` owns persistence. It writes run records to the local database, stores the serialized spec beside the run record, appends status events, and delegates event sequencing to the event store [@run_store]. The same store exposes `attach`, which returns the current run record, all events, and a `terminal` flag for attach-style streaming [@run_store]. Attaching is a read-only view onto the ledger: interrupting the foreground `jobs attach` command with `Ctrl-C` detaches the CLI without mutating the run [@jobs_dispatch], so the ledger still needs an explicit `jobs cancel` to record cancellation intent [@run_control]. See [Run states and events](../reference/runs/run-states-and-events) for the exact attach and interruption contract.
 
 The public command name is `jobs`, not `runs`. The parser exposes `jobs`, `jobs show`, `jobs logs`, `jobs attach`, and `jobs cancel`, with JSON output available on the read/control commands [@jobs_parser]. That naming keeps the user surface practical while leaving the internal model precise.
 

@@ -34,6 +34,10 @@ sources:
     type: wiki
     path: decisions/controlled-model-catalog
     note: Decision that keeps supported harness models in a controlled catalog.
+  - id: repo-affiliation
+    type: wiki
+    path: decisions/repository-affiliation-belongs-in-repository-service
+    note: Proposed decision that gives the repository service ownership of checkout-to-repository affiliation.
 ---
 
 # Decisions
@@ -81,3 +85,12 @@ does not stage, split, or commit wiki diffs itself [@auto-commit].
 [Controlled model catalog](controlled-model-catalog) decides that supported
 runner models are owned by CodeAlmanac config and tests, not by provider
 discovery or provider defaults [@model-catalog].
+
+## Repository Scope
+
+[Repository affiliation belongs in repository service](repository-affiliation-belongs-in-repository-service)
+is a proposed decision, not yet implemented. It records the intended
+ownership boundary for mapping a transcript's working directory back to a
+canonical registered repository, so that future worktree or nested-checkout
+support lands as a repository-service method instead of Conductor-specific
+sync logic [@repo-affiliation].

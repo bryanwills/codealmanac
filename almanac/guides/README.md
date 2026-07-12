@@ -42,6 +42,10 @@ sources:
     type: wiki
     path: guides/demo-codealmanac-in-launch-video
     note: Procedure for demonstrating CodeAlmanac in a launch video.
+  - id: release
+    type: wiki
+    path: guides/release-package
+    note: Procedure for publishing the codealmanac Python package to PyPI.
 ---
 
 # Guides
@@ -90,3 +94,9 @@ before adding behavior [@refactoring].
 product-demonstration guide for showing the local viewer and terminal query
 flow in a launch video, including the broader product-story and comparison
 framing behind that demo [@launch-demo].
+
+## Ship A Release
+
+[Release package](release-package) is the checklist for publishing the
+`codealmanac` package to PyPI: build gates, installed-artifact smoke checks,
+publishing, and verifying the public install path [@release].
