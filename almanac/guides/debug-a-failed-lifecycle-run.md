@@ -37,11 +37,10 @@ the record and normalized event stream after the original process exits
 If the run is active, `codealmanac jobs attach <run-id>` follows the same event
 record until it becomes terminal. The readable log is the primary debugging
 surface; JSON output exposes the corresponding structured harness fields.
-Pressing `Ctrl-C` while attached only detaches the foreground command; it does
-not cancel or otherwise mutate the run, and the CLI prints the exact
-`codealmanac jobs cancel <run-id>` command before exiting with status `130`
-[@jobs-dispatch]. See [Run states and events](../reference/runs/run-states-and-events)
-for the full attach and cancellation contract.
+Pressing `Ctrl-C` while attached only detaches the foreground command without
+mutating the run; cancel it explicitly with `codealmanac jobs cancel <run-id>`
+if the run should stop [@jobs-dispatch]. See [Run states and events](../reference/runs/run-states-and-events)
+for the full attach, detach, and cancellation contract.
 
 ## Identify The Boundary
 

@@ -45,7 +45,7 @@ topics:
     parents: [architecture]
   - slug: agent-runs
     title: Agent Runs
-    description: Harness contracts, provider adapters, and normalized agent events
+    description: Harness contracts, the Yoke harness boundary, and normalized agent events
     parents: [architecture]
   - slug: harnesses
     title: Harnesses
@@ -53,7 +53,7 @@ topics:
     parents: [agent-runs]
   - slug: providers
     title: Providers
-    description: Provider-specific edges behind service-owned ports
+    description: The Yoke harness boundary behind service-owned ports, shared by Claude and Codex
     parents: [agent-runs]
   - slug: yoke
     title: Yoke

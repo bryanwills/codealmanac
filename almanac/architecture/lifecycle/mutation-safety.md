@@ -42,9 +42,7 @@ That distinction matters for future changes. The prompt policy is still strict: 
 
 ## Prompt Boundary
 
-`operation_commit_policy` is the source-control contract lifecycle prompts receive. When auto-commit is enabled, it allows committing only `almanac/**/*.md` and `almanac/topics.yaml`; it forbids user config, runtime state, application source, logs, and unrelated files [@commit-policy]. The product decision behind this prompt-facing policy is [Auto-commit is prompt policy](../../decisions/auto-commit-is-prompt-policy).
-
-When auto-commit is disabled, the same policy tells the agent not to stage files and not to run `git commit` [@commit-policy]. This is policy rendered into the prompt. It is not a Python committer or a Python-side file mutation checker.
+`operation_commit_policy` renders the source-control contract lifecycle prompts receive, toggled by the `auto_commit` setting [@commit-policy]. The exact allowed and forbidden files and the enabled/disabled instruction text are recorded in [Auto-commit is prompt policy](../../decisions/auto-commit-is-prompt-policy) rather than repeated here; this page only needs the boundary fact that it is policy rendered into the prompt, not a Python committer or a Python-side file mutation checker [@commit-policy].
 
 ## Runner Boundary
 

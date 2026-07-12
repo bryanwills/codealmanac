@@ -40,7 +40,7 @@ This matters because the committed `almanac/` tree is source. A lifecycle agent 
 
 ## Service Boundary
 
-`HealthService.check` selects a repository and returns the index service's health report [@health-service]. It is a read-side diagnostic.
+`HealthService.check` selects a repository and returns the index service's health report [@health-service]. It is a read-side diagnostic, consistent with the read/write split described in [Service boundaries](../service-boundaries).
 
 `HealthService.validate` is stricter. It gathers source shape issues and runtime-state issues, then calls `index.ensure_fresh`. If index refresh fails, the validation result records a `page_routes` issue and stops before running index health queries [@health-service]. If refresh succeeds, validation adds issues derived from the health report [@health-service].
 

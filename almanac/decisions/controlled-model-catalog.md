@@ -24,7 +24,7 @@ sources:
 
 CodeAlmanac owns a controlled catalog of AI runner models. It does not discover arbitrary provider models during setup, accept provider defaults as product truth, or let harness adapters decide which models are supported [@config-plan]. The selected runner and model are stored in config as `harness.default` and `harness.model`, then passed toward lifecycle work as explicit settings [@config-models].
 
-The decision keeps model choice small, reviewable, and stable. Provider adapters can execute a chosen model, but the product list belongs to config and setup. This constrains future work in [Provider adapters](../architecture/agent-runs/provider-adapters), [Automation and update](../architecture/setup/automation-and-update), and [Config keys](../reference/config-keys).
+The decision keeps model choice small, reviewable, and stable. The harness adapter can execute a chosen model, but the product list belongs to config and setup. This constrains future work in the [Yoke harness boundary](../architecture/agent-runs/provider-adapters), [Automation and update](../architecture/setup/automation-and-update), and [Config keys](../reference/config-keys).
 
 ## Status
 

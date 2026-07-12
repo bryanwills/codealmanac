@@ -42,6 +42,10 @@ sources:
     type: file
     path: src/codealmanac/integrations/sources/transcripts/codex.py
     note: Discovers transcripts under ~/.codex/sessions.
+  - id: automation-render
+    type: file
+    path: src/codealmanac/cli/render/automation.py
+    note: Renders launchd run-health fields for automation status.
 ---
 
 # Setup Local Automation
@@ -70,7 +74,7 @@ codealmanac setup --yes --garden-off
 codealmanac setup --yes --no-auto-update
 ```
 
-The setup parser exposes runner choice, auto-commit policy, instruction skipping, sync interval, sync disable, Garden interval, Garden disable, and auto-update disable flags [@setup-parser].
+The setup parser exposes runner choice, auto-commit policy, instruction skipping, sync interval, sync disable, Garden interval, Garden disable, and auto-update disable flags [@setup-parser]. See [Instruction installation](../architecture/setup/instruction-installation) for what gets written to a coding agent's global instructions when instructions are not skipped.
 
 ## Understand The Default Tasks
 
@@ -98,6 +102,11 @@ Check the scheduler state:
 ```bash
 codealmanac automation status
 ```
+
+Each installed task reports whether launchd loaded it, whether it is currently
+running or idle, how many times it has run, and the last exit result. An idle
+task is normal between intervals. A nonzero last exit code means the last run
+failed; inspect the task log under `~/.codealmanac/logs/` [@automation-render].
 
 Then check sync and run activity:
 

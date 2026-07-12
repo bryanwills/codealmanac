@@ -42,7 +42,7 @@ The live agreement records the same reset for the Python product. It says the ha
 
 ## Decision
 
-Lifecycle operation prompts are open algorithms, not schemas for intermediate artifacts. The ingest prompt tells the agent to understand bounded source material, inspect the current `almanac/` tree, verify important claims, prefer updating existing pages, create pages only for durable anchors, update topics and Markdown links, validate, and no-op when the source does not improve durable project knowledge [@ingest_prompt].
+Lifecycle operation prompts are open algorithms, not schemas for intermediate artifacts. The ingest prompt tells the agent to understand bounded [source material](../concepts/source-material), inspect the current `almanac/` tree, verify important claims, prefer updating existing pages, create pages only for durable anchors, update topics and Markdown links, validate, and no-op when the source does not improve durable project knowledge [@ingest_prompt].
 
 The Garden prompt uses the same direct-editing model at graph scale. It asks the agent to inspect pages, topics, links, hubs, referenced files, sources, and health issues; find graph problems; merge, split, revise, or no-op as needed; and validate the result [@garden_prompt]. It allows helper agents for bounded audits, but the main agent owns final synthesis, page boundaries, topics, links, hubs, and prose [@garden_prompt].
 

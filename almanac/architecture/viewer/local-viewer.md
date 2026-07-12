@@ -98,6 +98,8 @@ The static viewer script keeps local UI state for the overview and selected repo
 
 Routes cover home, page, topic, search, file, jobs, and job detail [@viewer_js]. Repository changes clear job polling, reload the overview for the selected wiki, refresh navigation, and reroute the current hash [@viewer_js]. Navigation is built from topics and a folder-style page tree, so nested wiki paths appear as browseable folders rather than a flat page list [@viewer_js].
 
+Each route reports its own breadcrumb trail instead of a single page-level title. The header renders that trail as `CodeAlmanac > ... > <current>`, with a page route contributing its folder path plus title and other routes (jobs, search, topics, files) contributing their own trail [@viewer_js]. This replaced an earlier header that repeated the page title as a second top-level heading; the current shape keeps exactly one page-title heading per view.
+
 ## Boundaries
 
 The viewer is intentionally read-only. The architecture tests forbid mutating run request types such as `StartRunRequest`, `FinishRunRequest`, `QueueRunRequest`, and `CancelRunRequest` from the viewer service, viewer jobs projection, server app, and server API modules [@architecture_tests]. The same tests keep repository selection and projection logic outside `ViewerService`, so service methods stay focused on assembling viewer responses from existing read models [@architecture_tests].

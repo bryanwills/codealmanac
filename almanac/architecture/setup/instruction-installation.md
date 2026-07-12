@@ -66,9 +66,13 @@ unnecessary (typos, mechanical edits), how the `almanac/` tree, page identity,
 and `topics.yaml` fit together, then concrete `codealmanac search` (text,
 `--mentions`, `--topic`) and `codealmanac show PAGE` (`--lead`, `--body`,
 `--links`, `--backlinks`, `--files`, `--topics`) usage matching the public CLI
-surface [@guide-content] [@command-surface]. It also tells the agent that code
-is authoritative over the wiki for current runtime behavior, and to report a
-contradiction rather than propagate it into new code.
+surface [@guide-content] [@command-surface]. It also covers `codealmanac
+topics` and `topics show TOPIC` for browsing a wiki area by subject,
+`codealmanac list` for reading across multiple registered repositories, and
+`codealmanac health` and `codealmanac validate` for checking whether the wiki
+itself looks wrong [@guide-content]. It states an explicit trust order for a
+contradiction: current code outranks the Almanac, and the Almanac outranks
+ordinary repository documentation [@guide-content].
 
 The second half is a boundary statement: during ordinary coding work the
 agent should treat the wiki as read-only, searching and reading it but not
