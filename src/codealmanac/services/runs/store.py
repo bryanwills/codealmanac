@@ -24,6 +24,8 @@ from codealmanac.services.runs.models import (
     RunRecord,
     RunSpec,
     RunStatus,
+    RunWorkerIdleHandoffOutcome,
+    RunWorkerLockOwner,
 )
 from codealmanac.services.runs.queries import (
     active_run_exists,
@@ -142,6 +144,12 @@ class RunStore:
         stale_after: timedelta,
     ) -> RunWorkerLease | None:
         return self.lock_store.acquire(owner, pid, now, stale_after)
+
+    def release_worker_if_idle(
+        self,
+        owner: RunWorkerLockOwner,
+    ) -> RunWorkerIdleHandoffOutcome:
+        return self.lock_store.release_if_idle(owner)
 
     def log(self, run_id: str) -> tuple[RunLogEvent, ...]:
         self.read(run_id)

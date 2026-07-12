@@ -191,6 +191,10 @@ It is the constraint document for future agents.
   it is not a public command and it does not contain lifecycle business logic.
   Do not add parallel foreground/background modes; `jobs attach <run-id>` is the
   public way to follow a run.
+- 2026-07-11: Worker shutdown uses an atomic idle handoff. The lock owner
+  rechecks durable queue membership and deletes the global worker lock in one
+  immediate SQLite transaction. If work exists it keeps ownership and resumes
+  draining; do not replace this with polling, sleeps, or a permanent daemon.
 - 2026-07-01: `sync` queues eligible transcript ingests and starts the same
   worker path as manual lifecycle commands. Scheduled automation also launches
   ordinary scanner/queue commands rather than a separate sync worker model.

@@ -41,6 +41,12 @@ class RunEventKind(StrEnum):
     ERROR = "error"
 
 
+class RunWorkerIdleHandoffOutcome(StrEnum):
+    WORK_AVAILABLE = "work_available"
+    RELEASED = "released"
+    OWNERSHIP_LOST = "ownership_lost"
+
+
 class PageChangeSet(CodeAlmanacModel):
     created: tuple[str, ...] = ()
     updated: tuple[str, ...] = ()

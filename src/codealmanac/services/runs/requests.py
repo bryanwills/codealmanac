@@ -14,6 +14,7 @@ from codealmanac.services.runs.models import (
     RunKind,
     RunSpec,
     RunStatus,
+    RunWorkerLockOwner,
 )
 
 
@@ -113,6 +114,10 @@ class AcquireRunWorkerLockRequest(CodeAlmanacModel):
         if value is not None and value <= 0:
             raise ValueError("worker lock pid must be positive")
         return value
+
+
+class ReleaseRunWorkerIfIdleRequest(CodeAlmanacModel):
+    owner: RunWorkerLockOwner
 
 
 class SpawnRunWorkerRequest(CodeAlmanacModel):

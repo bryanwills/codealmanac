@@ -8,11 +8,13 @@ from codealmanac.services.runs.models import (
     RunQueueDrainResult,
     RunRecord,
     RunStatus,
+    RunWorkerIdleHandoffOutcome,
 )
 from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
     FinishRunRequest,
     RecordRunEventRequest,
+    ReleaseRunWorkerIfIdleRequest,
     ShowRunRequest,
 )
 from codealmanac.services.runs.service import RunsService
@@ -47,6 +49,11 @@ class RunQueueWorker:
             while request.max_runs is None or len(processed) < request.max_runs:
                 queued = self.runs.next_queued()
                 if queued is None:
+                    outcome = self.runs.release_worker_if_idle(
+                        ReleaseRunWorkerIfIdleRequest(owner=lease.owner)
+                    )
+                    if outcome == RunWorkerIdleHandoffOutcome.WORK_AVAILABLE:
+                        continue
                     break
                 record = self.run_queued(queued)
                 processed.append(record)

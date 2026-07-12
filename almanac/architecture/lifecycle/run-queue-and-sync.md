@@ -22,6 +22,10 @@ sources:
     type: file
     path: src/codealmanac/services/runs/models.py
     note: Run specs, queue drain result, and run statuses.
+  - id: worker_locks
+    type: file
+    path: src/codealmanac/services/runs/worker_locks.py
+    note: Global worker ownership and atomic idle handoff transaction.
   - id: sync_workflow
     type: file
     path: src/codealmanac/workflows/sync/service.py
@@ -54,11 +58,11 @@ For each queued run, the worker starts a hidden `__run-executor <run-id>` child 
 
 Running cancellation goes through `RunCancellation`: record intent, terminate the verified executor and its descendant harness processes, confirm exit, then append the terminal `cancelled` status. The process adapter validates PID birth time before signaling and escalates from graceful termination to force kill when necessary [@run_processes].
 
-## Known Race: Stranded Queued Work
+## Atomic Idle Handoff
 
-Every `start_build`, `start_ingest`, and `start_garden` call queues its run and then spawns exactly one worker process; none of them retry if that worker cannot acquire the drain lock [@run_queue]. `RunQueueWorker.drain(...)` returns `lock_acquired=False` immediately when the lock is held, with no wait or retry [@run_worker]. The active worker's loop only continues while `next_queued()` returns a run; once it returns `None` the loop exits and the lock is released in a `finally` block, with no re-check for work queued in the window between that last `next_queued()` call and the release [@run_worker].
+Every lifecycle start queues its run and spawns a worker. A spawned worker exits with `lock_acquired=False` when another worker already owns the global drain lock; the owner is responsible for picking up later queued work [@run_queue] [@run_worker].
 
-This is a lost-wakeup race: if a caller queues a new run while another worker holds the lock, and that worker finishes draining before the new run's own spawned worker can acquire the lock, the new worker exits immediately (`lock_acquired=False`) and the lock-holding worker never sees the new run before releasing the lock. The run then sits queued with no worker guaranteed to process it until something else calls `drain` again, such as the next scheduled Garden tick or a manually triggered run. This has been observed in practice when a scheduled Garden run held the lock while a concurrent build was queued through repository init. The fix would need to make the "queue empty, about to release" check atomic with lock release, or give a worker that fails to acquire the lock a wakeup or retry path; neither exists today.
+When the owner observes an empty queue, it calls `release_worker_if_idle(...)`. The worker-lock store starts an immediate SQLite transaction, verifies ownership, repeats the canonical oldest-queued-run query, and deletes the lock only if the queue remains empty [@run_worker] [@worker_locks]. Queue insertion uses the same write-transaction boundary. If insertion commits first, the current worker retains the lock and continues; if idle release commits first, the producer's newly spawned worker can acquire the free lock. This closes the empty-check-to-release lost-wakeup window without polling or a permanent daemon.
 
 ## Sync Boundary
 

@@ -172,6 +172,108 @@ def test_run_queue_drains_persisted_ingest_spec(
     )
 
 
+def test_run_queue_processes_work_queued_at_idle_handoff(
+    tmp_path: Path,
+    isolated_home: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "note.md").write_text("late queue design note\n", encoding="utf-8")
+    harness = QueueWritingHarnessAdapter()
+    executors = InlineRunExecutorSpawner()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
+        harness_adapters=(harness,),
+        executor_spawner=executors,
+        process_controller=FakeRunProcessController(),
+    )
+    bind_inline_executor(app, executors)
+    initialize_repository(app, repo)
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    release_if_idle = app.runs.release_worker_if_idle
+    queued_run_id: str | None = None
+
+    def queue_before_handoff(request):
+        nonlocal queued_run_id
+        if queued_run_id is None:
+            queued = app.workflows.queue.queue_ingest(
+                IngestRequest(
+                    cwd=repo,
+                    inputs=("note.md",),
+                    harness=HarnessKind.CODEX,
+                    model="gpt-5.5",
+                    auto_commit=False,
+                )
+            )
+            queued_run_id = queued.run_id
+        return release_if_idle(request)
+
+    monkeypatch.setattr(app.runs, "release_worker_if_idle", queue_before_handoff)
+
+    result = app.workflows.queue.drain(DrainRunQueueRequest())
+
+    assert queued_run_id is not None
+    assert [record.run_id for record in result.processed] == [queued_run_id]
+    assert app.runs.show(ShowRunRequest(run_id=queued_run_id)).status == RunStatus.DONE
+    assert len(harness.requests) == 1
+
+
+def test_run_queue_max_runs_leaves_later_work_for_next_worker(
+    tmp_path: Path,
+    isolated_home: Path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "first.md").write_text("first queue note\n", encoding="utf-8")
+    (repo / "second.md").write_text("second queue note\n", encoding="utf-8")
+    harness = QueueWritingHarnessAdapter()
+    executors = InlineRunExecutorSpawner()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db"),
+        harness_adapters=(harness,),
+        executor_spawner=executors,
+        process_controller=FakeRunProcessController(),
+    )
+    bind_inline_executor(app, executors)
+    initialize_repository(app, repo)
+    initialize_git(repo)
+    commit_all(repo, "initial wiki")
+    first = app.workflows.queue.queue_ingest(
+        IngestRequest(
+            cwd=repo,
+            inputs=("first.md",),
+            harness=HarnessKind.CODEX,
+            model="gpt-5.5",
+            auto_commit=False,
+        )
+    )
+    second = app.workflows.queue.queue_ingest(
+        IngestRequest(
+            cwd=repo,
+            inputs=("second.md",),
+            harness=HarnessKind.CODEX,
+            model="gpt-5.5",
+            auto_commit=False,
+        )
+    )
+
+    first_drain = app.workflows.queue.drain(DrainRunQueueRequest(max_runs=1))
+
+    assert [record.run_id for record in first_drain.processed] == [first.run_id]
+    assert app.runs.show(ShowRunRequest(run_id=first.run_id)).status == RunStatus.DONE
+    assert (
+        app.runs.show(ShowRunRequest(run_id=second.run_id)).status
+        == RunStatus.QUEUED
+    )
+
+    second_drain = app.workflows.queue.drain(DrainRunQueueRequest(max_runs=1))
+
+    assert [record.run_id for record in second_drain.processed] == [second.run_id]
+    assert app.runs.show(ShowRunRequest(run_id=second.run_id)).status == RunStatus.DONE
+
+
 def test_run_queue_drains_persisted_build_spec(
     tmp_path: Path,
     isolated_home: Path,

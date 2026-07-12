@@ -22,6 +22,7 @@ from codealmanac.services.runs.models import (
     RunRecord,
     RunSpec,
     RunStatus,
+    RunWorkerIdleHandoffOutcome,
 )
 from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
@@ -36,6 +37,7 @@ from codealmanac.services.runs.requests import (
     ReadRunSpecRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
+    ReleaseRunWorkerIfIdleRequest,
     ShowRunRequest,
     StartRunRequest,
     StreamRunAttachRequest,
@@ -494,6 +496,76 @@ def test_runs_service_worker_lock_is_exclusive_and_recovers_stale_owner(
     )
     assert after_release is not None
     after_release.release()
+
+
+def test_worker_idle_handoff_releases_lock_when_queue_is_empty(
+    isolated_home: Path,
+) -> None:
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
+    )
+    now = datetime(2026, 7, 11, 12, 0, tzinfo=UTC)
+    lease = app.runs.acquire_worker_lock(
+        AcquireRunWorkerLockRequest(owner="first-worker", pid=os.getpid(), now=now)
+    )
+    assert lease is not None
+
+    outcome = app.runs.release_worker_if_idle(
+        ReleaseRunWorkerIfIdleRequest(owner=lease.owner)
+    )
+    replacement = app.runs.acquire_worker_lock(
+        AcquireRunWorkerLockRequest(
+            owner="replacement-worker",
+            pid=os.getpid(),
+            now=now,
+        )
+    )
+
+    assert outcome == RunWorkerIdleHandoffOutcome.RELEASED
+    assert replacement is not None
+    replacement.release()
+
+
+def test_worker_idle_handoff_retains_lock_when_work_is_queued(
+    tmp_path: Path,
+    isolated_home: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    app = create_app(
+        AppConfig(database_path=isolated_home / ".codealmanac/codealmanac.db")
+    )
+    repository = initialize_repository(app, repo)
+    app.runs.queue(
+        QueueRunRequest(
+            repository_id=repository.repository_id,
+            spec=RunSpec(
+                kind=RunKind.GARDEN,
+                harness=HarnessKind.CODEX,
+                model="gpt-5.5",
+            ),
+        )
+    )
+    now = datetime(2026, 7, 11, 12, 0, tzinfo=UTC)
+    lease = app.runs.acquire_worker_lock(
+        AcquireRunWorkerLockRequest(owner="first-worker", pid=os.getpid(), now=now)
+    )
+    assert lease is not None
+
+    outcome = app.runs.release_worker_if_idle(
+        ReleaseRunWorkerIfIdleRequest(owner=lease.owner)
+    )
+    competing = app.runs.acquire_worker_lock(
+        AcquireRunWorkerLockRequest(
+            owner="competing-worker",
+            pid=os.getpid(),
+            now=now,
+        )
+    )
+
+    assert outcome == RunWorkerIdleHandoffOutcome.WORK_AVAILABLE
+    assert competing is None
+    lease.release()
 
 
 def test_finish_run_request_requires_terminal_status() -> None:

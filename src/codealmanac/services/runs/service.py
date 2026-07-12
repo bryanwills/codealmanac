@@ -17,6 +17,7 @@ from codealmanac.services.runs.models import (
     RunLogEvent,
     RunRecord,
     RunSpec,
+    RunWorkerIdleHandoffOutcome,
 )
 from codealmanac.services.runs.requests import (
     AcquireRunWorkerLockRequest,
@@ -31,6 +32,7 @@ from codealmanac.services.runs.requests import (
     ReadRunSpecRequest,
     RecordRunEventRequest,
     RecordRunHarnessTranscriptRequest,
+    ReleaseRunWorkerIfIdleRequest,
     ShowRunRequest,
     StartRunRequest,
     StreamRunAttachRequest,
@@ -101,6 +103,12 @@ class RunsService:
             request.now or datetime.now(UTC),
             request.stale_after,
         )
+
+    def release_worker_if_idle(
+        self,
+        request: ReleaseRunWorkerIfIdleRequest,
+    ) -> RunWorkerIdleHandoffOutcome:
+        return self.store.release_worker_if_idle(request.owner)
 
     def log(self, request: ReadRunLogRequest) -> tuple[RunLogEvent, ...]:
         record = self.store.read(request.run_id)
