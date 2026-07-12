@@ -34,6 +34,14 @@ sources:
     type: file
     path: src/codealmanac/services/automation/defaults.py
     note: Default sync, garden, and update intervals.
+  - id: claude-transcripts
+    type: file
+    path: src/codealmanac/integrations/sources/transcripts/claude.py
+    note: Discovers transcripts under ~/.claude/projects.
+  - id: codex-transcripts
+    type: file
+    path: src/codealmanac/integrations/sources/transcripts/codex.py
+    note: Discovers transcripts under ~/.codex/sessions.
 ---
 
 # Setup Local Automation
@@ -99,6 +107,18 @@ codealmanac jobs
 ```
 
 The README presents `sync status`, `sync`, `automation status`, and `jobs` as the daily local surfaces for automation and lifecycle work [@readme]. If a scheduled run fails, inspect it with `codealmanac jobs show <run-id>` and `codealmanac jobs logs <run-id>`.
+
+## Troubleshoot macOS Full Disk Access Prompts
+
+Sync reads transcripts from `~/.claude/projects` and `~/.codex/sessions` [@claude-transcripts] [@codex-transcripts], which macOS treats as data owned by other apps. On macOS Sonoma and later, this can trigger a repeating "would like to access data from other apps" prompt for the launchd-scheduled `sync` job, because the prompt targets the exact executable that opened the files rather than CodeAlmanac as a concept.
+
+Granting Full Disk Access to Codex, Terminal, or another parent app does not stop the prompt, because the scheduled job runs as its own process under the Python interpreter tied to the current install. Grant Full Disk Access (System Settings > Privacy & Security > Full Disk Access) to that specific interpreter or `codealmanac` executable, then re-apply automation:
+
+```bash
+codealmanac config apply
+```
+
+The tradeoff is that Full Disk Access applies to the whole interpreter, not narrowly to CodeAlmanac, since there is no dedicated signed CodeAlmanac binary that macOS can authorize on its own.
 
 ## Uninstall Local Artifacts
 
