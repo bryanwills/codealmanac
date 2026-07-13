@@ -1,6 +1,6 @@
 ---
 title: Yoke Harness Boundary
-topics: [architecture, harnesses, providers, agent-runs]
+topics: [architecture, harnesses, yoke, agent-runs]
 sources:
   - id: adapter
     type: file

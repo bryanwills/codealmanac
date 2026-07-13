@@ -36,7 +36,7 @@ sources:
 
 Repository local state is the runtime state CodeAlmanac keeps outside the committed wiki. The authored wiki lives under `almanac/`, while the global database, user config, update lock, and per-repository runtime directories live under the product-specific state directory `~/.codealmanac/` [@repo-readme] [@core-paths]. This split lets Markdown stay reviewable in Git while search indexes, run records, and other derived state can be rebuilt or managed locally.
 
-The local-state boundary is owned by `AppConfig` and `LocalStatePaths`. `AppConfig` defaults the database to `~/.codealmanac/codealmanac.db` and the user config to `~/.codealmanac/config.toml`; both paths are normalized through `expanduser().resolve(strict=False)` [@settings] [@core-paths]. `LocalStatePaths` then derives the state directory from the database parent and rejects a database path that is not directly inside that state directory [@settings].
+The local-state boundary is owned by `AppConfig` and `LocalStatePaths`. The composition root builds one `LocalStatePaths` value from `AppConfig` and threads it through every service that needs a local file or database path, so repository registration, indexing, and updates all agree on the same directory without recomputing it [@settings] [@app-root]. [Local state layout](../../reference/local-state-layout) is the reference for the exact default paths, the path-normalization rule, and the constraint that the database must live directly inside the state directory.
 
 ## What Lives There
 
@@ -52,9 +52,7 @@ The local database is also the lookup surface for command flows. The repository 
 
 ## Config And Locks
 
-User config is local state, not repo source. `AppConfig` reads `CODEALMANAC_` environment variables and otherwise uses the default config path under `~/.codealmanac/` [@settings]. If only the database path is customized, `LocalStatePaths.from_config(...)` keeps config beside that database unless the config path was explicitly set [@settings].
-
-The update lock is also global state. `LocalStatePaths.update_lock_path` returns `~/.codealmanac/update.lock`, and the app composition root passes that path to `UpdatesService` with the local database path [@settings] [@app-root]. That shape makes scheduled package update coordination a global product concern rather than a wiki-file concern.
+User config and the update lock are global state, not repo source, for the same reason repository rows are: a single machine-local `AppConfig` should govern every registered repository instead of each repo carrying its own settings [@settings]. The app composition root passes `LocalStatePaths.update_lock_path` to `UpdatesService` alongside the local database path, which makes scheduled package update coordination a global product concern rather than a wiki-file concern [@settings] [@app-root]. See [Local state layout](../../reference/local-state-layout) for the exact config-path derivation rule and the update-lock path.
 
 ## Boundary With The Wiki
 

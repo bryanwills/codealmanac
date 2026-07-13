@@ -51,10 +51,6 @@ topics:
     title: Harnesses
     description: Local Codex and Claude runner integration boundaries
     parents: [agent-runs]
-  - slug: providers
-    title: Providers
-    description: The Yoke harness boundary behind service-owned ports, shared by Claude and Codex
-    parents: [agent-runs]
   - slug: yoke
     title: Yoke
     description: Packaged Yoke agent collection, harness adapter, and event projection

@@ -13,7 +13,7 @@ sources:
   - id: topics
     type: file
     path: almanac/topics.yaml
-    note: Topic graph entry for the agent-runs neighborhood and its harnesses and providers children.
+    note: Topic graph entry for the agent-runs neighborhood and its harnesses and yoke children.
 ---
 
 # Agent Runs
