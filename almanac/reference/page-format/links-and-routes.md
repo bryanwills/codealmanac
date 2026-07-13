@@ -40,9 +40,7 @@ Routes come from paths under `almanac/`. An ordinary Markdown file drops its `.m
 
 ## Page Routes
 
-`page_id_for_path()` requires a Markdown file under the repository's `almanac/` directory [@wiki_paths]. `almanac/reference/page-format/links-and-routes.md` becomes `reference/page-format/links-and-routes`; `almanac/architecture/README.md` becomes `architecture`; and `almanac/README.md` becomes `README` [@wiki_paths].
-
-The page iterator walks Markdown files below `almanac/`, but skips files inside reserved source directories [@wiki_paths]. The reserved directories are `manual` and `jobs` [@wiki_paths]. That skip is a route-indexing guard; current runtime state still belongs under `~/.codealmanac/`, not in `almanac/jobs` [@live_agreement].
+A link target can only ever resolve to a route that the page iterator actually indexes. [Page identity](../../architecture/wiki/page-identity) owns the full derivation table; the one fact link resolution depends on is that the iterator skips Markdown files beneath the reserved `manual` and `jobs` source directories before those files get a slug, so links can never resolve into them [@wiki_paths]. Current runtime state still belongs under `~/.codealmanac/`, not in `almanac/jobs` [@live_agreement].
 
 ## Resolved Markdown Links
 

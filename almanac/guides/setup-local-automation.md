@@ -104,9 +104,10 @@ codealmanac automation status
 ```
 
 Each installed task reports whether launchd loaded it, whether it is currently
-running or idle, how many times it has run, and the last exit result. An idle
-task is normal between intervals. A nonzero last exit code means the last run
-failed; inspect the task log under `~/.codealmanac/logs/` [@automation-render].
+running or idle, how many times it has run, and the last exit result
+[@automation-render]. See [Automation and update](../architecture/setup/automation-and-update)
+for what each `ScheduledJobState` field means and when a nonzero exit code
+warrants inspecting the task log under `~/.codealmanac/logs/`.
 
 Then check sync and run activity:
 

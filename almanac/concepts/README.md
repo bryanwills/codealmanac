@@ -50,7 +50,9 @@ state instead [@local-repo-wiki].
 topics, links, file references, sources, backlinks, and health checks
 [@page-graph]. Why concept, guide, decision, and reference vocabulary exists
 today without being a validated frontmatter field is a product decision; see
-[No page-kind field](../decisions/no-page-kind-field).
+[No page-kind field](../decisions/no-page-kind-field). For the implementation
+pages behind that derived model, continue to the
+[Wiki architecture](../architecture/wiki) hub.
 
 ## Lifecycle And Inputs
 

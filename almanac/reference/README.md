@@ -78,8 +78,9 @@ output, or [Error and exit code contract](cli/error-and-exit-code-contract)
 when changing terminal failures [@json-output] [@error-exit].
 
 [Config keys](config-keys) defines `auto_commit`, `harness.default`, and
-`harness.model`, including precedence between CLI flags, project config, user
-config, and built-in defaults [@config-keys].
+`harness.model`, including precedence between CLI flags, the one user config
+file, and built-in defaults; there is no repository-level config layer
+[@config-keys].
 
 ## Wiki Page Format
 

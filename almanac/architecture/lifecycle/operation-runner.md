@@ -55,3 +55,5 @@ That guardrail matters for future changes. New page-writing operation kinds shou
 ## Related Safety Page
 
 The write boundary for lifecycle agents is covered in [Mutation safety](mutation-safety). That page explains the current split between prompt-level source-control policy and runtime wiki validation.
+
+When a run fails at one of these steps, [Debug a failed lifecycle run](../../guides/debug-a-failed-lifecycle-run) walks through distinguishing a harness failure from a wiki validation failure using the recorded event stream.

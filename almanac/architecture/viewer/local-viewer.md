@@ -26,6 +26,10 @@ sources:
     type: file
     path: src/codealmanac/services/viewer/service.py
     note: Viewer service entrypoints and projection flow.
+  - id: renderer
+    type: file
+    path: src/codealmanac/services/viewer/renderer.py
+    note: Markdown rendering and leading-title-heading removal.
   - id: scope
     type: file
     path: src/codealmanac/services/viewer/repository_scope.py
@@ -81,6 +85,8 @@ The main entrypoints are `overview`, `page`, `search`, `file`, `topic`, `jobs`, 
 ## Page Projection
 
 Page detail combines index data with rendered Markdown. `page` loads the `PageView`, renders the body, and returns title, summary, topics, raw body, HTML, backlinks, outgoing links, file references, sources, and related pages [@viewer_service]. Related pages are derived from incoming and outgoing page links, with duplicates and self-links removed [@viewer_service].
+
+`MarkdownRenderer.render` also drops a leading `# <title>` heading from the rendered body when it matches the page's title, through `drop_leading_title_heading` [@renderer]. This is the body-side half of the single-heading-per-view shape; the breadcrumb change described below is the header-side half.
 
 The projection module keeps conversion rules small and explicit. It maps repositories, topics, sources, and page summaries into viewer models [@projections]. Source display order follows citation order when the renderer reports citations; uncited sources sort after cited sources by source id [@projections]. File paths are shown relative to the repository's `almanac/` path when possible, with the old `pages/` prefix stripped if it appears in indexed data [@projections].
 
