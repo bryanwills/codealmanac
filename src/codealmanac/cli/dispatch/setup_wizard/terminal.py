@@ -1,19 +1,29 @@
 import os
-import select
 import sys
-import termios
-import tty
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+try:
+    import select
+    import termios
+    import tty
+    _HAVE_TERMIOS = True
+except ImportError:
+    _HAVE_TERMIOS = False
+
 
 def supports_interactive_setup() -> bool:
+    if not _HAVE_TERMIOS:
+        return False
     return sys.stdin.isatty() and sys.stdout.isatty()
 
 
 @contextmanager
 def wizard_terminal() -> Iterator[None]:
     """Own the terminal for the wizard's lifetime."""
+    if not _HAVE_TERMIOS:
+        yield
+        return
     try:
         fd = sys.stdin.fileno()
         previous = termios.tcgetattr(fd)
@@ -26,19 +36,28 @@ def wizard_terminal() -> Iterator[None]:
     try:
         yield
     finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, previous)
+        try:
+            termios.tcsetattr(fd, termios.TCSADRAIN, previous)
+        except (OSError, termios.error):
+            pass
         sys.stdout.write("\x1b[?25h\x1b[?1049l")
         sys.stdout.flush()
 
 
 def read_setup_key() -> str:
+    if not _HAVE_TERMIOS:
+        return sys.stdin.read(1)
     fd = sys.stdin.fileno()
     sys.stdout.flush()
     key = os.read(fd, 1).decode("utf-8", errors="ignore")
     if key != "\x1b":
         return key
     for _ in range(2):
-        ready, _, _ = select.select([fd], [], [], 0.05)
+        try:
+            ready, _, _ = select.select([fd], [], [], 0.05)
+        except OSError:
+            # select.select might fail on Windows / non-sockets
+            ready = []
         if len(ready) == 0:
             return key
         key += os.read(fd, 1).decode("utf-8", errors="ignore")

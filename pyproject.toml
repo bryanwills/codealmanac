@@ -27,6 +27,7 @@ dependencies = [
   "charset-normalizer>=3.4.7",
   "claude-agent-sdk>=0.2.110",
   "fastapi>=0.138.1",
+  "filelock>=3.12.0",
   "httpx>=0.28.1",
   "humanfriendly>=10.0",
   "jsonlines>=4.0",
