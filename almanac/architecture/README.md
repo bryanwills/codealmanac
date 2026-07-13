@@ -98,6 +98,10 @@ sources:
     type: wiki
     path: architecture/setup/automation-and-update
     note: Architecture page for setup-owned automation and update behavior.
+  - id: instruction-install
+    type: wiki
+    path: architecture/setup/instruction-installation
+    note: Architecture page for writing kernel instructions into a repository during setup.
 ---
 
 # Architecture
@@ -132,6 +136,6 @@ For authored wiki contracts, read [Page identity](wiki/page-identity), [Path nor
 
 Use [CLI adapter boundary](cli/adapter-boundary) and [Terminal output](cli/terminal-output) for command entrypoints and rendering [@cli-adapter] [@terminal-output]. Use [Agent runs](agent-runs/) for normalized harness execution and the Yoke harness boundary that serves Claude and Codex behind one adapter [@agent-runs]. Use [Source resolution and runtime](sources/source-resolution-and-runtime) when changing ingest inputs or source adapters [@source-runtime].
 
-[Agents and manuals](runtime-resources/prompts-and-manuals) covers the packaged Yoke agents and writing references used by lifecycle runs, and [Setup automation and update](setup/automation-and-update) covers setup-owned scheduler and update behavior [@agents-manuals] [@setup-automation].
+[Agents and manuals](runtime-resources/prompts-and-manuals) covers the packaged Yoke agents and writing references used by lifecycle runs, and [Setup automation and update](setup/automation-and-update) covers setup-owned scheduler and update behavior [@agents-manuals] [@setup-automation]. [Instruction installation](setup/instruction-installation) covers the sibling setup concern: writing `CLAUDE.md`/`AGENTS.md` kernel instructions into a repository [@instruction-install].
 
 [Local state](repositories/local-state), [Selection and root](repositories/selection-and-root), and [SQLite store boundaries](persistence/sqlite-store-boundaries) explain repository selection, runtime paths, and persistence ownership [@local-state] [@selection-root] [@sqlite-stores]. [Local viewer](viewer/local-viewer) explains the browser UI that projects the same wiki, topics, files, and jobs [@local-viewer].
