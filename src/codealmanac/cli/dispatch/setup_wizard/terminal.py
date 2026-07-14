@@ -1,12 +1,13 @@
 import os
 import sys
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 
 try:
     import select
     import termios
     import tty
+
     _HAVE_TERMIOS = True
 except ImportError:
     _HAVE_TERMIOS = False
@@ -36,10 +37,8 @@ def wizard_terminal() -> Iterator[None]:
     try:
         yield
     finally:
-        try:
+        with suppress(OSError, termios.error):
             termios.tcsetattr(fd, termios.TCSADRAIN, previous)
-        except (OSError, termios.error):
-            pass
         sys.stdout.write("\x1b[?25h\x1b[?1049l")
         sys.stdout.flush()
 
