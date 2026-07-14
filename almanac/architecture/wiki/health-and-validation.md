@@ -48,7 +48,7 @@ This matters because the committed `almanac/` tree is source. A lifecycle agent 
 
 ## Indexed Health Report
 
-The index-backed health report is assembled in `build_health_report`. It includes orphan pages, dead file references, broken page links, broken cross-wiki links, empty topics, empty pages, missing source citations, unused sources, and duplicate sources [@health-views].
+The index-backed health report is assembled in `build_health_report` against the derived index that [Index refresh and search](index-refresh-and-search) also queries. It includes orphan pages, dead file references, broken page links, broken cross-wiki links, empty topics, empty pages, missing source citations, unused sources, and duplicate sources [@health-views].
 
 Most of those checks are graph or page checks. Orphan pages have no topic rows. Dead file references point at missing repo paths. Broken Markdown links target missing page slugs. Empty topics have no pages, and empty pages have no meaningful body text after headings are ignored [@health-graph].
 

@@ -18,6 +18,10 @@ sources:
     type: file
     path: src/codealmanac/integrations/runs/process.py
     note: Detached worker/executor spawning and verified process-tree termination.
+  - id: run_control
+    type: file
+    path: src/codealmanac/workflows/run_queue/control.py
+    note: RunCancellation orchestration of intent, termination, and terminal status.
   - id: run_models
     type: file
     path: src/codealmanac/services/runs/models.py
@@ -56,7 +60,7 @@ Scheduled Garden iterates registered repositories and skips repositories that al
 
 For each queued run, the worker starts a hidden `__run-executor <run-id>` child and waits for it. `RunExecutor` atomically claims the row with its execution identity, reads the durable spec, and calls `BuildWorkflow.execute_started(...)`, `IngestWorkflow.execute_started(...)`, or `GardenWorkflow.execute_started(...)` [@run_worker] [@run_executor]. The worker reconciles the terminal record before selecting the next row, so cancelling one executor does not kill queue management or strand later work [@run_worker].
 
-Running cancellation goes through `RunCancellation`: record intent, terminate the verified executor and its descendant harness processes, confirm exit, then append the terminal `cancelled` status. The process adapter validates PID birth time before signaling and escalates from graceful termination to force kill when necessary [@run_processes].
+Running cancellation goes through `RunCancellation`: record intent, terminate the verified executor and its descendant harness processes, confirm exit, then append the terminal `cancelled` status [@run_control]. The process adapter validates PID birth time before signaling and escalates from graceful termination to force kill when necessary [@run_processes].
 
 ## Atomic Idle Handoff
 

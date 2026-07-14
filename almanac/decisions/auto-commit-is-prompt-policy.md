@@ -62,4 +62,4 @@ Python does not own a committer abstraction. Architecture tests reject files nam
 
 The upside is a small lifecycle core. CodeAlmanac can render policy, run the harness, record events, refresh the index, validate the wiki, and mark the run terminal without splitting writing and committing into separate engines [@operation_service]. The cost is that commit quality depends on the agent following the prompt, so the policy must stay clear.
 
-This decision is part of the same product stance as [No propose/apply or dry-run](no-propose-apply-or-dry-run): when judgment belongs to the agent, the product gives the agent real source material and clear constraints instead of building a second state machine around it.
+This decision is part of the same product stance as [No propose/apply or dry-run](no-propose-apply-or-dry-run): when judgment belongs to the agent, the product gives the agent real [source material](../concepts/source-material) and clear constraints instead of building a second state machine around it.

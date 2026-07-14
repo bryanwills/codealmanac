@@ -1,6 +1,6 @@
 ---
 title: Links And Routes
-topics: [reference, page-format, links]
+topics: [reference, page-format, links, pages]
 sources:
   - id: wiki_links
     type: file

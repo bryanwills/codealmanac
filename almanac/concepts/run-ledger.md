@@ -32,7 +32,7 @@ sources:
 
 The run ledger is CodeAlmanac's local record of lifecycle work. It joins run records, queued run specs, run events, worker locks, transcript references, and job inspection into one durable model. The user sees it through `codealmanac jobs`, while internal services call it `runs` because it records the lifecycle state of build, ingest, and garden operations [@jobs_parser][@run_models].
 
-A run is not just a log. It is the state object that says which repository the work belongs to, what kind of lifecycle operation it is, whether it is queued, running, done, failed, or cancelled, and what events have happened so far [@run_models]. The ledger lets agents and humans inspect background work without relying on hidden process state.
+A run is not just a log. It is the state object that says which repository the work belongs to, what kind of [lifecycle operation](lifecycle-operation) it is, whether it is queued, running, done, failed, or cancelled, and what events have happened so far [@run_models]. The ledger lets agents and humans inspect background work without relying on hidden process state.
 
 ## What It Records
 

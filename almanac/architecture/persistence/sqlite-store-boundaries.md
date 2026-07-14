@@ -32,6 +32,6 @@ These helpers are generic. They do not know about repositories, runs, topics, or
 
 ## Store-Owned Schemas
 
-The index schema lives with the index service and defines derived tables for pages, topics, topic parents, file references, page sources, page links, cross-wiki links, FTS rows, and metadata [@index_schema]. The run tables live with the run service and define `runs`, `run_events`, and `worker_locks` [@run_tables].
+The index schema lives with the index service and defines derived tables for pages, topics, topic parents, file references, page sources, page links, cross-wiki links, FTS rows, and metadata [@index_schema]. The run tables live with the run service and define `runs`, `run_events`, and `worker_locks` [@run_tables]. [Run queue and sync](../lifecycle/run-queue-and-sync) explains the atomic handoff semantics the `worker_locks` table enforces.
 
 The composition root wires concrete stores into their owning services [@app_root]. Future persistence work should keep that direction: add or change the store that owns the data, then inject it through the app root rather than opening SQLite from adapters or workflows.

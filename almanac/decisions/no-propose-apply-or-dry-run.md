@@ -30,7 +30,7 @@ sources:
 
 # No Propose/Apply Or Dry-Run
 
-CodeAlmanac does not wrap wiki-writing agents in proposal files, apply steps, dry-run rehearsals, or approve/revise/reject state machines. When an operation needs judgment, the product gives an agent concrete source material, [prompts and manuals](../architecture/runtime-resources/prompts-and-manuals), and constraints, then expects the agent to write or no-op directly [@manual][@live_agreement].
+CodeAlmanac does not wrap wiki-writing agents in proposal files, apply steps, dry-run rehearsals, or approve/revise/reject state machines. When an operation needs judgment, the product gives an agent concrete [source material](../concepts/source-material), [prompts and manuals](../architecture/runtime-resources/prompts-and-manuals), and constraints, then expects the agent to write or no-op directly [@manual][@live_agreement].
 
 The decision is structural. CodeAlmanac owns deterministic mechanics such as repository selection, source loading, harness execution, run logging, prompt rendering, indexing, and validation. The agent owns editorial judgment: what matters, what page should change, what links and topics make sense, and whether the best result is no change [@ingest_prompt][@garden_prompt].
 
@@ -42,7 +42,7 @@ The live agreement records the same reset for the Python product. It says the ha
 
 ## Decision
 
-Lifecycle operation prompts are open algorithms, not schemas for intermediate artifacts. The ingest prompt tells the agent to understand bounded [source material](../concepts/source-material), inspect the current `almanac/` tree, verify important claims, prefer updating existing pages, create pages only for durable anchors, update topics and Markdown links, validate, and no-op when the source does not improve durable project knowledge [@ingest_prompt].
+[Lifecycle operation](../concepts/lifecycle-operation) prompts are open algorithms, not schemas for intermediate artifacts. The ingest prompt tells the agent to understand bounded source material, inspect the current `almanac/` tree, verify important claims, prefer updating existing pages, create pages only for durable anchors, update topics and Markdown links, validate, and no-op when the source does not improve durable project knowledge [@ingest_prompt].
 
 The Garden prompt uses the same direct-editing model at graph scale. It asks the agent to inspect pages, topics, links, hubs, referenced files, sources, and health issues; find graph problems; merge, split, revise, or no-op as needed; and validate the result [@garden_prompt]. It allows helper agents for bounded audits, but the main agent owns final synthesis, page boundaries, topics, links, hubs, and prose [@garden_prompt].
 

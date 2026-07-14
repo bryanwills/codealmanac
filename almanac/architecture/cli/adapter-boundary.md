@@ -36,13 +36,13 @@ This boundary is split into three responsibilities: parser modules define public
 
 ## Entrypoint
 
-`main()` builds the parser, parses `argv`, and delegates to `dispatch(args)`. It catches `CodeAlmanacError` and Pydantic `ValidationError`, prints `codealmanac: ...` to stderr, and returns exit code `1` [@cli-main]. The `dispatch(args)` helper constructs the app with `create_app()` and passes the parsed arguments plus app object to the root dispatcher [@cli-main].
+`main()` builds the parser, parses `argv`, and delegates to `dispatch(args)`. It catches three shapes of failure: a `CliSyntaxError` renders a guided syntax screen and returns exit code `2`; a `CodeAlmanacError` or Pydantic `ValidationError` prints `codealmanac: ...` to stderr and returns exit code `1` [@cli-main]. The `dispatch(args)` helper constructs the app with `create_app()` and passes the parsed arguments plus app object to the root dispatcher [@cli-main]. See [Terminal Output](terminal-output) and the [error and exit code contract](../../reference/cli/error-and-exit-code-contract) for how the syntax-error path renders and why it gets its own exit code.
 
 That small entrypoint enforces the adapter role. The CLI owns process-level concerns: argument parsing, stderr for user-facing failures, and integer exit codes. It does not construct stores, choose integrations, or run lifecycle logic directly.
 
 ## Parser Boundary
 
-`cli/parser/root.py` creates the `codealmanac` parser, installs `--version`, and registers command families through `add_run_commands`, `add_wiki_commands`, and `add_admin_commands` [@parser-root]. The public command metavar lists the visible command surface, including `init`, `ingest`, `garden`, `sync`, `search`, `show`, `topics`, `health`, `validate`, `serve`, `config`, `setup`, `jobs`, and `automation` [@parser-root].
+`cli/parser/root.py` creates the `codealmanac` parser, installs `--version`, and registers command families through `add_run_commands`, `add_wiki_commands`, and `add_admin_commands` [@parser-root]. The public command metavar lists the full visible command surface: `init`, `ingest`, `garden`, `sync`, `list`, `search`, `show`, `topics`, `health`, `validate`, `reindex`, `serve`, `tag`, `untag`, `config`, `setup`, `uninstall`, `doctor`, `update`, `jobs`, and `automation` [@parser-root].
 
 Parser modules should describe syntax only. For example, the root parser knows that command families exist, but it does not know how search calls the index or how setup writes instructions. That keeps public command shape separate from product action.
 
