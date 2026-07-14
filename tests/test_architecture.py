@@ -147,7 +147,7 @@ def test_index_read_views_are_split_by_query_family():
 
     assert expected <= {path.name for path in index_root.glob("*.py")}
     assert oversized == []
-    assert "fts_pages MATCH" in (index_root / "search_views.py").read_text(
+    assert "fts_sections MATCH" in (index_root / "search_views.py").read_text(
         encoding="utf-8"
     )
     assert "PageView(" in (index_root / "page_views.py").read_text(encoding="utf-8")
@@ -199,7 +199,7 @@ def test_index_store_keeps_write_side_responsibilities_split():
     assert "def stored_signature" in projection
     assert "def replace_documents" in projection
     assert "INSERT INTO pages" in projection
-    assert "DELETE FROM fts_pages" in projection
+    assert "DELETE FROM fts_sections" in projection
     assert "load_page_document" not in projection
     assert "SCHEMA_DDL" not in projection
 

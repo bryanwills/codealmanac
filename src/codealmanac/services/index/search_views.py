@@ -1,10 +1,10 @@
-import re
 from pathlib import Path
 
 from codealmanac.core.slug import to_kebab_case
 from codealmanac.database import SQLiteConnection, SQLiteRow
 from codealmanac.services.index.models import SearchPageResult
 from codealmanac.services.index.page_views import topics_for_page
+from codealmanac.services.index.query import analyze_search_query
 from codealmanac.services.index.requests import SearchIndexRequest
 from codealmanac.services.wiki.paths import (
     escape_glob_meta,
@@ -19,7 +19,14 @@ def search_pages(
     request: SearchIndexRequest,
 ) -> tuple[SearchPageResult, ...]:
     rows = connection.execute(*search_sql(request)).fetchall()
-    results = [search_result_from_row(connection, row) for row in rows]
+    results: list[SearchPageResult] = []
+    seen_pages: set[str] = set()
+    for row in rows:
+        slug = str(row["slug"])
+        if slug in seen_pages:
+            continue
+        seen_pages.add(slug)
+        results.append(search_result_from_row(connection, row))
     if request.limit is not None:
         return tuple(results[: request.limit])
     return tuple(results)
@@ -45,17 +52,36 @@ def search_sql(request: SearchIndexRequest) -> tuple[str, tuple[object, ...]]:
     if request.mentions is not None and request.mentions.strip():
         append_file_mention_clause(where_clauses, params, request.mentions)
 
-    query = (request.query or "").strip()
-    if query:
-        where_clauses.insert(0, "fts_pages MATCH ?")
-        params.insert(0, build_fts_query(query))
+    query = analyze_search_query(request.query or "")
+    if query is not None:
+        where_clauses.insert(0, "fts_sections MATCH ?")
+        params.insert(0, query)
         return (
             f"""
-            SELECT p.slug, p.title, p.summary, p.file_path, p.updated_at
+            SELECT
+              p.slug,
+              p.title,
+              p.summary,
+              p.file_path,
+              p.updated_at,
+              ps.heading_path AS matched_heading,
+              NULLIF(
+                TRIM(snippet(fts_sections, 4, '', '', ' … ', 32)),
+                ''
+              ) AS excerpt,
+              bm25(fts_sections, 0.0, 0.0, 5.0, 3.0, 1.0) AS search_rank,
+              ps.ordinal AS section_ordinal
             FROM pages p
-            JOIN fts_pages f ON f.slug = p.slug
+            JOIN page_sections ps ON ps.page_slug = p.slug
+            JOIN fts_sections
+              ON fts_sections.page_slug = ps.page_slug
+             AND fts_sections.section_id = ps.section_id
             WHERE {" AND ".join(where_clauses)}
-            ORDER BY rank, p.updated_at DESC, p.slug ASC
+            ORDER BY
+              search_rank ASC,
+              p.updated_at DESC,
+              p.slug ASC,
+              section_ordinal ASC
             """,
             tuple(params),
         )
@@ -65,7 +91,14 @@ def search_sql(request: SearchIndexRequest) -> tuple[str, tuple[object, ...]]:
     )
     return (
         f"""
-        SELECT p.slug, p.title, p.summary, p.file_path, p.updated_at
+        SELECT
+          p.slug,
+          p.title,
+          p.summary,
+          p.file_path,
+          p.updated_at,
+          NULL AS matched_heading,
+          NULL AS excerpt
         FROM pages p
         {where_sql}
         ORDER BY p.updated_at DESC, p.slug ASC
@@ -123,14 +156,6 @@ def append_file_mention_clause(
     params.extend([normalized, *parent_folders])
 
 
-def build_fts_query(raw: str) -> str:
-    tokens = re.split(r"[^a-zA-Z0-9]+", raw.casefold())
-    clean = [token for token in tokens if token]
-    if not clean:
-        return '""'
-    return " AND ".join(f"{token}*" for token in clean)
-
-
 def search_result_from_row(
     connection: SQLiteConnection,
     row: SQLiteRow,
@@ -142,4 +167,6 @@ def search_result_from_row(
         file_path=Path(row["file_path"]),
         updated_at=row["updated_at"],
         topics=topics_for_page(connection, row["slug"]),
+        matched_heading=row["matched_heading"],
+        excerpt=row["excerpt"],
     )
