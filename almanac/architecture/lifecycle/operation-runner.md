@@ -36,7 +36,7 @@ This shape exists so lifecycle workflows do not reimplement harness and run plum
 
 `execute` calls `HarnessesService.run` with a `RunHarnessRequest` containing the harness kind, model, repository root, rendered prompt, and optional title [@operation-service]. The runner then records the harness transcript if one exists and converts normalized harness events into run log events [@operation-service].
 
-Event classification lives beside the runner, not in individual workflows. Harness error events become run error events. Tool use, tool result, usage, provider session, warning, and helper-agent events become tool events. Other harness events become output events [@operation-harness].
+Event classification lives beside the runner, not in individual workflows. Harness error events become run error events. Tool use, tool result, tool summary, usage, provider session, warning, and helper-agent events become tool events. Other harness events become output events [@operation-harness].
 
 If a harness returns no event stream, the harness helper creates a terminal fallback event from the harness status and output text [@operation-harness]. That keeps failed and minimal harness adapters visible in the run log.
 
