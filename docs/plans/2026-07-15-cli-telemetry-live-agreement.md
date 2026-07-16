@@ -273,3 +273,10 @@ ignored build output, installed into an isolated Python 3.12 environment, and
 passed version, config, and unknown-model privacy-boundary smokes with telemetry
 disabled. GitHub's package check and both test jobs passed for implementation
 commit `fc48144b`; PR #36 remained mergeable.
+
+## Final documentation review
+
+A final P3 review found one shipped manual example that still named the retired
+combined `harnesses.run(...)` call. `src/codealmanac/manual/how-to-write.md` now
+teaches the explicit `ensure_ready(...)` then `run_ready(...)` stages used by
+`OperationRunner`; no runtime behavior changed.
