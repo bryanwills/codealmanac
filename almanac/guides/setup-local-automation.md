@@ -62,7 +62,7 @@ For the default unattended setup, run:
 codealmanac setup --yes
 ```
 
-The README describes plain setup as installing local agent instructions plus the default local automation: sync, Garden, and daily package update [@readme]. In code, setup writes `auto_commit`, `harness.default`, and `harness.model` through the config service when config is available [@setup-service].
+The README describes plain setup as installing local agent instructions plus the default local automation: sync, Garden, and daily package update [@readme]. In code, setup writes `auto_commit`, `harness.default`, and `harness.model` through the config service when config is available [@setup-service]. `auto_commit` is a prompt policy read by lifecycle operations, not a Python-side committer; see [Auto-commit is prompt policy](../decisions/auto-commit-is-prompt-policy) for what the flag actually controls.
 
 Use flags to change the initial policy:
 
@@ -72,6 +72,7 @@ codealmanac setup --yes --sync-every 5h
 codealmanac setup --yes --sync-off
 codealmanac setup --yes --garden-off
 codealmanac setup --yes --no-auto-update
+codealmanac setup --yes --no-auto-commit
 ```
 
 The setup parser exposes runner choice, auto-commit policy, instruction skipping, sync interval, sync disable, Garden interval, Garden disable, and auto-update disable flags [@setup-parser]. See [Instruction installation](../architecture/setup/instruction-installation) for what gets written to a coding agent's global instructions when instructions are not skipped.

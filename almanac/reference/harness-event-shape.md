@@ -15,6 +15,10 @@ sources:
     type: file
     path: src/codealmanac/integrations/harnesses/yoke/events.py
     note: Converts Yoke EventKind values into HarnessEventKind and builds HarnessEvent from a Yoke Event.
+  - id: operation-harness
+    type: file
+    path: src/codealmanac/workflows/operations/harness.py
+    note: Filters text_delta before recording and classifies remaining events for the run log.
 ---
 
 # Harness Event Shape
@@ -54,6 +58,8 @@ A harness event always has a `kind` and non-empty `message`. All other fields ar
 | `agent_completed` | A helper agent or child turn completed. |
 
 For `tool_request`, `approval_request`, `user_input_request`, `request_resolved`, `hook`, `rate_limit`, `goal_updated`, `goal_cleared`, and `stream_event`, `HarnessEvent` carries only `kind` and `message` today: the Yoke adapter's event projector does not copy Yoke's structured `request`, `response`, or `goal` payloads into any `HarnessEvent` field, so their detail is limited to whatever text `message` carries [@yoke-event-projector].
+
+`text_delta` events reach `HarnessEvent` like any other kind, but the [operation runner](../architecture/lifecycle/operation-runner) drops them before recording: `should_record_harness_event` filters out `text_delta` so incremental streaming text never becomes a durable run event [@operation-harness]. Every other event kind becomes a run event.
 
 ## Event Fields
 

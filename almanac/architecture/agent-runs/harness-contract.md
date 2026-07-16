@@ -40,9 +40,7 @@ The supported harness kinds are currently `codex` and `claude`. The terminal run
 
 `RunHarnessRequest` is small on purpose. It carries the harness kind, model, agent kind, working directory, prompt, and optional title [@harness-requests]. The agent kind is one of `build`, `ingest`, or `garden`; it tells the adapter which packaged Yoke agent to load for the run, so one adapter can serve every lifecycle operation instead of branching per operation [@harness-requests]. The prompt is already rendered by the lifecycle workflow before it crosses this boundary. That keeps prompt composition in runtime resources and operation workflows, while adapters focus on provider execution.
 
-The request itself only requires non-empty `model` text; the harness contract does not re-validate model names against a catalog. The controlled model set that constrains which names ever reach this request is enforced earlier, in config; see [Controlled model catalog](../../decisions/controlled-model-catalog) for the allowed models and why the set is closed.
-
-The request requires non-empty model and prompt text [@harness-requests]. A harness adapter may translate the request into provider options, CLI arguments, SDK calls, or app-server messages, but it must return to the same result model.
+The request requires non-empty `model` and `prompt` text; the harness contract does not re-validate model names against a catalog [@harness-requests]. The controlled model set that constrains which names ever reach this request is enforced earlier, in config; see [Controlled model catalog](../../decisions/controlled-model-catalog) for the allowed models and why the set is closed. A harness adapter may translate the request into provider options, CLI arguments, SDK calls, or app-server messages, but it must return to the same result model.
 
 ## Results
 

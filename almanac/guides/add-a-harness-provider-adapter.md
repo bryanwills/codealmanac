@@ -28,7 +28,7 @@ Use this guide when CodeAlmanac needs to add a new local agent runner (a new
 `HarnessKind`, such as a future harness alongside Codex and Claude) or change
 which Yoke surface an existing runner uses. The guide has two parts because the
 work usually spans two repos: provider or surface support belongs in Yoke, and
-the CodeAlmanac-side product choice — the `HarnessKind`, controlled models, and
+the CodeAlmanac-side product choice — the `HarnessKind`, [controlled models](../decisions/controlled-model-catalog), and
 `YokeHarnessAdapter` registration — belongs here.
 
 ## Add Provider Support To Yoke First
