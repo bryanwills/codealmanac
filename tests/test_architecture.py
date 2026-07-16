@@ -756,6 +756,10 @@ def test_cli_admin_render_stays_split_by_output_family():
         "config.py": ("ConfigSetResult", "def render_config_set("),
         "diagnostics.py": ("DoctorReport", "def render_doctor("),
         "jobs.py": ("RunRecord", "def render_runs("),
+        "setup/background_items.py": (
+            "BackgroundItemNotice",
+            "def render_background_item_notice(",
+        ),
         "setup/result.py": ("SetupResult", "def render_setup_result("),
         "setup/uninstall.py": ("UninstallResult", "def render_uninstall_text("),
         "setup/screens.py": ("SetupChoiceScreen", "def render_setup_choice_screen("),

@@ -8,6 +8,10 @@ from codealmanac.cli.render.brand import (
     print_banner,
 )
 from codealmanac.cli.render.common import print_json_model
+from codealmanac.cli.render.setup.background_items import (
+    background_item_confirmation_notice,
+    render_background_item_notice,
+)
 from codealmanac.cli.render.setup.steps import SetupStep, render_setup_step
 from codealmanac.cli.render.setup.uninstall import render_uninstall_text
 from codealmanac.cli.render.terminal import (
@@ -50,8 +54,18 @@ def render_setup_text(result: SetupResult) -> None:
         render_setup_step(step)
         if index < len(steps) - 1:
             write_line(BAR)
+    background_notice = background_item_confirmation_notice(
+        enabled_automation_tasks(result)
+    )
+    if background_notice is not None:
+        write_line(BAR)
+        render_background_item_notice(background_notice)
     write_line("")
     render_next_steps_box(next_step_lines(result))
+
+
+def enabled_automation_tasks(result: SetupResult) -> tuple[AutomationTask, ...]:
+    return tuple(item.task for item in result.config_update.automation if item.enabled)
 
 
 def next_step_lines(result: SetupResult) -> tuple[str, ...]:

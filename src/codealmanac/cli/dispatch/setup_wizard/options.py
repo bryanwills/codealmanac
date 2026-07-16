@@ -26,8 +26,15 @@ def target_options() -> tuple[SetupChoiceOption, ...]:
 
 def maintenance_options() -> tuple[SetupChoiceOption, ...]:
     return (
-        SetupChoiceOption("Automatic", ()),
-        SetupChoiceOption("Manual", ()),
+        SetupChoiceOption(
+            "Automatic",
+            (
+                "Sync learns from recent sessions",
+                "Garden improves your wiki",
+                "Both run locally in background",
+            ),
+        ),
+        SetupChoiceOption("Manual", ("Run Sync or Garden yourself",)),
     )
 
 
@@ -71,8 +78,17 @@ def model_options(harness: HarnessKind) -> tuple[SetupChoiceOption, ...]:
 
 def update_options() -> tuple[SetupChoiceOption, ...]:
     return (
-        SetupChoiceOption("Automatic", ()),
-        SetupChoiceOption("Manual", ()),
+        SetupChoiceOption(
+            "Automatic",
+            (
+                "Keep CodeAlmanac updated",
+                "Runs locally in background",
+            ),
+        ),
+        SetupChoiceOption(
+            "Manual",
+            ("Run codealmanac update yourself",),
+        ),
     )
 
 

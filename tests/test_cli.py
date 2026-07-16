@@ -361,6 +361,9 @@ def test_cli_setup_and_uninstall_codex_instructions(
     assert "Codex" in captured.out
     assert "Product updates" in captured.out
     assert "auto-update on" in captured.out
+    assert "macOS background items" in captured.out
+    assert "may have shown 3 “Background Items Added” notifications" in captured.out
+    assert "CodeAlmanac's Sync, Garden, and Update schedules" in captured.out
     assert "Agent change handling" in captured.out
     assert "agents may create almanac: commits" in captured.out
     assert "Next steps" in captured.out
@@ -501,11 +504,18 @@ def test_cli_setup_interactive_choices_can_disable_update_and_commits(
     assert "almanac: update wiki context" in output.out
     assert "almanac/architecture/indexing.md" in output.out
     assert "How should your wikis be updated?" in output.out
+    assert "Sync learns from recent sessions" in output.out
+    assert "Garden improves your wiki" in output.out
+    assert "macOS heads-up" in output.out
+    assert "adds 3 CodeAlmanac background tasks: Sync, Garden, and Update" in output.out
+    assert "They are expected and all from CodeAlmanac" in output.out
     assert "[b] Codex + Claude" not in output.out
     assert "sync quiet agent sessions" not in output.out
     assert "install local scheduled updater" not in output.out
     assert "Product updates" in output.out
     assert "auto-update off" in output.out
+    assert "may have shown 2 “Background Items Added” notifications" in output.out
+    assert "CodeAlmanac's Sync and Garden schedules" in output.out
     assert "Agent change handling" in output.out
     assert "agents leave wiki edits in the worktree for review" in output.out
     assert tuple(job.task for job in scheduler.installed) == (

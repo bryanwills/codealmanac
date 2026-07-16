@@ -26,9 +26,12 @@ from codealmanac.cli.dispatch.setup_wizard.terminal import (
     wizard_terminal,
 )
 from codealmanac.cli.render.setup import (
+    BackgroundItemNotice,
     SetupChoiceScreen,
+    background_item_choice_notice,
     render_setup_choice_screen,
 )
+from codealmanac.services.automation.models import AutomationTask
 from codealmanac.services.config.models import (
     DEFAULT_HARNESS_MODELS,
     UserConfig,
@@ -129,6 +132,9 @@ def wizard_selections(
             title="Product updates",
             question="Keep CodeAlmanac up to date automatically?",
             options=update_options(),
+            selection_notices=background_item_selection_notices(
+                automatic_maintenance=maintenance_index == 0
+            ),
         ),
         initial_index=0 if defaults.auto_update else 1,
     )
@@ -150,6 +156,18 @@ def wizard_selections(
         auto_commit=change_index == 0,
         sync_off=maintenance_index == 1,
         garden_off=maintenance_index == 1,
+    )
+
+
+def background_item_selection_notices(
+    automatic_maintenance: bool,
+) -> tuple[BackgroundItemNotice | None, ...]:
+    maintenance_tasks = (
+        (AutomationTask.SYNC, AutomationTask.GARDEN) if automatic_maintenance else ()
+    )
+    return (
+        background_item_choice_notice((*maintenance_tasks, AutomationTask.UPDATE)),
+        background_item_choice_notice(maintenance_tasks),
     )
 
 

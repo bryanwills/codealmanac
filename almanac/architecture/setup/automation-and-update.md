@@ -18,6 +18,14 @@ sources:
     type: file
     path: src/codealmanac/services/setup/automation.py
     note: Setup-side automation task selection.
+  - id: setup_wizard
+    type: file
+    path: src/codealmanac/cli/dispatch/setup_tui.py
+    note: Interactive onboarding choices and background-item notice selection.
+  - id: setup_background_items
+    type: file
+    path: src/codealmanac/cli/render/setup/background_items.py
+    note: macOS background-item explanation before installation and after setup.
   - id: automation_service
     type: file
     path: src/codealmanac/services/automation/service.py
@@ -61,6 +69,8 @@ The area matters because it is local-only product infrastructure. Scheduled work
 The request model defaults to both instruction targets, Codex as the harness, auto-commit enabled, and all three automation tasks enabled. It accepts setup-time interval and disable controls and validates positive durations [@setup_requests].
 
 Setup's automation policy lives outside the service. The default tasks are sync, Garden, and update. `selected_setup_tasks` reflects the three enable/disable choices, which are persisted in TOML before scheduler reconciliation [@setup_automation].
+
+Interactive onboarding explains Sync and Garden where automatic wiki maintenance is selected. On the Product updates step, it also shows a choice-sensitive macOS heads-up before installation: automatic maintenance contributes Sync and Garden, and automatic product updates contributes Update. The notice tells the user that macOS may show one “Background Items Added” notification per enabled task and identifies every item as CodeAlmanac-owned. The completion screen repeats the enabled task count and names after setup [@setup_wizard][@setup_background_items].
 
 ## Scheduled Jobs
 

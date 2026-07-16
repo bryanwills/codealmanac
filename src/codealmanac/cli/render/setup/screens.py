@@ -13,6 +13,10 @@ from codealmanac.cli.render.brand import (
     print_badge,
     print_banner,
 )
+from codealmanac.cli.render.setup.background_items import (
+    BackgroundItemNotice,
+    render_selected_background_item_notice,
+)
 from codealmanac.cli.render.terminal import (
     card_center_row,
     card_right_row,
@@ -37,6 +41,7 @@ class SetupChoiceScreen:
     question: str
     options: tuple[SetupChoiceOption, ...]
     visual: str = "cards"
+    selection_notices: tuple[BackgroundItemNotice | None, ...] = ()
 
 
 def render_setup_choice_screen(
@@ -48,9 +53,7 @@ def render_setup_choice_screen(
     print_badge()
     write_line("")
     write_line(
-        f"  {BLUE}◆{RST}  "
-        f"{DIM}[{screen.step}/6]{RST} "
-        f"{WHITE_BOLD}{screen.title}{RST}"
+        f"  {BLUE}◆{RST}  {DIM}[{screen.step}/6]{RST} {WHITE_BOLD}{screen.title}{RST}"
     )
     write_line(BAR)
     for line in wrap_with_prefixes(screen.question, f"{BAR}   ", f"{BAR}   ", 78):
@@ -63,6 +66,7 @@ def render_setup_choice_screen(
         render_vertical_options(screen.options, selected_index)
     else:
         render_option_cards(screen.options, selected_index)
+    render_selected_background_item_notice(screen.selection_notices, selected_index)
     write_line("")
     write_line(
         f"  {DIM}│{RST}   "
@@ -78,12 +82,12 @@ def render_option_cards(
     selected_index: int,
 ) -> None:
     card_width = 21 if len(options) == 3 else 34
+    description_rows = max((len(option.description) for option in options), default=0)
     card_lines = tuple(
-        option_card(option, card_width, index == selected_index)
+        option_card(option, card_width, description_rows, index == selected_index)
         for index, option in enumerate(options)
     )
-    rows = max(len(lines) for lines in card_lines)
-    for row in range(rows):
+    for row in range(max(len(lines) for lines in card_lines)):
         parts = []
         for lines in card_lines:
             parts.append(lines[row] if row < len(lines) else " " * (card_width + 2))
@@ -123,6 +127,7 @@ def render_vertical_options(
 def option_card(
     option: SetupChoiceOption,
     width: int,
+    description_rows: int,
     selected: bool,
 ) -> tuple[str, ...]:
     enabled = not option.disabled
@@ -138,6 +143,8 @@ def option_card(
     ]
     for description in option.description:
         lines.append(card_center_row(f"{body}{description}{RST}", width, border, RST))
+    for _ in range(description_rows - len(option.description)):
+        lines.append(card_row("", width, border, RST))
     lines.append(card_row("", width, border, RST))
     lines.append(f"{border}╰{'─' * width}╯{RST}")
     return tuple(lines)
