@@ -280,3 +280,19 @@ A final P3 review found one shipped manual example that still named the retired
 combined `harnesses.run(...)` call. `src/codealmanac/manual/how-to-write.md` now
 teaches the explicit `ensure_ready(...)` then `run_ready(...)` stages used by
 `OperationRunner`; no runtime behavior changed.
+
+## Latest-main reconciliation
+
+PR #36 was rebased onto `origin/main` at `c594aec1`, which includes the macOS
+background-item setup work from `59ccd345`. The setup conflicts preserve both
+features: every choice screen uses the dynamic six-or-seven-step denominator,
+the Product updates screen renders the selected background-item notice, and
+telemetry remains the optional final screen. Notice construction lives with the
+other background-item render policy instead of making `setup_tui.py` oversized.
+
+The combined interactive setup regression verifies `[1/7]` through `[7/7]`,
+runner/model/instructions ordering, the telemetry choice, and the selected
+background-item notice in one journey. Rebase verification passed all 564 tests
+on Python 3.12.10 and Python 3.13.3, Ruff, `git diff --check`, and
+`codealmanac validate` over 71 pages. A tree comparison against the previous PR
+head plus latest main found no runtime drift.

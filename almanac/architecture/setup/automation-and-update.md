@@ -21,11 +21,11 @@ sources:
   - id: setup_wizard
     type: file
     path: src/codealmanac/cli/dispatch/setup_tui.py
-    note: Interactive onboarding choices and background-item notice selection.
+    note: Interactive onboarding choices and selected-notice wiring.
   - id: setup_background_items
     type: file
     path: src/codealmanac/cli/render/setup/background_items.py
-    note: macOS background-item explanation before installation and after setup.
+    note: macOS background-item selection and explanation before and after setup.
   - id: automation_service
     type: file
     path: src/codealmanac/services/automation/service.py
