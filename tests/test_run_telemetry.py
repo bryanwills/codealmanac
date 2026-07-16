@@ -1,11 +1,15 @@
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
 from codealmanac.app import create_app
+from codealmanac.services.config.models import ConfigKey
+from codealmanac.services.config.requests import SetConfigValueRequest
 from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.repositories.requests import RegisterRepositoryRequest
 from codealmanac.services.runs.models import (
+    RunExecutionRef,
     RunFailureCategory,
     RunKind,
     RunSpec,
@@ -13,6 +17,7 @@ from codealmanac.services.runs.models import (
 )
 from codealmanac.services.runs.requests import (
     CancelRunRequest,
+    FinishRunCancellationRequest,
     FinishRunRequest,
     MarkRunRunningRequest,
     QueueRunRequest,
@@ -55,6 +60,15 @@ def queued_run(tmp_path: Path):
         )
     )
     return app, sender, run
+
+
+def set_telemetry(app, *, enabled: bool) -> None:
+    app.config.set(
+        SetConfigValueRequest(
+            key=ConfigKey.TELEMETRY_ENABLED,
+            value=str(enabled).lower(),
+        )
+    )
 
 
 def test_terminal_run_is_captured_exactly_once_without_identifiers(
@@ -103,6 +117,59 @@ def test_queued_cancellation_emits_terminal_event(tmp_path: Path) -> None:
     app.runs.prepare_cancellation(CancelRunRequest(run_id=run.run_id))
 
     assert sender.events[0].properties["status"] == "cancelled"
+
+
+def test_opted_out_finish_is_not_replayed_after_reenable(tmp_path: Path) -> None:
+    app, sender, run = queued_run(tmp_path)
+    app.runs.mark_running(MarkRunRunningRequest(run_id=run.run_id))
+    request = FinishRunRequest(run_id=run.run_id, status=RunStatus.DONE)
+
+    set_telemetry(app, enabled=False)
+    app.runs.finish(request)
+    set_telemetry(app, enabled=True)
+    app.runs.finish(request)
+
+    assert sender.events == []
+
+
+def test_opted_out_queued_cancellation_is_not_replayed_after_reenable(
+    tmp_path: Path,
+) -> None:
+    app, sender, run = queued_run(tmp_path)
+    request = CancelRunRequest(run_id=run.run_id)
+
+    set_telemetry(app, enabled=False)
+    app.runs.prepare_cancellation(request)
+    set_telemetry(app, enabled=True)
+    app.runs.prepare_cancellation(request)
+
+    assert sender.events == []
+
+
+def test_opted_out_running_cancellation_is_not_replayed_after_reenable(
+    tmp_path: Path,
+) -> None:
+    app, sender, run = queued_run(tmp_path)
+    execution = RunExecutionRef(
+        execution_id="executor-1",
+        pid=4242,
+        process_started_at=datetime(2026, 1, 1, tzinfo=UTC),
+    )
+    app.runs.mark_running(
+        MarkRunRunningRequest(run_id=run.run_id, execution=execution)
+    )
+    app.runs.prepare_cancellation(CancelRunRequest(run_id=run.run_id))
+    request = FinishRunCancellationRequest(
+        run_id=run.run_id,
+        execution_id=execution.execution_id,
+    )
+
+    set_telemetry(app, enabled=False)
+    app.runs.finish_cancellation(request)
+    set_telemetry(app, enabled=True)
+    app.runs.finish_cancellation(request)
+
+    assert sender.events == []
 
 
 def test_worker_spawn_crash_emits_exception_and_failed_lifecycle(

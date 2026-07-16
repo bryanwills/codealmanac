@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 from codealmanac.services.telemetry.models import TelemetryEvent
@@ -11,18 +12,6 @@ POSTHOG_US_HOST = "https://us.i.posthog.com"
 PROJECT_KEY_ENV = "CODEALMANAC_POSTHOG_PROJECT_KEY"
 DEFAULT_PROJECT_API_KEY = "phc_ypqXB8PiWLTYn3DsKDyYb4KDEnzNsrhwrQPC8Xqd9K5i"
 MAX_EVENT_BYTES = 64 * 1024
-SDK_CONTEXT_PROPERTIES = frozenset(
-    (
-        "$is_server",
-        "$lib",
-        "$lib_version",
-        "$os",
-        "$os_distro",
-        "$os_version",
-        "$python_runtime",
-        "$python_version",
-    )
-)
 
 
 class SubprocessTelemetrySender:
@@ -68,7 +57,10 @@ def deliver(
         disable_geoip=True,
         enable_exception_autocapture=False,
         capture_exception_code_variables=False,
-        before_send=strip_sdk_context,
+        before_send=partial(
+            keep_validated_event_properties,
+            allowed_properties=frozenset(event.properties),
+        ),
     )
     try:
         client.capture(
@@ -82,12 +74,24 @@ def deliver(
         client.shutdown()
 
 
-def strip_sdk_context(message: dict[str, Any]) -> dict[str, Any]:
-    properties = message.get("properties")
-    if isinstance(properties, dict):
-        for key in SDK_CONTEXT_PROPERTIES:
-            properties.pop(key, None)
-    return message
+def keep_validated_event_properties(
+    message: dict[str, Any],
+    *,
+    allowed_properties: frozenset[str],
+) -> dict[str, Any] | None:
+    try:
+        properties = message.get("properties")
+        if not isinstance(properties, dict):
+            return None
+        message["properties"] = {
+            key: properties[key]
+            for key in allowed_properties
+            if key in properties
+        }
+        return message
+    except Exception:
+        # PostHog sends the unmodified event when before_send raises.
+        return None
 
 
 def main() -> int:

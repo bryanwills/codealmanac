@@ -211,6 +211,36 @@ def test_main_captures_crash_and_reraises(
     assert "private" not in sender.events[0].model_dump_json()
 
 
+def test_exception_shaping_cannot_replace_original_crash(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    class BrokenStringError(RuntimeError):
+        def __str__(self) -> str:
+            raise RuntimeError("exception stringification failed")
+
+    sender = RecordingSender()
+    app = create_app(
+        AppConfig(database_path=tmp_path / "codealmanac.db"),
+        telemetry_sender=sender,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    def crash(args, app):
+        raise BrokenStringError
+
+    monkeypatch.setattr("codealmanac.cli.execution.dispatch_app", crash)
+
+    with pytest.raises(BrokenStringError):
+        main(["health"])
+
+    assert [event.name for event in sender.events] == [
+        "$exception",
+        "cli command completed",
+    ]
+    assert sender.events[0].properties["$exception_message"] == "BrokenStringError"
+
+
 def test_main_captures_interruption_and_reraises(
     tmp_path: Path,
     monkeypatch,
@@ -235,6 +265,35 @@ def test_main_captures_interruption_and_reraises(
     assert sender.events[0].properties["exit_code"] == 130
 
 
+def test_jobs_attach_returned_130_is_captured_as_interrupted(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    sender = RecordingSender()
+    app = create_app(
+        AppConfig(database_path=tmp_path / "codealmanac.db"),
+        telemetry_sender=sender,
+    )
+    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
+
+    def interrupted_attach(_request):
+        def updates():
+            raise KeyboardInterrupt
+            yield
+
+        return updates()
+
+    monkeypatch.setattr(app.runs, "stream_attach", interrupted_attach)
+
+    assert main(["jobs", "attach", "garden-attach-test"]) == 130
+
+    event = sender.events[0]
+    assert event.properties["command"] == "jobs"
+    assert event.properties["action"] == "attach"
+    assert event.properties["outcome"] == "interrupted"
+    assert event.properties["exit_code"] == 130
+
+
 def test_main_redacts_user_arguments_echoed_by_an_unhandled_error(
     tmp_path: Path,
     monkeypatch,
@@ -255,35 +314,6 @@ def test_main_redacts_user_arguments_echoed_by_an_unhandled_error(
         main(["search", "private-customer-query"])
 
     assert "private-customer-query" not in sender.events[0].model_dump_json()
-
-
-def test_crash_capture_preserves_original_error_when_cwd_is_unavailable(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    sender = RecordingSender()
-    app = create_app(
-        AppConfig(database_path=tmp_path / "codealmanac.db"),
-        telemetry_sender=sender,
-    )
-    monkeypatch.setattr("codealmanac.cli.main.create_app", lambda: app)
-
-    def crash(args, app):
-        raise RuntimeError("original failure")
-
-    monkeypatch.setattr("codealmanac.cli.execution.dispatch_app", crash)
-    monkeypatch.setattr(
-        "codealmanac.cli.execution.Path.cwd",
-        lambda: (_ for _ in ()).throw(FileNotFoundError("cwd disappeared")),
-    )
-
-    with pytest.raises(RuntimeError, match="original failure"):
-        main(["health"])
-
-    assert [event.name for event in sender.events] == [
-        "$exception",
-        "cli command completed",
-    ]
 
 
 @pytest.mark.parametrize(

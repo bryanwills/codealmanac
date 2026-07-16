@@ -7,7 +7,7 @@ from codealmanac.integrations.telemetry.sender import (
     POSTHOG_US_HOST,
     SubprocessTelemetrySender,
     deliver,
-    strip_sdk_context,
+    keep_validated_event_properties,
 )
 from codealmanac.services.telemetry.models import TelemetryEvent, TelemetryIdentity
 
@@ -122,18 +122,22 @@ def test_deliver_uses_uuid_geoip_disable_and_person_profile() -> None:
 
     deliver(example_event(), "phc_public", client_factory=client_factory)
 
-    assert clients == [
-        {
-            "key": "phc_public",
-            "host": POSTHOG_US_HOST,
-            "sync_mode": True,
-            "timeout": 5,
-            "disable_geoip": True,
-            "enable_exception_autocapture": False,
-            "capture_exception_code_variables": False,
-            "before_send": strip_sdk_context,
-        }
-    ]
+    assert len(clients) == 1
+    client_options = clients[0]
+    before_send = client_options.pop("before_send")
+    assert before_send.func is keep_validated_event_properties
+    assert before_send.keywords == {
+        "allowed_properties": frozenset(example_event().properties)
+    }
+    assert client_options == {
+        "key": "phc_public",
+        "host": POSTHOG_US_HOST,
+        "sync_mode": True,
+        "timeout": 5,
+        "disable_geoip": True,
+        "enable_exception_autocapture": False,
+        "capture_exception_code_variables": False,
+    }
     args, kwargs = calls[0]
     assert args == ("cli command completed",)
     assert kwargs["distinct_id"] == str(example_event().identity.installation_id)
@@ -153,19 +157,53 @@ def test_sdk_context_is_removed_before_upload() -> None:
             "$os_version": "private-full-version",
             "$python_runtime": "CPython",
             "$python_version": "3.13.3",
+            "$future_private_context": "must not leave the sender",
             "os_family": "darwin",
             "os_major": "25",
             "python_version": "3.13",
         }
     }
 
-    assert strip_sdk_context(message) == {
+    assert keep_validated_event_properties(
+        message,
+        allowed_properties=frozenset(("os_family", "os_major", "python_version")),
+    ) == {
         "properties": {
             "os_family": "darwin",
             "os_major": "25",
             "python_version": "3.13",
         }
     }
+
+
+def test_sdk_property_filter_drops_event_if_rebuilding_fails() -> None:
+    class BrokenProperties(dict):
+        def __getitem__(self, key):
+            raise RuntimeError("unexpected SDK property container")
+
+    message = {"properties": BrokenProperties(command="health")}
+
+    assert keep_validated_event_properties(
+        message,
+        allowed_properties=frozenset(("command",)),
+    ) is None
+
+
+def test_real_posthog_sdk_upload_contains_only_validated_properties(
+    monkeypatch,
+) -> None:
+    uploaded: list[dict] = []
+
+    def record_batch(*args, batch, **kwargs) -> None:
+        uploaded.extend(batch)
+
+    monkeypatch.setattr("posthog.client.batch_post", record_batch)
+
+    event = example_event()
+    deliver(event, "phc_public")
+
+    assert len(uploaded) == 1
+    assert uploaded[0]["properties"] == event.properties
 
 
 def test_sender_drops_oversized_payload_without_spawning(monkeypatch) -> None:

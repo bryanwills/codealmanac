@@ -83,18 +83,10 @@ class RunQueueWorker:
             return self.reconcile_exit(queued.record.run_id, exit_code)
         except Exception as error:
             record = self.runs.show(ShowRunRequest(run_id=queued.record.run_id))
-            repository = self.runs.repository_for(record)
             self.telemetry.capture_exception(
                 error,
                 command=record.kind.value,
                 process_kind="worker",
-                sensitive_paths=(repository.root_path,),
-                sensitive_values=(
-                    record.run_id,
-                    record.repository_id,
-                    str(repository.name),
-                    record.title or "",
-                ),
             )
             if record.status in TERMINAL_RUN_STATUSES:
                 return record

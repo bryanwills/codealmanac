@@ -204,7 +204,7 @@ def test_event_allowlist_drops_unknown_properties(tmp_path: Path) -> None:
     assert sender.events == []
 
 
-def test_exception_capture_redacts_paths_secrets_and_source_code(
+def test_exception_capture_excludes_paths_secrets_and_source_code(
     tmp_path: Path,
 ) -> None:
     service, sender = make_service(tmp_path / "codealmanac.db")
@@ -219,7 +219,6 @@ def test_exception_capture_redacts_paths_secrets_and_source_code(
             error,
             command="garden",
             process_kind="executor",
-            sensitive_paths=(tmp_path,),
         )
 
     event = sender.events[0]
@@ -237,7 +236,7 @@ def test_exception_capture_redacts_paths_secrets_and_source_code(
     assert event.properties["$exception_fingerprint"]
 
 
-def test_exception_capture_redacts_generic_paths_and_credentials(
+def test_exception_capture_excludes_generic_paths_and_credentials(
     tmp_path: Path,
 ) -> None:
     service, sender = make_service(tmp_path / "codealmanac.db")
@@ -259,3 +258,25 @@ def test_exception_capture_redacts_generic_paths_and_credentials(
     assert "hunter2" not in dumped
     assert "Bearer-private" not in dumped
     assert "sk-live-secret" not in dumped
+
+
+def test_exception_capture_excludes_all_free_form_error_text(tmp_path: Path) -> None:
+    service, sender = make_service(tmp_path / "codealmanac.db")
+    private_text = (
+        "customer-repo private-note.md prompt=delete-everything "
+        "provider output for Ada"
+    )
+    try:
+        raise RuntimeError(private_text)
+    except RuntimeError as error:
+        service.capture_exception(
+            error,
+            command="garden",
+            process_kind="executor",
+        )
+
+    event = sender.events[0]
+    exception = event.properties["$exception_list"][0]
+    assert event.properties["$exception_message"] == "RuntimeError"
+    assert exception["value"] == "RuntimeError"
+    assert private_text not in event.model_dump_json()

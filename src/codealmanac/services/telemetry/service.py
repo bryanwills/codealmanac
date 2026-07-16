@@ -1,10 +1,7 @@
 import hashlib
 import os
 import platform
-import re
-import tempfile
 from collections.abc import Mapping
-from pathlib import Path
 from types import TracebackType
 from uuid import uuid4
 
@@ -27,20 +24,6 @@ from codealmanac.services.telemetry.ports import TelemetrySender
 from codealmanac.services.telemetry.store import TelemetryIdentityStore
 
 TRUTHY_ENV_VALUES = frozenset(("1", "true", "yes", "on"))
-TOKEN_PATTERN = re.compile(
-    r"(?i)\b(api[_-]?key|access[_-]?token|auth[_-]?token|authorization|"
-    r"credential|cookie|password|token|secret)\s*[=:]\s*[^\s,;]+"
-)
-URL_CREDENTIAL_PATTERN = re.compile(r"([a-z][a-z0-9+.-]{0,30}://)[^/@\s]+@", re.I)
-COMMON_TOKEN_PATTERN = re.compile(
-    r"(?i)\b(?:github_pat|gh[opsu]|phc|sk|xox[baprs])[-_][a-z0-9_-]{6,}\b"
-)
-POSIX_PATH_PATTERN = re.compile(r"(?<![:\w])/(?:[^\s,;:'\"<>()\[\]{}])+")
-WINDOWS_PATH_PATTERN = re.compile(
-    r"(?i)\b[a-z]:\\(?:[^\s,;:'\"<>()\[\]{}])+"
-)
-TILDE_PATH_PATTERN = re.compile(r"~/(?:[^\s,;:'\"<>()\[\]{}])+")
-MAX_EXCEPTION_MESSAGE_LENGTH = 300
 
 
 class TelemetryService:
@@ -111,48 +94,44 @@ class TelemetryService:
         *,
         command: str,
         process_kind: str,
-        sensitive_paths: tuple[Path, ...] = (),
-        sensitive_values: tuple[str, ...] = (),
     ) -> None:
-        exception_type = type(error).__name__
-        frames = safe_frames(error.__traceback__)
-        fingerprint = exception_fingerprint(exception_type, frames)
-        message = redact_exception_message(
-            str(error) or exception_type,
-            sensitive_paths,
-            sensitive_values,
-        )
-        self.capture(
-            "$exception",
-            {
-                "$exception_list": [
-                    {
-                        "mechanism": {
-                            "type": "generic",
-                            "handled": False,
-                        },
-                        "module": None,
-                        "type": exception_type,
-                        "value": message,
-                        "stacktrace": {
-                            "frames": frames,
-                            "type": "raw",
-                        },
-                    }
-                ],
-                "$exception_fingerprint": fingerprint,
-                "$exception_type": exception_type,
-                "$exception_message": message,
-                "command": command,
-                "process_kind": process_kind,
-            },
-        )
+        try:
+            exception_type = type(error).__name__
+            frames = safe_frames(error.__traceback__)
+            fingerprint = exception_fingerprint(exception_type, frames)
+            self.capture(
+                "$exception",
+                {
+                    "$exception_list": [
+                        {
+                            "mechanism": {
+                                "type": "generic",
+                                "handled": False,
+                            },
+                            "module": None,
+                            "type": exception_type,
+                            "value": exception_type,
+                            "stacktrace": {
+                                "frames": frames,
+                                "type": "raw",
+                            },
+                        }
+                    ],
+                    "$exception_fingerprint": fingerprint,
+                    "$exception_type": exception_type,
+                    "$exception_message": exception_type,
+                    "command": command,
+                    "process_kind": process_kind,
+                },
+            )
+        except Exception:
+            # Exception telemetry must never replace the product exception.
+            return
 
     def capture_lifecycle(
         self,
         record: RunRecord,
         spec: RunSpec | None,
-        failure_category: RunFailureCategory | None = None,
     ) -> None:
         if spec is None or record.finished_at is None:
             return
@@ -160,7 +139,7 @@ class TelemetryService:
         category = None
         if record.status == RunStatus.FAILED:
             category = (
-                failure_category or RunFailureCategory.INTERNAL_ERROR
+                record.failure_category or RunFailureCategory.INTERNAL_ERROR
             ).value
         properties = LifecycleRunCompletedProperties(
             run_kind=record.kind.value,
@@ -200,17 +179,17 @@ class TelemetryService:
             name=name,
             identity=identity,
             properties={
-                    **properties,
-                    "cli_version": self.version,
-                    "identity_kind": identity.kind,
-                    "os_family": platform.system().lower(),
-                    "os_major": platform.release().split(".", 1)[0],
-                    "architecture": platform.machine().lower(),
-                    "python_version": (
-                        f"{platform.python_version_tuple()[0]}."
-                        f"{platform.python_version_tuple()[1]}"
-                    ),
-                    "$geoip_disable": True,
+                **properties,
+                "cli_version": self.version,
+                "identity_kind": identity.kind,
+                "os_family": platform.system().lower(),
+                "os_major": platform.release().split(".", 1)[0],
+                "architecture": platform.machine().lower(),
+                "python_version": (
+                    f"{platform.python_version_tuple()[0]}."
+                    f"{platform.python_version_tuple()[1]}"
+                ),
+                "$geoip_disable": True,
             },
         )
 
@@ -247,27 +226,3 @@ def exception_fingerprint(
     location = frames[-1] if frames else "no-codealmanac-frame"
     source = f"{exception_type}:{location}"
     return hashlib.sha256(source.encode()).hexdigest()[:20]
-
-
-def redact_exception_message(
-    message: str,
-    sensitive_paths: tuple[Path, ...],
-    sensitive_values: tuple[str, ...] = (),
-) -> str:
-    redacted = message
-    paths = (*sensitive_paths, Path.home(), Path(tempfile.gettempdir()))
-    path_strings = {str(path) for path in paths}
-    path_strings.update(str(path.resolve()) for path in paths)
-    for path in sorted(path_strings, key=len, reverse=True):
-        if path and path != "/":
-            redacted = redacted.replace(path, "<path>")
-    for value in sorted(set(sensitive_values), key=len, reverse=True):
-        if value and value not in {".", "-", "/"}:
-            redacted = redacted.replace(value, "<argument>")
-    redacted = URL_CREDENTIAL_PATTERN.sub(r"\1<credentials>@", redacted)
-    redacted = TOKEN_PATTERN.sub(r"\1=<redacted>", redacted)
-    redacted = COMMON_TOKEN_PATTERN.sub("<redacted>", redacted)
-    redacted = WINDOWS_PATH_PATTERN.sub("<path>", redacted)
-    redacted = POSIX_PATH_PATTERN.sub("<path>", redacted)
-    redacted = TILDE_PATH_PATTERN.sub("<path>", redacted)
-    return redacted[:MAX_EXCEPTION_MESSAGE_LENGTH]

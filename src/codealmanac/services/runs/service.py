@@ -156,18 +156,19 @@ class RunsService:
         )
 
     def finish(self, request: FinishRunRequest) -> RunRecord:
-        record = self.store.finish(
+        result = self.store.finish(
             request.run_id,
             request.status,
             request.summary,
             request.error,
-        )
-        self.telemetry.capture_lifecycle(
-            record,
-            self.store.read_spec(request.run_id),
             request.failure_category,
         )
-        return record
+        if result.changed:
+            self.telemetry.capture_lifecycle(
+                result.record,
+                self.store.read_spec(request.run_id),
+            )
+        return result.record
 
     def prepare_cancellation(
         self,
@@ -176,7 +177,7 @@ class RunsService:
         record = self.store.read(request.run_id)
         self.require_run_matches_repository(record, request.repository_name)
         plan = self.store.prepare_cancellation(request.run_id)
-        if plan.record.status in TERMINAL_RUN_STATUSES:
+        if plan.changed and plan.record.status in TERMINAL_RUN_STATUSES:
             self.telemetry.capture_lifecycle(
                 plan.record,
                 self.store.read_spec(request.run_id),
@@ -191,7 +192,7 @@ class RunsService:
             request.run_id,
             request.execution_id,
         )
-        if result.record.status in TERMINAL_RUN_STATUSES:
+        if result.changed and result.record.status in TERMINAL_RUN_STATUSES:
             self.telemetry.capture_lifecycle(
                 result.record,
                 self.store.read_spec(request.run_id),

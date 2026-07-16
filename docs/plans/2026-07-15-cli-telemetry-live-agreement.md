@@ -16,13 +16,15 @@ tests.
 ## Git state
 
 - Development branch: `codex/cli-telemetry`
-- Base: latest `origin/main` at `7ebc8c85`
+- Current merged base: `origin/main` at `6c0bbabb`
 - Plan commit: `a40ef638`
 - Onboarding/config commit: `f64c893d`
 - Almanac architecture commit: `4e8e9661`
 - Telemetry implementation/test commit: `8c193253`
 - Exact production QA documentation commit: `d80b1aee`
 - Linux CI test-isolation fix: `4edfe89a`
+- Review-fix plan commit: `22e81980`
+- Main merge commit: `ddee1934`
 - Unrelated untracked user files must not be staged or modified.
 
 ## Settled product decisions
@@ -46,8 +48,9 @@ tests.
   background failures and cancellations.
 - Capture real unhandled foreground, worker, and executor exceptions in PostHog
   Error Tracking. Do not turn normal provider or validation failures into fake
-  exceptions. Strip paths, credentials, tokens, locals, code variables, and
-  source context.
+  exceptions. Send only exception type, stable fingerprint, and CodeAlmanac
+  module/function/line frames; never send exception text, locals, code variables,
+  or source context.
 - Telemetry is best effort and detached. It must not change output, exit status,
   or command latency. No outbox/retry queue in v1.
 
@@ -62,8 +65,8 @@ tests.
 - Stable UUID singleton and exact-once event claims in SQLite.
 - Policy reload on every event; config opt-out, `CODEALMANAC_NO_TELEMETRY`,
   `DO_NOT_TRACK`, and CI suppression.
-- Redacted, bounded exception envelope with CodeAlmanac-only module/function/line
-  frames and stable fingerprint.
+- Structural exception envelope with CodeAlmanac-only module/function/line
+  frames and stable fingerprint; arbitrary exception text never enters an event.
 - Supported PostHog Python SDK dependency.
 - Detached one-shot sender with bounded stdin JSON, no output, no waiting,
   GeoIP disabled, person processing allowed, SDK exception autocapture off, and
@@ -177,8 +180,38 @@ for all 14 tiles. At verification time setup/search/show views were empty becaus
 the project contained only deliberate config/validate smoke events; no fake usage
 was added, and these views will populate from real telemetry-enabled installations.
 
+## Diligent review hardening
+
+On 2026-07-16, five review findings were checked against the intended design and
+accepted because each exposed a real privacy, consent, boundary, ledger, or
+analytics gap:
+
+- Exception capture is now structural and non-throwing. It never calls
+  `str(error)` or sends free-form error text.
+- Lifecycle telemetry runs only for the first durable non-terminal-to-terminal
+  transition. An opted-out transition cannot be replayed after re-enabling.
+- PostHog `before_send` rebuilds properties from the typed event's exact key set,
+  so new SDK context fields cannot bypass the allowlist.
+- Failed runs persist their controlled failure category in the run ledger;
+  telemetry reads the durable result instead of receiving telemetry-only state.
+- Foreground commands returning exit code `130`, including the real `jobs attach`
+  detachment path, are recorded as interrupted rather than failed.
+
+The branch also merged current `origin/main`; the dependency resolution keeps
+both main's `filelock` requirement and telemetry's PostHog requirement.
+
+Local review-fix verification passed 547 tests on Python 3.12.10 and Python
+3.13.3, Ruff, `git diff --check`, and `codealmanac validate` over 71 pages. A
+real PostHog 7.25 client with its network submitter mocked proved that the final
+SDK payload contains exactly the validated event properties; a separate
+red/green test proves a failing property rebuild drops the event rather than
+letting the SDK send its unmodified context. The final wheel built, installed in
+an isolated Python 3.12 environment, and passed version, config, and dependency
+smokes with telemetry disabled.
+
 ## Completion state
 
-Implementation, review, disposable smoke testing, package verification, privacy
-audit, and PostHog dashboard work are complete. The feature remains isolated on
-`codex/cli-telemetry`; unrelated user files remain untouched and untracked.
+The original implementation, disposable smoke testing, privacy audit, and
+PostHog dashboard work are complete. Diligent-review fixes and local full-suite
+and package verification are complete on `codex/cli-telemetry`; GitHub CI for the
+updated branch is pending. Unrelated user files remain untouched and untracked.

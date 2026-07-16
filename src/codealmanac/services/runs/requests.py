@@ -168,6 +168,8 @@ class FinishRunRequest(CodeAlmanacModel):
 
     @model_validator(mode="after")
     def failure_category_matches_status(self) -> "FinishRunRequest":
+        if self.status == RunStatus.FAILED and self.failure_category is None:
+            raise ValueError("failed runs require failure_category")
         if self.status != RunStatus.FAILED and self.failure_category is not None:
             raise ValueError("failure_category is only valid for failed runs")
         return self

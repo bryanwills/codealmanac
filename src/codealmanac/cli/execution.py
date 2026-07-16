@@ -1,8 +1,6 @@
 import argparse
 import sys
 import time
-from contextlib import suppress
-from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -46,8 +44,6 @@ def execute(
             error,
             command=command,
             process_kind=process_kind(command),
-            sensitive_paths=telemetry_sensitive_paths(app),
-            sensitive_values=sensitive_argument_values(args),
         )
         capture_command(
             app.telemetry,
@@ -60,11 +56,19 @@ def execute(
     capture_command(
         app.telemetry,
         args,
-        outcome="success" if exit_code == 0 else "failed",
+        outcome=outcome_for_exit_code(exit_code),
         exit_code=exit_code,
         duration_seconds=time.monotonic() - started_at,
     )
     return exit_code
+
+
+def outcome_for_exit_code(exit_code: int) -> str:
+    if exit_code == 0:
+        return "success"
+    if exit_code == 130:
+        return "interrupted"
+    return "failed"
 
 
 def process_kind(command: str) -> str:
@@ -73,38 +77,3 @@ def process_kind(command: str) -> str:
         "__run-executor": "executor",
         "__garden-scheduler": "scheduler",
     }.get(command, "foreground")
-
-
-def telemetry_sensitive_paths(app: CodeAlmanac) -> tuple[Path, ...]:
-    paths = [app.local_state.state_dir]
-    with suppress(OSError):
-        paths.append(Path.cwd())
-    return tuple(paths)
-
-
-def sensitive_argument_values(args: argparse.Namespace) -> tuple[str, ...]:
-    controlled_fields = {
-        "command",
-        "sync_command",
-        "topic_command",
-        "config_command",
-        "jobs_command",
-        "automation_command",
-    }
-    values: list[str] = []
-    for field, value in vars(args).items():
-        if field not in controlled_fields:
-            append_sensitive_values(values, value)
-    return tuple(values)
-
-
-def append_sensitive_values(values: list[str], value: object) -> None:
-    if isinstance(value, str):
-        values.append(value)
-        return
-    if isinstance(value, Path):
-        values.append(str(value))
-        return
-    if isinstance(value, (list, tuple, set)):
-        for item in value:
-            append_sensitive_values(values, item)
