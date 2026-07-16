@@ -1,11 +1,14 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+from filelock import FileLock
+
 from codealmanac.services.harnesses.models import HarnessKind
 from codealmanac.services.repositories.models import Repository
 from codealmanac.services.repositories.store import RepositoryStore
 from codealmanac.services.runs.models import RunKind, RunSpec, RunStatus
 from codealmanac.services.runs.store import RunStore
+from codealmanac.services.updates.lock import UpdateLockStore
 from codealmanac.services.updates.models import (
     PackageCommandResult,
     PackageInstallMetadata,
@@ -72,7 +75,7 @@ def test_update_service_plans_pip_upgrade_with_current_python():
     assert plan.status == UpdateStatus.READY
     assert plan.method == UpdateInstallMethod.PIP
     assert plan.command == (
-        "/venv/bin/python",
+        str(Path("/venv/bin/python")),
         "-m",
         "pip",
         "install",
@@ -181,35 +184,40 @@ def test_scheduled_update_skips_when_lifecycle_run_is_active(tmp_path: Path):
     assert result.status == UpdateStatus.SKIPPED
     assert result.message == "scheduled update skipped: 1 CodeAlmanac job is active"
     assert runner.commands == []
-    assert not (state_dir / "update.lock").exists()
+
+    # Lock is released, so we can acquire it
+    lock = FileLock(str(state_dir / "update.lock"))
+    lock.acquire(timeout=0)
+    lock.release()
 
 
 def test_scheduled_update_skips_when_update_lock_is_held(tmp_path: Path):
     state_dir = tmp_path / ".codealmanac"
     state_dir.mkdir()
-    (state_dir / "update.lock").write_text(
-        '{"pid": 1, "created_at": "2099-01-01T00:00:00Z"}',
-        encoding="utf-8",
-    )
-    runner = FakeCommandRunner(PackageCommandResult(exit_code=0))
-    service = UpdatesService(
-        FakeMetadataProvider(PackageInstallMetadata(version="0.1.0", installer="uv")),
-        runner,
-        lock_path=state_dir / "update.lock",
-        database_path=state_dir / "codealmanac.db",
-    )
+    lock_path = state_dir / "update.lock"
 
-    result = service.run(
-        RunUpdateRequest(
-            scheduled=True,
-            now=datetime(2026, 7, 6, tzinfo=UTC),
+    other_lock = FileLock(str(lock_path))
+    other_lock.acquire()
+
+    try:
+        runner = FakeCommandRunner(PackageCommandResult(exit_code=0))
+        service = UpdatesService(
+            FakeMetadataProvider(
+                PackageInstallMetadata(version="0.1.0", installer="uv")
+            ),
+            runner,
+            lock_path=lock_path,
+            database_path=state_dir / "codealmanac.db",
         )
-    )
 
-    assert result.status == UpdateStatus.SKIPPED
-    assert result.message == "scheduled update skipped: update already in progress"
-    assert runner.commands == []
-    assert (state_dir / "update.lock").exists()
+        result = service.run(RunUpdateRequest(scheduled=True))
+
+        assert result.status == UpdateStatus.SKIPPED
+        assert result.message == "scheduled update skipped: update already in progress"
+        assert runner.commands == []
+        assert lock_path.exists()
+    finally:
+        other_lock.release()
 
 
 def test_scheduled_update_runs_smoke_after_success(tmp_path: Path):
@@ -236,7 +244,10 @@ def test_scheduled_update_runs_smoke_after_success(tmp_path: Path):
         ("codealmanac", "doctor", "--json"),
     ]
     assert tuple(smoke.exit_code for smoke in result.smoke) == (0, 0)
-    assert not (tmp_path / ".codealmanac/update.lock").exists()
+    # Lock is released, so we can acquire it
+    lock = FileLock(str(tmp_path / ".codealmanac/update.lock"))
+    lock.acquire(timeout=0)
+    lock.release()
 
 
 def test_scheduled_update_fails_when_smoke_fails(tmp_path: Path):
@@ -307,3 +318,82 @@ def write_run_record(
     )
     if status == RunStatus.RUNNING:
         store.mark_running(record.run_id)
+
+
+def test_update_lock_store_acquires_new_lock(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+
+    lease = store.acquire(lock_path)
+    assert lease is not None
+    assert lock_path.exists()
+
+    lease.release()
+
+    # Another lease can be acquired after release
+    lease2 = store.acquire(lock_path)
+    assert lease2 is not None
+    lease2.release()
+
+
+def test_update_lock_store_refuses_held_lock(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+
+    # First acquisition
+    lease1 = store.acquire(lock_path)
+    assert lease1 is not None
+
+    # Second acquisition immediately after should fail
+    lease2 = store.acquire(lock_path)
+    assert lease2 is None
+
+    lease1.release()
+
+    # After release, we can acquire again
+    lease3 = store.acquire(lock_path)
+    assert lease3 is not None
+    lease3.release()
+
+
+def hold_lock_worker(lock_path_str: str, start_event, stop_event) -> None:
+    from filelock import FileLock
+
+    lock = FileLock(lock_path_str)
+    lock.acquire()
+    start_event.set()
+    stop_event.wait(timeout=5)
+    lock.release()
+
+
+def test_update_lock_store_multiprocessing(tmp_path: Path):
+    lock_path = tmp_path / "update.lock"
+    store = UpdateLockStore()
+
+    import multiprocessing
+
+    start_event = multiprocessing.Event()
+    stop_event = multiprocessing.Event()
+
+    p = multiprocessing.Process(
+        target=hold_lock_worker,
+        args=(str(lock_path), start_event, stop_event),
+    )
+    p.start()
+
+    try:
+        # Wait for the worker to acquire the lock
+        assert start_event.wait(timeout=5)
+
+        # Now, try to acquire the lock in this process. It should fail.
+        lease = store.acquire(lock_path)
+        assert lease is None
+
+    finally:
+        stop_event.set()
+        p.join(timeout=5)
+
+    # After the worker finishes (releasing the lock), we should be able to acquire it
+    lease2 = store.acquire(lock_path)
+    assert lease2 is not None
+    lease2.release()
