@@ -147,8 +147,9 @@ leads, duplicate pages, and unsupported claims.
 No-op is valid. If the material adds no durable wiki knowledge, the harness
 should leave the wiki unchanged.
 
-`ingest` and `garden` create queued runs and start a local worker. Use
-`codealmanac jobs` and `codealmanac jobs attach <run-id>` to follow them.
+`init`, `ingest`, and `garden` create queued runs and start a local worker. To
+follow them visually, run `codealmanac serve` and select **Jobs** in the
+sidebar. To stay in the terminal, use `codealmanac jobs attach <run-id>`.
 
 ## Sync And Automation
 
@@ -340,9 +341,10 @@ codealmanac serve
 ```
 
 The viewer is read-only. It renders pages, search, topics, backlinks, and
-file-reference navigation from local wiki data. By default it can switch across
-available registered local wikis. Use `codealmanac serve --wiki <name>` to
-narrow the viewer to one wiki.
+file-reference navigation from local wiki data. `serve` opens it in your default
+browser once the server is ready; use `codealmanac serve --no-open` for headless
+or scripted use. By default the viewer can switch across available registered
+local wikis. Use `codealmanac serve --wiki <name>` to narrow it to one wiki.
 
 ## Migrating From The npm CLI
 

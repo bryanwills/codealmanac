@@ -95,7 +95,7 @@ Parser failures go through the custom argument parser, which classifies syntax p
 | `health` | Report graph and source health. | `--wiki`, `--json` [@parser_wiki] |
 | `validate` | Validate the local wiki and return nonzero when issues exist. | `--wiki`, `--json` [@parser_wiki] |
 | `reindex` | Force a full index rebuild. | `--wiki`, `--json` [@parser_wiki] |
-| `serve` | Serve the local wiki viewer. | `--wiki`, `--host`, `--port`; defaults to `127.0.0.1:3927` [@parser_wiki] |
+| `serve` | Serve the local wiki viewer and open it in the default browser. | `--wiki`, `--host`, `--port`, `--no-open`; defaults to `127.0.0.1:3927` and opens the browser [@parser_wiki] |
 | `tag <page> <topics...>` | Add topics to a page frontmatter block. | `--wiki` [@parser_wiki] |
 | `untag <page> <topics...>` | Remove topics from a page frontmatter block. | `--wiki` [@parser_wiki] |
 | `config` | Read or write user config values, or apply saved config to machine automation. | `list`, `get`, `set`, `apply`; keys cover `auto_commit`, `harness.default`, `harness.model`, and the `automation.<task>.enabled`/`automation.<task>.every` family; see [Config keys](../config-keys) [@parser_config] |

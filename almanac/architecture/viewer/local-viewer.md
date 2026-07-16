@@ -64,13 +64,13 @@ sources:
 
 The local viewer is the read-only browser surface exposed by `codealmanac serve`. It projects repo wiki pages, topics, file evidence, registered wiki navigation, and lifecycle jobs from local state; it does not own a separate store or write path [@readme] [@viewer_service].
 
-The command accepts `--wiki`, `--host`, and `--port`, with parser defaults of `127.0.0.1:3927` when host and port are omitted [@parser]. Pages, links, topics, source references, and file references come from the index read model. Job lists and job detail come from the run ledger. The browser routes between those projections with hash routes and renders the current repository's wiki graph [@viewer_service] [@viewer_js].
+The command accepts `--wiki`, `--host`, `--port`, and `--no-open`, with parser defaults of `127.0.0.1:3927` when host and port are omitted [@parser]. It opens the viewer in the default browser unless `--no-open` is set. Pages, links, topics, source references, and file references come from the index read model. Job lists and job detail come from the run ledger. The browser routes between those projections with hash routes and renders the current repository's wiki graph [@viewer_service] [@viewer_js].
 
 For the public command contract, see [Public command surface](../../reference/cli/public-command-surface). For the run data shown in the jobs view, see [Run states and events](../../reference/runs/run-states-and-events).
 
 ## Entry Point
 
-The serve dispatch imports `uvicorn` and the FastAPI server lazily, builds the server with the current working directory and optional wiki name, prints the viewer URL, and runs the server with warning-level logs [@dispatch]. `create_server_app` is the server composition root: it registers error handlers, API routes, and static routes without defining endpoint logic itself [@server_app].
+The serve dispatch imports `uvicorn` and the FastAPI server lazily, builds the server with the current working directory and optional wiki name, and prints the viewer URL [@dispatch]. Unless `--no-open` is set, a daemon thread waits for Uvicorn to bind successfully before opening that URL through Python's default-browser integration. The dispatch then runs the server with warning-level logs [@dispatch]. `create_server_app` is the server composition root: it registers error handlers, API routes, and static routes without defining endpoint logic itself [@server_app].
 
 The API layer maps HTTP routes to `ViewerService` request objects. `/api/overview`, `/api/page/{slug}`, `/api/search`, `/api/file`, `/api/topic/{slug}`, `/api/jobs`, and `/api/jobs/{run_id}` all call the viewer service through the application object [@server_api]. When `codealmanac serve --wiki <name>` scopes the server, the API uses that repository name instead of per-request `wiki` parameters [@server_api].
 

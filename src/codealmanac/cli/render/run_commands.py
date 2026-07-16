@@ -1,16 +1,17 @@
 import json
 
 from codealmanac.cli.render.style import style
+from codealmanac.cli.render.terminal import card_row, terminal_width, visible_length
 from codealmanac.services.runs.models import RunKind
 from codealmanac.workflows.run_queue.models import (
     RunQueueStartResult,
     ScheduledGardenResult,
 )
 
-RUN_QUIPS = {
-    RunKind.BUILD: "every codebase deserves a biography — writing yours now.",
-    RunKind.INGEST: "the wiki is hungry — feeding it your latest work.",
-    RunKind.GARDEN: "weeding, pruning, watering. your wiki, but tidier.",
+RUN_HEADLINES = {
+    RunKind.BUILD: "Building your CodeAlmanac in the background",
+    RunKind.INGEST: "Adding knowledge to your CodeAlmanac in the background",
+    RunKind.GARDEN: "Improving your CodeAlmanac in the background",
 }
 
 
@@ -41,15 +42,41 @@ def render_run_queue_started(result: RunQueueStartResult) -> None:
     dim = style.DIM
     bold = style.BOLD
     rst = style.RST
-    print(f"{blue}◆{rst} {record.kind.value} queued: {blue}{record.run_id}{rst}")
-    print(f"{dim}│{rst} repo:    {result.repository.name}")
-    print(f"{dim}│{rst} ahead:   {result.runs_ahead} run(s)")
-    print(f"{dim}│{rst} follow:  {bold}codealmanac jobs attach {record.run_id}{rst}")
-    print(f"{dim}│{rst} details: {bold}codealmanac jobs show {record.run_id}{rst}")
-    print(f"{dim}│ worker: pid {result.worker.child_pid}{rst}")
-    quip = RUN_QUIPS.get(record.kind)
-    if quip is not None:
-        print(f"{dim}◇ {quip}{rst}")
+    headline = RUN_HEADLINES[record.kind]
+    print(f"{blue}◆{rst} {bold}{headline}{rst}")
+    print()
+    render_viewer_follow_box()
+    print()
+    print("  Prefer the terminal?")
+    print(f"    {bold}codealmanac jobs attach {record.run_id}{rst}")
+    print()
+    print(
+        f"{dim}  Job: {record.run_id} · Repo: {result.repository.name}{rst}"
+    )
+
+
+def render_viewer_follow_box() -> None:
+    blue = style.BLUE
+    dim = style.DIM
+    bold = style.BOLD
+    rst = style.RST
+    border = f"{blue}{dim}"
+    lines = (
+        f"  {bold}Follow progress in the CodeAlmanac viewer{rst}",
+        "",
+        f"    {blue}{bold}codealmanac serve{rst}",
+        "",
+        f"  Then select {bold}Jobs{rst} in the sidebar.",
+    )
+    available_width = max(40, terminal_width() - 6)
+    content_width = max(visible_length(line) for line in lines)
+    width = max(content_width, min(62, available_width))
+    print(f"  {border}╭{'─' * width}╮{rst}")
+    print(f"  {card_row('', width, border, rst)}")
+    for line in lines:
+        print(f"  {card_row(line, width, border, rst)}")
+    print(f"  {card_row('', width, border, rst)}")
+    print(f"  {border}╰{'─' * width}╯{rst}")
 
 
 def render_scheduled_garden(result: ScheduledGardenResult) -> None:

@@ -18,6 +18,10 @@ sources:
     type: file
     path: src/codealmanac/cli/render/search.py
     note: Search and reindex render behavior.
+  - id: run-render
+    type: file
+    path: src/codealmanac/cli/render/run_commands.py
+    note: Human and JSON receipts for queued lifecycle work.
   - id: cli-tests
     type: file
     path: tests/test_cli.py
@@ -45,6 +49,14 @@ Render functions usually accept a structured result and a `json_output` flag. Sh
 Search output shows the pattern. `render_search` prints JSON rows when `--json` is set. In human mode, it prints each result slug, optionally a summary, and writes `# 0 results` to stderr when there are no matches [@search-render]. Reindex follows the same split: JSON uses the shared model printer, while human output prints `reindexed: ...` with an index summary [@search-render] [@common-render].
 
 The tests lock this in. They check that `search login` prints a slug, `search login --slugs` suppresses the summary, missing search results produce no stdout and `# 0 results` on stderr, and `reindex --json` includes structured fields such as `pages_indexed` [@cli-tests].
+
+Queued lifecycle receipts use a different hierarchy because their main purpose
+is to teach the next action. The human output for `init`, `ingest`, and `garden`
+leads with an operation-specific background-work headline, gives
+`codealmanac serve` and the **Jobs** sidebar destination one shared blue
+bordered callout, and then offers `jobs attach` as the terminal alternative.
+The job id and repository sit in quiet metadata at the bottom. The JSON receipt
+remains compact and preserves queue and worker fields for scripts [@run-render].
 
 ## Styling
 

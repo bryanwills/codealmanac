@@ -79,6 +79,11 @@ def add_wiki_commands(subcommands: argparse._SubParsersAction) -> None:
     serve.add_argument("--wiki")
     serve.add_argument("--host", default=DEFAULT_VIEWER_HOST)
     serve.add_argument("--port", type=int, default=DEFAULT_VIEWER_PORT)
+    serve.add_argument(
+        "--no-open",
+        action="store_true",
+        help="serve without opening the viewer in a browser",
+    )
 
     tag = subcommands.add_parser("tag", help="add topics to a page")
     tag.add_argument("page")

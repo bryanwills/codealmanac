@@ -244,6 +244,7 @@ def command_catalog() -> CommandCatalog:
                     row("codealmanac serve --port <n>", "Choose port"),
                     row("codealmanac serve --host <host>", "Choose host"),
                     row("codealmanac serve --wiki <name>", "Serve one wiki"),
+                    row("codealmanac serve --no-open", "Do not open a browser"),
                 ),
             ),
             guide(

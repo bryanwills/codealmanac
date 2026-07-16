@@ -301,10 +301,14 @@ def test_cli_init_creates_wiki_and_prints_name(
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "◆ build queued: build-" in captured.out
-    assert "repo:    my-repo" in captured.out
-    assert "follow:  codealmanac jobs attach build-" in captured.out
-    assert "◇ every codebase deserves a biography" in captured.out
+    assert "◆ Building your CodeAlmanac in the background" in captured.out
+    assert "Follow progress in the CodeAlmanac viewer" in captured.out
+    assert "codealmanac serve" in captured.out
+    assert "Then select Jobs in the sidebar." in captured.out
+    assert "╭" in captured.out
+    assert "╰" in captured.out
+    assert "codealmanac jobs attach build-" in captured.out
+    assert "· Repo: my-repo" in captured.out
     assert captured.err == ""
     assert (repo / "almanac/README.md").is_file()
     assert (repo / "almanac/topics.yaml").is_file()
@@ -891,7 +895,7 @@ def test_cli_init_and_reindex_commands(
 
     assert main(["init", str(repo)]) == 0
     init_output = capsys.readouterr()
-    assert "◆ build queued: build-" in init_output.out
+    assert "◆ Building your CodeAlmanac in the background" in init_output.out
     assert not (repo / "almanac/index.db").exists()
 
     (repo / "almanac/note.md").write_text(
@@ -1129,6 +1133,77 @@ def test_cli_help_includes_serve(capsys):
     assert "config" in output.out
 
 
+@pytest.mark.parametrize(
+    ("extra_args", "should_open"),
+    (((), True), (("--no-open",), False)),
+)
+def test_cli_serve_opens_viewer_after_server_is_ready(
+    viewer_repo,
+    monkeypatch,
+    capsys,
+    extra_args: tuple[str, ...],
+    should_open: bool,
+):
+    import uvicorn
+
+    from codealmanac.cli.dispatch import serve as serve_dispatch
+
+    repo, app = viewer_repo
+    monkeypatch.chdir(repo)
+    opened_urls: list[str] = []
+    browser_threads = []
+
+    class FakeConfig:
+        def __init__(self, server_app, **options):
+            self.server_app = server_app
+            self.options = options
+
+    class FakeThread:
+        def __init__(self, *, target, args, name, daemon):
+            self.target = target
+            self.args = args
+            self.name = name
+            self.daemon = daemon
+            browser_threads.append(self)
+
+        def start(self):
+            return None
+
+        def run(self):
+            self.target(*self.args)
+
+    class FakeServer:
+        def __init__(self, config):
+            self.config = config
+            self.started = False
+            self.should_exit = False
+
+        def run(self):
+            assert opened_urls == []
+            self.started = True
+            for thread in browser_threads:
+                thread.run()
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(uvicorn, "Config", FakeConfig)
+    monkeypatch.setattr(uvicorn, "Server", FakeServer)
+    monkeypatch.setattr(serve_dispatch.threading, "Thread", FakeThread)
+    monkeypatch.setattr(
+        serve_dispatch.webbrowser,
+        "open_new_tab",
+        opened_urls.append,
+    )
+    args = build_parser().parse_args(("serve", *extra_args))
+
+    assert serve_dispatch.run_serve(app, args) == 0
+
+    output = capsys.readouterr()
+    assert output.out == "codealmanac viewer: http://127.0.0.1:3927\n"
+    assert args.no_open is not should_open
+    assert opened_urls == (["http://127.0.0.1:3927"] if should_open else [])
+    assert len(browser_threads) == int(should_open)
+
+
 def test_cli_ingest_queues_run_with_selected_harness(
     tmp_path: Path,
     isolated_home: Path,
@@ -1170,8 +1245,8 @@ def test_cli_ingest_queues_run_with_selected_harness(
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
-    assert f"ingest queued: {run.run_id}" in output.out
-    assert "follow:  codealmanac jobs attach" in output.out
+    assert "◆ Adding knowledge to your CodeAlmanac in the background" in output.out
+    assert f"codealmanac jobs attach {run.run_id}" in output.out
     assert run.status == RunStatus.QUEUED
     assert spec is not None
     assert spec.harness == HarnessKind.CODEX
@@ -1215,7 +1290,8 @@ default = "codex"
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
-    assert f"ingest queued: {run.run_id}" in output.out
+    assert "◆ Adding knowledge to your CodeAlmanac in the background" in output.out
+    assert f"Job: {run.run_id} · Repo: repo" in output.out
     assert spec is not None
     assert spec.harness == HarnessKind.CODEX
     assert adapter.requests == []
@@ -1296,7 +1372,8 @@ def test_cli_garden_queues_run_with_selected_harness(
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
     spec = app.runs.read_spec(ReadRunSpecRequest(run_id=run.run_id))
-    assert f"garden queued: {run.run_id}" in output.out
+    assert "◆ Improving your CodeAlmanac in the background" in output.out
+    assert f"Job: {run.run_id} · Repo: repo" in output.out
     assert run.status == RunStatus.QUEUED
     assert spec is not None
     assert spec.harness == HarnessKind.CODEX
@@ -1330,9 +1407,12 @@ def test_cli_garden_plain_output(
     output = capsys.readouterr()
     run = app.runs.list(ListRunsRequest(repository_name="repo"))[0]
 
-    assert f"garden queued: {run.run_id}" in output.out
-    assert f"follow:  codealmanac jobs attach {run.run_id}" in output.out
-    assert "worker: pid 5151" in output.out
+    assert "◆ Improving your CodeAlmanac in the background" in output.out
+    assert "│  Follow progress in the CodeAlmanac viewer" in output.out
+    assert "│    codealmanac serve" in output.out
+    assert "│  Then select Jobs in the sidebar." in output.out
+    assert f"codealmanac jobs attach {run.run_id}" in output.out
+    assert f"Job: {run.run_id} · Repo: repo" in output.out
     assert run.kind == RunKind.GARDEN
     assert harness.requests == []
     assert spawner.requests == [SpawnRunWorkerRequest(cwd=repo)]
