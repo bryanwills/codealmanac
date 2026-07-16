@@ -58,6 +58,10 @@ README_REQUIRED_FRAGMENTS = (
 )
 
 README_FORBIDDEN_FRAGMENTS = (
+    "curl -fsSL",
+    "python -m pip install codealmanac",
+    "Give this prompt to your coding agent",
+    "hand this prompt to your coding agent",
     "npx codealmanac",
     # codealmanac itself is never installed from npm; harness CLIs (codex,
     # claude) are npm packages and their repair hints may name npm.

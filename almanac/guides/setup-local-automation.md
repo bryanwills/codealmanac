@@ -81,7 +81,7 @@ The setup parser exposes runner choice, auto-commit policy, instruction skipping
 
 Setup's default automation task list is `sync`, `garden`, and `update` [@setup-automation]. Sync scans recent local agent transcripts, Garden improves wiki structure and graph hygiene, and update keeps the local CodeAlmanac CLI package updated [@setup-automation].
 
-The default intervals are 5 hours for sync, 4 hours for Garden, and 1 day for update [@automation-defaults]. Setup removes tasks from the default list when `--sync-off`, `--garden-off`, or `--no-auto-update` is set [@setup-automation].
+The default intervals are 5 hours for sync, 24 hours for Garden, and 1 day for update [@automation-defaults]. Setup removes tasks from the default list when `--sync-off`, `--garden-off`, or `--no-auto-update` is set [@setup-automation].
 
 ## Manage Automation Directly
 
@@ -89,7 +89,7 @@ The `automation` command is read-only: its only subcommand is `status`, optional
 
 ```bash
 codealmanac config set automation.sync.every 5h
-codealmanac config set automation.garden.every 4h
+codealmanac config set automation.garden.every 24h
 codealmanac config set automation.update.every 24h
 codealmanac automation status
 ```

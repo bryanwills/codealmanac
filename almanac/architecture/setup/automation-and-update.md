@@ -66,7 +66,7 @@ Setup's automation policy lives outside the service. The default tasks are sync,
 
 `AutomationService` reconciles one task, removes all tasks during full uninstall, and reports status through a `SchedulerAdapter` port [@automation_service]. Reconciliation installs a job when enabled and uninstalls it when disabled. `AutomationJobFactory` turns saved task policy into a `ScheduledJob` [@automation_service][@automation_jobs].
 
-The job factory gives each task concrete local execution details. The resolved `codealmanac` executable runs `sync`, `update --scheduled`, or `__garden-scheduler` [@automation_jobs]. Intervals come from saved user configuration; defaults are 5 hours, 4 hours, and 24 hours [@automation_jobs].
+The job factory gives each task concrete local execution details. The resolved `codealmanac` executable runs `sync`, `update --scheduled`, or `__garden-scheduler` [@automation_jobs]. Intervals come from saved user configuration; defaults are 5 hours for sync and 24 hours for both Garden and update [@automation_jobs].
 
 The macOS implementation writes launchd plists under `~/Library/LaunchAgents`, creates stdout and stderr log directories, bootouts any existing job, bootstraps the new job, and reads status back from launchd [@launchd]. The generated plist contains the label, a `Program` key set to the resolved `codealmanac` executable, program arguments, start interval, environment variables, `RunAtLoad`, and log paths [@launchd]. This keeps the [service boundary](../service-boundaries) scheduler-neutral while the adapter owns launchd mechanics.
 

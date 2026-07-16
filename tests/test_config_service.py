@@ -57,7 +57,7 @@ def test_config_service_returns_defaults_without_file(
     assert config.harness.model == "gpt-5.5"
     assert config.automation.sync.enabled is True
     assert config.automation.sync.every == timedelta(hours=5)
-    assert config.automation.garden.every == timedelta(hours=4)
+    assert config.automation.garden.every == timedelta(hours=24)
     assert config.automation.update.every == timedelta(hours=24)
 
 

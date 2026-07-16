@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 DEFAULT_SYNC_INTERVAL = timedelta(hours=5)
-DEFAULT_GARDEN_INTERVAL = timedelta(hours=4)
+DEFAULT_GARDEN_INTERVAL = timedelta(hours=24)
 DEFAULT_UPDATE_INTERVAL = timedelta(days=1)
 
 SYNC_LABEL = "com.codealmanac.sync"

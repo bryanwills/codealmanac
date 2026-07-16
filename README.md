@@ -25,25 +25,9 @@ indexed locally, and reviewed in Git like any other code change.
 
 ## Quickstart
 
-Give this prompt to your coding agent:
-
-```text
-Install and set up CodeAlmanac for this repository.
-
-Use the official installer:
-curl -fsSL https://codealmanac.com/install.sh | sh
-
-Then run `codealmanac setup` without `--yes`. Walk me through its interactive
-setup and wait for my choices instead of selecting defaults for me.
-
-Initialize this repository if it does not already have an almanac/ directory,
-then verify the installation with `codealmanac doctor`.
-```
-
-Prefer to do it yourself?
-
 ```bash
-curl -fsSL https://codealmanac.com/install.sh | sh && codealmanac setup
+uv tool install codealmanac@latest
+codealmanac setup
 ```
 
 See [Install](#install) and [Setup](#setup) for more options.
@@ -60,22 +44,8 @@ codealmanac serve                    # Shows the wiki in local web viewer.
 
 ## Install
 
-With the install script:
-
-```bash
-curl -fsSL https://codealmanac.com/install.sh | sh
-```
-
-or directly:
-
 ```bash
 uv tool install codealmanac@latest
-```
-
-or:
-
-```bash
-python -m pip install codealmanac
 ```
 
 From this checkout:
@@ -97,29 +67,19 @@ distribution. If you used the npm CLI, your machine may still carry the old
 global install plus the hooks and agent instructions it set up. Remove those
 before installing from PyPI.
 
-The easiest path is to hand this prompt to your coding agent:
+Remove the old global package and any CodeAlmanac hooks or agent-instruction
+sections it installed, then install and set up the Python CLI:
 
-```text
-Migrate this machine from the old codealmanac npm CLI to the new PyPI CLI.
-
-1. Uninstall every old install of the CLI and its dependencies:
-   npm uninstall -g codealmanac
-   Also check bun, pnpm, and yarn global installs, and remove any stray
-   codealmanac, almanac, or alm binaries left on PATH.
-2. Remove everything the old CLI installed into agent tooling:
-   - Delete codealmanac hooks from Claude Code settings
-     (~/.claude/settings.json and any project .claude/settings*.json).
-   - Remove codealmanac sections and @-imports from ~/.claude/CLAUDE.md and
-     any other agent instruction files.
-3. Install the latest PyPI CLI:
-   curl -fsSL https://codealmanac.com/install.sh | sh
-4. Run codealmanac setup --yes to reinstall agent instructions and automation.
-5. Verify the migration:
-   which codealmanac points at the new install and codealmanac --help runs.
-
-Leave repo-local almanac/ wiki trees alone - they are committed wiki content,
-not part of the CLI install.
+```bash
+npm uninstall -g codealmanac
+uv tool install codealmanac@latest
+codealmanac setup --yes
+codealmanac doctor
 ```
+
+Also remove old bun, pnpm, or yarn installs and any stray legacy binaries from
+`PATH`. Leave repo-local `almanac/` trees alone; they are committed wiki
+content, not part of the CLI install.
 
 ## Setup
 
@@ -142,7 +102,7 @@ Setup installs agent instructions for your chosen tools and three local macOS
 | Job | Default schedule | What it does |
 | --- | ---: | --- |
 | Sync | Every 5 hours | Scans recent Codex and Claude conversations and queues useful knowledge for the relevant registered wiki. |
-| Garden | Every 4 hours | Reviews every registered wiki for stale, duplicated, or poorly connected knowledge. |
+| Garden | Every 24 hours | Reviews every registered wiki for stale, duplicated, or poorly connected knowledge. |
 | Update | Every 24 hours | Checks for and installs CodeAlmanac CLI updates when it is safe to do so. |
 
 These schedules run locally in the background. Use
@@ -256,7 +216,7 @@ codealmanac automation status
 
 # Change a schedule
 codealmanac config set automation.sync.every 5h
-codealmanac config set automation.garden.every 4h
+codealmanac config set automation.garden.every 24h
 codealmanac config set automation.update.every 24h
 
 # Disable or re-enable a schedule
@@ -385,7 +345,7 @@ every = "5h"
 
 [automation.garden]
 enabled = true
-every = "4h"
+every = "24h"
 
 [automation.update]
 enabled = true

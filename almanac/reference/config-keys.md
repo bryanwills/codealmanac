@@ -62,7 +62,7 @@ written [@config-tests].
 | `automation.sync.enabled` | Boolean | `true` | `true` or `false` |
 | `automation.sync.every` | Duration | `5h` | Positive human duration |
 | `automation.garden.enabled` | Boolean | `true` | `true` or `false` |
-| `automation.garden.every` | Duration | `4h` | Positive human duration |
+| `automation.garden.every` | Duration | `24h` | Positive human duration |
 | `automation.update.enabled` | Boolean | `true` | `true` or `false` |
 | `automation.update.every` | Duration | `24h` | Positive human duration |
 
@@ -98,7 +98,7 @@ every = "5h"
 
 [automation.garden]
 enabled = true
-every = "4h"
+every = "24h"
 
 [automation.update]
 enabled = true
