@@ -13,10 +13,15 @@ It is the constraint document for future agents.
   profile; no name or email exists until a future login explicitly links an
   opaque account identity. GeoIP is disabled. Allowlisted command and lifecycle
   outcomes may leave the machine, and real unhandled foreground/background
-  Python exceptions may send a bounded redacted message plus CodeAlmanac-only
-  stack shape. Code, paths, args, queries, repository/run identifiers, prompts,
+  Python exceptions may send only their type, stable structural fingerprint,
+  and CodeAlmanac-only stack shape. Code, exception messages, paths, args,
+  queries, repository/run identifiers, prompts,
   transcripts, Git data, provider session IDs, locals, environment variables,
   and code variables never leave the machine.
+- 2026-07-16: Lifecycle telemetry exports a model only when its harness/model
+  pair matches the central controlled catalog; unknown or incompatible values
+  drop the event. Durable `RunSpec` remains readable independently of that
+  changing outbound catalog so historical queued records do not become invalid.
 - 2026-06-29: Python v1 is a local product. Do not build hosted shipping,
   hosted CLI, login/connect/upload, SDK, or MCP in this rewrite.
 - 2026-07-05: `e773dc0b` is the fork point for the right local Python product.
@@ -225,6 +230,12 @@ It is the constraint document for future agents.
   and internal phases; operation workflows name only their preparation phases,
   such as ingest `source_preparation`, while delegating the actual failure write
   to the runner.
+- 2026-07-16: Harness readiness and provider invocation are separate operation
+  stages. After readiness succeeds, adapter exceptions are
+  `provider_execution` regardless of exception class; caller event-sink errors
+  remain `internal_error`. Failure-event persistence and the authoritative
+  terminal transition are independent best-effort effects, so one cannot skip
+  the other.
 - 2026-07-01: Shared lifecycle helper responsibilities are split behind the
   import-compatible `workflows/lifecycle.py` facade. `lifecycle_mutation.py`
   owns Git/workspace mutation preflight, reported-change validation, path-diff

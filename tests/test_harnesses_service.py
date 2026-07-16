@@ -6,6 +6,8 @@ from pydantic import ValidationError
 from codealmanac.core.errors import ConflictError, NotFoundError
 from codealmanac.services.harnesses.models import (
     HarnessAgentKind,
+    HarnessEvent,
+    HarnessEventKind,
     HarnessKind,
     HarnessReadiness,
     HarnessRunResult,
@@ -14,6 +16,7 @@ from codealmanac.services.harnesses.models import (
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import (
     HarnessesService,
+    HarnessEventSinkFailed,
     HarnessUnavailable,
 )
 
@@ -45,7 +48,8 @@ def test_harnesses_service_runs_registered_adapter(tmp_path: Path):
     adapter = FakeHarnessAdapter(HarnessKind.CODEX)
     service = HarnessesService((adapter,))
 
-    result = service.run(
+    service.ensure_ready(HarnessKind.CODEX)
+    result = service.run_ready(
         RunHarnessRequest(
             kind=HarnessKind.CODEX,
             model="gpt-5.5",
@@ -80,20 +84,12 @@ class UnavailableHarnessAdapter:
         raise AssertionError("an unavailable harness never runs")
 
 
-def test_harnesses_service_refuses_to_run_unavailable_harness(tmp_path: Path):
+def test_harnesses_service_ensure_ready_rejects_unavailable_harness():
     adapter = UnavailableHarnessAdapter(HarnessKind.CODEX)
     service = HarnessesService((adapter, FakeHarnessAdapter(HarnessKind.CLAUDE)))
 
     with pytest.raises(HarnessUnavailable) as excinfo:
-        service.run(
-            RunHarnessRequest(
-                kind=HarnessKind.CODEX,
-                model="gpt-5.5",
-                agent=HarnessAgentKind.BUILD,
-                cwd=tmp_path,
-                prompt="Build the wiki.",
-            )
-        )
+        service.ensure_ready(HarnessKind.CODEX)
 
     message = str(excinfo.value)
     assert "harness codex is not available: Error: spawn codex ENOENT" in message
@@ -116,6 +112,32 @@ def test_harnesses_service_ensure_ready_raises_for_unregistered_kind():
 
     with pytest.raises(NotFoundError):
         service.ensure_ready(HarnessKind.CLAUDE)
+
+
+def test_harnesses_service_distinguishes_event_sink_failure(tmp_path: Path):
+    class EventfulHarnessAdapter(FakeHarnessAdapter):
+        def run(self, request, on_event=None):
+            assert on_event is not None
+            on_event(HarnessEvent(kind=HarnessEventKind.TEXT, message="working"))
+            return super().run(request, on_event)
+
+    adapter = EventfulHarnessAdapter(HarnessKind.CODEX)
+    service = HarnessesService((adapter,))
+    sink_error = OSError("run-event store unavailable")
+
+    with pytest.raises(HarnessEventSinkFailed) as excinfo:
+        service.run_ready(
+            RunHarnessRequest(
+                kind=HarnessKind.CODEX,
+                model="gpt-5.5",
+                agent=HarnessAgentKind.BUILD,
+                cwd=tmp_path,
+                prompt="Build the wiki.",
+            ),
+            on_event=lambda event: (_ for _ in ()).throw(sink_error),
+        )
+
+    assert excinfo.value.error is sink_error
 
 
 def test_unavailable_message_omits_switch_hint_without_alternatives(tmp_path: Path):
@@ -152,19 +174,11 @@ def test_harnesses_service_readiness_answers_for_unregistered_kind():
     assert unregistered.message == "no claude harness adapter is registered"
 
 
-def test_harnesses_service_rejects_missing_or_duplicate_adapters(tmp_path: Path):
+def test_harnesses_service_rejects_missing_or_duplicate_adapters():
     service = HarnessesService()
 
     with pytest.raises(NotFoundError):
-        service.run(
-            RunHarnessRequest(
-                kind=HarnessKind.CODEX,
-                model="gpt-5.5",
-                agent=HarnessAgentKind.BUILD,
-                cwd=tmp_path,
-                prompt="Try a run without an adapter.",
-            )
-        )
+        service.ensure_ready(HarnessKind.CODEX)
 
     with pytest.raises(ConflictError):
         HarnessesService(

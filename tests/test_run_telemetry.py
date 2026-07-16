@@ -41,7 +41,7 @@ class RecordingSender:
         self.events.append(event)
 
 
-def queued_run(tmp_path: Path):
+def queued_run(tmp_path: Path, *, model: str = "gpt-5.5"):
     sender = RecordingSender()
     app = create_app(
         AppConfig(database_path=tmp_path / "codealmanac.db"),
@@ -56,7 +56,7 @@ def queued_run(tmp_path: Path):
             spec=RunSpec(
                 kind=RunKind.GARDEN,
                 harness=HarnessKind.CODEX,
-                model="gpt-5.5",
+                model=model,
             ),
         )
     )
@@ -110,6 +110,19 @@ def test_failed_run_has_only_controlled_failure_category(tmp_path: Path) -> None
 
     assert sender.events[0].properties["failure_category"] == "provider_execution"
     assert "private provider output" not in sender.events[0].model_dump_json()
+
+
+def test_lifecycle_event_drops_uncontrolled_private_model_text(
+    tmp_path: Path,
+) -> None:
+    private_model = "/Users/alice/private-model-token"
+    app, sender, run = queued_run(tmp_path, model=private_model)
+
+    app.runs.finish(
+        FinishRunRequest(run_id=run.run_id, status=RunStatus.DONE)
+    )
+
+    assert sender.events == []
 
 
 def test_queued_cancellation_emits_terminal_event(tmp_path: Path) -> None:

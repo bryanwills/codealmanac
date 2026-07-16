@@ -243,7 +243,32 @@ GitHub's package check and both test jobs passed for follow-up review-fix commit
 ## Completion state
 
 The original implementation, disposable smoke testing, privacy audit, PostHog
-dashboard, and first diligent-review fixes are complete on
-`codex/cli-telemetry`. Follow-up review fixes have passed full local, package,
-and GitHub verification. PR #36 is draft and mergeable. Unrelated user files
-remain untouched and untracked.
+dashboard, and diligent-review fixes are on `codex/cli-telemetry`. The third
+review fixes have passed full local and package verification; their GitHub
+verification is pending push. PR #36 remains draft. Unrelated user files remain
+untouched and untracked.
+
+## Third review hardening
+
+On 2026-07-16, three further findings were reproduced and accepted with bounded
+architectural fixes:
+
+- Lifecycle telemetry now rejects unknown or harness-incompatible model values
+  against the central catalog. Validation stays at the outbound typed boundary,
+  not in durable `RunSpec`, so historical queued records remain readable.
+- `OperationRunner.fail` computes a non-throwing summary and independently
+  best-efforts the readable error event and authoritative failed transition. An
+  event-store failure can no longer leave a run durably running or replace its
+  phase category.
+- `HarnessesService.ensure_ready` and `run_ready` make workflow phase explicit.
+  Adapter exceptions are `provider_execution` after readiness, while a typed
+  caller event-sink failure remains `internal_error`.
+
+The implementation plan is
+`docs/plans/2026-07-16-cli-telemetry-third-review-fixes.md`. Focused telemetry,
+workflow, and harness verification passed 71 tests. The full suite passed 562
+tests on Python 3.12.10 and Python 3.13.3, along with Ruff, `git diff --check`,
+and `codealmanac validate` over 71 pages. A clean wheel build omitted stale
+ignored build output, installed into an isolated Python 3.12 environment, and
+passed version, config, and unknown-model privacy-boundary smokes with telemetry
+disabled. GitHub results are recorded after the implementation commit is pushed.

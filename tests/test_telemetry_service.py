@@ -1,10 +1,12 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from codealmanac.services.config.models import TelemetryConfig, UserConfig
 from codealmanac.services.telemetry.models import (
     CliCommandCompletedProperties,
+    LifecycleRunCompletedProperties,
     TelemetryEvent,
 )
 from codealmanac.services.telemetry.service import TelemetryService
@@ -57,6 +59,17 @@ def make_service(
         version="1.2.3",
     )
     return service, sender
+
+
+def test_lifecycle_properties_reject_model_for_another_harness() -> None:
+    with pytest.raises(ValidationError, match="model is not controlled for harness"):
+        LifecycleRunCompletedProperties(
+            run_kind="garden",
+            status="done",
+            harness="codex",
+            model="claude-sonnet-5",
+            duration_bucket="1-10s",
+        )
 
 
 def test_identity_is_a_stable_uuid_stored_in_sqlite(tmp_path: Path) -> None:

@@ -4,6 +4,8 @@ from uuid import UUID
 from pydantic import model_validator
 
 from codealmanac.core.models import CodeAlmanacModel
+from codealmanac.services.config.models import HARNESS_MODELS
+from codealmanac.services.harnesses.models import HarnessKind
 
 type TelemetryValue = (
     str
@@ -102,7 +104,9 @@ class LifecycleRunCompletedProperties(CodeAlmanacModel):
     ] | None = None
 
     @model_validator(mode="after")
-    def failure_category_matches_status(self) -> "LifecycleRunCompletedProperties":
+    def validate_lifecycle_contract(self) -> "LifecycleRunCompletedProperties":
+        if self.model not in HARNESS_MODELS[HarnessKind(self.harness)]:
+            raise ValueError("model is not controlled for harness")
         if self.status == "failed" and self.failure_category is None:
             raise ValueError("failed lifecycle events require failure_category")
         if self.status != "failed" and self.failure_category is not None:

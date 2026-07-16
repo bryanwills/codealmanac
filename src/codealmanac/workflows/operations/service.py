@@ -2,12 +2,12 @@ from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from pathlib import Path
 
-from codealmanac.core.errors import NotFoundError
+from codealmanac.core.errors import error_summary
 from codealmanac.services.harnesses.models import HarnessEvent, HarnessRunResult
 from codealmanac.services.harnesses.requests import RunHarnessRequest
 from codealmanac.services.harnesses.service import (
     HarnessesService,
-    HarnessUnavailable,
+    HarnessEventSinkFailed,
 )
 from codealmanac.services.health.service import HealthService
 from codealmanac.services.index.service import IndexService
@@ -26,7 +26,6 @@ from codealmanac.services.runs.requests import (
 )
 from codealmanac.services.runs.service import RunsService
 from codealmanac.workflows.operations.harness import (
-    first_line,
     harness_events,
     harness_run_event_kind,
     should_record_harness_event,
@@ -85,30 +84,46 @@ class OperationRunner:
             emitted_events.append(event)
             self.record_harness_event(request.context, event)
 
-        try:
-            harness = self.harnesses.run(
-                RunHarnessRequest(
-                    kind=request.harness,
-                    model=request.model,
-                    agent=request.agent,
-                    cwd=repository.root_path,
-                    prompt=request.prompt,
-                    title=request.title,
-                ),
-                on_event=record_live_event,
+        with self.failure_phase(
+            request.context,
+            RunFailureCategory.INTERNAL_ERROR,
+        ):
+            harness_request = RunHarnessRequest(
+                kind=request.harness,
+                model=request.model,
+                agent=request.agent,
+                cwd=repository.root_path,
+                prompt=request.prompt,
+                title=request.title,
             )
-        except (HarnessUnavailable, NotFoundError) as error:
+
+        try:
+            self.harnesses.ensure_ready(request.harness)
+        except Exception as error:
             self.fail(
                 request.context,
                 error,
                 RunFailureCategory.HARNESS_READINESS,
             )
             raise
+
+        try:
+            harness = self.harnesses.run_ready(
+                harness_request,
+                on_event=record_live_event,
+            )
+        except HarnessEventSinkFailed as error:
+            self.fail(
+                request.context,
+                error.error,
+                RunFailureCategory.INTERNAL_ERROR,
+            )
+            raise error.error from error
         except Exception as error:
             self.fail(
                 request.context,
                 error,
-                RunFailureCategory.INTERNAL_ERROR,
+                RunFailureCategory.PROVIDER_EXECUTION,
             )
             raise
 
@@ -158,7 +173,7 @@ class OperationRunner:
         error: Exception,
         category: RunFailureCategory,
     ) -> None:
-        message = first_line(str(error)) or error.__class__.__name__
+        message = error_summary(error)
         with suppress(Exception):
             self.record(
                 RecordOperationEventRequest(
@@ -167,6 +182,7 @@ class OperationRunner:
                     message=message,
                 )
             )
+        with suppress(Exception):
             self.runs.finish(
                 FinishRunRequest(
                     run_id=context.run_id,
