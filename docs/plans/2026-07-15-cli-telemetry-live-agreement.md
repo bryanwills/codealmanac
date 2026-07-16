@@ -106,6 +106,48 @@ tests.
   fields; the first retained pre-hardening dogfood command is the only historical
   event containing them.
 
+## Exact final-commit production QA
+
+On 2026-07-16, commit `da82eac9` was rebuilt as a wheel, installed into a new
+virtualenv, and exercised against live PostHog from a disposable home and repo.
+This closes the gap between the earlier live transport smoke and the final
+reviewed package:
+
+- Real `config get` and `config list` CLI processes traveled through the
+  detached child and appeared in PostHog under installation UUID
+  `fa20d035-0853-4eca-ac6c-59695dcef732`.
+- The final audit found exactly three command events, two lifecycle events, and
+  two exceptions on one PostHog person. Its person property map remained empty.
+- Command events contained the allowlisted command/action/outcome, version,
+  coarse platform, duration, and GeoIP-disable fields. Checked IP, GeoIP country,
+  email, name, argv, query, path, repository/run identifiers, prompt,
+  transcript, and SDK full runtime/library fields were all absent.
+- Calling the same successful durable finish twice produced one `garden/done`
+  event. A real worker spawn exception produced one `garden/failed` event with
+  `internal_error`; the local delivery table contained exactly the two terminal
+  claims.
+- The worker OSError created issue `019f69e3-9563-7a81-81cf-e630049ea96a` with
+  `cannot spawn executor at <path> token=<redacted>`. A real hidden executor
+  crash joined the existing ValueError issue. Both retained only in-package
+  CodeAlmanac frames and no session, URL, locals, environment, code variables,
+  run IDs, or repository IDs.
+- Setting telemetry false and running another command left the live event count
+  unchanged. Each environment opt-out also ran successfully without creating a
+  telemetry database. Help, version, and syntax-error paths created no identity.
+- Routing the detached child through a dead proxy left the foreground command's
+  output and zero exit code unchanged; it returned in 0.509 seconds and no event
+  appeared for that disposable UUID.
+- Twenty concurrent first-use processes resolved one UUID, and twenty concurrent
+  claims produced exactly one winner. Corrupt UUID and delivery-table state did
+  not break a valid command or durable run.
+- The wheel metadata declares Python 3.12+, contains only the public `phc_`
+  ingestion token, contains no `phx_` personal-key pattern, and keeps the PostHog
+  SDK out of the foreground import path. The full suites passed all 534 tests on
+  both Python 3.12.10 and Python 3.13.3.
+- A force-blocking dashboard refresh succeeded for all eight tiles and reflected
+  the new installation, lifecycle outcomes, and exception volume. Project IP
+  anonymization remained on and session replay remained off.
+
 ## Completion state
 
 Implementation, review, disposable smoke testing, package verification, privacy
