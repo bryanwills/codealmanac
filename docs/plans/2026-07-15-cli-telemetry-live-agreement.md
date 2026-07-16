@@ -25,6 +25,7 @@ tests.
 - Linux CI test-isolation fix: `4edfe89a`
 - Review-fix plan commit: `22e81980`
 - Main merge commit: `ddee1934`
+- Diligent review-fix commit: `463de759`
 - Unrelated untracked user files must not be staged or modified.
 
 ## Settled product decisions
@@ -209,9 +210,12 @@ letting the SDK send its unmodified context. The final wheel built, installed in
 an isolated Python 3.12 environment, and passed version, config, and dependency
 smokes with telemetry disabled.
 
+PR #36 became mergeable after the main merge. GitHub's package check and both
+test jobs passed for review-fix commit `463de759`.
+
 ## Completion state
 
-The original implementation, disposable smoke testing, privacy audit, and
-PostHog dashboard work are complete. Diligent-review fixes and local full-suite
-and package verification are complete on `codex/cli-telemetry`; GitHub CI for the
-updated branch is pending. Unrelated user files remain untouched and untracked.
+The implementation, disposable smoke testing, privacy audit, PostHog dashboard,
+diligent-review fixes, local verification, and GitHub CI are complete on
+`codex/cli-telemetry`. PR #36 is draft and mergeable. Unrelated user files remain
+untouched and untracked.
