@@ -58,6 +58,9 @@ def test_setup_installs_codex_block_idempotently(home: Path):
     assert "codealmanac search --mentions src/checkout/" in body
     assert "## Reading pages" in body
     assert "codealmanac show PAGE --backlinks" in body
+    assert "## Citing Almanac in final answers" in body
+    assert "immediately after the claim it supports" in body
+    assert "almanac/architecture/setup/instruction-installation.md" in body
     assert "## Maintenance boundary" in body
     assert "codealmanac topics create" not in body
     assert first.plan.default_harness.value == "codex"
@@ -102,6 +105,9 @@ def test_setup_installs_claude_guide_and_import_idempotently(home: Path):
     guide = guide_path.read_text(encoding="utf-8")
     assert "## Finding knowledge" in guide
     assert "## Reading pages" in guide
+    assert "## Citing Almanac in final answers" in guide
+    assert "immediately after the claim it supports" in guide
+    assert "almanac/architecture/setup/instruction-installation.md" in guide
     assert "## Maintenance boundary" in guide
     assert claude_md.count(CLAUDE_IMPORT_LINE) == 1
 

@@ -137,6 +137,19 @@ codealmanac show PAGE --json
 The Markdown files under `almanac/` may also be read directly when raw source is
 more useful than the indexed view.
 
+## Citing Almanac in final answers
+
+When CodeAlmanac contributes to your final answer, cite the Almanac page that
+supplied that knowledge.
+
+Place each citation inline, immediately after the claim it supports. Link to
+the committed Markdown page using its repository-relative path:
+
+```md
+Setup installs the same guide for both supported agents
+([Instruction Installation](almanac/architecture/setup/instruction-installation.md)).
+```
+
 ## Browsing topics and repositories
 
 Topics provide a read-only way to browse an area of the wiki:
