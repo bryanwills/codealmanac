@@ -244,9 +244,9 @@ GitHub's package check and both test jobs passed for follow-up review-fix commit
 
 The original implementation, disposable smoke testing, privacy audit, PostHog
 dashboard, and diligent-review fixes are on `codex/cli-telemetry`. The third
-review fixes have passed full local and package verification; their GitHub
-verification is pending push. PR #36 remains draft. Unrelated user files remain
-untouched and untracked.
+review fixes have passed full local, package, and GitHub verification. PR #36
+remains draft and mergeable. Unrelated user files remain untouched and
+untracked.
 
 ## Third review hardening
 
@@ -271,4 +271,5 @@ tests on Python 3.12.10 and Python 3.13.3, along with Ruff, `git diff --check`,
 and `codealmanac validate` over 71 pages. A clean wheel build omitted stale
 ignored build output, installed into an isolated Python 3.12 environment, and
 passed version, config, and unknown-model privacy-boundary smokes with telemetry
-disabled. GitHub results are recorded after the implementation commit is pushed.
+disabled. GitHub's package check and both test jobs passed for implementation
+commit `fc48144b`; PR #36 remained mergeable.
