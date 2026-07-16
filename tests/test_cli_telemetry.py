@@ -6,6 +6,7 @@ import pytest
 from codealmanac.app import create_app
 from codealmanac.cli.main import main
 from codealmanac.cli.telemetry import command_action, duration_bucket
+from codealmanac.services.automation.models import ScheduledJob, ScheduledJobStatus
 from codealmanac.services.setup.models import (
     PackageUninstallResult,
     PackageUninstallStatus,
@@ -36,6 +37,17 @@ class SkippedPackageUninstaller:
             method=UpdateInstallMethod.UNKNOWN,
             message="test package removal skipped",
         )
+
+
+class SkippedScheduler:
+    def install(self, _job: ScheduledJob) -> ScheduledJobStatus:
+        raise AssertionError("install is not expected during uninstall")
+
+    def uninstall(self, _job: ScheduledJob) -> bool:
+        return False
+
+    def status(self, _job: ScheduledJob) -> ScheduledJobStatus:
+        raise AssertionError("status is not expected during uninstall")
 
 
 @pytest.mark.parametrize(
@@ -158,6 +170,7 @@ def test_uninstall_preserves_preexisting_opt_out_and_removes_identity_state(
     database_path = isolated_home / ".codealmanac/codealmanac.db"
     app = create_app(
         AppConfig(database_path=database_path),
+        scheduler=SkippedScheduler(),
         telemetry_sender=sender,
         package_uninstaller=SkippedPackageUninstaller(),
     )
