@@ -38,6 +38,10 @@ sources:
     type: wiki
     path: decisions/repository-affiliation-belongs-in-repository-service
     note: Proposed decision that gives the repository service ownership of checkout-to-repository affiliation.
+  - id: telemetry-setup
+    type: wiki
+    path: decisions/telemetry-permission-is-final-setup-step
+    note: Planned decision for setup ordering and telemetry consent behavior.
 ---
 
 # Decisions
@@ -85,6 +89,13 @@ does not stage, split, or commit wiki diffs itself [@auto-commit].
 [Controlled model catalog](controlled-model-catalog) decides that supported
 runner models are owned by CodeAlmanac config and tests, not by provider
 discovery or provider defaults [@model-catalog].
+
+## Setup Consent
+
+[Telemetry permission is final setup step](telemetry-permission-is-final-setup-step)
+records a planned setup contract: telemetry permission comes after runner,
+instruction, model, maintenance, update, and change-handling choices, with an
+explicit `telemetry.enabled` config setting once implemented [@telemetry-setup].
 
 ## Repository Scope
 
