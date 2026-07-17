@@ -74,6 +74,16 @@ itself looks wrong [@guide-content]. It states an explicit trust order for a
 contradiction: current code outranks the Almanac, and the Almanac outranks
 ordinary repository documentation [@guide-content].
 
+Between the search/show usage and the topics/list/health coverage, the guide
+also instructs the agent to cite CodeAlmanac in its own final answers: when
+Almanac knowledge contributes to a final answer, cite the supporting page
+inline, immediately after the claim, as a Markdown link to the committed page
+using its repository-relative path [@guide-content]. This is a citation
+obligation the installed agent owes the user in its own responses, distinct
+from the in-page `sources:` frontmatter and citation-marker convention that
+wiki maintenance operations use when writing pages (see
+[Frontmatter and sources](../../reference/page-format/frontmatter-and-sources)).
+
 The second half is a boundary statement: during ordinary coding work the
 agent should treat the wiki as read-only, searching and reading it but not
 editing pages, sources, links, topics, or structure. Wiki maintenance belongs
